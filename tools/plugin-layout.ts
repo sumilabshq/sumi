@@ -8,10 +8,9 @@ interface AstNode {
 }
 
 const PLUGIN_FILE = "src/plugin.ts";
-const SLOTS_FILE = "src/slots.ts";
 const INDEX_FILE = "src/index.ts";
 const ALLOWED_TOP = new Set(["src", "data", "node_modules", "package.json", "tsconfig.json", "LICENSE"]);
-const SRC_TOP_FILES = new Set(["plugin.ts", "slots.ts", "index.ts"]);
+const SRC_TOP_FILES = new Set(["plugin.ts", "index.ts"]);
 const SRC_AREAS = new Set(["features", "shared"]);
 const GENERATED_FOLDER = "generated";
 const GENERATED_FILES = new Set(["plugin.ts"]);
@@ -40,7 +39,6 @@ function pluginRefusalsOf(pluginsRoot: string, name: string): readonly string[] 
 	return [
 		...topRefusalsOf(folder, at),
 		...pluginFileRefusalsOf(folder, at),
-		...slotRefusalsOf(folder, at),
 		...indexRefusalsOf(folder, at),
 		...srcPlacementRefusalsOf(folder, at),
 		...foreignLibRefusalsOf(folder, at),
@@ -225,20 +223,6 @@ function pluginFileRefusalsOf(folder: string, at: (relative: string) => string):
 	];
 }
 
-function slotRefusalsOf(folder: string, at: (relative: string) => string): readonly string[] {
-	const sources = sourcesUnder(path.join(folder, "src"));
-	const outside = sources
-		.filter((file) => path.relative(folder, file) !== path.normalize(SLOTS_FILE))
-		.filter((file) => callsOf(programOf(file), "slot").length > 0)
-		.map((file) => `${at(path.relative(folder, file))}: slot(...) outside ${SLOTS_FILE}`);
-	const slotsFile = path.join(folder, SLOTS_FILE);
-	const empty =
-		existsSync(slotsFile) && callsOf(programOf(slotsFile), "slot").length === 0
-			? [`${at(SLOTS_FILE)}: declares no slot; delete it`]
-			: [];
-	return [...outside, ...empty];
-}
-
 function indexRefusalsOf(folder: string, at: (relative: string) => string): readonly string[] {
 	const file = path.join(folder, INDEX_FILE);
 
@@ -334,17 +318,6 @@ function rootCalleeOf(node: AstNode | null): string | null {
 	}
 
 	return callee?.type === "MemberExpression" ? rootCalleeOf(nodeAt(callee, "object")) : null;
-}
-
-function callsOf(nodes: readonly unknown[], name: string): readonly AstNode[] {
-	return nodes.flatMap((node) => (isAstNode(node) ? callsIn(node, name) : []));
-}
-
-function callsIn(node: AstNode, name: string): readonly AstNode[] {
-	const callee = nodeAt(node, "callee");
-	const own = node.type === "CallExpression" && callee?.type === "Identifier" && callee["name"] === name ? [node] : [];
-	const children = Object.values(node).flatMap((value) => (Array.isArray(value) ? value : [value]));
-	return [...own, ...callsOf(children, name)];
 }
 
 function nodeAt(node: unknown, key: string): AstNode | null {

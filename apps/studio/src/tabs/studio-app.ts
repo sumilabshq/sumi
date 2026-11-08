@@ -23,7 +23,7 @@ import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import type { BackgroundModule, WindowModule } from "../plugins/sumi-plugins.js";
 import type { FrameCoreModule } from "./frame-routes.js";
 
-const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [fileSystem, terminal];
+export const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [fileSystem, terminal];
 
 export function frameCoreModulesOf(backgroundModules: readonly BackgroundModule[]): readonly FrameCoreModule[] {
 	return [

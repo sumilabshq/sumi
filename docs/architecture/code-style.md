@@ -28,10 +28,10 @@ How code is written inside the architecture. The rules hold in any project built
 
 ## The fluent chain
 
-The fluent chain is this project's one declaration pattern: requests, modules, guards, middleware, slots and plugins are all declared by it, as zod schemas already are.
+The fluent chain is this project's one declaration pattern: requests, modules, guards, middleware and plugins are all declared by it, as zod schemas already are.
 
-- **A kind is declared with a chain; a value of a kind is one object.** Declaring a request, module, guard, middleware, slot or plugin is a chain. Using one is a single object: a fill, options, a module's config (`tasks({ file })`), `billing({ over })`, `layout({ injects })`, input, start settings.
-- **A call that changes the chain's types takes one item; a call that lists independent items takes many.** `.guard`, `.use`, `.provide` take one; `.fill`, `.imports`, `.declare` take many.
+- **A kind is declared with a chain; a value of a kind is one object.** Declaring a request, module, guard, middleware or plugin is a chain. Using one is a single object: options, a module's config (`tasks({ file })`), `billing({ over })`, `layout({ injects })`, input, start settings.
+- **A call that changes the chain's types takes one item; a call that lists independent items takes many.** `.guard`, `.use`, `.provide`, `.apply` take one; `.imports`, `.require`, `.optional` take many.
 - **One concern per call**, read top to bottom in the order it runs.
 - **Every behaviour ends in `.handle()`**: a request, a guard, a middleware.
 - **`.guard` decides who may call, `.use` wraps the call**: two verbs, never one for both.

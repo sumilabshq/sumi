@@ -1,6 +1,6 @@
 import { apps as appsModule } from "../plugins/apps/data/apps/generated/module.ts";
 import { faceOf } from "../plugins/apps/src/features/app-tab/lib/face-of.ts";
-import { AppSchema, apps } from "../plugins/apps/src/index.ts";
+import { appsFilledBy } from "./apps-filled-fixture.ts";
 import { BROWSER_PAGE_ICON } from "../plugins/browser-page/src/features/browser-page/lib/browser-page-icon.ts";
 import { LazyBrowserPageView } from "../plugins/browser-page/src/features/browser-page/lib/lazy-browser-page-view.ts";
 import { chat } from "../plugins/chat/src/index.ts";
@@ -17,10 +17,6 @@ export const BROWSER_PAGE_FACE = faceOf({
 	view: LazyBrowserPageView,
 });
 
-export const BUILT_IN_FACES = [main, chat].flatMap((filler) =>
-	filler.parts.fills
-		.flatMap(({ slot, listId, item }) => (slot === apps.apps && listId !== null ? [{ id: listId, item }] : []))
-		.map(({ id, item }) => faceOf({ id, ...AppSchema.parse(item) })),
-);
+export const BUILT_IN_FACES = appsFilledBy([main, chat]).map(faceOf);
 
 export const PluginAppsModule = appsModule({ apps: [...BUILT_IN_FACES, TERMINAL_FACE, BROWSER_PAGE_FACE] });

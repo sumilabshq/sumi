@@ -1,5 +1,5 @@
-import type { ContractShape } from "@widgetarium/data-framework";
+import type { McpServer } from "@widgetarium/data-framework";
 
 export interface McpConfig {
-	readonly modules: readonly ContractShape[];
+	readonly servers: readonly McpServer[];
 }

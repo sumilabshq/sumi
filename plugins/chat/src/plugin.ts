@@ -1,6 +1,6 @@
 import { apps } from "@sumi/apps-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
-import { sumiHost } from "@sumi/sumi-host-plugin";
+import { backend, shell, windows } from "@sumi/sumi-host-plugin";
 import { assistant as assistantModule } from "@widgetarium/assistant/implementation";
 import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { plugin } from "@widgetarium/plugin-framework";
@@ -12,22 +12,20 @@ import { CHAT_TAB_PAGE } from "./features/chat-page/lib/chat-tab-page.js";
 import { isOutsideHolders } from "./features/chat-page/lib/chat-standing.js";
 
 export const chat = plugin("chat")
-	.require(sumiHost, apps, commandMenu)
-	.fill(
-		apps.apps.add({
+	.require(backend, windows, shell, apps, commandMenu)
+	.apply((app) => {
+		app.use(apps).app({
 			id: "chat",
 			title: "New chat",
 			art: "chat",
 			isListed: false,
 			tabs: { canStandIn: isOutsideHolders, holdsTabs: true, splits: true, runsInPage: false, keepsRecord: true },
-		}),
-		sumiHost.backgroundModules.add({ id: "questions", module: () => questionsModule, contract: questions }),
-		sumiHost.tabPage.add({ id: "chat", tabPage: () => CHAT_TAB_PAGE }),
-		sumiHost.windowModules.add({ id: "chat-tabs", module: () => chatTabs }),
-		sumiHost.windowServerModules.add({ id: "assistant", module: ({ assistant }) => assistantModule(assistant) }),
-		sumiHost.windowProviders.add({ id: "ask-composer", provider: askComposerProviderOf }),
-	)
-	.apply((app) => {
+		});
+		app.use(backend).module(questionsModule, questions);
+		app.use(shell).tabPage(CHAT_TAB_PAGE);
+		app.use(windows).module(chatTabs);
+		app.use(windows).serverModule(({ assistant }) => assistantModule(assistant));
+		app.use(shell).provider(askComposerProviderOf);
 		app.use(commandMenu).door({
 			id: "ask",
 			letter: "i",

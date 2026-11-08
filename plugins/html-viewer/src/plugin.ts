@@ -5,13 +5,13 @@ import { LazyHtmlView } from "./features/html/lib/lazy-html-view.js";
 
 export const htmlViewer = plugin("html-viewer")
 	.require(files)
-	.fill(
-		files.fileViewers.add({
+	.apply((app) => {
+		app.use(files).viewer({
 			id: "html-viewer",
 			title: "HTML",
 			icon: HTML_ICON,
 			extensions: ["html", "htm"],
 			view: LazyHtmlView,
 			actions: [ReloadAction, SourceAction, FileTextCopyAction, OpenInSystemAppAction],
-		}),
-	);
+		});
+	});

@@ -136,7 +136,7 @@ function tested(id: string, cases: Cases): void {
 	});
 }
 
-const PLUGINS = 'import { plugin, slot } from "@widgetarium/plugin-framework";\n';
+const PLUGINS = 'import { plugin } from "@widgetarium/plugin-framework";\n';
 
 tested("building-block-names", {
 	valid: [
@@ -153,8 +153,7 @@ tested("building-block-names", {
 			`${MODULE_REQUESTS}export const count = query().public().handle((_input, { counter }) => counter.value);`,
 			COUNT_REQUESTS,
 		),
-		ok(`${PLUGINS}export const commandMenu = plugin("command-menu").require(sumiHost).declare(menuDoors);`),
-		ok(`${PLUGINS}export const tabFaces = slot().item(TabFaceSchema).list();`),
+		ok(`${PLUGINS}export const commandMenu = plugin("command-menu").require(sumiHost);`),
 	],
 	invalid: [
 		bad(`${MODULE_REQUESTS}export const Count = query().public();`, "notCamel", COUNT_REQUESTS),
@@ -192,8 +191,8 @@ tested("building-block-names", {
 		),
 		bad(`${PLUGINS}export const ChatPlugin = plugin("chat").require(apps);`, "notCamel"),
 		bad(`${PLUGINS}export const chatPlugin = plugin("chat").require(apps);`, "kindSuffix"),
-		bad(`${PLUGINS}export const TabFaces = slot().item(TabFaceSchema).list();`, "notCamel"),
-		bad(`${PLUGINS}export const tabFacesSlot = slot().item(TabFaceSchema).list();`, "kindSuffix"),
+		bad(`${PLUGINS}export const CommandMenu = plugin("command-menu");`, "notCamel"),
+		bad(`${PLUGINS}export const commandMenuPlugin = plugin("command-menu");`, "kindSuffix"),
 		bad(`${PLUGINS}const probe = plugin("probe");`, "unnamed"),
 	],
 });
@@ -203,7 +202,7 @@ tested("no-choice-strings", {
 		ok(TALLY_MODULE, "packages/tally/module.ts"),
 		ok(`${REQUESTS}export const pages = query().cache({ freshFor: minutes(5) });`),
 		ok(`${REQUESTS}export const H = handler(PagesQuery, M).handle(() => "a string is data here");`),
-		ok(`${PLUGINS}export const chat = plugin("chat").fill(apps.tabFaces.add({ id: "chat", title: "New chat" }));`),
+		ok(`${PLUGINS}export const chat = plugin("chat").require(apps).apply((app) => app.use(apps).app({ id: "chat" }));`),
 		ok(`${PLUGINS}export const chat = plugin("chat").require(apps);`),
 		ok(`${REQUESTS}export const pages = query().metadata({ description: "Free-form text an adapter reads." });`),
 	],
@@ -216,7 +215,6 @@ tested("no-choice-strings", {
 		bad(`${PLUGINS}export const chat = plugin("chat").require("apps");`, "choiceString"),
 		bad(`${PLUGINS}export const chat = plugin("chat", "extra");`, "choiceString"),
 		bad(TALLY_MODULE.replace("on(Device)", 'on("Device")'), "choiceString", "packages/tally/module.ts"),
-		bad(`${PLUGINS}export const tabFaces = slot("tab-faces").item(TabFaceSchema).list();`, "choiceString"),
 	],
 });
 

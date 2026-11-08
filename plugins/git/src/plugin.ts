@@ -10,8 +10,8 @@ import { FileListAction } from "./features/git-page/ui/file-list-action/file-lis
 
 export const git = plugin("git")
 	.require(apps)
-	.fill(
-		apps.apps.add({
+	.apply((app) => {
+		app.use(apps).app({
 			id: "git",
 			title: "Git",
 			icon: GIT_ICON,
@@ -19,5 +19,5 @@ export const git = plugin("git")
 			actions: [FileListAction, WrapAction, RereadAction],
 			tabModules: () => [gitModule],
 			titleOf: gitTitleOf,
-		}),
-	);
+		});
+	});

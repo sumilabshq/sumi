@@ -8,11 +8,9 @@ type Files = Readonly<Record<string, string>>;
 
 const GOOD: Files = {
 	"package.json": '{ "widgetarium": { "level": "plugin" } }',
-	"src/plugin.ts":
-		'import { plugin } from "x";\nimport { pinned } from "./slots.js";\nexport const notes = plugin("notes").declare(pinned);\n',
-	"src/slots.ts": 'import { slot } from "x";\nexport const pinned = slot().item(schema).list();\n',
+	"src/plugin.ts": 'import { plugin } from "x";\nexport const notes = plugin("notes");\n',
 	"src/generated/plugin.ts":
-		'import { namedSlot, pluginWithSlots } from "x";\nimport { notes as definition } from "../plugin.js";\nimport * as slots from "../slots.js";\n\nexport const notes = pluginWithSlots(definition, { pinned: namedSlot("pinned", slots.pinned) });\n',
+		'import { pluginWithSlots } from "x";\nimport { notes as definition } from "../plugin.js";\n\nexport const notes = pluginWithSlots(definition, {});\n',
 	"src/index.ts": 'export * from "./generated/plugin.js";\n',
 	"data/notes/package.json": '{ "widgetarium": { "level": "domain" } }',
 	"data/notes/module.ts": "export const NotesModule = 1;\n",
@@ -46,7 +44,7 @@ function without(files: Files, removed: string): Files {
 check("every plugin in plugins/ follows the layout", layoutRefusalsOf("plugins"), []);
 check("a plugin laid out by the rule passes", refusalsOf(GOOD), []);
 check(
-	"a plugin with no slots and no modules needs neither slots.ts nor data/",
+	"a plugin with no modules needs no data/",
 	refusalsOf({
 		"package.json": "{}",
 		"src/plugin.ts": 'import { plugin } from "x";\nexport const notes = plugin("notes");\n',
@@ -60,15 +58,12 @@ check("a plugin without src/plugin.ts is refused", refusalsOf(without(GOOD, "src
 check(
 	"a helper beside the plugin definition is refused",
 	refusalsOf({ ...GOOD, "src/plugin.ts": `${GOOD["src/plugin.ts"] ?? ""}function helper() {}\n` }),
-	["plugins/notes/src/plugin.ts:4: FunctionDeclaration beside the plugin definition; move it to its own file"],
+	["plugins/notes/src/plugin.ts:3: FunctionDeclaration beside the plugin definition; move it to its own file"],
 );
 check(
-	"a slot declared outside slots.ts is refused",
-	refusalsOf({
-		...GOOD,
-		"src/features/list/lib/extra.ts": 'import { slot } from "x";\nexport const extra = slot().item(schema);\n',
-	}),
-	["plugins/notes/src/features/list/lib/extra.ts: slot(...) outside src/slots.ts"],
+	"a slots.ts file at the top of src is refused like any loose file",
+	refusalsOf({ ...GOOD, "src/slots.ts": "export const pinned = 1;\n" }),
+	["plugins/notes/src/slots.ts: no other loose file at the top of src; it goes to features/<feature>/ or shared/"],
 );
 check(
 	"an index that does more than re-export is refused",

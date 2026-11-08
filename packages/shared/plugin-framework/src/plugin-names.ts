@@ -24,8 +24,6 @@ interface SavedName {
 
 const ID_TWICE =
 	'plugins #{first} and #{second} of .builtInPlugins() are both named "{plugin}", so the second does not start: rename the plugin("{plugin}") string of one, or start the runtime .withNameResolves()';
-const ALIASED_WITH_SLOTS =
-	'plugin #{at} of .builtInPlugins() would run as {alias}, since another plugin is named "{plugin}" too, but it declares slots, which an aliased plugin cannot yet, so it does not start: rename the plugin("{plugin}") string of one';
 const FNV_OFFSET = 0x811c9dc5;
 const FNV_PRIME = 0x01000193;
 
@@ -36,24 +34,22 @@ export function namedPluginsOf(builtIn: readonly Plugin[], ask: NamingAsk): Name
 		? groups.map(([id, group]) => resolvedGroupOf(id, group, ask.kept))
 		: groups.map(([, group]) => firstOnlyOf(group));
 	const named = new Map(naming.flatMap(({ names }) => [...names]));
-	const started = placed.flatMap(({ plugin, at }) => {
-		const name = named.get(plugin);
-		return name === undefined ? [] : [{ plugin: name === plugin.id ? plugin : plugin.aliased(name), at }];
-	});
-	return withoutAliasedSlots(
-		started,
-		naming.flatMap(({ refusals }) => refusals),
-	);
+	return {
+		named: placed.flatMap(({ plugin }) => {
+			const name = named.get(plugin);
+			return name === undefined ? [] : [name === plugin.id ? plugin : plugin.aliased(name)];
+		}),
+		refusals: naming.flatMap(({ refusals }) => refusals),
+	};
 }
 
 export function originOf(plugin: Plugin): string {
-	const { fills, derivedFills, declaredSlots, requiredPlugins, optionalPlugins } = plugin.parts;
+	const { requiredPlugins, optionalPlugins, requiredServices, optionalServices } = plugin.parts;
 	const marks = [
-		...fills.map((fill) => `fill ${fill.slot.label} ${fill.listId ?? ""}`),
-		...derivedFills.map((fill) => `derived ${fill.slot.label} ${fill.source.label}`),
-		...declaredSlots.map((slot) => `declares ${slot.label}`),
 		...requiredPlugins.map(({ id }) => `requires ${id}`),
 		...optionalPlugins.map(({ id }) => `optional ${id}`),
+		...requiredServices.map(({ id }) => `requires service ${id}`),
+		...optionalServices.map(({ id }) => `optional service ${id}`),
 	];
 	return hashOf([...new Set(marks)].sort().join("\n"));
 }
@@ -89,7 +85,7 @@ function firstOnlyOf([first, ...rest]: readonly Placed[]): GroupNaming {
 	};
 }
 
-// TRADE-OFF: no plugin identity beyond its id; the hash of its fills stands in, changed fills fall back to builtInPlugins order
+// TRADE-OFF: no plugin identity beyond its id; the hash of its requirements stands in, so changed requirements fall back to builtInPlugins order
 function resolvedGroupOf(id: string, group: readonly Placed[], kept: PluginState | null): GroupNaming {
 	const saved = savedNamesOf(id, kept);
 	const names = new Map<Plugin, string>();
@@ -143,24 +139,6 @@ function unclaimedNameOf(id: string, saved: readonly SavedName[], { taken, kept 
 	}
 
 	return `${id}-${suffix}`;
-}
-
-// TODO: slots of an aliased plugin
-function withoutAliasedSlots(started: readonly Placed[], refusals: readonly string[]): NamedPlugins {
-	const refused = started.filter(({ plugin }) => plugin.isAliased && plugin.parts.declaredSlots.length > 0);
-	return {
-		named: started.filter((each) => !refused.includes(each)).map(({ plugin }) => plugin),
-		refusals: [
-			...refusals,
-			...refused.map(({ plugin, at }) =>
-				sentenceOf(ALIASED_WITH_SLOTS, {
-					at: String(at + 1),
-					alias: plugin.id,
-					plugin: plugin.slotOwnerId,
-				}),
-			),
-		],
-	};
 }
 
 function hashOf(text: string): string {

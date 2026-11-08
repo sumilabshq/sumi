@@ -339,30 +339,18 @@ const BOARD_PLUGIN_FILES: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "@fixture/notes-board-plugin", widgetarium: { level: "plugin" } }),
 	"src/plugin.ts": [
 		'import { plugin } from "@widgetarium/plugin-framework";',
-		'import { boardRows, pinnedNotes as pinned } from "./slots.js";',
 		"",
-		'export const notesBoard = plugin("notes-board").declare(pinned, boardRows);',
-		"",
-	].join("\n"),
-	"src/slots.ts": [
-		'import { slot } from "@widgetarium/plugin-framework";',
-		"",
-		"export const pinnedNotes = slot().item(Note).list();",
-		"export const boardRows = slot().item(Row).list();",
+		'export const notesBoard = plugin("notes-board");',
 		"",
 	].join("\n"),
 };
 
 const BOARD_PLUGIN_ENTRY = [
 	GENERATED_HEADER.trimEnd(),
-	'import { namedSlot, pluginWithSlots } from "@widgetarium/plugin-framework";',
+	'import { pluginWithSlots } from "@widgetarium/plugin-framework";',
 	'import { notesBoard as definition } from "../plugin.js";',
-	'import * as slots from "../slots.js";',
 	"",
-	"export const notesBoard = pluginWithSlots(definition, {",
-	'\tpinnedNotes: namedSlot("pinned-notes", slots.pinnedNotes),',
-	'\tboardRows: namedSlot("board-rows", slots.boardRows),',
-	"});",
+	"export const notesBoard = pluginWithSlots(definition, {});",
 	"",
 ].join("\n");
 
@@ -1047,7 +1035,7 @@ try {
 	layFiles(board, BOARD_PLUGIN_FILES);
 	const boardRun = await cli(["plugins/notes-board"], scratch);
 	check(
-		"generate names a plugin and its slots in src/generated/plugin.ts, one namespace named after the plugin's constant",
+		"generate names a plugin in src/generated/plugin.ts, one namespace named after the plugin's constant",
 		[boardRun.code, entryIn(board, PLUGIN_ENTRY)],
 		[0, BOARD_PLUGIN_ENTRY],
 	);
@@ -1067,24 +1055,6 @@ try {
 			staleBoard.said.includes("plugins/notes-board/src/generated/extra.ts is a file generate no longer writes"),
 		],
 		[1, true, true],
-	);
-	layFiles(board, {
-		"src/slots.ts": `${BOARD_PLUGIN_FILES["src/slots.ts"] ?? ""}export const cardFaces = slot().item(Face).list();\n`,
-	});
-	check(
-		"a slot of slots.ts the plugin does not declare is refused",
-		refusedWith(await cli(["plugins/notes-board"], scratch), "exports the slot cardFaces, which"),
-		[1, true],
-	);
-	layFiles(board, {
-		...BOARD_PLUGIN_FILES,
-		"src/plugin.ts":
-			'import { plugin } from "@widgetarium/plugin-framework";\nimport { tabFaces } from "@sumi/apps-plugin";\n\nexport const notesBoard = plugin("notes-board").declare(tabFaces);\n',
-	});
-	check(
-		"a declared slot that is not the plugin's own is refused",
-		refusedWith(await cli(["plugins/notes-board"], scratch), "declares tabFaces, which is not a slot exported by"),
-		[1, true],
 	);
 	layFiles(board, {
 		...BOARD_PLUGIN_FILES,

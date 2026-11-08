@@ -1,4 +1,4 @@
-import type { ContractShape } from "@widgetarium/data-framework";
+import type { McpServer } from "@widgetarium/data-framework";
 import type { McpConfig } from "../../shared/host/mcp.host.js";
 import { McpServersGateway } from "./mcp-servers.gateway.js";
 
@@ -7,7 +7,7 @@ export class ConfiguredMcpServersGateway extends McpServersGateway {
 		super();
 	}
 
-	servedContracts(): readonly ContractShape[] {
-		return this.config.modules;
+	servers(): readonly McpServer[] {
+		return this.config.servers;
 	}
 }

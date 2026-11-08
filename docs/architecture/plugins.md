@@ -1,63 +1,62 @@
 # Plugins
 
-Two frameworks, two jobs. **`@widgetarium/data-framework`** carries every piece of data: modules, requests (queries, commands, events), transports ([requests.md](requests.md)). **`@widgetarium/plugin-framework`** says what is switched on and who extends whom: plugins, slots, fills and the plugin runtime with its per-workspace state. Neither imports the other; Sumi joins them: the state reaches the runtime through `PluginStateStore`, a reader and writer the host implements over its store.
+Two frameworks, two jobs. **`@widgetarium/data-framework`** carries every piece of data: modules, requests (queries, commands, events), transports ([requests.md](requests.md)). **`@widgetarium/plugin-framework`** says what is switched on, who builds on whom and what each plugin offers the others: plugins, services and the plugin runtime with its per-workspace state. Neither imports the other; Sumi joins them: the state reaches the runtime through `PluginStateStore`, a reader and writer the host implements over its store.
 
 ## The plugin framework
 
-| Piece                                                                                  | Is                                                                                                                                                                                                                                                                                                                  |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `export const chat = plugin("chat")`                                                   | a plugin, its id the one kebab segment it takes (`plugin("command-menu")`), checked where it is written: `.require(p)` / `.optional(p)` the plugins it builds on, `.declare(slot)` the slots it owns, `.fill(…)` what it puts into slots                                                                            |
-| `export const menuDoors = slot().item(schema)[.list()]`                                | in `src/slots.ts`: a typed extension point, named `<plugin-id>.<slot-kebab>` (`command-menu.menu-doors`); a fill is checked against the schema; a list holds `z.object()` items, each fill with an `id` holding no `.`                                                                                              |
-| `commandMenu.menuDoors.add({ id, … })`, `slot.set(item)`                               | a fill, written subject first: a list slot takes `.add` (the item carries its `id`), a single slot `.set`                                                                                                                                                                                                           |
-| `apps.apps.addFrom(source, (items) => [...])`, `slot.setFrom(source, (items) => item)` | a fill built from the fills of a slot the plugin declares itself: the function gets that slot's items, each with its `id`, and answers the items to put in the target                                                                                                                                               |
-| `src/generated/plugin.ts`                                                              | written by `data-framework generate`: names the plugin's slots (`namedSlot`), places them under the plugin's id (`pluginWithSlots(definition, { … })`) and exports one namespace named after the plugin's constant, the plugin with its slots as properties (`commandMenu.menuDoors`); `src/index.ts` re-exports it |
-| `runtime().builtInPlugins(...).alwaysOn(...).state(store).withNameResolves().start()`  | the plugin runtime, one per workspace: names, enables and starts the plugins, resolves each slot's fills and every refusal; answers `startedIds`, `refusals`, `notes`, `fillsOf(slot)`, `readerOf(pluginId)` and `modulePrefixOf(pluginId)`                                                                         |
-| `sumi.plugins.json`, `PluginStateStore`                                                | per workspace, owned by the runtime and written through the host's store: `{ "v": 1, "plugins": { "<id>": { "enabled": boolean, "alias"?: string, "of"?: string, "from"?: string } } }` ([The plugin state](#the-plugin-state))                                                                                     |
-| `readerOf(pluginId)`                                                                   | reads the fills of the slots that plugin declares, and refuses any other slot                                                                                                                                                                                                                                       |
-
-A plugin's constant may meet a data module's of the same name (`apps`, `commandMenu`). The plugin keeps the name; the data side is imported under an alias: `apps as appsContract` from `"./contract"`, `apps as appsModule` from `"./implementation"`. In its own `plugin.ts` a plugin imports a slot named like itself as `apps as appsSlot`.
-
-## A plugin owns its data
-
-**The rule.** A plugin declares its slots and its modules. The fills of its slots are read by its own code only, through the reader the host hands it. Anyone else reaches that data only through the plugin's module: its queries, commands and events. A plugin that needs it `.require`s the plugin and `.imports` the module.
-
-**The host knows no plugin.** `apps/tauri` and `apps/studio` start the plugin runtime, start the modules plugins put in the host's slots and draw the pages plugins put there. They never read, parse or interpret another plugin's slot. They offer what any plugin may use: a store, the tasks file, a slot reader scoped to the plugin, transports, a place to draw a tab. A host that reads `apps` fills, or a module of the shell configured with them, is the defect this rule forbids. It happened once: `appHost({ apps })` took the apps list from the host, and it was rewritten.
-
-The host declares its own slots in `plugins/sumi-host` and reads only those:
-
-| Slot                           | Item                                                                                          | The host                                                                                                                                                                                                                                                                                                      |
-| ------------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sumiHost.backgroundModules`   | `{ module: (offers) => module, contract, exposes? }`                                          | starts `module(offers)` in the core per workspace; each studio window imports `contract` over IPC; then calls each adapter in `exposes` (`(served: { runtime, module }) => void`, such as `serveMcp`) with the started core and the module's wire name; an adapter that throws is logged and the core runs on |
-| `sumiHost.tabPage`             | `{ tabPage: (offers) => { page, header, draws(app), modulesOf(tab, windowOffers) } }`, a list | draws the `page` of the first fill that `draws` the tab's app, inside an app over the tab's frame routes that also runs and imports what `modulesOf` answers; `header: "shell"` puts the shell's `AppHeader` above it                                                                                         |
-| `sumiHost.windowModules`       | `{ module: (offers) => module }`                                                              | runs `module(offers)` in each studio window's app, beside the shell's own modules; in Tauri `offers.tauri` lends the store and the core-changed signal                                                                                                                                                        |
-| `sumiHost.windowLayers`        | `{ layer: (offers) => component }`                                                            | draws `component` over the studio frame, inside the window's app                                                                                                                                                                                                                                              |
-| `sumiHost.windowProviders`     | `{ provider: (offers) => component }`                                                         | wraps the studio frame and its layers in `component`, built once per window from the window offers                                                                                                                                                                                                            |
-| `sumiHost.windowServerModules` | `{ module: (offers) => module }`, a list                                                      | serves every `module(offers)` in one server per studio window, with no app caller, on the transport the window offers lend as `windowServer`; `offers` are `workspaceId`, `platform`, `core` and `assistant` (the machine's assistant ports)                                                                  |
-| `sumiHost.frameModules`        | `{ contract, serving: (offers) => { module, frameClosed(tabId) } }`, a list                   | serves `module` in each studio window behind `AppCallerAuthenticate` and routes `contract` to every app frame, each frame hearing only its own `{ tab }`; calls `frameClosed` when a frame goes                                                                                                               |
-
-`offers` always holds `fillsOf(slot)`, the plugin's own slot reader. The window offers (`WindowOffers`) are what a window lends a plugin's modules: `workspaceId`, `platform`, `windowApp` (the window's app), `core` (the transport to the core), `windowServer` (the transport to the window server's modules) and `focusedChatId()`; a window provider and a frame module get them with their reader, a tab page's `modulesOf` with the tab. A window also lends what any drawn plugin may use through `@sumi/sumi-host-plugin`: `AskComposerContext` (the chat composer, its app and bar), `TabFaceContext` (a tab's art) and `OPENS_LAYER_MARK` (an element that opens a layer, so a press on it is not a press outside).
-
-## Fills built from a slot
-
-A plugin that collects fills in its own slot can pass them on to another plugin's slot, so the plugins filling it register once:
+| Piece                                                                                 | Is                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `export const chat = plugin("chat")`                                                  | a plugin, its id the one kebab segment it takes, checked where it is written                                                                                                                            |
+| `.require(a, b)`, `.optional(c)`                                                      | the plugins and services it builds on: required ones start first, optional ones may be off                                                                                                              |
+| `.apply((app) => api)`                                                                | runs once at start, after everything it builds on; `app.use(dep)` answers a dependency's API (`null` for an optional one that is off); what `apply` returns is this plugin's API                        |
+| `export const backend = service<Backend>("backend")`                                  | a capability the host provides rather than a plugin; required or optional like a plugin                                                                                                                 |
+| `runtime().provide(backend, (caller) => impl)`                                        | the host's implementation of a service, built per plugin from `caller: { pluginId, prefix }`                                                                                                            |
+| `runtime().builtInPlugins(...).alwaysOn(...).state(store).withNameResolves().start()` | the plugin runtime, one per workspace: names, enables, orders and applies the plugins; answers `startedIds`, `refusals`, `notes` and `modulePrefixOf(pluginId)`                                         |
+| `src/generated/plugin.ts`                                                             | written by `data-framework generate`: `pluginWithSlots(definition, {})`, the plugin's namespace; `src/index.ts` re-exports it                                                                              |
+| `sumi.plugins.json`, `PluginStateStore`                                               | per workspace, owned by the runtime and written through the host's store: `{ "v": 1, "plugins": { "<id>": { "enabled": boolean, "alias"?, "of"?, "from"? } } }` ([The plugin state](#the-plugin-state)) |
 
 ```ts skip-check
 export const files = plugin("files")
 	.require(apps)
-	.declare(fileViewers)
-	.fill(
-		apps.apps.addFrom(fileViewers, (viewers) =>
-			viewers.map((viewer) => ({ id: viewer.id, title: viewer.title, icon: viewer.icon, view: viewer.view })),
-		),
-	);
+	.apply((app) => ({
+		viewer: (viewer: FileViewer): void => {
+			app.use(apps).app({ ...viewer, tabModules: ({ tabId }) => [filePage({ tabId })] });
+		},
+	}));
+
+export const markdownViewer = plugin("markdown-viewer")
+	.require(files)
+	.apply((app) => app.use(files).viewer({ id: "markdown", title: "Markdown", view: MarkdownView }));
 ```
 
-- **Subject first.** `apps.apps.add({ ... })` is a fill; `apps.apps.addFrom(source, build)` is a fill built from `source`, and a single slot's `setFrom(source, build)` folds the items into its one item. The function may map, drop, or fold many items into one; `addFrom`'s answer is a list of items, typed by the target slot. Inside its own `plugin.ts` a plugin names its slots by their constants from `./slots.js` (`fileViewers`); everyone else through the namespace (`files.fileViewers`).
-- **Only from its own slots.** The source must be a slot the building plugin declares, as `fillsOf` reads only its own slots; any other source is refused.
-- **Resolved before anyone reads.** The runtime resolves plain fills first, then each built fill once its source is complete, so a built slot may feed another build whatever order the fills are written in. Two builds waiting on each other, or a slot built from itself, are refused as a loop.
-- **Checked like any fill.** Each built item passes the same checks as a plain fill of the building plugin: the target's owner is required or optional, and the target's schema accepts the item. A function that throws or answers something that is not a list is refused with the reason.
+- **An API is plain functions.** A plugin keeps what others hand it in its own arrays and passes those arrays, by reference, into its modules' config; a module reads them when it starts, after every `apply` ran. No schema guards an API: TypeScript types it.
+- **Calls happen inside `apply`.** After start every API is closed: a later call throws `X.method was called after start: call it inside apply`.
+- **Using what was not listed is refused.** `app.use(dep)` on a dependency missing from `.require` / `.optional` refuses the plugin; so does a required service no host provides.
+- **Refusals spread.** A plugin refused (its `apply` threw, a requirement is off, a cycle) does not start, and every plugin requiring it is refused too, each naming why. Every cycle is refused, optional ones included: `plugin X optionally uses Y, which uses it back`.
 
-`tools/plugin-framework-checks.ts` holds each rule, and each was broken on purpose once.
+A plugin's constant may meet a data module's of the same name (`apps`, `commandMenu`). The plugin keeps the name; the data side is imported under an alias: `apps as appsContract` from `"./contract"`, `apps as appsModule` from `"./implementation"`.
+
+## A plugin owns its data
+
+**The rule.** A plugin owns its modules and what other plugins hand it through its API. Only its own code reads that; anyone else reaches the data through its module's queries, commands and events. A plugin that needs it `.require`s the plugin and `.imports` the module.
+
+**The host knows no plugin.** `apps/tauri` and `apps/studio` start the plugin runtime, provide the host services and start or draw what plugins register through them. They never read another plugin's API or configure a module with its data. It happened once: `appHost({ apps })` took the apps list from the host, and it was rewritten.
+
+The services are declared in `plugins/sumi-host` (`src/shared/lib/host-services.ts`); `apps/studio/src/plugins/host-services.ts` provides them and collects every registration into `ResolvedPlugins`:
+
+| Service   | Call                                                                 | The host                                                                                                                                                                                                                                                        |
+| --------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend` | `module(module, contract)`, `moduleOf((offers) => module, contract)` | starts the module in the core per workspace (`offers`: `store`, `file`); each studio window imports `contract` over IPC                                                                                                                                         |
+| `backend` | `server({ name, modules, serve })`                                   | after the core, starts one runtime per server with `modules`, every core module and the host capabilities imported over the core's local transport, then calls `serve(runtime)`; a module both in the core and in a server is refused for the server: one owner |
+| `windows` | `module(module)`, `moduleOf((offers) => module)`                     | runs it in each studio window's app; in Tauri `offers.tauri` lends the store and the core-changed signal                                                                                                                                                        |
+| `windows` | `serverModule((offers) => module)`                                   | serves it in one server per studio window, with no app caller, on the transport the window offers lend as `windowServer`; `offers` are `workspaceId`, `platform`, `core` and `assistant`                                                                        |
+| `shell`   | `tabPage({ page, header, draws(app), modulesOf(tab, offers) })`      | draws `page` for the first registration that `draws` the tab's app, inside an app over the tab's frame routes that also runs and imports what `modulesOf` answers; `header: "shell"` puts the shell's `AppHeader` above it                                      |
+| `shell`   | `layer(component)`, `provider((offers) => component)`                | draws the layer over the studio frame; wraps the frame and its layers in the provider, built once per window                                                                                                                                                    |
+| `shell`   | `frameModule(contract, (offers) => { module, frameClosed(tabId) })`  | serves `module` in each window behind `AppCallerAuthenticate` and routes `contract` to every app frame, each frame hearing only its own `{ tab }`; calls `frameClosed` when a frame goes                                                                        |
+
+The window offers (`WindowOffers`) are `workspaceId`, `platform`, `windowApp`, `core`, `windowServer` and `focusedChatId()`. A window also lends any drawn plugin, through `@sumi/sumi-host-plugin`, `AskComposerContext` (the chat composer), `TabFaceContext` (a tab's art) and `OPENS_LAYER_MARK` (an element that opens a layer, so a press on it is not a press outside). Every module a plugin under an alias registers is prefixed with the alias (`prefixedModule`, [requests.md](requests.md#a-prefix)).
+
+`tools/plugin-framework-checks.ts` and `tools/plugin-apply-checks.ts` hold each rule, and each was broken on purpose once.
 
 ## The plugin state
 
@@ -73,20 +72,14 @@ export const files = plugin("files")
 
 ## Two plugins with one id
 
-Plugin ids are the strings in `plugin("…")`. Two built-in plugins with one id are refused by default: the second does not start, and the refusal names both and says to rename one string. Started `.withNameResolves()`, the runtime runs every plugin but one of that id under an alias, `<id>-2`, `-3`… (the only names with digits; a plugin id still takes none). The state records which plugin each name stands for: `"chat-2": { "enabled": true, "alias": "chat-2", "of": "chat", "from": "3f9a12bc" }`, and `"from"` on the plain `chat` entry too. `from` is the plugin's origin: a hash of what it fills, builds, declares and requires, since a plugin has no identity beyond its id. Names resolve saved first: a plugin whose origin matches a saved entry takes that name, the others take the plain id when free, then a saved name nobody claimed, then the next free suffix; so reordering `builtInPlugins` never moves an alias to another plugin. TRADE-OFF: a plugin whose fills change gets a new origin and falls back to `builtInPlugins` order. The alias names the plugin's fills, and the host passes it as the prefix of that plugin's modules (`modulePrefixOf`, [requests.md](requests.md#a-prefix)). A plugin running under its own id has no alias, so its modules take no prefix and every wire name stays as it was. A plugin that would run under an alias and declares slots does not start, refused with the reason. TODO: slots of an aliased plugin.
+Plugin ids are the strings in `plugin("…")`. Two built-in plugins with one id are refused by default: the second does not start, and the refusal names both and says to rename one string. Started `.withNameResolves()`, the runtime runs every plugin but one of that id under an alias, `<id>-2`, `-3`… (the only names with digits; a plugin id still takes none). The state records which plugin each name stands for: `"chat-2": { "enabled": true, "alias": "chat-2", "of": "chat", "from": "3f9a12bc" }`, and `"from"` on the plain `chat` entry too. `from` is the plugin's origin: a hash of the plugins and services it requires and marks optional. Names resolve saved first: a plugin whose origin matches a saved entry takes that name, the others take the plain id when free, then a saved name nobody claimed, then the next free suffix; so reordering `builtInPlugins` never moves an alias to another plugin. TRADE-OFF: two plugins of one id with the same dependencies share an origin and fall back to `builtInPlugins` order. The alias is the prefix of that plugin's modules (`modulePrefixOf`, `caller.prefix`); a plugin running under its own id takes no prefix, so every wire name stays as it was.
 
 ## How Sumi runs them
 
-```
-sumi.plugins.json ──► startSumiPlugins(state)        apps/studio/src/plugins/sumi-plugins.ts, the plugin runtime
-                        │
-      core window ──────┼── host capabilities (files, terminal) + every sumiHost.backgroundModules module(offers)
-                        │                                       served per workspace over IPC
-      studio window ────┼── imports every sumiHost.backgroundModules contract over the core transport
-                        ├── runs every sumiHost.windowModules module, draws every sumiHost.windowLayers layer
-                        ├── wraps its frame in every sumiHost.windowProviders provider(window offers)
-                        └── draws the sumiHost.tabPage page that draws a tab's app, with the modules it asks for
-```
+1. `startSumiPlugins(state)` (`apps/studio/src/plugins/sumi-plugins.ts`) starts the plugin runtime for a workspace with the three host services; every `apply` registers through them.
+2. The core window starts the host capabilities (files, terminal) and every `backend` module, serves them per workspace over IPC, then starts every `backend.server` (`startBackendServers`).
+3. Each studio window imports every `backend` contract over the core transport, runs every `windows` module, serves every `windows.serverModule`, wraps its frame in every `shell.provider` and draws every `shell.layer`.
+4. A tab draws the `shell.tabPage` that draws its app, with the modules its `modulesOf` asks for.
 
 ## Layout
 
@@ -97,8 +90,7 @@ plugins/<name>/
   package.json  tsconfig.json  LICENSE
   src/
     plugin.ts     always: the plugin() definition and its imports, nothing else
-    slots.ts      when it declares slots: the slots, their item schemas and types
-    index.ts      re-exports only: ./generated/plugin.js, and what other code needs of slots.ts
+    index.ts      re-exports only: ./generated/plugin.js, and what other code needs
     generated/plugin.ts   written by data-framework generate: the plugin's namespace
     features/<feature>/ui/<block>/   the feature's blocks, .tsx, and the .css a block uses beside it
     features/<feature>/lib/          the feature's hooks and helpers, .ts
@@ -108,13 +100,12 @@ plugins/<name>/
     <module>/     a data module package (placement.md)
 ```
 
-Apart from `plugin.ts`, `slots.ts`, `index.ts` and `generated/`, `src/` is a client package's inside ([placement.md](placement.md#a-client-package), [views.md](views.md)): one file per thing, each where its kind and its users put it.
+Apart from `plugin.ts`, `index.ts` and `generated/`, `src/` is a client package's inside ([placement.md](placement.md#a-client-package), [views.md](views.md)): one file per thing, each where its kind and its users put it.
 
 | Breaks the layout                                                                         | Because                                                      |
 | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | no `src/plugin.ts`                                                                        | a plugin folder without its plugin has no reason to exist    |
-| a helper, slot, schema, type or second declaration in `plugin.ts`                         | `plugin.ts` is read to learn what the plugin is, at a glance |
-| `slot()` outside `slots.ts`                                                               | the slots a plugin offers are one list                       |
+| a helper, schema, type or second declaration in `plugin.ts`                               | `plugin.ts` is read to learn what the plugin is, at a glance |
 | a `module.ts` or a `"level": "domain"` package outside `data/<module>/`                   | a plugin's data lives in one place                           |
 | anything in `index.ts` but `export … from`                                                | the entry hides nothing                                      |
 | any other file or folder at the top of `src/` but `features/`, `shared/` and `generated/` | a flat heap hides which feature a file serves                |
@@ -128,22 +119,20 @@ A feature may draw another feature's block; it never imports another feature's `
 
 ## Example: apps
 
-`plugins/apps` declares `apps.apps` (`{ id, title, icon, view }`) and owns the `apps` module (`plugins/apps/data/apps`, `@sumi/apps`): the core starts it with the plugin's own fills, and `apps.apps.all` answers the apps a workspace has. The plugin fills the host's `sumiHost.tabPage` with the page that draws an app's view. `plugins/terminal` and `plugins/browser-page` require it and fill `apps.apps` with the Terminal and the Browser. The browser-page plugin also owns the `webPage` module (`plugins/browser-page/data/web-page`, `@widgetarium/web-page`) and fills `sumiHost.frameModules` with it, so every frame, its own Browser view included, reaches web pages while the host names no `web-page` module. The shell's menu reads `apps.apps.all`; nothing reads `apps.apps` but the apps plugin.
+`plugins/apps` returns `{ app(entry) }`: an app is `{ id, title, icon or art, view?, tabs?, … }`, kept in the plugin's own list. It owns the `apps` module (`plugins/apps/data/apps`, `@sumi/apps`) and `places`, both started in the core through `backend.moduleOf` with that list; `apps.apps.all` answers the apps a workspace has. It runs `appHost` in each window (`windows.moduleOf`) and registers the tab page that draws an app's view. `terminal`, `main`, `chat` and `files` call `app.use(apps).app(...)`; nothing reads the list but the apps plugin.
 
 ## Example: command menu
 
-`plugins/command-menu` declares `commandMenu.menuDoors` (`{ id, letter, label, placeholder, startsWith }`), `commandMenu.menuPages` (`{ id, draftsOf }`, the sections a door draws) and `commandMenu.menuRowSources` (`{ id, isFindable, rowsOf(send) }`, rows other plugins add). It owns `commandMenu` (`plugins/command-menu/data/command-menu`, `@sumi/command-menu`), started with its own fills through `sumiHost.windowModules`, and draws the menu and its keys through `sumiHost.windowLayers`. Its own fills are the doors ⌘K, ⌘N and ⌘L; ⌘I is the chat plugin's. The module's built-in pages and rows answer when no fill replaces them; a page filled for a door wins. The shell opens the menu only through `commandMenu.opening.toggle` and reads the doors' keys through `commandMenu.opening.doors`.
+`plugins/command-menu` returns `{ door, page, rowSource }`. Its own doors are ⌘K, ⌘N and ⌘L; ⌘I is the chat plugin's. It runs `commandMenu` (`plugins/command-menu/data/command-menu`, `@sumi/command-menu`) in each window with its lists and draws the menu through `shell.layer`. A page added for a door wins over the module's built-in one. The shell opens the menu only through `commandMenu.opening.toggle`.
 
 ## Example: mcp
 
-`plugins/mcp` declares `mcp.mcpModules` (`{ id, module, contract }`, a background module an agent reaches as an MCP server) and owns the `mcp` module (`plugins/mcp/data/mcp`, `@sumi/mcp`). It passes every fill on to `sumiHost.backgroundModules` with `exposes: [serveMcp]`, so the core starts the module once and `serveMcp` mounts its `.public()` requests as MCP tools through `mcpServerOf` ([requests.md](requests.md#starting-runtime-and-adapters)). The `mcp` module, started with the plugin's own fills, is the one list of MCP servers: `mcp.servers.all` answers each server with its tools, named by their path in the module (`dock_questions-of-chat`) and described by the request's `metadata.description`. It is always on. A module filled in `sumiHost.backgroundModules` with `exposes: [serveMcp]` directly is served too but is not listed. A tool name past 64 characters is refused, and the core logs the module unserved. TRADE-OFF: a passed-on fill belongs to the `mcp` plugin, so its module gets the mcp plugin's slot reader and no alias prefix, never its own plugin's. TODO: hand the mounted servers to the agent's MCP relay; servers from a file (GitHub, Jira) with no plugin.
+`plugins/mcp` owns the `mcp` module (`plugins/mcp/data/mcp`, `@sumi/mcp`), the one list of MCP servers, and registers one backend server, `mcp`, whose `serve` mounts `mcpServerOf(runtime, { name })`: every `.public()` request of every module in that runtime is a tool, named by its full name with dots → `_` (`questions_dock_questions-of-chat`) and described by `metadata.description`. It returns `{ tools(modules) }`: a plugin hands it modules to serve to agents, and those modules run only in the MCP server. `mcp.servers.all` answers each server with its tools. A tool name past 64 characters is refused, and the server is logged unserved. TODO: hand the mounted servers to the agent's MCP relay; servers from a file (GitHub, Jira) with no plugin.
 
 ## Example: chat
 
-`plugins/chat` owns the chat's modules, `plugins/chat/data/assistant` (`@widgetarium/assistant`), `plugins/chat/data/questions` (`@widgetarium/questions`) and `plugins/chat/data/mascot` (`@widgetarium/mascot`), and every drawn part of the chat: the page (`src/features/`: chat-page, assistant, mascot, questions) and the Ask composer (`src/features/ask`). It fills the host's `sumiHost.backgroundModules` with `questions`; `sumiHost.tabPage` with the chat page, which draws the `chat` app with no shell header and whose `modulesOf` runs `mascot` in the tab's app and imports `tasks` over `offers.core` and `assistant` over `offers.windowServer`; `sumiHost.windowServerModules` with `assistant(offers.assistant)`, one instance per window serving every chat: each request names its `chat` (the chat's id, `null` for the Ask composer), and the module's `ChatPartsGateway` picks that chat's ports from the lent host and keeps its state; `sumiHost.windowProviders` with the Ask composer, whose app imports the same module; and the menu's `commandMenu.menuDoors` and `commandMenu.menuPages` with the Ask door, ⌘I, and its page (Create and send, Create only); a picked row hands its draft to a chat through the composer the window lends. A chat is a tab of the `chat` app in places, and it tears off, opens and closes through the same places commands as every tab: places decides which window shows it, and app-host only carries out the effects.
+`plugins/chat` owns `plugins/chat/data/assistant` (`@widgetarium/assistant`), `plugins/chat/data/questions` (`@widgetarium/questions`), `plugins/chat/data/mascot` (`@widgetarium/mascot`) and `plugins/chat/data/chat-tabs`, and every drawn part of the chat. Its `apply` adds the `chat` app to `apps`, starts `questions` in the core (`backend.module`), registers the chat tab page (no shell header; `modulesOf` runs `mascot` and imports `tasks` over `offers.core` and `assistant` over `offers.windowServer`), runs `chatTabs` in each window, serves `assistant(offers.assistant)` per window (`windows.serverModule`; each request names its `chat`), wraps the window in the Ask composer (`shell.provider`) and adds the menu's Ask door ⌘I with its page. A chat is a tab of the `chat` app in places.
 
 The chat's sheets reach the window through the canvas sheet (`tools/canvas-sheet.mts`), as the menu's do.
 
 TODO: the chat pane's plate, its crumb and more menu, the chats column and the chat tab's mascot icon are still the shell's: they draw app-host's chat rows and pane kind, and move once app-host's chats move into the chat plugin.
-
-TODO: a row source of another plugin sends only to modules the menu's module imports.

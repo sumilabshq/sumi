@@ -117,11 +117,9 @@ const sneaky = plugin("sneaky").apply((app) => {
 	app.use(stranger as never);
 });
 const unlisted = started([stranger, sneaky]);
-check(
-	"using a plugin not listed in .require or .optional refuses the plugin",
-	unlisted.refusals,
-	["plugin sneaky could not apply: plugin sneaky uses stranger, which it does not list in .require or .optional"],
-);
+check("using a plugin not listed in .require or .optional refuses the plugin", unlisted.refusals, [
+	"plugin sneaky could not apply: plugin sneaky uses stranger, which it does not list in .require or .optional",
+]);
 
 const breaks = plugin("breaks").apply(() => {
 	throw new Error("no doors today");
@@ -144,11 +142,9 @@ const loopEndClosed = plugin("loop-end")
 	.optional(loopStart)
 	.apply(() => undefined);
 const optionalLoop = started([loopStart, loopEndClosed]);
-check(
-	"an optional cycle is refused",
-	optionalLoop.refusals,
-	["plugin loop-end optionally uses loop-start, which uses it back"],
-);
+check("an optional cycle is refused", optionalLoop.refusals, [
+	"plugin loop-end optionally uses loop-start, which uses it back",
+]);
 
 const generatedApplies = { count: 0 };
 const generated = pluginWithSlots(

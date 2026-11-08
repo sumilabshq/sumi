@@ -16,7 +16,8 @@ interface InitializeResult {
 	};
 }
 
-type McpResult = InitializeResult | ToolResult | { readonly tools: readonly McpTool[] } | Readonly<Record<string, never>>;
+type McpResult =
+	InitializeResult | ToolResult | { readonly tools: readonly McpTool[] } | Readonly<Record<string, never>>;
 
 type JsonRpcOutcome =
 	| { readonly result: McpResult }
@@ -38,14 +39,14 @@ export interface McpServer {
 	answer(message: unknown): Promise<McpReply | null>;
 }
 
-interface ServedModuleTools {
-	readonly module: string;
+interface ServedTools {
+	readonly name: string;
 	readonly exposed: Exposed;
 	readonly tools: ReadonlyMap<string, ServedTool>;
 	readonly listed: readonly McpTool[];
 }
 
-const ADAPTER = "mcpServerOf({module})";
+const ADAPTER = "mcpServerOf({server})";
 const SERVER_VERSION = "0.1.0";
 const SUPPORTED_PROTOCOLS: readonly string[] = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const FALLBACK_PROTOCOL = "2025-06-18";
@@ -54,10 +55,10 @@ const METHOD_NOT_FOUND = -32601;
 const INVALID_PARAMS = -32602;
 const INTERNAL_ERROR = -32603;
 const NOT_A_MESSAGE = "An MCP message is a JSON-RPC object with a method.";
-const UNKNOWN_METHOD = "The MCP server {module} does not know the method {method}.";
+const UNKNOWN_METHOD = "The MCP server {server} does not know the method {method}.";
 const NOT_A_TOOL_CALL = "tools/call takes { name, arguments }.";
-const UNKNOWN_TOOL = "The MCP server {module} has no tool {tool}.";
-const NOT_ANSWERED = "[mcp] {module}: tool {tool} threw instead of answering: {reason}";
+const UNKNOWN_TOOL = "The MCP server {server} has no tool {tool}.";
+const NOT_ANSWERED = "[mcp] {server}: tool {tool} threw instead of answering: {reason}";
 
 const MessageSchema = z.object({
 	id: z.union([z.string(), z.number()]).optional(),
@@ -72,26 +73,23 @@ const ToolCallSchema = z.object({
 	arguments: z.record(z.string(), z.unknown()).default({}),
 });
 
-export function mcpServerOf(runtime: Runtime, { module }: { readonly module: string }): McpServer {
-	const exposed = runtime.expose({
-		adapter: ADAPTER.replace("{module}", module),
-		module,
-	});
-	const tools = servedToolsOf(exposed.requests, module);
+export function mcpServerOf(runtime: Runtime, { name }: { readonly name: string }): McpServer {
+	const exposed = runtime.expose({ adapter: ADAPTER.replace("{server}", name) });
+	const tools = servedToolsOf(exposed.requests);
 	const served = {
-		module,
+		name,
 		exposed,
 		tools,
 		listed: toolsOf(tools),
 	};
 	return {
-		name: module,
+		name,
 		tools: served.listed,
 		answer: (message) => replyTo(served, message),
 	};
 }
 
-async function replyTo(served: ServedModuleTools, message: unknown): Promise<McpReply | null> {
+async function replyTo(served: ServedTools, message: unknown): Promise<McpReply | null> {
 	const parsed = MessageSchema.safeParse(message);
 
 	if (!parsed.success) {
@@ -115,10 +113,10 @@ async function replyTo(served: ServedModuleTools, message: unknown): Promise<Mcp
 	};
 }
 
-async function outcomeOf(served: ServedModuleTools, method: string, params: unknown): Promise<JsonRpcOutcome> {
+async function outcomeOf(served: ServedTools, method: string, params: unknown): Promise<JsonRpcOutcome> {
 	switch (method) {
 		case "initialize":
-			return { result: initializeResultOf(served.module, params) };
+			return { result: initializeResultOf(served.name, params) };
 		case "ping":
 			return { result: {} };
 		case "tools/list":
@@ -128,17 +126,17 @@ async function outcomeOf(served: ServedModuleTools, method: string, params: unkn
 		default:
 			return errorOutcomeOf(
 				METHOD_NOT_FOUND,
-				UNKNOWN_METHOD.replace("{module}", served.module).replace("{method}", method),
+				UNKNOWN_METHOD.replace("{server}", served.name).replace("{method}", method),
 			);
 	}
 }
 
-function initializeResultOf(module: string, params: unknown): InitializeResult {
+function initializeResultOf(name: string, params: unknown): InitializeResult {
 	return {
 		protocolVersion: protocolOf(params),
 		capabilities: { tools: {} },
 		serverInfo: {
-			name: module,
+			name,
 			version: SERVER_VERSION,
 		},
 	};
@@ -154,7 +152,7 @@ function protocolOf(params: unknown): string {
 	return asked.data.protocolVersion;
 }
 
-async function toolCallOutcomeOf(served: ServedModuleTools, params: unknown): Promise<JsonRpcOutcome> {
+async function toolCallOutcomeOf(served: ServedTools, params: unknown): Promise<JsonRpcOutcome> {
 	const call = ToolCallSchema.safeParse(params);
 
 	if (!call.success) {
@@ -166,7 +164,7 @@ async function toolCallOutcomeOf(served: ServedModuleTools, params: unknown): Pr
 	if (tool === undefined) {
 		return errorOutcomeOf(
 			INVALID_PARAMS,
-			UNKNOWN_TOOL.replace("{module}", served.module).replace("{tool}", call.data.name),
+			UNKNOWN_TOOL.replace("{server}", served.name).replace("{tool}", call.data.name),
 		);
 	}
 
@@ -182,7 +180,7 @@ async function toolCallOutcomeOf(served: ServedModuleTools, params: unknown): Pr
 	} catch (thrown) {
 		const reason = reasonOf(thrown);
 		console.error(
-			NOT_ANSWERED.replace("{module}", served.module).replace("{tool}", call.data.name).replace("{reason}", reason),
+			NOT_ANSWERED.replace("{server}", served.name).replace("{tool}", call.data.name).replace("{reason}", reason),
 		);
 		return errorOutcomeOf(INTERNAL_ERROR, reason);
 	}

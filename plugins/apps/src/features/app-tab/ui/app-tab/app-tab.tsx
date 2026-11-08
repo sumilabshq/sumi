@@ -1,7 +1,7 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { useTabHeader } from "@sumi/sumi-host-plugin";
-import type { AppView, ArtOf, TabModulesOf, TabRules, TitleOf } from "../../../../slots.js";
+import type { AppView, ArtOf, TabModulesOf, TabRules, TitleOf } from "../../lib/app-types.js";
 
 export interface FilledApp {
 	readonly id: string;

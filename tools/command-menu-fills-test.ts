@@ -2,7 +2,7 @@ import { apps } from "@sumi/apps-plugin";
 import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { chat } from "@sumi/chat-plugin";
-import { shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
+import { backend, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
 import type { DeviceModule } from "@widgetarium/data-framework";
 import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
@@ -73,6 +73,11 @@ const ENABLED = [sumiHost.id, apps.id, commandMenu.id, chat.id, probe.id];
 const started = pluginRuntime()
 	.builtInPlugins(sumiHost, apps, commandMenu, chat, probe)
 	.state(new MemoryPluginStateStore(ENABLED))
+	.provide(backend, () => ({
+		module: () => undefined,
+		moduleOf: () => undefined,
+		server: () => undefined,
+	}))
 	.provide(windows, ({ pluginId }) => ({
 		module: (module) => {
 			windowModules.set(pluginId, module);

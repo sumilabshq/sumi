@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import { CHAT_LOOK, FILE_LOOK, createCodeLines, markdownNodesOf } from "@widgetarium/markdown";
-import type { FileViewer } from "../plugins/files/src/slots.ts";
+import type { FileViewer } from "../plugins/files/src/features/viewer-choice/lib/file-viewer.ts";
 import { extensionOf, viewerOfFile } from "../plugins/files/src/features/viewer-choice/lib/viewer-of-file.ts";
 import { hasSecretsAt, secretsHidden, shownCodeOf } from "../plugins/code-viewer/src/features/code/lib/shown-code.ts";
 import { check, tally } from "./check-helpers.ts";

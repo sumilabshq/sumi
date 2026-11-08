@@ -5,4 +5,6 @@ import { TERMINAL_ICON } from "./features/terminal/lib/terminal-icon.js";
 
 export const terminal = plugin("terminal")
 	.require(apps)
-	.fill(apps.apps.add({ id: "terminal", title: "Terminal", icon: TERMINAL_ICON, view: LazyTerminalView }));
+	.apply((app) => {
+		app.use(apps).app({ id: "terminal", title: "Terminal", icon: TERMINAL_ICON, view: LazyTerminalView });
+	});

@@ -6,9 +6,7 @@ import {
 	command,
 	event,
 	mcpServerOf,
-	mcpToolsOf,
 	module,
-	moduleContract,
 	named,
 	query,
 	refuse,
@@ -83,7 +81,7 @@ const started = runtime()
 			.handles([other]),
 	)
 	.start(ON_SERVER);
-const tally$ = mcpServerOf(started, { module: "tally" });
+const tally$ = mcpServerOf(started, { name: "tally" });
 
 function call(id: number, method: string, params?: unknown): Promise<unknown> {
 	return tally$.answer({
@@ -104,25 +102,32 @@ check(
 	'a query.metadata() takes an object of fields, such as { description: "…" }',
 );
 
-check("server: named by its module", tally$.name, "tally");
+check("server: named as asked", tally$.name, "tally");
 check(
-	"tools: only the module's public requests, path dots as underscores",
+	"tools: every module's public requests of the runtime, full name with dots as underscores",
 	tally$.tools.map(({ name }) => name).sort(),
-	["board_bump", "board_count", "board_echo", "board_refuse-always", "board_shot"],
+	[
+		"shelf_shelf_other",
+		"tally_board_bump",
+		"tally_board_count",
+		"tally_board_echo",
+		"tally_board_refuse-always",
+		"tally_board_shot",
+	],
 );
 check(
 	"tools: description comes from metadata",
-	tally$.tools.find(({ name }) => name === "board_count")?.description,
+	tally$.tools.find(({ name }) => name === "tally_board_count")?.description,
 	"How far the counter went.",
 );
 check(
 	"tools: no input is an empty object schema",
-	tally$.tools.find(({ name }) => name === "board_count")?.inputSchema,
+	tally$.tools.find(({ name }) => name === "tally_board_count")?.inputSchema,
 	{ type: "object", properties: {} },
 );
 check(
 	"tools: an object input keeps its fields and their descriptions",
-	tally$.tools.find(({ name }) => name === "board_bump")?.inputSchema,
+	tally$.tools.find(({ name }) => name === "tally_board_bump")?.inputSchema,
 	{
 		type: "object",
 		properties: { by: { type: "number", description: "Steps to add." } },
@@ -131,7 +136,7 @@ check(
 );
 check(
 	"tools: a non-object input is wrapped in { input }",
-	tally$.tools.find(({ name }) => name === "board_echo")?.inputSchema,
+	tally$.tools.find(({ name }) => name === "tally_board_echo")?.inputSchema,
 	{ type: "object", properties: { input: { type: "string" } }, required: ["input"] },
 );
 
@@ -156,30 +161,30 @@ check(
 );
 check(
 	"tools/list: the same tools",
-	await call(3, "tools/list").then((reply) => JSON.stringify(reply).includes('"board_shot"')),
+	await call(3, "tools/list").then((reply) => JSON.stringify(reply).includes('"tally_board_shot"')),
 	true,
 );
 check(
 	"tools/call: a command runs and answers its output",
-	await call(4, "tools/call", { name: "board_bump", arguments: { by: 3 } }),
+	await call(4, "tools/call", { name: "tally_board_bump", arguments: { by: 3 } }),
 	{ jsonrpc: "2.0", id: 4, result: { content: [{ type: "text", text: "3" }] } },
 );
-check("tools/call: a query reads what the command wrote", await call(5, "tools/call", { name: "board_count" }), {
+check("tools/call: a query reads what the command wrote", await call(5, "tools/call", { name: "tally_board_count" }), {
 	jsonrpc: "2.0",
 	id: 5,
 	result: { content: [{ type: "text", text: "3" }] },
 });
 check(
 	"tools/call: a wrapped input is unwrapped",
-	await call(6, "tools/call", { name: "board_echo", arguments: { input: "hi" } }),
+	await call(6, "tools/call", { name: "tally_board_echo", arguments: { input: "hi" } }),
 	{ jsonrpc: "2.0", id: 6, result: { content: [{ type: "text", text: '"hi"' }] } },
 );
 check(
 	"tools/call: a refusal is a tool error with its reason",
-	await call(7, "tools/call", { name: "board_refuse-always" }),
+	await call(7, "tools/call", { name: "tally_board_refuse-always" }),
 	{ jsonrpc: "2.0", id: 7, result: { content: [{ type: "text", text: "never today" }], isError: true } },
 );
-check("tools/call: a png in the output becomes an image", await call(8, "tools/call", { name: "board_shot" }), {
+check("tools/call: a png in the output becomes an image", await call(8, "tools/call", { name: "tally_board_shot" }), {
 	jsonrpc: "2.0",
 	id: 8,
 	result: {
@@ -191,15 +196,15 @@ check("tools/call: a png in the output becomes an image", await call(8, "tools/c
 });
 check(
 	"tools/call: bad input is a tool error, not a crash",
-	await call(9, "tools/call", { name: "board_bump", arguments: { by: "x" } }).then((reply) =>
+	await call(9, "tools/call", { name: "tally_board_bump", arguments: { by: "x" } }).then((reply) =>
 		JSON.stringify(reply).includes('"isError":true'),
 	),
 	true,
 );
-check("tools/call: an unknown tool is a JSON-RPC error", await call(10, "tools/call", { name: "shelf_other" }), {
+check("tools/call: an unknown tool is a JSON-RPC error", await call(10, "tools/call", { name: "tally_board_nope" }), {
 	jsonrpc: "2.0",
 	id: 10,
-	error: { code: -32602, message: "The MCP server tally has no tool shelf_other." },
+	error: { code: -32602, message: "The MCP server tally has no tool tally_board_nope." },
 });
 check("an unknown method is a JSON-RPC error", await call(11, "resources/list"), {
 	jsonrpc: "2.0",
@@ -212,38 +217,12 @@ check("a message with no method is an invalid request", await tally$.answer({ id
 	error: { code: -32600, message: "An MCP message is a JSON-RPC object with a method." },
 });
 
-const exposedTally = started.expose({ adapter: "the check", module: "tally" });
-check(
-	"expose({ module }): another module's request is not reached",
-	await exposedTally
-		.answer({
-			name: "shelf.shelf.other",
-			input: undefined,
-			idempotencyKey: null,
-			signal: new AbortController().signal,
-		})
-		.then((answered) => (answered.ok ? "answered" : answered.code)),
-	"not-found",
-);
-
 check(
 	"initialize: an unknown protocol answers the one this server speaks",
 	await call(13, "initialize", { protocolVersion: "1999-01-01" }).then((reply) =>
 		JSON.stringify(reply).includes('"protocolVersion":"2025-06-18"'),
 	),
 	true,
-);
-check(
-	"mcpToolsOf: a contract lists only its public requests",
-	mcpToolsOf(
-		moduleContract("ledger", Anywhere, {
-			ledger: {
-				open: named("ledger.open", query().public().output(z.number())),
-				secret: named("ledger.secret", query().output(z.number())),
-			},
-		}),
-	).map(({ name }) => name),
-	["ledger_open"],
 );
 
 const tooLong = named(`board.${"x".repeat(70)}`, query())
@@ -261,8 +240,8 @@ const longRuntime = runtime()
 	.start(ON_SERVER);
 check(
 	"a tool name past 64 characters is refused, naming the request",
-	thrownBy(() => mcpServerOf(longRuntime, { module: "lengthy" })).startsWith(
-		`lengthy: lengthy.board.${"x".repeat(70)} becomes the MCP tool board_`,
+	thrownBy(() => mcpServerOf(longRuntime, { name: "lengthy" })).startsWith(
+		`lengthy.board.${"x".repeat(70)} becomes the MCP tool lengthy_board_`,
 	),
 	true,
 );

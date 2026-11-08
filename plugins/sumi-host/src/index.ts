@@ -1,40 +1,20 @@
-export {
-	BackgroundModuleSchema,
-	FrameModuleSchema,
-	TabPageSchema,
-	WindowLayerSchema,
-	WindowModuleSchema,
-	WindowProviderSchema,
-	WindowServerModuleSchema,
-	backend,
-	shell,
-	windows,
-} from "./slots.js";
+export { backend, shell, windows } from "./shared/lib/host-services.js";
 export type {
 	Backend,
 	BackendOffers,
-	Shell,
-	Windows,
-	BackgroundModuleOf,
+	BackendServer,
 	CoreChanges,
-	CoreOffers,
 	DrawnTabPage,
 	FrameServing,
-	FrameServingOf,
-	ModuleExposure,
-	ServedModule,
+	Shell,
 	TabModules,
-	TabPageOf,
 	TabPageProps,
-	WindowLayerOf,
-	WindowModuleOf,
 	WindowModuleOffers,
 	WindowOffers,
-	WindowProviderOf,
 	WindowProviderProps,
-	WindowServerModuleOf,
 	WindowServerOffers,
-} from "./slots.js";
+	Windows,
+} from "./shared/lib/host-services.js";
 export * from "./generated/plugin.js";
 export * from "./features/ask-composer/lib/ask-composer-context.js";
 export * from "./features/tab-face/lib/tab-face-context.js";

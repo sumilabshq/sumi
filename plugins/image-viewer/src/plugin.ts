@@ -7,13 +7,13 @@ import { SizeAction } from "./features/image/ui/size-action/size-action.js";
 
 export const imageViewer = plugin("image-viewer")
 	.require(files)
-	.fill(
-		files.fileViewers.add({
+	.apply((app) => {
+		app.use(files).viewer({
 			id: "image-viewer",
 			title: "Image",
 			icon: IMAGE_ICON,
 			extensions: Object.keys(IMAGE_TYPES),
 			view: LazyImageView,
 			actions: [SizeAction, FilePathCopyAction, OpenInSystemAppAction],
-		}),
-	);
+		});
+	});

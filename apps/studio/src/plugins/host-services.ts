@@ -4,6 +4,7 @@ import type { Backend, Shell, Windows } from "@sumi/sumi-host-plugin";
 import type {
 	BackgroundModule,
 	FrameModule,
+	HostServer,
 	PluginTabPage,
 	WindowLayer,
 	WindowModule,
@@ -19,6 +20,7 @@ export interface HostRegistrations {
 	readonly windowLayers: WindowLayer[];
 	readonly windowProviders: WindowProvider[];
 	readonly frameModules: FrameModule[];
+	readonly servers: HostServer[];
 }
 
 export function emptyHostRegistrations(): HostRegistrations {
@@ -30,6 +32,7 @@ export function emptyHostRegistrations(): HostRegistrations {
 		windowLayers: [],
 		windowProviders: [],
 		frameModules: [],
+		servers: [],
 	};
 }
 
@@ -39,7 +42,6 @@ export function backendFor(registrations: HostRegistrations): (caller: CallerFac
 			registrations.backgroundModules.push({
 				contract,
 				prefix,
-				exposes: [],
 				moduleOf: () => prefixedModule(module, prefix),
 			});
 		},
@@ -47,8 +49,15 @@ export function backendFor(registrations: HostRegistrations): (caller: CallerFac
 			registrations.backgroundModules.push({
 				contract,
 				prefix,
-				exposes: [],
 				moduleOf: (offers) => prefixedModule(build(offers), prefix),
+			});
+		},
+		server: ({ name, modules, serve }) => {
+			registrations.servers.push({
+				name,
+				prefix,
+				modules,
+				serve: (runtime) => serve(runtime),
 			});
 		},
 	});

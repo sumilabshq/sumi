@@ -1,4 +1,4 @@
-import type { TitleOf } from "../../../slots.js";
+import type { TitleOf } from "./app-types.js";
 import type { FilledApp } from "../ui/app-tab/app-tab.js";
 
 export function titlesOfApps(apps: readonly FilledApp[]): ReadonlyMap<string, TitleOf> {

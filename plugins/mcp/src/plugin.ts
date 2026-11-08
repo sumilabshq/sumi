@@ -1,25 +1,20 @@
 import { mcp as mcpContract } from "@sumi/mcp/contract";
 import { mcp as mcpModule } from "@sumi/mcp/implementation";
-import { sumiHost } from "@sumi/sumi-host-plugin";
+import { backend } from "@sumi/sumi-host-plugin";
+import type { McpServer, ServerSideModule } from "@widgetarium/data-framework";
 import { plugin } from "@widgetarium/plugin-framework";
-import { serveMcp } from "./features/serve-mcp/lib/serve-mcp.js";
-import { mcpModules } from "./slots.js";
+import { serveMcpInto } from "./features/serve-mcp/lib/serve-mcp.js";
 
 export const mcp = plugin("mcp")
-	.require(sumiHost)
-	.declare(mcpModules)
-	.fill(
-		sumiHost.backgroundModules.add({
-			id: "mcp",
-			module: ({ fillsOf }) => mcpModule({ modules: fillsOf(mcpModules).map(({ contract }) => contract) }),
-			contract: mcpContract,
-		}),
-		sumiHost.backgroundModules.addFrom(mcpModules, (items) =>
-			items.map(({ id, module, contract }) => ({
-				id,
-				module,
-				contract,
-				exposes: [serveMcp],
-			})),
-		),
-	);
+	.require(backend)
+	.apply((app) => {
+		const tools: ServerSideModule[] = [];
+		const servers: McpServer[] = [];
+		app.use(backend).module(mcpModule({ servers }), mcpContract);
+		app.use(backend).server({ name: "mcp", modules: tools, serve: serveMcpInto(servers, "mcp") });
+		return {
+			tools: (modules: readonly ServerSideModule[]): void => {
+				tools.push(...modules);
+			},
+		};
+	});

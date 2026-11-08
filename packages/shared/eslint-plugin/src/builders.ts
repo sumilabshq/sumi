@@ -12,8 +12,7 @@ export type Builder =
 	| "clientModule"
 	| "module"
 	| "handler"
-	| "plugin"
-	| "slot";
+	| "plugin";
 
 export interface BuilderCall {
 	readonly builder: Builder;
@@ -32,7 +31,6 @@ const BUILDERS: ReadonlySet<string> = new Set([
 	"module",
 	"handler",
 	"plugin",
-	"slot",
 ]);
 const BUILDER_SOURCE =
 	/^@widgetarium\/(data|plugin)-framework$|\/(data|plugin)-framework\/src\/index(\.[jt]s)?$|^#module$/;

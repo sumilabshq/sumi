@@ -1,5 +1,5 @@
-export { ANY_EXTENSION, FileViewerSchema } from "./slots.js";
-export type { FileViewer } from "./slots.js";
+export { ANY_EXTENSION } from "./features/viewer-choice/lib/file-viewer.js";
+export type { FileViewer } from "./features/viewer-choice/lib/file-viewer.js";
 export * from "./generated/plugin.js";
 export { useFileTab } from "./shared/lib/use-file-tab.js";
 export type { FileTab } from "./shared/lib/use-file-tab.js";

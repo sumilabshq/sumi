@@ -11,14 +11,9 @@ import { terminal } from "@widgetarium/terminal/implementation";
 import type { ServerSideModule } from "@widgetarium/data-framework";
 import { AppsSchema } from "@sumi/apps/contract";
 import { apps as appsModule } from "../plugins/apps/data/apps/generated/module.ts";
-import { apps } from "../plugins/apps/src/index.ts";
-import { chat } from "../plugins/chat/src/index.ts";
-import { main } from "../plugins/main/src/index.ts";
-import { sumiHost } from "../plugins/sumi-host/src/index.ts";
 import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
 import { localTransport } from "@widgetarium/data-framework";
 import { MemoryPluginStateStore, PLUGIN_STATE_FILE } from "@widgetarium/plugin-framework";
-import type { Plugin, SlotShape } from "@widgetarium/plugin-framework";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import type { ResolvedPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
@@ -89,10 +84,6 @@ async function appIdsAnsweredBy(resolved: ResolvedPlugins): Promise<unknown> {
 	return answered.ok ? answered.output : answered.reason;
 }
 
-function fillIdsOf(filler: Plugin, slot: SlotShape): readonly (string | null)[] {
-	return filler.parts.fills.filter((fill) => fill.slot === slot).map(({ listId }) => listId);
-}
-
 function sourcesNaming(word: string): readonly string[] {
 	return SCANNED_ROOTS.flatMap((root) =>
 		readdirSync(root, { recursive: true, withFileTypes: true })
@@ -149,7 +140,7 @@ check(
 	[fileSystem.definition.name, terminal.definition.name],
 );
 check(
-	"the background modules slot holds the apps plugin's places and apps, the chat plugin's questions, the old app's tasks and the mcp plugin's servers, none of the host's",
+	"the backend holds the apps plugin's places and apps, the chat plugin's questions, the old app's tasks and the mcp plugin's server list, none of the host's",
 	resolved.backgroundModules.map(({ contract }) => contract.name),
 	[
 		places.definition.name,
@@ -217,7 +208,7 @@ check(
 check(
 	"the chat plugin lends the window its Ask composer through the host's window providers slot",
 	resolved.windowProviders.map(({ id }) => id),
-	["chat.ask-composer"],
+	["chat.provider-0"],
 );
 check(
 	"only the host's plugin list names the chat plugin: no other host source imports it",
@@ -242,7 +233,7 @@ check(
 check(
 	"the chat plugin serves one assistant per window through the host's window server modules slot",
 	resolved.windowServerModules.map(({ id }) => id),
-	["chat.assistant"],
+	["chat.server-0"],
 );
 check(
 	"no source starts an assistant per chat: no per-chat app, no host narrowed to a chat outside the module's gateways",
@@ -273,10 +264,8 @@ check(
 	[false, false],
 );
 check(
-	"no code outside the apps plugin and its fillers names the apps slot: the host never reads it",
-	["apps.apps.add", "fillsOf(appsSlot)"]
-		.flatMap((word) => sourcesNaming(word))
-		.filter((file) => !APPS_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
+	"no code outside the apps plugin and the plugins that add apps uses its API: the host never reads it",
+	sourcesNaming("use(apps)").filter((file) => !APPS_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
 	[],
 );
 
@@ -286,21 +275,12 @@ check(
 	[],
 );
 check(
-	"places and apps are the apps plugin's background modules, questions the chat plugin's, tasks the old app's",
-	[
-		fillIdsOf(apps, sumiHost.backgroundModules),
-		fillIdsOf(chat, sumiHost.backgroundModules),
-		fillIdsOf(main, sumiHost.backgroundModules),
-	],
-	[["places", "apps"], ["questions"], ["tasks"]],
-);
-check(
 	"the built-in profile runs the apps plugin's app-host, the command menu's module and the chat's chat-tabs in the window and draws the menu's layer",
 	[
 		resolved.windowModules.map((windowModule) => windowModule.moduleOf({}).definition.name),
 		resolved.windowLayers.map(({ id }) => id),
 	],
-	[["app-host", "chat-tabs", "command-menu"], ["command-menu.layer-0"]],
+	[["app-host", "command-menu", "chat-tabs"], ["command-menu.layer-0"]],
 );
 
 const startedCore = runtime()
