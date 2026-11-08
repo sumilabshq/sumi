@@ -6,6 +6,9 @@ export type BenchStep =
 	| { readonly kind: "css"; readonly text: string }
 	| { readonly kind: "wait"; readonly ms: number }
 	| { readonly kind: "probe"; readonly times: number }
+	| { readonly kind: "press"; readonly label: string }
+	| { readonly kind: "inspect"; readonly selectors: readonly string[] }
+	| { readonly kind: "probe-var"; readonly selector: string; readonly name: string; readonly fromPx: number; readonly stepPx: number; readonly times: number }
 	| { readonly kind: "probe-state"; readonly times: number }
 	| { readonly kind: "probe-touch"; readonly times: number; readonly selector: string };
 
@@ -33,6 +36,7 @@ const WORST_GAPS_SHOWN = 6;
 const BENCH_CSS_ID = "wg-bench-css";
 const BENCH_RAN_KEY = "__wgBenchRan";
 const SIDEBAR_SELECTOR = ".wg-shell-left";
+const SHELL_SELECTOR = ".wg-shell";
 const PROBE_WIDTHS = ["300px", "360px"] as const;
 const TOGGLE_SELECTOR = '[data-side-toggle="left"]';
 const CLICKABLE = "button, a, [role='button'], [role='tab'], [role='treeitem'], [role='option'], [data-tab-id]";
@@ -42,7 +46,7 @@ export function runBenchIfFresh(plan: BenchPlan): void {
 		return;
 	}
 
-	if (document.querySelector(TOGGLE_SELECTOR) === null || Reflect.get(window, BENCH_RAN_KEY) === plan.at) {
+	if (document.querySelector(SHELL_SELECTOR) === null || Reflect.get(window, BENCH_RAN_KEY) === plan.at) {
 		return;
 	}
 
@@ -92,6 +96,22 @@ async function runStep(step: BenchStep): Promise<readonly number[]> {
 	if (step.kind === "css") {
 		benchStyle().textContent = step.text;
 		await pause(500);
+		return [];
+	}
+
+	if (step.kind === "probe-var") {
+		say(varProbed(step));
+		return [];
+	}
+
+	if (step.kind === "inspect") {
+		say({ inspected: step.selectors.map(lookOf) });
+		return [];
+	}
+
+	if (step.kind === "press") {
+		say({ pressed: step.label, found: pressedLabel(step.label) });
+		await pause(1000);
 		return [];
 	}
 
@@ -237,6 +257,63 @@ function stateProbed(times: number): Readonly<Record<string, unknown>> {
 
 function perTurn(totalMs: number, times: number): number {
 	return Math.round((totalMs / times) * 10) / 10;
+}
+
+function varProbed(step: Extract<BenchStep, { kind: "probe-var" }>): Readonly<Record<string, unknown>> {
+	const target = document.querySelector<HTMLElement>(step.selector);
+
+	if (target === null) {
+		return { varProbe: step.selector, missing: true };
+	}
+
+	const kept = target.style.getPropertyValue(step.name);
+	const spent: number[] = [];
+
+	for (let turn = 0; turn < step.times; turn += 1) {
+		target.style.setProperty(step.name, `${String(step.fromPx + turn * step.stepPx)}px`);
+		const before = performance.now();
+		void document.body.offsetHeight;
+		spent.push(performance.now() - before);
+	}
+
+	target.style.setProperty(step.name, kept);
+	const sorted = [...spent].sort((a, b) => a - b);
+	return {
+		varProbe: step.name,
+		averageMs: perTurn(spent.reduce((sum, ms) => sum + ms, 0), step.times),
+		medianMs: perTurn(sorted[Math.floor(sorted.length / 2)] ?? 0, 1),
+		worstMs: perTurn(sorted.at(-1) ?? 0, 1),
+	};
+}
+
+function lookOf(selector: string): Readonly<Record<string, unknown>> {
+	const found = document.querySelector<HTMLElement>(selector);
+
+	if (found === null) {
+		return { selector, missing: true };
+	}
+
+	const style = getComputedStyle(found);
+	const box = found.getBoundingClientRect();
+	return {
+		selector,
+		left: Math.round(box.left),
+		top: Math.round(box.top),
+		width: Math.round(box.width),
+		height: Math.round(box.height),
+		fontSize: style.fontSize,
+		padding: style.padding,
+		margin: style.margin,
+		layers: found.closest(".wg-kit-portal-layer")?.className ?? null,
+	};
+}
+
+function pressedLabel(label: string): boolean {
+	const target = [...document.querySelectorAll<HTMLElement>("[aria-label]")].find(
+		(element) => element.getAttribute("aria-label") === label,
+	);
+	target?.click();
+	return target !== undefined;
 }
 
 function pressed(text: string): void {
