@@ -1,7 +1,8 @@
 const SCROLL_END_PIN = "--sumi-composer-expand-scroll-end";
+const SCROLL_HELD = "data-scroll-held";
 
 export function holdChatScroll(frame: HTMLElement): void {
-	if (frame.dataset.scrollHeld !== undefined) {
+	if (frame.hasAttribute(SCROLL_HELD)) {
 		return;
 	}
 
@@ -12,10 +13,10 @@ export function holdChatScroll(frame: HTMLElement): void {
 	}
 
 	frame.style.setProperty(SCROLL_END_PIN, getComputedStyle(scroll).paddingBottom);
-	frame.dataset.scrollHeld = "";
+	frame.setAttribute(SCROLL_HELD, "");
 }
 
 export function releaseChatScroll(frame: HTMLElement): void {
-	delete frame.dataset.scrollHeld;
+	frame.removeAttribute(SCROLL_HELD);
 	frame.style.removeProperty(SCROLL_END_PIN);
 }
