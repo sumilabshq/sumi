@@ -14192,6 +14192,15 @@ body.wg-tree-carrying .wg-tile-body {
 	padding: 0;
 }
 
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-search input {
+	font-size: inherit;
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-search .wg-kit-pop-search-field:focus-within {
+	box-shadow: none;
+	outline: none;
+}
+
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-menu-label {
 	padding: 6px 10px 2px;
 	font-size: var(--sumi-fs-12);
