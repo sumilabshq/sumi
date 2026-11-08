@@ -113,41 +113,41 @@ export const BackgroundModuleSchema = z.object({
 	contract: z.custom<ModuleContract<ServerRuns>>(isModuleContract, NOT_A_CONTRACT),
 });
 
-export const BackgroundModulesSlot = slot("background-modules").item(BackgroundModuleSchema).list();
+export const backgroundModules = slot().item(BackgroundModuleSchema).list();
 
 export const TabPageSchema = z.object({
 	tabPage: z.custom<TabPageOf>((value) => typeof value === "function", NOT_A_TAB_PAGE_OF),
 });
 
-export const TabPageSlot = slot("tab-page").item(TabPageSchema).list();
+export const tabPage = slot().item(TabPageSchema).list();
 
 export const WindowModuleSchema = z.object({
 	module: z.custom<WindowModuleOf>((value) => typeof value === "function", NOT_A_WINDOW_MODULE_OF),
 });
 
-export const WindowModulesSlot = slot("window-modules").item(WindowModuleSchema).list();
+export const windowModules = slot().item(WindowModuleSchema).list();
 
 export const WindowLayerSchema = z.object({
 	layer: z.custom<WindowLayerOf>((value) => typeof value === "function", NOT_A_WINDOW_LAYER_OF),
 });
 
-export const WindowLayersSlot = slot("window-layers").item(WindowLayerSchema).list();
+export const windowLayers = slot().item(WindowLayerSchema).list();
 
 export const WindowProviderSchema = z.object({
 	provider: z.custom<WindowProviderOf>((value) => typeof value === "function", NOT_A_WINDOW_PROVIDER_OF),
 });
 
-export const WindowProvidersSlot = slot("window-providers").item(WindowProviderSchema).list();
+export const windowProviders = slot().item(WindowProviderSchema).list();
 
 export const FrameModuleSchema = z.object({
 	contract: z.custom<ModuleContract<ServerRuns>>(isModuleContract, NOT_A_FRAME_CONTRACT),
 	serving: z.custom<FrameServingOf>((value) => typeof value === "function", NOT_A_FRAME_SERVING_OF),
 });
 
-export const FrameModulesSlot = slot("frame-modules").item(FrameModuleSchema).list();
+export const frameModules = slot().item(FrameModuleSchema).list();
 
 export const WindowServerModuleSchema = z.object({
 	module: z.custom<WindowServerModuleOf>((value) => typeof value === "function", NOT_A_WINDOW_SERVER_MODULE_OF),
 });
 
-export const WindowServerModulesSlot = slot("window-server-modules").item(WindowServerModuleSchema).list();
+export const windowServerModules = slot().item(WindowServerModuleSchema).list();

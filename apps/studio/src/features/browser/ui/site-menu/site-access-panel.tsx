@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import type { AccessLevel, AccessSource } from "@widgetarium/browser";
 import { useHeldTab } from "../../lib/held-tab.js";
-import { SetSiteLevelCommand, SiteAccessQuery } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { SiteRow } from "./site-row.js";
 
 const MENU_LABEL = "Site access";
@@ -22,8 +22,8 @@ const SAID_BY_SOURCE: Readonly<Record<AccessSource, string>> = {
 };
 
 export function SiteAccessPanel(): ReactElement {
-	const { shown, rows } = useQuery(SiteAccessQuery, { heldTabId: useHeldTab() }).data;
-	const setSiteLevel = useCommand(SetSiteLevelCommand);
+	const { shown, rows } = useQuery(browser.sites.siteAccess, { heldTabId: useHeldTab() }).data;
+	const setSiteLevel = useCommand(browser.sites.setSiteLevel);
 	const others = rows.filter((row) => row.siteKey !== shown?.siteKey);
 	const levelOf = (siteKey: string) => (level: AccessLevel) => void setSiteLevel.run({ siteKey, level });
 	return (

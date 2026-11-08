@@ -1,10 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { OutputOf } from "@widgetarium/data-framework";
-import type { PagesQuery } from "@widgetarium/canvas";
+import type { canvas } from "@widgetarium/canvas";
 import { PAGE_ROW } from "../../lib/panel-row-look.js";
 
-type ListedPage = OutputOf<typeof PagesQuery>["items"][number];
+type ListedPage = OutputOf<typeof canvas.pages.pages>["items"][number];
 
 export interface PageRowProps {
 	readonly row: ListedPage;

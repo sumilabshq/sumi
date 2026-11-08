@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { ReadFileBytesQuery } from "@sumi/contract";
+import { fileSystem } from "@sumi/contract";
 import { FileNote, useFileSwitches } from "@sumi/files-plugin";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { imageSourceOf } from "../../lib/image-types.js";
@@ -10,7 +10,7 @@ export interface ImageFileProps {
 }
 
 export function ImageFile({ path }: ImageFileProps): ReactElement | null {
-	const read = useOptionalQuery(ReadFileBytesQuery, { path });
+	const read = useOptionalQuery(fileSystem.files.readFileBytes, { path });
 	const isActualSize = useFileSwitches().isOn("size");
 
 	if (read.failure !== null) {

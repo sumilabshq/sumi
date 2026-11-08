@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { Icon, PopoverItem } from "@widgetarium/kit";
 import { BOARD_ITEM } from "../../lib/menu-look/menu-look.js";
-import { CloseGroupCommand, UngroupCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 
 const UNGROUP = "Ungroup";
@@ -15,8 +15,8 @@ export function GroupActions({
 	readonly group: GroupFace;
 	readonly onClose: () => void;
 }): ReactElement {
-	const ungroup = useCommand(UngroupCommand);
-	const closeGroup = useCommand(CloseGroupCommand);
+	const ungroup = useCommand(appHost.groups.ungroup);
+	const closeGroup = useCommand(appHost.tabActions.closeGroup);
 	const ask = (run: () => void) => () => {
 		onClose();
 		run();

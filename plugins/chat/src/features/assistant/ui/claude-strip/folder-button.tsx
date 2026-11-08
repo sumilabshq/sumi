@@ -8,7 +8,7 @@ import { ChatMenu } from "../chat-menu/chat-menu.js";
 import { ChatMenuLine } from "../chat-menu/chat-menu-line.js";
 import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
 import { StripButton } from "./strip-button.js";
-import { ChooseWorkingFolderCommand, PickWorkingFolderCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import type { WorkingFolders } from "@widgetarium/assistant";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
@@ -20,8 +20,8 @@ const OPEN_ANOTHER = "Open another folder…";
 export function FolderButton({ folders }: { readonly folders: WorkingFolders }): ReactElement {
 	const menu = useMenuOpening();
 	const chat = useChatKey();
-	const choose = useCommand(ChooseWorkingFolderCommand);
-	const pickAnother = useCommand(PickWorkingFolderCommand);
+	const choose = useCommand(assistant.agent.chooseWorkingFolder);
+	const pickAnother = useCommand(assistant.agent.pickWorkingFolder);
 	return (
 		<>
 			<StripButton label={CHOOSE_A_FOLDER} isOn={menu.spot !== null} onOpen={menu.openAt}>

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import { AnswerAskCommand, StopInkCommand } from "../packages/domain/browser/index.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/module.ts";
 import { MemoryOnceAllowancesGateway } from "../packages/domain/browser/gateways/once-allowances/memory.gateway.ts";
 import { activityWith, isSameActivity } from "../packages/domain/browser/shared/lib/ink-activity.ts";
 import { effectiveGrants, onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
@@ -59,17 +59,17 @@ check("a changed activity is not", isSameActivity(quiet, activityWith(quiet, { s
 
 const stopping = fakeBrowser();
 const stoppingApp = runtime()
-	.modules(BrowserModule({ injects: stopping.parts }))
+	.modules(browserModule({ injects: stopping.parts }))
 	.start();
 let inkTold = 0;
 stopping.parts.inkActivity.inkActivityChanged(() => {
 	inkTold += 1;
 });
-const stopped = await stoppingApp.send(StopInkCommand);
+const stopped = await stoppingApp.send(browser.asks.stopInk);
 check("stopping ink is written through the handler", [stopped.ok, inkTold], [true, 1]);
 check("and the activity says when", stopping.parts.inkActivity.inkActivity().stoppedAt !== null, true);
 
-const answered = await stoppingApp.send(AnswerAskCommand, {
+const answered = await stoppingApp.send(browser.asks.answerAsk, {
 	id: "gone",
 	answer: "site",
 });

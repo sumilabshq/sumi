@@ -1,20 +1,20 @@
 import { plugin } from "@widgetarium/plugin-framework";
 import {
-	BackgroundModulesSlot,
-	FrameModulesSlot,
-	TabPageSlot,
-	WindowLayersSlot,
-	WindowModulesSlot,
-	WindowProvidersSlot,
-	WindowServerModulesSlot,
+	backgroundModules,
+	frameModules,
+	tabPage,
+	windowLayers,
+	windowModules,
+	windowProviders,
+	windowServerModules,
 } from "./slots.js";
 
-export const SumiHostPlugin = plugin("sumi-host").declare(
-	BackgroundModulesSlot,
-	TabPageSlot,
-	WindowModulesSlot,
-	WindowLayersSlot,
-	WindowProvidersSlot,
-	FrameModulesSlot,
-	WindowServerModulesSlot,
+export const sumiHost = plugin().declare(
+	backgroundModules,
+	tabPage,
+	windowModules,
+	windowLayers,
+	windowProviders,
+	frameModules,
+	windowServerModules,
 );

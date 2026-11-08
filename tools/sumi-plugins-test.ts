@@ -2,20 +2,20 @@ import { runtime } from "@widgetarium/data-framework";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { APP_MODULES } from "@widgetarium/app-registry/modules";
-import { FileSystemModule } from "@widgetarium/file-system/module";
-import { PlacesModule } from "@widgetarium/places/module";
-import { QuestionsModule } from "@widgetarium/questions/module";
-import { TasksModule } from "@widgetarium/tasks/module";
-import { TerminalModule } from "@widgetarium/terminal/module";
+import { fileSystem } from "@widgetarium/file-system/module";
+import { places } from "@widgetarium/places/module";
+import { questions } from "@widgetarium/questions/module";
+import { tasks } from "@widgetarium/tasks/module";
+import { terminal } from "@widgetarium/terminal/module";
 import type { ServerSideModule } from "@widgetarium/data-framework";
 import { AppsSchema } from "@sumi/apps";
-import { AppsModule } from "../plugins/apps/data/apps/module.ts";
-import { AppsPlugin } from "../plugins/apps/src/plugin.ts";
-import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
-import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot } from "../plugins/command-menu/src/index.ts";
-import { MainPlugin } from "../plugins/main/src/plugin.ts";
-import { BackgroundModulesSlot } from "../plugins/sumi-host/src/slots.ts";
-import type { WindowOffers } from "../plugins/sumi-host/src/slots.ts";
+import { apps as appsModule } from "../plugins/apps/data/apps/module.ts";
+import { apps } from "../plugins/apps/src/index.ts";
+import { chat } from "../plugins/chat/src/index.ts";
+import { commandMenu } from "../plugins/command-menu/src/index.ts";
+import { main } from "../plugins/main/src/index.ts";
+import { sumiHost } from "../plugins/sumi-host/src/index.ts";
+import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
 import { localTransport } from "@widgetarium/data-framework";
 import type { Plugin, SlotShape } from "@widgetarium/plugin-framework";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
@@ -55,7 +55,7 @@ const VIEWER_APP_IDS = ["markdown-viewer", "code-viewer", "image-viewer", "video
 const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
 const HOST_ROOTS = ["apps/studio/src", "apps/tauri/src"];
-const CHAT_PLUGIN_NAMES = ["@sumi/chat-plugin", "ChatPlugin"];
+const CHAT_PLUGIN_NAMES = ["@sumi/chat-plugin"];
 const CHAT_PIECES = [
 	"AssistantModule(",
 	"askComposerOf",
@@ -78,7 +78,7 @@ async function appIdsAnsweredBy(resolved: ResolvedPlugins): Promise<unknown> {
 			scope: { workspaceId: "sumi-plugins" },
 		});
 	const answered = await core.expose({ adapter: SUMI_PLUGINS_TEST, authenticate: new AppCallerAuthenticate() }).answer({
-		name: "apps/apps",
+		name: "apps.apps.apps",
 		input: undefined,
 		idempotencyKey: null,
 		signal: new AbortController().signal,
@@ -87,8 +87,8 @@ async function appIdsAnsweredBy(resolved: ResolvedPlugins): Promise<unknown> {
 	return answered.ok ? answered.output : answered.reason;
 }
 
-function fillIdsOf(filler: Plugin, slot: SlotShape): readonly string[] {
-	return filler.parts.fills.filter((fill) => fill.slot === slot).map(({ id }) => id);
+function fillIdsOf(filler: Plugin, slot: SlotShape): readonly (string | null)[] {
+	return filler.parts.fills.filter((fill) => fill.slot === slot).map(({ listId }) => listId);
 }
 
 function sourcesNaming(word: string): readonly string[] {
@@ -137,24 +137,19 @@ async function tabModuleNamesOf(resolved: ResolvedPlugins, app: string): Promise
 
 const resolved = resolvePlugins(BUILT_IN_PROFILE);
 const coreModulesNow = coreModulesOf(resolved);
-const coreModulesBefore = [PlacesModule, FileSystemModule, QuestionsModule, TerminalModule, ...APP_MODULES];
+const coreModulesBefore = [places, fileSystem, questions, terminal, ...APP_MODULES];
 const coreNamesNow = coreModulesNow.map(({ definition }) => definition.name);
 
 check("the built-in profile resolves with no refusal", resolved.refusals, []);
 check(
 	"the host runs the machine capabilities itself: files and terminal sessions",
 	HOST_CAPABILITY_MODULES.map(({ definition }) => definition.name),
-	[FileSystemModule.definition.name, TerminalModule.definition.name],
+	[fileSystem.definition.name, terminal.definition.name],
 );
 check(
 	"the background modules slot holds the apps plugin's places and apps, the chat plugin's questions and the old app's tasks, none of the host's",
 	resolved.backgroundModules.map(({ contract }) => contract.name),
-	[
-		PlacesModule.definition.name,
-		AppsModule.definition.name,
-		QuestionsModule.definition.name,
-		TasksModule.definition.name,
-	],
+	[places.definition.name, appsModule.definition.name, questions.definition.name, tasks.definition.name],
 );
 check(
 	"the core starts every module it started before, each once, and the apps plugin's module",
@@ -214,7 +209,7 @@ check(
 check(
 	"the chat plugin lends the window its Ask composer through the host's window providers slot",
 	resolved.windowProviders.map(({ id }) => id),
-	["chat/ask-composer"],
+	["chat.ask-composer"],
 );
 check(
 	"only the host's plugin list names the chat plugin: no other host source imports it",
@@ -229,7 +224,7 @@ check(
 check(
 	"the browser-page plugin serves its web-page module to every frame through the host's frame modules slot",
 	resolved.frameModules.map(({ id, contract }) => [id, contract.name]),
-	[["browser-page/web-page", "web-page"]],
+	[["browser-page.web-page", "web-page"]],
 );
 check(
 	"no host source names the web-page module, its package or its native pages",
@@ -239,7 +234,7 @@ check(
 check(
 	"the chat plugin serves one assistant per window through the host's window server modules slot",
 	resolved.windowServerModules.map(({ id }) => id),
-	["chat/assistant"],
+	["chat.assistant"],
 );
 check(
 	"no source starts an assistant per chat: no per-chat app, no host narrowed to a chat outside the module's gateways",
@@ -271,13 +266,15 @@ check(
 );
 check(
 	"no code outside the apps plugin and its fillers names the apps slot: the host never reads it",
-	sourcesNaming("AppsSlot").filter((file) => !APPS_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
+	["apps.apps.add", "fillsOf(appsSlot)"]
+		.flatMap((word) => sourcesNaming(word))
+		.filter((file) => !APPS_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
 	[],
 );
 
 check(
 	"no code outside the command menu plugin and its fillers names its slots: the host never reads them",
-	["MenuDoorsSlot", "MenuPagesSlot", "MenuRowSourcesSlot"].flatMap((word) =>
+	["commandMenu.menuDoors", "commandMenu.menuPages", "commandMenu.menuRowSources"].flatMap((word) =>
 		sourcesNaming(word).filter((file) => !MENU_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
 	),
 	[],
@@ -285,18 +282,18 @@ check(
 check(
 	"the Ask door, ⌘I, and its page are the chat plugin's fills, and the menu fills no Ask of its own",
 	[
-		fillIdsOf(ChatPlugin, MenuDoorsSlot),
-		fillIdsOf(ChatPlugin, MenuPagesSlot),
-		fillIdsOf(CommandMenuPlugin, MenuDoorsSlot),
+		fillIdsOf(chat, commandMenu.menuDoors),
+		fillIdsOf(chat, commandMenu.menuPages),
+		fillIdsOf(commandMenu, commandMenu.menuDoors),
 	],
 	[["ask"], ["ask"], ["anywhere", "new-tab", "this-tab"]],
 );
 check(
 	"places and apps are the apps plugin's background modules, questions the chat plugin's, tasks the old app's",
 	[
-		fillIdsOf(AppsPlugin, BackgroundModulesSlot),
-		fillIdsOf(ChatPlugin, BackgroundModulesSlot),
-		fillIdsOf(MainPlugin, BackgroundModulesSlot),
+		fillIdsOf(apps, sumiHost.backgroundModules),
+		fillIdsOf(chat, sumiHost.backgroundModules),
+		fillIdsOf(main, sumiHost.backgroundModules),
 	],
 	[["places", "apps"], ["questions"], ["tasks"]],
 );
@@ -306,7 +303,7 @@ check(
 		resolved.windowModules.map((windowModule) => windowModule.moduleOf({}).definition.name),
 		resolved.windowLayers.map(({ id }) => id),
 	],
-	[["app-host", "command-menu", "chat-tabs"], ["command-menu/command-menu"]],
+	[["app-host", "command-menu", "chat-tabs"], ["command-menu.command-menu"]],
 );
 
 const startedCore = runtime()

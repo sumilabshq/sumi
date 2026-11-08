@@ -19,7 +19,7 @@ import {
 	tearOffPlan,
 } from "./lib/showing-plans.js";
 
-export const RestoreTabsCommand = command("restore-tabs")
+export const restoreTabs = command()
 	.public()
 	.input(RestoreTabsAskSchema)
 	.output(TabsSettledSchema)
@@ -28,7 +28,7 @@ export const RestoreTabsCommand = command("restore-tabs")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), restorePlan(ask)))),
 	);
 
-export const ShowTabCommand = command("show-tab")
+export const showTab = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -37,7 +37,7 @@ export const ShowTabCommand = command("show-tab")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), showTabPlan(id)))),
 	);
 
-export const ShowChatTabCommand = command("show-chat-tab")
+export const showChatTab = command()
 	.public()
 	.input(ChatTabAskSchema)
 	.output(TabsSettledSchema)
@@ -46,7 +46,7 @@ export const ShowChatTabCommand = command("show-chat-tab")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), showChatTabPlan(chatId)))),
 	);
 
-export const FitTabsToPanesCommand = command("fit-tabs-to-panes")
+export const fitTabsToPanes = command()
 	.public()
 	.input(SettleAskSchema)
 	.output(TabsSettledSchema)
@@ -55,7 +55,7 @@ export const FitTabsToPanesCommand = command("fit-tabs-to-panes")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), fitTabsPlan()))),
 	);
 
-export const RememberPagesCommand = command("remember-pages")
+export const rememberPages = command()
 	.public()
 	.input(SettleAskSchema)
 	.output(TabsSettledSchema)
@@ -64,7 +64,7 @@ export const RememberPagesCommand = command("remember-pages")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), rememberPagesPlan()))),
 	);
 
-export const OpenTabInOwnWindowCommand = command("open-tab-in-own-window")
+export const openTabInOwnWindow = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -73,7 +73,7 @@ export const OpenTabInOwnWindowCommand = command("open-tab-in-own-window")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), ownWindowPlan(id)))),
 	);
 
-export const TearOffTabCommand = command("tear-off-tab")
+export const tearOffTab = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -82,7 +82,7 @@ export const TearOffTabCommand = command("tear-off-tab")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), tearOffPlan(id)))),
 	);
 
-export const ReloadTabCommand = command("reload-tab")
+export const reloadTab = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)

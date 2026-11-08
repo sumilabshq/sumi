@@ -58,4 +58,4 @@ export const AppSchema = z.object({
 	titleOf: z.custom<TitleOf>((value) => typeof value === "function", NOT_A_TITLE).optional(),
 });
 
-export const AppsSlot = slot("apps").item(AppSchema).list();
+export const apps = slot().item(AppSchema).list();

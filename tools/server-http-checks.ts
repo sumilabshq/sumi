@@ -3,7 +3,7 @@ import type { ChildProcess } from "node:child_process";
 import path from "node:path";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
+import { fixtureBilling } from "@widgetarium/fixture-billing";
 import { check } from "./check-helpers.ts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
@@ -47,14 +47,14 @@ async function allowedOriginFor(url: string, origin: string): Promise<string | n
 
 async function checkRequests(url: string): Promise<void> {
 	const client = runtime()
-		.imports(FixtureBillingModule({ over: orpcTransport(url) }))
+		.imports(fixtureBilling({ over: orpcTransport(url) }))
 		.start();
-	const opened = await client.send(BalanceQuery);
+	const opened = await client.send(fixtureBilling.charge.balance);
 	check("a query travels over real HTTP and answers", opened, {
 		ok: true,
 		output: { currency: "EUR", total: 0, charges: 0 },
 	});
-	const refused = await client.send(ChargeCommand, { amount: 5000 });
+	const refused = await client.send(fixtureBilling.charge.charge, { amount: 5000 });
 	check("a guard's refusal travels back with its code", refused.ok ? "ran" : [refused.code, refused.ran], [
 		"forbidden",
 		false,
@@ -63,10 +63,10 @@ async function checkRequests(url: string): Promise<void> {
 }
 
 async function checkRepeatedKey(client: Runtime): Promise<void> {
-	const first = await client.send(ChargeCommand, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
-	const repeat = await client.send(ChargeCommand, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
+	const first = await client.send(fixtureBilling.charge.charge, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
+	const repeat = await client.send(fixtureBilling.charge.charge, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
 	check("a repeat of one idempotency key gets the first answer, which ran", [first.ok, repeat], [true, first]);
-	const after = await client.send(BalanceQuery);
+	const after = await client.send(fixtureBilling.charge.balance);
 	check("and the handler ran once", after.ok ? after.output.charges : after.reason, 1);
 }
 

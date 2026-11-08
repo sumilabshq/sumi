@@ -1,20 +1,25 @@
 import { z } from "zod";
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { AppTabsQuery } from "@widgetarium/app-host";
-import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
-import { DoorSchema, KeptMenuSchema, MenuDoorsSchema, OpenMenuSchema } from "../../shared/schema/command-menu.schema.js";
+import { appHost } from "@widgetarium/app-host";
+import { commandMenuChanged } from "../../gateways/command-menu/command-menu.events.js";
+import {
+	DoorSchema,
+	KeptMenuSchema,
+	MenuDoorsSchema,
+	OpenMenuSchema,
+} from "../../shared/schema/command-menu.schema.js";
 import { doorKeysOf, refuseDoor } from "./lib/doors.js";
 import { heldTabOfPage } from "../../shared/lib/held-tab.js";
 import { filledWithShown } from "./lib/shown-text.js";
 
-export const CommandMenuQuery = query("command-menu")
+export const commandMenu = query()
 	.public()
 	.output(KeptMenuSchema)
 	.settlesNow()
 	.handle((_input, { commandMenu }) => commandMenu.menu());
 
-export const MenuDoorsQuery = query("menu-doors")
+export const menuDoors = query()
 	.public()
 	.output(MenuDoorsSchema)
 	.settlesNow()
@@ -25,70 +30,75 @@ export const MenuDoorsQuery = query("menu-doors")
 		})),
 	}));
 
-export const ToggleCommandMenuCommand = command("toggle-command-menu")
+export const toggleCommandMenu = command()
 	.public()
 	.input(OpenMenuSchema)
 	.idempotencyKey(PerCall)
-	.handle(async ({ door, text, shownName, newTabList, pageId }, { commandMenu, menuFills, send, invalidate }) => {
-		const refusal = refuseDoor(door, menuFills.doors());
+	.handle(
+		async (
+			{ door, text, shownName, newTabList, pageId },
+			{ commandMenu: keptCommandMenu, menuFills, send, invalidate },
+		) => {
+			const refusal = refuseDoor(door, menuFills.doors());
 
-		if (refusal !== null) {
-			return refuse(refusal);
-		}
+			if (refusal !== null) {
+				return refuse(refusal);
+			}
 
-		invalidate(CommandMenuQuery);
-		const was = commandMenu.menu();
-		const filled =
-			text === null
-				? filledWithShown((await send(AppTabsQuery)).tabs, shownName, await heldTabOfPage(pageId, send))
-				: { door, text };
+			invalidate(commandMenu);
+			const was = keptCommandMenu.menu();
+			const filled =
+				text === null
+					? filledWithShown((await send(appHost.tabs.appTabs)).tabs, shownName, await heldTabOfPage(pageId, send))
+					: { door, text };
 
-		if (
-			was.isOpen &&
-			(was.door === door || was.door === filled.door) &&
-			was.newTabList === newTabList &&
-			was.pageId === pageId
-		) {
-			const shut = `command menu open at ${was.door} → shut (the same opener again)`;
-			commandMenu.saveMenu(
+			if (
+				was.isOpen &&
+				(was.door === door || was.door === filled.door) &&
+				was.newTabList === newTabList &&
+				was.pageId === pageId
+			) {
+				const shut = `command menu open at ${was.door} → shut (the same opener again)`;
+				keptCommandMenu.saveMenu(
+					{
+						...was,
+						isOpen: false,
+					},
+					shut,
+				);
+				console.info(`[widgetarium] ${shut}`);
+				return;
+			}
+
+			const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}" over ${pageId ?? "the shown tab"}, new tabs into ${newTabList ?? "the shown tab's list"}`;
+			keptCommandMenu.saveMenu(
 				{
-					...was,
-					isOpen: false,
+					isOpen: true,
+					door: filled.door,
+					text: filled.text,
+					opening: was.opening + 1,
+					newTabList,
+					pageId,
 				},
-				shut,
+				reason,
 			);
-			console.info(`[widgetarium] ${shut}`);
-			return;
-		}
+			console.info(`[widgetarium] ${reason}`);
+		},
+	);
 
-		const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}" over ${pageId ?? "the shown tab"}, new tabs into ${newTabList ?? "the shown tab's list"}`;
-		commandMenu.saveMenu(
-			{
-				isOpen: true,
-				door: filled.door,
-				text: filled.text,
-				opening: was.opening + 1,
-				newTabList,
-				pageId,
-			},
-			reason,
-		);
-		console.info(`[widgetarium] ${reason}`);
-	});
-
-export const ChangeMenuDoorCommand = command("change-menu-door")
+export const changeMenuDoor = command()
 	.public()
 	.input(z.object({ door: DoorSchema }))
 	.idempotencyKey(Repeatable)
-	.handle(({ door }, { commandMenu, menuFills, invalidate }) => {
+	.handle(({ door }, { commandMenu: keptCommandMenu, menuFills, invalidate }) => {
 		const refusal = refuseDoor(door, menuFills.doors());
 
 		if (refusal !== null) {
 			return refuse(refusal);
 		}
 
-		invalidate(CommandMenuQuery);
-		const was = commandMenu.menu();
+		invalidate(commandMenu);
+		const was = keptCommandMenu.menu();
 
 		if (!was.isOpen || was.door === door) {
 			console.info(`[widgetarium] command menu door skipped: ${was.isOpen ? `already ${door}` : "shut"}`);
@@ -96,7 +106,7 @@ export const ChangeMenuDoorCommand = command("change-menu-door")
 		}
 
 		const reason = `command menu door ${was.door} → ${door}`;
-		commandMenu.saveMenu(
+		keptCommandMenu.saveMenu(
 			{
 				...was,
 				door,
@@ -106,12 +116,12 @@ export const ChangeMenuDoorCommand = command("change-menu-door")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const CloseCommandMenuCommand = command("close-command-menu")
+export const closeCommandMenu = command()
 	.public()
 	.idempotencyKey(Repeatable)
-	.handle((_input, { commandMenu, invalidate }) => {
-		invalidate(CommandMenuQuery);
-		const was = commandMenu.menu();
+	.handle((_input, { commandMenu: keptCommandMenu, invalidate }) => {
+		invalidate(commandMenu);
+		const was = keptCommandMenu.menu();
 
 		if (!was.isOpen) {
 			console.info("[widgetarium] command menu close skipped: already shut");
@@ -119,7 +129,7 @@ export const CloseCommandMenuCommand = command("close-command-menu")
 		}
 
 		const reason = `command menu open at ${was.door} → shut`;
-		commandMenu.saveMenu(
+		keptCommandMenu.saveMenu(
 			{
 				...was,
 				isOpen: false,
@@ -129,6 +139,6 @@ export const CloseCommandMenuCommand = command("close-command-menu")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const MenuOnMenuChangedSubscriber = subscriber(CommandMenuChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(CommandMenuQuery);
+export const menuOnMenuChanged = subscriber(commandMenuChanged).handle((_input, { invalidate }) => {
+	invalidate(commandMenu);
 });

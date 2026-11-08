@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Icon, Popover, PopoverAnchor, PopoverAnchorAt, PopoverContent, PopoverItem } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import type { ChatRowData } from "@sumi/chat-tabs";
-import { PinTabCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 
 export type ChatMenuAt =
 	| {
@@ -30,7 +30,7 @@ const RENAME = "Rename";
 const ITEM_ICON_PX = 18;
 
 export function ChatMenu({ at, row, onClose, onRename }: ChatMenuProps): ReactElement {
-	const pinChat = useCommand(PinTabCommand);
+	const pinChat = useCommand(appHost.tabActions.pinTab);
 	const lastAt = useRef(at);
 	const lastRow = useRef(row);
 	if (at !== null && row !== null) {

@@ -1,8 +1,8 @@
 import { localTransport, runtime } from "@widgetarium/data-framework";
-import { FileSystemModule, PlacesModule } from "@sumi/contract";
+import { fileSystem, places } from "@sumi/contract";
 import type { Runtime } from "@widgetarium/data-framework";
-import { FileSwitchesQuery, FlipFileSwitchCommand, ReloadFileCommand } from "../plugins/files/data/file-page/index.ts";
-import { FilePageModule } from "../plugins/files/data/file-page/module.ts";
+import { filePage } from "../plugins/files/data/file-page/index.ts";
+import { filePage as filePageModule } from "../plugins/files/data/file-page/module.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const UNUSED_CORE = localTransport();
@@ -10,13 +10,13 @@ Object.assign(globalThis, { window: new EventTarget() });
 
 function startedTab(): Runtime {
 	return runtime()
-		.modules(FilePageModule({ tabId: "tab-1" }))
-		.imports(FileSystemModule({ over: UNUSED_CORE }), PlacesModule({ over: UNUSED_CORE }))
+		.modules(filePageModule({ tabId: "tab-1" }))
+		.imports(fileSystem({ over: UNUSED_CORE }), places({ over: UNUSED_CORE }))
 		.start({ platform: "browser", scope: { workspaceId: "file-page" } });
 }
 
 async function switchesOf(started: Runtime): Promise<unknown> {
-	const answered = await started.send(FileSwitchesQuery);
+	const answered = await started.send(filePage.switches.fileSwitches);
 	return answered.ok ? answered.output : answered.reason;
 }
 
@@ -25,14 +25,14 @@ const otherTab = startedTab();
 
 check("a new file tab starts with every switch off and no reload", await switchesOf(tab), { on: [], loads: 0 });
 
-await tab.send(FlipFileSwitchCommand, { name: "wrap" });
-await tab.send(FlipFileSwitchCommand, { name: "values" });
+await tab.send(filePage.switches.flipFileSwitch, { name: "wrap" });
+await tab.send(filePage.switches.flipFileSwitch, { name: "values" });
 check("flipping turns a switch on, each named once", await switchesOf(tab), { on: ["wrap", "values"], loads: 0 });
 
-await tab.send(FlipFileSwitchCommand, { name: "wrap" });
+await tab.send(filePage.switches.flipFileSwitch, { name: "wrap" });
 check("flipping again turns it off and leaves the others", await switchesOf(tab), { on: ["values"], loads: 0 });
 
-await tab.send(ReloadFileCommand);
+await tab.send(filePage.switches.reloadFile);
 check("reload counts up, so the page draws anew", await switchesOf(tab), { on: ["values"], loads: 1 });
 
 check("another tab keeps its own switches: the module lives per tab app", await switchesOf(otherTab), {
@@ -40,7 +40,7 @@ check("another tab keeps its own switches: the module lives per tab app", await 
 	loads: 0,
 });
 
-const refused = await tab.send(FlipFileSwitchCommand, { name: "everything" as "wrap" });
+const refused = await tab.send(filePage.switches.flipFileSwitch, { name: "everything" as "wrap" });
 check("a switch the page does not have is refused before anything changes", refused.ok, false);
 
 console.log(

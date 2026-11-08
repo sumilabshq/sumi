@@ -5,9 +5,9 @@ import { handled } from "./generated/handled.js";
 
 export type { BoardFile, TasksConfig } from "./shared/host/tasks.host.js";
 
-export const TasksModule = module("tasks")
+export const tasks = module()
 	.on(Server)
 	.config<TasksConfig>()
 	.guard(PublicGuard)
 	.provide((facts) => tasksPartsOn(facts))
-	.handles(...handled);
+	.handles(handled);

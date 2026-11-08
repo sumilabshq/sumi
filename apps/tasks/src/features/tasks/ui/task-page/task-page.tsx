@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { TaskQuery } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { TaskGone } from "./task-gone.js";
 import { TaskShown } from "./task-shown.js";
@@ -10,7 +10,7 @@ export interface TaskPageProps {
 }
 
 export function TaskPage({ task }: TaskPageProps): ReactElement | null {
-	const read = useOptionalQuery(TaskQuery, { task });
+	const read = useOptionalQuery(tasks.board.task, { task });
 
 	if (read.failure !== null) {
 		return <TaskGone task={task} />;

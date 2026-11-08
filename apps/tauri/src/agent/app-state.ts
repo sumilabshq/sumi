@@ -1,13 +1,13 @@
 import { z } from "zod";
-import type { AppTabsQuery } from "@widgetarium/app-host";
-import type { ChatListQuery } from "@sumi/chat-tabs";
+import type { appHost } from "@widgetarium/app-host";
+import type { chatTabs } from "@sumi/chat-tabs";
 import type { OutputOf } from "@widgetarium/data-framework";
 import { tabListsOf } from "./sidebar-lists.js";
 import type { ListedEntry, ListedGroup, Sidebar, SidebarTab, TabList } from "./sidebar-lists.js";
 
 export type { Sidebar, SidebarTab } from "./sidebar-lists.js";
-export type ChatList = OutputOf<typeof ChatListQuery>;
-export type AppTabs = OutputOf<typeof AppTabsQuery>;
+export type ChatList = OutputOf<typeof chatTabs.chatList.chatList>;
+export type AppTabs = OutputOf<typeof appHost.tabs.appTabs>;
 
 export const WORKSPACE = "workspace";
 export const PINNED = "pinned";

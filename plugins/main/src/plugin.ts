@@ -1,16 +1,16 @@
-import { AppsPlugin, AppsSlot } from "@sumi/apps-plugin";
-import { BackgroundModulesSlot, SumiHostPlugin } from "@sumi/sumi-host-plugin";
+import { apps } from "@sumi/apps-plugin";
+import { sumiHost } from "@sumi/sumi-host-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
-import { TasksModule as TasksContract } from "@widgetarium/tasks";
-import { TasksModule } from "@widgetarium/tasks/module";
+import { tasks } from "@widgetarium/tasks";
+import { tasks as tasksModule } from "@widgetarium/tasks/module";
 import { siteArtOf } from "./features/browser/lib/site-art.js";
 
-export const MainPlugin = plugin("main")
-	.require(SumiHostPlugin, AppsPlugin)
+export const main = plugin()
+	.require(sumiHost, apps)
 	.fill(
-		BackgroundModulesSlot({ id: "tasks", module: ({ file }) => TasksModule({ file }), contract: TasksContract }),
-		AppsSlot({ id: "canvas", title: "Canvas", art: "canvas" }),
-		AppsSlot({
+		sumiHost.backgroundModules.add({ id: "tasks", module: ({ file }) => tasksModule({ file }), contract: tasks }),
+		apps.apps.add({ id: "canvas", title: "Canvas", art: "canvas" }),
+		apps.apps.add({
 			id: "browser",
 			title: "Browser",
 			newTabTitle: "New tab",
@@ -19,5 +19,5 @@ export const MainPlugin = plugin("main")
 			isListed: false,
 			tabs: { navigates: true },
 		}),
-		AppsSlot({ id: "tasks", title: "Tasks", art: "tasks" }),
+		apps.apps.add({ id: "tasks", title: "Tasks", art: "tasks" }),
 	);

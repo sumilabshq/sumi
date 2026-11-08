@@ -1,10 +1,5 @@
 import { z } from "zod";
-import {
-	AskedQuestionSchema,
-	DeliverQuestionsCommand,
-	PostQuestionsCommand,
-	QuestionsQuery,
-} from "@widgetarium/questions";
+import { AskedQuestionSchema, questions } from "@widgetarium/questions";
 import type { QuestionNeed } from "@widgetarium/questions";
 import { fieldsOf, inputOf, outputOf } from "./tool-places.js";
 import type { ToolContext } from "./tool-places.js";
@@ -23,7 +18,7 @@ export async function askNeeded(context: ToolContext, input: unknown) {
 	const ids = await posted(context, { tool: "ask_needed", need: "needed", input });
 	await settledOf(context, ids);
 	const delivered = await outputOf(
-		context.app.send(DeliverQuestionsCommand, {
+		context.app.send(questions.agent.deliverQuestions, {
 			chat: context.chatId,
 			ids: [...ids],
 		}),
@@ -59,7 +54,7 @@ async function posted(
 ): Promise<readonly string[]> {
 	const asked = inputOf(QuestionsInputSchema, tool, fieldsOf(tool, input));
 	const answer = await outputOf(
-		app.send(PostQuestionsCommand, {
+		app.send(questions.agent.postQuestions, {
 			chat: chatId,
 			need,
 			questions: asked.questions,
@@ -68,10 +63,10 @@ async function posted(
 	return answer.ids;
 }
 
-// TRADE-OFF: the call polls the core every half second; a watch over QuestionsChangedEvent would answer at once
+// TRADE-OFF: the call polls the core every half second; a watch over questions.questions.questionsChanged would answer at once
 async function settledOf({ app, chatId }: ToolContext, ids: readonly string[]): Promise<void> {
 	for (;;) {
-		const held = await outputOf(app.send(QuestionsQuery, { chat: chatId, ids: [...ids] }));
+		const held = await outputOf(app.send(questions.agent.questions, { chat: chatId, ids: [...ids] }));
 
 		if (held.some(({ state }) => state === "withdrawn")) {
 			throw new Error(NOT_ANSWERED);

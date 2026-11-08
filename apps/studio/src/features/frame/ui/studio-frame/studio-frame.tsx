@@ -5,10 +5,9 @@ import type { ReadCursor } from "@widgetarium/behaviors";
 import { Slot, useCommand, useQuery } from "@widgetarium/data-framework";
 import { NewChatShortcut } from "../../../app-host/ui/new-chat-shortcut/new-chat-shortcut.js";
 import { LinkOpener } from "../../../app-host/ui/link-opener/link-opener.js";
-import { FrameSidesQuery } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout";
 import { FrameSideReveal } from "../../../frame-sides/ui/frame-side-reveal/frame-side-reveal.js";
 import { FrameSideToggle } from "../../../frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
-import { FrameWidthsQuery, ResizeFrameEdgeCommand } from "@widgetarium/layout";
 import { FrameEdgeHandle } from "../../../frame-widths/ui/frame-edge/frame-edge.js";
 import { PaneBoard } from "../../../panes/ui/pane-board/pane-board.js";
 import type { PaneBoardProps } from "../../../panes/ui/pane-board/pane-board.js";
@@ -29,9 +28,9 @@ export interface StudioFrameProps {
 const FRAME_CLASS = "wg-studio wg-shell";
 
 export function StudioFrame({ frame, chromeLeftPx, readCursor, left, panes, panel }: StudioFrameProps): ReactElement {
-	const widths = useQuery(FrameWidthsQuery).data;
-	const sides = useQuery(FrameSidesQuery).data;
-	const resizeEdge = useCommand(ResizeFrameEdgeCommand);
+	const widths = useQuery(layout.frameWidths.frameWidths).data;
+	const sides = useQuery(layout.frameSides.frameSides).data;
+	const resizeEdge = useCommand(layout.frameWidths.resizeFrameEdge);
 	const appZone = useRef<HTMLDivElement | null>(null);
 	const leftSide = useRef<HTMLDivElement | null>(null);
 	useWritesFrameWidths(frame, widths);

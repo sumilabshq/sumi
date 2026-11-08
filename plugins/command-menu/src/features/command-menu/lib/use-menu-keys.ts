@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { CloseCommandMenuCommand } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu";
 import { ASK_COMPOSER_SELECTOR } from "./ask-composer-mark.js";
 import { MENU_KEY_ACTS } from "./menu-key-acts.js";
 import type { KeyedMenu } from "./menu-key-acts.js";
@@ -10,7 +10,7 @@ type MenuKeysAsk = Omit<KeyedMenu, "close">;
 type MenuKey = KeyboardEvent<HTMLElement>;
 
 export function useMenuKeys(ask: MenuKeysAsk): (event: MenuKey) => void {
-	const close = useCommand(CloseCommandMenuCommand);
+	const close = useCommand(commandMenu.opening.closeCommandMenu);
 	const menu: KeyedMenu = {
 		...ask,
 		close: () => void close.run(),

@@ -18,10 +18,10 @@ import type { StudioStart } from "../apps/studio/src/legacy/widgetarium-studio.t
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
 import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
-import { PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
+import { layout } from "../packages/state/layout/generated/contract.ts";
 import type { PaneSide, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { CreateChatCommand } from "../packages/domain/workspaces/generated/contract.ts";
-import { RenameTabCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
+import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 
@@ -84,15 +84,15 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 	void restoreTabs(studioApp);
 	Object.assign(window, {
 		__PLACE_TAB_IN_PANE__: (tabId: string) =>
-			studioApp.send(PlacePaneCommand, {
+			studioApp.send(layout.panes.placePane, {
 				view: { kind: "app", tabId },
 				targetId: "pane-app",
 				side: "right",
 			}),
 		__PLACE_PANE__: (view: PaneView, targetId: string | null, side: PaneSide) =>
-			studioApp.send(PlacePaneCommand, { view, targetId, side }),
-		__CREATE_CHAT__: () => studioApp.send(CreateChatCommand, { title: null }),
-		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(RenameTabCommand, { id, label: title }),
+			studioApp.send(layout.panes.placePane, { view, targetId, side }),
+		__CREATE_CHAT__: () => studioApp.send(workspaces.chats.createChat, { title: null }),
+		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(appHost.tabActions.renameTab, { id, label: title }),
 	});
 	return {
 		assistant,

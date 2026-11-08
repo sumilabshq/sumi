@@ -1,11 +1,10 @@
-import { PrefillDraftCommand } from "../plugins/chat/data/assistant/generated/contract.ts";
+import { assistant } from "../plugins/chat/data/assistant/generated/contract.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer } from "../packages/shared/data-framework/src/index.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { SearchWebCommand } from "../packages/domain/browser/index.ts";
-import { AskInkPromptQuery, LeaveFailureCommand, OpenAddressCommand } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/index.ts";
 import { loadFailureKindOf } from "../packages/domain/browser/shared/lib/load-failure.ts";
 import { nearMatchOf } from "../packages/domain/browser/features/tabs/lib/near-match.ts";
 import { SEARCH_ENGINE } from "../packages/domain/browser/shared/lib/search-address.ts";
@@ -17,7 +16,7 @@ import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";
 import { exactStatesReport } from "./browser-states-exact.ts";
 import { askInkPromptOf } from "../packages/domain/browser/features/tabs/lib/ask-ink-prompt.ts";
-import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { assistant as assistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { Composer } from "../plugins/chat/src/features/assistant/ui/composer/composer.tsx";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { AskComposerContext, NO_ASK_COMPOSER } from "@sumi/sumi-host-plugin";
@@ -68,7 +67,9 @@ for (const [host, recent, wanted] of NEAR) {
 }
 
 function started(browser: FakeBrowser) {
-	return runtime().modules(BrowserModule({ injects: browser.parts })).start();
+	return runtime()
+		.modules(browserModule({ injects: browser.parts }))
+		.start();
 }
 
 function said(answer: Answer<unknown>): string {
@@ -76,7 +77,7 @@ function said(answer: Answer<unknown>): string {
 }
 
 const searching = fakeBrowser();
-const searched = await started(searching).send(SearchWebCommand, { text: "test.co", heldTabId: null });
+const searched = await started(searching).send(browser.ink.searchWeb, { text: "test.co", heldTabId: null });
 check("a search answers", said(searched), "ok");
 check("a search opens the one engine in the same tab", searching.pages.opened, [`${SEARCH_ENGINE}test.co`]);
 check(
@@ -89,7 +90,7 @@ const hidden = fakeBrowser();
 hidden.pages.isShownOnScreen = false;
 check(
 	"the guard refuses a search into a tab that is not on screen",
-	said(await started(hidden).send(SearchWebCommand, { text: "test.co", heldTabId: null })),
+	said(await started(hidden).send(browser.ink.searchWeb, { text: "test.co", heldTabId: null })),
 	"tab-not-visible",
 );
 check("and nothing opens", hidden.pages.opened, []);
@@ -175,10 +176,10 @@ check(
 	host.querySelector("[data-browser-recent-site]")?.getAttribute("data-browser-recent-site"),
 	"github.com",
 );
-const newTabPrompt = await shownApp.send(AskInkPromptQuery, { tabId: "tab-1" });
+const newTabPrompt = await shownApp.send(browser.tabs.askInkPrompt, { tabId: "tab-1" });
 check("asking Sumi on a new tab drafts its prompt", newTabPrompt.ok && newTabPrompt.output, "Find a page for me");
 
-const refused = await shownApp.send(OpenAddressCommand, {
+const refused = await shownApp.send(browser.tabs.openAddress, {
 	tabId: "tab-1",
 	address: "javascript:open()",
 	heldTabId: null,
@@ -225,7 +226,7 @@ check(
 	true,
 );
 check("and turns back too", await waitFor(() => copyButtonText() === "Copy link", COPY_SHOWN_FOR_MS), true);
-await shownApp.send(LeaveFailureCommand, { tabId: "tab-1" });
+await shownApp.send(browser.tabs.leaveFailure, { tabId: "tab-1" });
 check("going back from a refused scheme dismisses it", shown.pages.moves.at(-1), "dismiss");
 
 const visiting = fakeBrowser();
@@ -283,7 +284,7 @@ for (const [what, failure, prompt] of PROMPTED) {
 const chatSent: string[] = [];
 const chatApp = runtime()
 	.modules(
-		AssistantModule({
+		assistantModule({
 			kind: "web",
 			webAssistant: NO_ASSISTANT,
 		}),
@@ -328,13 +329,17 @@ document.body.append(askingHost);
 createRoot(askingHost).render(
 	h(
 		RuntimeProvider,
-		{ runtime: runtime().modules(BrowserModule({ injects: asking.parts })).start() },
+		{
+			runtime: runtime()
+				.modules(browserModule({ injects: asking.parts }))
+				.start(),
+		},
 		h(
 			AskComposerContext,
 			{
 				value: {
 					...NO_ASK_COMPOSER,
-					ask: (text: string) => void chatApp.send(PrefillDraftCommand, { chat: null, text }),
+					ask: (text: string) => void chatApp.send(assistant.prefill.prefillDraft, { chat: null, text }),
 				},
 			},
 			h(Browser, {}),

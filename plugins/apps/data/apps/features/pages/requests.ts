@@ -1,6 +1,6 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import type { Send, User } from "@widgetarium/data-framework";
-import { AppTabQuery } from "@widgetarium/places";
+import { places } from "@widgetarium/places";
 import { command, query, subscriber } from "#module";
 import {
 	AppPageAskSchema,
@@ -18,7 +18,7 @@ import { pageRecordedOf, pageRememberedOf, pageTitleOf, refuseForeignFavicon } f
 import type { TitledTab } from "./lib/page-records.js";
 import type { PageTitlesGateway } from "../../gateways/page-titles/page-titles.gateway.js";
 import { onlyShellReasonOf } from "./lib/shell-only.js";
-import { KeptPagesChangedEvent } from "../../gateways/pages/pages.events.js";
+import { keptPagesChanged } from "../../gateways/pages/pages.events.js";
 import type { PagesGateway } from "../../gateways/pages/pages.gateway.js";
 import { pressTakenFrom, refusePress, withPressQueued } from "./lib/presses.js";
 
@@ -29,7 +29,7 @@ interface PageReaders {
 
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
 
-export const AppPageQuery = query("app-page")
+export const appPage = query()
 	.public()
 	.input(AppPageAskSchema)
 	.output(AppPageSchema)
@@ -42,7 +42,7 @@ export const AppPageQuery = query("app-page")
 		};
 	});
 
-export const PageTitlesQuery = query("page-titles")
+export const pageTitles = query()
 	.public()
 	.input(PageTitlesAskSchema)
 	.output(PageTitlesSchema)
@@ -67,7 +67,7 @@ function titledTabOf(tab: PageTab, readers: PageReaders): TitledTab {
 	};
 }
 
-export const RecordAppPageCommand = command("record-app-page")
+export const recordAppPage = command()
 	.public()
 	.input(RecordedAppPageSchema)
 	.idempotencyKey(Repeatable)
@@ -82,11 +82,11 @@ export const RecordAppPageCommand = command("record-app-page")
 		const { page, reason } = pageRecordedOf(pages.page(recorded.id), recorded);
 		pages.savePage(recorded.id, page, reason);
 		console.info(`[apps] ${reason}`);
-		invalidate(AppPageQuery, { id: recorded.id });
-		invalidate(PageTitlesQuery);
+		invalidate(appPage, { id: recorded.id });
+		invalidate(pageTitles);
 	});
 
-export const PressAppActionCommand = command("press-app-action")
+export const pressAppAction = command()
 	.public()
 	.input(PressAppActionSchema)
 	.idempotencyKey(PerCall)
@@ -108,10 +108,10 @@ export const PressAppActionCommand = command("press-app-action")
 		pages.savePressesMinted(minted);
 		pages.savePage(tab, withPressQueued(was, press), reason);
 		console.info(`[apps] ${reason}`);
-		invalidate(AppPageQuery, { id: tab });
+		invalidate(appPage, { id: tab });
 	});
 
-export const TakeActionPressCommand = command("take-action-press")
+export const takeActionPress = command()
 	.public()
 	.input(TakeActionPressSchema)
 	.output(TakenPressSchema)
@@ -127,12 +127,12 @@ export const TakeActionPressCommand = command("take-action-press")
 		const reason = `tab ${id} presses -${press} ${taken.press.action} (taken by the app)`;
 		pages.savePage(id, taken.page, reason);
 		console.info(`[apps] ${reason}`);
-		invalidate(AppPageQuery, { id });
+		invalidate(appPage, { id });
 		return taken.press;
 	});
 
 async function ownTabOf(send: Send, user: User | null, id: string): Promise<{ app: string; address: string | null }> {
-	const tab = await send(AppTabQuery, { id });
+	const tab = await send(places.tabFacts.appTab, { id });
 
 	if (user !== null && tab.app !== user.id) {
 		return refuse(NOT_ITS_TAB.replace("{id}", id).replace("{app}", user.id));
@@ -141,7 +141,7 @@ async function ownTabOf(send: Send, user: User | null, id: string): Promise<{ ap
 	return tab;
 }
 
-export const RememberPageTitlesCommand = command("remember-page-titles")
+export const rememberPageTitles = command()
 	.public()
 	.input(RememberedPageTitlesSchema)
 	.idempotencyKey(Repeatable)
@@ -156,9 +156,9 @@ export const RememberPageTitlesCommand = command("remember-page-titles")
 			return;
 		}
 
-		invalidate(PageTitlesQuery);
+		invalidate(pageTitles);
 		for (const id of kept) {
-			invalidate(AppPageQuery, { id });
+			invalidate(appPage, { id });
 		}
 	});
 
@@ -174,7 +174,7 @@ function keepRemembered(pages: PagesGateway, remembered: RememberedPageTitle): r
 	return [remembered.tabId];
 }
 
-export const RereadKeptPagesSubscriber = subscriber(KeptPagesChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(AppPageQuery);
-	invalidate(PageTitlesQuery);
+export const rereadKeptPages = subscriber(keptPagesChanged).handle((_input, { invalidate }) => {
+	invalidate(appPage);
+	invalidate(pageTitles);
 });

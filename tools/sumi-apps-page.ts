@@ -7,16 +7,16 @@ import type { RemoteTransport } from "../packages/shared/data-framework/src/inde
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.ts";
 import type { RegisteredApp } from "../packages/shared/app-registry/index.ts";
-import { AppTabsQuery, OpenChatCommand, ShowTabCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
-import { ChooseThemeCommand } from "../packages/state/appearance/generated/contract.ts";
+import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { appearance as appearanceContract } from "../packages/state/appearance/generated/contract.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { CommandMenuResultsQuery } from "../plugins/command-menu/data/command-menu/index.ts";
-import { LayoutModule } from "../packages/state/layout/module.ts";
-import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
+import { browser } from "../packages/domain/browser/module.ts";
+import { commandMenu } from "../plugins/command-menu/data/command-menu/index.ts";
+import { layout } from "../packages/state/layout/module.ts";
+import { workspaces } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
-import { AppTabQuery, PlacesModule } from "../plugins/apps/data/places/generated/contract.ts";
-import { TasksModule } from "../packages/domain/tasks/index.ts";
+import { places } from "../plugins/apps/data/places/generated/contract.ts";
+import { tasks } from "../packages/domain/tasks/index.ts";
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.ts";
 import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -55,7 +55,7 @@ const PROJECT: WidgetariumProject = {
 
 const overHttp = orpcTransport(location.origin);
 const NOT_ABORTED = new AbortController().signal;
-// TRADE-OFF: no abort, like the Tauri IPC transport; an aborted call leaves app-host/held-tabs stale
+// TRADE-OFF: no abort, like the Tauri IPC transport; an aborted call leaves app-host.tabs.held-tabs stale
 const core: RemoteTransport = {
 	call: (call) =>
 		overHttp.call({
@@ -67,9 +67,9 @@ const core: RemoteTransport = {
 const PLUGINS = resolvePlugins(BUILT_IN_PROFILE);
 const studioApp = runtime()
 	.modules(
-		LayoutModule,
-		BrowserModule({ injects: fakeBrowser(new FakeBrowserPagesGateway()).parts }),
-		WorkspacesModule({
+		layout,
+		browser({ injects: fakeBrowser(new FakeBrowserPagesGateway()).parts }),
+		workspaces({
 			injects: memoryWorkspacesParts({
 				workspaces: [
 					{
@@ -95,7 +95,7 @@ const studioApp = runtime()
 		PluginAppsModule,
 		...PLUGINS.windowModules.map((windowModule) => windowModule.moduleOf({})),
 	)
-	.imports(PlacesModule({ over: core }), TasksModule({ over: core }))
+	.imports(places({ over: core }), tasks({ over: core }))
 	.start({
 		platform: "browser",
 		scope: {
@@ -113,21 +113,21 @@ function servedPageUrlOf({ id, ui }: RegisteredApp): string {
 
 const appearance = startStudioAppearance(window);
 const driver: SumiAppsDriver = {
-	showTab: (id) => outputOf(studioApp.send(ShowTabCommand, { id })),
-	tab: (id) => outputOf(studioApp.send(AppTabQuery, { id })),
-	tabs: () => outputOf(studioApp.send(AppTabsQuery)),
+	showTab: (id) => outputOf(studioApp.send(appHost.tabs.showTab, { id })),
+	tab: (id) => outputOf(studioApp.send(places.tabFacts.appTab, { id })),
+	tabs: () => outputOf(studioApp.send(appHost.tabs.appTabs)),
 	menuResults: (text) =>
 		outputOf(
-			studioApp.send(CommandMenuResultsQuery, {
+			studioApp.send(commandMenu.results.commandMenuResults, {
 				text,
 				door: "anywhere",
 				pageId: null,
 			}),
 		),
-	chooseTheme: (choice) => outputOf(appearance.appearanceApp.send(ChooseThemeCommand, { choice })),
+	chooseTheme: (choice) => outputOf(appearance.appearanceApp.send(appearanceContract.theme.chooseTheme, { choice })),
 	openChat: () =>
 		outputOf(
-			studioApp.send(OpenChatCommand, {
+			studioApp.send(appHost.chatOpening.openChat, {
 				chatId: SUMI_CHAT_TAB,
 				paneId: null,
 			}),

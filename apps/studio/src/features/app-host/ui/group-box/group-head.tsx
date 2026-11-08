@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { Icon } from "@widgetarium/kit";
-import { FoldGroupCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import {
 	CARD_HEAD,
 	CARD_HEAD_COUNT,
@@ -26,7 +26,7 @@ const TURN =
 	"cv:flex cv:transition-transform cv:duration-(--sumi-dur-base) cv:ease-(--sumi-ease-out) cv:motion-reduce:transition-none cv:data-[folded]:-rotate-90";
 
 export function GroupHead({ group: { id, name, isOpen }, count }: GroupHeadProps): ReactElement {
-	const foldGroup = useCommand(FoldGroupCommand);
+	const foldGroup = useCommand(appHost.groups.foldGroup);
 	const folded = isOpen ? undefined : "";
 	return (
 		<button

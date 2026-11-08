@@ -1,11 +1,11 @@
 import { query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import { AppTabsQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
-import { ChatListQuery } from "@sumi/chat-tabs";
-import { AppsQuery } from "@sumi/apps";
-import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
-import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";
-import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
+import { appHost } from "@widgetarium/app-host";
+import { chatTabs } from "@sumi/chat-tabs";
+import { apps as appsContract } from "@sumi/apps";
+import { browser as browserContract } from "@widgetarium/browser";
+import { workspaces as workspacesContract } from "@widgetarium/workspaces";
+import { commandMenuChanged } from "../../gateways/command-menu/command-menu.events.js";
 import type { FilledRowSource, Pools, RowsOf } from "../../shared/host/command-menu.host.js";
 import { FoundSchema, ResultsAskSchema, ResultsSchema } from "../../shared/schema/command-menu.schema.js";
 import type { Found, Results } from "../../shared/schema/command-menu.schema.js";
@@ -32,7 +32,7 @@ interface SourcedRows {
 	readonly rows: readonly Found[];
 }
 
-export const CommandMenuResultsQuery = query("command-menu-results")
+export const commandMenuResults = query()
 	.public()
 	.input(ResultsAskSchema)
 	.output(ResultsSchema)
@@ -40,9 +40,9 @@ export const CommandMenuResultsQuery = query("command-menu-results")
 		const page = [...menuFills.pages(), ...BUILT_IN_PAGES].find(({ id }) => id === door);
 		const [sourced, appTabs, workspaces, browser] = await Promise.all([
 			Promise.all([...builtInSourcesOf(), ...menuFills.sources()].map((source) => sourcedRowsOf(source, send))),
-			send(AppTabsQuery),
-			send(WorkspacesQuery),
-			send(BrowserTabsQuery, ALL_PAGES),
+			send(appHost.tabs.appTabs),
+			send(workspacesContract.workspaces.workspaces),
+			send(browserContract.tabs.browserTabs, ALL_PAGES),
 		]);
 		const heldId = await heldTabOfPage(pageId, send);
 		const typed = typedOf(text);
@@ -73,35 +73,47 @@ export const CommandMenuResultsQuery = query("command-menu-results")
 		};
 	});
 
-export const ResultsOnMenuChangedSubscriber = subscriber(CommandMenuChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(CommandMenuResultsQuery);
+export const resultsOnMenuChanged = subscriber(commandMenuChanged).handle((_input, { invalidate }) => {
+	invalidate(commandMenuResults);
 });
 
-export const ResultsOnChatsChangedSubscriber = subscriber(ChatsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(CommandMenuResultsQuery);
-});
+export const resultsOnChatsChanged = subscriber(workspacesContract.chats.chatsChanged).handle(
+	(_input, { invalidate }) => {
+		invalidate(commandMenuResults);
+	},
+);
 
-export const ResultsOnPagesChangedSubscriber = subscriber(PagesChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(CommandMenuResultsQuery);
-});
+export const resultsOnPagesChanged = subscriber(browserContract.browserPages.pagesChanged).handle(
+	(_input, { invalidate }) => {
+		invalidate(commandMenuResults);
+	},
+);
 
-const tabRowsOf: RowsOf = async (send) => tabsFoundOf(await send(TabsSidebarQuery));
+const tabRowsOf: RowsOf = async (send) => tabsFoundOf(await send(appHost.tabs.tabsSidebar));
 
 const chatRowsOf: RowsOf = async (send) => {
-	const [sidebar, chats, apps] = await Promise.all([send(TabsSidebarQuery), send(ChatListQuery), send(AppsQuery)]);
+	const [sidebar, chats, apps] = await Promise.all([
+		send(appHost.tabs.tabsSidebar),
+		send(chatTabs.chatList.chatList),
+		send(appsContract.apps.apps),
+	]);
 	return chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.apps);
 };
 
-const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(AppsQuery)).apps);
+const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(appsContract.apps.apps)).apps);
 
-const siteRowsOf: RowsOf = async (send) => sitesFoundOf((await send(BrowserTabsQuery, ALL_PAGES)).recentSites);
+const siteRowsOf: RowsOf = async (send) =>
+	sitesFoundOf((await send(browserContract.tabs.browserTabs, ALL_PAGES)).recentSites);
 
-const workspaceRowsOf: RowsOf = async (send) => workspacesFoundOf(await send(WorkspacesQuery));
+const workspaceRowsOf: RowsOf = async (send) => workspacesFoundOf(await send(workspacesContract.workspaces.workspaces));
 
-const closedTabRowsOf: RowsOf = async (send) => closedFoundOf((await send(ClosedTabsQuery)).tabs);
+const closedTabRowsOf: RowsOf = async (send) => closedFoundOf((await send(appHost.closedTabs.closedTabs)).tabs);
 
 const chatElsewhereRowsOf: RowsOf = async (send) => {
-	const [elsewhere, apps] = await Promise.all([send(ChatsElsewhereQuery), send(AppsQuery)]);
+	const [elsewhere, apps] = await Promise.all([
+		send(workspacesContract.workspaces.chatsElsewhere),
+		send(appsContract.apps.apps),
+	]);
 	return chatsElsewhereFoundOf(elsewhere.rows, apps.apps);
 };
 

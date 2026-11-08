@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { RenameGroupCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 
 const GROUP_NAME = "Group name";
@@ -16,7 +16,7 @@ export function GroupNameField({
 	readonly onDone: () => void;
 }): ReactElement {
 	const [typed, setTyped] = useState(group.name);
-	const renameGroup = useCommand(RenameGroupCommand);
+	const renameGroup = useCommand(appHost.groups.renameGroup);
 	const keep = (): void => {
 		if (typed.trim() !== "" && typed !== group.name) {
 			void renameGroup.run({

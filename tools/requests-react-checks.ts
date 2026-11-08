@@ -108,7 +108,7 @@ check(
 
 const refused = await held.add?.run({ title: "" });
 check("a refused command answers its refusal", refused?.ok, false);
-check("and reaches the one refusal handler", refusals.at(-1)?.name, "pages/add-page");
+check("and reaches the one refusal handler", refusals.at(-1)?.name, "pages.add-page");
 
 const counted = local();
 const firstCommits: string[] = [];

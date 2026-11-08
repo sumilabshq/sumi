@@ -2,11 +2,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Repeatable, refusalOf, wireAnswerOf } from "@widgetarium/data-framework";
 import type { Answer, HearChanges, RemoteTransport } from "@widgetarium/data-framework";
-import { PlacesModule } from "@widgetarium/places";
-import { QuestionsModule } from "@widgetarium/questions";
-import { TasksModule } from "@widgetarium/tasks";
-import { FileSystemModule } from "@widgetarium/file-system";
-import { TerminalModule } from "@widgetarium/terminal";
+import { places } from "@widgetarium/places";
+import { questions } from "@widgetarium/questions";
+import { tasks } from "@widgetarium/tasks";
+import { fileSystem } from "@widgetarium/file-system";
+import { terminal } from "@widgetarium/terminal";
 import { CORE_CALL, CORE_CHANGED_EVENT, CORE_RESTARTED, CORE_SERVING_EVENT, CoreChangeSchema } from "./core-wire.js";
 import type { CoreCall } from "./core-wire.js";
 
@@ -103,11 +103,11 @@ export function listenOnWindow(name: string, heard: (payload: unknown) => void):
 }
 
 const EVERY_CORE_QUERY: Parameters<HearChanges>[0] = [
-	...PlacesModule.requests,
-	...TasksModule.requests,
-	...QuestionsModule.requests,
-	...FileSystemModule.requests,
-	...TerminalModule.requests,
+	...places.requests,
+	...tasks.requests,
+	...questions.requests,
+	...fileSystem.requests,
+	...terminal.requests,
 ]
 	.filter((request) => request.kind === "query")
 	.map((request) => ({

@@ -1,12 +1,12 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { CameraAnswerSchema, CameraKeptSchema } from "../../shared/schema/camera.schema.js";
 import { CanvasOpenedSchema, CanvasOpeningSchema, ModeAnswerSchema } from "../../shared/schema/canvas-view.schema.js";
 import { OPENING_FIELDS, isTouching, momentWriteOf, openingOf } from "../../shared/lib/view/canvas-moment.js";
 import { canvasOpenStepOf } from "./lib/canvas-opening.js";
 
-export const OpenCanvasCommand = command("open-canvas")
+export const openCanvas = command()
 	.public()
 	.input(CanvasOpenedSchema)
 	.idempotencyKey(Repeatable)
@@ -25,19 +25,19 @@ export const OpenCanvasCommand = command("open-canvas")
 		}
 	});
 
-export const CanvasOpeningQuery = query("canvas-opening")
+export const canvasOpening = query()
 	.public()
 	.output(CanvasOpeningSchema)
 	.settlesNow()
 	.handle((_input, { canvasMoment }) => openingOf(canvasMoment.moment()));
 
-export const CameraQuery = query("camera")
+export const camera = query()
 	.public()
 	.output(CameraAnswerSchema)
 	.settlesNow()
 	.handle((_input, { canvasMoment }) => ({ camera: canvasMoment.moment().camera }));
 
-export const KeepCameraCommand = command("keep-camera")
+export const keepCamera = command()
 	.public()
 	.input(CameraKeptSchema)
 	.idempotencyKey(Repeatable)
@@ -49,13 +49,13 @@ export const KeepCameraCommand = command("keep-camera")
 		}
 	});
 
-export const ModeQuery = query("mode")
+export const mode = query()
 	.public()
 	.output(ModeAnswerSchema)
 	.settlesNow()
 	.handle((_input, { canvasMoment }) => ({ mode: canvasMoment.moment().mode }));
 
-export const SetModeCommand = command("set-mode")
+export const setMode = command()
 	.public()
 	.input(ModeAnswerSchema)
 	.idempotencyKey(Repeatable)
@@ -74,16 +74,16 @@ export const SetModeCommand = command("set-mode")
 		}
 	});
 
-export const RereadViewSubscriber = subscriber(CanvasMomentChangedEvent).handle(({ fields }, { invalidate }) => {
+export const rereadView = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
 	if (fields.includes("camera")) {
-		invalidate(CameraQuery);
+		invalidate(camera);
 	}
 
 	if (fields.includes("mode")) {
-		invalidate(ModeQuery);
+		invalidate(mode);
 	}
 
 	if (isTouching(fields, OPENING_FIELDS)) {
-		invalidate(CanvasOpeningQuery);
+		invalidate(canvasOpening);
 	}
 });

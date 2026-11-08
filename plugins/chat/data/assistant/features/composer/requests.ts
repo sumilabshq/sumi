@@ -2,10 +2,24 @@ import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { FOLDERS_NOT_HERE } from "../../gateways/attachment-folder/none.gateway.js";
 import { holdChatDraft, wearChoices, wearProvider } from "../../shared/lib/chat-drafts.js";
-import { FileDraggedEvent } from "../../gateways/chat-parts/chat-parts.events.js";
+import { fileDragged } from "../../gateways/chat-parts/chat-parts.events.js";
 import { chosenOf } from "../../shared/lib/chosen-provider.js";
-import { AdoptedDraftSchema, AttachReachSchema, AttachmentAskedSchema, DraftAttachmentsSchema, FilesAskedSchema, MessageAskedSchema, TakenDraftSchema } from "../../shared/schema/attachment.schema.js";
-import { ChatOpenedSchema, DraftNoticeSchema, DraftTextSchema, HeldDraftTextSchema, OpenedDraftSchema } from "../../shared/schema/chat-draft.schema.js";
+import {
+	AdoptedDraftSchema,
+	AttachReachSchema,
+	AttachmentAskedSchema,
+	DraftAttachmentsSchema,
+	FilesAskedSchema,
+	MessageAskedSchema,
+	TakenDraftSchema,
+} from "../../shared/schema/attachment.schema.js";
+import {
+	ChatOpenedSchema,
+	DraftNoticeSchema,
+	DraftTextSchema,
+	HeldDraftTextSchema,
+	OpenedDraftSchema,
+} from "../../shared/schema/chat-draft.schema.js";
 import { DroppedAskedSchema, FileDragSchema, PageDragAskedSchema } from "../../shared/schema/file-drag.schema.js";
 import { adoptUnsent } from "./lib/adopted-draft.js";
 import { ACCEPTED, refusalOfCount, refusalOfReach } from "./lib/attachment-rules.js";
@@ -25,20 +39,20 @@ const REMOVED = "removed {name}";
 const DROPPED_ALREADY = "the dropped files were already attached";
 const HANDED_OVER = "handed to a new chat";
 
-export const DraftAttachmentsQuery = query("draft-attachments")
+export const draftAttachments = query()
 	.public()
 	.input(ChatKeySchema)
 	.output(DraftAttachmentsSchema)
 	.settlesNow()
 	.handle(inChat((_input, { draftAttachments }) => draftAttachments.draftAttachments().map(chipOf)));
 
-export const AttachFilesCommand = command("attach-files")
+export const attachFiles = command()
 	.public()
 	.input(FilesAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(
 		inChat(async ({ files }, injects) => {
-			injects.invalidate(DraftAttachmentsQuery);
+			injects.invalidate(draftAttachments);
 			await attachOffered(injects, {
 				files: files.map(offeredOf),
 				folders: [],
@@ -46,29 +60,29 @@ export const AttachFilesCommand = command("attach-files")
 		}),
 	);
 
-export const RemoveAttachmentCommand = command("remove-attachment")
+export const removeAttachment = command()
 	.public()
 	.input(AttachmentAskedSchema)
 	.idempotencyKey((input) => input.id)
 	.handle(
-		inChat(({ id }, { draftAttachments, invalidate }) => {
-			const drafts = draftAttachments.draftAttachments();
+		inChat(({ id }, { draftAttachments: keptDraftAttachments, invalidate }) => {
+			const drafts = keptDraftAttachments.draftAttachments();
 			const removed = drafts.find((draft) => draft.id === id);
 
 			if (!removed) {
 				return refuse(ALREADY_REMOVED);
 			}
 
-			invalidate(DraftAttachmentsQuery);
+			invalidate(draftAttachments);
 			saveDrafts(
-				draftAttachments,
+				keptDraftAttachments,
 				drafts.filter((draft) => draft !== removed),
 				REMOVED.replace("{name}", removed.name),
 			);
 		}),
 	);
 
-export const SendMessageCommand = command("send-message")
+export const sendMessage = command()
 	.public()
 	.input(MessageAskedSchema)
 	.idempotencyKey(PerCall)
@@ -76,7 +90,7 @@ export const SendMessageCommand = command("send-message")
 		inChat(async ({ said, replaces }, injects) => {
 			const drafts = injects.draftAttachments.draftAttachments();
 			injects.chatDrafts.saveUnseenSaid(null);
-			injects.invalidate(DraftAttachmentsQuery);
+			injects.invalidate(draftAttachments);
 			await sendWithDrafts(injects, {
 				said,
 				drafts,
@@ -85,28 +99,28 @@ export const SendMessageCommand = command("send-message")
 		}),
 	);
 
-export const TakeDraftCommand = command("take-draft")
+export const takeDraft = command()
 	.public()
 	.input(ChatKeySchema)
 	.output(TakenDraftSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat((_input, { draftAttachments, invalidate }) => {
-			const attachments = draftAttachments.draftAttachments();
-			invalidate(DraftAttachmentsQuery);
-			saveDrafts(draftAttachments, [], HANDED_OVER);
+		inChat((_input, { draftAttachments: keptDraftAttachments, invalidate }) => {
+			const attachments = keptDraftAttachments.draftAttachments();
+			invalidate(draftAttachments);
+			saveDrafts(keptDraftAttachments, [], HANDED_OVER);
 			return { attachments: [...attachments] };
 		}),
 	);
 
-export const AdoptDraftCommand = command("adopt-draft")
+export const adoptDraft = command()
 	.public()
 	.input(AdoptedDraftSchema)
 	.output(DraftTextSchema)
 	.idempotencyKey(PerCall)
 	.handle(
 		inChat(async (adopted, injects) => {
-			injects.invalidate(DraftAttachmentsQuery);
+			injects.invalidate(draftAttachments);
 
 			if (!adopted.sends) {
 				return adoptUnsent(injects, adopted);
@@ -125,7 +139,7 @@ export const AdoptDraftCommand = command("adopt-draft")
 		}),
 	);
 
-export const SweepAttachmentsCommand = command("sweep-attachments")
+export const sweepAttachments = command()
 	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
@@ -138,7 +152,7 @@ export const SweepAttachmentsCommand = command("sweep-attachments")
 		),
 	);
 
-export const AttachReachQuery = query("attach-reach")
+export const attachReach = query()
 	.public()
 	.input(ChatKeySchema)
 	.output(AttachReachSchema)
@@ -150,18 +164,18 @@ export const AttachReachQuery = query("attach-reach")
 		})),
 	);
 
-export const AttachFolderCommand = command("attach-folder")
+export const attachFolder = command()
 	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(async (_input, { assistantSetup, attachmentFolder, draftAttachments, invalidate }) => {
+		inChat(async (_input, { assistantSetup, attachmentFolder, draftAttachments: keptDraftAttachments, invalidate }) => {
 			if (!attachmentFolder.canPick()) {
 				return refuse(FOLDERS_NOT_HERE);
 			}
 
 			const provider = chosenOf(await assistantSetup.setup());
-			const held = draftAttachments.draftAttachments();
+			const held = keptDraftAttachments.draftAttachments();
 			const refusal = refusalOfReach("folder", provider) ?? refusalOfCount(held.length, 1, provider.reads);
 
 			if (refusal) {
@@ -175,34 +189,34 @@ export const AttachFolderCommand = command("attach-folder")
 				return;
 			}
 
-			invalidate(DraftAttachmentsQuery);
+			invalidate(draftAttachments);
 			attachDrafted(
-				draftAttachments,
-				draftedFolders([path], provider, draftAttachments.draftAttachments()),
+				keptDraftAttachments,
+				draftedFolders([path], provider, keptDraftAttachments.draftAttachments()),
 				provider.reads,
 			);
 		}),
 	);
 
-export const FileDragQuery = query("file-drag")
+export const fileDrag = query()
 	.public()
 	.input(ChatKeySchema)
 	.output(FileDragSchema)
 	.settlesNow()
 	.handle(inChat((_input, { fileDrag }) => fileDragOf(fileDrag.fileDrag())));
 
-export const HearPageDragCommand = command("hear-page-drag")
+export const hearPageDrag = command()
 	.public()
 	.input(PageDragAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(({ drag }, { fileDrag, invalidate }) => {
-			invalidate(FileDragQuery);
-			saveFileDrag(fileDrag, heardPageDrag(fileDrag.fileDrag(), drag), `the page heard a file drag ${drag}`);
+		inChat(({ drag }, { fileDrag: keptFileDrag, invalidate }) => {
+			invalidate(fileDrag);
+			saveFileDrag(keptFileDrag, heardPageDrag(keptFileDrag.fileDrag(), drag), `the page heard a file drag ${drag}`);
 		}),
 	);
 
-export const AttachDroppedCommand = command("attach-dropped")
+export const attachDropped = command()
 	.public()
 	.input(DroppedAskedSchema)
 	.idempotencyKey((input) => input.id)
@@ -215,8 +229,8 @@ export const AttachDroppedCommand = command("attach-dropped")
 				return;
 			}
 
-			injects.invalidate(FileDragQuery);
-			injects.invalidate(DraftAttachmentsQuery);
+			injects.invalidate(fileDrag);
+			injects.invalidate(draftAttachments);
 			await attachOffered(injects, batch);
 			saveFileDrag(
 				injects.fileDrag,
@@ -229,14 +243,14 @@ export const AttachDroppedCommand = command("attach-dropped")
 		}),
 	);
 
-export const ClearChatCommand = command("clear-chat")
+export const clearChat = command()
 	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
 	.handle(
 		inChat(async (_input, injects) => {
 			await injects.assistantSession.clear();
-			injects.invalidate(DraftAttachmentsQuery);
+			injects.invalidate(draftAttachments);
 			saveDrafts(injects.draftAttachments, [], CLEARED);
 			sweepFolder(injects, {
 				isBusy: false,
@@ -245,7 +259,7 @@ export const ClearChatCommand = command("clear-chat")
 		}),
 	);
 
-export const HoldDraftTextCommand = command("hold-draft-text")
+export const holdDraftText = command()
 	.public()
 	.input(HeldDraftTextSchema)
 	.output(DraftNoticeSchema)
@@ -277,50 +291,54 @@ export const HoldDraftTextCommand = command("hold-draft-text")
 		}),
 	);
 
-export const OpenChatDraftCommand = command("open-chat-draft")
+export const openChatDraft = command()
 	.public()
 	.input(ChatOpenedSchema)
 	.output(OpenedDraftSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(async ({ chat: chatId }, { chatDrafts, draftAttachments, claudeOptions, assistantSetup, invalidate }) => {
-			const left = chatDrafts.openChat();
+		inChat(
+			async (
+				{ chat: chatId },
+				{ chatDrafts, draftAttachments: keptDraftAttachments, claudeOptions, assistantSetup, invalidate },
+			) => {
+				const left = chatDrafts.openChat();
 
-			if (left === chatId) {
+				if (left === chatId) {
+					return {
+						said: "",
+						notice: chatDrafts.problemOf(chatId),
+					};
+				}
+
+				if (left !== null) {
+					holdChatDraft(chatDrafts, left, { attachments: keptDraftAttachments.draftAttachments() });
+				}
+
+				chatDrafts.saveOpenChat(chatId);
+				console.debug(`[widgetarium] open chat ${String(left)} → ${chatId}`);
+				await chatDrafts.ready(chatId);
+				const opened = chatDrafts.chatDraft(chatId);
+				chatDrafts.saveUnseenSaid(opened === null || opened.said === "" ? null : opened.said);
+				invalidate(draftAttachments);
+				saveDrafts(keptDraftAttachments, opened?.attachments ?? [], CHAT_SWITCHED);
+				wearChoices(claudeOptions, opened?.choices ?? null, chatId);
+				await wearProvider(assistantSetup, opened?.provider ?? null, chatId);
 				return {
-					said: "",
+					said: opened?.said ?? "",
 					notice: chatDrafts.problemOf(chatId),
 				};
-			}
-
-			if (left !== null) {
-				holdChatDraft(chatDrafts, left, { attachments: draftAttachments.draftAttachments() });
-			}
-
-			chatDrafts.saveOpenChat(chatId);
-			console.debug(`[widgetarium] open chat ${String(left)} → ${chatId}`);
-			await chatDrafts.ready(chatId);
-			const opened = chatDrafts.chatDraft(chatId);
-			chatDrafts.saveUnseenSaid(opened === null || opened.said === "" ? null : opened.said);
-			invalidate(DraftAttachmentsQuery);
-			saveDrafts(draftAttachments, opened?.attachments ?? [], CHAT_SWITCHED);
-			wearChoices(claudeOptions, opened?.choices ?? null, chatId);
-			await wearProvider(assistantSetup, opened?.provider ?? null, chatId);
-			return {
-				said: opened?.said ?? "",
-				notice: chatDrafts.problemOf(chatId),
-			};
-		}),
+			},
+		),
 	);
 
-export const HearHostDragSubscriber = subscriber(FileDraggedEvent)
-	.handle(
-		inChat(({ drag: event }, { fileDrag, invalidate }) => {
-			invalidate(FileDragQuery);
-			saveFileDrag(
-				fileDrag,
-				heardHostDrag(fileDrag.fileDrag(), event, crypto.randomUUID()),
-				`the host heard a file drag ${event.kind}`,
-			);
-		}),
-	);
+export const hearHostDrag = subscriber(fileDragged).handle(
+	inChat(({ drag: event }, { fileDrag: keptFileDrag, invalidate }) => {
+		invalidate(fileDrag);
+		saveFileDrag(
+			keptFileDrag,
+			heardHostDrag(keptFileDrag.fileDrag(), event, crypto.randomUUID()),
+			`the host heard a file drag ${event.kind}`,
+		);
+	}),
+);

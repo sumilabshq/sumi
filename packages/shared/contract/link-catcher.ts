@@ -1,5 +1,5 @@
 import type { Runtime } from "@widgetarium/data-framework";
-import { OpenLinkCommand } from "./generated/places.js";
+import { places } from "./generated/places.js";
 
 export interface LinkCatching {
 	readonly sumi: Runtime;
@@ -28,7 +28,7 @@ export function catchLinks({ sumi, tabId }: LinkCatching, view: Window = window)
 		}
 
 		event.preventDefault();
-		void sumi.send(OpenLinkCommand, { from: tabId, ...press }).then((followed) => {
+		void sumi.send(places.tabFacts.openLink, { from: tabId, ...press }).then((followed) => {
 			if (!followed.ok) {
 				console.error(`[sumi] the link ${press.href} was refused: ${followed.reason}`);
 			}

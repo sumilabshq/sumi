@@ -6,10 +6,10 @@ import { handled } from "./generated/handled.js";
 
 export type { AppAbilities, PlacedApp, PlacesConfig } from "./shared/host/places.host.js";
 
-export const PlacesModule = module("places")
+export const places = module()
 	.on(Server)
 	.config<PlacesConfig>()
 	.guard(PublicGuard)
 	.guard(AppCallersGuard)
 	.provide(({ scope, config }) => keptPlacesParts(config, scope.workspaceId))
-	.handles(...handled);
+	.handles(handled);

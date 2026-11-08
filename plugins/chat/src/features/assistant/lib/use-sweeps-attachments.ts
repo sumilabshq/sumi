@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { SweepAttachmentsCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 const SWEEP_EVERY_MS = 600000;
 
 export function useSweepsAttachments(isBusy: boolean): void {
 	const chat = useChatKey();
-	const sweep = useCommand(SweepAttachmentsCommand);
+	const sweep = useCommand(assistant.composer.sweepAttachments);
 	const run = sweep.run;
 	useEffect(() => {
 		void run({ chat });

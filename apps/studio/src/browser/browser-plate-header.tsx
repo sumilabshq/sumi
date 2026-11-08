@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { GoBackCommand, GoForwardCommand, PageHeadQuery } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useHeldTab } from "../features/browser/lib/held-tab.js";
 import { KeptOutChip } from "../features/browser/ui/kept-out-chip/kept-out-chip.js";
@@ -11,9 +11,9 @@ import { PlateTint } from "../features/plate/ui/plate-header/plate-tint.js";
 
 export function BrowserPlateHeader(): ReactElement | null {
 	const heldTabId = useHeldTab();
-	const head = useQuery(PageHeadQuery, { heldTabId }).data;
-	const goBack = useCommand(GoBackCommand);
-	const goForward = useCommand(GoForwardCommand);
+	const head = useQuery(browser.pageLook.pageHead, { heldTabId }).data;
+	const goBack = useCommand(browser.tabs.goBack);
+	const goForward = useCommand(browser.tabs.goForward);
 
 	if (head === null) {
 		return null;

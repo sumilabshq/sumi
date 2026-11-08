@@ -1,7 +1,7 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
-import { OpenChatCommand } from "@widgetarium/app-host";
-import { PaneTreeQuery } from "@widgetarium/layout";
-import { ChatToOpenQuery, CreateChatCommand, ForgetChatToOpenCommand } from "@widgetarium/workspaces";
+import { appHost } from "@widgetarium/app-host";
+import { layout } from "@widgetarium/layout";
+import { workspaces } from "@widgetarium/workspaces";
 import { command } from "#module";
 import { ChatOpenedSchema, ChatPaneSchema, NewChatTitleSchema } from "../../shared/schema/chat-opening.schema.js";
 import { chatIdForPane } from "./lib/chat-for-pane.js";
@@ -9,24 +9,24 @@ import { chatIdForPane } from "./lib/chat-for-pane.js";
 const NOT_READ = "the layout or the chats are not read yet";
 const NOT_AN_EMPTY_CHAT_PANE = "pane {pane} is not a chat pane waiting for a chat";
 
-export const OpenNewChatCommand = command("open-new-chat")
+export const openNewChat = command()
 	.public()
 	.input(NewChatTitleSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey(PerCall)
 	.handle(async ({ title }, { send }) => {
-		const created = await send(CreateChatCommand, { title });
-		await send(OpenChatCommand, { chatId: created.id, paneId: null });
+		const created = await send(workspaces.chats.createChat, { title });
+		await send(appHost.chatOpening.openChat, { chatId: created.id, paneId: null });
 		return created;
 	});
 
-export const NameChatPaneCommand = command("name-chat-pane")
+export const nameChatPane = command()
 	.public()
 	.input(ChatPaneSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey((input) => input.paneId)
 	.handle(async ({ paneId }, { send }) => {
-		const [board, asked] = await Promise.all([send(PaneTreeQuery), send(ChatToOpenQuery)]);
+		const [board, asked] = await Promise.all([send(layout.panes.paneTree), send(workspaces.chats.chatToOpen)]);
 
 		if (!board.isLoaded || !asked.isRead) {
 			return refuse(NOT_READ);
@@ -39,15 +39,15 @@ export const NameChatPaneCommand = command("name-chat-pane")
 		}
 
 		const chatId = await chatIdForPane(send, board, asked.id);
-		await send(OpenChatCommand, { chatId, paneId });
+		await send(appHost.chatOpening.openChat, { chatId, paneId });
 		return { id: chatId };
 	});
 
-export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
+export const openChatAskedOnStart = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle(async (_input, { send }) => {
-		const [board, asked] = await Promise.all([send(PaneTreeQuery), send(ChatToOpenQuery)]);
+		const [board, asked] = await Promise.all([send(layout.panes.paneTree), send(workspaces.chats.chatToOpen)]);
 
 		if (!board.isLoaded || !asked.isRead) {
 			return refuse(NOT_READ);
@@ -58,6 +58,6 @@ export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
 		}
 
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
-		await send(OpenChatCommand, { chatId: asked.id, paneId: null });
-		await send(ForgetChatToOpenCommand, { id: asked.id });
+		await send(appHost.chatOpening.openChat, { chatId: asked.id, paneId: null });
+		await send(workspaces.chats.forgetChatToOpen, { id: asked.id });
 	});

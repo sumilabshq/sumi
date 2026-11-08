@@ -1,10 +1,15 @@
 import { z } from "zod";
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
-import { CloseEssentialTabCommand, ReleaseEssentialTabCommand, ShowEssentialTabCommand } from "@widgetarium/places";
+import { places } from "@widgetarium/places";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
-import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
-import { essentialsOf, findEssential, moveEssential, removeEssential } from "../../shared/lib/essentials/essentials.js";
+import { tabsSettled } from "../../shared/events/tabs.events.js";
+import {
+	essentialsOf,
+	findEssential,
+	moveEssential,
+	removeEssentialMove,
+} from "../../shared/lib/essentials/essentials.js";
 import { saveEssentials, settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import type { Essential, KeptEssentials } from "../../shared/schema/essential.schema.js";
@@ -19,41 +24,38 @@ const WORKSPACE_END = {
 	before: null,
 };
 
-export const ShowEssentialCommand = command("show-essential")
+export const showEssential = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
 		const essential = findEssential(await keptOf(injects.essentials), id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(ShowEssentialTabCommand, { at, essential: refOf(essential) }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabOpening.showEssentialTab, { at, essential: refOf(essential) }),
 		);
 	});
 
-export const RemoveEssentialCommand = command("remove-essential")
+export const removeEssential = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
 		const kept = await keptOf(injects.essentials);
 		const essential = findEssential(kept, id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
-		await releaseEssential(
-			{ injects, send, told: () => emit(TabsSettledEvent) },
-			{ kept, essential, place: WORKSPACE_END },
-		);
+		await releaseEssential({ injects, send, told: () => emit(tabsSettled) }, { kept, essential, place: WORKSPACE_END });
 	});
 
-export const CloseEssentialCommand = command("close-essential")
+export const closeEssential = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(CloseEssentialTabCommand, { at, essentialId: id }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabClosing.closeEssentialTab, { at, essentialId: id }),
 		);
 	});
 
-export const PlaceEssentialCommand = command("place-essential")
+export const placeEssential = command()
 	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
@@ -75,7 +77,7 @@ export const PlaceEssentialCommand = command("place-essential")
 		}
 
 		const place = { list: to.list, groupId: to.groupId, before: to.before };
-		await releaseEssential({ injects, send, told: () => emit(TabsSettledEvent) }, { kept, essential, place });
+		await releaseEssential({ injects, send, told: () => emit(tabsSettled) }, { kept, essential, place });
 	});
 
 interface EssentialRelease {
@@ -88,8 +90,10 @@ async function releaseEssential(
 	reach: TabsReach & { readonly injects: { readonly essentials: EssentialsGateway } },
 	{ kept, essential, place }: EssentialRelease,
 ): Promise<void> {
-	await settleAsked(reach, (at) => reach.send(ReleaseEssentialTabCommand, { at, essential: refOf(essential), place }));
-	saveEssentials(kept, removeEssential(kept, essential), reach.injects.essentials);
+	await settleAsked(reach, (at) =>
+		reach.send(places.tabOpening.releaseEssentialTab, { at, essential: refOf(essential), place }),
+	);
+	saveEssentials(kept, removeEssentialMove(kept, essential), reach.injects.essentials);
 }
 
 async function keptOf(essentials: EssentialsGateway): Promise<KeptEssentials> {

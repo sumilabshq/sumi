@@ -1,7 +1,7 @@
 import { query } from "#module";
 import { AppsSchema } from "../../shared/schema/app.schema.js";
 
-export const AppsQuery = query("apps")
+export const apps = query()
 	.public()
 	.output(AppsSchema)
 	.handle((_input, { appList }) => ({ apps: appList.apps() }));

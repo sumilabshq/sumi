@@ -3,18 +3,7 @@ import type { Runtime } from "@widgetarium/data-framework";
 import { DesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/design-files.gateway.ts";
 import { MemoryCanvasMomentGateway } from "../packages/domain/canvas/gateways/canvas-moment/memory.gateway.ts";
 import { AgentJobsGateway } from "../packages/domain/canvas/gateways/agent-jobs/agent-jobs.gateway.ts";
-import {
-	AddPhotosCommand,
-	CanvasOpeningQuery,
-	FocusWidgetCommand,
-	ModeQuery,
-	PageChoicesQuery,
-	PickVariantCommand,
-	ResizeSidebarWidthCommand,
-	ReturnNoteQuery,
-	ShowPageCommand,
-	SidebarQuery,
-} from "../packages/domain/canvas/index.ts";
+import { canvas as canvasContract } from "../packages/domain/canvas/index.ts";
 import { canDragLayer } from "../packages/domain/canvas/features/layers/lib/layer-drag.ts";
 import type { CanvasLayer } from "../packages/domain/canvas/shared/schema/layer.schema.ts";
 import type { DrawnDesign } from "../packages/domain/canvas/shared/schema/drawn-design.schema.ts";
@@ -81,14 +70,14 @@ export async function checkCanvasRequests(check: Check): Promise<void> {
 
 async function checkOpensInHand(check: Check): Promise<void> {
 	const canvas = await openedCanvasOver(canvasPartsOver(), { ...FARM_OPENED, mode: "pointer" });
-	const mode = await canvas.send(ModeQuery);
+	const mode = await canvas.send(canvasContract.view.mode);
 	check("a canvas opens in hand mode even from a kept opening that says pointer", mode.ok && mode.output.mode, "hand");
 }
 
 async function checkReturnNote(check: Check): Promise<void> {
 	const parts = canvasPartsOver({ designFolder: new BrokenSpecDesignFolderGateway(async () => DESIGN) });
 	const canvas = await openedCanvasOver(parts);
-	const answer = await canvas.send(ReturnNoteQuery, { cameFrom: "Notes/Home.md" });
+	const answer = await canvas.send(canvasContract.pages.returnNote, { cameFrom: "Notes/Home.md" });
 	check(
 		"a return to a note answers why when the spec cannot be read, rather than opening the note it came from",
 		answer.ok && answer.output.kind === "none" ? answer.output.said.includes("the front matter is broken") : answer,
@@ -96,7 +85,7 @@ async function checkReturnNote(check: Check): Promise<void> {
 	);
 	const fromNote = await (
 		await openedCanvasOver(canvasPartsOver())
-	).send(ReturnNoteQuery, { cameFrom: "Notes/Home.md" });
+	).send(canvasContract.pages.returnNote, { cameFrom: "Notes/Home.md" });
 	check(
 		"and with no spec page naming a note it goes back to the note it came from",
 		fromNote.ok ? fromNote.output : fromNote.reason,
@@ -106,7 +95,7 @@ async function checkReturnNote(check: Check): Promise<void> {
 
 async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 	const canvas = await openedCanvasOver(canvasPartsOver(), { ...FARM_OPENED, page: "" });
-	const choices = await canvas.send(PageChoicesQuery);
+	const choices = await canvas.send(canvasContract.pages.pageChoices);
 	check(
 		"a canvas over a project with no design folder reads the project's design",
 		choices.ok ? choices.output.groups : choices.reason,
@@ -117,7 +106,7 @@ async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 async function checkAbsentDesignIsStartedByAJob(check: Check): Promise<void> {
 	const absent = new FixedDesignFolderGateway(async () => null);
 	const groupsOf = async (canvas: Runtime): Promise<unknown> => {
-		const choices = await canvas.send(PageChoicesQuery);
+		const choices = await canvas.send(canvasContract.pages.pageChoices);
 		return choices.ok ? choices.output.groups : choices.reason;
 	};
 	check(
@@ -136,8 +125,8 @@ async function checkPickAfterPageTurn(check: Check): Promise<void> {
 	const held = heldFolder();
 	const canvasMoment = new MemoryCanvasMomentGateway();
 	const canvas = await openedCanvasOver(canvasPartsOver({ designFolder: held.folder, canvasMoment }));
-	const picking = canvas.send(PickVariantCommand, { screen: "Home B" });
-	await canvas.send(ShowPageCommand, { page: "Other" });
+	const picking = canvas.send(canvasContract.pages.pickVariant, { screen: "Home B" });
+	await canvas.send(canvasContract.pages.showPage, { page: "Other" });
 	held.release();
 	await picking;
 	check(
@@ -172,7 +161,11 @@ async function checkChangeSourceLivesWithTheCanvas(check: Check): Promise<void> 
 async function checkPhotosLandInTheOpenedApp(check: Check): Promise<void> {
 	const photos = new RecordedDesignFilesGateway();
 	const canvas = await openedCanvasOver(canvasPartsOver({ designFiles: photos }));
-	const answer = await canvas.send(AddPhotosCommand, { photos: [new File(["x"], "a.png")] }, { idempotencyKey: "a" });
+	const answer = await canvas.send(
+		canvasContract.photos.addPhotos,
+		{ photos: [new File(["x"], "a.png")] },
+		{ idempotencyKey: "a" },
+	);
 	check(
 		"photos are written into the references of the app the canvas was opened on",
 		[answer.ok, photos.added.length, photos.added.every((path) => path.includes("/Farm/"))],
@@ -183,8 +176,8 @@ async function checkPhotosLandInTheOpenedApp(check: Check): Promise<void> {
 async function checkSidebarResize(check: Check): Promise<void> {
 	const canvas = await openedCanvasOver(canvasPartsOver());
 	const pxAfter = async (px: number, roomPx: number): Promise<unknown> => {
-		await canvas.send(ResizeSidebarWidthCommand, { px, roomPx });
-		const sidebar = await canvas.send(SidebarQuery);
+		await canvas.send(canvasContract.layers.resizeSidebarWidth, { px, roomPx });
+		const sidebar = await canvas.send(canvasContract.layers.sidebar);
 		return sidebar.ok ? sidebar.output.px : sidebar.reason;
 	};
 	check(
@@ -197,11 +190,11 @@ async function checkSidebarResize(check: Check): Promise<void> {
 async function checkMomentChangeReReads(check: Check): Promise<void> {
 	const canvas = await openedCanvasOver(canvasPartsOver());
 	const reRead = { opening: 0, mode: 0 };
-	const stopOpening = canvas.routes.watch(CanvasOpeningQuery, undefined, () => (reRead.opening += 1));
-	const stopMode = canvas.routes.watch(ModeQuery, undefined, () => (reRead.mode += 1));
-	await canvas.send(FocusWidgetCommand, { widget: "@you/tasks" });
+	const stopOpening = canvas.routes.watch(canvasContract.view.canvasOpening, undefined, () => (reRead.opening += 1));
+	const stopMode = canvas.routes.watch(canvasContract.view.mode, undefined, () => (reRead.mode += 1));
+	await canvas.send(canvasContract.pages.focusWidget, { widget: "@you/tasks" });
 	await settled();
-	const opening = await canvas.send(CanvasOpeningQuery);
+	const opening = await canvas.send(canvasContract.view.canvasOpening);
 	stopOpening();
 	stopMode();
 	check(

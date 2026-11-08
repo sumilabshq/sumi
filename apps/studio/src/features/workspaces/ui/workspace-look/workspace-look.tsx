@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Button, Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import type { WorkspaceRow } from "@widgetarium/workspaces";
-import { SetWorkspaceIconCommand } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 import { tabOf } from "../../lib/look-choices.js";
 import type { LookTab } from "../../lib/look-choices.js";
 import { LookGrid } from "./look-grid.js";
@@ -20,7 +20,7 @@ const TABS: ReadonlyArray<readonly [LookTab, string, string]> = [
 export function WorkspaceLook({ workspace }: { readonly workspace: WorkspaceRow }): ReactElement {
 	const [tab, setTab] = useState<LookTab>(tabOf(workspace.icon));
 	const [typed, setTyped] = useState("");
-	const setIcon = useCommand(SetWorkspaceIconCommand);
+	const setIcon = useCommand(workspaces.workspaces.setWorkspaceIcon);
 	const searchSaid = TABS.find(([kind]) => kind === tab)?.[2] ?? "";
 	return (
 		<div role="group" aria-label={LOOK_LABEL} data-ws-look="">

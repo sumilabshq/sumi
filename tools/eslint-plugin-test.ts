@@ -28,7 +28,7 @@ const CLIENT_MODULE =
 	'import { clientModule } from "@widgetarium/data-framework";\nexport const NotesClientModule = clientModule("notes");\n';
 
 const TALLY_MODULE =
-	'import { Device, module } from "@widgetarium/data-framework";\nimport { handled } from "./generated/handled.js";\nexport const TallyModule = module("tally").on(Device).handles(...handled);\n';
+	'import { Device, module } from "@widgetarium/data-framework";\nimport { handled } from "./generated/handled.js";\nexport const tally = module().on(Device).handles(handled);\n';
 const COUNT_REQUESTS = "packages/tally/features/count/requests.ts";
 const MODULE_REQUESTS = 'import { command, query } from "#module";\n';
 const CONFIGURED_MODULE = [
@@ -36,11 +36,11 @@ const CONFIGURED_MODULE = [
 	'import type { CanvasConfig } from "./shared/host/canvas.host.js";',
 	'import { handled } from "./generated/handled.js";',
 	'export type { Adapter, CanvasConfig } from "./shared/host/canvas.host.js";',
-	'export const CanvasModule = module("canvas").on(Device).config<CanvasConfig>().handles(...handled);',
+	"export const canvas = module().on(Device).config<CanvasConfig>().handles(handled);",
 	"",
 ].join("\n");
 const PLACED_MODULE =
-	'import { {on}, module } from "@widgetarium/data-framework";\nexport const PlacedModule = module("{name}").on({on});\n';
+	'import { {on}, module } from "@widgetarium/data-framework";\nexport const {name} = module().on({on});\n';
 
 const WORKSPACE: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "fixture", workspaces: ["apps/*", "packages/*"] }),
@@ -137,66 +137,76 @@ function tested(id: string, cases: Cases): void {
 	});
 }
 
+const PLUGINS = 'import { plugin, slot } from "@widgetarium/plugin-framework";\n';
+
 tested("building-block-names", {
 	valid: [
 		ok(TALLY_MODULE, "packages/tally/module.ts"),
 		ok(
-			'import { event, subscriber } from "@widgetarium/data-framework";\nexport const PanesChangedEvent = event("panes-changed");\nexport const PanesReReadSubscriber = subscriber(PanesChangedEvent).handle(() => undefined);',
+			'import { event, subscriber } from "@widgetarium/data-framework";\nexport const panesChanged = event();\nexport const rereadPanes = subscriber(panesChanged).handle(() => undefined);',
 		),
-		ok(`${REQUESTS}export const PagesQuery = query("notes/pages");`),
+		ok(`${REQUESTS}export const pages = query();`),
 		ok(`${REQUESTS}export const PagesQueryHandler = handler(PagesQuery, NotesClientModule).handle(() => 1);`),
 		ok(`${REQUESTS}export const OwnsNoteGuard = guard().handle(() => undefined);`),
 		ok(`${REQUESTS}export const BillingServerModule = serverModule("billing").guard(PublicGuard);`),
-		ok('import { query } from "./elsewhere.js";\nconst pages = query("x");'),
+		ok('import { query } from "./elsewhere.js";\nconst Pages = query("x");'),
 		ok(
-			`${MODULE_REQUESTS}export const CountQuery = query("count").public().handle((_input, { counter }) => counter.value);`,
+			`${MODULE_REQUESTS}export const count = query().public().handle((_input, { counter }) => counter.value);`,
 			COUNT_REQUESTS,
 		),
+		ok(`${PLUGINS}export const commandMenu = plugin().require(sumiHost).declare(menuDoors);`),
+		ok(`${PLUGINS}export const tabFaces = slot().item(TabFaceSchema).list();`),
 	],
 	invalid: [
-		bad(`${MODULE_REQUESTS}export const Count = query("count").public();`, "wrongSuffix", COUNT_REQUESTS),
-		bad(`${MODULE_REQUESTS}const BumpCommand = command("bump");`, "unnamed", COUNT_REQUESTS),
-		bad('import { module } from "@widgetarium/data-framework";\nexport const Tally = module("tally");', "wrongSuffix"),
+		bad(`${MODULE_REQUESTS}export const Count = query().public();`, "notCamel", COUNT_REQUESTS),
+		bad(`${MODULE_REQUESTS}export const countQuery = query().public();`, "kindSuffix", COUNT_REQUESTS),
+		bad(`${MODULE_REQUESTS}const bump = command();`, "unnamed", COUNT_REQUESTS),
+		bad('import { module } from "@widgetarium/data-framework";\nexport const TallyModule = module();', "notCamel"),
+		bad('import { module } from "@widgetarium/data-framework";\nexport const tallyModule = module();', "kindSuffix"),
 		bad(
-			'import { event } from "@widgetarium/data-framework";\nexport const PanesChanged = event("panes-changed");',
-			"wrongSuffix",
+			'import { event } from "@widgetarium/data-framework";\nexport const panesChangedEvent = event();',
+			"kindSuffix",
 		),
 		bad(
-			'import { event, subscriber } from "@widgetarium/data-framework";\nexport const PanesChangedEvent = event("panes-changed");\nexport const ReRead = subscriber(PanesChangedEvent).handle(() => undefined);',
-			"wrongSuffix",
+			'import { event, subscriber } from "@widgetarium/data-framework";\nexport const panesChanged = event();\nexport const ReRead = subscriber(panesChanged).handle(() => undefined);',
+			"notCamel",
 		),
-		bad(`${REQUESTS}export const Pages = query("notes/pages");`, "wrongSuffix"),
-		bad(`${REQUESTS}const PagesQuery = query("notes/pages");`, "unnamed"),
-		bad(`${REQUESTS}export const listed = [query("notes/pages")];`, "unnamed"),
-		bad(`${REQUESTS}export let PagesQuery = query("notes/pages");`, "unnamed"),
-		bad(`${REQUESTS}export const pagesQuery = query("notes/pages");`, "notPascal"),
+		bad(`${REQUESTS}export const pages2 = query();`, "notCamel"),
+		bad(`${REQUESTS}const pages = query();`, "unnamed"),
+		bad(`${REQUESTS}export const listed = [query()];`, "unnamed"),
+		bad(`${REQUESTS}export let pages = query();`, "unnamed"),
+		bad(`${REQUESTS}export const owns = guard().handle(() => undefined);`, "notPascal"),
 		bad(`${REQUESTS}export const PagesHandler = handler(PagesQuery, NotesClientModule);`, "wrongHandler"),
 		bad(`${REQUESTS}export const PagesHandler = handler(Pages, NotesClientModule);`, "notRequest"),
 		bad(`${REQUESTS}export const Billing = serverModule("billing");`, "wrongSuffix"),
 		bad(`${REQUESTS}export const Canvas = clientModule("canvas");`, "wrongSuffix"),
 		bad(`${REQUESTS}export const Timing = middleware().handle(async (_c, _d, next) => next());`, "wrongSuffix"),
 		bad(
-			'import { query as read } from "@widgetarium/data-framework";\nexport const Pages = read("notes/pages");',
-			"wrongSuffix",
+			'import { query as read } from "@widgetarium/data-framework";\nexport const pagesQuery = read();',
+			"kindSuffix",
 		),
+		bad(`${PLUGINS}export const ChatPlugin = plugin().require(apps);`, "notCamel"),
+		bad(`${PLUGINS}export const chatPlugin = plugin().require(apps);`, "kindSuffix"),
+		bad(`${PLUGINS}export const TabFaces = slot().item(TabFaceSchema).list();`, "notCamel"),
+		bad(`${PLUGINS}export const tabFacesSlot = slot().item(TabFaceSchema).list();`, "kindSuffix"),
+		bad(`${PLUGINS}const probe = plugin();`, "unnamed"),
 	],
 });
 
 tested("no-choice-strings", {
 	valid: [
 		ok(TALLY_MODULE, "packages/tally/module.ts"),
-		ok(`${REQUESTS}export const PagesQuery = query("notes/pages").cache({ freshFor: minutes(5) });`),
+		ok(`${REQUESTS}export const pages = query().cache({ freshFor: minutes(5) });`),
 		ok(`${REQUESTS}export const H = handler(PagesQuery, M).handle(() => "a string is data here");`),
+		ok(`${PLUGINS}export const chat = plugin().fill(apps.tabFaces.add({ id: "chat", title: "New chat" }));`),
 	],
 	invalid: [
-		bad(`${REQUESTS}export const AddCommand = command("notes/add").idempotencyKey("per-call");`, "choiceString"),
-		bad(
-			`${MODULE_REQUESTS}export const BumpCommand = command("bump").idempotencyKey("per-call");`,
-			"choiceString",
-			COUNT_REQUESTS,
-		),
-		bad(`${REQUESTS}export const PagesQuery = query("notes/pages").cache({ freshFor: "5m" });`, "choiceString"),
+		bad(`${REQUESTS}export const add = command().idempotencyKey("per-call");`, "choiceString"),
+		bad(`${MODULE_REQUESTS}export const bump = command("bump");`, "choiceString", COUNT_REQUESTS),
+		bad(`${REQUESTS}export const pages = query().cache({ freshFor: "5m" });`, "choiceString"),
 		bad(`${REQUESTS}export const NotesClientModule = clientModule("notes").provide("parts");`, "choiceString"),
+		bad(`${PLUGINS}export const chat = plugin("chat").require(apps);`, "choiceString"),
+		bad(`${PLUGINS}export const tabFaces = slot("tab-faces").item(TabFaceSchema).list();`, "choiceString"),
 	],
 });
 
@@ -302,15 +312,12 @@ tested("server-module", {
 tested("feature-layout", {
 	valid: [
 		ok(
-			'import { query } from "@widgetarium/data-framework";\nexport const CountQuery = query("count").handle(() => 1);',
+			'import { query } from "@widgetarium/data-framework";\nexport const count = query().handle(() => 1);',
 			COUNT_REQUESTS,
 		),
 		ok('export * from "./generated/contract.js";', "packages/tally/index.ts"),
 		ok("export const SearchQuery = 1;", SEARCH_CONTRACT),
-		ok(
-			'import { query } from "@widgetarium/data-framework";\nexport const SearchQuery = query("notes/search");',
-			SEARCH_CONTRACT,
-		),
+		ok('import { query } from "@widgetarium/data-framework";\nexport const search = query();', SEARCH_CONTRACT),
 		ok("export const rank = 1;", "packages/notes/features/search/lib/rank.ts"),
 		ok("export const SearchBox = 1;", "packages/notes/features/search/ui/search-box.tsx"),
 		ok("export const RenameCommand = 1;", "packages/notes/features/edit/rename/contract.ts"),
@@ -326,19 +333,13 @@ tested("feature-layout", {
 		ok('export * from "./generated/server.js";', "packages/ledger/server.ts"),
 	],
 	invalid: [
-		bad(PLACED_MODULE.replaceAll("{name}", "gauge").replaceAll("{on}", "Device"), "misplaced", "packages/gauge/module.ts"),
+		bad(
+			PLACED_MODULE.replaceAll("{name}", "gauge").replaceAll("{on}", "Device"),
+			"misplaced",
+			"packages/gauge/module.ts",
+		),
 		bad("export const a = 1;", "misplaced", "packages/gauge/serve.ts"),
 		bad("export const ClockHost = 1;", "misplaced", "packages/tally/shared/host/clock.ts"),
-		bad(
-			'import { query } from "@widgetarium/data-framework";\nexport const CountQuery = query("counting").handle(() => 1);',
-			"wrongShortName",
-			COUNT_REQUESTS,
-		),
-		bad(
-			'import { query } from "@widgetarium/data-framework";\nexport const CountQuery = query("tally/count").handle(() => 1);',
-			"wrongShortName",
-			COUNT_REQUESTS,
-		),
 		bad("export const a = 1;", "misplaced", "packages/tally/features/mixed/requests.ts"),
 		bad("export const CountView = 1;", "misplaced", "packages/tally/features/count/ui/count-view.tsx"),
 		bad("export const a = 1;", "misplaced", "packages/notes/features/search/helpers.ts"),
@@ -351,11 +352,6 @@ tested("feature-layout", {
 		bad(
 			'import { handler } from "@widgetarium/data-framework";\nexport const SearchQueryHandler = handler(SearchQuery, M);',
 			"handlerInContract",
-			SEARCH_CONTRACT,
-		),
-		bad(
-			'import { query } from "@widgetarium/data-framework";\nexport const SearchQuery = query("notes/find");',
-			"wrongName",
 			SEARCH_CONTRACT,
 		),
 		bad(

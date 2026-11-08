@@ -1,13 +1,7 @@
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
-import {
-	BrowserTabsQuery,
-	ClosePageCommand,
-	OpenPageCommand,
-	ShowTabCommand,
-} from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/index.ts";
 import { onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import type { CommittedPage } from "../packages/domain/browser/shared/schema/page-read.schema.ts";
@@ -98,7 +92,9 @@ function manyPages(): ManyPages {
 	return {
 		browser,
 		pages,
-		started: runtime().modules(BrowserModule({ injects: browser.parts })).start(),
+		started: runtime()
+			.modules(browserModule({ injects: browser.parts }))
+			.start(),
 	};
 }
 
@@ -108,24 +104,24 @@ function said(answer: Answer<unknown>): string {
 
 async function opened(started: Runtime, tabIds: readonly string[]): Promise<void> {
 	for (const tabId of tabIds) {
-		await started.send(OpenPageCommand, { tabId });
+		await started.send(browser.tabs.openPage, { tabId });
 	}
 }
 
 const listed = manyPages();
 await opened(listed.started, ["page-b", "page-c", "page-b"]);
-await listed.started.send(ShowTabCommand, { tabId: "page-c" });
-const listedTabs = await listed.started.send(BrowserTabsQuery, { heldTabId: null });
+await listed.started.send(browser.tabs.showTab, { tabId: "page-c" });
+const listedTabs = await listed.started.send(browser.tabs.browserTabs, { heldTabId: null });
 check(
 	"the browser holds one page per opened tab, an id opened twice once, and shows the one asked",
 	listedTabs.ok && listedTabs.output.tabs.map((tab) => `${tab.id}${tab.isShown ? "*" : ""}`),
 	[FIRST, "page-b", "page-c*"],
 );
 check("showing a page freezes every other page and thaws it", [...listed.pages.frozen].sort(), ["page-b", FIRST]);
-await listed.started.send(ShowTabCommand, { tabId: FIRST });
+await listed.started.send(browser.tabs.showTab, { tabId: FIRST });
 check("showing another page thaws it and freezes the one left", [...listed.pages.frozen].sort(), ["page-b", "page-c"]);
-await listed.started.send(ClosePageCommand, { tabId: "page-c" });
-const afterClose = await listed.started.send(BrowserTabsQuery, { heldTabId: null });
+await listed.started.send(browser.tabs.closePage, { tabId: "page-c" });
+const afterClose = await listed.started.send(browser.tabs.browserTabs, { heldTabId: null });
 check(
 	"closing a page takes it off the list and keeps the rest",
 	afterClose.ok && afterClose.output.tabs.map((tab) => tab.id),
@@ -137,7 +133,7 @@ await opened(switching.started, ["page-b"]);
 switching.pages.duringRead = () => void switching.pages.show("page-b");
 check(
 	"a page switched away from during Sumi's read is refused as not visible",
-	said(await switching.started.send(ReadPageContentCommand, { tabId: null })),
+	said(await switching.started.send(browser.ink.readPageContent, { tabId: null })),
 	"tab-not-visible",
 );
 check("and the audit names the page that was being read", switching.browser.audit.access.at(-1)?.tab, FIRST);
@@ -146,8 +142,12 @@ check("a hidden page answers that it is not on screen", switching.pages.isOnScre
 const reading = manyPages();
 await opened(reading.started, ["page-b"]);
 reading.pages.open("page-b", "https://example.com/board");
-await reading.started.send(ShowTabCommand, { tabId: "page-b" });
-check("Sumi reads the shown page", said(await reading.started.send(ReadPageContentCommand, { tabId: null })), "ok");
+await reading.started.send(browser.tabs.showTab, { tabId: "page-b" });
+check(
+	"Sumi reads the shown page",
+	said(await reading.started.send(browser.ink.readPageContent, { tabId: null })),
+	"ok",
+);
 check("and the reading mark is on that page", reading.browser.parts.inkActivity.inkActivity().reading?.tabId, "page-b");
 
 const granted = manyPages();
@@ -155,7 +155,7 @@ await opened(granted.started, ["page-b"]);
 granted.pages.open(FIRST, PRIVATE_SITE);
 granted.pages.open("page-b", PRIVATE_SITE);
 granted.browser.parts.onceAllowances.saveOnceAllowances([onceAllowanceOf("192.168.1.10", FIRST, Date.now())]);
-const grantedTabs = await granted.started.send(BrowserTabsQuery, { heldTabId: null });
+const grantedTabs = await granted.started.send(browser.tabs.browserTabs, { heldTabId: null });
 check(
 	"a once-grant on one page does not cover another page at the same site",
 	grantedTabs.ok && grantedTabs.output.tabs.map((tab) => `${tab.id}:${tab.access?.decision}`),
@@ -164,9 +164,9 @@ check(
 
 const asking = manyPages();
 asking.pages.open(FIRST, PRIVATE_SITE);
-const askedRead = asking.started.send(ReadPageContentCommand, { tabId: null });
+const askedRead = asking.started.send(browser.ink.readPageContent, { tabId: null });
 await waitFor(() => asking.browser.parts.accessAsks.accessAsks().length === 1);
-await asking.started.send(ClosePageCommand, { tabId: FIRST });
+await asking.started.send(browser.tabs.closePage, { tabId: FIRST });
 check("closing a page refuses the ask still waiting on it", said(await askedRead), "ask-unanswered");
 
 await checksElectronPages();

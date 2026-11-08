@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { AcceptTaskCommand } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
 import { useCommand } from "@widgetarium/data-framework";
 import { Button } from "@widgetarium/kit";
@@ -15,7 +15,7 @@ export function hasActionBar(card: TaskCard): boolean {
 }
 
 export function TaskActionBar({ card }: TaskActionBarProps): ReactElement {
-	const accept = useCommand(AcceptTaskCommand).with({ task: card.id });
+	const accept = useCommand(tasks.person.acceptTask).with({ task: card.id });
 	const [isSendingBack, setSendingBack] = useState(false);
 	return (
 		<div className="wg-tasks-action-bar" data-tasks-action-bar="">

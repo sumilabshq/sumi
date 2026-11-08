@@ -21,7 +21,7 @@ import {
 	showEssentialPlan,
 } from "./lib/opening-plans.js";
 
-export const OpenTabCommand = command("open-tab")
+export const openTab = command()
 	.public()
 	.input(OpenTabAskSchema)
 	.output(OpenedTabSettledSchema)
@@ -30,7 +30,7 @@ export const OpenTabCommand = command("open-tab")
 		openedOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), openPlan(ask)))),
 	);
 
-export const OpenTabBelowCommand = command("open-tab-below")
+export const openTabBelow = command()
 	.public()
 	.input(TabAskSchema)
 	.output(OpenedTabSettledSchema)
@@ -39,7 +39,7 @@ export const OpenTabBelowCommand = command("open-tab-below")
 		openedOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), openBelowPlan(id)))),
 	);
 
-export const DuplicateTabCommand = command("duplicate-tab")
+export const duplicateTab = command()
 	.public()
 	.input(DuplicateTabAskSchema)
 	.output(OpenedTabSettledSchema)
@@ -48,7 +48,7 @@ export const DuplicateTabCommand = command("duplicate-tab")
 		openedOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), duplicatePlan(ask)))),
 	);
 
-export const ReopenClosedTabCommand = command("reopen-closed-tab")
+export const reopenClosedTab = command()
 	.public()
 	.input(ReopenClosedAskSchema)
 	.output(TabsSettledSchema)
@@ -57,7 +57,7 @@ export const ReopenClosedTabCommand = command("reopen-closed-tab")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), reopenPlan(tabId)))),
 	);
 
-export const ShowEssentialTabCommand = command("show-essential-tab")
+export const showEssentialTab = command()
 	.public()
 	.input(ShowEssentialAskSchema)
 	.output(TabsSettledSchema)
@@ -66,7 +66,7 @@ export const ShowEssentialTabCommand = command("show-essential-tab")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), showEssentialPlan(essential)))),
 	);
 
-export const ReleaseEssentialTabCommand = command("release-essential-tab")
+export const releaseEssentialTab = command()
 	.public()
 	.input(ReleaseEssentialAskSchema)
 	.output(TabsSettledSchema)

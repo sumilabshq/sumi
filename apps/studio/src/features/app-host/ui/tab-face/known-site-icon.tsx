@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useOptionalQuery } from "@widgetarium/data-framework";
-import { SiteIconQuery } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { FaviconImage } from "./favicon-image.js";
 import type { TabArtSize } from "./tab-art.js";
 
@@ -12,7 +12,7 @@ export interface KnownSiteIconProps {
 }
 
 export function KnownSiteIcon({ origin, size, fallback }: KnownSiteIconProps): ReactElement {
-	const icon = useOptionalQuery(SiteIconQuery, { origin }).data?.icon ?? null;
+	const icon = useOptionalQuery(browser.siteIcons.siteIcon, { origin }).data?.icon ?? null;
 
 	if (icon === null) {
 		return fallback;

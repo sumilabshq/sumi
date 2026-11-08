@@ -5,7 +5,7 @@ import { useHoverIntent } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 import type { FrameSide } from "@widgetarium/layout";
-import { FrameSidesQuery, PeekFrameSideCommand, ToggleFrameSideCommand } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout";
 import { SIDE_KEYS } from "../../lib/side-keys.js";
 
 export interface FrameSideToggleProps {
@@ -29,9 +29,9 @@ const LABEL: Readonly<Record<FrameSide, SideLabels>> = {
 };
 
 export function FrameSideToggle({ side }: FrameSideToggleProps): ReactElement {
-	const look = useQuery(FrameSidesQuery).data[side];
-	const toggle = useCommand(ToggleFrameSideCommand);
-	const peek = useCommand(PeekFrameSideCommand);
+	const look = useQuery(layout.frameSides.frameSides).data[side];
+	const toggle = useCommand(layout.frameSides.toggleFrameSide);
+	const peek = useCommand(layout.frameSides.peekFrameSide);
 	const hover = useHoverIntent(() => void peek.run({ side }));
 	const floating = useRef<HTMLDivElement>(null);
 	useWearsInkUnder(floating);

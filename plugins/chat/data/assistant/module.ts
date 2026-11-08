@@ -6,10 +6,10 @@ import { handled } from "./generated/handled.js";
 
 export type { AssistantHosts } from "./gateways/assistant-parts/assistant-parts.gateway.js";
 
-export const AssistantModule = module("assistant")
+export const assistant = module()
 	.on(Anywhere)
 	.config<AssistantHosts>()
 	.guard(PublicGuard)
 	.guard(AssistantCallersGuard)
 	.provide((facts) => chatPartsOn(facts))
-	.handles(...handled);
+	.handles(handled);

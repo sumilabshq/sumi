@@ -1,5 +1,5 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { CloseTabCommand, OpenChatCommand, ShowTabCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { SidebarTab } from "@widgetarium/app-host";
 
 export interface RowPick {
@@ -8,9 +8,9 @@ export interface RowPick {
 }
 
 export function useRowPick({ tab, children }: SidebarTab): RowPick {
-	const showTab = useCommand(ShowTabCommand);
-	const openChat = useCommand(OpenChatCommand);
-	const closeTab = useCommand(CloseTabCommand);
+	const showTab = useCommand(appHost.tabs.showTab);
+	const openChat = useCommand(appHost.chatOpening.openChat);
+	const closeTab = useCommand(appHost.tabActions.closeTab);
 	const close = (): void => void closeTab.run({ id: tab.id });
 
 	if (children === undefined) {

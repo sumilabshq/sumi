@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { SearchTasksQuery } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import { useQuery } from "@widgetarium/data-framework";
 import { useOpenTask } from "../../lib/use-open-task.js";
 import { TaskRow } from "./task-row.js";
@@ -12,7 +12,7 @@ export interface SearchHitsProps {
 const NOTHING_FOUND = "No task matches “{search}”.";
 
 export function SearchHits({ search }: SearchHitsProps): ReactElement {
-	const hits = useQuery(SearchTasksQuery, {
+	const hits = useQuery(tasks.board.searchTasks, {
 		query: search,
 		includeClosed: true,
 	}).data;

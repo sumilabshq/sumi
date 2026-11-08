@@ -5,7 +5,7 @@ import { useMenuOpening } from "../../lib/menu-spot.js";
 import { EFFORT_FACES, MODE_FACES } from "../../lib/strip-faces.js";
 import { OptionMenu } from "./option-menu.js";
 import { StripButton } from "./strip-button.js";
-import { ChooseClaudeOptionCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import type { ClaudeOptions } from "@widgetarium/assistant";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
@@ -20,7 +20,7 @@ const EFFORT = "Effort";
 
 export function ClaudeOptionButtons({ claude, usage = null, modelButton }: ClaudeOptionButtonsProps): ReactElement {
 	const chat = useChatKey();
-	const choose = useCommand(ChooseClaudeOptionCommand);
+	const choose = useCommand(assistant.agent.chooseClaudeOption);
 	const mode = useMenuOpening();
 	const effort = useMenuOpening();
 	return (

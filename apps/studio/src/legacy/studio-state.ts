@@ -1,10 +1,10 @@
-import { ShowViewCommand, ShownViewQuery } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import { STUDIO_OPENED_ON } from "@widgetarium/core/engine/studio-state-port.js";
 import type { StudioMoment, StudioState, StudioView } from "@widgetarium/core/engine/studio-state-port.js";
 import type { Runtime } from "@widgetarium/data-framework";
 import { createListeners } from "./listeners.js";
 
-// TRADE-OFF: the core StudioState port still carries the shown view, so it reads and writes app-host's ShownViewQuery; views should read the query themselves
+// TRADE-OFF: the core StudioState port still carries the shown view, so it reads and writes app-host's appHost.shownView.shownView; views should read the query themselves
 export function createStudioState(studioApp: Runtime): StudioState {
 	const listeners = createListeners();
 	let moment = STUDIO_OPENED_ON;
@@ -26,7 +26,7 @@ export function createStudioState(studioApp: Runtime): StudioState {
 		now: momentNow,
 		subscribe: (changed) => {
 			const stopPanel = listeners.subscribe(changed);
-			const stopView = studioApp.routes.watch(ShownViewQuery, undefined, changed);
+			const stopView = studioApp.routes.watch(appHost.shownView.shownView, undefined, changed);
 			return () => {
 				stopPanel();
 				stopView();
@@ -51,12 +51,12 @@ export function createStudioState(studioApp: Runtime): StudioState {
 }
 
 function shownViewOf(studioApp: Runtime): StudioView {
-	const read = studioApp.routes.readNow(ShownViewQuery);
-	return read === null ? STUDIO_OPENED_ON.view : ShownViewQuery.outputSchema.parse(read.output);
+	const read = studioApp.routes.readNow(appHost.shownView.shownView);
+	return read === null ? STUDIO_OPENED_ON.view : appHost.shownView.shownView.outputSchema.parse(read.output);
 }
 
 async function showView(studioApp: Runtime, view: StudioView): Promise<void> {
-	const answer = await studioApp.send(ShowViewCommand, { view });
+	const answer = await studioApp.send(appHost.shownView.showView, { view });
 
 	if (!answer.ok) {
 		console.error(`[widgetarium] the studio could not show ${view}: ${answer.reason}`);

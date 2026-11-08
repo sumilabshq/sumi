@@ -9,18 +9,9 @@ import {
 } from "../apps/tauri/src/assistant/assistant-bridge.ts";
 import { cssPointOf, dragStepOf, isInside } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
 import type { ChatSpot, WebviewDragSource } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
-import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { assistant as assistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { attachmentFilesIn } from "../plugins/chat/data/assistant/gateways/assistant-parts/port.gateway.ts";
-import {
-	AttachDroppedCommand,
-	AttachFolderCommand,
-	AttachReachQuery,
-	ChooseClaudeOptionCommand,
-	ClaudeOptionsQuery,
-	DraftAttachmentsQuery,
-	FileDragQuery,
-	SendMessageCommand,
-} from "../plugins/chat/data/assistant/index.ts";
+import { assistant as assistantContract } from "../plugins/chat/data/assistant/index.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
@@ -146,7 +137,7 @@ function memoryShelf(): UsageMemory {
 
 function chatOver({ host }: TauriAssistant): Runtime {
 	return runtime()
-		.modules(AssistantModule(host))
+		.modules(assistantModule(host))
 		.start({
 			platform: "tauri",
 			scope: {
@@ -418,19 +409,19 @@ async function folderAndOptionChecks(): Promise<void> {
 	ipc.pickedFolder = "/Users/me/Apps/habits";
 	const shelf = memoryShelf();
 	const chat = chatOver(startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER }, shelf));
-	const reach = await chat.send(AttachReachQuery, { chat: null });
+	const reach = await chat.send(assistantContract.composer.attachReach, { chat: null });
 	check("Tauri offers folders to attach", reach.ok ? reach.output.canAttachFolders : null, true);
-	await chat.send(AttachFolderCommand, { chat: null });
+	await chat.send(assistantContract.composer.attachFolder, { chat: null });
 	check("the folder is picked by Rust's dialog, not named by the page", callsNamed(ipc, "pick_folder").length, 1);
-	const drafts = await chat.send(DraftAttachmentsQuery, { chat: null });
+	const drafts = await chat.send(assistantContract.composer.draftAttachments, { chat: null });
 	check(
 		"the picked folder shows as a folder card with its path from home",
 		drafts.ok ? drafts.output.map(({ kind, name, where }) => [kind, name, where]) : null,
 		[["folder", "habits", "~/Apps/habits"]],
 	);
-	await chat.send(ChooseClaudeOptionCommand, { chat: null, option: { model: "sonnet" } });
-	await chat.send(ChooseClaudeOptionCommand, { chat: null, option: { effort: "xhigh" } });
-	await chat.send(SendMessageCommand, { chat: null, said: "Match its style" });
+	await chat.send(assistantContract.agent.chooseClaudeOption, { chat: null, option: { model: "sonnet" } });
+	await chat.send(assistantContract.agent.chooseClaudeOption, { chat: null, option: { effort: "xhigh" } });
+	await chat.send(assistantContract.composer.sendMessage, { chat: null, said: "Match its style" });
 	await flush();
 	const started = callsNamed(ipc, "start_turn").at(-1)?.args;
 	const startedArgs = typeof started === "object" && started !== null ? started : {};
@@ -458,7 +449,7 @@ async function folderAndOptionChecks(): Promise<void> {
 			},
 		},
 	]);
-	const options = await chat.send(ClaudeOptionsQuery, { chat: null });
+	const options = await chat.send(assistantContract.agent.claudeOptions, { chat: null });
 	check("the plan usage Claude Code reports with a turn reaches the strip", options.ok ? options.output?.usage : null, {
 		fiveHour: { used: 0.38, resetsAt: 1792326000000 },
 		week: { used: 0.12, resetsAt: 1792731600000 },
@@ -609,7 +600,7 @@ async function fileDropChecks(): Promise<void> {
 	const chat = chatOver(assistant);
 	const isOver = async (): Promise<unknown> => {
 		await flush();
-		const drag = await chat.send(FileDragQuery, { chat: null });
+		const drag = await chat.send(assistantContract.composer.fileDrag, { chat: null });
 		return drag.ok ? drag.output.isOver : null;
 	};
 	await flush();
@@ -634,18 +625,18 @@ async function fileDropChecks(): Promise<void> {
 	});
 	await flush();
 	await flush();
-	const drag = await chat.send(FileDragQuery, { chat: null });
+	const drag = await chat.send(assistantContract.composer.fileDrag, { chat: null });
 	const dropped = drag.ok ? drag.output.dropped : null;
 	check(
 		"the drop hides the zone and waits to be attached",
 		[drag.ok && drag.output.isOver, typeof dropped],
 		[false, "string"],
 	);
-	await chat.send(AttachDroppedCommand, { chat: null, id: dropped ?? "" });
+	await chat.send(assistantContract.composer.attachDropped, { chat: null, id: dropped ?? "" });
 	check("the dropped file's bytes are read by its path", callsNamed(ipc, "read_dropped")[0]?.args, {
 		path: "/Users/me/notes.md",
 	});
-	const drafts = await chat.send(DraftAttachmentsQuery, { chat: null });
+	const drafts = await chat.send(assistantContract.composer.draftAttachments, { chat: null });
 	check(
 		"the drop attaches the folder and the file",
 		drafts.ok ? drafts.output.map(({ kind, name }) => [kind, name]) : null,
@@ -654,8 +645,8 @@ async function fileDropChecks(): Promise<void> {
 			["text", "notes.md"],
 		],
 	);
-	await chat.send(AttachDroppedCommand, { chat: null, id: dropped ?? "" });
-	const again = await chat.send(DraftAttachmentsQuery, { chat: null });
+	await chat.send(assistantContract.composer.attachDropped, { chat: null, id: dropped ?? "" });
+	const again = await chat.send(assistantContract.composer.draftAttachments, { chat: null });
 	check("one drop attaches once", again.ok ? again.output.length : null, 2);
 	chat.stop();
 	check("stopping the chat stops listening", drags.unlistened, 1);

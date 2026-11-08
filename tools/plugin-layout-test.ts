@@ -9,9 +9,11 @@ type Files = Readonly<Record<string, string>>;
 const GOOD: Files = {
 	"package.json": '{ "widgetarium": { "level": "plugin" } }',
 	"src/plugin.ts":
-		'import { plugin } from "x";\nimport { NotesSlot } from "./slots.js";\nexport const NotesPlugin = plugin("notes").declare(NotesSlot);\n',
-	"src/slots.ts": 'import { slot } from "x";\nexport const NotesSlot = slot("notes").item(schema).list();\n',
-	"src/index.ts": 'export * from "./slots.js";\nexport * from "./plugin.js";\n',
+		'import { plugin } from "x";\nimport { pinned } from "./slots.js";\nexport const notes = plugin().declare(pinned);\n',
+	"src/slots.ts": 'import { slot } from "x";\nexport const pinned = slot().item(schema).list();\n',
+	"src/generated/plugin.ts":
+		'import { namedPlugin, namedSlot } from "x";\nimport { notes as definition } from "../plugin.js";\nimport * as slots from "../slots.js";\n\nexport const notes = namedPlugin("notes", definition, { pinned: namedSlot("pinned", slots.pinned) });\n',
+	"src/index.ts": 'export * from "./generated/plugin.js";\n',
 	"data/notes/package.json": '{ "widgetarium": { "level": "domain" } }',
 	"data/notes/module.ts": "export const NotesModule = 1;\n",
 	"src/features/list/ui/note-list/note-list.tsx":
@@ -47,8 +49,8 @@ check(
 	"a plugin with no slots and no modules needs neither slots.ts nor data/",
 	refusalsOf({
 		"package.json": "{}",
-		"src/plugin.ts": 'import { plugin } from "x";\nexport const NotesPlugin = plugin("notes");\n',
-		"src/index.ts": 'export * from "./plugin.js";\n',
+		"src/plugin.ts": 'import { plugin } from "x";\nexport const notes = plugin();\n',
+		"src/index.ts": 'export * from "./generated/plugin.js";\n',
 	}),
 	[],
 );
@@ -64,14 +66,13 @@ check(
 	"a slot declared outside slots.ts is refused",
 	refusalsOf({
 		...GOOD,
-		"src/features/list/lib/extra.ts":
-			'import { slot } from "x";\nexport const ExtraSlot = slot("extra").item(schema);\n',
+		"src/features/list/lib/extra.ts": 'import { slot } from "x";\nexport const extra = slot().item(schema);\n',
 	}),
 	["plugins/notes/src/features/list/lib/extra.ts: slot(...) outside src/slots.ts"],
 );
 check(
 	"an index that does more than re-export is refused",
-	refusalsOf({ ...GOOD, "src/index.ts": 'export * from "./plugin.js";\nexport const Extra = 1;\n' }),
+	refusalsOf({ ...GOOD, "src/index.ts": 'export * from "./generated/plugin.js";\nexport const Extra = 1;\n' }),
 	["plugins/notes/src/index.ts:2: ExportNamedDeclaration; the entry only re-exports"],
 );
 check(
@@ -88,6 +89,11 @@ check(
 	],
 );
 
+check(
+	"anything in src/generated/ but the generated plugin.ts is refused",
+	refusalsOf({ ...GOOD, "src/generated/extra.ts": "export const extra = 1;\n" }),
+	["plugins/notes/src/generated/extra.ts: src/generated/ holds only what widgetarium generate writes, plugin.ts"],
+);
 check(
 	"a loose file at the top of src is refused",
 	refusalsOf({ ...GOOD, "src/helper.ts": "export const helper = 1;\n" }),
@@ -123,11 +129,9 @@ check(
 	refusalsOf({ ...GOOD, "src/features/list/ui/note-list/use-rows.ts": "export const useRows = 1;\n" }),
 	["plugins/notes/src/features/list/ui/note-list/use-rows.ts: a block folder holds only its .tsx and the .css it uses"],
 );
-check(
-	"a .tsx in lib/ is refused",
-	refusalsOf({ ...GOOD, "src/shared/lib/row.tsx": "export const Row = 1;\n" }),
-	["plugins/notes/src/shared/lib/row.tsx: lib/ holds only .ts files, no folder, no .tsx, no .css"],
-);
+check("a .tsx in lib/ is refused", refusalsOf({ ...GOOD, "src/shared/lib/row.tsx": "export const Row = 1;\n" }), [
+	"plugins/notes/src/shared/lib/row.tsx: lib/ holds only .ts files, no folder, no .tsx, no .css",
+]);
 check(
 	"a folder in lib/ is refused",
 	refusalsOf({ ...GOOD, "src/features/list/lib/scene/paths.ts": "export const paths = 1;\n" }),

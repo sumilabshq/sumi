@@ -1,12 +1,27 @@
 import { PerCall } from "@widgetarium/data-framework";
 import { command } from "#module";
 import { searchAddressOf } from "../../shared/lib/search-address.js";
-import { CapturePageSchema, InkAddressSchema, OpenedPageSchema, PageContentSchema, ReadPageSchema, PageShotSchema } from "../../shared/schema/page-read.schema.js";
+import {
+	CapturePageSchema,
+	InkAddressSchema,
+	OpenedPageSchema,
+	PageContentSchema,
+	ReadPageSchema,
+	PageShotSchema,
+} from "../../shared/schema/page-read.schema.js";
 import { SearchWebSchema } from "../../shared/schema/search-web.schema.js";
-import { arrivalAllowed, changeActivity, fadeReading, inspected, navigationAllowed, readAllowed, stillAllowed } from "./lib/ink-gate.js";
+import {
+	arrivalAllowed,
+	changeActivity,
+	fadeReading,
+	inspected,
+	navigationAllowed,
+	readAllowed,
+	stillAllowed,
+} from "./lib/ink-gate.js";
 import { refuseReportedRead } from "./lib/read-refusals.js";
 
-export const ReadPageContentCommand = command("read-page-content")
+export const readPageContent = command()
 	.public()
 	.input(ReadPageSchema)
 	.output(PageContentSchema)
@@ -25,7 +40,7 @@ export const ReadPageContentCommand = command("read-page-content")
 		}
 	});
 
-export const CapturePageCommand = command("capture-page")
+export const capturePage = command()
 	.public()
 	.input(CapturePageSchema)
 	.output(PageShotSchema)
@@ -44,7 +59,7 @@ export const CapturePageCommand = command("capture-page")
 		}
 	});
 
-export const InkOpenAddressCommand = command("ink-open-address")
+export const inkOpenAddress = command()
 	.public()
 	.input(InkAddressSchema)
 	.output(OpenedPageSchema)
@@ -67,7 +82,7 @@ export const InkOpenAddressCommand = command("ink-open-address")
 		}
 	});
 
-export const SearchWebCommand = command("search-web")
+export const searchWeb = command()
 	.public()
 	.input(SearchWebSchema)
 	.idempotencyKey(PerCall)

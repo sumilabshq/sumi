@@ -1,6 +1,6 @@
 import { Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
+import { placedTabsChanged } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, moving } from "../../shared/lib/settling/settling.js";
 import { AskedLinkSchema } from "../../shared/schema/tabs.schema.js";
@@ -28,7 +28,7 @@ import {
 	recordTurnPlan,
 } from "./lib/fact-plans.js";
 
-export const KeepChatTabsCommand = command("keep-chat-tabs")
+export const keepChatTabs = command()
 	.public()
 	.input(KeepChatTabsAskSchema)
 	.idempotencyKey(Repeatable)
@@ -36,7 +36,7 @@ export const KeepChatTabsCommand = command("keep-chat-tabs")
 		answered(await tabs.movePlacedTabs(moving(null, placedApps.placedApps(), keepChatTabsPlan(chats))));
 	});
 
-export const RecordTabTurnCommand = command("record-tab-turn")
+export const recordTabTurn = command()
 	.public()
 	.input(TabTurnSchema)
 	.output(TabTurnMarksSchema)
@@ -51,7 +51,7 @@ export const RecordTabTurnCommand = command("record-tab-turn")
 		return marks;
 	});
 
-export const MarkTabSeenCommand = command("mark-tab-seen")
+export const markTabSeen = command()
 	.public()
 	.input(SeenTabSchema)
 	.idempotencyKey(Repeatable)
@@ -59,7 +59,7 @@ export const MarkTabSeenCommand = command("mark-tab-seen")
 		answered(await tabs.movePlacedTabs(moving(null, placedApps.placedApps(), markSeenPlan(id))));
 	});
 
-export const ForgetRunningTurnsCommand = command("forget-running-turns")
+export const forgetRunningTurns = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle(async (_input, { tabs, placedApps }) => {
@@ -67,10 +67,10 @@ export const ForgetRunningTurnsCommand = command("forget-running-turns")
 	});
 
 const APP_CALLABLE: ReadonlySet<string> = new Set([
-	"places/open-tab",
-	"places/record-app-address",
-	"places/app-tab",
-	"places/open-link",
+	"places.tab-opening.open-tab",
+	"places.tab-facts.record-app-address",
+	"places.tab-facts.app-tab",
+	"places.tab-facts.open-link",
 ]);
 const NOT_FOR_APPS = "{request} is not open to apps; an app may call {allowed}";
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
@@ -103,7 +103,7 @@ export const OwnsLinkingTabGuard = guard<{ readonly from: string }>()
 		await denyUnlessAppHolds(tabs, input.from, context.user.id);
 	});
 
-export const OpenLinkCommand = command("open-link")
+export const openLink = command()
 	.public()
 	.input(LinkAskSchema)
 	.output(LinkFollowedSchema)
@@ -137,7 +137,7 @@ export const OpenLinkCommand = command("open-link")
 		return { kind: "asked" as const };
 	});
 
-export const AskedLinksQuery = query("asked-links")
+export const askedLinks = query()
 	.public()
 	.input(AskedLinksAskSchema)
 	.output(AskedLinksSchema)
@@ -148,7 +148,7 @@ export const AskedLinksQuery = query("asked-links")
 		};
 	});
 
-export const TakeAskedLinkCommand = command("take-asked-link")
+export const takeAskedLink = command()
 	.public()
 	.input(TakeAskedLinkSchema)
 	.output(AskedLinkSchema)
@@ -158,11 +158,11 @@ export const TakeAskedLinkCommand = command("take-asked-link")
 		return typeof taken === "string" ? refuse(taken) : taken;
 	});
 
-export const RereadAskedLinksSubscriber = subscriber(PlacedTabsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(AskedLinksQuery);
+export const rereadAskedLinks = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
+	invalidate(askedLinks);
 });
 
-export const AppTabQuery = query("app-tab")
+export const appTab = query()
 	.public()
 	.input(OwnAppTabAskSchema)
 	.output(OwnAppTabSchema)
@@ -173,11 +173,11 @@ export const AppTabQuery = query("app-tab")
 		return tab === undefined ? refuse(NO_TAB.replace("{id}", id)) : ownAppTabOf(placedApps.placedApps(), tab);
 	});
 
-export const RereadAppTabSubscriber = subscriber(PlacedTabsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(AppTabQuery);
+export const rereadAppTab = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
+	invalidate(appTab);
 });
 
-export const RecordAppAddressCommand = command("record-app-address")
+export const recordAppAddress = command()
 	.public()
 	.input(AppAddressSchema)
 	.idempotencyKey(Repeatable)

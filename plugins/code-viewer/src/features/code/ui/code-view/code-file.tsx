@@ -1,6 +1,6 @@
 import { createElement as h, useMemo } from "react";
 import type { ReactElement } from "react";
-import { ReadFileQuery } from "@sumi/contract";
+import { fileSystem } from "@sumi/contract";
 import { FileNote, SourcePage, useFileSwitches } from "@sumi/files-plugin";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { shownCodeOf } from "../../lib/shown-code.js";
@@ -10,7 +10,7 @@ export interface CodeFileProps {
 }
 
 export function CodeFile({ path }: CodeFileProps): ReactElement | null {
-	const read = useOptionalQuery(ReadFileQuery, { path });
+	const read = useOptionalQuery(fileSystem.files.readFile, { path });
 	const switches = useFileSwitches();
 	const showsSecrets = switches.isOn("values");
 	const shown = useMemo(

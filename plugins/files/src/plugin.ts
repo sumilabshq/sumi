@@ -1,22 +1,22 @@
-import { AppsPlugin, AppsSlot } from "@sumi/apps-plugin";
-import { FilePageModule } from "@sumi/file-page/module";
-import { SumiHostPlugin } from "@sumi/sumi-host-plugin";
+import { apps } from "@sumi/apps-plugin";
+import { filePage } from "@sumi/file-page/module";
+import { sumiHost } from "@sumi/sumi-host-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
 import { fileNameOf } from "./features/file-page/lib/file-name.js";
-import { FileViewersSlot } from "./slots.js";
+import { fileViewers } from "./slots.js";
 
-export const FilesPlugin = plugin("files")
-	.require(SumiHostPlugin, AppsPlugin)
-	.declare(FileViewersSlot)
+export const files = plugin()
+	.require(sumiHost, apps)
+	.declare(fileViewers)
 	.fill(
-		AppsSlot(FileViewersSlot, (viewers) =>
+		apps.apps.addFrom(fileViewers, (viewers) =>
 			viewers.map(({ id, title, icon, view, actions }) => ({
 				id,
 				title,
 				icon,
 				view,
 				actions,
-				tabModules: ({ tabId }) => [FilePageModule({ tabId })],
+				tabModules: ({ tabId }) => [filePage({ tabId })],
 				titleOf: fileNameOf,
 			})),
 		),

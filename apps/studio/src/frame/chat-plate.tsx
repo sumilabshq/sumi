@@ -1,9 +1,9 @@
 import { createElement as h, useContext, useEffect } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { NameChatPaneCommand } from "@sumi/chat-tabs";
-import { PaneTreeQuery } from "@widgetarium/layout";
-import { ChatToOpenQuery } from "@widgetarium/workspaces";
+import { chatTabs } from "@sumi/chat-tabs";
+import { layout } from "@widgetarium/layout";
+import { workspaces } from "@widgetarium/workspaces";
 import { PaneCloseContext } from "../features/panes/lib/pane-close-context.js";
 import { Plate } from "../features/plate/ui/plate/plate.js";
 import { ChatPage } from "./chat-page.js";
@@ -27,9 +27,9 @@ export function ChatPlate({ chatId, crumb, more }: ChatPlateProps): ReactElement
 
 function useNamesUnnamedPane(chatId: string | null): void {
 	const pane = useContext(PaneCloseContext);
-	const isBoardRead = useQuery(PaneTreeQuery).data.isLoaded;
-	const areChatsRead = useQuery(ChatToOpenQuery).data.isRead;
-	const nameChatPane = useCommand(NameChatPaneCommand);
+	const isBoardRead = useQuery(layout.panes.paneTree).data.isLoaded;
+	const areChatsRead = useQuery(workspaces.chats.chatToOpen).data.isRead;
+	const nameChatPane = useCommand(chatTabs.chatOpening.nameChatPane);
 	const paneId = pane?.paneId ?? null;
 	useEffect(() => {
 		if (chatId !== null || paneId === null || !isBoardRead || !areChatsRead) {

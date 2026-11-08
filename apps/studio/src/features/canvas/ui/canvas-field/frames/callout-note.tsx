@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { CALLOUT } from "@widgetarium/behaviors";
 import type { NoteSide, PlacedNote } from "@widgetarium/behaviors";
-import { FocusWidgetCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import type { CalloutShown } from "@widgetarium/canvas";
 
 export interface CalloutNoteProps {
@@ -30,7 +30,7 @@ const WIDGET_BUTTON =
 	"cv:mt-1 cv:cursor-pointer cv:self-start cv:rounded-full cv:border-0 cv:bg-page cv:px-2.5 cv:py-1 cv:text-base cv:font-semibold cv:text-ink cv:shadow-none cv:transition-colors cv:hover:bg-fill cv:focus-visible:bg-fill cv:focus-visible:outline-none";
 
 export function CalloutNote({ callout, at, place, side }: CalloutNoteProps): ReactElement | null {
-	const focus = useCommand(FocusWidgetCommand);
+	const focus = useCommand(canvas.pages.focusWidget);
 	const isHere = place ? place.side === side : side === "right";
 	if (!isHere) return null;
 	return (

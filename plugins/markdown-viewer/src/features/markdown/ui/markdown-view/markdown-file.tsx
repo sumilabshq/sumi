@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { ReadFileQuery } from "@sumi/contract";
+import { fileSystem } from "@sumi/contract";
 import { FileNote, SourcePage, useFileSwitches } from "@sumi/files-plugin";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { MARKDOWN_PAGE_CLASS } from "../../lib/markdown-page-sheet.js";
@@ -13,7 +13,7 @@ export interface MarkdownFileProps {
 const MARKDOWN = "md";
 
 export function MarkdownFile({ path }: MarkdownFileProps): ReactElement {
-	const read = useOptionalQuery(ReadFileQuery, { path });
+	const read = useOptionalQuery(fileSystem.files.readFile, { path });
 	const showsSource = useFileSwitches().isOn("source");
 	const holder = useRendersMarkdownFile(showsSource ? null : read.data);
 

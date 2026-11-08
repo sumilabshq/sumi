@@ -11,7 +11,7 @@ import { PlateMore } from "../features/plate/ui/plate-header/plate-more.js";
 import { PlateShown } from "../features/plate/ui/plate-header/plate-shown.js";
 import type { CrumbWords } from "../features/plate/ui/plate-header/plate-crumb.js";
 import type { PlateMoreItem } from "../features/plate/ui/plate-header/plate-more.js";
-import { WorkspacesQuery } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
 import { AppPage } from "../features/app-frame/ui/app-page/app-page.js";
@@ -51,7 +51,7 @@ export function WorkspaceAppPlate({
 	browser,
 	backToView,
 }: WorkspaceAppPlateProps): ReactElement {
-	const appName = useQuery(WorkspacesQuery).data.current.name;
+	const appName = useQuery(workspaces.workspaces.workspaces).data.current.name;
 	const appTitleOf = useAppTitleOf();
 	const shownApp = view === "app" ? null : view;
 	const moreItems = useMemo(() => moreItemsOf(view, appName, backToView), [view, appName, backToView]);

@@ -1,45 +1,33 @@
 import { z } from "zod";
 import { Repeatable } from "@widgetarium/data-framework";
 import { command } from "#module";
-import {
-	CloseGroupCommand as PlacesCloseGroupCommand,
-	CloseOtherTabsCommand as PlacesCloseOtherTabsCommand,
-	CloseShownTabCommand as PlacesCloseShownTabCommand,
-	CloseTabCommand as PlacesCloseTabCommand,
-	PinTabCommand as PlacesPinTabCommand,
-	DuplicateTabCommand as PlacesDuplicateTabCommand,
-	OpenTabBelowCommand as PlacesOpenTabBelowCommand,
-	ReloadTabCommand as PlacesReloadTabCommand,
-	RenameTabCommand as PlacesRenameTabCommand,
-	ReopenClosedTabCommand as PlacesReopenClosedTabCommand,
-	TearOffTabCommand as PlacesTearOffTabCommand,
-} from "@widgetarium/places";
-import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { places } from "@widgetarium/places";
+import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { OpenedTabSchema, TabToOpenSchema } from "../../shared/schema/app-tab.schema.js";
 import { TabPinSchema } from "../../shared/schema/tab-mark.schema.js";
 import { openTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 
-export const OpenTabCommand = command("open-tab")
+export const openTab = command()
 	.public()
 	.input(TabToOpenSchema)
 	.output(OpenedTabSchema)
 	.idempotencyKey(Repeatable)
 	.handle((asked, { send, emit, ...injects }) =>
-		openTabSettled({ injects, send, told: () => emit(TabsSettledEvent) }, asked),
+		openTabSettled({ injects, send, told: () => emit(tabsSettled) }, asked),
 	);
 
-export const OpenTabBelowCommand = command("open-tab-below")
+export const openTabBelow = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesOpenTabBelowCommand, { at, id }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabOpening.openTabBelow, { at, id }),
 		);
 	});
 
-export const DuplicateTabCommand = command("duplicate-tab")
+export const duplicateTab = command()
 	.public()
 	.input(
 		z.object({
@@ -52,94 +40,94 @@ export const DuplicateTabCommand = command("duplicate-tab")
 	.output(OpenedTabSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async (asked, { send, emit, ...injects }) => {
-		const opened = await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesDuplicateTabCommand, { at, ...asked }),
+		const opened = await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabOpening.duplicateTab, { at, ...asked }),
 		);
 		return { id: opened.id };
 	});
 
-export const ReloadTabCommand = command("reload-tab")
+export const reloadTab = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesReloadTabCommand, { at, id }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabShowing.reloadTab, { at, id }),
 		);
 	});
 
-export const RenameTabCommand = command("rename-tab")
+export const renameTab = command()
 	.public()
 	.input(z.object({ id: z.string(), label: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, label }, { send, emit, studioWindow }) => {
-		await send(PlacesRenameTabCommand, { window: studioWindow.windowLabel(), id, label });
-		emit(TabsSettledEvent);
+		await send(places.tabPlacing.renameTab, { window: studioWindow.windowLabel(), id, label });
+		emit(tabsSettled);
 	});
 
-export const CloseOtherTabsCommand = command("close-other-tabs")
+export const closeOtherTabs = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesCloseOtherTabsCommand, { at, id }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabClosing.closeOtherTabs, { at, id }),
 		);
 	});
 
-export const ReopenClosedTabCommand = command("reopen-closed-tab")
+export const reopenClosedTab = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle(async (_input, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesReopenClosedTabCommand, { at, tabId: null }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabOpening.reopenClosedTab, { at, tabId: null }),
 		);
 	});
 
-export const CloseTabCommand = command("close-tab")
+export const closeTab = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesCloseTabCommand, { at, id }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabClosing.closeTab, { at, id }),
 		);
 	});
 
-export const CloseShownTabCommand = command("close-shown-tab")
+export const closeShownTab = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle(async (_input, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesCloseShownTabCommand, { at }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabClosing.closeShownTab, { at }),
 		);
 	});
 
-export const TearOffTabCommand = command("tear-off-tab")
+export const tearOffTab = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesTearOffTabCommand, { at, id }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabShowing.tearOffTab, { at, id }),
 		);
 	});
 
-export const CloseGroupCommand = command("close-group")
+export const closeGroup = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesCloseGroupCommand, { at, id }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.tabClosing.closeGroup, { at, id }),
 		);
 	});
 
-export const PinTabCommand = command("pin-tab")
+export const pinTab = command()
 	.public()
 	.input(TabPinSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, isPinned }, { send, emit, studioWindow }) => {
-		await send(PlacesPinTabCommand, { window: studioWindow.windowLabel(), id, isPinned });
-		emit(TabsSettledEvent);
+		await send(places.tabPlacing.pinTab, { window: studioWindow.windowLabel(), id, isPinned });
+		emit(tabsSettled);
 	});

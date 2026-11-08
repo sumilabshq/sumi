@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
-import { MenuDoorsQuery, ToggleCommandMenuCommand } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu";
 import { OPENS_LAYER_MARK } from "@sumi/sumi-host-plugin";
 
 export interface SearchButtonProps {
@@ -14,8 +14,8 @@ const SEARCH = "Search";
 const SEARCH_DOOR = "anywhere";
 
 export function SearchButton({ className, iconPx }: SearchButtonProps): ReactElement {
-	const openMenu = useCommand(ToggleCommandMenuCommand);
-	const keys = useQuery(MenuDoorsQuery).data.doors.find(({ id }) => id === SEARCH_DOOR)?.keys ?? "";
+	const openMenu = useCommand(commandMenu.opening.toggleCommandMenu);
+	const keys = useQuery(commandMenu.opening.menuDoors).data.doors.find(({ id }) => id === SEARCH_DOOR)?.keys ?? "";
 	return (
 		<IconButton
 			variant="ghost"

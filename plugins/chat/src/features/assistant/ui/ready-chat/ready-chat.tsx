@@ -21,7 +21,7 @@ import { ChatTurns } from "./chat-turns.js";
 import { QueueZone } from "../queue/queue-zone.js";
 import { useQueueActions } from "../../lib/use-queue-actions.js";
 import { ChatDock } from "./chat-dock.js";
-import { ChatQuery, StopTurnCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 
 export interface ReadyChatProps {
 	readonly setupFailure: string | null;
@@ -34,14 +34,14 @@ export interface ReadyChatProps {
 const TITLE = "Widgetarium AI";
 
 export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyChatProps): ReactElement {
-	const { data: chat } = useQuery(ChatQuery, { chat: chatId ?? null });
+	const { data: chat } = useQuery(assistant.chat.chat, { chat: chatId ?? null });
 	const { session } = chat;
 	const [change, setChange] = useState<AttachedChange | null>(null);
 	const { failure, report } = useFailureLine();
 	const asks = useChatAsks({ report, change, setChange });
 	const queueActions = useQueueActions(report);
 	const editing = chat.queued.find(({ isHeld }) => isHeld) ?? null;
-	const stopTurn = useCommand(StopTurnCommand);
+	const stopTurn = useCommand(assistant.chat.stopTurn);
 	const chatRoot = useRef<HTMLDivElement>(null);
 	const showCard = (key: string): void => scrollToCard(chatRoot.current, key);
 	const typed = useTellsAgentActivity(chat);

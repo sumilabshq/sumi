@@ -1,19 +1,32 @@
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { QuestionsChangedEvent } from "../../gateways/questions/questions.events.js";
+import { questionsChanged } from "../../gateways/questions/questions.events.js";
 import { answersText } from "../../shared/lib/answer-text.js";
-import { answersReadyIn, questionAnswered, questionReopened, questionsSkipped } from "../../shared/lib/question-moves.js";
-import { AnswerQuestionAskSchema, ChangedCountSchema, ChatQuestionsAskSchema, ChatQuestionsSchema, DeliveredSchema, QuestionAskSchema, QuestionsAskSchema } from "../../shared/schema/question.schema.js";
+import {
+	answersReadyIn,
+	questionAnswered,
+	questionReopened,
+	questionsSkipped,
+} from "../../shared/lib/question-moves.js";
+import {
+	AnswerQuestionAskSchema,
+	ChangedCountSchema,
+	ChatQuestionsAskSchema,
+	ChatQuestionsSchema,
+	DeliveredSchema,
+	QuestionAskSchema,
+	QuestionsAskSchema,
+} from "../../shared/schema/question.schema.js";
 import type { ChatQuestions, Question } from "../../shared/schema/question.schema.js";
 
-export const ChatQuestionsQuery = query("chat-questions")
+export const chatQuestions = query()
 	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(ChatQuestionsSchema)
 	.settlesNow()
 	.handle(({ chat }, { questions }) => dockOf(questions.questionsOf(chat)));
 
-export const AnswerQuestionCommand = command("answer-question")
+export const answerQuestion = command()
 	.public()
 	.input(AnswerQuestionAskSchema)
 	.idempotencyKey(Repeatable)
@@ -23,11 +36,11 @@ export const AnswerQuestionCommand = command("answer-question")
 			(held) => questionAnswered(held, ask, Date.now()),
 			`answer ${ask.id}`,
 		);
-		invalidate(ChatQuestionsQuery);
+		invalidate(chatQuestions);
 		return changed.ok ? undefined : refuse(changed.refusal);
 	});
 
-export const SkipQuestionsCommand = command("skip-questions")
+export const skipQuestions = command()
 	.public()
 	.input(QuestionsAskSchema)
 	.output(ChangedCountSchema)
@@ -38,21 +51,21 @@ export const SkipQuestionsCommand = command("skip-questions")
 			(held) => questionsSkipped(held, ask, Date.now()),
 			`skip ${ask.ids.join(", ")}`,
 		);
-		invalidate(ChatQuestionsQuery);
+		invalidate(chatQuestions);
 		return changed.ok ? { changed: ask.ids.length } : refuse(changed.refusal);
 	});
 
-export const ReopenQuestionCommand = command("reopen-question")
+export const reopenQuestion = command()
 	.public()
 	.input(QuestionAskSchema)
 	.idempotencyKey(Repeatable)
 	.handle((ask, { questions, invalidate }) => {
 		const changed = questions.changeQuestions(ask.chat, (held) => questionReopened(held, ask), `undo ${ask.id}`);
-		invalidate(ChatQuestionsQuery);
+		invalidate(chatQuestions);
 		return changed.ok ? undefined : refuse(changed.refusal);
 	});
 
-export const ReadyAnswersQuery = query("ready-answers")
+export const readyAnswers = query()
 	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(DeliveredSchema)
@@ -65,8 +78,8 @@ export const ReadyAnswersQuery = query("ready-answers")
 		};
 	});
 
-export const RereadQuestionsSubscriber = subscriber(QuestionsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(ChatQuestionsQuery);
+export const rereadQuestions = subscriber(questionsChanged).handle((_input, { invalidate }) => {
+	invalidate(chatQuestions);
 });
 
 function dockOf(held: readonly Question[]): ChatQuestions {

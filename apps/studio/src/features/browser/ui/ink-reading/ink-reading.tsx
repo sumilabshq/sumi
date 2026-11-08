@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import type { ReadKind } from "@widgetarium/browser";
-import { InkReadingQuery, StopInkCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 
 const PILL =
 	"cv:absolute cv:bottom-6 cv:left-1/2 cv:z-[2] cv:flex cv:h-12 cv:-translate-x-1/2 cv:items-center cv:gap-3 cv:rounded-full cv:bg-ink cv:ps-5 cv:pe-1 cv:text-sm cv:whitespace-nowrap cv:text-page";
@@ -16,8 +16,8 @@ const DOING: Readonly<Record<ReadKind, string>> = {
 };
 
 export function InkReading(): ReactElement | null {
-	const reading = useQuery(InkReadingQuery).data;
-	const stopInk = useCommand(StopInkCommand);
+	const reading = useQuery(browser.asks.inkReading).data;
+	const stopInk = useCommand(browser.asks.stopInk);
 
 	if (reading === null) {
 		return null;

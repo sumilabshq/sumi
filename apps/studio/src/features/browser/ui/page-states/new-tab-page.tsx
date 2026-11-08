@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import type { RecentSite } from "@widgetarium/browser";
-import { OpenAddressCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { AskInkAction } from "../ask-ink-action/ask-ink-action.js";
 import { NewTabField } from "./new-tab-field.js";
@@ -24,7 +24,7 @@ const RECENT_WORD = "Recent";
 const ASK_TO_FIND = "Ask Sumi to find it";
 
 export function NewTabPage({ tabId, recentSites }: NewTabPageProps): ReactElement {
-	const openAddress = useCommand(OpenAddressCommand);
+	const openAddress = useCommand(browser.tabs.openAddress);
 	const heldTabId = useHeldTab();
 	const open = (address: string): void =>
 		void openAddress.run({

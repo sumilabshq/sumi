@@ -1,8 +1,8 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
-import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
+import { jobsChanged } from "../../gateways/agent-jobs/agent-jobs.events.js";
+import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import type { CanvasField } from "../../shared/schema/canvas-moment.schema.js";
 import { DrawingSchema } from "../../shared/schema/drawing.schema.js";
 import { FieldRegionsSchema } from "../../shared/schema/regions.schema.js";
@@ -16,13 +16,13 @@ import { regionsOf } from "./lib/regions-of.js";
 
 const FIELD_STATE_FIELDS: readonly CanvasField[] = [...PAGE_FIELDS, "mode", "selection", "focusedWidget"];
 
-export const DrawingQuery = query("drawing")
+export const drawing = query()
 	.public()
 	.output(DrawingSchema)
 	.settlesNow()
 	.handle((_input, { widgetDrawing }) => widgetDrawing.drawing());
 
-export const FieldRegionsQuery = query("field-regions")
+export const fieldRegions = query()
 	.public()
 	.output(FieldRegionsSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs, widgetDrawing }) => {
@@ -31,7 +31,7 @@ export const FieldRegionsQuery = query("field-regions")
 		return { regions: regionsOf(now, widgetDrawing.drawing()) };
 	});
 
-export const FieldStateQuery = query("field-state")
+export const fieldState = query()
 	.public()
 	.output(FieldStateSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
@@ -54,7 +54,7 @@ export const FieldStateQuery = query("field-state")
 		};
 	});
 
-export const PickSpotCommand = command("pick-spot")
+export const pickSpot = command()
 	.public()
 	.input(SpotPickSchema)
 	.idempotencyKey(Repeatable)
@@ -68,7 +68,7 @@ export const PickSpotCommand = command("pick-spot")
 		}
 	});
 
-export const ResolveSpotCommand = command("resolve-spot")
+export const resolveSpot = command()
 	.public()
 	.input(SpotFoundSchema)
 	.idempotencyKey(Repeatable)
@@ -92,22 +92,22 @@ export const ResolveSpotCommand = command("resolve-spot")
 		}
 	});
 
-export const RereadFieldSubscriber = subscriber(CanvasMomentChangedEvent).handle(({ fields }, { invalidate }) => {
+export const rereadField = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
 	if (isTouching(fields, PAGE_FIELDS)) {
-		invalidate(FieldRegionsQuery);
+		invalidate(fieldRegions);
 	}
 
 	if (isTouching(fields, FIELD_STATE_FIELDS)) {
-		invalidate(FieldStateQuery);
+		invalidate(fieldState);
 	}
 });
 
-export const RereadFieldForDesignSubscriber = subscriber(DesignChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(FieldRegionsQuery);
-	invalidate(FieldStateQuery);
+export const rereadFieldForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(fieldRegions);
+	invalidate(fieldState);
 });
 
-export const RereadFieldForJobsSubscriber = subscriber(JobsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(FieldRegionsQuery);
-	invalidate(FieldStateQuery);
+export const rereadFieldForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+	invalidate(fieldRegions);
+	invalidate(fieldState);
 });

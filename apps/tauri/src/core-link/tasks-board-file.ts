@@ -1,6 +1,6 @@
 import { runtime } from "@widgetarium/data-framework";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import { FileInfoQuery, FileSystemModule, ReadFileQuery, WriteFileCommand } from "@widgetarium/file-system";
+import { fileSystem } from "@widgetarium/file-system";
 import { APP_CALLER_HEADER } from "@widgetarium/studio";
 import type { BoardFile } from "@widgetarium/tasks/module";
 
@@ -9,7 +9,7 @@ const BOARD_FILE_PATH = "tasks.json";
 
 export function tasksBoardFileOver(core: RemoteTransport): BoardFile {
 	const files = runtime()
-		.imports(FileSystemModule({ over: stampCaller(core, TASKS_APP_ID) }))
+		.imports(fileSystem({ over: stampCaller(core, TASKS_APP_ID) }))
 		.start();
 	return {
 		read: () => readBoardText(files),
@@ -18,7 +18,7 @@ export function tasksBoardFileOver(core: RemoteTransport): BoardFile {
 }
 
 async function writeBoardText(files: Runtime, text: string): Promise<void> {
-	const written = await files.send(WriteFileCommand, {
+	const written = await files.send(fileSystem.files.writeFile, {
 		path: BOARD_FILE_PATH,
 		content: text,
 	});
@@ -29,7 +29,7 @@ async function writeBoardText(files: Runtime, text: string): Promise<void> {
 }
 
 async function readBoardText(files: Runtime): Promise<string | null> {
-	const info = await files.send(FileInfoQuery, { path: BOARD_FILE_PATH });
+	const info = await files.send(fileSystem.files.fileInfo, { path: BOARD_FILE_PATH });
 
 	if (!info.ok) {
 		throw new Error(info.reason);
@@ -39,7 +39,7 @@ async function readBoardText(files: Runtime): Promise<string | null> {
 		return null;
 	}
 
-	const read = await files.send(ReadFileQuery, { path: BOARD_FILE_PATH });
+	const read = await files.send(fileSystem.files.readFile, { path: BOARD_FILE_PATH });
 
 	if (!read.ok) {
 		throw new Error(read.reason);

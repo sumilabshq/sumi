@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { ReadFileQuery } from "@sumi/contract";
+import { fileSystem } from "@sumi/contract";
 import { FileNote, SourcePage, useFileSwitches } from "@sumi/files-plugin";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 
@@ -13,7 +13,7 @@ const HTML = "html";
 
 // TODO: relative images, styles and scripts of the page do not load; srcdoc has no base folder
 export function HtmlFile({ path }: HtmlFileProps): ReactElement | null {
-	const read = useOptionalQuery(ReadFileQuery, { path });
+	const read = useOptionalQuery(fileSystem.files.readFile, { path });
 	const switches = useFileSwitches();
 
 	if (read.failure !== null) {

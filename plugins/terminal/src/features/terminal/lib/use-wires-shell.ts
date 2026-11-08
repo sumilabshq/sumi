@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { RefObject } from "react";
 import type { Terminal } from "@xterm/xterm";
-import { ResizeTerminalCommand, TypeTerminalCommand } from "@sumi/contract";
+import { terminal as terminalContract } from "@sumi/contract";
 import type { Answer, Runtime } from "@widgetarium/data-framework";
 
 // TRADE-OFF: sends each keystroke itself; useCommand shares one key between equal keystrokes in flight
@@ -15,10 +15,14 @@ export function useWiresShell(terminal: RefObject<Terminal | null>, shell: Runti
 		}
 
 		const showRefusalOf = (answer: Answer<unknown>): void => setRefusal(answer.ok ? null : answer.reason);
-		void shell.send(ResizeTerminalCommand, { session, cols: drawn.cols, rows: drawn.rows }).then(showRefusalOf);
-		const typing = drawn.onData((keys) => void shell.send(TypeTerminalCommand, { session, keys }).then(showRefusalOf));
+		void shell
+			.send(terminalContract.lines.resizeTerminal, { session, cols: drawn.cols, rows: drawn.rows })
+			.then(showRefusalOf);
+		const typing = drawn.onData(
+			(keys) => void shell.send(terminalContract.lines.typeTerminal, { session, keys }).then(showRefusalOf),
+		);
 		const resizing = drawn.onResize(
-			(size) => void shell.send(ResizeTerminalCommand, { session, ...size }).then(showRefusalOf),
+			(size) => void shell.send(terminalContract.lines.resizeTerminal, { session, ...size }).then(showRefusalOf),
 		);
 		return () => {
 			typing.dispose();

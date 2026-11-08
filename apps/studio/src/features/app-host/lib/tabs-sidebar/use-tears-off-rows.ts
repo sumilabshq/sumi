@@ -1,9 +1,9 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { TearOffTabCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { TabRef } from "../tab-drag/tab-ref.js";
 
 export function useTearsOffRows(): (row: TabRef) => void {
-	const tearOffTab = useCommand(TearOffTabCommand);
+	const tearOffTab = useCommand(appHost.tabActions.tearOffTab);
 	const tearOff = async ({ id, isChat }: TabRef): Promise<void> => {
 		const answer = await tearOffTab.run({ id });
 

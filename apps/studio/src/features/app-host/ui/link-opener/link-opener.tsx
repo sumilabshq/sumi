@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
-import { OpenLinkCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import { useCommand } from "@widgetarium/data-framework";
 import { PRESSED_EVENTS, linkPressOf } from "../../lib/link-presses/link-press.js";
 
@@ -11,7 +11,7 @@ export interface LinkOpenerProps {
 const CAPTURE = { capture: true } as const;
 
 export function LinkOpener({ frame }: LinkOpenerProps): null {
-	const { run: openLink } = useCommand(OpenLinkCommand);
+	const { run: openLink } = useCommand(appHost.links.openLink);
 
 	useEffect(() => {
 		const holder = frame.current;

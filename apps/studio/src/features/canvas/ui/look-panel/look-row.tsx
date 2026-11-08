@@ -2,9 +2,9 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { NativeSelect, NativeSelectOption, Segmented } from "@widgetarium/kit";
 import type { OutputOf } from "@widgetarium/data-framework";
-import type { LookPanelQuery } from "@widgetarium/canvas";
+import type { canvas } from "@widgetarium/canvas";
 
-type LookRowShown = Extract<OutputOf<typeof LookPanelQuery>, { kind: "look" }>["rows"][number];
+type LookRowShown = Extract<OutputOf<typeof canvas.look.lookPanel>, { kind: "look" }>["rows"][number];
 
 export interface LookRowProps {
 	readonly row: LookRowShown;

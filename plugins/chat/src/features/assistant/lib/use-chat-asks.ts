@@ -1,7 +1,7 @@
 import { useCommand } from "@widgetarium/data-framework";
 import type { AttachedChange, CardAsks } from "./chat-cards-slot.js";
 import type { Report } from "../../../shared/lib/failure-line.js";
-import { SendMessageCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { answerSettled } from "../../../shared/lib/answer-settled.js";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
@@ -15,7 +15,7 @@ const NOT_SENT = "the message could not be sent";
 
 export function useChatAsks({ report, change, setChange }: ChangeHeld): CardAsks {
 	const chat = useChatKey();
-	const sendMessage = useCommand(SendMessageCommand);
+	const sendMessage = useCommand(assistant.composer.sendMessage);
 	const keptUnless = (isDone: boolean): void => {
 		if (!isDone) setChange((held) => held ?? change);
 	};

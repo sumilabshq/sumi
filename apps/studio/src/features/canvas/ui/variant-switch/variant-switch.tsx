@@ -1,16 +1,15 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { VariantsQuery } from "@widgetarium/canvas";
-import { PickVariantCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { PillSwitch } from "../pill-switch/pill-switch.js";
 import { VARIANTS_LEAVE } from "../../lib/app-zone-steps.js";
 
 const VARIANTS = `cv:inline-flex cv:items-center cv:gap-2 ${VARIANTS_LEAVE}`;
 
 export function VariantSwitch(): ReactElement | null {
-	const { isShown, shown, items } = useQuery(VariantsQuery).data;
-	const pick = useCommand(PickVariantCommand);
+	const { isShown, shown, items } = useQuery(canvas.pages.variants).data;
+	const pick = useCommand(canvas.pages.pickVariant);
 	if (!isShown) return null;
 	return (
 		<span className={VARIANTS} data-canvas-variants="">

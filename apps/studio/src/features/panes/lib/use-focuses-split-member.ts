@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { ShowTabCommand, ShownSplitQuery } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { ShownSplit } from "@widgetarium/app-host";
 import type { PaneBoard } from "@widgetarium/layout";
 import { viewTargetOf } from "./split-panes.js";
@@ -16,9 +16,9 @@ interface Asked {
 }
 
 export function useFocusesSplitMember(tree: PaneBoard): (paneId: string) => void {
-	const showTab = useCommand(ShowTabCommand);
+	const showTab = useCommand(appHost.tabs.showTab);
 	const looked: Seen = {
-		split: useQuery(ShownSplitQuery).data.split,
+		split: useQuery(appHost.splits.shownSplit).data.split,
 		tree,
 		showTab: showTab.run,
 	};

@@ -19,13 +19,9 @@ import { OutfitIdSchema } from "../apps/studio/src/features/mascot/lib/outfit.sc
 import type { MascotState } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
 import { activityAfter } from "../plugins/chat/data/mascot/features/activity/lib/activity-after.ts";
 import { MemoryAgentActivityGateway } from "../plugins/chat/data/mascot/gateways/agent-activity/memory.gateway.ts";
-import {
-	AgentActivityQuery,
-	AgentActivitySchema,
-	RecordAgentEventsCommand,
-} from "../plugins/chat/data/mascot/index.ts";
+import { AgentActivitySchema, mascot } from "../plugins/chat/data/mascot/index.ts";
 import type { AgentActivity, AgentEvent } from "../plugins/chat/data/mascot/index.ts";
-import { MascotModule } from "../plugins/chat/data/mascot/module.ts";
+import { mascot as mascotModule } from "../plugins/chat/data/mascot/module.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
@@ -140,21 +136,21 @@ check(
 );
 
 const mascotApp = runtime()
-	.modules(MascotModule)
+	.modules(mascotModule)
 	.start({
 		platform: "browser",
 		scope: {
 			workspaceId: "mascot-test",
 		},
 	});
-await mascotApp.send(RecordAgentEventsCommand, {
+await mascotApp.send(mascot.activity.recordAgentEvents, {
 	events: ["sent", "toolStarted", "toolStarted", "toolFinished"],
 });
-const midRun = await mascotApp.send(AgentActivityQuery);
-await mascotApp.send(RecordAgentEventsCommand, {
+const midRun = await mascotApp.send(mascot.activity.agentActivity);
+await mascotApp.send(mascot.activity.recordAgentEvents, {
 	events: ["runFinished"],
 });
-const afterRun = await mascotApp.send(AgentActivityQuery);
+const afterRun = await mascotApp.send(mascot.activity.agentActivity);
 check(
 	"the module counts tools through a run and ends it on runFinished",
 	[

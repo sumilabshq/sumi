@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { PlaceEssentialCommand, PlaceGroupCommand, PlaceTabCommand, TabDropSchema } from "@widgetarium/app-host";
+import { TabDropSchema, appHost } from "@widgetarium/app-host";
 import type { TabDrop } from "@widgetarium/app-host";
 import type { DragSource } from "../tab-drag/drag-source.js";
 import type { SidebarDragParts } from "../tab-drag/sidebar-drag-parts.js";
@@ -35,9 +35,9 @@ function usePlacesDrops(): (source: DragSource, drop: TabDrop) => Promise<boolea
 
 function useDropPlacers() {
 	return {
-		placeTab: useCommand(PlaceTabCommand),
-		placeEssential: useCommand(PlaceEssentialCommand),
-		placeGroup: useCommand(PlaceGroupCommand),
+		placeTab: useCommand(appHost.tabs.placeTab),
+		placeEssential: useCommand(appHost.essentials.placeEssential),
+		placeGroup: useCommand(appHost.groups.placeGroup),
 	};
 }
 

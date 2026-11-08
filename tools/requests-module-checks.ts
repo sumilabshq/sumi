@@ -16,6 +16,8 @@ import {
 	moduleContract,
 	query,
 } from "../packages/shared/data-framework/src/index.ts";
+import { handledItems, named } from "../packages/shared/data-framework/src/index.ts";
+import { fullyNamed } from "./requests-names.ts";
 import type { ModuleFacts } from "../packages/shared/data-framework/src/index.ts";
 import { orpcTransport, servePort } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
@@ -40,17 +42,17 @@ const ON_BROWSER = {
 
 const SCOPE = { workspaceId: "tally-workspace" };
 
-const CountQuery = query<TallyParts>("count")
+const count = named("count", query<TallyParts>())
 	.public()
 	.output(z.number())
 	.settlesNow()
 	.handle((_input, { counter }) => counter.value);
 
-const BumpCommand = command<TallyParts>("bump")
+const bump = named("bump", command<TallyParts>())
 	.public()
 	.input(z.object({ by: z.number() }))
 	.idempotencyKey(Repeatable)
-	.invalidates([CountQuery])
+	.invalidates([count])
 	.guard(
 		guard<{ readonly by: number }>().handle(({ input }) => {
 			if (input.by > 10) {
@@ -62,120 +64,119 @@ const BumpCommand = command<TallyParts>("bump")
 		counter.value += by;
 	});
 
-const CountContract = query("tally/count").output(z.number()).settlesNow();
-const BumpContract = command("tally/bump")
+const CountContract = fullyNamed("tally.count", query()).output(z.number()).settlesNow();
+const BumpContract = fullyNamed("tally.bump", command())
 	.input(z.object({ by: z.number() }))
 	.idempotencyKey(Repeatable)
 	.invalidates([CountContract]);
 
-const TallyDeclared = module("tally").on(Anywhere);
+const TallyDeclared = module().on(Anywhere);
 
 function tallyOver(counter: Counter) {
-	return TallyDeclared.provide(() => ({ counter })).handles(CountQuery, BumpCommand);
+	return TallyDeclared.provide(() => ({ counter })).handles(handledItems("tally", [count, bump]));
 }
 
-const ChargeContract = command("payments/charge")
+const ChargeContract = fullyNamed("payments.charge", command())
 	.input(z.object({ cents: z.number() }))
 	.output(z.string())
 	.idempotencyKey(Repeatable);
 
-const RefundContract = command("payments/refund")
+const RefundContract = fullyNamed("payments.refund", command())
 	.input(z.object({ reason: z.string() }))
 	.idempotencyKey(Repeatable);
 
-const PaymentsContract = moduleContract("payments", Server, [ChargeContract]);
-const DevicePaymentsContract = moduleContract("payments", Device, [ChargeContract]);
+const PaymentsContract = moduleContract("payments", Server, { charge: ChargeContract });
+const DevicePaymentsContract = moduleContract("payments", Device, { charge: ChargeContract });
 
-const ChargeCommand = command("charge")
+const charge = named("charge", command())
 	.public()
 	.input(z.object({ cents: z.number() }))
 	.output(z.string())
 	.idempotencyKey(Repeatable)
 	.handle(({ cents }) => `charged ${cents}`);
 
-const BuyCommand = command("buy")
+const buy = named("buy", command())
 	.public()
 	.input(z.object({ cents: z.number() }))
 	.output(z.string())
 	.idempotencyKey(Repeatable)
 	.handle(async ({ cents }, { send }) => send(ChargeContract, { cents }));
 
-const BuyContract = command("shop/buy")
+const BuyContract = fullyNamed("shop.buy", command())
 	.input(z.object({ cents: z.number() }))
 	.output(z.string())
 	.idempotencyKey(Repeatable);
 
-const PaymentsModule = module("payments")
+const PaymentsModule = module()
 	.on(Anywhere)
 	.provide(() => ({}))
-	.handles(ChargeCommand);
-const ShopModule = module("shop")
+	.handles(handledItems("payments", [charge]));
+const ShopModule = module()
 	.on(Anywhere)
 	.imports(PaymentsContract)
 	.provide(() => ({}))
-	.handles(BuyCommand);
+	.handles(handledItems("shop", [buy]));
 
-const InvoicesQuery = query("invoices")
+const invoicesRequest = named("invoices", query())
 	.public()
 	.output(z.array(z.string()))
 	.handle(() => ["inv-1"]);
 
-const CreateCustomerCommand = command("create-customer")
+const createCustomer = named("create-customer", command())
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId)
 	.handle(({ userId }) => `cus-${userId}`);
 
-const InvoicesContract = query("billing/invoices").output(z.array(z.string()));
-const CreateCustomerContract = command("billing/create-customer")
+const InvoicesContract = fullyNamed("billing.invoices", query()).output(z.array(z.string()));
+const CreateCustomerContract = fullyNamed("billing.create-customer", command())
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId);
 
-const BillingModule = module("billing")
+const BillingModule = module()
 	.on(Server)
 	.guard(PublicGuard)
 	.provide(() => ({}))
-	.handles(InvoicesQuery, CreateCustomerCommand);
-const BillingContract = moduleContract("billing", Server, [InvoicesContract]);
+	.handles(handledItems("billing", [invoicesRequest, createCustomer]));
+const BillingContract = moduleContract("billing", Server, { invoices: InvoicesContract });
 
-const SignUpCommand = command("sign-up")
+const signUp = named("sign-up", command())
 	.public()
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId)
 	.handle(async ({ userId }, { send }) => send(CreateCustomerContract, { userId }));
 
-const SignUpContract = command("auth/sign-up")
+const SignUpContract = fullyNamed("auth.sign-up", command())
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId);
 
-const AuthModule = module("auth")
+const AuthModule = module()
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(BillingContract)
 	.provide(() => ({}))
-	.handles(SignUpCommand);
+	.handles(handledItems("auth", [signUp]));
 
-const DeviceTallyModule = module("tally")
+const DeviceTallyModule = module()
 	.on(Device)
 	.provide(() => ({ counter: new Counter() }))
-	.handles(CountQuery, BumpCommand);
+	.handles(handledItems("tally", [count, bump]));
 
 export function typedOnly(): void {
 	const tally = buildersOf<typeof DeviceTallyModule>();
 	// @ts-expect-error
-	command("unkeyed").handle(() => undefined);
-	tally
-		.query("read")
+	named("unkeyed", command()).handle(() => undefined);
+	named("read", tally.query())
 		.output(z.number())
 		.handle((_input, { counter }) => counter.value);
 	// @ts-expect-error
-	tally.query("timed").handle((_input, { clock }) => clock);
+	named("timed", tally.query()).handle((_input, { clock }) => clock);
 	// @ts-expect-error
-	query("loose").handle((_input, { counter }) => counter);
-	command("pay")
+	named("loose", query()).handle((_input, { counter }) => counter);
+	named("pay", command())
 		.idempotencyKey(Repeatable)
 		.handle(async (_input, { send }) => {
 			await send(RefundContract, { reason: "any request" });
@@ -183,7 +184,7 @@ export function typedOnly(): void {
 			await send(ChargeContract, { cents: "five" });
 		});
 	// @ts-expect-error
-	module("tally").handles(CountQuery);
+	module().handles(handledItems("tally", [count]));
 	// @ts-expect-error
 	runtime().imports(PaymentsContract);
 	// @ts-expect-error
@@ -192,7 +193,7 @@ export function typedOnly(): void {
 	// @ts-expect-error
 	buildersOf<{ readonly counter: Counter }>();
 	// @ts-expect-error
-	module("tally").on(Device).config<{ readonly injects: number }>();
+	module().on(Device).config<{ readonly injects: number }>();
 }
 
 const counter = new Counter();
@@ -206,7 +207,7 @@ check("a self-handled command runs its handler", await started.send(BumpContract
 check("its write is seen by the next read", await started.send(CountContract), { ok: true, output: 3 });
 check(
 	"a short name is the request's own: the module adds its prefix when it handles it",
-	[CountQuery.request.name, CountQuery.request.module],
+	[count.request.name, count.request.module],
 	["count", null],
 );
 
@@ -217,8 +218,8 @@ check(
 		request.invalidated?.map(({ name }) => name) ?? null,
 	]),
 	[
-		["tally/count", null],
-		["tally/bump", ["tally/count"]],
+		["tally.count", null],
+		["tally.bump", ["tally.count"]],
 	],
 );
 
@@ -227,16 +228,16 @@ check("its own input guard refuses on the client", refused.ok ? "ran" : refused.
 
 check(
 	"a request handled twice by one module is refused by name",
-	thrownBy(() => TallyDeclared.provide(() => ({ counter })).handles(CountQuery, CountQuery)),
+	thrownBy(() => TallyDeclared.provide(() => ({ counter })).handles(handledItems("tally", [count, count]))),
 	'module "tally" handles count twice: a request belongs to one module, once',
 );
 
 check(
 	"a request says who may call it once: .public() and .callableBy() together are refused",
 	[
-		thrownBy(() => query("both").public().callableBy(PaymentsContract)),
-		thrownBy(() => query("twice").public().public()),
-		thrownBy(() => query("nobody").callableBy()),
+		thrownBy(() => named("both", query()).public().callableBy(PaymentsContract)),
+		thrownBy(() => named("twice", query()).public().public()),
+		thrownBy(() => named("nobody", query()).callableBy()),
 	],
 	[
 		"both already says who may call it: a request is .public() or .callableBy(...) once, never both",
@@ -257,7 +258,7 @@ runtime()
 		TallyDeclared.provide((facts) => {
 			seenFacts = facts;
 			return { counter };
-		}).handles(CountQuery, BumpCommand),
+		}).handles(handledItems("tally", [count, bump])),
 	)
 	.start({ platform: "tauri", scope: { workspaceId: "w-1" } });
 check("provide receives the platform and scope its starter was told", seenFacts, {
@@ -274,7 +275,7 @@ check(
 			runtime().modules(tallyOver(new Counter())).start({ platform: "server", env: {}, scope: SCOPE }),
 		),
 	).split("\n")[1],
-	"tally/count is exposed with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
+	"tally.count is exposed with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
 );
 
 check(
@@ -284,7 +285,7 @@ check(
 			.modules(
 				TallyDeclared.guard(PublicGuard)
 					.provide(() => ({ counter: new Counter() }))
-					.handles(CountQuery, BumpCommand),
+					.handles(handledItems("tally", [count, bump])),
 			)
 			.start({ platform: "server", env: {}, scope: SCOPE }),
 	),
@@ -301,11 +302,11 @@ check(
 
 const closed = runtime()
 	.modules(
-		module("tally")
+		module()
 			.on(Anywhere)
 			.guard(guard().handle(() => deny("the tally is closed")))
 			.provide(() => ({ counter: new Counter() }))
-			.handles(CountQuery, BumpCommand),
+			.handles(handledItems("tally", [count, bump])),
 	)
 	.start(ON_BROWSER);
 const closedRead = await closed.send(CountContract);
@@ -319,7 +320,7 @@ const signedInTally = runtime()
 	.modules(
 		TallyDeclared.guard(AuthenticatedGuard)
 			.provide(() => ({ counter: new Counter() }))
-			.handles(CountQuery, BumpCommand),
+			.handles(handledItems("tally", [count, bump])),
 	)
 	.start(ON_BROWSER);
 const signedInRead = await signedInTally.send(CountContract);
@@ -331,10 +332,10 @@ check(
 check(
 	"an adapter with no Authenticate refuses to expose a module guard that needs a user",
 	thrownBy(() => servePort(signedInTally, new MessageChannel().port1)).split("\n")[1],
-	"tally/count is guarded by AuthenticatedGuard, which needs a user, and servePort() has no Authenticate: pass one",
+	"tally.count is guarded by AuthenticatedGuard, which needs a user, and servePort() has no Authenticate: pass one",
 );
 
-const ClockedQuery = query("clocked")
+const clocked = named("clocked", query())
 	.public()
 	.output(z.number())
 	.handle(() => 1);
@@ -348,15 +349,15 @@ check(
 	thrownBy(() =>
 		runtime()
 			.modules(
-				module("tally")
+				module()
 					.on(Anywhere)
 					.guard(ClockGuard)
 					.provide(() => ({}))
-					.handles(ClockedQuery),
+					.handles(handledItems("tally", [clocked])),
 			)
 			.start(ON_BROWSER),
 	).split("\n")[1],
-	"guard #1 of tally/clocked requires clock, which neither its module nor runtime().provide() gives as a Clock",
+	"guard #1 of tally.clocked requires clock, which neither its module nor runtime().provide() gives as a Clock",
 );
 
 check(
@@ -364,11 +365,11 @@ check(
 	thrownBy(() =>
 		runtime()
 			.modules(
-				module("tally")
+				module()
 					.on(Anywhere)
 					.guard(ClockGuard)
 					.provide(() => ({}))
-					.handles(ClockedQuery),
+					.handles(handledItems("tally", [clocked])),
 			)
 			.provide(() => ({ rateLimits: new MemoryRateLimits(), clock: new Clock() }))
 			.start(ON_BROWSER),
@@ -403,10 +404,10 @@ check(
 
 const unimportedBuy = await runtime()
 	.modules(
-		module("shop")
+		module()
 			.on(Anywhere)
 			.provide(() => ({}))
-			.handles(BuyCommand),
+			.handles(handledItems("shop", [buy])),
 		PaymentsModule,
 	)
 	.start(ON_BROWSER)
@@ -414,13 +415,13 @@ const unimportedBuy = await runtime()
 check(
 	"a request sending to a module its module does not import fails at the send, naming the fix",
 	unimportedBuy.ok ? "ran" : unimportedBuy.reason,
-	'shop/buy sends payments/charge, but module "shop" does not import payments: add .imports()',
+	'shop.buy sends payments.charge, but module "shop" does not import payments: add .imports()',
 );
 
 const billingServer = dataFrameworkMiddleware(
 	runtime().modules(AuthModule, BillingModule).start({ platform: "server", env: {}, scope: SCOPE }),
 );
-const AuthContract = moduleContract("auth", Server, [SignUpContract]);
+const AuthContract = moduleContract("auth", Server, { signUp: SignUpContract });
 const overWire = runtime()
 	.imports(
 		AuthContract({ over: orpcTransport("http://api", { fetch: billingServer.fetch }) }),
@@ -439,19 +440,19 @@ check("a public request answers over the wire", await overWire.send(InvoicesCont
 });
 
 const forgotten: string[] = [];
-const ForgetCommand = command("forget")
+const forget = named("forget", command())
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ id }) => {
 		forgotten.push(id);
 	});
-const NotesModule = module("notes")
+const NotesModule = module()
 	.on(Server)
 	.guard(PublicGuard)
 	.provide(() => ({}))
-	.handles(ForgetCommand);
-const ForgetContract = command("notes/forget")
+	.handles(handledItems("notes", [forget]));
+const ForgetContract = fullyNamed("notes.forget", command())
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 const notesServer = dataFrameworkMiddleware(
@@ -459,7 +460,7 @@ const notesServer = dataFrameworkMiddleware(
 );
 const notesOverWire = runtime()
 	.imports(
-		moduleContract("notes", Server, [ForgetContract])({
+		moduleContract("notes", Server, { forget: ForgetContract })({
 			over: orpcTransport("http://notes", { fetch: notesServer.fetch }),
 		}),
 	)
@@ -472,7 +473,7 @@ check(
 	[true, ["n-1"]],
 );
 
-const CREATE_CUSTOMER_NOT_EXPOSED = "billing/create-customer: the server exposes no such request";
+const CREATE_CUSTOMER_NOT_EXPOSED = "billing.create-customer: the server exposes no such request";
 
 const wireCalls: string[] = [];
 const countingFetch = (request: Request): Response | Promise<Response> => {
@@ -483,7 +484,7 @@ const leaky = runtime()
 	.imports({
 		name: "billing",
 		transport: orpcTransport("http://api", { fetch: countingFetch }),
-		publicRequestNames: ["billing/invoices", "billing/create-customer"],
+		publicRequestNames: ["billing.invoices", "billing.create-customer"],
 	})
 	.start();
 const askedOverWire = await leaky.send(CreateCustomerContract, { userId: "u-3" });
@@ -493,7 +494,7 @@ check(
 	["not-found", CREATE_CUSTOMER_NOT_EXPOSED],
 );
 
-const LooseCreateCustomerContract = command("billing/create-customer")
+const LooseCreateCustomerContract = fullyNamed("billing.create-customer", command())
 	.input(z.object({ userId: z.number() }))
 	.output(z.string())
 	.idempotencyKey(Repeatable);
@@ -504,24 +505,24 @@ check(
 	["not-found", CREATE_CUSTOMER_NOT_EXPOSED],
 );
 
-const ProvisionCommand = command("provision")
+const provision = named("provision", command())
 	.callableBy(AuthContract)
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId)
 	.handle(({ userId }) => `prov-${userId}`);
-const ProvisionContract = command("accounts/provision")
+const ProvisionContract = fullyNamed("accounts.provision", command())
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId);
 const accountsServer = dataFrameworkMiddleware(
 	runtime()
 		.modules(
-			module("accounts")
+			module()
 				.on(Server)
 				.guard(PublicGuard)
 				.provide(() => ({}))
-				.handles(ProvisionCommand),
+				.handles(handledItems("accounts", [provision])),
 		)
 		.start({ platform: "server", env: {}, scope: SCOPE }),
 );
@@ -529,22 +530,22 @@ const provisioned = await runtime()
 	.imports({
 		name: "accounts",
 		transport: orpcTransport("http://accounts", { fetch: accountsServer.fetch }),
-		publicRequestNames: ["accounts/provision"],
+		publicRequestNames: ["accounts.provision"],
 	})
 	.start()
 	.send(ProvisionContract, { userId: "u-9" });
 check(
 	"a request callable by named modules is refused over a transport like a process-only one, naming no module",
 	provisioned.ok ? "ran" : [provisioned.code, provisioned.reason],
-	["not-found", "accounts/provision: the server exposes no such request"],
+	["not-found", "accounts.provision: the server exposes no such request"],
 );
 
-const AnywhereSignUp = module("auth")
+const AnywhereSignUp = module()
 	.on(Anywhere)
 	.guard(PublicGuard)
 	.imports(BillingContract)
 	.provide(() => ({}))
-	.handles(SignUpCommand);
+	.handles(handledItems("auth", [signUp]));
 const anywhereServer = dataFrameworkMiddleware(
 	runtime().modules(AnywhereSignUp, BillingModule).start({ platform: "server", env: {}, scope: SCOPE }),
 );
@@ -560,7 +561,7 @@ check(
 	"a Device module imported over a transport is refused where .over is called",
 	thrownBy(() => {
 		// @ts-expect-error
-		moduleContract("auth", Device, [SignUpContract])({ over: orpcTransport("http://api") });
+		moduleContract("auth", Device, { signUp: SignUpContract })({ over: orpcTransport("http://api") });
 	}),
 	'module "auth" runs on a device: only a module .on(Server) or .on(Anywhere) is imported over a transport',
 );
@@ -578,23 +579,23 @@ const remoteSignedUp = await runtime()
 check(
 	"a server sending a request with no mark to a module it imports from an address is refused there",
 	remoteSignedUp.ok ? "ran" : remoteSignedUp.reason,
-	`billing/create-customer answered not-found: ${CREATE_CUSTOMER_NOT_EXPOSED}`,
+	`billing.create-customer answered not-found: ${CREATE_CUSTOMER_NOT_EXPOSED}`,
 );
 
-const ReportQuery = query("report")
+const report = named("report", query())
 	.public()
 	.output(z.number())
 	.handle(async (_input, { send }) => {
 		const invoices = await send(InvoicesContract);
 		return invoices.length;
 	});
-const ReportContract = query("reports/report").output(z.number());
-const ReportsModule = module("reports")
+const ReportContract = fullyNamed("reports.report", query()).output(z.number());
+const ReportsModule = module()
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(BillingContract)
 	.provide(() => ({}))
-	.handles(ReportQuery);
+	.handles(handledItems("reports", [report]));
 let headerAtBilling: string | null = null;
 const reportsServer = dataFrameworkMiddleware(
 	runtime()
@@ -614,7 +615,7 @@ const reportsServer = dataFrameworkMiddleware(
 );
 const reports = runtime()
 	.imports(
-		moduleContract("reports", Server, [ReportContract])({
+		moduleContract("reports", Server, { report: ReportContract })({
 			over: orpcTransport("http://reports", { fetch: reportsServer.fetch }),
 		}),
 	)
@@ -658,21 +659,21 @@ check(
 	],
 );
 
-const SecretQuery = query("secret")
+const secret = named("secret", query())
 	.output(z.string())
 	.settlesNow()
 	.handle(() => "s3cret");
-const SecretContract = query("vault/secret").output(z.string()).settlesNow();
-const ReadQuery = query("read")
+const SecretContract = fullyNamed("vault.secret", query()).output(z.string()).settlesNow();
+const read = named("read", query())
 	.public()
 	.output(z.string())
 	.handle(async (_input, { send }) => `read ${await send(SecretContract)}`);
-const ReadContract = query("vault/read").output(z.string());
-const VaultModule = module("vault")
+const ReadContract = fullyNamed("vault.read", query()).output(z.string());
+const VaultModule = module()
 	.on(Anywhere)
 	.guard(PublicGuard)
 	.provide(() => ({}))
-	.handles(ReadQuery, SecretQuery);
+	.handles(handledItems("vault", [read, secret]));
 
 const vaultOnDevice = runtime().modules(VaultModule).start(ON_BROWSER);
 check(
@@ -686,23 +687,23 @@ check(
 	[{ ok: true, output: "s3cret" }, { output: "s3cret" }],
 );
 
-const PeekQuery = query("peek")
+const peek = named("peek", query())
 	.public()
 	.output(z.string())
 	.handle(async (_input, { send }) => send(SecretContract));
-const PeekContract = query("audit/peek").output(z.string());
-const AuditModule = module("audit")
+const PeekContract = fullyNamed("audit.peek", query()).output(z.string());
+const AuditModule = module()
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(VaultModule)
 	.provide(() => ({}))
-	.handles(PeekQuery);
+	.handles(handledItems("audit", [peek]));
 const vaultServer = dataFrameworkMiddleware(
 	runtime().modules(VaultModule, AuditModule).start({ platform: "server", env: {}, scope: SCOPE }),
 );
 const auditOverWire = runtime()
 	.imports(
-		moduleContract("audit", Server, [PeekContract])({
+		moduleContract("audit", Server, { peek: PeekContract })({
 			over: orpcTransport("http://api", { fetch: vaultServer.fetch }),
 		}),
 	)
@@ -716,35 +717,36 @@ const secretOverWire = await runtime()
 	.imports({
 		name: "vault",
 		transport: orpcTransport("http://api", { fetch: vaultServer.fetch }),
-		publicRequestNames: ["vault/read", "vault/secret"],
+		publicRequestNames: ["vault.read", "vault.secret"],
 	})
 	.start()
 	.send(SecretContract);
 check(
 	"a request with no mark is refused over the wire",
 	secretOverWire.ok ? "ran" : [secretOverWire.code, secretOverWire.reason],
-	["not-found", "vault/secret: the server exposes no such request"],
+	["not-found", "vault.secret: the server exposes no such request"],
 );
 
-const EntryQuery = query("entry")
+const entry = named("entry", query())
 	.callableBy({ name: "clerk" })
 	.output(z.string())
 	.handle(() => "entry");
-const EntryContract = query("ledger/entry").output(z.string());
-const LedgerModule = module("ledger")
+const EntryContract = fullyNamed("ledger.entry", query()).output(z.string());
+const LedgerModule = module()
 	.on(Anywhere)
 	.provide(() => ({}))
-	.handles(EntryQuery);
-const ReadEntryQuery = query("read")
-	.public()
-	.output(z.string())
-	.handle(async (_input, { send }) => send(EntryContract));
+	.handles(handledItems("ledger", [entry]));
+const readEntryQuery = () =>
+	named("read", query())
+		.public()
+		.output(z.string())
+		.handle(async (_input, { send }) => send(EntryContract));
 const ledgerReaderModuleOf = (name: string) =>
-	module(name)
+	module()
 		.on(Anywhere)
 		.imports(LedgerModule)
 		.provide(() => ({}))
-		.handles(ReadEntryQuery);
+		.handles(handledItems(name, [readEntryQuery()]));
 const ledgerApp = runtime()
 	.modules(LedgerModule, ledgerReaderModuleOf("clerk"), ledgerReaderModuleOf("stranger"))
 	.start(ON_BROWSER);
@@ -752,18 +754,18 @@ const entryFromView = await ledgerApp.send(EntryContract);
 check(
 	"a view sending a request callable by named modules is refused, naming the modules",
 	entryFromView.ok ? "ran" : [entryFromView.code, entryFromView.reason],
-	["forbidden", "ledger/entry is callable only by module(s) clerk, not by a view"],
+	["forbidden", "ledger.entry is callable only by module(s) clerk, not by a view"],
 );
 check("a view reading it now is refused the same way", ledgerApp.routes.readNow(EntryContract), null);
-check("a module it names may send it", await ledgerApp.send(query("clerk/read").output(z.string())), {
+check("a module it names may send it", await ledgerApp.send(fullyNamed("clerk.read", query()).output(z.string())), {
 	ok: true,
 	output: "entry",
 });
-const entryFromStranger = await ledgerApp.send(query("stranger/read").output(z.string()));
+const entryFromStranger = await ledgerApp.send(fullyNamed("stranger.read", query()).output(z.string()));
 check(
 	"a module it does not name is refused",
 	entryFromStranger.ok ? "ran" : [entryFromStranger.code, entryFromStranger.reason],
-	["refused", "ledger/entry answered forbidden: ledger/entry is callable only by module(s) clerk, not by stranger"],
+	["refused", "ledger.entry answered forbidden: ledger.entry is callable only by module(s) clerk, not by stranger"],
 );
 
 check(
@@ -771,10 +773,10 @@ check(
 	thrownBy(() =>
 		runtime()
 			.modules(
-				module("tally")
+				module()
 					.on(Anywhere)
 					.provide(() => ({ send: new Counter(), counter: new Counter() }))
-					.handles(CountQuery),
+					.handles(handledItems("tally", [count])),
 			)
 			.start(ON_BROWSER),
 	).split("\n")[1],

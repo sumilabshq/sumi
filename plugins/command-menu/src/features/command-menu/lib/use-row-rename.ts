@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { RenameRowCommand } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu";
 import type { Row } from "@sumi/command-menu";
 import type { Toast } from "./use-menu-moves.js";
 
@@ -20,7 +20,7 @@ interface Renaming {
 
 export function useRowRename(picked: Row | null, setToast: (toast: Toast) => void): RowRename {
 	const [renaming, setRenaming] = useState<Renaming | null>(null);
-	const renameRow = useCommand(RenameRowCommand);
+	const renameRow = useCommand(commandMenu.doing.renameRow);
 	return {
 		key: renaming?.key ?? null,
 		name: renaming?.name ?? "",

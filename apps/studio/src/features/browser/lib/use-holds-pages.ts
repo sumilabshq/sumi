@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import { AttachPagesCommand, DetachPagesCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { useCommand } from "@widgetarium/data-framework";
 import { useHeldTab } from "./held-tab.js";
 
 export function useHoldsPages(isAvailable: boolean): RefObject<HTMLDivElement | null> {
 	const pages = useRef<HTMLDivElement | null>(null);
 	const heldTabId = useHeldTab();
-	const attachPages = useCommand(AttachPagesCommand);
-	const detachPages = useCommand(DetachPagesCommand);
+	const attachPages = useCommand(browser.tabs.attachPages);
+	const detachPages = useCommand(browser.tabs.detachPages);
 	const hostCallsInOrder = useRef<Promise<unknown>>(Promise.resolve());
 
 	useEffect(() => {

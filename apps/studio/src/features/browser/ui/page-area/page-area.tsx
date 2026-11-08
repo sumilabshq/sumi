@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useQuery } from "@widgetarium/data-framework";
-import { BrowserTabsQuery } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { useHoldsPages } from "../../lib/use-holds-pages.js";
 import { PageState } from "../page-states/page-state.js";
@@ -17,7 +17,7 @@ const READING = "cv:outline-2 cv:outline-offset-[-2px] cv:outline-brand";
 const PAGES = "cv:absolute cv:inset-0";
 
 export function PageArea({ searchFor, children }: PageAreaProps): ReactElement {
-	const browserTabs = useQuery(BrowserTabsQuery, { heldTabId: useHeldTab() }).data;
+	const browserTabs = useQuery(browser.tabs.browserTabs, { heldTabId: useHeldTab() }).data;
 	const pages = useHoldsPages(browserTabs.isAvailable);
 	const shown = browserTabs.tabs.find((tab) => tab.isShown);
 	const isReading = browserTabs.inkReading !== null && browserTabs.inkReading.tabId === shown?.id;

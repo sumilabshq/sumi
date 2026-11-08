@@ -3,13 +3,13 @@ import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { IsTooltipHosted, TooltipHost } from "../packages/shared/kit/src/index.ts";
-import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { LayoutModule } from "../packages/state/layout/module.ts";
-import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
+import { appHost } from "../plugins/apps/data/app-host/module.ts";
+import { browser as browserModule } from "../packages/domain/browser/module.ts";
+import { layout } from "../packages/state/layout/module.ts";
+import { workspaces } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
-import { DoRowCommand } from "../plugins/command-menu/data/command-menu/index.ts";
+import { commandMenu } from "../plugins/command-menu/data/command-menu/index.ts";
 import { CommandMenuLayer } from "../plugins/command-menu/src/features/command-menu/ui/command-menu-layer/command-menu-layer.tsx";
 import { AskComposerBar } from "../plugins/chat/src/features/ask/ui/ask-composer-bar/ask-composer-bar.tsx";
 import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
@@ -26,7 +26,7 @@ import { placedTabsOf, placesOver } from "./places-fixture.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { AskComposerContext, TabFaceContext } from "@sumi/sumi-host-plugin";
 import type { AskComposer } from "@sumi/sumi-host-plugin";
-import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { assistant } from "../plugins/chat/data/assistant/module.ts";
 import { tauriAssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/tauri.gateway.ts";
 import { claudeOptionsCell } from "../apps/tauri/src/assistant/claude-options-cell.ts";
 import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";
@@ -96,11 +96,12 @@ browser.recentSites.saveRecentSites(
 );
 const studio = runtime()
 	.modules(
-		AppHostModule,
+		appHost,
 		PluginAppsModule,
-		BrowserModule({ injects: browser.parts }),
-		LayoutModule,
-		WorkspacesModule({ injects: memoryWorkspacesParts({
+		browserModule({ injects: browser.parts }),
+		layout,
+		workspaces({
+			injects: memoryWorkspacesParts({
 				workspaces: [
 					{
 						id: "default",
@@ -124,7 +125,8 @@ const studio = runtime()
 					})),
 					openOnStartId: "chat-0",
 				},
-			}), }),
+			}),
+		}),
 		...PLUGIN_WINDOW_MODULES,
 	)
 	.imports(
@@ -140,7 +142,7 @@ const studio = runtime()
 		),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
-void studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
+void studio.send(commandMenu.doing.doRow, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
 
 const ASK_WORKSPACE = {
 	id: "default",
@@ -151,52 +153,55 @@ const ASK_WORKSPACE = {
 };
 const askApp = runtime()
 	.modules(
-		AssistantModule({ injects: oneChatParts(
-			tauriAssistantParts({
-				kind: "tauri",
-				chatDrafts: new MemoryChatDraftShelf(),
-				tauriAssistant: {
-					...NO_ASSISTANT,
-					can: true,
-					setup: async () => ({
-						isReady: true,
-						providerLabel: "Claude Code",
-						providers: [
-							{
-								id: "claude-code",
-								label: "Claude Code",
-								canEdit: true,
-								reads: {
-									images: true,
-									files: "path",
+		assistant({
+			injects: oneChatParts(
+				tauriAssistantParts({
+					kind: "tauri",
+					chatDrafts: new MemoryChatDraftShelf(),
+					tauriAssistant: {
+						...NO_ASSISTANT,
+						can: true,
+						setup: async () => ({
+							isReady: true,
+							providerLabel: "Claude Code",
+							providers: [
+								{
+									id: "claude-code",
+									label: "Claude Code",
+									canEdit: true,
+									reads: {
+										images: true,
+										files: "path",
+									},
 								},
-							},
-						],
-						chosen: "claude-code",
-						helperAgents: false,
-						renderMarkdown: null,
-					}),
-				},
-				tauriAttachments: {
-					folder: "/attachments",
-					files: memoryFolder(),
-				},
-				folders: {
-					pick: async () => null,
-					lend: () => undefined,
-				},
-				claudeOptions: claudeOptionsCell(),
-				drops: {
-					fileDragged: () => () => undefined,
-				},
-				workspace: {
-					client: {
-						chooseFolder: async (_id, folder) => ({ ...ASK_WORKSPACE, folder }),
-						attachFolder: async () => null,
+							],
+							chosen: "claude-code",
+							helperAgents: false,
+							renderMarkdown: null,
+						}),
 					},
-					folder: workspaceFolderCell(ASK_WORKSPACE),
-				},
-			}),), }),
+					tauriAttachments: {
+						folder: "/attachments",
+						files: memoryFolder(),
+					},
+					folders: {
+						pick: async () => null,
+						lend: () => undefined,
+					},
+					claudeOptions: claudeOptionsCell(),
+					drops: {
+						fileDragged: () => () => undefined,
+					},
+					workspace: {
+						client: {
+							chooseFolder: async (_id, folder) => ({ ...ASK_WORKSPACE, folder }),
+							attachFolder: async () => null,
+						},
+						folder: workspaceFolderCell(ASK_WORKSPACE),
+					},
+				}),
+			),
+		}),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
 window.__ASKED__ = [];

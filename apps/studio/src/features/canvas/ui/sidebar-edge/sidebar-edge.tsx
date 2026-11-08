@@ -3,7 +3,7 @@ import type { ReactElement, RefObject } from "react";
 import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { ResetSidebarWidthCommand, ResizeSidebarWidthCommand, SidebarQuery } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { SIDEBAR_HAIRLINE_PX } from "../../lib/sidebar-hairline.js";
 
 const EDGE_LABEL = "Sidebar width";
@@ -12,7 +12,7 @@ const EDGE =
 
 export function SidebarEdge(): ReactElement | null {
 	const edge = useRef<HTMLDivElement | null>(null);
-	const { isOpen, px, leastPx } = useQuery(SidebarQuery).data;
+	const { isOpen, px, leastPx } = useQuery(canvas.layers.sidebar).data;
 	const handlers = useSidebarEdgeResize(edge, px);
 	if (!isOpen) {
 		return null;
@@ -35,8 +35,8 @@ export function SidebarEdge(): ReactElement | null {
 }
 
 function useSidebarEdgeResize(edge: RefObject<HTMLDivElement | null>, px: number): EdgeResizeHandlers {
-	const resize = useCommand(ResizeSidebarWidthCommand);
-	const reset = useCommand(ResetSidebarWidthCommand);
+	const resize = useCommand(canvas.layers.resizeSidebarWidth);
+	const reset = useCommand(canvas.layers.resetSidebarWidth);
 	return useEdgeResize({
 		widthOf: () => px,
 		onResize: (asked) => void resize.run({ px: asked, roomPx: roomBesideOf(edge.current) }),

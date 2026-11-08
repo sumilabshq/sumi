@@ -1,14 +1,16 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/module.ts";
+import { browser as browserContract } from "../packages/domain/browser/index.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 
 const browser = fakeBrowser();
-const browserApp = runtime().modules(BrowserModule({ injects: browser.parts })).start();
+const browserApp = runtime()
+	.modules(browserModule({ injects: browser.parts }))
+	.start();
 const host = document.createElement("div");
 document.body.append(host);
 createRoot(host).render(h(RuntimeProvider, { runtime: browserApp }, inBrowserPlate()));
@@ -38,7 +40,7 @@ check(
 );
 check("the pages are attached to the page area", browser.pages.attached[0]?.hasAttribute("data-browser-pages"), true);
 
-const reading = browserApp.send(ReadPageContentCommand, { tabId: null });
+const reading = browserApp.send(browserContract.ink.readPageContent, { tabId: null });
 await reading;
 browser.pages.told();
 await waitFor(() => host.querySelector("[data-browser-ink-reading]") !== null);
@@ -54,7 +56,7 @@ browser.pages.tab = {
 	url: "https://mail.google.com/",
 };
 browser.pages.told();
-const asking = browserApp.send(ReadPageContentCommand, { tabId: null });
+const asking = browserApp.send(browserContract.ink.readPageContent, { tabId: null });
 await waitFor(() => host.querySelector("[data-browser-ask]") !== null);
 check(
 	"an ask is drawn over the page",

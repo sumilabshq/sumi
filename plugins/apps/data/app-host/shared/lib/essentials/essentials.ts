@@ -15,7 +15,7 @@ export const FIRST_ESSENTIALS: readonly EssentialFace[] = [
 	{
 		app: "canvas",
 		address: null,
-		// TODO: seed title from AppsQuery; a sync seed cannot ask
+		// TODO: seed title from apps.apps.apps; a sync seed cannot ask
 		title: "Canvas",
 		favicon: null,
 	},
@@ -70,7 +70,7 @@ export function moveEssential(kept: KeptEssentials, moved: Essential, at: number
 	};
 }
 
-export function removeEssential(kept: KeptEssentials, removed: Essential): MovedEssentials {
+export function removeEssentialMove(kept: KeptEssentials, removed: Essential): MovedEssentials {
 	return {
 		kept: {
 			...kept,

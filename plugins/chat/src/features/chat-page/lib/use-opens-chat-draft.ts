@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { OpenChatDraftCommand, PrefillDraftCommand } from "@sumi/contract";
+import { assistant } from "@sumi/contract";
 import type { Runtime } from "@widgetarium/data-framework";
 import { toast } from "@widgetarium/kit";
 
@@ -10,7 +10,7 @@ export function useOpensChatDraft(shell: Runtime, chatId: string): void {
 }
 
 async function openChatDraft(shell: Runtime, chatId: string): Promise<void> {
-	const opened = await shell.send(OpenChatDraftCommand, {
+	const opened = await shell.send(assistant.composer.openChatDraft, {
 		chat: chatId,
 	});
 
@@ -27,7 +27,7 @@ async function openChatDraft(shell: Runtime, chatId: string): Promise<void> {
 		return;
 	}
 
-	const filled = await shell.send(PrefillDraftCommand, {
+	const filled = await shell.send(assistant.prefill.prefillDraft, {
 		chat: chatId,
 		text: opened.output.said,
 	});

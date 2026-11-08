@@ -1,7 +1,7 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
+import { appHost as appHostModule } from "../plugins/apps/data/app-host/module.ts";
 import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
 import type { StudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/studio-window.gateway.ts";
@@ -10,17 +10,17 @@ import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/cor
 import { MemoryShownViewGateway } from "../plugins/apps/data/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
 import type { StudioView } from "../plugins/apps/data/app-host/shared/schema/studio-view.schema.ts";
-import { PlacesModule } from "../plugins/apps/data/places/generated/contract.ts";
+import { places as placesContract } from "../plugins/apps/data/places/generated/contract.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesLinkOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/module.ts";
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
-import { LayoutModule } from "../packages/state/layout/module.ts";
+import { layout as layoutModule } from "../packages/state/layout/module.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
 import type { PaneTree } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
+import { workspaces } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
@@ -146,14 +146,14 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
 	const studioApp = runtime()
 		.modules(
-			AppHostModule({ injects: { ...appHost } }),
+			appHostModule({ injects: { ...appHost } }),
 			PluginAppsModule,
-			BrowserModule({ injects: fakeBrowser(pages).parts }),
-			LayoutModule({ injects: { ...layout } }),
-			WorkspacesModule({ injects: workspacesOf(seed.chatTitle ?? null) }),
+			browser({ injects: fakeBrowser(pages).parts }),
+			layoutModule({ injects: { ...layout } }),
+			workspaces({ injects: workspacesOf(seed.chatTitle ?? null) }),
 			...PLUGIN_WINDOW_MODULES,
 		)
-		.imports(PlacesModule({ over: placesLinkOf(places) }))
+		.imports(placesContract({ over: placesLinkOf(places) }))
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });
 	return {
 		appHost,

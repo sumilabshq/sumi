@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { BoardQuery } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import { useQuery } from "@widgetarium/data-framework";
 import {
 	DropdownMenu,
@@ -20,7 +20,7 @@ const ALL_AGENTS = "all";
 const ALL_AGENTS_SAID = "All agents";
 
 export function AgentsMenu({ view }: AgentsMenuProps): ReactElement {
-	const { columns } = useQuery(BoardQuery, {
+	const { columns } = useQuery(tasks.board.board, {
 		...view.ask,
 		owner: null,
 	}).data;

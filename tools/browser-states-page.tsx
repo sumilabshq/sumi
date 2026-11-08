@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { browser as browserModule } from "../packages/domain/browser/module.ts";
 import { Browser } from "../apps/studio/src/features/browser/ui/browser/browser.tsx";
 import type { BrowserTab, RecentSite } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
@@ -27,7 +27,9 @@ function sceneElement(scene: StateScene): ReturnType<typeof h> {
 	};
 	browser.recentSites.saveRecentSites(scene.recentSites);
 
-	const sceneApp = runtime().modules(BrowserModule({ injects: browser.parts })).start();
+	const sceneApp = runtime()
+		.modules(browserModule({ injects: browser.parts }))
+		.start();
 	return h(
 		"div",
 		{

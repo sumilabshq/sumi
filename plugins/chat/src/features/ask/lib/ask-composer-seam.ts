@@ -1,6 +1,6 @@
-import { AdoptDraftCommand, PrefillDraftCommand, TakeDraftCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import type { AdoptedDraft } from "@widgetarium/assistant";
-import { OpenNewChatCommand } from "@sumi/chat-tabs";
+import { chatTabs } from "@sumi/chat-tabs";
 import { toastRefusal } from "@widgetarium/data-framework/command-refusals";
 import type { Runtime } from "@widgetarium/data-framework";
 import type { AskComposer } from "@sumi/sumi-host-plugin";
@@ -39,7 +39,7 @@ async function handDraftToChat(apps: AskComposerApps, asked: AskedDraft): Promis
 		return;
 	}
 
-	const taken = await apps.askApp.send(TakeDraftCommand, { chat: null });
+	const taken = await apps.askApp.send(assistant.composer.takeDraft, { chat: null });
 
 	if (!taken.ok) {
 		console.error(`[widgetarium] Ask Sumi could not take the attachments of its composer: ${taken.reason}`);
@@ -55,11 +55,11 @@ async function handDraftToChat(apps: AskComposerApps, asked: AskedDraft): Promis
 }
 
 async function adoptIn(askApp: Runtime, draft: AdoptedDraft): Promise<void> {
-	const adopted = await askApp.send(AdoptDraftCommand, draft);
+	const adopted = await askApp.send(assistant.composer.adoptDraft, draft);
 
 	if (!adopted.ok) {
 		console.error(`[widgetarium] Ask Sumi could not hand its draft to chat ${draft.chat}: ${adopted.reason}`);
-		toastRefusal({ name: AdoptDraftCommand.name, reason: adopted.reason, ran: adopted.ran });
+		toastRefusal({ name: assistant.composer.adoptDraft.name, reason: adopted.reason, ran: adopted.ran });
 		return;
 	}
 
@@ -67,7 +67,7 @@ async function adoptIn(askApp: Runtime, draft: AdoptedDraft): Promise<void> {
 		return;
 	}
 
-	const filled = await askApp.send(PrefillDraftCommand, { chat: draft.chat, text: adopted.output.said });
+	const filled = await askApp.send(assistant.prefill.prefillDraft, { chat: draft.chat, text: adopted.output.said });
 
 	if (!filled.ok) {
 		console.error(`[widgetarium] Ask Sumi could not fill the composer of chat ${draft.chat}: ${filled.reason}`);
@@ -75,7 +75,7 @@ async function adoptIn(askApp: Runtime, draft: AdoptedDraft): Promise<void> {
 }
 
 async function newChatIdIn(windowApp: Runtime): Promise<string | null> {
-	const opened = await windowApp.send(OpenNewChatCommand, { title: null });
+	const opened = await windowApp.send(chatTabs.chatOpening.openNewChat, { title: null });
 
 	if (!opened.ok) {
 		console.error(`[widgetarium] Ask Sumi found no chat on this board and could not open one: ${opened.reason}`);

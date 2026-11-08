@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, Icon } from "@widgetarium/kit";
-import { PlaceTabCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 import { POINTER_ITEM, POINTER_SUBMENU } from "../../lib/menu-look/menu-look.js";
 
@@ -13,7 +13,7 @@ export interface MoveToGroupMenuProps {
 }
 
 export function MoveToGroupMenu({ tabId, list, groups }: MoveToGroupMenuProps): ReactElement {
-	const placeTab = useCommand(PlaceTabCommand);
+	const placeTab = useCommand(appHost.tabs.placeTab);
 	return (
 		<ContextMenuSub>
 			<ContextMenuSubTrigger

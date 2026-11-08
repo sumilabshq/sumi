@@ -1,10 +1,10 @@
-import { AppsModule } from "../plugins/apps/data/apps/module.ts";
+import { apps as appsModule } from "../plugins/apps/data/apps/module.ts";
 import { faceOf } from "../plugins/apps/src/features/app-tab/lib/face-of.ts";
-import { AppSchema, AppsSlot } from "../plugins/apps/src/slots.ts";
+import { AppSchema, apps } from "../plugins/apps/src/index.ts";
 import { BROWSER_PAGE_ICON } from "../plugins/browser-page/src/features/browser-page/lib/browser-page-icon.ts";
 import { LazyBrowserPageView } from "../plugins/browser-page/src/features/browser-page/lib/lazy-browser-page-view.ts";
-import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
-import { MainPlugin } from "../plugins/main/src/plugin.ts";
+import { chat } from "../plugins/chat/src/index.ts";
+import { main } from "../plugins/main/src/index.ts";
 import { LazyTerminalView } from "../plugins/terminal/src/features/terminal/lib/lazy-terminal-view.ts";
 import { TERMINAL_ICON } from "../plugins/terminal/src/features/terminal/lib/terminal-icon.ts";
 
@@ -17,10 +17,10 @@ export const BROWSER_PAGE_FACE = faceOf({
 	view: LazyBrowserPageView,
 });
 
-export const BUILT_IN_FACES = [MainPlugin, ChatPlugin].flatMap((filler) =>
+export const BUILT_IN_FACES = [main, chat].flatMap((filler) =>
 	filler.parts.fills
-		.filter(({ slot }) => slot === AppsSlot)
+		.flatMap(({ slot, listId, item }) => (slot === apps.apps && listId !== null ? [{ id: listId, item }] : []))
 		.map(({ id, item }) => faceOf({ id, ...AppSchema.parse(item) })),
 );
 
-export const PluginAppsModule = AppsModule({ apps: [...BUILT_IN_FACES, TERMINAL_FACE, BROWSER_PAGE_FACE] });
+export const PluginAppsModule = appsModule({ apps: [...BUILT_IN_FACES, TERMINAL_FACE, BROWSER_PAGE_FACE] });

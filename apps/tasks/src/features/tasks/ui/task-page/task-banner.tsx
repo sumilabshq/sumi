@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { AcceptTaskCommand, KeepTaskCommand } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
 import { useCommand } from "@widgetarium/data-framework";
 import { Button } from "@widgetarium/kit";
@@ -15,8 +15,8 @@ export interface TaskBannerProps {
 }
 
 export function TaskBanner({ card, showsStatus = true }: TaskBannerProps): ReactElement | null {
-	const accept = useCommand(AcceptTaskCommand).with({ task: card.id });
-	const keep = useCommand(KeepTaskCommand).with({ task: card.id });
+	const accept = useCommand(tasks.person.acceptTask).with({ task: card.id });
+	const keep = useCommand(tasks.person.keepTask).with({ task: card.id });
 	const [isSendingBack, setSendingBack] = useState(false);
 
 	if (!hasBannerContent(card)) {

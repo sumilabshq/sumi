@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { ComposerPrefillQuery, TakePrefillCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export function useTakesPrefill(
@@ -9,8 +9,8 @@ export function useTakesPrefill(
 	fill: (text: string) => void,
 ): void {
 	const chat = useChatKey();
-	const prefill = useQuery(ComposerPrefillQuery, { chat }).data;
-	const takePrefill = useCommand(TakePrefillCommand);
+	const prefill = useQuery(assistant.prefill.composerPrefill, { chat }).data;
+	const takePrefill = useCommand(assistant.prefill.takePrefill);
 	const taken = useRef<number | null>(null);
 
 	useEffect(() => {

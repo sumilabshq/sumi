@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
 import { useCommand } from "@widgetarium/data-framework";
-import { AgentEventSchema, RecordAgentEventsCommand } from "@widgetarium/mascot";
+import { AgentEventSchema, mascot } from "@widgetarium/mascot";
 import type { AgentEvent } from "@widgetarium/mascot";
 
 export interface ChatMoment {
@@ -42,7 +42,7 @@ export interface ChatSeen {
 }
 
 export function useTellsAgentActivity({ session, isAsking }: ChatSeen): () => void {
-	const record = useCommand(RecordAgentEventsCommand);
+	const record = useCommand(mascot.activity.recordAgentEvents);
 	const told = useRef<ChatMoment>(chatMomentOf({ session, isAsking }));
 	useEffect(() => {
 		const now = chatMomentOf({ session, isAsking });

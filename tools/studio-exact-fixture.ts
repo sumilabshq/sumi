@@ -1,7 +1,7 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
+import { appHost as appHostModule } from "../plugins/apps/data/app-host/module.ts";
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
 import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
@@ -12,12 +12,12 @@ import { NoPaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-
 import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
 import { MemoryShownViewGateway } from "../plugins/apps/data/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
-import { LayoutModule } from "../packages/state/layout/module.ts";
-import { ShowChatInPaneCommand } from "../packages/state/layout/generated/contract.ts";
-import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
-import { OpenChatCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { layout as layoutModule } from "../packages/state/layout/module.ts";
+import { layout } from "../packages/state/layout/generated/contract.ts";
+import { workspaces as workspacesModule } from "../packages/domain/workspaces/module.ts";
+import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -174,7 +174,7 @@ export function exactStudio({
 	const studioApp = runtime()
 		.modules(
 			PluginAppsModule,
-			AppHostModule({
+			appHostModule({
 				injects: {
 					studioWindow: new MemoryStudioWindowGateway(),
 					essentials: keptEssentials,
@@ -183,19 +183,19 @@ export function exactStudio({
 					coreChanges: new NoCoreChangesGateway(),
 				},
 			}),
-			BrowserModule({ injects: fakeBrowser(boardPages).parts }),
-			LayoutModule,
-			WorkspacesModule({ injects: workspaces }),
+			browser({ injects: fakeBrowser(boardPages).parts }),
+			layoutModule,
+			workspacesModule({ injects: workspaces }),
 			...PLUGIN_WINDOW_MODULES,
 		)
 		.imports(placesOver(places))
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });
-	void studioApp.send(ShowChatInPaneCommand, { chatId: releaseChatId, paneId: null });
+	void studioApp.send(layout.paneTabs.showChatInPane, { chatId: releaseChatId, paneId: null });
 	return {
 		studioApp,
 		places,
 		essentials: keptEssentials,
-		switchChat: (id) => void studioApp.send(OpenChatCommand, { chatId: id, paneId: null }),
+		switchChat: (id) => void studioApp.send(appHost.chatOpening.openChat, { chatId: id, paneId: null }),
 		holdElsewhere: (pageId) => boardPages.holdElsewhere(pageId),
 	};
 }

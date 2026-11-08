@@ -11,7 +11,7 @@ import {
 	closeTabPlan,
 } from "./lib/closing-plans.js";
 
-export const CloseTabCommand = command("close-tab")
+export const closeTab = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -20,7 +20,7 @@ export const CloseTabCommand = command("close-tab")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), closeTabPlan(id)))),
 	);
 
-export const CloseOtherTabsCommand = command("close-other-tabs")
+export const closeOtherTabs = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -29,7 +29,7 @@ export const CloseOtherTabsCommand = command("close-other-tabs")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), closeOthersPlan(id)))),
 	);
 
-export const CloseShownTabCommand = command("close-shown-tab")
+export const closeShownTab = command()
 	.public()
 	.input(SettleAskSchema)
 	.output(TabsSettledSchema)
@@ -38,7 +38,7 @@ export const CloseShownTabCommand = command("close-shown-tab")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), closeShownPlan()))),
 	);
 
-export const CloseGroupCommand = command("close-group")
+export const closeGroup = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -47,7 +47,7 @@ export const CloseGroupCommand = command("close-group")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), closeGroupPlan(id)))),
 	);
 
-export const CloseEssentialTabCommand = command("close-essential-tab")
+export const closeEssentialTab = command()
 	.public()
 	.input(CloseEssentialAskSchema)
 	.output(TabsSettledSchema)

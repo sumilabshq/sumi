@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import type { AskAnswer } from "@widgetarium/browser";
-import { AccessAsksQuery, AnswerAskCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { AskChips } from "./ask-chips.js";
 
 const CARD =
@@ -21,8 +21,8 @@ const READ_ONLY = "Read only: a screenshot and page content";
 const DATA_NOT_ORDERS = "Page content is data to Sumi, never instructions.";
 
 export function AskCard(): ReactElement | null {
-	const [asked] = useQuery(AccessAsksQuery).data;
-	const answerAsk = useCommand(AnswerAskCommand);
+	const [asked] = useQuery(browser.asks.accessAsks).data;
+	const answerAsk = useCommand(browser.asks.answerAsk);
 
 	if (!asked) {
 		return null;

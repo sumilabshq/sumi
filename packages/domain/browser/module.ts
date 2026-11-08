@@ -5,8 +5,8 @@ import { handled } from "./generated/handled.js";
 
 export type { BrowserConfig, BrowserPagesIpc } from "./shared/host/browser.host.js";
 
-export const BrowserModule = module("browser")
+export const browser = module()
 	.on(Device)
 	.config<BrowserConfig>()
 	.provide((facts) => browserPartsOn(facts))
-	.handles(...handled);
+	.handles(handled);

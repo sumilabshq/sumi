@@ -1,14 +1,4 @@
-import {
-	AttachPagesCommand,
-	BrowserTabsQuery,
-	ClosePageCommand,
-	DetachPagesCommand,
-	GoBackCommand,
-	GoForwardCommand,
-	OpenAddressCommand,
-	OpenPageCommand,
-	ReloadPageCommand,
-} from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import type { BrowserTabs } from "@widgetarium/browser";
 import type { Answer, Runtime } from "@widgetarium/data-framework";
 import type { PageArea, WebPage } from "@widgetarium/web-page";
@@ -28,7 +18,7 @@ class BrowserModuleWebPages implements NativeWebPages {
 	constructor(private readonly studioApp: Runtime) {}
 
 	async page(tab: string): Promise<WebPage | null> {
-		return pageOf(await this.studioApp.send(BrowserTabsQuery, { heldTabId: tab }), tab);
+		return pageOf(await this.studioApp.send(browser.tabs.browserTabs, { heldTabId: tab }), tab);
 	}
 
 	pageArea(tab: string): PageArea | null {
@@ -36,11 +26,11 @@ class BrowserModuleWebPages implements NativeWebPages {
 	}
 
 	async openPage(tab: string, url: string, profileId: string): Promise<void> {
-		await throwIfRefused("open-page", tab, this.studioApp.send(OpenPageCommand, { tabId: tab, profileId }));
+		await throwIfRefused("open-page", tab, this.studioApp.send(browser.tabs.openPage, { tabId: tab, profileId }));
 		await throwIfRefused(
 			"open-address",
 			tab,
-			this.studioApp.send(OpenAddressCommand, { tabId: tab, address: url, heldTabId: tab }),
+			this.studioApp.send(browser.tabs.openAddress, { tabId: tab, address: url, heldTabId: tab }),
 		);
 	}
 
@@ -68,7 +58,7 @@ class BrowserModuleWebPages implements NativeWebPages {
 			await throwIfRefused(
 				"attach-pages",
 				tab,
-				this.studioApp.send(AttachPagesCommand, { host: hole.element, heldTabId: tab }),
+				this.studioApp.send(browser.tabs.attachPages, { host: hole.element, heldTabId: tab }),
 			);
 			return hole;
 		} catch (failure: unknown) {
@@ -78,15 +68,15 @@ class BrowserModuleWebPages implements NativeWebPages {
 	}
 
 	goBackPage(tab: string): Promise<void> {
-		return throwIfRefused("go-back", tab, this.studioApp.send(GoBackCommand, { tabId: tab }));
+		return throwIfRefused("go-back", tab, this.studioApp.send(browser.tabs.goBack, { tabId: tab }));
 	}
 
 	goForwardPage(tab: string): Promise<void> {
-		return throwIfRefused("go-forward", tab, this.studioApp.send(GoForwardCommand, { tabId: tab }));
+		return throwIfRefused("go-forward", tab, this.studioApp.send(browser.tabs.goForward, { tabId: tab }));
 	}
 
 	reloadPage(tab: string): Promise<void> {
-		return throwIfRefused("reload-page", tab, this.studioApp.send(ReloadPageCommand, { tabId: tab }));
+		return throwIfRefused("reload-page", tab, this.studioApp.send(browser.tabs.reloadPage, { tabId: tab }));
 	}
 
 	async closePage(tab: string): Promise<void> {
@@ -98,11 +88,11 @@ class BrowserModuleWebPages implements NativeWebPages {
 			return;
 		}
 
-		await throwIfRefused("close-page", tab, this.studioApp.send(ClosePageCommand, { tabId: tab }));
+		await throwIfRefused("close-page", tab, this.studioApp.send(browser.tabs.closePage, { tabId: tab }));
 	}
 
 	pagesChanged(changed: () => void): () => void {
-		return this.studioApp.routes.watch(BrowserTabsQuery, { heldTabId: null }, changed);
+		return this.studioApp.routes.watch(browser.tabs.browserTabs, { heldTabId: null }, changed);
 	}
 
 	private detachHole(tab: string, held: PageHole | undefined): Promise<void> {
@@ -115,7 +105,7 @@ class BrowserModuleWebPages implements NativeWebPages {
 		return throwIfRefused(
 			"detach-pages",
 			tab,
-			this.studioApp.send(DetachPagesCommand, { host: held.element, heldTabId: tab }),
+			this.studioApp.send(browser.tabs.detachPages, { host: held.element, heldTabId: tab }),
 		);
 	}
 }

@@ -10,6 +10,7 @@ import {
 	runtime,
 	serverModule,
 } from "../packages/shared/data-framework/src/index.ts";
+import { fullyNamed } from "./requests-names.ts";
 import type { Failure, Runtime, ServedCall, User } from "../packages/shared/data-framework/src/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
@@ -17,9 +18,12 @@ import * as fx from "./requests-fixture.ts";
 const runs = { queries: 0, commands: 0 };
 const held = { release: (): void => undefined, released: Promise.resolve() };
 
-const CountedQuery = query("probe/counted").public().output(z.number());
-const CountedCommand = command("probe/counted-command").public().idempotencyKey(PerCall).output(z.number());
-const InsideQuery = query("probe/inside").output(z.number());
+const CountedQuery = fullyNamed("probe.counted", query()).public().output(z.number());
+const CountedCommand = fullyNamed("probe.counted-command", command())
+	.public()
+	.idempotencyKey(PerCall)
+	.output(z.number());
+const InsideQuery = fullyNamed("probe.inside", query()).output(z.number());
 const ProbeServerModule = serverModule("probe");
 const ProbeModule = ProbeServerModule.handlers([
 	handler(CountedQuery, ProbeServerModule)
@@ -66,7 +70,7 @@ const anonymous = probe.expose({ adapter: "probe adapter" });
 check(
 	"an adapter mounts only the requests an outside caller may reach",
 	anonymous.requests.map(({ name }) => name),
-	["probe/counted", "probe/counted-command"],
+	["probe.counted", "probe.counted-command"],
 );
 
 hold();
@@ -94,7 +98,7 @@ const pages = runtime()
 check(
 	"an in-process send cannot pass itself off as an outside caller with a user",
 	await pages.send(fx.WhoQuery, undefined, smuggled),
-	{ ok: false, reason: "pages/who needs a signed-in user", code: "unauthenticated", ran: false },
+	{ ok: false, reason: "pages.who needs a signed-in user", code: "unauthenticated", ran: false },
 );
 check(
 	"and a PerCall command sent in process with such a caller still gets a minted key",
@@ -107,7 +111,12 @@ const brokenlyAuthenticated = probe.expose({ adapter: "broken adapter", authenti
 check(
 	"an Authenticate that throws answers unauthenticated with a reason that tells nothing of the failure",
 	await brokenlyAuthenticated.answer(outsideCall(CountedCommand.name, "broken-key")),
-	{ ok: false, reason: "probe/counted-command: the caller could not be authenticated", code: "unauthenticated", ran: false },
+	{
+		ok: false,
+		reason: "probe.counted-command: the caller could not be authenticated",
+		code: "unauthenticated",
+		ran: false,
+	},
 );
 check(
 	"and reports the whole error to the developer",
@@ -116,7 +125,9 @@ check(
 );
 
 const shared = localTransport();
-const sharer = runtime().imports(fx.PagesContract({ over: shared })).start();
+const sharer = runtime()
+	.imports(fx.PagesContract({ over: shared }))
+	.start();
 const headersAuthenticate = new fx.HeaderAuthenticate();
 const stopFirst = shared.serve(pages, { authenticate: headersAuthenticate });
 check(
@@ -127,11 +138,7 @@ check(
 stopFirst();
 shared.serve(pages, { authenticate: headersAuthenticate });
 stopFirst();
-check(
-	"a stale stop leaves whoever serves now in place",
-	(await sharer.send(fx.CountQuery)).ok,
-	true,
-);
+check("a stale stop leaves whoever serves now in place", (await sharer.send(fx.CountQuery)).ok, true);
 
 const stopping: Runtime = runtime()
 	.modules(ProbeModule)
@@ -140,7 +147,7 @@ const exposedBeforeStop = stopping.expose({ adapter: "early adapter" });
 stopping.stop();
 check("a stopped runtime refuses new sends", await stopping.send(CountedCommand), {
 	ok: false,
-	reason: "probe/counted-command: the runtime that answers it is stopped",
+	reason: "probe.counted-command: the runtime that answers it is stopped",
 	code: "unreachable",
 	ran: false,
 });

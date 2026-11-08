@@ -1,3 +1,3 @@
 import { event } from "@widgetarium/data-framework";
 
-export const TabsSettledEvent = event("tabs-settled").public();
+export const tabsSettled = event().public();

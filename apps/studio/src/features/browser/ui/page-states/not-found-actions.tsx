@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import type { BrowserTabState, PageFailure } from "@widgetarium/browser";
-import { OpenAddressCommand, ReloadPageCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { hostOf } from "../../lib/failure-copy.js";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { AskInkAction } from "../ask-ink-action/ask-ink-action.js";
@@ -22,8 +22,8 @@ const TRY_AGAIN = "Try again";
 const ASK_INK = "Ask Sumi";
 
 export function NotFoundActions({ tab, failure, searchFor }: NotFoundActionsProps): ReactElement {
-	const openAddress = useCommand(OpenAddressCommand);
-	const reload = useCommand(ReloadPageCommand);
+	const openAddress = useCommand(browser.tabs.openAddress);
+	const reload = useCommand(browser.tabs.reloadPage);
 	const heldTabId = useHeldTab();
 	const open = (address: string): void =>
 		void openAddress.run({

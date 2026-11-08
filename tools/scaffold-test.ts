@@ -97,11 +97,11 @@ async function cli(...argv: string[]): Promise<CliRun> {
 async function checksScaffolding(): Promise<void> {
 	const runs = [
 		await cli("add", "module", "notes", "--on", "Device"),
-		await cli("add", "feature", "notes/tasks", "--query", "Tasks", "--command", "AddTask"),
+		await cli("add", "feature", "notes/tasks", "--query", "tasks", "--command", "addTask"),
 		keepNoteInModule(),
 		await cli("add", "feature", "notes/tags"),
 		await cli("add", "module", "billing", "--on", "Server", "--in", "state"),
-		await cli("add", "feature", "billing/ledger", "--command", "Charge"),
+		await cli("add", "feature", "billing/ledger", "--command", "charge"),
 	];
 	check(
 		"add module and add feature answer 0",
@@ -130,15 +130,21 @@ function keepNoteInModule(): CliRun {
 
 function checksLaidFiles(): void {
 	check(
-		"module.ts ends with .handles(...handled) and add feature leaves it alone, handled lists every feature's requests, and a server module is guarded",
+		"module.ts ends with .handles(handled) and add feature leaves it alone, handled names every feature's requests, and a server module is guarded",
 		[
-			probeText(`${NOTES}/module.ts`).includes(".handles(...handled);"),
+			probeText(`${NOTES}/module.ts`).includes(".handles(handled);"),
 			probeText(`${NOTES}/module.ts`).includes(KEPT_NOTE),
 			handledIn(NOTES),
 			handledIn(BILLING),
 			probeText(`${BILLING}/module.ts`).includes(".guard(AuthenticatedGuard)"),
 		],
-		[true, true, "AddTaskCommand, TagsQuery, TasksQuery", "ChargeCommand", true],
+		[
+			true,
+			true,
+			'named("tags.tags", tags), named("tasks.add-task", addTask), named("tasks.tasks", tasks)',
+			'named("ledger.charge", charge)',
+			true,
+		],
 	);
 	check(
 		"every laid request is public and takes its builder from #module",
@@ -276,7 +282,7 @@ async function isFormatted(file: string): Promise<boolean> {
 
 function handledIn(folder: string): string {
 	const code = probeText(`${folder}/generated/handled.ts`).replace(/\s+/g, " ");
-	return /handled: readonly ModuleItem\[\] = \[([^\]]*)\]/.exec(code)?.[1]?.trim().replace(/,$/, "") ?? "";
+	return /handled = handledItems\("[a-z-]+", \[([^\]]*)\]/.exec(code)?.[1]?.trim().replace(/,$/, "") ?? "";
 }
 
 function probeText(file: string): string {

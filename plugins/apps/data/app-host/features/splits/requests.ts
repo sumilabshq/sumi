@@ -1,38 +1,33 @@
 import { z } from "zod";
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import {
-	PlaceInViewCommand as PlacesPlaceInViewCommand,
-	RemoveFromSplitCommand as PlacesRemoveFromSplitCommand,
-	ResizeSplitCommand as PlacesResizeSplitCommand,
-	ShownSplitQuery as PlacesShownSplitQuery,
-} from "@widgetarium/places";
-import { ClosePaneCommand } from "@widgetarium/layout";
-import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
-import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { places } from "@widgetarium/places";
+import { layout } from "@widgetarium/layout";
+import { studioCoreChanged } from "../../gateways/core-changes/core-changes.events.js";
+import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { ShownSplitSchema, SplitPlacingSchema } from "../../shared/schema/split.schema.js";
 
-export const ShownSplitQuery = query("shown-split")
+export const shownSplit = query()
 	.public()
 	.output(ShownSplitSchema)
 	.handle(async (_input, { send, studioWindow }) =>
-		send(PlacesShownSplitQuery, { window: studioWindow.windowLabel() }),
+		send(places.splits.shownSplit, { window: studioWindow.windowLabel() }),
 	);
 
-export const PlaceInViewCommand = command("place-in-view")
+export const placeInView = command()
 	.public()
 	.input(SplitPlacingSchema)
 	.output(z.object({ isPlaced: z.boolean() }))
 	.idempotencyKey(Repeatable)
 	.handle(async (placing, { send, emit, ...injects }) => {
-		const placed = await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesPlaceInViewCommand, { at, ...placing }),
+		const placed = await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.splits.placeInView, { at, ...placing }),
 		);
 		return { isPlaced: placed.isPlaced };
 	});
 
-export const CloseViewPaneCommand = command("close-view-pane")
+export const closeViewPane = command()
 	.public()
 	.input(z.object({ paneId: z.string().min(1), tabId: z.string().min(1).nullable() }))
 	.idempotencyKey(Repeatable)
@@ -40,16 +35,16 @@ export const CloseViewPaneCommand = command("close-view-pane")
 		const left =
 			tabId === null
 				? null
-				: await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-						send(PlacesRemoveFromSplitCommand, { at, tabId }),
+				: await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+						send(places.splits.removeFromSplit, { at, tabId }),
 					);
 
 		if (left?.isMember !== true) {
-			await send(ClosePaneCommand, { id: paneId });
+			await send(layout.panes.closePane, { id: paneId });
 		}
 	});
 
-export const ResizeSplitCommand = command("resize-split")
+export const resizeSplit = command()
 	.public()
 	.input(
 		z.object({
@@ -60,15 +55,15 @@ export const ResizeSplitCommand = command("resize-split")
 	)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ branchId, at: edge, share }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesResizeSplitCommand, { at, branchId, edge, share }),
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(places.splits.resizeSplit, { at, branchId, edge, share }),
 		);
 	});
 
-export const RereadShownSplitSubscriber = subscriber(TabsSettledEvent).handle((_input, { invalidate }) => {
-	invalidate(ShownSplitQuery);
+export const rereadShownSplit = subscriber(tabsSettled).handle((_input, { invalidate }) => {
+	invalidate(shownSplit);
 });
 
-export const RereadShownSplitForCoreSubscriber = subscriber(StudioCoreChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(ShownSplitQuery);
+export const rereadShownSplitForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
+	invalidate(shownSplit);
 });

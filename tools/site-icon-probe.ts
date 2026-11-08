@@ -2,8 +2,8 @@ import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { JSDOM } from "jsdom";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { SiteIconQuery } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/index.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import { WebBrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/web.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
@@ -38,19 +38,21 @@ const rustProbe = {
 const siteIcons = new MemorySiteIconsGateway();
 const started = runtime()
 	.modules(
-		BrowserModule({ injects: browserPartsOf({
+		browserModule({
+			injects: browserPartsOf({
 				browserPages: new WebBrowserPagesGateway(),
 				browserGrants: new MemoryBrowserGrantsGateway(),
 				browserAudit: new MemoryBrowserAuditGateway(),
 				recentSites: new MemoryRecentSitesGateway(),
 				siteIcons,
 				siteFiles: new TauriSiteFilesGateway(rustProbe),
-			}), }),
+			}),
+		}),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "probe" } });
 
 for (const origin of ORIGINS) {
-	const answer = await started.send(SiteIconQuery, { origin });
+	const answer = await started.send(browser.siteIcons.siteIcon, { origin });
 	const kept = siteIcons.siteIcons().find((icon) => icon.origin === origin);
 	const icon = answer.ok ? answer.output.icon : null;
 	console.log(

@@ -2,18 +2,18 @@ import { Repeatable } from "@widgetarium/data-framework";
 import { command, query } from "#module";
 import { FlipFileSwitchInputSchema, SwitchesSchema } from "../../shared/schema/switches.schema.js";
 
-export const FileSwitchesQuery = query("file-switches")
+export const fileSwitches = query()
 	.public()
 	.output(SwitchesSchema)
 	.settlesNow()
 	.handle((_input, { switches }) => switches.switches());
 
-export const FlipFileSwitchCommand = command("flip-file-switch")
+export const flipFileSwitch = command()
 	.public()
 	.input(FlipFileSwitchInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ name }, { switches, invalidate }) => {
-		invalidate(FileSwitchesQuery);
+		invalidate(fileSwitches);
 		const was = switches.switches();
 		const isOn = was.on.includes(name);
 		const now = {
@@ -25,11 +25,11 @@ export const FlipFileSwitchCommand = command("flip-file-switch")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const ReloadFileCommand = command("reload-file")
+export const reloadFile = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { switches, invalidate }) => {
-		invalidate(FileSwitchesQuery);
+		invalidate(fileSwitches);
 		const was = switches.switches();
 		const reason = `file loads ${was.loads} → ${was.loads + 1} (reload)`;
 		switches.saveSwitches(

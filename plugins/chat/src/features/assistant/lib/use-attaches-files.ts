@@ -1,10 +1,10 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { AttachFilesCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export function useAttachesFiles(): (files: readonly File[]) => void {
 	const chat = useChatKey();
-	const attachFiles = useCommand(AttachFilesCommand);
+	const attachFiles = useCommand(assistant.composer.attachFiles);
 	return (files) => {
 		if (files.length === 0) {
 			return;

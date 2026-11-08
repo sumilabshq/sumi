@@ -12,6 +12,6 @@ export const FileViewerSchema = AppSchema.extend({
 	extensions: z.array(z.string().regex(EXTENSION, NOT_AN_EXTENSION)).min(1),
 });
 
-export const FileViewersSlot = slot("file-viewers").item(FileViewerSchema).list();
+export const fileViewers = slot().item(FileViewerSchema).list();
 
 export type FileViewer = FilledItem<typeof FileViewerSchema>;

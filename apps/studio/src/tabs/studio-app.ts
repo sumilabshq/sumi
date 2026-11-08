@@ -1,7 +1,7 @@
 import type { CoreChanges, WindowModuleOffers } from "@sumi/sumi-host-plugin";
 import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-store";
-import { RestoreTabsCommand } from "@widgetarium/app-host";
-import { BrowserModule } from "@widgetarium/browser/module";
+import { appHost } from "@widgetarium/app-host";
+import { browser } from "@widgetarium/browser/module";
 import type { BrowserPagesIpc } from "@widgetarium/browser/module";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type {
@@ -12,17 +12,17 @@ import type {
 	Runtime,
 	ServerRuns,
 } from "@widgetarium/data-framework";
-import { FileSystemModule as FileSystemContract, TerminalModule as TerminalContract } from "@sumi/contract";
-import { LayoutModule } from "@widgetarium/layout/module";
+import { fileSystem, terminal } from "@sumi/contract";
+import { layout } from "@widgetarium/layout/module";
 import type { StudioWindows } from "@widgetarium/layout/module";
 import type { BoardFile } from "@widgetarium/tasks/module";
-import { FileSystemModule } from "@widgetarium/file-system/module";
-import { TerminalModule } from "@widgetarium/terminal/module";
-import { WorkspacesModule } from "@widgetarium/workspaces/module";
+import { fileSystem as fileSystemModule } from "@widgetarium/file-system/module";
+import { terminal as terminalModule } from "@widgetarium/terminal/module";
+import { workspaces } from "@widgetarium/workspaces/module";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import type { BackgroundModule, WindowModule } from "../plugins/sumi-plugins.js";
 
-const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [FileSystemContract, TerminalContract];
+const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [fileSystem, terminal];
 
 export function frameCoreModulesOf(
 	backgroundModules: readonly BackgroundModule[],
@@ -70,14 +70,14 @@ export function startCoreInProcess(
 		file: boardFileInMemory(),
 	};
 	const core = runtime()
-		.modules(FileSystemModule, TerminalModule, ...backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
+		.modules(fileSystemModule, terminalModule, ...backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
 		.start({ platform: "server", env: {}, scope: { workspaceId } });
 	mountOrStop(core, (started) => local.serve(started, { authenticate: new AppCallerAuthenticate() }));
 	return local;
 }
 
 export async function restoreTabs(studioApp: Runtime): Promise<void> {
-	const answer = await studioApp.send(RestoreTabsCommand);
+	const answer = await studioApp.send(appHost.tabs.restoreTabs);
 
 	if (!answer.ok) {
 		console.error(`[widgetarium] the studio could not restore its tabs: ${answer.reason}`);
@@ -86,15 +86,11 @@ export async function restoreTabs(studioApp: Runtime): Promise<void> {
 
 function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModule[] {
 	if (lent === undefined) {
-		return [LayoutModule, BrowserModule, WorkspacesModule];
+		return [layout, browser, workspaces];
 	}
 
 	const { store, windows, ipc } = lent;
-	return [
-		LayoutModule({ tauri: { store, windows } }),
-		BrowserModule({ tauri: { ipc } }),
-		WorkspacesModule({ tauri: { store } }),
-	];
+	return [layout({ tauri: { store, windows } }), browser({ tauri: { ipc } }), workspaces({ tauri: { store } })];
 }
 
 function boardFileInMemory(): BoardFile {

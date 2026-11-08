@@ -1,4 +1,4 @@
-import { AppearanceModule } from "@sumi/contract";
+import { appearance } from "@sumi/contract";
 import type { FrameServing } from "@sumi/sumi-host-plugin";
 import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
 import { mountOrStop, runtime } from "@widgetarium/data-framework";
@@ -82,7 +82,7 @@ function leaseRoutes({ ask, leased, opened }: FrameLease): FrameRoutes {
 			})),
 			...held.map(({ served, lease }) => frameModuleRouteOf(lease, served.contract, tabId)),
 			{
-				module: AppearanceModule,
+				module: appearance,
 				transport: ask.appearance,
 				hears: hearsAll,
 			},

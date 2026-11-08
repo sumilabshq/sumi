@@ -1,5 +1,32 @@
-export * from "./slots.js";
-export * from "./plugin.js";
+export {
+	BackgroundModuleSchema,
+	FrameModuleSchema,
+	TabPageSchema,
+	WindowLayerSchema,
+	WindowModuleSchema,
+	WindowProviderSchema,
+	WindowServerModuleSchema,
+} from "./slots.js";
+export type {
+	BackgroundModuleOf,
+	CoreChanges,
+	CoreOffers,
+	DrawnTabPage,
+	FrameServing,
+	FrameServingOf,
+	TabModules,
+	TabPageOf,
+	TabPageProps,
+	WindowLayerOf,
+	WindowModuleOf,
+	WindowModuleOffers,
+	WindowOffers,
+	WindowProviderOf,
+	WindowProviderProps,
+	WindowServerModuleOf,
+	WindowServerOffers,
+} from "./slots.js";
+export * from "./generated/plugin.js";
 export * from "./features/ask-composer/lib/ask-composer-context.js";
 export * from "./features/tab-face/lib/tab-face-context.js";
 export * from "./features/tab-header/lib/tab-header-context.js";

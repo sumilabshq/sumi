@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { AppTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
-import { ChatListQuery } from "@sumi/chat-tabs";
+import { appHost } from "@widgetarium/app-host";
+import { chatTabs } from "@sumi/chat-tabs";
 import { AppStateInputSchema, appStateOf } from "./app-state.js";
 import type { AppState } from "./app-state.js";
 import { inputOf, outputOf } from "./tool-places.js";
@@ -32,9 +32,9 @@ const APP_WORDS: Readonly<Record<z.infer<typeof AgentAppSchema>, { readonly name
 export async function appState({ app, chatId }: ToolContext, input: unknown): Promise<AppState> {
 	const asked = inputOf(AppStateInputSchema, "app_state", input);
 	const [sidebar, chats, tabs] = await Promise.all([
-		outputOf(app.send(TabsSidebarQuery)),
-		outputOf(app.send(ChatListQuery)),
-		outputOf(app.send(AppTabsQuery)),
+		outputOf(app.send(appHost.tabs.tabsSidebar)),
+		outputOf(app.send(chatTabs.chatList.chatList)),
+		outputOf(app.send(appHost.tabs.appTabs)),
 	]);
 	return appStateOf({ sidebar, chats, tabs }, chatId, asked);
 }

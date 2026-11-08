@@ -1,11 +1,15 @@
 import { query, subscriber } from "#module";
 import { SiteFilesGateway } from "../../gateways/site-files/site-files.gateway.js";
-import { SiteIconChangedEvent } from "../../gateways/site-icons/site-icons.events.js";
+import { siteIconChanged } from "../../gateways/site-icons/site-icons.events.js";
 import { DATA_IMAGE, iconLinksOfHead } from "../../shared/lib/page-icon-links.js";
 import { keptIconOfOrigin, originPageOf, withIconKept } from "../../shared/lib/site-icon-cache.js";
 import { iconAddressesOf } from "../../shared/lib/site-icon-choice.js";
 import { originOf } from "../../shared/lib/site-key.js";
-import { SiteIconAnswerSchema, SiteIconOfOriginSchema, SiteOriginSchema } from "../../shared/schema/site-icon.schema.js";
+import {
+	SiteIconAnswerSchema,
+	SiteIconOfOriginSchema,
+	SiteOriginSchema,
+} from "../../shared/schema/site-icon.schema.js";
 import type { KeptSiteIcon, SiteIconAnswer } from "../../shared/schema/site-icon.schema.js";
 
 interface DiscoveredIcon extends SiteIconAnswer {
@@ -15,7 +19,7 @@ interface DiscoveredIcon extends SiteIconAnswer {
 const WEB_ORIGIN = /^https?:\/\//;
 const MOST_LOGGED_ADDRESS = 120;
 
-export const SiteIconQuery = query("site-icon")
+export const siteIcon = query()
 	.public()
 	.input(SiteOriginSchema)
 	.output(SiteIconOfOriginSchema)
@@ -50,8 +54,8 @@ export const SiteIconQuery = query("site-icon")
 		return { icon: fresh.icon };
 	});
 
-export const RereadSiteIconSubscriber = subscriber(SiteIconChangedEvent).handle(({ origin }, { invalidate }) => {
-	invalidate(SiteIconQuery, { origin });
+export const rereadSiteIcon = subscriber(siteIconChanged).handle(({ origin }, { invalidate }) => {
+	invalidate(siteIcon, { origin });
 });
 
 async function discoveredIconOf(origin: string, siteFiles: SiteFilesGateway): Promise<DiscoveredIcon> {

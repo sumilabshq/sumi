@@ -3,9 +3,7 @@ import type { ReactElement } from "react";
 import { GPU_FRAMES } from "@widgetarium/gpu";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { usePanZoom } from "@widgetarium/behaviors";
-import { FieldStateQuery } from "@widgetarium/canvas";
-import { CameraQuery } from "@widgetarium/canvas";
-import { KeepCameraCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { FieldRegions } from "./field-regions.js";
 import { PRESSABLE } from "../../lib/field-marks.js";
 import { Highlight } from "./highlight.js";
@@ -23,9 +21,9 @@ const LAYER =
 export function FieldStage(): ReactElement {
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const fieldRef = useRef<HTMLDivElement | null>(null);
-	const state = useQuery(FieldStateQuery).data;
-	const { camera } = useQuery(CameraQuery).data;
-	const keepCamera = useCommand(KeepCameraCommand);
+	const state = useQuery(canvas.field.fieldState).data;
+	const { camera } = useQuery(canvas.view.camera).data;
+	const keepCamera = useCommand(canvas.view.keepCamera);
 	const grips = { isHand: !state.isPointer, pressable: PRESSABLE, ownScroll: null };
 	const pan = usePanZoom({ layerRef, fieldRef }, grips, {
 		camera,

@@ -2,7 +2,7 @@ import { useRef } from "react";
 import type { RefObject } from "react";
 import { useOptionalQuery, useQuery } from "@widgetarium/data-framework";
 import type { FrameBounds, PaneBoard, PaneLeaf, PaneNode, PanePlacement, PlacementPreview } from "@widgetarium/layout";
-import { PaneTreeQuery, PlacementPreviewQuery } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout";
 import { focusedGroupOf } from "./aim-targets.js";
 import { drawLayout } from "./draw-layout.js";
 import { cornersOf, fixedPlaceOf, nodeWithId, paneLayoutOf, panePlacesOf, rimOf } from "./pane-layout.js";
@@ -104,7 +104,7 @@ export function useBoardLook(board: RefObject<HTMLDivElement | null>, { chatPx, 
 }
 
 function useFocusedLayout(board: RefObject<HTMLDivElement | null>, { box, spacing }: Measure): Focused {
-	const tree = useQuery(PaneTreeQuery).data;
+	const tree = useQuery(layout.panes.paneTree).data;
 	const offered = useRef<ReadonlyMap<string, PaneRect>>(new Map());
 	const { aim, carriedHome } = usePaneDrop({ board, rects: offered, leaves: tree.leaves, groups: tree.chatGroups });
 	const focus = focusedGroupOf(tree.chatGroups, carriedHome);
@@ -123,7 +123,7 @@ function useFocusedLayout(board: RefObject<HTMLDivElement | null>, { box, spacin
 }
 
 function usePreviewed(board: RefObject<HTMLDivElement | null>, focused: Focused, measure: Measure): Previewed {
-	const previewed = useOptionalQuery(PlacementPreviewQuery, focused.aim).data;
+	const previewed = useOptionalQuery(layout.panes.placementPreview, focused.aim).data;
 	const movingId = movingIdOf(previewed, focused.tree.leaves);
 	const shown = shownLayoutOf(previewed, focused.focus, measure) ?? focused.resting;
 	const preview = previewed === null || shown === focused.resting ? undefined : shown.rects.get(previewed.placedId);

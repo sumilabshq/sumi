@@ -1,21 +1,21 @@
-import { AppsPlugin, AppsSlot } from "@sumi/apps-plugin";
-import { FrameModulesSlot, SumiHostPlugin } from "@sumi/sumi-host-plugin";
+import { apps } from "@sumi/apps-plugin";
+import { sumiHost } from "@sumi/sumi-host-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
-import { WebPageModule } from "@widgetarium/web-page";
+import { webPage } from "@widgetarium/web-page";
 import { BROWSER_PAGE_ICON } from "./features/browser-page/lib/browser-page-icon.js";
 import { LazyBrowserPageView } from "./features/browser-page/lib/lazy-browser-page-view.js";
 import { webPageServingOf } from "./features/web-page/lib/web-page-serving.js";
 import { ReloadPageAction } from "./features/web-page/ui/reload-page-action/reload-page-action.js";
 
-export const BrowserPagePlugin = plugin("browser-page")
-	.require(SumiHostPlugin, AppsPlugin)
+export const browserPage = plugin()
+	.require(sumiHost, apps)
 	.fill(
-		AppsSlot({
+		apps.apps.add({
 			id: "browser-page",
 			title: "Browser",
 			icon: BROWSER_PAGE_ICON,
 			view: LazyBrowserPageView,
 			actions: [ReloadPageAction],
 		}),
-		FrameModulesSlot({ id: "web-page", contract: WebPageModule, serving: webPageServingOf }),
+		sumiHost.frameModules.add({ id: "web-page", contract: webPage, serving: webPageServingOf }),
 	);

@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { BoardQuery, TaskQuery, TasksQuery } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
 import { useRuntime } from "@widgetarium/data-framework";
 
-const REREAD = [BoardQuery, TaskQuery, TasksQuery];
+const REREAD = [tasks.board.board, tasks.board.task, tasks.board.tasks];
 
 export function useRereadsAtContinue(cards: readonly TaskCard[]): void {
 	const { queryClient } = useRuntime("useRereadsAtContinue");

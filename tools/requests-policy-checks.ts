@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MemoryDoneKeys, runtime, clientModule, handler, query } from "../packages/shared/data-framework/src/index.ts";
+import { fullyNamed } from "./requests-names.ts";
 import type { Failure } from "../packages/shared/data-framework/src/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
@@ -18,14 +19,14 @@ check("a query answers its handler's output", await started.send(fx.PagesQuery, 
 const badInput = await started.send(fx.AddPageCommand, { title: "" }, { idempotencyKey: "k-empty" });
 check("a refused input names the request, the field and the code, and nothing ran", badInput, {
 	ok: false,
-	reason: "pages/add-page input: title: Too small: expected string to have >=1 characters",
+	reason: "pages.add-page input: title: Too small: expected string to have >=1 characters",
 	code: "invalid-input",
 	ran: false,
 });
 
 check("an output outside its schema is refused as invalid-output", await started.send(fx.BadOutputQuery), {
 	ok: false,
-	reason: "pages/bad-output output: (root): Too small: expected string to have >=10 characters",
+	reason: "pages.bad-output output: (root): Too small: expected string to have >=10 characters",
 	code: "invalid-output",
 	ran: false,
 });
@@ -41,7 +42,7 @@ check("a crash is a refusal, not a throw", crashed, {
 check(
 	"a crash is reported once, with what was thrown",
 	reported.map((failure) => [failure.source, failure.code, failure.thrown instanceof TypeError]),
-	[["pages/crash", "failed", true]],
+	[["pages.crash", "failed", true]],
 );
 
 check(
@@ -105,10 +106,10 @@ pages.runs.length = 0;
 await Promise.all([started.send(fx.PagesQuery, { prefix: "H" }), started.send(fx.PagesQuery, { prefix: "H" })]);
 check("two identical reads at once run the handler once", pages.runs, ["list H"]);
 
-const unhandled = query("pages/unhandled").output(z.string());
+const unhandled = fullyNamed("pages.unhandled", query()).output(z.string());
 check("a request no module runs, with no server, is refused as no-server", await started.send(unhandled), {
 	ok: false,
-	reason: "pages/unhandled runs on no module of this runtime, and no import reaches it",
+	reason: "pages.unhandled runs on no module of this runtime, and no import reaches it",
 	code: "no-server",
 	ran: false,
 });
@@ -125,7 +126,7 @@ check(
 check(
 	"and reports the throw rather than swallowing it",
 	reported.map((failure) => [failure.source, failure.code, failure.reason]),
-	[["pages/broken-count", "failed", "the count broke"]],
+	[["pages.broken-count", "failed", "the count broke"]],
 );
 
 check(
@@ -155,11 +156,11 @@ check(
 			)
 			.start(),
 	),
-	"runtime() refused:\nthe handler of pages/slow injects missing, which its module does not provide as a Missing",
+	"runtime() refused:\nthe handler of pages.slow injects missing, which its module does not provide as a Missing",
 );
 
 const PlainClientModule = clientModule("pages");
-const OtherQuery = query("other/thing").output(z.string());
+const OtherQuery = fullyNamed("other.thing", query()).output(z.string());
 check(
 	"a handler in a module its request does not name refuses the start",
 	thrownBy(() =>
@@ -167,7 +168,7 @@ check(
 			.modules(PlainClientModule.handlers([handler(OtherQuery, PlainClientModule).handle(() => "x")]))
 			.start(),
 	),
-	'runtime() refused:\nother/thing is handled in module "pages", but its name names module "other"',
+	'runtime() refused:\nother.thing is handled in module "pages", but its name names module "other"',
 );
 
 const ElsewhereClientModule = clientModule("pages");
@@ -178,7 +179,7 @@ check(
 			.modules(ElsewhereClientModule.handlers([handler(fx.SlowQuery, PlainClientModule).handle(() => "x")]))
 			.start(),
 	),
-	'runtime() refused:\nthe handler of pages/slow was built for module "pages", but module "pages" holds it',
+	'runtime() refused:\nthe handler of pages.slow was built for module "pages", but module "pages" holds it',
 );
 
 check(
@@ -193,7 +194,7 @@ check(
 			)
 			.start(),
 	),
-	"runtime() refused:\npages/slow has 2 handlers",
+	"runtime() refused:\npages.slow has 2 handlers",
 );
 
 check(

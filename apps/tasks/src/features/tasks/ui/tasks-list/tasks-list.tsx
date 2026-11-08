@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { TaskStatusSchema, TasksQuery } from "@widgetarium/tasks";
+import { TaskStatusSchema, tasks } from "@widgetarium/tasks";
 import type { TaskCard, TaskStatus } from "@widgetarium/tasks";
 import { useQuery } from "@widgetarium/data-framework";
 import { useOpenTask } from "../../lib/use-open-task.js";
@@ -16,7 +16,7 @@ const LISTED_MOST = 200;
 const MORE = "{count} more are not listed";
 
 export function TasksList({ view }: TasksListProps): ReactElement {
-	const page = useQuery(TasksQuery, {
+	const page = useQuery(tasks.board.tasks, {
 		status: view.listStatus === null ? [] : [view.listStatus],
 		updatedWithin: "month",
 		owner: view.ask.owner,

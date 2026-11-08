@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { REFUSAL_HANDLER } from "@widgetarium/data-framework/command-refusals";
 import { useQuery } from "@widgetarium/data-framework";
-import { ReturnNoteQuery } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { RoundButton } from "../round-button/round-button.js";
 import { returned } from "../../lib/returned.js";
 
@@ -15,12 +15,12 @@ export interface ReturnToNoteButtonProps {
 const RETURN_LABEL = "Back to view";
 
 export function ReturnToNoteButton({ cameFrom, open }: ReturnToNoteButtonProps): ReactElement {
-	const returnNote = useQuery(ReturnNoteQuery, { cameFrom }).data;
+	const returnNote = useQuery(canvas.pages.returnNote, { cameFrom }).data;
 	const onRefused = useContext(REFUSAL_HANDLER);
 	const onReturn = (): void => {
 		if (returnNote.kind === "none") {
 			onRefused({
-				name: ReturnNoteQuery.name,
+				name: canvas.pages.returnNote.name,
 				reason: returnNote.said,
 				ran: false,
 			});

@@ -5,13 +5,13 @@ import { useOverflowsAcross } from "../../lib/use-overflows-across.js";
 import { hasPreview, isPicture, useOpensPictures } from "../../lib/use-opens-pictures.js";
 import { AttachmentCard } from "./attachment-card.js";
 import { AttachmentsMore } from "./attachments-more.js";
-import { DraftAttachmentsQuery, RemoveAttachmentCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export function DraftAttachments(): ReactElement | null {
 	const chat = useChatKey();
-	const { data: drafts } = useQuery(DraftAttachmentsQuery, { chat });
-	const remove = useCommand(RemoveAttachmentCommand);
+	const { data: drafts } = useQuery(assistant.composer.draftAttachments, { chat });
+	const remove = useCommand(assistant.composer.removeAttachment);
 	const track = useRef<HTMLDivElement>(null);
 	const across = useOverflowsAcross(track, drafts.length);
 	const { holder, open, viewer } = useOpensPictures<HTMLDivElement>(drafts.filter(isPicture));

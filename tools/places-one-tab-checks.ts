@@ -1,26 +1,9 @@
 import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import {
-	AppTabQuery,
-	CloseTabCommand,
-	ClosedTabsQuery,
-	FoldTabCommand,
-	KeepChatTabsCommand,
-	MakeEssentialCommand,
-	MarkTabSeenCommand,
-	OpenTabCommand,
-	PlaceTabCommand,
-	PlacesModule,
-	RecordTabTurnCommand,
-	RecordAppAddressCommand,
-	ReopenClosedTabCommand,
-	ShowTabCommand,
-	SidebarQuery,
-	TearOffTabCommand,
-} from "../plugins/apps/data/places/index.ts";
+import { places as placesContract } from "../plugins/apps/data/places/index.ts";
 import type { PlacedSidebar, Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
-import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { places as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -57,12 +40,12 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 			.start({ platform: "server", env: {} }),
 	);
 	return runtime()
-		.imports(PlacesModule({ over: core }))
+		.imports(placesContract({ over: core }))
 		.start();
 }
 
 async function sidebarOf(places: Runtime): Promise<PlacedSidebar | string> {
-	const answer = await places.send(SidebarQuery, { at: AT, essentials: [] });
+	const answer = await places.send(placesContract.tabs.sidebar, { at: AT, essentials: [] });
 	return answer.ok ? answer.output : answer.reason;
 }
 
@@ -81,9 +64,9 @@ function openRowsOf(sidebar: PlacedSidebar | string): unknown {
 async function wholeChatChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
-	await places.send(KeepChatTabsCommand, { chats: [{ id: "chat-a", title: "Release plan" }] });
-	await places.send(OpenTabCommand, { at: AT, app: "canvas", list: "chat-a" });
-	await places.send(RecordTabTurnCommand, { id: "chat-a", title: null, isBusy: true, isSeen: false });
+	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
+	await places.send(placesContract.tabOpening.openTab, { at: AT, app: "canvas", list: "chat-a" });
+	await places.send(placesContract.tabFacts.recordTabTurn, { id: "chat-a", title: null, isBusy: true, isSeen: false });
 	check(
 		"places alone answers a chat row: its title, its running mark and its artifacts, with no chat record anywhere",
 		openRowsOf(await sidebarOf(places)),
@@ -96,13 +79,13 @@ async function wholeChatChecks(): Promise<void> {
 }
 
 async function chatIdOf(places: Runtime): Promise<string | null> {
-	const answer = await places.send(AppTabQuery, { id: "chat-a" });
+	const answer = await places.send(placesContract.tabFacts.appTab, { id: "chat-a" });
 	return answer.ok ? answer.output.chatId : answer.reason;
 }
 
 async function chatIdChecks(places: Runtime): Promise<void> {
 	const kept = await chatIdOf(places);
-	await places.send(RecordAppAddressCommand, { id: "chat-a", address: "/elsewhere" });
+	await places.send(placesContract.tabFacts.recordAppAddress, { id: "chat-a", address: "/elsewhere" });
 	check(
 		"a chat tab's chatId is its own id, whatever address the app records",
 		[kept, await chatIdOf(places)],
@@ -111,9 +94,9 @@ async function chatIdChecks(places: Runtime): Promise<void> {
 }
 
 async function turnEndingChecks(places: Runtime): Promise<void> {
-	await places.send(RecordTabTurnCommand, { id: "chat-a", title: null, isBusy: false, isSeen: false });
+	await places.send(placesContract.tabFacts.recordTabTurn, { id: "chat-a", title: null, isBusy: false, isSeen: false });
 	const unread = openRowsOf(await sidebarOf(places));
-	await places.send(MarkTabSeenCommand, { id: "chat-a" });
+	await places.send(placesContract.tabFacts.markTabSeen, { id: "chat-a" });
 	check(
 		"a turn ending unseen marks the tab unread, and seeing it clears the mark",
 		[unread, openRowsOf(await sidebarOf(places))],
@@ -122,8 +105,8 @@ async function turnEndingChecks(places: Runtime): Promise<void> {
 }
 
 async function archiveChecks(places: Runtime, tabs: MemoryTabsGateway): Promise<void> {
-	const closed = await places.send(CloseTabCommand, { at: AT, id: "chat-a" });
-	const closedRows = await places.send(ClosedTabsQuery);
+	const closed = await places.send(placesContract.tabClosing.closeTab, { at: AT, id: "chat-a" });
+	const closedRows = await places.send(placesContract.tabs.closedTabs);
 	check(
 		"closing a chat tab archives it with its artifacts: it leaves the list and stands among the closed tabs",
 		[
@@ -135,10 +118,10 @@ async function archiveChecks(places: Runtime, tabs: MemoryTabsGateway): Promise<
 		[true, [], [["chat-a", "Release plan"]], 1],
 	);
 
-	await places.send(KeepChatTabsCommand, { chats: [{ id: "chat-a", title: "Release plan" }] });
+	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
 	check("a closed chat is not brought back by its record", openRowsOf(await sidebarOf(places)), []);
 
-	await places.send(ReopenClosedTabCommand, { at: AT, tabId: "chat-a" });
+	await places.send(placesContract.tabOpening.reopenClosedTab, { at: AT, tabId: "chat-a" });
 	check("reopening brings the chat back with its artifacts", openRowsOf(await sidebarOf(places)), [
 		["Release plan", "none", 1],
 	]);
@@ -147,18 +130,22 @@ async function archiveChecks(places: Runtime, tabs: MemoryTabsGateway): Promise<
 async function sameForEveryTabChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
-	await places.send(KeepChatTabsCommand, {
+	await places.send(placesContract.tabFacts.keepChatTabs, {
 		chats: [
 			{ id: "chat-a", title: "One" },
 			{ id: "chat-b", title: "Two" },
 		],
 	});
-	const inChat = await places.send(PlaceTabCommand, {
+	const inChat = await places.send(placesContract.tabPlacing.placeTab, {
 		at: AT,
 		id: "chat-b",
 		place: { list: "chat-a", groupId: null, before: null },
 	});
-	const essential = await places.send(MakeEssentialCommand, { at: AT, id: "chat-b", essentialId: "essential-1" });
+	const essential = await places.send(placesContract.tabPlacing.makeEssential, {
+		at: AT,
+		id: "chat-b",
+		essentialId: "essential-1",
+	});
 	check(
 		"a chat dropped onto a chat is refused, and a chat becomes an essential like any tab",
 		[inChat.ok ? "placed" : inChat.reason, essential.ok ? essential.output.title : essential.reason],
@@ -169,12 +156,12 @@ async function sameForEveryTabChecks(): Promise<void> {
 async function foldChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
-	await places.send(KeepChatTabsCommand, { chats: [{ id: "chat-a", title: "One" }] });
-	const opened = await places.send(OpenTabCommand, { at: AT, app: "canvas", list: null });
+	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "One" }] });
+	const opened = await places.send(placesContract.tabOpening.openTab, { at: AT, app: "canvas", list: null });
 	const tabId = opened.ok ? opened.output.id : "";
-	await places.send(FoldTabCommand, { window: WINDOW, id: "chat-a" });
+	await places.send(placesContract.tabPlacing.foldTab, { window: WINDOW, id: "chat-a" });
 	const folded = await sidebarOf(places);
-	const plain = await places.send(FoldTabCommand, { window: WINDOW, id: tabId });
+	const plain = await places.send(placesContract.tabPlacing.foldTab, { window: WINDOW, id: tabId });
 	const foldedOf = (sidebar: PlacedSidebar | string): unknown =>
 		typeof sidebar === "string"
 			? sidebar
@@ -192,9 +179,9 @@ async function reuseChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
 	const ask = { at: AT, app: "tasks" as const, address: "T-7", reusesHeld: true };
-	const first = await places.send(OpenTabCommand, ask);
-	const again = await places.send(OpenTabCommand, ask);
-	const other = await places.send(OpenTabCommand, { ...ask, address: "T-8" });
+	const first = await places.send(placesContract.tabOpening.openTab, ask);
+	const again = await places.send(placesContract.tabOpening.openTab, ask);
+	const other = await places.send(placesContract.tabOpening.openTab, { ...ask, address: "T-8" });
 	const idOf = (opened: typeof first): string => (opened.ok ? opened.output.id : opened.reason);
 	check(
 		"an open that reuses a held tab shows the tab at that address instead of opening a second one",
@@ -209,8 +196,8 @@ async function reuseChecks(): Promise<void> {
 
 async function oneWindowOwnerChecks(): Promise<void> {
 	const places = placesApp(new MemoryTabsGateway());
-	await places.send(KeepChatTabsCommand, { chats: [{ id: "chat-b", title: "Draft" }] });
-	const terminal = await places.send(OpenTabCommand, { at: AT, app: "terminal", list: null });
+	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-b", title: "Draft" }] });
+	const terminal = await places.send(placesContract.tabOpening.openTab, { at: AT, app: "terminal", list: null });
 	const terminalId = terminal.ok ? terminal.output.id : terminal.reason;
 	const able = { ...AT, screen: { ...NO_SCREEN, canOpenOwnWindow: true } };
 	const held = { ...able, screen: { ...able.screen, elsewhere: [{ window: "studio-2", tabIds: ["chat-b"] }] } };
@@ -219,8 +206,8 @@ async function oneWindowOwnerChecks(): Promise<void> {
 	check(
 		"places tears off a chat and a page-less app tab by one command, each into a window of its own",
 		[
-			effectsOf(await places.send(TearOffTabCommand, { at: able, id: "chat-b" })),
-			effectsOf(await places.send(TearOffTabCommand, { at: able, id: terminalId })),
+			effectsOf(await places.send(placesContract.tabShowing.tearOffTab, { at: able, id: "chat-b" })),
+			effectsOf(await places.send(placesContract.tabShowing.tearOffTab, { at: able, id: terminalId })),
 		],
 		[
 			[
@@ -233,8 +220,8 @@ async function oneWindowOwnerChecks(): Promise<void> {
 	check(
 		"a chat another window holds comes forward on open and on tear-off, decided by places alone",
 		[
-			effectsOf(await places.send(ShowTabCommand, { at: held, id: "chat-b" })),
-			effectsOf(await places.send(TearOffTabCommand, { at: held, id: "chat-b" })),
+			effectsOf(await places.send(placesContract.tabShowing.showTab, { at: held, id: "chat-b" })),
+			effectsOf(await places.send(placesContract.tabShowing.tearOffTab, { at: held, id: "chat-b" })),
 		],
 		[[{ kind: "focus-window", window: "studio-2" }], [{ kind: "focus-window", window: "studio-2" }]],
 	);

@@ -2,9 +2,14 @@ import { CallLoggerMiddleware, Repeatable, deny, guard, refuse } from "@widgetar
 import { command, query, subscriber } from "#module";
 import type { Invalidate } from "@widgetarium/data-framework";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
-import { WebPagesChangedEvent } from "../../gateways/web-pages/web-pages.events.js";
+import { webPagesChanged } from "../../gateways/web-pages/web-pages.events.js";
 import { WebPagesGateway } from "../../gateways/web-pages/web-pages.gateway.js";
-import { OpenWebPageInputSchema, PlaceWebPageInputSchema, WebPageSchema, WebPageTabSchema } from "../../shared/schema/web-page.schema.js";
+import {
+	OpenWebPageInputSchema,
+	PlaceWebPageInputSchema,
+	WebPageSchema,
+	WebPageTabSchema,
+} from "../../shared/schema/web-page.schema.js";
 import type { PageArea, WebPage } from "../../shared/schema/web-page.schema.js";
 import { refuseWebUrl, urlWithoutFragment } from "./lib/web-url.js";
 
@@ -62,7 +67,7 @@ export const WebPageCallLoggerMiddleware = CallLoggerMiddleware("web-page", (inp
 	TAB_CALLED.replace("{tab}", WebPageTabSchema.safeParse(input).data?.tab ?? "none"),
 );
 
-export const WebPageQuery = query("web-page")
+export const webPage = query()
 	.public()
 	.input(WebPageTabSchema)
 	.output(WebPageSchema.nullable())
@@ -77,11 +82,11 @@ export const WebPageQuery = query("web-page")
 				};
 	});
 
-export const RereadWebPageSubscriber = subscriber(WebPagesChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(WebPageQuery);
+export const rereadWebPage = subscriber(webPagesChanged).handle((_input, { invalidate }) => {
+	invalidate(webPage);
 });
 
-export const OpenWebPageCommand = command("open-web-page")
+export const openWebPage = command()
 	.public()
 	.input(OpenWebPageInputSchema)
 	.idempotencyKey(Repeatable)
@@ -102,7 +107,7 @@ export const OpenWebPageCommand = command("open-web-page")
 		logPageChange(invalidate, tab, `${urlOf(was)} → ${url} (open)`);
 	});
 
-export const PlaceWebPageCommand = command("place-web-page")
+export const placeWebPage = command()
 	.public()
 	.input(PlaceWebPageInputSchema)
 	.idempotencyKey(Repeatable)
@@ -114,28 +119,28 @@ export const PlaceWebPageCommand = command("place-web-page")
 		logPageChange(invalidate, tab, `placed ${areaOf(was)} → ${areaOf(area)}`);
 	});
 
-export const GoBackWebPageCommand = command("go-back-web-page")
+export const goBackWebPage = command()
 	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
 	.handle(({ tab }, reach) => takePageStep(reach, tab, GO_BACK));
 
-export const GoForwardWebPageCommand = command("go-forward-web-page")
+export const goForwardWebPage = command()
 	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
 	.handle(({ tab }, reach) => takePageStep(reach, tab, GO_FORWARD));
 
-export const ReloadWebPageCommand = command("reload-web-page")
+export const reloadWebPage = command()
 	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
 	.handle(({ tab }, reach) => takePageStep(reach, tab, RELOAD));
 
-export const CloseWebPageCommand = command("close-web-page")
+export const closeWebPage = command()
 	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
@@ -160,7 +165,7 @@ async function pageOrRefuse(webPages: WebPagesGateway, tab: string): Promise<Web
 }
 
 function logPageChange(invalidate: Invalidate, tab: string, change: string): void {
-	invalidate(WebPageQuery, { tab });
+	invalidate(webPage, { tab });
 	console.info(`[widgetarium] web page ${tab} ${change}`);
 }
 

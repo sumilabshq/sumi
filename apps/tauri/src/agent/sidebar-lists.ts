@@ -1,7 +1,7 @@
-import type { TabsSidebarQuery } from "@widgetarium/app-host";
+import type { appHost } from "@widgetarium/app-host";
 import type { OutputOf } from "@widgetarium/data-framework";
 
-export type Sidebar = OutputOf<typeof TabsSidebarQuery>;
+export type Sidebar = OutputOf<typeof appHost.tabs.tabsSidebar>;
 type SidebarEntry = Sidebar["sections"][number]["entries"][number];
 type SidebarItem = Extract<SidebarEntry, { kind: "tab" }>;
 type ChatChild = NonNullable<SidebarItem["children"]>[number];

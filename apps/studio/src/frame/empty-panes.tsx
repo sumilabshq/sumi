@@ -2,13 +2,13 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { Button } from "@widgetarium/kit";
-import { PlacePaneCommand } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout";
 
 const OPEN_CHAT = "Open chat";
 const OPEN_TAB = "Open tab";
 
 export function EmptyPanes(): ReactElement {
-	const placePane = useCommand(PlacePaneCommand);
+	const placePane = useCommand(layout.panes.placePane);
 	return (
 		<div className="wg-pane-empty-actions" data-pane-empty="">
 			<Button

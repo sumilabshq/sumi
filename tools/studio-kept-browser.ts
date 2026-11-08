@@ -1,4 +1,4 @@
-import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
+import { browser } from "../packages/domain/browser/index.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
 import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
@@ -27,7 +27,7 @@ export function keptStudioApp(): Runtime {
 	Object.assign(window, {
 		__PAGE_ON_SCREEN__: () => parts.browserPages.isOnScreen("tab-1"),
 		__INK_READ__: async () => {
-			const answer = await browserApp.send(ReadPageContentCommand, { tabId: null });
+			const answer = await browserApp.send(browser.ink.readPageContent, { tabId: null });
 			return answer.ok ? "ok" : answer.reason;
 		},
 	});

@@ -4,13 +4,13 @@ import path from "node:path";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
-import { AppTabQuery, FileSystemModule, PlacesModule } from "@sumi/contract";
-import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { places, fileSystem } from "@sumi/contract";
+import { places as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
-import { FileSystemModule as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
-import { FilePageModule } from "../plugins/files/data/file-page/module.ts";
+import { filePage } from "../plugins/files/data/file-page/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 import { builtInPlacedApps } from "./placed-apps-fixture.ts";
@@ -59,15 +59,17 @@ const transport = orpcTransport("http://file-moves.test", {
 
 function tabAppOf(tabId: string): Runtime {
 	return runtime()
-		.modules(FilePageModule({ tabId }))
-		.imports(FileSystemModule({ over: transport }), PlacesModule({ over: transport }))
+		.modules(filePage({ tabId }))
+		.imports(fileSystem({ over: transport }), places({ over: transport }))
 		.start({ platform: "browser", scope: { workspaceId: "file-moves" } });
 }
 
 const tabs = [tabAppOf("tab-notes"), tabAppOf("tab-gone")];
 
 async function addressesOf(): Promise<unknown> {
-	const answers = await Promise.all(["tab-notes", "tab-gone"].map((id) => tabs[0]?.send(AppTabQuery, { id })));
+	const answers = await Promise.all(
+		["tab-notes", "tab-gone"].map((id) => tabs[0]?.send(places.tabFacts.appTab, { id })),
+	);
 	return answers.map((answer) => (answer?.ok ? answer.output.address : answer?.reason));
 }
 

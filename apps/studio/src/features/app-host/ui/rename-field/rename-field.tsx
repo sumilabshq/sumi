@@ -1,7 +1,7 @@
 import { createElement as h, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { RenameTabCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import { useSelectsOnMount } from "../../lib/use-selects-on-mount.js";
 
 export interface Named {
@@ -21,7 +21,7 @@ const RENAME_TAB = "Rename {title}";
 export function RenameField({ named, className, onDone }: RenameFieldProps): ReactElement {
 	const [typed, setTyped] = useState(named.label ?? named.title);
 	const field = useRef<HTMLInputElement | null>(null);
-	const renameTab = useCommand(RenameTabCommand);
+	const renameTab = useCommand(appHost.tabActions.renameTab);
 	useSelectsOnMount(field);
 	const onKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
 		if (event.key !== "Enter" && event.key !== "Escape") {

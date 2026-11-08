@@ -15,17 +15,17 @@ export const MenuDoorFillSchema = z.object({
 	startsWith: DoorStartSchema,
 });
 
-export const MenuDoorsSlot = slot("menu-doors").item(MenuDoorFillSchema).list();
+export const menuDoors = slot().item(MenuDoorFillSchema).list();
 
 export const MenuPageFillSchema = z.object({
 	draftsOf: z.custom<DraftsOf>((value) => typeof value === "function", NOT_DRAFTS_OF),
 });
 
-export const MenuPagesSlot = slot("menu-pages").item(MenuPageFillSchema).list();
+export const menuPages = slot().item(MenuPageFillSchema).list();
 
 export const MenuRowSourceFillSchema = z.object({
 	isFindable: z.boolean(),
 	rowsOf: z.custom<RowsOf>((value) => typeof value === "function", NOT_ROWS_OF),
 });
 
-export const MenuRowSourcesSlot = slot("menu-row-sources").item(MenuRowSourceFillSchema).list();
+export const menuRowSources = slot().item(MenuRowSourceFillSchema).list();

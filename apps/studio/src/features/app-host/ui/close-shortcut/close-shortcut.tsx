@@ -1,11 +1,11 @@
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { useShortcut } from "../../lib/shortcut/use-shortcut.js";
-import { CloseShownTabCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import { CLOSE_KEY } from "../../lib/tab-keys.js";
 
 export function CloseShortcut({ frame }: { readonly frame: RefObject<HTMLElement | null> }): null {
-	const closeShownTab = useCommand(CloseShownTabCommand);
+	const closeShownTab = useCommand(appHost.tabActions.closeShownTab);
 	useShortcut(frame, {
 		key: CLOSE_KEY,
 		isShifted: false,

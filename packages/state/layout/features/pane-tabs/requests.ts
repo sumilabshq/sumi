@@ -1,21 +1,35 @@
 import { z } from "zod";
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
-import { PaneTreeQuery, PlacementPreviewQuery } from "../../generated/contract.js";
-import { boardOf, goneTabPanesOf, paneShowingTab, shownTabPaneOf, tabPaneIdsOf, tabTargetOf, treeWithoutGoneTabs, treeWithoutPane, treeShowingChat, treeShowingShownTabAlone, treeShowingTabInGroup, treeWithoutPanes, withTabShown } from "../../shared/lib/pane-trees.js";
+import { layout } from "../../generated/contract.js";
+import {
+	boardOf,
+	goneTabPanesOf,
+	paneShowingTab,
+	shownTabPaneOf,
+	tabPaneIdsOf,
+	tabTargetOf,
+	treeWithoutGoneTabs,
+	treeWithoutPane,
+	treeShowingChat,
+	treeShowingShownTabAlone,
+	treeShowingTabInGroup,
+	treeWithoutPanes,
+	withTabShown,
+} from "../../shared/lib/pane-trees.js";
 import { goneTabsWords, paneTransitionOf } from "../../shared/lib/pane-words.js";
 import { holdsOf } from "../../shared/lib/window-trees.js";
 import type { PaneBoard, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 
 const NO_TAB_TARGET = "the target pane is not an app pane showing a tab";
 
-export const ShowTabInTargetPaneCommand = command("show-tab-in-target-pane")
+export const showTabInTargetPane = command()
 	.public()
 	.input(z.object({ tabId: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId }, { paneTree, invalidate }) => {
-		invalidate(PaneTreeQuery);
-		invalidate(PlacementPreviewQuery);
+		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const target = tabTargetOf(tree);
 
@@ -40,7 +54,7 @@ export const ShowTabInTargetPaneCommand = command("show-tab-in-target-pane")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const ShowChatInPaneCommand = command("show-chat-in-pane")
+export const showChatInPane = command()
 	.public()
 	.input(
 		z.object({
@@ -50,8 +64,8 @@ export const ShowChatInPaneCommand = command("show-chat-in-pane")
 	)
 	.idempotencyKey(Repeatable)
 	.handle(({ chatId, paneId }, { paneTree, invalidate }) => {
-		invalidate(PaneTreeQuery);
-		invalidate(PlacementPreviewQuery);
+		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const holder = paneTree.elsewhere().find((other) => holdsOf([other])[0]?.chatIds.includes(chatId));
 
@@ -72,12 +86,12 @@ export const ShowChatInPaneCommand = command("show-chat-in-pane")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const OpenShownTabPaneCommand = command("open-shown-tab-pane")
+export const openShownTabPane = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { paneTree, invalidate }) => {
-		invalidate(PaneTreeQuery);
-		invalidate(PlacementPreviewQuery);
+		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 
 		const shownTabLeaf = shownTabPaneOf(tree);
@@ -93,12 +107,12 @@ export const OpenShownTabPaneCommand = command("open-shown-tab-pane")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const CloseShownTabPaneCommand = command("close-shown-tab-pane")
+export const closeShownTabPane = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { paneTree, invalidate }) => {
-		invalidate(PaneTreeQuery);
-		invalidate(PlacementPreviewQuery);
+		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const shown = shownTabPaneOf(tree);
 
@@ -113,13 +127,13 @@ export const CloseShownTabPaneCommand = command("close-shown-tab-pane")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const ClosePanesOfTabsCommand = command("close-panes-of-tabs")
+export const closePanesOfTabs = command()
 	.public()
 	.input(z.object({ tabIds: z.array(z.string()).readonly() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ tabIds }, { paneTree, invalidate }) => {
-		invalidate(PaneTreeQuery);
-		invalidate(PlacementPreviewQuery);
+		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const paneIds = tabPaneIdsOf(tree, tabIds);
 
@@ -133,13 +147,13 @@ export const ClosePanesOfTabsCommand = command("close-panes-of-tabs")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const DropGoneTabsCommand = command("drop-gone-tabs")
+export const dropGoneTabs = command()
 	.public()
 	.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ heldTabIds }, { paneTree, invalidate }) => {
-		invalidate(PaneTreeQuery);
-		invalidate(PlacementPreviewQuery);
+		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const gonePanes = goneTabPanesOf(tree, new Set(heldTabIds));
 
@@ -153,7 +167,7 @@ export const DropGoneTabsCommand = command("drop-gone-tabs")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const ShowTabInChatGroupCommand = command("show-tab-in-chat-group")
+export const showTabInChatGroup = command()
 	.public()
 	.input(
 		z.object({
@@ -164,8 +178,8 @@ export const ShowTabInChatGroupCommand = command("show-tab-in-chat-group")
 	)
 	.idempotencyKey(Repeatable)
 	.handle(({ chatId, tabId, isOnlyWhenBare }, { paneTree, invalidate }) => {
-		invalidate(PaneTreeQuery);
-		invalidate(PlacementPreviewQuery);
+		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const group = boardGroupOf(tree, chatId);
 

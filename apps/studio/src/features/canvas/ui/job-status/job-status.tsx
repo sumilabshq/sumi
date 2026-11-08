@@ -1,13 +1,12 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { JobStatusQuery } from "@widgetarium/canvas";
-import { StopJobCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { JobLine } from "./job-line.js";
 
 export function JobStatus(): ReactElement | null {
-	const { shown } = useQuery(JobStatusQuery).data;
-	const stop = useCommand(StopJobCommand);
+	const { shown } = useQuery(canvas.jobs.jobStatus).data;
+	const stop = useCommand(canvas.jobs.stopJob);
 
 	if (!shown) return null;
 

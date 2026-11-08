@@ -1,7 +1,7 @@
-import { AppTabsQuery, OpenLinkCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { linkOf, linkTargetOf } from "../packages/shared/core/src/engine/sumi-link.ts";
 import type { LinkTarget } from "../packages/shared/core/src/engine/sumi-link.ts";
-import { PaneTreeQuery } from "../packages/state/layout/generated/contract.ts";
+import { layout } from "../packages/state/layout/generated/contract.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
 
@@ -54,11 +54,11 @@ const fakes = studioFakesOf();
 const studio = fakes.studioApp;
 
 async function openLink(href: string, opensNew = false) {
-	return studio.send(OpenLinkCommand, { href, opensNew });
+	return studio.send(appHost.links.openLink, { href, opensNew });
 }
 
 async function tabsNow() {
-	const answer = await studio.send(AppTabsQuery);
+	const answer = await studio.send(appHost.tabs.appTabs);
 	return answer.ok ? answer.output.tabs : [];
 }
 
@@ -95,7 +95,7 @@ await openLink(linkOf({ kind: "tab", id: firstTask?.id ?? "" }));
 check("a tab link shows that tab", (await shownTab())?.id, firstTask?.id);
 
 async function paneViews() {
-	const tree = await studio.send(PaneTreeQuery);
+	const tree = await studio.send(layout.panes.paneTree);
 	return tree.ok ? tree.output.leaves.map((leaf) => leaf.view) : [];
 }
 

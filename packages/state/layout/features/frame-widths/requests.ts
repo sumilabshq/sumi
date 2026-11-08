@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { FrameWidthsChangedEvent } from "../../gateways/frame-widths/frame-widths.events.js";
+import { frameWidthsChanged } from "../../gateways/frame-widths/frame-widths.events.js";
 import { FRAME_BOUNDS, FRAME_LIMITS, edgePxWithin, widthsWithin } from "../../shared/lib/frame-bounds.js";
 import { FrameEdgeSchema, FrameWidthsAnswerSchema, WidthPxSchema } from "../../shared/schema/frame-widths.schema.js";
 
-export const FrameWidthsQuery = query("frame-widths")
+export const frameWidths = query()
 	.public()
 	.output(FrameWidthsAnswerSchema)
 	.settlesNow()
@@ -14,7 +14,7 @@ export const FrameWidthsQuery = query("frame-widths")
 		bounds: FRAME_LIMITS,
 	}));
 
-export const ResizeFrameEdgeCommand = command("resize-frame-edge")
+export const resizeFrameEdge = command()
 	.public()
 	.input(
 		z.object({
@@ -24,9 +24,9 @@ export const ResizeFrameEdgeCommand = command("resize-frame-edge")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.handle(({ edge, px, mostPx }, { frameWidths, invalidate }) => {
-		invalidate(FrameWidthsQuery);
-		const widths = widthsWithin(frameWidths.widths());
+	.handle(({ edge, px, mostPx }, { frameWidths: keptFrameWidths, invalidate }) => {
+		invalidate(frameWidths);
+		const widths = widthsWithin(keptFrameWidths.widths());
 		const next = edgePxWithin(edge, px, mostPx);
 
 		if (widths[edge] === next) {
@@ -34,7 +34,7 @@ export const ResizeFrameEdgeCommand = command("resize-frame-edge")
 		}
 
 		const reason = `frame width ${edge} ${widths[edge]} → ${next} (drag)`;
-		frameWidths.saveWidths(
+		keptFrameWidths.saveWidths(
 			{
 				...widths,
 				[edge]: next,
@@ -44,7 +44,7 @@ export const ResizeFrameEdgeCommand = command("resize-frame-edge")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const ResetFrameEdgeCommand = command("reset-frame-edge")
+export const resetFrameEdge = command()
 	.public()
 	.input(
 		z.object({
@@ -53,9 +53,9 @@ export const ResetFrameEdgeCommand = command("reset-frame-edge")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.handle(({ edge, mostPx }, { frameWidths, invalidate }) => {
-		invalidate(FrameWidthsQuery);
-		const widths = widthsWithin(frameWidths.widths());
+	.handle(({ edge, mostPx }, { frameWidths: keptFrameWidths, invalidate }) => {
+		invalidate(frameWidths);
+		const widths = widthsWithin(keptFrameWidths.widths());
 		const next = edgePxWithin(edge, FRAME_BOUNDS[edge].usualPx, mostPx);
 
 		if (widths[edge] === next) {
@@ -63,7 +63,7 @@ export const ResetFrameEdgeCommand = command("reset-frame-edge")
 		}
 
 		const reason = `frame width ${edge} ${widths[edge]} → ${next} (reset)`;
-		frameWidths.saveWidths(
+		keptFrameWidths.saveWidths(
 			{
 				...widths,
 				[edge]: next,
@@ -73,6 +73,6 @@ export const ResetFrameEdgeCommand = command("reset-frame-edge")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const RereadFrameWidthsSubscriber = subscriber(FrameWidthsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(FrameWidthsQuery);
+export const rereadFrameWidths = subscriber(frameWidthsChanged).handle((_input, { invalidate }) => {
+	invalidate(frameWidths);
 });

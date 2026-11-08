@@ -1,11 +1,11 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { LayTearOffGhostCommand, ShowTearOffGhostCommand, WearTearOffGhostCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import type { OverlayPort } from "@widgetarium/behaviors";
 
 export function useTearOffOverlay(): OverlayPort {
-	const layGhost = useCommand(LayTearOffGhostCommand);
-	const wearGhost = useCommand(WearTearOffGhostCommand);
-	const showGhost = useCommand(ShowTearOffGhostCommand);
+	const layGhost = useCommand(browser.tabs.layTearOffGhost);
+	const wearGhost = useCommand(browser.tabs.wearTearOffGhost);
+	const showGhost = useCommand(browser.tabs.showTearOffGhost);
 	return {
 		lay: async (lay) => {
 			const answer = await layGhost.run(lay);

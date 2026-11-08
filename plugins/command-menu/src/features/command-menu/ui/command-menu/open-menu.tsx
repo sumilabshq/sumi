@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { CloseCommandMenuCommand } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu";
 import type { KeptMenu } from "@sumi/command-menu";
 import { useClosesOnPressOutside } from "../../lib/use-closes-on-press-outside.js";
 import { MenuPanel } from "./menu-panel.js";
@@ -9,7 +9,7 @@ import { MenuPanel } from "./menu-panel.js";
 const MENU = "Command menu";
 
 export function OpenMenu({ menu }: { readonly menu: KeptMenu }): ReactElement {
-	const close = useCommand(CloseCommandMenuCommand);
+	const close = useCommand(commandMenu.opening.closeCommandMenu);
 	const panel = useClosesOnPressOutside(() => void close.run());
 	return (
 		<div className="wg-cm-layer" data-command-menu="">

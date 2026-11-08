@@ -14,6 +14,8 @@ import {
 	query,
 	subscriber,
 } from "../packages/shared/data-framework/src/index.ts";
+import { handledItems, named } from "../packages/shared/data-framework/src/index.ts";
+import { fullyNamed } from "./requests-names.ts";
 import type { AnySubscriber, Failure } from "../packages/shared/data-framework/src/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 
@@ -52,38 +54,36 @@ class Vault {
 
 const settled = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 5));
 
-const LedgerDeclared = module("ledger")
+const LedgerDeclared = module()
 	.on(Device)
 	.provide(() => ({ ledger: new Ledger(), heard: new Heard() }));
 
 const ledgerBuilt = buildersOf<typeof LedgerDeclared, typeof AddedEvent>();
 
-const AddedEvent = event("added").input(z.object({ by: z.number() }));
+const AddedEvent = named("added", event()).input(z.object({ by: z.number() }));
 
-const LedgerChangedEvent = event("ledger-changed").from(
+const LedgerChangedEvent = named("ledger-changed", event()).from(
 	gatewayEvent(Ledger, (ledger, fire) => ledger.valueChanged(fire)),
 );
 
-const ValueQuery = ledgerBuilt
-	.query("value")
+const value = named("value", ledgerBuilt.query())
 	.public()
 	.output(z.number())
 	.handle((_input, { ledger }) => ledger.value);
 
-const AddCommand = ledgerBuilt
-	.command("add")
+const add = named("add", ledgerBuilt.command())
 	.public()
 	.input(z.object({ by: z.number() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ by }, { ledger, heard, emit, invalidate }) => {
 		if (by < 0) {
-			invalidate(ValueQuery);
+			invalidate(value);
 			throw new Error("a ledger only grows");
 		}
 
 		ledger.add(by);
 		emit(AddedEvent, { by });
-		invalidate(ValueQuery);
+		invalidate(value);
 		heard.said.push("answered");
 	});
 
@@ -108,40 +108,42 @@ const BigAddReReadSubscriber = ledgerBuilt
 	.subscriber(LedgerChangedEvent)
 	.handle((_input, { ledger, heard, invalidate }) => {
 		if (ledger.value >= 10) {
-			invalidate(ValueQuery);
+			invalidate(value);
 			heard.said.push("re-read past ten");
 		}
 	});
 
-const AddContract = command("ledger/add")
+const AddContract = fullyNamed("ledger.add", command())
 	.input(z.object({ by: z.number() }))
 	.idempotencyKey(Repeatable);
 
-const ValueContract = query("ledger/value").output(z.number());
+const ValueContract = fullyNamed("ledger.value", query()).output(z.number());
 
-const ReachOtherContract = command("reaching/reach-other").idempotencyKey(Repeatable);
+const ReachOtherContract = fullyNamed("reaching.reach-other", command()).idempotencyKey(Repeatable);
 
 const LedgerModule = LedgerDeclared.handles(
-	ValueQuery,
-	AddCommand,
-	AddedEvent,
-	LedgerChangedEvent,
-	FirstHearsSubscriber,
-	SecondHearsSubscriber,
-	BrokenHearsSubscriber,
-	SlowHearsSubscriber,
-	BigAddReReadSubscriber,
+	handledItems("ledger", [
+		value,
+		add,
+		AddedEvent,
+		LedgerChangedEvent,
+		FirstHearsSubscriber,
+		SecondHearsSubscriber,
+		BrokenHearsSubscriber,
+		SlowHearsSubscriber,
+		BigAddReReadSubscriber,
+	]),
 );
 
 check(
 	"a subscriber listed twice in one module is refused by name",
-	thrownBy(() => LedgerDeclared.handles(FirstHearsSubscriber).handles(FirstHearsSubscriber)),
+	thrownBy(() => LedgerDeclared.handles(handledItems("ledger", [FirstHearsSubscriber, FirstHearsSubscriber]))),
 	'module "ledger" lists a subscriber of added twice: list each subscriber once',
 );
 
 export function typedOnly(): void {
 	// @ts-expect-error
-	ledgerBuilt.query("timed").handle((_input, { clock }) => clock);
+	named("timed", ledgerBuilt.query()).handle((_input, { clock }) => clock);
 	// @ts-expect-error
 	subscriber(AddedEvent).inject({ heard: Heard });
 }
@@ -160,7 +162,7 @@ const { started, heard, ledger } = ledgerApp(failures);
 const answer = await started.send(AddContract, { by: 3 });
 check("the emitter's answer arrives before any subscriber runs", heard.said, ["answered"]);
 check("a successful command names exactly the queries it invalidated", answer.ok ? answer.invalidated : answer, [
-	{ query: "ledger/value", inputKey: null },
+	{ query: "ledger.value", inputKey: null },
 ]);
 await settled();
 check(
@@ -205,78 +207,76 @@ check(
 	["re-read past ten", 0],
 );
 
-const OtherValueQuery = query("other/value").output(z.number());
+const otherValue = fullyNamed("other.value", query()).output(z.number());
 
-const ReachesOtherCommand = command("reach-other")
+const reachesOther = named("reach-other", command())
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { invalidate }) => {
-		invalidate(OtherValueQuery);
+		invalidate(otherValue);
 	});
 
-const ReachingModule = module("reaching")
+const ReachingModule = module()
 	.on(Device)
 	.provide(() => ({}))
-	.handles(ReachesOtherCommand);
+	.handles(handledItems("reaching", [reachesOther]));
 
 const reaching = runtime().modules(ReachingModule).start(ON_BROWSER);
 const reached = await reaching.send(ReachOtherContract);
 check(
 	"invalidating a query of a module this one does not import fails, naming the fix",
 	reached.ok ? "ok" : reached.reason,
-	'reaching/reach-other invalidates other/value, but module "reaching" does not import other: add .imports()',
+	'reaching.reach-other invalidates other.value, but module "reaching" does not import other: add .imports()',
 );
 
-const ForeignEvent = event("other/changed");
+const ForeignEvent = fullyNamed("other.changed", event());
 
-const OwnChangedEvent = event("own-changed");
+const OwnChangedEvent = named("own-changed", event());
 
-const ForeignEmittingDeclared = module("foreign-emitting")
+const ForeignEmittingDeclared = module()
 	.on(Device)
 	.provide(() => ({}));
 
 const foreignEmittingBuilt = buildersOf<typeof ForeignEmittingDeclared, typeof OwnChangedEvent>();
 
-const EmitsForeignCommand = foreignEmittingBuilt
-	.command("emits-foreign")
+const emitsForeign = named("emits-foreign", foreignEmittingBuilt.command())
 	.public()
 	.idempotencyKey(Repeatable)
-	// @ts-expect-error a module emits only its own events
 	.handle((_input, { emit }) => emit(ForeignEvent));
 
-const EmitsForeignContract = command("foreign-emitting/emits-foreign").idempotencyKey(Repeatable);
+const EmitsForeignContract = fullyNamed("foreign-emitting.emits-foreign", command()).idempotencyKey(Repeatable);
 
 const foreignEmitting = runtime()
-	.modules(ForeignEmittingDeclared.handles(EmitsForeignCommand, OwnChangedEvent))
+	.modules(ForeignEmittingDeclared.handles(handledItems("foreign-emitting", [emitsForeign, OwnChangedEvent])))
 	.start(ON_BROWSER);
 const emittedForeign = await foreignEmitting.send(EmitsForeignContract);
 check(
 	"a request emitting another module's event is refused where it emits",
 	emittedForeign.ok ? "ok" : emittedForeign.reason,
-	'foreign-emitting/emits-foreign emits other/changed, which module "foreign-emitting" does not own: a module emits only its own events',
+	'foreign-emitting.emits-foreign emits other.changed, which module "foreign-emitting" does not own: a module emits only its own events',
 );
 
-const KeptChangedEvent = event("kept-changed");
+const KeptChangedEvent = named("kept-changed", event());
 
-const SharedChangedEvent = event("shared-changed").public();
+const SharedChangedEvent = named("shared-changed", event()).public();
 
 const RereadKeptSubscriber = subscriber(KeptChangedEvent).handle(() => undefined);
 
-const KeeperModule = module("keeper")
+const KeeperModule = module()
 	.on(Device)
 	.provide(() => ({ ledger: new Ledger() }))
-	.handles(ValueQuery, SharedChangedEvent, KeptChangedEvent, RereadKeptSubscriber);
+	.handles(handledItems("keeper", [value, SharedChangedEvent, KeptChangedEvent, RereadKeptSubscriber]));
 
-const HearsKeptSubscriber = subscriber(event("keeper/kept-changed")).handle(() => undefined);
+const HearsKeptSubscriber = subscriber(fullyNamed("keeper.kept-changed", event())).handle(() => undefined);
 
-const HearsSharedSubscriber = subscriber(event("keeper/shared-changed")).handle(() => undefined);
+const HearsSharedSubscriber = subscriber(fullyNamed("keeper.shared-changed", event())).handle(() => undefined);
 
 const hearerModuleOf = (heard: AnySubscriber) =>
-	module("hearer")
+	module()
 		.on(Device)
 		.imports(KeeperModule)
 		.provide(() => ({ ledger: new Ledger() }))
-		.handles(ValueQuery, heard);
+		.handles(handledItems("hearer", [value, heard]));
 
 check(
 	"another module in the same process subscribing to an event with no mark starts",
@@ -291,15 +291,15 @@ check(
 
 const ListensForeignSubscriber = subscriber(ForeignEvent).handle(() => undefined);
 
-const ListeningModule = module("listening")
+const ListeningModule = module()
 	.on(Device)
 	.provide(() => ({ ledger: new Ledger() }))
-	.handles(ValueQuery, ListensForeignSubscriber);
+	.handles(handledItems("listening", [value, ListensForeignSubscriber]));
 
 check(
 	"a subscriber of another module's event needs that module in .imports()",
 	thrownBy(() => runtime().modules(ListeningModule).start(ON_BROWSER)).split("\n")[1],
-	'the subscriber of other/changed listens to other/changed, but module "listening" does not import other: add .imports()',
+	'the subscriber of other.changed listens to other.changed, but module "listening" does not import other: add .imports()',
 );
 
 class Registry {
@@ -308,14 +308,14 @@ class Registry {
 
 const vaultsSeen: string[] = [];
 
-const VaultedModule = module("vaulted")
+const VaultedModule = module()
 	.on(Device)
 	.config<{ readonly vault: Vault }>()
 	.provide(({ config }) => {
 		vaultsSeen.push(config.vault.name);
 		return { ledger: new Ledger() };
 	})
-	.handles(ValueQuery);
+	.handles(handledItems("vaulted", [value]));
 
 runtime()
 	.modules(VaultedModule({ vault: new Vault() }))
@@ -345,14 +345,14 @@ check(
 
 const placesSeen: string[] = [];
 
-const MaybeHostedModule = module("maybe-hosted")
+const MaybeHostedModule = module()
 	.on(Device)
 	.config<{ readonly tauri?: { readonly vault: Vault } }>()
 	.provide(({ config }) => {
 		placesSeen.push(config.tauri === undefined ? "elsewhere" : config.tauri.vault.name);
 		return { ledger: new Ledger() };
 	})
-	.handles(ValueQuery);
+	.handles(handledItems("maybe-hosted", [value]));
 
 runtime().modules(MaybeHostedModule).start(ON_BROWSER);
 runtime()
@@ -366,7 +366,7 @@ check(
 
 const mountsSeen: string[] = [];
 
-const MountedModule = module("canvas")
+const MountedModule = module()
 	.on(Device)
 	.config<
 		{ readonly kind: "vault"; readonly registry: Registry } | { readonly kind: "project"; readonly folder: string }
@@ -375,7 +375,7 @@ const MountedModule = module("canvas")
 		mountsSeen.push(config.kind === "vault" ? `vault ${config.registry.widgets}` : `project ${config.folder}`);
 		return { ledger: new Ledger() };
 	})
-	.handles(ValueQuery);
+	.handles(handledItems("canvas", [value]));
 
 runtime()
 	.modules(MountedModule({ kind: "vault", registry: new Registry() }))
@@ -388,7 +388,7 @@ check("a config union reaches provide as the variant the module was called with"
 	"project apps/notes",
 ]);
 
-const BadPayloadEvent = event("bad-payload")
+const BadPayloadEvent = named("bad-payload", event())
 	.input(z.object({ by: z.number() }))
 	.from(gatewayEvent(Ledger, (held, fire) => held.valueChanged(() => fire({ by: "not a number" }))));
 
@@ -396,10 +396,10 @@ const NeverHearsSubscriber = ledgerBuilt.subscriber(BadPayloadEvent).handle((_in
 	heard.said.push("heard a bad payload");
 });
 
-const BadPayloadModule = module("payloads")
+const BadPayloadModule = module()
 	.on(Device)
 	.provide(() => ({ ledger: new Ledger(), heard: new Heard() }))
-	.handles(ValueQuery, BadPayloadEvent, NeverHearsSubscriber);
+	.handles(handledItems("payloads", [value, BadPayloadEvent, NeverHearsSubscriber]));
 
 const payloadFailures: Failure[] = [];
 const payloadLedger = new Ledger();
@@ -415,24 +415,24 @@ check(
 	[0, true],
 );
 
-const QueryTriesInvalidating = query("tries")
+const QueryTriesInvalidating = named("tries", query())
 	.output(z.number())
 	// @ts-expect-error
 	.handle((_input, { invalidate }) => {
-		invalidate(ValueQuery);
+		invalidate(value);
 		return 1;
 	});
 
 check("a query's context offers no invalidate", typeof QueryTriesInvalidating.handle, "function");
 
-const ServedLedgerModule = module("served-ledger")
+const ServedLedgerModule = module()
 	.on(Anywhere)
 	.guard(PublicGuard)
 	.provide(() => ({
 		ledger: new Ledger(),
 		heard: new Heard(),
 	}))
-	.handles(ValueQuery, LedgerChangedEvent, BigAddReReadSubscriber);
+	.handles(handledItems("served-ledger", [value, LedgerChangedEvent, BigAddReReadSubscriber]));
 const servedLedger = new Ledger();
 const servedLedgerServer = runtime()
 	.modules(

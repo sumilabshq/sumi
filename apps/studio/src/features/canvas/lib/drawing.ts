@@ -1,6 +1,6 @@
 import { useQuery } from "@widgetarium/data-framework";
 import type { WidgetSurfaceProps } from "@widgetarium/core/surface/widget-surface.js";
-import { DrawingQuery } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 
 export interface Drawing {
 	readonly registry: WidgetSurfaceProps["registry"];
@@ -10,7 +10,7 @@ export interface Drawing {
 const NOT_A_REGISTRY = "the canvas drawing holds no widget registry";
 
 export function useDrawing(): Drawing {
-	const { registry, host } = useQuery(DrawingQuery).data;
+	const { registry, host } = useQuery(canvas.field.drawing).data;
 
 	if (!isDrawnRegistry(registry) || !isDrawnHost(host)) {
 		throw new Error(NOT_A_REGISTRY);

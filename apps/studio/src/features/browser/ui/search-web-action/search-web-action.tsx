@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { SearchWebCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { PrimaryAction } from "../page-state/primary-action.js";
 
@@ -13,7 +13,7 @@ const SEARCH_ICON_PX = 17;
 const SEARCH_FOR = "Search for {text}";
 
 export function SearchWebAction({ text }: SearchWebActionProps): ReactElement {
-	const searchWeb = useCommand(SearchWebCommand);
+	const searchWeb = useCommand(browser.ink.searchWeb);
 	const heldTabId = useHeldTab();
 	return (
 		<PrimaryAction

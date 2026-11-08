@@ -1,6 +1,6 @@
 import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { HeldTabsQuery } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { AppKind, HeldTabs } from "@widgetarium/app-host";
 import { useQuery } from "@widgetarium/data-framework";
 
@@ -19,7 +19,7 @@ type KeptInstances = ReadonlyMap<string, KeptInstance>;
 const APPS_WITH_EMPTY_PAGE: ReadonlySet<AppKind> = new Set(["browser"]);
 
 export function KeptApps({ shown, drawnOf }: KeptAppsProps): ReactElement {
-	const { kept, shownKey } = useKeptInstances(shown, useQuery(HeldTabsQuery).data);
+	const { kept, shownKey } = useKeptInstances(shown, useQuery(appHost.tabs.heldTabs).data);
 	return (
 		<Fragment>
 			{[...kept].map(([key, instance]) => (

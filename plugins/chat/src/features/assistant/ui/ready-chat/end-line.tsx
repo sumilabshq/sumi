@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { FinishLine } from "../finish-line/finish-line.js";
 import { FailureCard } from "../failure-card/failure-card.js";
-import { RetryTurnCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import type { Chat } from "@widgetarium/assistant";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
@@ -13,7 +13,7 @@ const NOT_COMPACTED = "The chat was not compacted";
 
 export function EndLine({ chat }: { readonly chat: Chat }): ReactNode {
 	const chatKey = useChatKey();
-	const retryTurn = useCommand(RetryTurnCommand);
+	const retryTurn = useCommand(assistant.chat.retryTurn);
 	const { session } = chat;
 	const last = session.turns.at(-1);
 

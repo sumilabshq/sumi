@@ -1,11 +1,21 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { offsetOfCursor, pageAt } from "@widgetarium/core/gateway/page.js";
-import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
-import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
+import { jobsChanged } from "../../gateways/agent-jobs/agent-jobs.events.js";
+import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import { COMPONENTS_PAGE } from "../../shared/schema/canvas-page.schema.js";
-import { PageAskSchema, PageChoicesSchema, PagesAskSchema, PagesPageSchema, ReturnNoteAskSchema, ReturnNoteSchema, ScreenAskSchema, VariantsSchema, WidgetAskSchema } from "../../shared/schema/pages.schema.js";
+import {
+	PageAskSchema,
+	PageChoicesSchema,
+	PagesAskSchema,
+	PagesPageSchema,
+	ReturnNoteAskSchema,
+	ReturnNoteSchema,
+	ScreenAskSchema,
+	VariantsSchema,
+	WidgetAskSchema,
+} from "../../shared/schema/pages.schema.js";
 import { PAGE_FIELDS, pagesNowOf } from "../../shared/lib/pages/pages-now.js";
 import { pageTurnWhileRead } from "../../shared/lib/pages/page-turn.js";
 import { pageChoicesOf } from "../../shared/lib/pages/page-choices.js";
@@ -16,7 +26,7 @@ import { variantsOf } from "./lib/variants-of.js";
 const SPEC_REFUSED = "The spec of {app} cannot be read: {why}";
 const NO_NOTE_TO_RETURN_TO = "{app} has no page with a note to go back to.";
 
-export const PageChoicesQuery = query("page-choices")
+export const pageChoices = query()
 	.public()
 	.output(PageChoicesSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
@@ -25,7 +35,7 @@ export const PageChoicesQuery = query("page-choices")
 		return pageChoicesOf(pages);
 	});
 
-export const PagesQuery = query("pages")
+export const pages = query()
 	.public()
 	.input(PagesAskSchema)
 	.output(PagesPageSchema)
@@ -41,7 +51,7 @@ export const PagesQuery = query("pages")
 		return pageAt(rows, offset, pages.screens.length);
 	});
 
-export const VariantsQuery = query("variants")
+export const variants = query()
 	.public()
 	.output(VariantsSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
@@ -50,7 +60,7 @@ export const VariantsQuery = query("variants")
 		return variantsOf(pages);
 	});
 
-export const ReturnNoteQuery = query("return-note")
+export const returnNote = query()
 	.public()
 	.input(ReturnNoteAskSchema)
 	.output(ReturnNoteSchema)
@@ -82,7 +92,7 @@ export const ReturnNoteQuery = query("return-note")
 		};
 	});
 
-export const ShowPageCommand = command("show-page")
+export const showPage = command()
 	.public()
 	.input(PageAskSchema)
 	.idempotencyKey(Repeatable)
@@ -102,7 +112,7 @@ export const ShowPageCommand = command("show-page")
 		}
 	});
 
-export const FocusWidgetCommand = command("focus-widget")
+export const focusWidget = command()
 	.public()
 	.input(WidgetAskSchema)
 	.idempotencyKey(Repeatable)
@@ -126,7 +136,7 @@ export const FocusWidgetCommand = command("focus-widget")
 		}
 	});
 
-export const FinishFlightCommand = command("finish-flight")
+export const finishFlight = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { canvasMoment }) => {
@@ -137,7 +147,7 @@ export const FinishFlightCommand = command("finish-flight")
 		}
 	});
 
-export const PickVariantCommand = command("pick-variant")
+export const pickVariant = command()
 	.public()
 	.input(ScreenAskSchema)
 	.idempotencyKey(Repeatable)
@@ -172,27 +182,27 @@ export const PickVariantCommand = command("pick-variant")
 		}
 	});
 
-export const RereadPagesSubscriber = subscriber(CanvasMomentChangedEvent).handle(({ fields }, { invalidate }) => {
+export const rereadPages = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
 	if (!isTouching(fields, PAGE_FIELDS)) {
 		return;
 	}
 
-	invalidate(PageChoicesQuery);
-	invalidate(PagesQuery);
-	invalidate(VariantsQuery);
-	invalidate(ReturnNoteQuery);
+	invalidate(pageChoices);
+	invalidate(pages);
+	invalidate(variants);
+	invalidate(returnNote);
 });
 
-export const RereadPagesForDesignSubscriber = subscriber(DesignChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(PageChoicesQuery);
-	invalidate(PagesQuery);
-	invalidate(VariantsQuery);
-	invalidate(ReturnNoteQuery);
+export const rereadPagesForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(pageChoices);
+	invalidate(pages);
+	invalidate(variants);
+	invalidate(returnNote);
 });
 
-export const RereadPagesForJobsSubscriber = subscriber(JobsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(PageChoicesQuery);
-	invalidate(PagesQuery);
-	invalidate(VariantsQuery);
-	invalidate(ReturnNoteQuery);
+export const rereadPagesForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+	invalidate(pageChoices);
+	invalidate(pages);
+	invalidate(variants);
+	invalidate(returnNote);
 });

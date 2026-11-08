@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent, RefObject } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { DraftAttachmentsQuery, HoldDraftTextCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { toast } from "@widgetarium/kit";
 import { sendState } from "./send-state.js";
 import type { SendState } from "./send-state.js";
@@ -27,7 +27,7 @@ export interface ComposerDraft {
 export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerDraft {
 	const [draft, setDraft] = useState("");
 	const attach = useAttachesFiles();
-	const { data: drafted } = useQuery(DraftAttachmentsQuery, { chat: useChatKey() });
+	const { data: drafted } = useQuery(assistant.composer.draftAttachments, { chat: useChatKey() });
 	const sending = useRef<string | null>(null);
 	const holdNow = useHoldsDraft({
 		draft,
@@ -82,7 +82,7 @@ interface HeldInput {
 
 function useHoldsDraft({ draft, attachedCount, sending }: HeldInput): () => void {
 	const chat = useChatKey();
-	const holdDraftText = useCommand(HoldDraftTextCommand);
+	const holdDraftText = useCommand(assistant.composer.holdDraftText);
 	const latestHold = useRef(holdDraftText);
 	latestHold.current = holdDraftText;
 	const latestDraft = useRef(draft);

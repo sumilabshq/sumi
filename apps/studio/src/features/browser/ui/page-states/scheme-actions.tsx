@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { PrimaryAction } from "../page-state/primary-action.js";
 import type { PageFailure } from "@widgetarium/browser";
-import { LeaveFailureCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { CopyLinkAction } from "./copy-link-action.js";
 import { StateActions } from "./state-actions.js";
 
@@ -15,7 +15,7 @@ export interface SchemeActionsProps {
 const GO_BACK = "Go back";
 
 export function SchemeActions({ tabId, failure }: SchemeActionsProps): ReactElement {
-	const leave = useCommand(LeaveFailureCommand);
+	const leave = useCommand(browser.tabs.leaveFailure);
 	return (
 		<StateActions>
 			<PrimaryAction icon="arrow-left" label={GO_BACK} onPress={() => void leave.run({ tabId })} />

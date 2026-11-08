@@ -1,11 +1,11 @@
 import { runtime, orpcTransport } from "@widgetarium/data-framework";
-import { FileSystemModule, PlacesModule, TerminalModule } from "../packages/shared/contract/index.ts";
+import { fileSystem, places, terminal } from "../packages/shared/contract/index.ts";
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
 import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/use-frame-port.ts";
 import type { FrameOpened } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { frameRoutesOf } from "../apps/studio/src/tabs/frame-routes.ts";
 import { webPageServingOf } from "../plugins/browser-page/src/features/web-page/lib/web-page-serving.ts";
-import { WebPageModule } from "../plugins/browser-page/data/web-page/index.ts";
+import { webPage } from "../plugins/browser-page/data/web-page/index.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 
 declare global {
@@ -32,15 +32,15 @@ const core = orpcTransport(location.origin);
 const routesFor = frameRoutesOf({
 	workspaceId: "contract-frame",
 	core,
-	coreModules: [FileSystemModule, TerminalModule, PlacesModule],
+	coreModules: [fileSystem, terminal, places],
 	appearance: startStudioAppearance(window).transport,
 	frameModules: [
 		{
-			contract: WebPageModule,
+			contract: webPage,
 			serving: webPageServingOf({
 				platform: "browser",
 				windowApp: runtime()
-					.imports(PlacesModule({ over: core }))
+					.imports(places({ over: core }))
 					.start(),
 			}),
 		},

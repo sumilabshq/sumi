@@ -1,4 +1,5 @@
 import { MemoryDoneKeys, MemoryRateLimits, runtime } from "../packages/shared/data-framework/src/index.ts";
+import { fullyNamed } from "./requests-names.ts";
 import type { DoneKeys, RateLimit, RateLimits } from "../packages/shared/data-framework/src/index.ts";
 import {
 	PublicGuard,
@@ -73,7 +74,7 @@ check(
 	await editor.send(fx.AddPageCommand, { title: "" }, { idempotencyKey: "w-0" }),
 	{
 		ok: false,
-		reason: "pages/add-page input: title: Too small: expected string to have >=1 characters",
+		reason: "pages.add-page input: title: Too small: expected string to have >=1 characters",
 		code: "invalid-input",
 		ran: false,
 	},
@@ -83,13 +84,13 @@ check("so nothing went over the wire", wireCalls.length, callsBefore);
 const rename = { from: "About", to: "Team" };
 check("AuthenticatedGuard refuses a call with no user", await anonymous.send(fx.RenamePageCommand, rename), {
 	ok: false,
-	reason: "pages/rename-page needs a signed-in user",
+	reason: "pages.rename-page needs a signed-in user",
 	code: "unauthenticated",
 	ran: false,
 });
 check("HasPermissionGuard refuses a user without the permission", await reader.send(fx.RenamePageCommand, rename), {
 	ok: false,
-	reason: "pages/rename-page needs the permission pages.rename",
+	reason: "pages.rename-page needs the permission pages.rename",
 	code: "forbidden",
 	ran: false,
 });
@@ -100,7 +101,7 @@ check("a user with the permission runs it", await editor.send(fx.RenamePageComma
 check(
 	"a project guard reads what its module provides, and refuses a rename of a page that is not there",
 	await editor.send(fx.RenamePageCommand, { from: "Nowhere", to: "Else" }),
-	{ ok: false, reason: "pages/rename-page: no such page", code: "forbidden", ran: false },
+	{ ok: false, reason: "pages.rename-page: no such page", code: "forbidden", ran: false },
 );
 check("a guard that throws on the server is a refusal, and nothing ran", await anonymous.send(fx.GuardCrashQuery), {
 	ok: false,
@@ -239,12 +240,12 @@ check(
 		"dataFrameworkMiddleware() refused:",
 		...["rename-page", "traced", "who", "stamp", "context", "secret", "who-else", "pay"].map(
 			(name) =>
-				`pages/${name} is guarded by AuthenticatedGuard, which needs a user, and dataFrameworkMiddleware() has no Authenticate: pass one`,
+				`pages.${name} is guarded by AuthenticatedGuard, which needs a user, and dataFrameworkMiddleware() has no Authenticate: pass one`,
 		),
-		"pages/mine is guarded by guard #1, which needs a user, and dataFrameworkMiddleware() has no Authenticate: pass one",
+		"pages.mine is guarded by guard #1, which needs a user, and dataFrameworkMiddleware() has no Authenticate: pass one",
 	].join("\n"),
 );
-const RenameElsewhereCommand = command("pages/rename-elsewhere")
+const RenameElsewhereCommand = fullyNamed("pages.rename-elsewhere", command())
 	.idempotencyKey(Repeatable)
 	.input(z.object({ from: z.string() }));
 check(
@@ -259,9 +260,9 @@ check(
 			.modules(ElsewhereServerModule.handlers([RenameElsewhereCommandHandler]))
 			.start({ platform: "server" });
 	}),
-	"runtime() refused:\nguard #2 of pages/rename-elsewhere requires pages, which neither its module nor runtime().provide() gives as a Pages",
+	"runtime() refused:\nguard #2 of pages.rename-elsewhere requires pages, which neither its module nor runtime().provide() gives as a Pages",
 );
-const Unguarded = query("pages/unguarded").public().output(z.string());
+const Unguarded = fullyNamed("pages.unguarded", query()).public().output(z.string());
 const UnguardedClientModule = clientModule("pages");
 const UnguardedQueryHandler = handler(Unguarded, UnguardedClientModule).handle(() => "");
 const InputOnlyGuard = guard().handle(() => undefined);
@@ -274,7 +275,7 @@ check(
 			.modules(UnguardedServerModule.handlers([UnguardedQueryHandler]))
 			.start({ platform: "server" }),
 	),
-	'runtime() refused:\nthe handler of pages/unguarded was built for module "pages", but module "pages" holds it',
+	'runtime() refused:\nthe handler of pages.unguarded was built for module "pages", but module "pages" holds it',
 );
 const unguardedRuntime = runtime()
 	.modules(UnguardedClientModule.handlers([UnguardedQueryHandler]))
@@ -284,7 +285,7 @@ check(
 	thrownBy(() => dataFrameworkMiddleware(unguardedRuntime, { authenticate: new fx.HeaderAuthenticate() })),
 	[
 		"dataFrameworkMiddleware() refused:",
-		"pages/unguarded is exposed with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
+		"pages.unguarded is exposed with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
 	].join("\n"),
 );
 check(
@@ -298,7 +299,7 @@ check(
 	await anonymous.send(fx.SecretQuery),
 	{
 		ok: false,
-		reason: "step #1 of pages/secret answered without next(): a step may only refuse",
+		reason: "step #1 of pages.secret answered without next(): a step may only refuse",
 		code: "failed",
 		ran: false,
 	},
@@ -310,7 +311,7 @@ check(
 	[
 		{
 			ok: false,
-			reason: "step #1 of pages/who-else replaced user, which only the server sets",
+			reason: "step #1 of pages.who-else replaced user, which only the server sets",
 			code: "failed",
 			ran: false,
 		},
@@ -374,7 +375,7 @@ check(
 );
 
 const GreedyServerModule = serverModule("greedy").provide(() => ({ rateLimits: new MemoryRateLimits() }));
-const GreedyQuery = query("greedy/greedy").output(z.string());
+const GreedyQuery = fullyNamed("greedy.greedy", query()).output(z.string());
 const GreedyQueryHandler = handler(GreedyQuery, GreedyServerModule)
 	.guard(PublicGuard)
 	.handle(() => "");

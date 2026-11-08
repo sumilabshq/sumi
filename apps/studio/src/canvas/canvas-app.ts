@@ -1,4 +1,4 @@
-import { CanvasModule } from "@widgetarium/canvas/module";
+import { canvas } from "@widgetarium/canvas/module";
 import type { CanvasHosts as CanvasConfig } from "@widgetarium/canvas/module";
 import { runtime } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
@@ -6,7 +6,7 @@ import type { CanvasHosts } from "./canvas-hosts.js";
 
 export function startCanvasApp(hosts: CanvasHosts, appName: string): Runtime {
 	return runtime()
-		.modules(CanvasModule(canvasConfigOf(hosts)))
+		.modules(canvas(canvasConfigOf(hosts)))
 		.start({
 			platform: "browser",
 			scope: { workspaceId: appName },

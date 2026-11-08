@@ -2,7 +2,7 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
-import { CreateWorkspaceCommand, WorkspacesQuery } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 import { useFadesAtEdges } from "../../lib/use-fades-at-edges.js";
 import { StripButton } from "./strip-button.js";
 
@@ -12,8 +12,8 @@ const NEW_ICON_PX = 18;
 const NEW_WORKSPACE_TIP = tooltipMarks({ said: NEW_WORKSPACE, side: "top", align: "start" });
 
 export function WorkspaceStrip(): ReactElement | null {
-	const { rows, hasStrip } = useQuery(WorkspacesQuery).data;
-	const createWorkspace = useCommand(CreateWorkspaceCommand);
+	const { rows, hasStrip } = useQuery(workspaces.workspaces.workspaces).data;
+	const createWorkspace = useCommand(workspaces.workspaces.createWorkspace);
 	const scroller = useRef<HTMLDivElement | null>(null);
 	useFadesAtEdges(scroller, rows.length);
 	if (!hasStrip) {

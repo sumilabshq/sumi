@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { TabArt } from "../apps/studio/src/features/app-host/ui/tab-face/tab-art.tsx";
 import type { TabArtSize } from "../apps/studio/src/features/app-host/ui/tab-face/tab-art.tsx";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/module.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import { WebBrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/web.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
@@ -60,14 +60,16 @@ const siteFiles = new MemorySiteFilesGateway({
 });
 const studio = runtime()
 	.modules(
-		BrowserModule({ injects: browserPartsOf({
+		browser({
+			injects: browserPartsOf({
 				browserPages: new WebBrowserPagesGateway(),
 				browserGrants: new MemoryBrowserGrantsGateway(),
 				browserAudit: new MemoryBrowserAuditGateway(),
 				recentSites: new MemoryRecentSitesGateway(),
 				siteIcons,
 				siteFiles,
-			}), }),
+			}),
+		}),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "icons" } });
 const UNREAD_ICON = drawnIcon("rgb(52, 168, 83)");

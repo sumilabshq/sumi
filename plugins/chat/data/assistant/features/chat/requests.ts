@@ -1,7 +1,7 @@
 import { PerCall, Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { AssistantSessionChangedEvent } from "../../gateways/chat-parts/chat-parts.events.js";
-import { SentAttachmentsChangedEvent } from "../../shared/events/sent-attachments.events.js";
+import { assistantSessionChanged } from "../../gateways/chat-parts/chat-parts.events.js";
+import { sentAttachmentsChanged } from "../../shared/events/sent-attachments.events.js";
 import { ChatSchema, QueueChangeInChatSchema } from "../../shared/schema/chat.schema.js";
 import { TextAskedSchema } from "../../shared/schema/attachment.schema.js";
 import { chatOf } from "./lib/chat-of.js";
@@ -49,55 +49,57 @@ export const AssistantCallersGuard = guard().handle(({ request, context }) => {
 	}
 });
 
-export const ChatQuery = query("chat")
+export const chat = query()
 	.public()
 	.input(ChatKeySchema)
 	.output(ChatSchema)
 	.settlesNow()
-	.handle(inChat((_input, { assistantSession, sentAttachments }) => {
-		const session = assistantSession.session();
-		return chatOf({
-			isAvailable: assistantSession.isAvailable(),
-			session,
-			cards: assistantSession.cardsOf(session),
-			faces: session.turns.map((turn) => turn.calls.map((call) => assistantSession.faceOf(call))),
-			previews: sentAttachments.sentAttachments().previews,
-		});
-	}));
+	.handle(
+		inChat((_input, { assistantSession, sentAttachments }) => {
+			const session = assistantSession.session();
+			return chatOf({
+				isAvailable: assistantSession.isAvailable(),
+				session,
+				cards: assistantSession.cardsOf(session),
+				faces: session.turns.map((turn) => turn.calls.map((call) => assistantSession.faceOf(call))),
+				previews: sentAttachments.sentAttachments().previews,
+			});
+		}),
+	);
 
-export const RetryTurnCommand = command("retry-turn")
+export const retryTurn = command()
 	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
 	.handle(inChat((_input, { assistantSession }) => assistantSession.retry()));
 
-export const StopTurnCommand = command("stop-turn")
+export const stopTurn = command()
 	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
 	.handle(inChat((_input, { assistantSession }) => assistantSession.stop()));
 
-export const ChangeQueueCommand = command("change-queue")
+export const changeQueue = command()
 	.public()
 	.input(QueueChangeInChatSchema)
 	.idempotencyKey(PerCall)
-	.handle(inChat(({ change }, { assistantSession }) => {
-		const refusal = assistantSession.changeQueue(change);
-		return refusal === null ? undefined : refuse(refusal);
-	}));
+	.handle(
+		inChat(({ change }, { assistantSession }) => {
+			const refusal = assistantSession.changeQueue(change);
+			return refusal === null ? undefined : refuse(refusal);
+		}),
+	);
 
-export const SendTextCommand = command("send-text")
+export const sendText = command()
 	.public()
 	.input(TextAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(inChat(({ said }, { assistantSession }) => assistantSession.send(said)));
 
-export const RereadChatSubscriber = subscriber(AssistantSessionChangedEvent).handle(({ chat }, { invalidate }) => {
-	invalidate(ChatQuery, { chat });
+export const rereadChat = subscriber(assistantSessionChanged).handle(({ chat: chatId }, { invalidate }) => {
+	invalidate(chat, { chat: chatId });
 });
 
-export const RereadChatForAttachmentsSubscriber = subscriber(SentAttachmentsChangedEvent).handle(
-	(_input, { invalidate }) => {
-		invalidate(ChatQuery);
-	},
-);
+export const rereadChatForAttachments = subscriber(sentAttachmentsChanged).handle((_input, { invalidate }) => {
+	invalidate(chat);
+});

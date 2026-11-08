@@ -1,5 +1,5 @@
 import type { Runtime } from "@widgetarium/data-framework";
-import { WorkspacesQuery } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 
 export function reopensOnWorkspaceSwitch(
 	workspacesApp: Runtime,
@@ -7,7 +7,7 @@ export function reopensOnWorkspaceSwitch(
 	reopen: () => Promise<void>,
 ): () => void {
 	let shownId = openedId;
-	return workspacesApp.routes.watch(WorkspacesQuery, undefined, () => {
+	return workspacesApp.routes.watch(workspaces.workspaces.workspaces, undefined, () => {
 		const currentId = currentWorkspaceIdIn(workspacesApp) ?? shownId;
 
 		if (currentId === shownId) {
@@ -21,6 +21,6 @@ export function reopensOnWorkspaceSwitch(
 }
 
 function currentWorkspaceIdIn(workspacesApp: Runtime): string | null {
-	const read = workspacesApp.routes.readNow(WorkspacesQuery);
-	return read === null ? null : WorkspacesQuery.outputSchema.parse(read.output).current.id;
+	const read = workspacesApp.routes.readNow(workspaces.workspaces.workspaces);
+	return read === null ? null : workspaces.workspaces.workspaces.outputSchema.parse(read.output).current.id;
 }

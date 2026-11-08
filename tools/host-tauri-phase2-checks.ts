@@ -24,7 +24,7 @@ import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../apps/tauri/src/workspac
 import { WorkspaceClient } from "../apps/tauri/src/workspace/workspace-client.ts";
 import { reopensOnWorkspaceSwitch } from "../apps/tauri/src/workspace/workspace-switch.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
+import { workspaces } from "../packages/domain/workspaces/module.ts";
 import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import type { AssistantTurn } from "../packages/shared/core/src/engine/assistant-port.ts";
@@ -73,7 +73,10 @@ async function railChecks(): Promise<void> {
 	fake.known.set(RESEARCH.id, RESEARCH);
 	const reopened: string[] = [];
 	const parts = tauriWorkspacesParts(DEFAULT.id, new StoreClient(fake.invoke));
-	const workspacesApp = runtime().modules(WorkspacesModule({ injects: parts })).imports(placesOver()).start();
+	const workspacesApp = runtime()
+		.modules(workspaces({ injects: parts }))
+		.imports(placesOver())
+		.start();
 	reopensOnWorkspaceSwitch(workspacesApp, DEFAULT.id, async () => void reopened.push("reopen"));
 	await quietly(() => waitFor(() => parts.workspaces.workspaces().length === 2));
 	const apps = tauriWorkspaceApps({ workspaces: new WorkspaceClient(fake.invoke), workspacesApp });

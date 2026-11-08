@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { studioWindowOf } from "@widgetarium/behaviors";
-import { OpenChatAskedOnStartCommand } from "@sumi/chat-tabs";
-import { PaneTreeQuery } from "@widgetarium/layout";
-import { ChatToOpenQuery } from "@widgetarium/workspaces";
+import { chatTabs } from "@sumi/chat-tabs";
+import { layout } from "@widgetarium/layout";
+import { workspaces } from "@widgetarium/workspaces";
 import { hasUnnamedChatPane } from "./unnamed-chat-pane.js";
 
 export function useOpensChatAskedOnStart(): void {
-	const asked = useQuery(ChatToOpenQuery).data;
-	const board = useQuery(PaneTreeQuery).data;
-	const openChatAskedOnStart = useCommand(OpenChatAskedOnStartCommand);
+	const asked = useQuery(workspaces.chats.chatToOpen).data;
+	const board = useQuery(layout.panes.paneTree).data;
+	const openChatAskedOnStart = useCommand(chatTabs.chatOpening.openChatAskedOnStart);
 	const isWaiting = !board.isLoaded || !asked.isRead || hasUnnamedChatPane(board);
 	useEffect(() => {
 		if (asked.id === null || isWaiting || !studioWindowOf(location.search).isMain) {

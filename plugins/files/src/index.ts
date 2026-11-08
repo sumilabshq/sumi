@@ -1,5 +1,6 @@
-export * from "./slots.js";
-export * from "./plugin.js";
+export { ANY_EXTENSION, FileViewerSchema } from "./slots.js";
+export type { FileViewer } from "./slots.js";
+export * from "./generated/plugin.js";
 export { useFileTab } from "./shared/lib/use-file-tab.js";
 export type { FileTab } from "./shared/lib/use-file-tab.js";
 export { FileNote } from "./features/file-page/ui/file-note/file-note.js";

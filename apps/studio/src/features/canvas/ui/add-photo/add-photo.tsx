@@ -3,7 +3,7 @@ import type { ChangeEvent, ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
-import { AddPhotosCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { useCanvasSurroundings } from "../../lib/canvas-surroundings.js";
 import { RoundButton } from "../round-button/round-button.js";
 import { PAGE_NAME_AND_PHOTO_LEAVE } from "../../lib/app-zone-steps.js";
@@ -17,7 +17,7 @@ const PHOTO_HOLDER = `cv:inline-flex cv:items-center cv:gap-1.5 ${PAGE_NAME_AND_
 export function AddPhoto(): ReactElement {
 	const picker = useRef<HTMLInputElement | null>(null);
 	const anchor = useRef<HTMLSpanElement | null>(null);
-	const add = useCommand(AddPhotosCommand);
+	const add = useCommand(canvas.photos.addPhotos);
 	const { ownsPaste } = useCanvasSurroundings();
 	usePastedFiles(IMAGES, (photos) => {
 		if (ownsPaste()) {

@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { OpenWorkspaceByPositionCommand } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 
 const DIGIT_KEY = /^Digit([1-9])$/;
 
 export function WorkspaceKeys(): null {
-	const { run } = useCommand(OpenWorkspaceByPositionCommand);
+	const { run } = useCommand(workspaces.workspaces.openWorkspaceByPosition);
 	useEffect(() => {
 		const pressed = (event: KeyboardEvent): void => {
 			const digit = DIGIT_KEY.exec(event.code)?.[1];

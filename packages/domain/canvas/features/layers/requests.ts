@@ -1,8 +1,8 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
-import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
+import { jobsChanged } from "../../gateways/agent-jobs/agent-jobs.events.js";
+import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import type { CanvasField } from "../../shared/schema/canvas-moment.schema.js";
 import { LayersPanelSchema } from "../../shared/schema/layer-row.schema.js";
 import { LayerIdSchema, LayerMoveAskSchema, SeenLayersSchema } from "../../shared/schema/layer.schema.js";
@@ -33,7 +33,7 @@ const PANEL_FIELDS: readonly CanvasField[] = [
 	"closedLayers",
 ];
 
-export const LayersPanelQuery = query("layers-panel")
+export const layersPanel = query()
 	.public()
 	.output(LayersPanelSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs, widgetDrawing }) => {
@@ -48,7 +48,7 @@ export const LayersPanelQuery = query("layers-panel")
 		return layersPanelOf(shown, moment, widgetDrawing.drawing().registry);
 	});
 
-export const KeepSeenLayersCommand = command("keep-seen-layers")
+export const keepSeenLayers = command()
 	.public()
 	.input(SeenLayersSchema)
 	.idempotencyKey(Repeatable)
@@ -65,7 +65,7 @@ export const KeepSeenLayersCommand = command("keep-seen-layers")
 		}
 	});
 
-export const MoveLayerCommand = command("move-layer")
+export const moveLayer = command()
 	.public()
 	.input(LayerMoveAskSchema)
 	.idempotencyKey(PerCall)
@@ -113,12 +113,12 @@ export const MoveLayerCommand = command("move-layer")
 			const { sourceMoved } = await import("./lib/source-moved.js");
 			await designFiles.changeText(`${widgetFolder}/${move.file}`, (source) => sourceMoved(source, move));
 			designFolder.forgetFolder(moment.app);
-			emit(DesignChangedEvent, { app: moment.app });
+			emit(designChanged, { app: moment.app });
 			console.info(`[widgetarium] layer ${dragged} of ${widget} → into ${parent} (moved)`);
 		},
 	);
 
-export const PickLayerCommand = command("pick-layer")
+export const pickLayer = command()
 	.public()
 	.input(LayerIdSchema)
 	.idempotencyKey(Repeatable)
@@ -158,7 +158,7 @@ export const PickLayerCommand = command("pick-layer")
 		}
 	});
 
-export const ToggleLayerFoldCommand = command("toggle-layer-fold")
+export const toggleLayerFold = command()
 	.public()
 	.input(LayerIdSchema)
 	.idempotencyKey(Repeatable)
@@ -173,7 +173,7 @@ export const ToggleLayerFoldCommand = command("toggle-layer-fold")
 		}
 	});
 
-export const ToggleLayoutLockCommand = command("toggle-layout-lock")
+export const toggleLayoutLock = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { canvasMoment }) => {
@@ -192,7 +192,7 @@ export const ToggleLayoutLockCommand = command("toggle-layout-lock")
 		}
 	});
 
-export const SidebarQuery = query("sidebar")
+export const sidebar = query()
 	.public()
 	.output(SidebarSchema)
 	.settlesNow()
@@ -203,7 +203,7 @@ export const SidebarQuery = query("sidebar")
 		keptBesidePx: SIDEBAR_BOUNDS.keptBesidePx,
 	}));
 
-export const ToggleSidebarCommand = command("toggle-sidebar")
+export const toggleSidebar = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { canvasMoment }) => {
@@ -222,7 +222,7 @@ export const ToggleSidebarCommand = command("toggle-sidebar")
 		}
 	});
 
-export const ResizeSidebarWidthCommand = command("resize-sidebar-width")
+export const resizeSidebarWidth = command()
 	.public()
 	.input(SidebarResizeSchema)
 	.idempotencyKey(Repeatable)
@@ -236,11 +236,11 @@ export const ResizeSidebarWidthCommand = command("resize-sidebar-width")
 
 		const reason = `canvas sidebar ${was}px → ${next}px (resize)`;
 		sidebarWidth.saveSidebarPx(next, reason);
-		invalidate(SidebarQuery);
+		invalidate(sidebar);
 		console.debug(`[widgetarium] ${reason}`);
 	});
 
-export const ResetSidebarWidthCommand = command("reset-sidebar-width")
+export const resetSidebarWidth = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { sidebarWidth, invalidate }) => {
@@ -253,24 +253,24 @@ export const ResetSidebarWidthCommand = command("reset-sidebar-width")
 
 		const reason = `canvas sidebar ${was}px → ${next}px (reset)`;
 		sidebarWidth.saveSidebarPx(next, reason);
-		invalidate(SidebarQuery);
+		invalidate(sidebar);
 		console.debug(`[widgetarium] ${reason}`);
 	});
 
-export const RereadLayersSubscriber = subscriber(CanvasMomentChangedEvent).handle(({ fields }, { invalidate }) => {
+export const rereadLayers = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
 	if (isTouching(fields, PANEL_FIELDS)) {
-		invalidate(LayersPanelQuery);
+		invalidate(layersPanel);
 	}
 
 	if (fields.includes("isLayersOpen")) {
-		invalidate(SidebarQuery);
+		invalidate(sidebar);
 	}
 });
 
-export const RereadLayersForDesignSubscriber = subscriber(DesignChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(LayersPanelQuery);
+export const rereadLayersForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(layersPanel);
 });
 
-export const RereadLayersForJobsSubscriber = subscriber(JobsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(LayersPanelQuery);
+export const rereadLayersForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+	invalidate(layersPanel);
 });

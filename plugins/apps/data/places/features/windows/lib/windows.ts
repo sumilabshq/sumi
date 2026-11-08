@@ -1,6 +1,6 @@
 import type { MoveWindows } from "../../../shared/schema/windows.schema.js";
 
-export function openWindow(label: string, at: number): MoveWindows {
+export function openWindowMove(label: string, at: number): MoveWindows {
 	return ({ windows }) => {
 		if (windows.some((open) => open.label === label)) {
 			return null;
@@ -28,7 +28,7 @@ export function keepWindows(live: readonly string[]): MoveWindows {
 	};
 }
 
-export function closeWindow(label: string): MoveWindows {
+export function closeWindowMove(label: string): MoveWindows {
 	return ({ windows }) => {
 		if (!windows.some((open) => open.label === label)) {
 			return null;

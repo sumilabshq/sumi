@@ -1,8 +1,8 @@
 import { PerCall, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { lookPathOf } from "@widgetarium/core/app-look.js";
-import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
+import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import { LookPanelSchema, LookPickSchema } from "../../shared/schema/look-row.schema.js";
 import { lookTextPicked } from "./lib/look-picked.js";
 import type { LookTextPicked } from "./lib/look-picked.js";
@@ -13,7 +13,7 @@ import { fontsUrlOf } from "./lib/look-tokens.js";
 const UNREADABLE = "The look cannot be read: {why}";
 const NO_LOOK = "{app} has no look to change yet: the assistant offers it first.";
 
-export const LookPanelQuery = query("look-panel")
+export const lookPanel = query()
 	.public()
 	.output(LookPanelSchema)
 	.handle(async (_input, { canvasMoment, designFolder }) => {
@@ -39,7 +39,7 @@ export const LookPanelQuery = query("look-panel")
 		};
 	});
 
-export const PickLookCommand = command("pick-look")
+export const pickLook = command()
 	.public()
 	.input(LookPickSchema)
 	.idempotencyKey(PerCall)
@@ -53,18 +53,18 @@ export const PickLookCommand = command("pick-look")
 
 		await designFiles.changeText(path, (text) => pickedOrRefused(lookTextPicked(text, settingName, option)));
 		designFolder.forgetFolder(app);
-		emit(DesignChangedEvent, { app });
+		emit(designChanged, { app });
 		console.info(`[widgetarium] look of ${app}: ${settingName} → ${option} (picked)`);
 	});
 
-export const RereadLookSubscriber = subscriber(CanvasMomentChangedEvent).handle(({ fields }, { invalidate }) => {
+export const rereadLook = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
 	if (fields.includes("app")) {
-		invalidate(LookPanelQuery);
+		invalidate(lookPanel);
 	}
 });
 
-export const RereadLookForDesignSubscriber = subscriber(DesignChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(LookPanelQuery);
+export const rereadLookForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(lookPanel);
 });
 
 function pickedOrRefused(picked: LookTextPicked): string {

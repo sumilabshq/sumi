@@ -1,4 +1,4 @@
-import { FileSwitchesQuery } from "@sumi/file-page";
+import { filePage } from "@sumi/file-page";
 import type { FileSwitch } from "@sumi/file-page";
 import { useQuery } from "@widgetarium/data-framework";
 
@@ -8,7 +8,7 @@ export interface FileSwitches {
 }
 
 export function useFileSwitches(): FileSwitches {
-	const { on, loads } = useQuery(FileSwitchesQuery).data;
+	const { on, loads } = useQuery(filePage.switches.fileSwitches).data;
 	return {
 		isOn: (name) => on.includes(name),
 		loads,

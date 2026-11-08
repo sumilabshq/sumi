@@ -1,18 +1,20 @@
-import { StudioCoreChangedEvent, TabsSettledEvent } from "@widgetarium/app-host";
-import { ChatTabsQuery } from "@widgetarium/places";
+import { appHost } from "@widgetarium/app-host";
+import { places } from "@widgetarium/places";
 import { query, subscriber } from "#module";
 import { ChatListSchema } from "../../shared/schema/chat-list.schema.js";
 import { chatListOf } from "./lib/chat-list.js";
 
-export const ChatListQuery = query("chat-list")
+export const chatList = query()
 	.public()
 	.output(ChatListSchema)
-	.handle(async (_input, { send }) => chatListOf(await send(ChatTabsQuery)));
+	.handle(async (_input, { send }) => chatListOf(await send(places.tabs.chatTabs)));
 
-export const RereadChatListSubscriber = subscriber(TabsSettledEvent).handle((_input, { invalidate }) => {
-	invalidate(ChatListQuery);
+export const rereadChatList = subscriber(appHost.tabs.tabsSettled).handle((_input, { invalidate }) => {
+	invalidate(chatList);
 });
 
-export const RereadChatListForCoreSubscriber = subscriber(StudioCoreChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(ChatListQuery);
-});
+export const rereadChatListForCore = subscriber(appHost.coreChanges.studioCoreChanged).handle(
+	(_input, { invalidate }) => {
+		invalidate(chatList);
+	},
+);

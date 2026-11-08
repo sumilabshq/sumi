@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { SiteIconQuery } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/index.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import { WebBrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/web.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
@@ -38,7 +38,7 @@ function startedOver(served: ServedSiteFiles) {
 		siteFiles,
 	});
 	const started = runtime()
-		.modules(BrowserModule({ injects: parts }))
+		.modules(browserModule({ injects: parts }))
 		.start({ platform: "browser", scope: { workspaceId: "icons" } });
 	return { started, siteFiles, siteIcons };
 }
@@ -48,7 +48,7 @@ async function discoveredOf(served: ServedSiteFiles, origin = SITE, times = 1): 
 	let icon: string | null = null;
 
 	for (let asked = 0; asked < times; asked += 1) {
-		const answer = await started.send(SiteIconQuery, { origin });
+		const answer = await started.send(browser.siteIcons.siteIcon, { origin });
 		icon = answer.ok ? answer.output.icon : `refused: ${answer.reason}`;
 	}
 

@@ -4,7 +4,7 @@ import { IconButton } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 import type { WorkspaceRow } from "@widgetarium/workspaces";
-import { SetWorkspaceIconCommand } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 import { isChosen, lookChoicesOf } from "../../lib/look-choices.js";
 import type { LookTab } from "../../lib/look-choices.js";
 import { LookNone } from "./look-none.js";
@@ -16,7 +16,7 @@ export interface LookGridProps {
 }
 
 export function LookGrid({ workspace, tab, typed }: LookGridProps): ReactElement {
-	const setIcon = useCommand(SetWorkspaceIconCommand);
+	const setIcon = useCommand(workspaces.workspaces.setWorkspaceIcon);
 	const choices = lookChoicesOf(tab, typed);
 	if (choices.length === 0) {
 		return <LookNone />;

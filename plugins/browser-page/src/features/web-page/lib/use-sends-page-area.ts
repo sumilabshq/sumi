@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { PlaceWebPageCommand } from "@sumi/contract";
+import { webPage } from "@sumi/contract";
 import type { PageArea } from "@sumi/contract";
 import { useRuntime } from "@widgetarium/data-framework";
 
@@ -9,7 +9,7 @@ export function useSendsPageArea(tabId: string): (area: PageArea | null) => void
 	const shell = useRuntime("useSendsPageArea");
 	return useCallback(
 		(area: PageArea | null): void => {
-			void shell.send(PlaceWebPageCommand, { tab: tabId, area }).then((answer) => {
+			void shell.send(webPage.pages.placeWebPage, { tab: tabId, area }).then((answer) => {
 				if (!answer.ok) {
 					console.error(PLACE_REFUSED.replace("{tab}", tabId).replace("{reason}", answer.reason));
 				}

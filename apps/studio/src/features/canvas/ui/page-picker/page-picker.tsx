@@ -2,7 +2,7 @@ import { Fragment, createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { Icon, Popover, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
 import { useQuery } from "@widgetarium/data-framework";
-import { PageChoicesQuery } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { useTurnToPage } from "../../lib/use-turn-to-page.js";
 import { PAGE_NAME_AND_PHOTO_LEAVE } from "../../lib/app-zone-steps.js";
 import { GHOST_TEXT_BUTTON } from "../../lib/top-bar-look.js";
@@ -18,7 +18,7 @@ const TRIGGER_GHOST = `${TRIGGER_BASE} cv:gap-[var(--sumi-sp-1)] ${GHOST_TEXT_BU
 export function PagePicker(): ReactElement {
 	const anchor = useRef<HTMLSpanElement | null>(null);
 	const [isOpen, setOpen] = useState(false);
-	const { shown, groups } = useQuery(PageChoicesQuery).data;
+	const { shown, groups } = useQuery(canvas.pages.pageChoices).data;
 	const turnToPage = useTurnToPage();
 	const look = useTopBarLook();
 	const pick = (page: string): void => {

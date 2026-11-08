@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
-import { CameraQuery } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { GHOST_LABEL, RAISED_PILL } from "../../lib/top-bar-look.js";
 import { useTopBarLook } from "../../lib/top-bar-look-context.js";
 import { ZOOM_LEAVES } from "../../lib/app-zone-steps.js";
@@ -12,7 +12,7 @@ const ZOOM_PILL = `${RAISED_PILL} cv:flex cv:flex-none cv:items-center cv:px-3.5
 const ZOOM_GHOST = `${GHOST_LABEL} cv:flex cv:flex-none cv:items-center cv:tabular-nums ${ZOOM_LEAVES}`;
 
 export function ZoomLabel(): ReactElement | null {
-	const { camera } = useQuery(CameraQuery).data;
+	const { camera } = useQuery(canvas.view.camera).data;
 	const look = useTopBarLook();
 	if (!camera) {
 		return null;

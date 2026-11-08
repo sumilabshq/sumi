@@ -5,7 +5,7 @@ import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import { openAgentTools } from "../agent/agent-tools.js";
 import { tabLinksRenderer } from "../agent/tab-links.js";
-import { AppTabsQuery } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import { chatSessionLinkOf } from "../assistant/chat-session-link.js";
 import { startTauriAssistant } from "../assistant/tauri-assistant.js";
 import type { TauriAssistant } from "../assistant/tauri-assistant.js";
@@ -196,7 +196,7 @@ function startedPartsFieldsOf({ plugins, assistant, studioApp, core }: StartedPa
 }
 
 async function tabFaviconOf(studioApp: Runtime, id: string): Promise<string | null> {
-	const tabs = await studioApp.send(AppTabsQuery);
+	const tabs = await studioApp.send(appHost.tabs.appTabs);
 
 	if (!tabs.ok) {
 		console.warn(`[agent] the icon of a tab link to ${id} stays a glyph: ${tabs.reason}`);

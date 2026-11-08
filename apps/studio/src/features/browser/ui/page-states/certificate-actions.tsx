@@ -4,7 +4,7 @@ import { useCommand } from "@widgetarium/data-framework";
 import { PrimaryAction } from "../page-state/primary-action.js";
 import { QuietAction } from "../page-state/quiet-action.js";
 import type { PageFailure } from "@widgetarium/browser";
-import { LeaveFailureCommand } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { StateActions } from "./state-actions.js";
 
 export interface CertificateActionsProps {
@@ -17,7 +17,7 @@ const GO_BACK = "Go back";
 const DETAILS = "Details";
 
 export function CertificateActions({ tabId, failure }: CertificateActionsProps): ReactElement {
-	const leave = useCommand(LeaveFailureCommand);
+	const leave = useCommand(browser.tabs.leaveFailure);
 	const [isShowingDetails, setShowingDetails] = useState(false);
 	return (
 		<div>

@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { ShowPageCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { REFUSAL_HANDLER } from "@widgetarium/data-framework/command-refusals";
 import type { RefusalHandler, Runtime } from "@widgetarium/data-framework";
 
@@ -16,6 +16,6 @@ export function useHandsCanvas(canvasApp: Runtime, onCanvas: ((canvas: CanvasHan
 }
 
 async function pageShown(canvasApp: Runtime, page: string, onRefused: RefusalHandler): Promise<void> {
-	const answer = await canvasApp.send(ShowPageCommand, { page });
-	if (!answer.ok) onRefused({ name: ShowPageCommand.name, reason: answer.reason, ran: answer.ran });
+	const answer = await canvasApp.send(canvas.pages.showPage, { page });
+	if (!answer.ok) onRefused({ name: canvas.pages.showPage.name, reason: answer.reason, ran: answer.ran });
 }

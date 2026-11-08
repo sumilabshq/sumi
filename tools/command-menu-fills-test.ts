@@ -1,20 +1,15 @@
-import { AppsPlugin } from "@sumi/apps-plugin";
-import { ChatTabsModule } from "@sumi/chat-tabs/module";
-import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot, MenuRowSourcesSlot } from "@sumi/command-menu-plugin";
-import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
-import { SumiHostPlugin, WindowModuleSchema, WindowModulesSlot } from "@sumi/sumi-host-plugin";
-import { plugin, slotFillsOf, slotReaderOf, stampSlotName, startOrderOf } from "@widgetarium/plugin-framework";
+import { apps } from "@sumi/apps-plugin";
+import { chatTabs } from "@sumi/chat-tabs/module";
+import { commandMenu } from "@sumi/command-menu-plugin";
+import { chat } from "@sumi/chat-plugin";
+import { WindowModuleSchema, sumiHost } from "@sumi/sumi-host-plugin";
+import { namedPlugin, plugin, slotFillsOf, slotReaderOf, startOrderOf } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
-import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { LayoutModule } from "../packages/state/layout/module.ts";
-import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
-import {
-	CommandMenuQuery,
-	CommandMenuResultsQuery,
-	MenuDoorsQuery,
-	ToggleCommandMenuCommand,
-} from "../plugins/command-menu/data/command-menu/index.ts";
+import { appHost } from "../plugins/apps/data/app-host/module.ts";
+import { browser } from "../packages/domain/browser/module.ts";
+import { layout } from "../packages/state/layout/module.ts";
+import { workspaces } from "../packages/domain/workspaces/module.ts";
+import { commandMenu as commandMenuContract } from "../plugins/command-menu/data/command-menu/index.ts";
 import type { Found } from "../plugins/command-menu/data/command-menu/shared/schema/command-menu.schema.ts";
 import { check, tally } from "./check-helpers.ts";
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
@@ -41,51 +36,55 @@ const PROBE_ROW: Found = {
 	isOnScreen: false,
 };
 
-const ProbePlugin = plugin("probe")
-	.require(CommandMenuPlugin)
-	.fill(
-		MenuDoorsSlot({
-			id: "probe",
-			letter: "p",
-			label: "Probe",
-			placeholder: "Probe things",
-			startsWith: "empty",
-		}),
-		MenuPagesSlot({
-			id: "probe",
-			draftsOf: ({ pools }) => ({
-				foundCount: null,
-				drafts: [
-					{
-						label: "Probed",
-						layout: "list",
-						rows: pools["probe-rows"] ?? [],
-						isFallback: false,
-					},
-				],
+const probe = namedPlugin(
+	"probe",
+	plugin()
+		.require(commandMenu)
+		.fill(
+			commandMenu.menuDoors.add({
+				id: "probe",
+				letter: "p",
+				label: "Probe",
+				placeholder: "Probe things",
+				startsWith: "empty",
 			}),
-		}),
-		MenuRowSourcesSlot({
-			id: "probe-rows",
-			isFindable: true,
-			rowsOf: () => Promise.resolve([PROBE_ROW]),
-		}),
-	);
+			commandMenu.menuPages.add({
+				id: "probe",
+				draftsOf: ({ pools }) => ({
+					foundCount: null,
+					drafts: [
+						{
+							label: "Probed",
+							layout: "list",
+							rows: pools["probe-rows"] ?? [],
+							isFallback: false,
+						},
+					],
+				}),
+			}),
+			commandMenu.menuRowSources.add({
+				id: "probe-rows",
+				isFindable: true,
+				rowsOf: () => Promise.resolve([PROBE_ROW]),
+			}),
+		),
+	{},
+);
 
-const ENABLED = [SumiHostPlugin.id, AppsPlugin.id, CommandMenuPlugin.id, ChatPlugin.id, ProbePlugin.id];
-const startOrder = startOrderOf([SumiHostPlugin, AppsPlugin, CommandMenuPlugin, ChatPlugin, ProbePlugin], ENABLED);
+const ENABLED = [sumiHost.id, apps.id, commandMenu.id, chat.id, probe.id];
+const startOrder = startOrderOf([sumiHost, apps, commandMenu, chat, probe], ENABLED);
 const slotFills = slotFillsOf(startOrder.plugins, ENABLED);
 const windowModuleFill = slotFills.slots
-	.get(stampSlotName(SumiHostPlugin.id, WindowModulesSlot))
-	?.fills.find(({ pluginId }) => pluginId === CommandMenuPlugin.id);
+	.get(sumiHost.windowModules.name)
+	?.fills.find(({ pluginId }) => pluginId === commandMenu.id);
 
 if (windowModuleFill === undefined) {
 	throw new Error("the command menu plugin filled no window module");
 }
 
-const menuModule = WindowModuleSchema.parse(windowModuleFill.item).module(slotReaderOf(slotFills, CommandMenuPlugin));
+const menuModule = WindowModuleSchema.parse(windowModuleFill.item).module(slotReaderOf(slotFills, commandMenu));
 const studio = runtime()
-	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, ChatTabsModule, PluginAppsModule, menuModule)
+	.modules(browser, layout, workspaces, appHost, chatTabs, PluginAppsModule, menuModule)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "menu-fills" } });
 
@@ -105,32 +104,36 @@ check(
 	[],
 );
 
-const { doors } = await outputOf(studio.send(MenuDoorsQuery));
+const { doors } = await outputOf(studio.send(commandMenuContract.opening.menuDoors));
 check(
 	"the menu's own doors come first, then the doors other plugins filled (the chat's Ask, the probe), with their keys",
 	doors.map(({ id, keys }) => `${id} ${keys}`),
 	["anywhere ⌘K", "new-tab ⌘N", "this-tab ⌘L", "ask ⌘I", "probe ⌘P"],
 );
 
-const probed = await outputOf(studio.send(CommandMenuResultsQuery, { text: "", door: "probe", pageId: null }));
+const probed = await outputOf(
+	studio.send(commandMenuContract.results.commandMenuResults, { text: "", door: "probe", pageId: null }),
+);
 check(
 	"the filled door draws the filled page over the filled row source",
 	probed.sections.map(({ label, rows }) => [label, rows.map(({ title }) => title)]),
 	[["Probed", ["Probe Lantern"]]],
 );
 
-const found = await outputOf(studio.send(CommandMenuResultsQuery, { text: "lantern", door: "anywhere", pageId: null }));
+const found = await outputOf(
+	studio.send(commandMenuContract.results.commandMenuResults, { text: "lantern", door: "anywhere", pageId: null }),
+);
 check(
 	"a findable row source's rows are found from ⌘K",
 	found.sections.flatMap(({ rows }) => rows.map(({ title }) => title)),
 	["Probe Lantern"],
 );
 
-await outputOf(studio.send(ToggleCommandMenuCommand, { door: "probe", text: "" }));
-const opened = await outputOf(studio.send(CommandMenuQuery));
+await outputOf(studio.send(commandMenuContract.opening.toggleCommandMenu, { door: "probe", text: "" }));
+const opened = await outputOf(studio.send(commandMenuContract.opening.commandMenu));
 check("the filled door opens the menu", [opened.isOpen, opened.door], [true, "probe"]);
 
-const refused = await studio.send(ToggleCommandMenuCommand, { door: "nope", text: "" });
+const refused = await studio.send(commandMenuContract.opening.toggleCommandMenu, { door: "nope", text: "" });
 check(
 	"a door nobody filled is refused",
 	refused.ok ? "opened" : refused.reason,

@@ -4,7 +4,7 @@ import type { AttachmentFilesGateway } from "../../../gateways/attachment-files/
 import type { ClockGateway } from "../../../gateways/clock/clock.gateway.js";
 import type { DraftAttachment } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import type { SentAttachmentsGateway } from "../../../gateways/sent-attachments/sent-attachments.gateway.js";
-import { SentAttachmentsChangedEvent } from "../../../shared/events/sent-attachments.events.js";
+import { sentAttachmentsChanged } from "../../../shared/events/sent-attachments.events.js";
 import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
 import type { ProviderReads } from "../../../shared/schema/agent-setup.schema.js";
 import { KEPT_AT_MOST_MS, sweptPaths, withoutSwept } from "./attachment-sweep.js";
@@ -22,7 +22,7 @@ interface WrittenDrafts {
 	readonly files: readonly WrittenAttachment[];
 }
 
-export interface SweptFolder extends Emitter<typeof SentAttachmentsChangedEvent> {
+export interface SweptFolder extends Emitter<typeof sentAttachmentsChanged> {
 	readonly attachmentFiles: AttachmentFilesGateway;
 	readonly sentAttachments: SentAttachmentsGateway;
 }
@@ -101,5 +101,5 @@ export function sweepFolder({ attachmentFiles, sentAttachments, emit }: SweptFol
 	console.debug(
 		`[widgetarium] attachments on disk ${pathsOf(sent)} → ${pathsOf(next)} (${moment.isBusy ? KEPT_AN_HOUR : TURN_ENDED})`,
 	);
-	emit(SentAttachmentsChangedEvent);
+	emit(sentAttachmentsChanged);
 }

@@ -1,12 +1,6 @@
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import {
-	PinTabCommand,
-	PlaceInViewCommand,
-	PlaceTabCommand,
-	PlacesModule,
-	SidebarQuery,
-} from "../plugins/apps/data/places/index.ts";
+import { places } from "../plugins/apps/data/places/index.ts";
 import type { Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import type { SidebarEntry, TabDrop, TabsSidebar } from "../plugins/apps/data/app-host/index.ts";
@@ -69,15 +63,15 @@ console.info = () => undefined;
 
 async function splitWindowOf(pinned: readonly string[]): Promise<Runtime> {
 	const window = runtime()
-		.imports(PlacesModule({ over: placesLinkOf(new MemoryTabsGateway(placedTabsOf(SEED, ["chat"]))) }))
+		.imports(places({ over: placesLinkOf(new MemoryTabsGateway(placedTabsOf(SEED, ["chat"]))) }))
 		.start();
-	await window.send(PlaceInViewCommand, {
+	await window.send(places.splits.placeInView, {
 		at: AT,
 		tabId: "tab-2",
 		targetTabId: "tab-1",
 		side: "right",
 	});
-	await window.send(PlaceInViewCommand, {
+	await window.send(places.splits.placeInView, {
 		at: AT,
 		tabId: "tab-3",
 		targetTabId: "tab-2",
@@ -85,7 +79,7 @@ async function splitWindowOf(pinned: readonly string[]): Promise<Runtime> {
 	});
 
 	for (const id of pinned) {
-		await window.send(PinTabCommand, {
+		await window.send(places.tabPlacing.pinTab, {
 			window: MAIN_WINDOW,
 			id,
 			isPinned: true,
@@ -96,7 +90,7 @@ async function splitWindowOf(pinned: readonly string[]): Promise<Runtime> {
 }
 
 async function sidebarIn(window: Runtime): Promise<TabsSidebar> {
-	const read = await window.send(SidebarQuery, {
+	const read = await window.send(places.tabs.sidebar, {
 		at: AT,
 		essentials: [],
 	});
@@ -149,7 +143,7 @@ async function previewAndModelOf(drag: Drag): Promise<readonly [unknown, unknown
 		drop: drag.drop,
 		isLanding: true,
 	});
-	await window.send(PlaceTabCommand, {
+	await window.send(places.tabPlacing.placeTab, {
 		at: AT,
 		id: drag.id,
 		place: drag.drop,

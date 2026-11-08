@@ -1,4 +1,4 @@
-import { UndeliveredTaskCommand } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import type { Continued, TaskCard } from "@widgetarium/tasks";
 import { useCommand } from "@widgetarium/data-framework";
 import { toast } from "@widgetarium/kit";
@@ -12,7 +12,7 @@ const NOT_DELIVERED_UNCHANGED = "{task} was not delivered ({reason}) and is left
 
 export function useDeliverTask(task: string): DeliverTask {
 	const sendToChat = useSendToChat();
-	const undelivered = useCommand(UndeliveredTaskCommand);
+	const undelivered = useCommand(tasks.person.undeliveredTask);
 	return async (continued) => {
 		const delivered = await sendToChat(continued);
 

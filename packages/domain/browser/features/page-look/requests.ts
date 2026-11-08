@@ -1,10 +1,10 @@
 import { query, subscriber } from "#module";
-import { PageLooksChangedEvent, PagesChangedEvent } from "../../gateways/browser-pages/browser-pages.events.js";
+import { pageLooksChanged, pagesChanged } from "../../gateways/browser-pages/browser-pages.events.js";
 import { BrowserViewSchema } from "../../shared/schema/browser-tab.schema.js";
 import { PageHeadSchema } from "../../shared/schema/page-look.schema.js";
 import { pageHeadOf } from "./lib/page-head.js";
 
-export const PageHeadQuery = query("page-head")
+export const pageHead = query()
 	.public()
 	.input(BrowserViewSchema)
 	.output(PageHeadSchema.nullable())
@@ -20,10 +20,10 @@ export const PageHeadQuery = query("page-head")
 		return pageHeadOf(shown, browserPages.look(shown.id));
 	});
 
-export const RereadPageHeadForPagesSubscriber = subscriber(PagesChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(PageHeadQuery);
+export const rereadPageHeadForPages = subscriber(pagesChanged).handle((_input, { invalidate }) => {
+	invalidate(pageHead);
 });
 
-export const RereadPageHeadSubscriber = subscriber(PageLooksChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(PageHeadQuery);
+export const rereadPageHead = subscriber(pageLooksChanged).handle((_input, { invalidate }) => {
+	invalidate(pageHead);
 });

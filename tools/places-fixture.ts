@@ -2,8 +2,8 @@ import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
 import type { z } from "zod";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport } from "../packages/shared/data-framework/src/index.ts";
-import { PlacesModule as PlacesContract } from "../plugins/apps/data/places/generated/contract.ts";
-import { PlacesModule } from "../plugins/apps/data/places/module.ts";
+import { places } from "../plugins/apps/data/places/generated/contract.ts";
+import { places as placesModule } from "../plugins/apps/data/places/module.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { KeptSessionTabsSchema, migratedTabsOf } from "../plugins/apps/data/places/gateways/tabs/tauri/kept-session.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
@@ -41,7 +41,7 @@ export function placesLinkOf(tabs: MemoryTabsGateway): RemoteTransport {
 	link.serve(
 		runtime()
 			.modules(
-				PlacesModule({
+				placesModule({
 					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
 				}),
 			)
@@ -52,7 +52,7 @@ export function placesLinkOf(tabs: MemoryTabsGateway): RemoteTransport {
 }
 
 export function placesOver(tabs: MemoryTabsGateway = new MemoryTabsGateway()): RemoteModule {
-	return PlacesContract({ over: placesLinkOf(tabs) });
+	return places({ over: placesLinkOf(tabs) });
 }
 
 export async function windowTabsIn(tabs: MemoryTabsGateway, window = MAIN_WINDOW): Promise<WindowTabs> {

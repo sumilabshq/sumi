@@ -1,6 +1,6 @@
 import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { CanvasOpeningQuery, OpenCanvasCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import type { CanvasOpened, CanvasOpening } from "@widgetarium/canvas";
 import { RuntimeProvider, OnRefused, toastRefusal, useQuery } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
@@ -58,7 +58,7 @@ export function CanvasPage({
 }
 
 function KeptOpening({ onKept }: { readonly onKept: ((kept: CanvasOpening) => void) | undefined }): null {
-	const opening = useQuery(CanvasOpeningQuery).data;
+	const opening = useQuery(canvas.view.canvasOpening).data;
 	const told = useRef(opening);
 	useEffect(() => {
 		if (told.current === opening) {
@@ -86,7 +86,7 @@ function plateControlsOf(shell: CanvasShell | undefined): ReactElement | undefin
 function useOpensCanvas(canvasApp: Runtime, opened: CanvasOpened): boolean {
 	const [isOpen, setOpen] = useState(false);
 	useEffect(() => {
-		void canvasApp.send(OpenCanvasCommand, opened).then((answer) => {
+		void canvasApp.send(canvas.view.openCanvas, opened).then((answer) => {
 			if (!answer.ok) {
 				console.error(`[widgetarium] the canvas of ${opened.app} did not open: ${answer.reason}`);
 			}

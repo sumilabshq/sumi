@@ -1,14 +1,26 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.events.js";
-import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";
+import { workspacesChanged } from "../../gateways/workspaces/workspaces.events.js";
+import { currentWorkspaceChanged } from "../../gateways/current-workspace/current-workspace.events.js";
 import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
 import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
 import { titleOf } from "../../shared/lib/chat-title.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
 import { ChatElsewhereSchema, ChatsElsewhereSchema } from "../../shared/schema/chat.schema.js";
-import { WorkspaceIconChoiceSchema, WorkspaceIdSchema, WorkspaceNameSchema, WorkspacePositionSchema, WorkspacesSchema } from "../../shared/schema/workspace.schema.js";
-import type { CurrentWorkspace, Workspace, WorkspaceFolder, WorkspaceRow, WorkspacesView } from "../../shared/schema/workspace.schema.js";
+import {
+	WorkspaceIconChoiceSchema,
+	WorkspaceIdSchema,
+	WorkspaceNameSchema,
+	WorkspacePositionSchema,
+	WorkspacesSchema,
+} from "../../shared/schema/workspace.schema.js";
+import type {
+	CurrentWorkspace,
+	Workspace,
+	WorkspaceFolder,
+	WorkspaceRow,
+	WorkspacesView,
+} from "../../shared/schema/workspace.schema.js";
 
 const KEYED_WORKSPACES = 9;
 const KEY_HINT = "⌘{n}";
@@ -24,7 +36,7 @@ interface OpeningParts {
 	readonly currentWorkspace: CurrentWorkspaceGateway;
 }
 
-export const WorkspacesQuery = query("workspaces")
+export const workspaces = query()
 	.public()
 	.output(WorkspacesSchema)
 	.settlesNow()
@@ -32,16 +44,16 @@ export const WorkspacesQuery = query("workspaces")
 		workspacesViewOf(workspaces.workspaces(), currentWorkspace.currentWorkspace()),
 	);
 
-export const OpenWorkspaceCommand = command("open-workspace")
+export const openWorkspace = command()
 	.public()
 	.input(WorkspaceIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ id }, opening) => {
-		opening.invalidate(WorkspacesQuery);
-		return openWorkspace(id, opening);
+		opening.invalidate(workspaces);
+		return switchToWorkspace(id, opening);
 	});
 
-export const ChatsElsewhereQuery = query("chats-elsewhere")
+export const chatsElsewhere = query()
 	.public()
 	.output(ChatsElsewhereSchema)
 	.handle(async (_input, { workspaces, currentWorkspace, workspaceChats }) => {
@@ -60,12 +72,12 @@ export const ChatsElsewhereQuery = query("chats-elsewhere")
 		return { rows: rows.flat() };
 	});
 
-export const OpenChatElsewhereCommand = command("open-chat-elsewhere")
+export const openChatElsewhere = command()
 	.public()
 	.input(ChatElsewhereSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ workspaceId, chatId }, { workspaceChats, ...opening }) => {
-		opening.invalidate(WorkspacesQuery);
+		opening.invalidate(workspaces);
 		const workspace = workspaceIn(opening.workspaces.workspaces(), workspaceId);
 
 		if (workspace.id === opening.currentWorkspace.currentWorkspace().currentId) {
@@ -81,15 +93,15 @@ export const OpenChatElsewhereCommand = command("open-chat-elsewhere")
 		const reason = `workspace ${workspace.id} chat to open on start ${kept.openOnStartId ?? "none"} → ${chatId} (opened from elsewhere)`;
 		await workspaceChats.saveChatToOpenIn(workspace.id, chatId, reason);
 		console.info(`[widgetarium] ${reason}`);
-		await openWorkspace(workspace.id, opening);
+		await switchToWorkspace(workspace.id, opening);
 	});
 
-export const OpenWorkspaceByPositionCommand = command("open-workspace-by-position")
+export const openWorkspaceByPosition = command()
 	.public()
 	.input(WorkspacePositionSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ position }, opening) => {
-		opening.invalidate(WorkspacesQuery);
+		opening.invalidate(workspaces);
 		const workspace = opening.workspaces.workspaces()[position];
 
 		if (workspace === undefined || position >= KEYED_WORKSPACES) {
@@ -97,35 +109,35 @@ export const OpenWorkspaceByPositionCommand = command("open-workspace-by-positio
 			return;
 		}
 
-		await openWorkspace(workspace.id, opening);
+		await switchToWorkspace(workspace.id, opening);
 	});
 
-export const CreateWorkspaceCommand = command("create-workspace")
+export const createWorkspace = command()
 	.public()
 	.output(WorkspaceIdSchema)
 	.idempotencyKey(PerCall)
 	.handle(async (_input, opening) => {
-		opening.invalidate(WorkspacesQuery);
+		opening.invalidate(workspaces);
 		const name = untitledNameAfter(opening.workspaces.workspaces().map((workspace) => workspace.name));
 		const created = await opening.workspaces.createWorkspace(name);
 		console.info(`[widgetarium] workspaces: created ${created.name} (${created.id})`);
-		await openWorkspace(created.id, opening);
+		await switchToWorkspace(created.id, opening);
 		return { id: created.id };
 	});
 
-export const RenameWorkspaceCommand = command("rename-workspace")
+export const renameWorkspace = command()
 	.public()
 	.input(WorkspaceNameSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ id, name }, { workspaces, invalidate }) => {
-		invalidate(WorkspacesQuery);
+	.handle(async ({ id, name }, { workspaces: keptWorkspaces, invalidate }) => {
+		invalidate(workspaces);
 		const trimmed = name.trim();
 
 		if (trimmed === "") {
 			return refuse(NO_NAME);
 		}
 
-		const was = workspaceIn(workspaces.workspaces(), id);
+		const was = workspaceIn(keptWorkspaces.workspaces(), id);
 
 		if (was.name === trimmed) {
 			console.info(`[widgetarium] workspace ${id} rename skipped: already ${trimmed}`);
@@ -133,33 +145,31 @@ export const RenameWorkspaceCommand = command("rename-workspace")
 		}
 
 		const reason = `workspace ${id} name ${was.name} → ${trimmed}`;
-		await workspaces.saveWorkspaceName(id, trimmed, reason);
+		await keptWorkspaces.saveWorkspaceName(id, trimmed, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const SetWorkspaceIconCommand = command("set-workspace-icon")
+export const setWorkspaceIcon = command()
 	.public()
 	.input(WorkspaceIconChoiceSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ id, icon }, { workspaces, invalidate }) => {
-		invalidate(WorkspacesQuery);
-		const was = workspaceIn(workspaces.workspaces(), id);
+	.handle(async ({ id, icon }, { workspaces: keptWorkspaces, invalidate }) => {
+		invalidate(workspaces);
+		const was = workspaceIn(keptWorkspaces.workspaces(), id);
 		const reason = `workspace ${id} icon ${JSON.stringify(was.icon)} → ${JSON.stringify(icon)}`;
-		await workspaces.saveWorkspaceIcon(id, icon, reason);
+		await keptWorkspaces.saveWorkspaceIcon(id, icon, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const RereadWorkspacesSubscriber = subscriber(WorkspacesChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(WorkspacesQuery);
+export const rereadWorkspaces = subscriber(workspacesChanged).handle((_input, { invalidate }) => {
+	invalidate(workspaces);
 });
 
-export const RereadWorkspacesForCurrentSubscriber = subscriber(CurrentWorkspaceChangedEvent).handle(
-	(_input, { invalidate }) => {
-		invalidate(WorkspacesQuery);
-	},
-);
+export const rereadWorkspacesForCurrent = subscriber(currentWorkspaceChanged).handle((_input, { invalidate }) => {
+	invalidate(workspaces);
+});
 
-async function openWorkspace(id: string, { workspaces, currentWorkspace }: OpeningParts): Promise<void> {
+async function switchToWorkspace(id: string, { workspaces, currentWorkspace }: OpeningParts): Promise<void> {
 	const current = currentWorkspace.currentWorkspace();
 
 	if (id === current.currentId) {

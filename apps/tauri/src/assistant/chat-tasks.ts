@@ -1,10 +1,5 @@
 import type { Runtime } from "@widgetarium/data-framework";
-import {
-	ReleaseChatTasksCommand,
-	SettleTurnCommand,
-	TaskTrailerQuery,
-	UndeliveredTaskCommand,
-} from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import type { SettleTurnAsk, TurnFollowUp, TurnTrailer } from "@widgetarium/tasks";
 import type { SettledTurn } from "./turn-session.js";
 
@@ -75,7 +70,7 @@ function turnFailureOf({ failureKind, failure, resumesAt }: SettledTurn): Settle
 }
 
 async function askTrailer(app: Runtime, chatId: string): Promise<TurnTrailer> {
-	const answered = await app.send(TaskTrailerQuery, { chat: chatId });
+	const answered = await app.send(tasks.board.taskTrailer, { chat: chatId });
 
 	if (!answered.ok) {
 		console.warn(TRAILER_UNREAD.replace("{chat}", chatId).replace("{reason}", answered.reason));
@@ -86,7 +81,7 @@ async function askTrailer(app: Runtime, chatId: string): Promise<TurnTrailer> {
 }
 
 async function settle(app: Runtime, ask: SettleTurnAsk): Promise<Nudge | null> {
-	const answered = await app.send(SettleTurnCommand, ask);
+	const answered = await app.send(tasks.supervision.settleTurn, ask);
 
 	if (!answered.ok) {
 		// TODO: a refused settle leaves its task in progress until the next cold start
@@ -103,7 +98,7 @@ async function settle(app: Runtime, ask: SettleTurnAsk): Promise<Nudge | null> {
 }
 
 async function unsent(app: Runtime, nudge: Nudge, reason: string): Promise<void> {
-	const answered = await app.send(UndeliveredTaskCommand, { task: nudge.task, reason });
+	const answered = await app.send(tasks.person.undeliveredTask, { task: nudge.task, reason });
 
 	if (!answered.ok) {
 		// TODO: retry, or the task stays in progress until the next cold start
@@ -115,7 +110,7 @@ async function unsent(app: Runtime, nudge: Nudge, reason: string): Promise<void>
 }
 
 async function release(app: Runtime, chatId: string, why: ChatReleased): Promise<void> {
-	const answered = await app.send(ReleaseChatTasksCommand, { chat: chatId, why });
+	const answered = await app.send(tasks.supervision.releaseChatTasks, { chat: chatId, why });
 
 	if (!answered.ok) {
 		console.warn(NOT_RELEASED.replace("{chat}", chatId).replace("{why}", why).replace("{reason}", answered.reason));

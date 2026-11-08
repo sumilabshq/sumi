@@ -8,7 +8,7 @@ import { ChangedCountSchema, TurnFollowUpSchema } from "../../shared/schema/task
 import type { ChangedCount } from "../../shared/schema/task-view.schema.js";
 import { followUpOf, reconciledStep, releasedStep, settledStep, sweptStep } from "./lib/supervision-edits.js";
 
-export const SettleTurnCommand = command("settle-turn")
+export const settleTurn = command()
 	.public()
 	.input(SettleTurnAskSchema)
 	.output(TurnFollowUpSchema)
@@ -23,21 +23,21 @@ export const SettleTurnCommand = command("settle-turn")
 		return followUpOf(changed.board, ask);
 	});
 
-export const ReleaseChatTasksCommand = command("release-chat-tasks")
+export const releaseChatTasks = command()
 	.public()
 	.input(ReleaseChatAskSchema)
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tasks, clock }) => countAfter(tasks, (board) => releasedStep(board, ask, clock.now())));
 
-export const ReconcileTasksCommand = command("reconcile-tasks")
+export const reconcileTasks = command()
 	.public()
 	.input(ReconcileAskSchema)
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tasks, clock }) => countAfter(tasks, (board) => reconciledStep(board, ask, clock.now())));
 
-export const SweepStaleTasksCommand = command("sweep-stale-tasks")
+export const sweepStaleTasks = command()
 	.public()
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable)

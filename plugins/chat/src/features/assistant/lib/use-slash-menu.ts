@@ -4,7 +4,7 @@ import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import type { MenuSpot } from "./menu-spot.js";
 import { slashAskOf, slashEntriesOf } from "./slash-matches.js";
 import type { SlashAsk, SlashEntry } from "./slash-matches.js";
-import { ClearChatCommand, CompactChatCommand, SlashCommandsQuery } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export interface SlashMenuAsk {
@@ -36,9 +36,9 @@ const ABOVE_FIELD_PX = 4;
 
 export function useSlashMenu({ draft, fill, box }: SlashMenuAsk): SlashMenu {
 	const chat = useChatKey();
-	const names = useOptionalQuery(SlashCommandsQuery, { chat }).data ?? [];
-	const clear = useCommand(ClearChatCommand);
-	const compact = useCommand(CompactChatCommand);
+	const names = useOptionalQuery(assistant.slashCommands.slashCommands, { chat }).data ?? [];
+	const clear = useCommand(assistant.composer.clearChat);
+	const compact = useCommand(assistant.slashCommands.compactChat);
 	const [held, setHeld] = useState<SlashHeld>({
 		draft: "",
 		at: 0,

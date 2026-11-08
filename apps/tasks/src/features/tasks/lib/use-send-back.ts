@@ -1,4 +1,4 @@
-import { SendBackTaskCommand } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
 import { useCommand } from "@widgetarium/data-framework";
 import { useHandsOnTask } from "./use-hands-on-task.js";
@@ -9,7 +9,7 @@ export interface SendBack {
 }
 
 export function useSendBack(card: TaskCard): SendBack {
-	const sendBack = useCommand(SendBackTaskCommand);
+	const sendBack = useCommand(tasks.person.sendBackTask);
 	const handOn = useHandsOnTask(card);
 	return {
 		isRunning: sendBack.isRunning,

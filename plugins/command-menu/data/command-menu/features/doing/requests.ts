@@ -2,22 +2,11 @@ import { z } from "zod";
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import {
-	CloseTabCommand,
-	HeldTabsQuery,
-	OpenChatCommand,
-	OpenLinkCommand,
-	OpenTabCommand,
-	PinTabCommand,
-	RenameTabCommand,
-	ReopenClosedTabByIdCommand,
-	ShowEssentialCommand,
-	ShowTabCommand,
-} from "@widgetarium/app-host";
-import { OpenNewChatCommand } from "@sumi/chat-tabs";
+import { appHost } from "@widgetarium/app-host";
+import { chatTabs } from "@sumi/chat-tabs";
 import type { HeldTabs } from "@widgetarium/app-host";
-import { OpenAddressCommand } from "@widgetarium/browser";
-import { OpenChatElsewhereCommand, OpenWorkspaceCommand, RenameWorkspaceCommand } from "@widgetarium/workspaces";
+import { browser } from "@widgetarium/browser";
+import { workspaces } from "@widgetarium/workspaces";
 import { DoneSchema, IntentSchema, RenameAskSchema } from "../../shared/schema/command-menu.schema.js";
 import type { Done, Intent, KeptMenu, MenuCommand } from "../../shared/schema/command-menu.schema.js";
 import { confirmationOf } from "./lib/confirmation.js";
@@ -25,7 +14,7 @@ import { menuAfter } from "./lib/menu-after.js";
 
 const NO_NAME = "A new name cannot be empty.";
 
-export const DoRowCommand = command("do-row")
+export const doRow = command()
 	.public()
 	.input(z.object({ intent: IntentSchema }))
 	.output(DoneSchema)
@@ -47,7 +36,7 @@ export const DoRowCommand = command("do-row")
 		};
 	});
 
-export const RenameRowCommand = command("rename-row")
+export const renameRow = command()
 	.public()
 	.input(RenameAskSchema)
 	.output(DoneSchema)
@@ -61,13 +50,13 @@ export const RenameRowCommand = command("rename-row")
 
 		switch (kind) {
 			case "tab":
-				await send(RenameTabCommand, { id, label: trimmed });
+				await send(appHost.tabActions.renameTab, { id, label: trimmed });
 				break;
 			case "chat":
-				await send(RenameTabCommand, { id, label: trimmed });
+				await send(appHost.tabActions.renameTab, { id, label: trimmed });
 				break;
 			case "workspace":
-				await send(RenameWorkspaceCommand, { id, name: trimmed });
+				await send(workspaces.workspaces.renameWorkspace, { id, name: trimmed });
 				break;
 		}
 
@@ -95,31 +84,31 @@ async function performOpening(
 ): Promise<void> {
 	switch (intent.do) {
 		case "show-tab":
-			return send(ShowTabCommand, { id: intent.id });
+			return send(appHost.tabs.showTab, { id: intent.id });
 		case "reopen-closed":
-			return send(ReopenClosedTabByIdCommand, { tabId: intent.tabId });
+			return send(appHost.closedTabs.reopenClosedTabById, { tabId: intent.tabId });
 		case "show-essential":
-			return send(ShowEssentialCommand, { id: intent.id });
+			return send(appHost.essentials.showEssential, { id: intent.id });
 		case "open-chat":
-			return send(OpenChatCommand, { chatId: intent.id, paneId: null });
+			return send(appHost.chatOpening.openChat, { chatId: intent.id, paneId: null });
 		case "open-chat-elsewhere":
-			return send(OpenChatElsewhereCommand, { workspaceId: intent.workspaceId, chatId: intent.chatId });
+			return send(workspaces.workspaces.openChatElsewhere, { workspaceId: intent.workspaceId, chatId: intent.chatId });
 		case "open-workspace":
-			return send(OpenWorkspaceCommand, { id: intent.id });
+			return send(workspaces.workspaces.openWorkspace, { id: intent.id });
 		case "open-app":
-			await send(OpenTabCommand, { app: intent.app, list: newTabList });
+			await send(appHost.tabActions.openTab, { app: intent.app, list: newTabList });
 			return;
 		case "open-address":
 			return openAddress(intent, send, { newTabList, pageId });
 		case "open-link":
-			await send(OpenLinkCommand, { href: intent.href, opensNew: intent.where === "new-tab" });
+			await send(appHost.links.openLink, { href: intent.href, opensNew: intent.where === "new-tab" });
 			return;
 		case "run":
 			return runMenuCommand(intent.command, send);
 		case "close-tab":
-			return send(CloseTabCommand, { id: intent.id });
+			return send(appHost.tabActions.closeTab, { id: intent.id });
 		case "pin-chat":
-			return send(PinTabCommand, { id: intent.id, isPinned: intent.isPinned });
+			return send(appHost.tabActions.pinTab, { id: intent.id, isPinned: intent.isPinned });
 		default:
 			return unknownIntent(intent);
 	}
@@ -130,20 +119,20 @@ async function openAddress(
 	send: Send,
 	{ newTabList, pageId }: Pick<KeptMenu, "newTabList" | "pageId">,
 ): Promise<void> {
-	const shown = pageId ?? shownPageOf(await send(HeldTabsQuery));
+	const shown = pageId ?? shownPageOf(await send(appHost.tabs.heldTabs));
 
 	if (where === "this-tab" && shown !== null) {
-		return send(OpenAddressCommand, { tabId: shown, address, heldTabId: null });
+		return send(browser.tabs.openAddress, { tabId: shown, address, heldTabId: null });
 	}
 
-	await send(OpenTabCommand, { app: "browser", list: newTabList });
-	const opened = shownPageOf(await send(HeldTabsQuery));
+	await send(appHost.tabActions.openTab, { app: "browser", list: newTabList });
+	const opened = shownPageOf(await send(appHost.tabs.heldTabs));
 
 	if (opened === null) {
 		throw new Error(`the new tab for ${address} holds no browser page`);
 	}
 
-	await send(OpenAddressCommand, { tabId: opened, address, heldTabId: null });
+	await send(browser.tabs.openAddress, { tabId: opened, address, heldTabId: null });
 }
 
 function shownPageOf({ tabs, shownTabId }: HeldTabs): string | null {
@@ -154,7 +143,7 @@ function shownPageOf({ tabs, shownTabId }: HeldTabs): string | null {
 async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<void> {
 	switch (menuCommand) {
 		case "new-chat":
-			await send(OpenNewChatCommand, { title: null });
+			await send(chatTabs.chatOpening.openNewChat, { title: null });
 			return;
 		case "new-tab":
 			return;
@@ -162,7 +151,7 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 }
 
 async function newChatIdOf(text: string, send: Send): Promise<string> {
-	const opened = await send(OpenNewChatCommand, { title: text === "" ? null : text });
+	const opened = await send(chatTabs.chatOpening.openNewChat, { title: text === "" ? null : text });
 	return opened.id;
 }
 

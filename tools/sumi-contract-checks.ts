@@ -3,26 +3,14 @@ import { runtime, localTransport, messagePortTransport, servePort } from "@widge
 import { createFrameRelay, hearsAll } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { frameModuleRouteOf } from "../apps/studio/src/tabs/frame-routes.ts";
 import { CONTRACT_VERSION, contractRefusal, defineApp } from "../packages/shared/contract/index.ts";
-import { ReadFileQuery, WriteFileCommand, FileSystemModule } from "../packages/shared/contract/index.ts";
-import {
-	AssistantModule,
-	AttachFolderCommand,
-	ChatQuery,
-	ChooseProviderCommand,
-	FileDragQuery,
-	OpenProvidersCommand,
-	OpenWebPageCommand,
-	PickWorkingFolderCommand,
-	SendMessageCommand,
-	WebPageModule,
-	WebPageQuery,
-} from "../packages/shared/contract/index.ts";
+import { fileSystem } from "../packages/shared/contract/index.ts";
+import { assistant, webPage } from "../packages/shared/contract/index.ts";
 import type { RemoteModule, RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import { WebPageModule as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
-import { AssistantModule as RunnableAssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { webPage as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
+import { assistant as RunnableAssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
 import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
-import { FileSystemModule as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 
@@ -95,9 +83,11 @@ const transport = messagePortTransport(channel.port2);
 transport.changes(() => {
 	heard.changes += 1;
 });
-const sumi = runtime().imports(FileSystemModule({ over: transport })).start();
-await sumi.send(WriteFileCommand, { path: "a.txt", content: "over a port" });
-const read = await sumi.send(ReadFileQuery, { path: "a.txt" });
+const sumi = runtime()
+	.imports(fileSystem({ over: transport }))
+	.start();
+await sumi.send(fileSystem.files.writeFile, { path: "a.txt", content: "over a port" });
+const read = await sumi.send(fileSystem.files.readFile, { path: "a.txt" });
 check(
 	"a call over a MessagePort is answered, stamped by the listener",
 	read.ok ? read.output : read.reason,
@@ -109,13 +99,13 @@ channel.port2.close();
 
 const relay = createFrameRelay([
 	{
-		module: FileSystemModule,
+		module: fileSystem,
 		transport: localTransport(),
 		hears: hearsAll,
 	},
 ]);
 const notRelayed = await relay.answer({
-	name: "tasks/board",
+	name: "tasks.board.board",
 	input: undefined,
 	idempotencyKey: null,
 	signal: new AbortController().signal,
@@ -169,25 +159,25 @@ createFrameRelay([
 			transport: webPagesLocal,
 			release: () => undefined,
 		},
-		WebPageModule,
+		webPage,
 		"t1",
 	),
 ]).changes((invalidated) => {
 	heardByT1.push(...invalidated.map(({ inputKey }) => inputKey ?? "all"));
 });
-const pages = appOver(webPages, (transport) => WebPageModule({ over: transport }), "notes");
-await pages.send(OpenWebPageCommand, { tab: "t1", url: "https://example.com/page#private-token" });
-await appOver(webPages, (transport) => WebPageModule({ over: transport }), "tasks").send(OpenWebPageCommand, {
+const pages = appOver(webPages, (transport) => webPage({ over: transport }), "notes");
+await pages.send(webPage.pages.openWebPage, { tab: "t1", url: "https://example.com/page#private-token" });
+await appOver(webPages, (transport) => webPage({ over: transport }), "tasks").send(webPage.pages.openWebPage, {
 	tab: "t2",
 	url: "https://example.org/",
 });
-const page = await pages.send(WebPageQuery, { tab: "t1" });
+const page = await pages.send(webPage.pages.webPage, { tab: "t1" });
 check(
 	"web-page from the contract opens and reads a page over memory (a fake browser), its fragment left out",
 	page.ok ? [page.output?.title, page.output?.url] : page.reason,
 	["example.com", "https://example.com/page"],
 );
-const otherPage = await pages.send(WebPageQuery, { tab: "t2" });
+const otherPage = await pages.send(webPage.pages.webPage, { tab: "t2" });
 check("web-page refuses a tab that does not hold the calling app", otherPage.ok ? "read" : otherPage.code, "forbidden");
 check(
 	"a frame's web-page route hears its own tab's changes, never another tab's",
@@ -209,32 +199,35 @@ const chat = runtime()
 			workspaceId: "contract",
 		},
 	});
-const chatOfApp = appOver(chat, (transport) => AssistantModule({ over: transport }), "chat");
-await chatOfApp.send(SendMessageCommand, { chat: null, said: "hi" });
-const chatRead = await chatOfApp.send(ChatQuery, { chat: null });
+const chatOfApp = appOver(chat, (transport) => assistant({ over: transport }), "chat");
+await chatOfApp.send(assistant.composer.sendMessage, { chat: null, said: "hi" });
+const chatRead = await chatOfApp.send(assistant.chat.chat, { chat: null });
 check(
 	"an app sends a message and reads the answer through the assistant contract",
 	chatRead.ok ? chatRead.output.session.turns.map(({ text }) => text) : chatRead.reason,
 	["hi", "echo: hi"],
 );
 const chosenByChat = [
-	await chatOfApp.send(PickWorkingFolderCommand, { chat: null }),
-	await chatOfApp.send(ChooseProviderCommand, { chat: null, id: "claude" }),
-	await chatOfApp.send(OpenProvidersCommand, { chat: null }),
+	await chatOfApp.send(assistant.agent.pickWorkingFolder, { chat: null }),
+	await chatOfApp.send(assistant.agent.chooseProvider, { chat: null, id: "claude" }),
+	await chatOfApp.send(assistant.agent.openProviders, { chat: null }),
 ];
 check(
 	"the chat app picks a folder, chooses a provider and opens the providers itself",
 	chosenByChat.map((answer) => answer.ok || answer.code !== "forbidden"),
 	[true, true, true],
 );
-const shellOnly = [await chatOfApp.send(AttachFolderCommand, { chat: null }), await chatOfApp.send(FileDragQuery, { chat: null })];
+const shellOnly = [
+	await chatOfApp.send(assistant.composer.attachFolder, { chat: null }),
+	await chatOfApp.send(assistant.composer.fileDrag, { chat: null }),
+];
 check(
 	"an app may not lend a folder or hear file drags: those are the shell's",
 	shellOnly.map((answer) => (answer.ok ? "answered" : answer.code)),
 	["forbidden", "forbidden"],
 );
-const shellPicked = await appOver(chat, (transport) => AssistantModule({ over: transport }), null).send(
-	PickWorkingFolderCommand,
+const shellPicked = await appOver(chat, (transport) => assistant({ over: transport }), null).send(
+	assistant.agent.pickWorkingFolder,
 	{ chat: null },
 );
 check(

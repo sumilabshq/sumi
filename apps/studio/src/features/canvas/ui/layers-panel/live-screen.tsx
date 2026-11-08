@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { useMarkedLayers } from "@widgetarium/behaviors";
 import { useDrawing } from "../../lib/drawing.js";
-import { KeepSeenLayersCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import type { StatePicture } from "@widgetarium/canvas";
 import { LIVE_SCREEN } from "../../lib/field-marks.js";
 import { SCREEN } from "../../lib/screen-class.js";
@@ -16,7 +16,7 @@ export interface LiveScreenProps {
 
 export function LiveScreen({ picture, widthPx }: LiveScreenProps): ReactElement {
 	const { registry } = useDrawing();
-	const keep = useCommand(KeepSeenLayersCommand);
+	const keep = useCommand(canvas.layers.keepSeenLayers);
 	const [node, setNode] = useState<HTMLDivElement | null>(null);
 	useMarkedLayers(node, (layers) => void keep.run({ key: picture.widget, layers }));
 	return (

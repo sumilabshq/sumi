@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { Button, Icon, Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@widgetarium/kit";
 import { useQuery } from "@widgetarium/data-framework";
-import { WorkspacesQuery } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 import { WorkspaceLook } from "../workspace-look/workspace-look.js";
 import { WorkspaceMenu } from "./workspace-menu.js";
 
@@ -12,7 +12,7 @@ const LOOK_START_PX = 6;
 const CHEVRON_PX = 14;
 
 export function WorkspaceHeader(): ReactElement {
-	const { current } = useQuery(WorkspacesQuery).data;
+	const { current } = useQuery(workspaces.workspaces.workspaces).data;
 	const [isMenuOpen, setMenuOpen] = useState(false);
 	const [isLookOpen, setLookOpen] = useState(false);
 	const openLook = (): void => {

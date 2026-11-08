@@ -6,8 +6,8 @@ import { handled } from "./generated/handled.js";
 export type { AgentJobs } from "./shared/host/agent-jobs.host.js";
 export type { CanvasHosts } from "./gateways/canvas-parts/canvas-parts.gateway.js";
 
-export const CanvasModule = module("canvas")
+export const canvas = module()
 	.on(Device)
 	.config<CanvasHosts>()
 	.provide((facts) => canvasPartsOn(facts))
-	.handles(...handled);
+	.handles(handled);

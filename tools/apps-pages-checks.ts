@@ -2,18 +2,10 @@ import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
-import {
-	AppPageQuery,
-	AppsModule,
-	PageTitlesQuery,
-	PressAppActionCommand,
-	RecordAppPageCommand,
-	RememberPageTitlesCommand,
-	TakeActionPressCommand,
-} from "../plugins/apps/data/apps/index.ts";
-import { AppsModule as RunnableAppsModule } from "../plugins/apps/data/apps/module.ts";
-import { PlacesModule } from "../plugins/apps/data/places/index.ts";
-import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { apps } from "../plugins/apps/data/apps/index.ts";
+import { apps as RunnableAppsModule } from "../plugins/apps/data/apps/module.ts";
+import { places } from "../plugins/apps/data/places/index.ts";
+import { places as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
@@ -75,7 +67,7 @@ function appsAs(id: string | null): Runtime {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
 	const transport = orpcTransport("http://apps.test", { fetch: served.fetch, headers });
 	return runtime()
-		.imports(AppsModule({ over: transport }), PlacesModule({ over: transport }))
+		.imports(apps({ over: transport }), places({ over: transport }))
 		.start();
 }
 
@@ -84,17 +76,17 @@ const notes = appsAs("notes");
 const studio = appsAs(null);
 
 async function actionsOf(): Promise<unknown> {
-	const answer = await studio.send(AppPageQuery, { id: "t1" });
+	const answer = await studio.send(apps.pages.appPage, { id: "t1" });
 	return answer.ok ? answer.output.actions.map(({ id }) => id) : answer.reason;
 }
 
 async function pressesOf(): Promise<unknown> {
-	const answer = await tasks.send(AppPageQuery, { id: "t1" });
+	const answer = await tasks.send(apps.pages.appPage, { id: "t1" });
 	return answer.ok ? answer.output.presses.map(({ action }) => action) : answer.reason;
 }
 
 async function recordChecks(): Promise<void> {
-	await tasks.send(RecordAppPageCommand, {
+	await tasks.send(apps.pages.recordAppPage, {
 		id: "t1",
 		actions: [
 			{ id: "open-chat", label: "Open chat", icon: "message-square" },
@@ -102,49 +94,49 @@ async function recordChecks(): Promise<void> {
 		],
 	});
 	check("an app records the actions its tab's header shows", await actionsOf(), ["open-chat", "archive"]);
-	const foreign = await tasks.send(RecordAppPageCommand, {
+	const foreign = await tasks.send(apps.pages.recordAppPage, {
 		id: "n1",
 		actions: [{ id: "x", label: "X", icon: "x" }],
 	});
 	check("an app cannot record actions in a tab it does not hold", foreign.ok, false);
-	const peek = await notes.send(AppPageQuery, { id: "t1" });
+	const peek = await notes.send(apps.pages.appPage, { id: "t1" });
 	check("an app cannot read another app's tab page", peek.ok, false);
 }
 
 async function pressChecks(): Promise<void> {
-	const byApp = await tasks.send(PressAppActionCommand, { tab: "t1", action: "open-chat" });
+	const byApp = await tasks.send(apps.pages.pressAppAction, { tab: "t1", action: "open-chat" });
 	check("an app cannot press its own actions: only the shell presses", byApp.ok, false);
-	const unknown = await studio.send(PressAppActionCommand, { tab: "t1", action: "delete" });
+	const unknown = await studio.send(apps.pages.pressAppAction, { tab: "t1", action: "delete" });
 	check("a press of an action the tab does not show is refused", unknown.ok, false);
-	const off = await studio.send(PressAppActionCommand, { tab: "t1", action: "archive" });
+	const off = await studio.send(apps.pages.pressAppAction, { tab: "t1", action: "archive" });
 	check("a press of an action that is off is refused", off.ok, false);
-	await studio.send(PressAppActionCommand, { tab: "t1", action: "open-chat" });
-	await studio.send(PressAppActionCommand, { tab: "t1", action: "open-chat" });
+	await studio.send(apps.pages.pressAppAction, { tab: "t1", action: "open-chat" });
+	await studio.send(apps.pages.pressAppAction, { tab: "t1", action: "open-chat" });
 	check("a shell press waits in the tab for its app, a repeat replaces it", await pressesOf(), ["open-chat"]);
-	await notes.send(RecordAppPageCommand, { id: "n1", actions: [] });
+	await notes.send(apps.pages.recordAppPage, { id: "n1", actions: [] });
 	check("a press survives another tab's record", await pressesOf(), ["open-chat"]);
-	const read = await tasks.send(AppPageQuery, { id: "t1" });
+	const read = await tasks.send(apps.pages.appPage, { id: "t1" });
 	const press = read.ok ? (read.output.presses[0]?.id ?? "") : "";
-	const stolen = await notes.send(TakeActionPressCommand, { id: "t1", press });
+	const stolen = await notes.send(apps.pages.takeActionPress, { id: "t1", press });
 	check("another app cannot take the press", stolen.ok, false);
-	const taken = await tasks.send(TakeActionPressCommand, { id: "t1", press });
+	const taken = await tasks.send(apps.pages.takeActionPress, { id: "t1", press });
 	check("the app takes the press once", taken.ok ? taken.output.action : taken.reason, "open-chat");
-	const twice = await tasks.send(TakeActionPressCommand, { id: "t1", press });
+	const twice = await tasks.send(apps.pages.takeActionPress, { id: "t1", press });
 	check("a taken press cannot be taken again", twice.ok, false);
 	check("nothing waits after the press is taken", await pressesOf(), []);
 }
 
 async function pageOf(id: string): Promise<unknown> {
-	const answer = await studio.send(AppPageQuery, { id });
+	const answer = await studio.send(apps.pages.appPage, { id });
 	return answer.ok ? [answer.output.title, answer.output.favicon] : answer.reason;
 }
 
 async function refusedOf(page: Record<string, string>): Promise<boolean> {
-	return !(await tasks.send(RecordAppPageCommand, { id: "t1", ...page })).ok;
+	return !(await tasks.send(apps.pages.recordAppPage, { id: "t1", ...page })).ok;
 }
 
 async function titlesOf(app: Runtime): Promise<unknown> {
-	const answer = await app.send(PageTitlesQuery, {
+	const answer = await app.send(apps.pages.pageTitles, {
 		tabs: [
 			{ id: "t1", app: "tasks", address: "" },
 			{ id: "n1", app: "notes", address: "docs/readme.md" },
@@ -158,7 +150,7 @@ async function titleChecks(): Promise<void> {
 	check("a favicon on the web is refused", await refusedOf({ favicon: "https://example.com/icon.png" }), true);
 	check("another app's favicon is refused", await refusedOf({ favicon: "sumi-app://other/1.0.0/icon.png" }), true);
 	check("an unrecorded page takes its title from the app's titleOf", await pageOf("n1"), ["Note docs/readme.md", null]);
-	await tasks.send(RecordAppPageCommand, { id: "t1", title: "Board", favicon: TASKS_ICON });
+	await tasks.send(apps.pages.recordAppPage, { id: "t1", title: "Board", favicon: TASKS_ICON });
 	check("the app's own title and favicon are kept", await pageOf("t1"), ["Board", TASKS_ICON]);
 	check("an app cannot read every tab's title", await titlesOf(tasks), false);
 	check("the shell reads every tab's title, favicon and app title", await titlesOf(studio), [
@@ -175,9 +167,9 @@ const DOCS_PAGE = {
 };
 
 async function rememberChecks(): Promise<void> {
-	const byApp = await tasks.send(RememberPageTitlesCommand, { pages: [DOCS_PAGE] });
+	const byApp = await tasks.send(apps.pages.rememberPageTitles, { pages: [DOCS_PAGE] });
 	check("an app cannot remember the browser's page titles: only the shell does", byApp.ok, false);
-	await studio.send(RememberPageTitlesCommand, { pages: [DOCS_PAGE] });
+	await studio.send(apps.pages.rememberPageTitles, { pages: [DOCS_PAGE] });
 	check("the shell remembers a browser page's title and icon on its tab", await pageOf("n1"), [
 		"Docs",
 		DOCS_PAGE.favicon,
@@ -185,7 +177,7 @@ async function rememberChecks(): Promise<void> {
 }
 
 async function blankRememberChecks(): Promise<void> {
-	await studio.send(RememberPageTitlesCommand, {
+	await studio.send(apps.pages.rememberPageTitles, {
 		pages: [
 			{
 				...DOCS_PAGE,
@@ -194,7 +186,7 @@ async function blankRememberChecks(): Promise<void> {
 			},
 		],
 	});
-	await studio.send(RememberPageTitlesCommand, { pages: [{ ...DOCS_PAGE, title: "" }] });
+	await studio.send(apps.pages.rememberPageTitles, { pages: [{ ...DOCS_PAGE, title: "" }] });
 	check("a blank page and an empty title keep the remembered title", await pageOf("n1"), ["Docs", DOCS_PAGE.favicon]);
 }
 

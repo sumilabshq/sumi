@@ -5,13 +5,8 @@ import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
 import type { SumiProfile } from "@widgetarium/plugin-framework";
-import {
-	CloseWindowCommand,
-	ForgetRunningTurnsCommand,
-	KeepLiveWindowsCommand,
-	PlacesModule as PlacesContract,
-} from "@widgetarium/places";
-import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksContract } from "@widgetarium/tasks";
+import { places as placesContract } from "@widgetarium/places";
+import { tasks } from "@widgetarium/tasks";
 import { AppCallerAuthenticate, BUILT_IN_PROFILE, resolvePlugins } from "@widgetarium/studio";
 import type { BackgroundModule } from "@widgetarium/studio";
 import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
@@ -113,7 +108,9 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): R
 	return mountOrStop(core, (started) => {
 		const exposed = started.expose({ adapter: CORE_IPC, authenticate });
 		own.serve(started, { authenticate });
-		const places = runtime().imports(PlacesContract({ over: own }), TasksContract({ over: own })).start();
+		const places = runtime()
+			.imports(placesContract({ over: own }), tasks({ over: own }))
+			.start();
 		listener.serve(exposed);
 		return places;
 	});
@@ -131,7 +128,7 @@ function backgroundModulesOf(workspace: string, profile: SumiProfile): readonly 
 
 function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): void {
 	for (const [workspace, places] of served) {
-		void places.send(CloseWindowCommand, { window }).then((answered) => {
+		void places.send(placesContract.windows.closeWindow, { window }).then((answered) => {
 			if (!answered.ok) {
 				console.warn(
 					NOT_CLOSED.replace("{workspace}", workspace).replace("{window}", window).replace("{reason}", answered.reason),
@@ -143,7 +140,7 @@ function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): 
 
 async function keepLiveWindows(places: Runtime, workspace: string): Promise<void> {
 	const live = LiveWindowsSchema.parse(await invoke(CORE_LIVE_WINDOWS));
-	const answered = await places.send(KeepLiveWindowsCommand, { windows: live });
+	const answered = await places.send(placesContract.windows.keepLiveWindows, { windows: live });
 
 	if (!answered.ok) {
 		console.warn(NOT_KEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));
@@ -151,7 +148,7 @@ async function keepLiveWindows(places: Runtime, workspace: string): Promise<void
 }
 
 async function forgetRunningTurns(places: Runtime, workspace: string): Promise<void> {
-	const answered = await places.send(ForgetRunningTurnsCommand);
+	const answered = await places.send(placesContract.tabFacts.forgetRunningTurns);
 
 	if (!answered.ok) {
 		console.warn(TURNS_KEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));
@@ -170,7 +167,7 @@ async function reconcileTasks(core: Runtime, workspace: string): Promise<void> {
 		return;
 	}
 
-	const answered = await core.send(ReconcileTasksCommand, { liveChats: [] });
+	const answered = await core.send(tasks.supervision.reconcileTasks, { liveChats: [] });
 
 	if (!answered.ok) {
 		console.warn(NOT_RECONCILED.replace("{workspace}", workspace).replace("{reason}", answered.reason));
@@ -181,7 +178,7 @@ async function reconcileTasks(core: Runtime, workspace: string): Promise<void> {
 }
 
 async function sweepStaleTasks(core: Runtime, workspace: string, when: string): Promise<void> {
-	const answered = await core.send(SweepStaleTasksCommand);
+	const answered = await core.send(tasks.supervision.sweepStaleTasks);
 
 	if (!answered.ok) {
 		console.warn(NOT_SWEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));

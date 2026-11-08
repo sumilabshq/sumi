@@ -20,10 +20,12 @@ import {
 	seconds,
 	serverModule,
 } from "../packages/shared/data-framework/src/index.ts";
+import { named } from "../packages/shared/data-framework/src/index.ts";
+import { fullyNamed } from "./requests-names.ts";
 import type { TakesOptionsFirst, User } from "../packages/shared/data-framework/src/index.ts";
 import * as fx from "./requests-fixture.ts";
 
-const Plain = query("pages/plain").output(z.string());
+const Plain = fullyNamed("pages.plain", query()).output(z.string());
 const PlainClientModule = clientModule("pages");
 const PlainServerModule = serverModule("pages");
 const SignedServerModule = serverModule("pages").guard(AuthenticatedGuard);
@@ -57,11 +59,11 @@ class Clock {
 	}
 }
 
-const LedgerDeclared = module("ledger")
+const LedgerDeclared = module()
 	.on(Device)
 	.provide(() => ({ ledger: new Ledger() }));
-const OwnChangedEvent = event("own-changed");
-const ForeignChangedEvent = event("other/changed");
+const OwnChangedEvent = named("own-changed", event());
+const ForeignChangedEvent = fullyNamed("other.changed", event());
 const ledgerBuilt = buildersOf<typeof LedgerDeclared, typeof OwnChangedEvent>();
 const NeedsLedgerGuard = guard()
 	.requires({ ledger: Ledger })
@@ -77,52 +79,43 @@ const NeedsRateLimitsMiddleware = middleware()
 	.handle((_call, _deps, next) => next());
 
 export function requiresTypedOnly(): void {
-	ledgerBuilt
-		.query("total")
+	named("total", ledgerBuilt.query())
 		.output(z.number())
 		.guard(NeedsLedgerGuard)
 		.handle((_input, { ledger }) => ledger.total());
-	ledgerBuilt
-		.query("limited")
+	named("limited", ledgerBuilt.query())
 		.use(NeedsRateLimitsMiddleware)
 		.handle(() => undefined);
-	ledgerBuilt
-		.query("timed")
+	named("timed", ledgerBuilt.query())
 		// @ts-expect-error a step requiring a key neither the module nor the runtime provides
 		.guard(NeedsClockGuard);
-	ledgerBuilt
-		.query("mistyped")
+	named("mistyped", ledgerBuilt.query())
 		// @ts-expect-error a step requiring a key provided as another type
 		.guard(NeedsLedgerAsClockGuard);
-	ledgerBuilt
-		.query("runtime")
+	named("runtime", ledgerBuilt.query())
 		.output(z.boolean())
 		.handle((_input, { rateLimits }) => rateLimits instanceof RateLimits);
 }
 
 export function emitTypedOnly(): void {
-	ledgerBuilt
-		.command("emits-own")
+	named("emits-own", ledgerBuilt.command())
 		.idempotencyKey(PerCall)
 		.handle((_input, { emit }) => emit(OwnChangedEvent));
-	ledgerBuilt
-		.command("emits-foreign")
+	named("emits-foreign", ledgerBuilt.command())
 		.idempotencyKey(PerCall)
-		// @ts-expect-error a module emits only its own events
 		.handle((_input, { emit }) => emit(ForeignChangedEvent));
-	ledgerBuilt
-		.query("reads")
+	named("reads", ledgerBuilt.query())
 		// @ts-expect-error a query emits nothing
 		.handle((_input, { emit }) => emit(OwnChangedEvent));
 }
 
 export function optionsTypedOnly(): void {
-	const limited = query("pages/limited").output(z.string());
+	const limited = fullyNamed("pages.limited", query()).output(z.string());
 	limited.use(RateLimitMiddleware({ calls: 1, per: minutes(1) }));
 	limited.use(RateLimitMiddleware) satisfies TakesOptionsFirst;
 	// @ts-expect-error
 	limited.use(RateLimitMiddleware).handle(() => "");
-	module("pages").on(Device).use(RateLimitMiddleware) satisfies TakesOptionsFirst;
+	module().on(Device).use(RateLimitMiddleware) satisfies TakesOptionsFirst;
 	// @ts-expect-error
 	RateLimitMiddleware();
 	limited.use(OptionalOptionsMiddleware);
@@ -135,7 +128,7 @@ export function optionsTypedOnly(): void {
 	// @ts-expect-error
 	limited.guard(HasPermissionGuard).handle(() => "");
 	// @ts-expect-error
-	command("pages/unkeyed-guard").guard(AuthenticatedGuard);
+	fullyNamed("pages.unkeyed-guard", command()).guard(AuthenticatedGuard);
 }
 
 export function typedOnly(): void {
@@ -234,27 +227,27 @@ export function typedOnly(): void {
 	handler(Plain, fx.PagesClientModule).inject({ pages: fx.Pages });
 
 	// @ts-expect-error
-	query("pages/x").guard(PublicGuard);
+	fullyNamed("pages.x", query()).guard(PublicGuard);
 	// @ts-expect-error
-	command("pages/x").rateLimit({ calls: 1, per: minutes(1) });
+	fullyNamed("pages.x", command()).rateLimit({ calls: 1, per: minutes(1) });
 
-	const Unkeyed = command("pages/unkeyed");
+	const Unkeyed = fullyNamed("pages.unkeyed", command());
 	// @ts-expect-error
 	handler(Unkeyed, PlainServerModule);
 
 	// @ts-expect-error
-	query("pages/x").idempotencyKey(PerCall);
+	fullyNamed("pages.x", query()).idempotencyKey(PerCall);
 	// @ts-expect-error
-	command("pages/x").idempotencyKey(PerCall).idempotencyKey(PerCall);
+	fullyNamed("pages.x", command()).idempotencyKey(PerCall).idempotencyKey(PerCall);
 	// @ts-expect-error
-	query("pages/x").cache({ freshFor: 5000 });
-	query("pages/x").cache({ freshFor: seconds(5) });
+	fullyNamed("pages.x", query()).cache({ freshFor: 5000 });
+	fullyNamed("pages.x", query()).cache({ freshFor: seconds(5) });
 	// @ts-expect-error
-	command("pages/x")
+	fullyNamed("pages.x", command())
 		.idempotencyKey(PerCall)
 		.cache({ freshFor: seconds(1) });
 	// @ts-expect-error
-	query("pages/x").invalidates([fx.PagesQuery]);
+	fullyNamed("pages.x", query()).invalidates([fx.PagesQuery]);
 
 	// @ts-expect-error
 	HasPermissionGuard("pages.rename");

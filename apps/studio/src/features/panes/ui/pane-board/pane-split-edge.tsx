@@ -1,10 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { ResizeSplitCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { FrameBounds } from "@widgetarium/layout";
 import type { PaneEdge } from "../../lib/pane-layout.js";
-import { ResizePaneSplitCommand } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout";
 import { useEdgeDrag } from "../../lib/use-edge-drag.js";
 
 export interface PaneSplitEdgeProps {
@@ -18,8 +18,8 @@ const RESIZE_LABEL = "Resize panes";
 const CHAT_EDGE = "chat";
 
 export function PaneSplitEdge({ edge, bounds, onDrag, onChatPx }: PaneSplitEdgeProps): ReactElement {
-	const resize = useCommand(ResizePaneSplitCommand);
-	const resizeSplit = useCommand(ResizeSplitCommand);
+	const resize = useCommand(layout.panes.resizePaneSplit);
+	const resizeSplit = useCommand(appHost.splits.resizeSplit);
 	const { branchId } = edge;
 	const least = bounds.plateLeastPx / edge.spanPx;
 	const shareWithin = (asked: number): number => Math.min(Math.max(asked, least), edge.pairShare - least);

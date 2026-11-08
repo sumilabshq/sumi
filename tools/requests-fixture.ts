@@ -18,6 +18,7 @@ import {
 	refuse,
 	serverModule,
 } from "../packages/shared/data-framework/src/index.ts";
+import { fullyNamed } from "./requests-names.ts";
 import type { AnyRequest, Handler, Injected, User } from "../packages/shared/data-framework/src/index.ts";
 import { Authenticate, Server, moduleContract } from "../packages/shared/data-framework/src/index.ts";
 
@@ -83,77 +84,77 @@ export const KnownPageGuard = guard<{ readonly from: string }>()
 		return { known: input.from };
 	});
 
-export const PagesQuery = query("pages/pages")
+export const PagesQuery = fullyNamed("pages.pages", query())
 	.public()
 	.input(z.object({ prefix: z.string() }))
 	.output(z.array(z.string()));
 
-export const CountQuery = query("pages/count").public().settlesNow().output(z.number());
+export const CountQuery = fullyNamed("pages.count", query()).public().settlesNow().output(z.number());
 
-export const SlowQuery = query("pages/slow").public().output(z.string());
+export const SlowQuery = fullyNamed("pages.slow", query()).public().output(z.string());
 
-export const CrashQuery = query("pages/crash").public().output(z.string());
+export const CrashQuery = fullyNamed("pages.crash", query()).public().output(z.string());
 
-export const BadOutputQuery = query("pages/bad-output").public().output(z.string().min(10));
+export const BadOutputQuery = fullyNamed("pages.bad-output", query()).public().output(z.string().min(10));
 
-export const AddPageCommand = command("pages/add-page")
+export const AddPageCommand = fullyNamed("pages.add-page", command())
 	.public()
 	.idempotencyKey(PerCall)
 	.input(z.object({ title: z.string().min(1) }))
 	.output(z.object({ count: z.number() }));
 
-export const RenamePageCommand = command("pages/rename-page")
+export const RenamePageCommand = fullyNamed("pages.rename-page", command())
 	.public()
 	.input(z.object({ from: z.string(), to: z.string() }))
 	.idempotencyKey(({ from, to }) => [from, to].join(" to "))
 	.output(z.object({ count: z.number() }))
 	.invalidates([PagesQuery]);
 
-export const BumpCommand = command("pages/bump").public().idempotencyKey(Repeatable).output(z.number());
+export const BumpCommand = fullyNamed("pages.bump", command()).public().idempotencyKey(Repeatable).output(z.number());
 
-export const TouchPagesCommand = command("pages/touch-pages")
+export const TouchPagesCommand = fullyNamed("pages.touch-pages", command())
 	.public()
 	.idempotencyKey(Repeatable)
 	.input(z.object({ title: z.string() }))
 	.invalidates([PagesQuery]);
 
-export const CrashCommand = command("pages/crash-command").public().idempotencyKey(Repeatable);
+export const CrashCommand = fullyNamed("pages.crash-command", command()).public().idempotencyKey(Repeatable);
 
-export const GuardCrashQuery = query("pages/guard-crash").public().output(z.string());
+export const GuardCrashQuery = fullyNamed("pages.guard-crash", query()).public().output(z.string());
 
-export const LimitedQuery = query("pages/limited").public().output(z.number());
+export const LimitedQuery = fullyNamed("pages.limited", query()).public().output(z.number());
 
-export const TracedCommand = command("pages/traced").public().idempotencyKey(PerCall).output(z.string());
+export const TracedCommand = fullyNamed("pages.traced", command()).public().idempotencyKey(PerCall).output(z.string());
 
-export const WhoQuery = query("pages/who").public().output(z.string());
+export const WhoQuery = fullyNamed("pages.who", query()).public().output(z.string());
 
-export const StampCommand = command("pages/stamp")
+export const StampCommand = fullyNamed("pages.stamp", command())
 	.public()
 	.input(z.object({ note: z.string() }))
 	.idempotencyKey(({ note }) => note)
 	.output(z.string());
 
-export const RefusingCommand = command("pages/refusing").public().idempotencyKey(PerCall);
+export const RefusingCommand = fullyNamed("pages.refusing", command()).public().idempotencyKey(PerCall);
 
-export const BrokenCountQuery = query("pages/broken-count").public().settlesNow().output(z.number());
+export const BrokenCountQuery = fullyNamed("pages.broken-count", query()).public().settlesNow().output(z.number());
 
-export const SecretQuery = query("pages/secret").public().output(z.string());
+export const SecretQuery = fullyNamed("pages.secret", query()).public().output(z.string());
 
-export const WhoElseQuery = query("pages/who-else").public().output(z.string());
+export const WhoElseQuery = fullyNamed("pages.who-else", query()).public().output(z.string());
 
-export const PayCommand = command("pages/pay")
+export const PayCommand = fullyNamed("pages.pay", command())
 	.public()
 	.idempotencyKey(PerCall)
 	.input(z.object({ n: z.number() }))
 	.output(z.number());
 
-export const NoteCommand = command("pages/note")
+export const NoteCommand = fullyNamed("pages.note", command())
 	.public()
 	.input(z.object({ note: z.string() }))
 	.idempotencyKey(({ note }) => note)
 	.output(z.number());
 
-export const MineQuery = query("pages/mine").public().output(z.string());
+export const MineQuery = fullyNamed("pages.mine", query()).public().output(z.string());
 
 export const counted = { bumps: 0, refusals: 0, stamps: 0, pays: 0, notes: 0 };
 
@@ -297,7 +298,7 @@ export const WrappingMiddleware = middleware()
 		return answer;
 	});
 
-export const ContextQuery = query("pages/context")
+export const ContextQuery = fullyNamed("pages.context", query())
 	.public()
 	.output(z.object({ user: z.string(), startedAt: z.number() }));
 
@@ -363,7 +364,7 @@ export const HandlerTracingMiddleware = middleware().handle(async (_call, _deps,
 	return next();
 });
 
-export const OrderedCommand = command("ordered/ordered")
+export const OrderedCommand = fullyNamed("ordered.ordered", command())
 	.public()
 	.input(z.object({ note: z.string() }))
 	.idempotencyKey(({ note }) => note)
@@ -442,10 +443,10 @@ export const JoinedPagesServerModule = PagesServerModule.handlers(SERVED_PAGE_HA
 export const PagesContract = moduleContract(
 	"pages",
 	Server,
-	SERVED_PAGE_HANDLERS.map(({ request }) => request),
+	Object.fromEntries(SERVED_PAGE_HANDLERS.map(({ request }) => [request.identity.path ?? "", request])),
 );
 
-export const OrderedContract = moduleContract("ordered", Server, [OrderedCommand]);
+export const OrderedContract = moduleContract("ordered", Server, { ordered: OrderedCommand });
 
 export class HeaderAuthenticate extends Authenticate {
 	override async userOf(headers: Headers): Promise<User | null> {

@@ -1,7 +1,7 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { ShowEssentialCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { EssentialTile as EssentialTileState } from "@widgetarium/app-host";
 import { DropTint } from "../drop-tint/drop-tint.js";
 import { TabFaceIcon } from "../tab-face/tab-face-icon.js";
@@ -16,7 +16,7 @@ export const EssentialTile = memo(function EssentialTile({
 }: {
 	readonly tile: EssentialTileState;
 }): ReactElement {
-	const showEssential = useCommand(ShowEssentialCommand);
+	const showEssential = useCommand(appHost.essentials.showEssential);
 	const lifted = useLiftedMark(tile.id, null);
 	return (
 		<button

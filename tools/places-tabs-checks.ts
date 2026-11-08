@@ -4,20 +4,9 @@ import type { RemoteTransport, Runtime } from "../packages/shared/data-framework
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import {
-	CreateGroupCommand,
-	KeepChatTabsCommand,
-	OpenTabBelowCommand,
-	OpenTabCommand,
-	PinTabCommand,
-	PlaceGroupCommand,
-	PlaceTabCommand,
-	PlacedTabsQuery,
-	PlacesModule,
-	ShowTabCommand,
-} from "../plugins/apps/data/places/index.ts";
+import { places } from "../plugins/apps/data/places/index.ts";
 import type { Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
-import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { places as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { TauriTabsGateway } from "../plugins/apps/data/places/gateways/tabs/tauri/tauri.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
@@ -66,12 +55,12 @@ function placesCoreOver(tabs: MemoryTabsGateway | TauriTabsGateway): Runtime {
 
 function windowOver(core: RemoteTransport): Runtime {
 	return runtime()
-		.imports(PlacesModule({ over: core }))
+		.imports(places({ over: core }))
 		.start();
 }
 
 async function listsIn(windowApp: Runtime, window: string): Promise<unknown> {
-	const placed = await windowApp.send(PlacedTabsQuery, { window });
+	const placed = await windowApp.send(places.tabs.placedTabs, { window });
 	return placed.ok ? [placed.output.lists, placed.output.shownId] : placed.reason;
 }
 
@@ -136,7 +125,7 @@ async function migrationChecks(): Promise<void> {
 
 	fake.put(`${root}:chats.json`, { v: 1, rev: 2, chats: [] });
 	const [again] = windowsOver(tabsIn());
-	const placed = await again.send(PlacedTabsQuery, { window: "main" });
+	const placed = await again.send(places.tabs.placedTabs, { window: "main" });
 	check(
 		"a second start reads places.json and never migrates again",
 		placed.ok ? placed.output.tabs.filter((tab) => tab.app === "chat").map((tab) => tab.id) : placed.reason,
@@ -152,7 +141,7 @@ async function unreadableChecks(): Promise<void> {
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
 	const [main] = windowsOver(new TauriTabsGateway({ store, root, kept, apps: BUILT_IN_APPS }));
-	const placed = await main.send(PlacedTabsQuery, { window: "main" });
+	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
 	check(
 		"unreadable tabs start empty and are kept aside, never read again from the older files",
 		[placed.ok ? placed.output.minted : placed.reason, fake.files.get(`${root}:places.json`)?.["unreadableTabs"]],
@@ -164,8 +153,8 @@ async function oneWriterChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main, side] = windowsOver(tabs);
 	const opened = await Promise.all([
-		main.send(OpenTabCommand, { at: askAt("main"), app: "canvas" }),
-		side.send(OpenTabCommand, { at: askAt("studio-2"), app: "canvas" }),
+		main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" }),
+		side.send(places.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" }),
 	]);
 	check(
 		"two windows opening a tab at once each get their own, minted by the one writer",
@@ -200,22 +189,25 @@ async function oneWriterChecks(): Promise<void> {
 	);
 
 	const heard = { count: 0 };
-	main.routes.watch(PlacedTabsQuery, { window: "main" }, () => {
+	main.routes.watch(places.tabs.placedTabs, { window: "main" }, () => {
 		heard.count += 1;
 	});
-	await side.send(ShowTabCommand, { at: askAt("studio-2"), id: "tab-1" });
+	await side.send(places.tabShowing.showTab, { at: askAt("studio-2"), id: "tab-1" });
 	check("and the other window hears the change without asking", await waitFor(() => heard.count > 0), true);
 }
 
 async function declaredRuleChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main] = windowsOver(tabs);
-	const canvas = await main.send(OpenTabCommand, { at: askAt("main"), app: "canvas" });
-	const below = await main.send(OpenTabBelowCommand, { at: askAt("main"), id: canvas.ok ? canvas.output.id : "" });
-	const placed = await main.send(PlacedTabsQuery, { window: "main" });
+	const canvas = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
+	const below = await main.send(places.tabOpening.openTabBelow, {
+		at: askAt("main"),
+		id: canvas.ok ? canvas.output.id : "",
+	});
+	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
 	const belowApp = placed.ok && below.ok ? placed.output.tabs.find(({ id }) => id === below.output.id)?.app : null;
 	check("a tab opened below opens the app that declares it navigates", belowApp, "browser");
-	const chat = await main.send(OpenTabCommand, { at: askAt("main"), app: "chat" });
+	const chat = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "chat" });
 	check(
 		"opening a tab of the app that declares it draws no page is refused",
 		chat.ok ? "opened" : chat.reason,
@@ -226,26 +218,26 @@ async function declaredRuleChecks(): Promise<void> {
 async function lawChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main] = windowsOver(tabs);
-	await main.send(KeepChatTabsCommand, {
+	await main.send(places.tabFacts.keepChatTabs, {
 		chats: [
 			{ id: "chat-a", title: null },
 			{ id: "chat-b", title: null },
 		],
 	});
-	await main.send(KeepChatTabsCommand, {
+	await main.send(places.tabFacts.keepChatTabs, {
 		chats: [
 			{ id: "chat-a", title: null },
 			{ id: "chat-b", title: null },
 		],
 	});
-	const tab = await main.send(OpenTabCommand, { at: askAt("main"), app: "canvas", list: "chat-a" });
+	const tab = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas", list: "chat-a" });
 	const tabId = tab.ok ? tab.output.id : "";
-	const chatInChat = await main.send(PlaceTabCommand, {
+	const chatInChat = await main.send(places.tabPlacing.placeTab, {
 		at: askAt("main"),
 		id: "chat-b",
 		place: { list: "chat-a", groupId: null, before: null },
 	});
-	const noChat = await main.send(PlaceTabCommand, {
+	const noChat = await main.send(places.tabPlacing.placeTab, {
 		at: askAt("main"),
 		id: tabId,
 		place: { list: "tab-1", groupId: null, before: null },
@@ -264,8 +256,8 @@ async function lawChecks(): Promise<void> {
 		],
 	);
 
-	await main.send(PinTabCommand, { window: "main", id: tabId, isPinned: true });
-	const grouped = await main.send(CreateGroupCommand, { window: "main", from: { kind: "tab", tabId } });
+	await main.send(places.tabPlacing.pinTab, { window: "main", id: tabId, isPinned: true });
+	const grouped = await main.send(places.tabPlacing.createGroup, { window: "main", from: { kind: "tab", tabId } });
 	const placed = await tabs.placedTabs();
 	check(
 		"pinning moves the tab out of its chat into Pinned, and a group born around it stands there",
@@ -276,24 +268,24 @@ async function lawChecks(): Promise<void> {
 }
 
 async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void> {
-	const toOpen = await main.send(PlaceGroupCommand, {
+	const toOpen = await main.send(places.tabPlacing.placeGroup, {
 		window: "main",
 		id: groupId,
 		place: { list: "workspace", before: null },
 	});
-	const afterOpen = await main.send(PlacedTabsQuery, { window: "main" });
+	const afterOpen = await main.send(places.tabs.placedTabs, { window: "main" });
 	const lists = afterOpen.ok ? afterOpen.output.lists : {};
 	check(
 		"a group carried to Open leaves Pinned whole and stands last in Open",
 		[toOpen.ok, lists["pinned"]?.some((entry) => entry.id === groupId), lists["workspace"]?.at(-1)?.id],
 		[true, false, groupId],
 	);
-	await main.send(PlaceTabCommand, {
+	await main.send(places.tabPlacing.placeTab, {
 		at: askAt("main"),
 		id: "chat-b",
 		place: { list: "workspace", groupId, before: null },
 	});
-	const intoChat = await main.send(PlaceGroupCommand, {
+	const intoChat = await main.send(places.tabPlacing.placeGroup, {
 		window: "main",
 		id: groupId,
 		place: { list: "chat-a", before: null },

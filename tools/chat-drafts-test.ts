@@ -3,17 +3,8 @@ import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type { AssistantPort, AssistantSetup } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
-import {
-	AttachFilesCommand,
-	ChooseClaudeOptionCommand,
-	ChooseProviderCommand,
-	ClaudeOptionsQuery,
-	DraftAttachmentsQuery,
-	HoldDraftTextCommand,
-	OpenChatDraftCommand,
-	SendMessageCommand,
-} from "../plugins/chat/data/assistant/index.ts";
+import { assistant as assistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { assistant } from "../plugins/chat/data/assistant/index.ts";
 import { portAssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/port.gateway.ts";
 import { PrivateFolderAttachmentFilesGateway } from "../plugins/chat/data/assistant/gateways/attachment-files/private-folder.gateway.ts";
 import { ShelfChatDraftsGateway } from "../plugins/chat/data/assistant/gateways/chat-drafts/shelf.gateway.ts";
@@ -123,11 +114,13 @@ function chatServerOver(shelf: TauriChatDraftShelf): Runtime {
 	);
 	return runtime()
 		.modules(
-			AssistantModule({ injects: oneChatParts({
-				...portAssistantParts(port, attachmentFiles),
-				claudeOptions: new CellClaudeOptionsGateway(claudeOptionsCell()),
-				chatDrafts: new ShelfChatDraftsGateway(shelf, port),
-			}) }),
+			assistantModule({
+				injects: oneChatParts({
+					...portAssistantParts(port, attachmentFiles),
+					claudeOptions: new CellClaudeOptionsGateway(claudeOptionsCell()),
+					chatDrafts: new ShelfChatDraftsGateway(shelf, port),
+				}),
+			}),
 		)
 		.start({
 			platform: "browser",
@@ -144,9 +137,9 @@ interface ComposerSeen {
 }
 
 async function opened(server: Runtime, chatId: string): Promise<ComposerSeen> {
-	const draft = await server.send(OpenChatDraftCommand, { chat: chatId });
-	const chips = await server.send(DraftAttachmentsQuery, { chat: null });
-	const options = await server.send(ClaudeOptionsQuery, { chat: null });
+	const draft = await server.send(assistant.composer.openChatDraft, { chat: chatId });
+	const chips = await server.send(assistant.composer.draftAttachments, { chat: null });
+	const options = await server.send(assistant.agent.claudeOptions, { chat: null });
 	return {
 		said: draft.ok ? draft.output.said : null,
 		files: chips.ok ? chips.output.map(({ name }) => name) : [],
@@ -157,11 +150,11 @@ async function opened(server: Runtime, chatId: string): Promise<ComposerSeen> {
 const firstShelf = await readShelf();
 const frame = chatServerOver(firstShelf);
 await opened(frame, DAILY);
-await frame.send(AttachFilesCommand, { chat: null, files: [new File([PNG], "shot.png")] });
-await frame.send(HoldDraftTextCommand, { chat: null, said: TYPED });
-await frame.send(ChooseClaudeOptionCommand, { chat: null, option: { effort: "high" } });
+await frame.send(assistant.composer.attachFiles, { chat: null, files: [new File([PNG], "shot.png")] });
+await frame.send(assistant.composer.holdDraftText, { chat: null, said: TYPED });
+await frame.send(assistant.agent.chooseClaudeOption, { chat: null, option: { effort: "high" } });
 const inOther = await opened(frame, OTHER);
-await frame.send(ChooseClaudeOptionCommand, { chat: null, option: { effort: "low" } });
+await frame.send(assistant.agent.chooseClaudeOption, { chat: null, option: { effort: "low" } });
 check("another chat opens with an empty composer and none of Daily's files", [inOther.said, inOther.files], ["", []]);
 check("coming back to Daily brings its text, its image and its effort", await opened(frame, DAILY), {
 	said: TYPED,
@@ -213,15 +206,15 @@ check("and the other chat keeps its own effort", (await opened(restarted, OTHER)
 
 const lateComposer = chatServerOver(restartedShelf);
 await opened(lateComposer, DAILY);
-await lateComposer.send(HoldDraftTextCommand, { chat: null, said: "" });
+await lateComposer.send(assistant.composer.holdDraftText, { chat: null, said: "" });
 check(
 	"an empty hold from a composer that has not shown the text yet leaves the kept text alone",
 	restartedShelf.draftOf(DAILY)?.said,
 	TYPED,
 );
-await lateComposer.send(HoldDraftTextCommand, { chat: null, said: TYPED });
-await lateComposer.send(SendMessageCommand, { chat: null, said: TYPED });
-await lateComposer.send(HoldDraftTextCommand, { chat: null, said: "" });
+await lateComposer.send(assistant.composer.holdDraftText, { chat: null, said: TYPED });
+await lateComposer.send(assistant.composer.sendMessage, { chat: null, said: TYPED });
+await lateComposer.send(assistant.composer.holdDraftText, { chat: null, said: "" });
 await restartedShelf.flush();
 check(
 	"sending empties the draft: no text, no files kept, the image sent",
@@ -237,18 +230,18 @@ check(
 const NOTE = "e4a1b2c3-0d5f-4a6b-8c7d-9e0f1a2b3c4d";
 const noteFrame = chatServerOver(restartedShelf);
 await opened(noteFrame, NOTE);
-await noteFrame.send(HoldDraftTextCommand, { chat: null, said: "a short note" });
+await noteFrame.send(assistant.composer.holdDraftText, { chat: null, said: "a short note" });
 const noteAgain = chatServerOver(restartedShelf);
 await opened(noteAgain, NOTE);
-await noteAgain.send(HoldDraftTextCommand, { chat: null, said: "a short note" });
-await noteAgain.send(HoldDraftTextCommand, { chat: null, said: "" });
+await noteAgain.send(assistant.composer.holdDraftText, { chat: null, said: "a short note" });
+await noteAgain.send(assistant.composer.holdDraftText, { chat: null, said: "" });
 check("text deleted right after it was put back is deleted for good", restartedShelf.draftOf(NOTE)?.said ?? "", "");
 
 const providerFrame = chatServerOver(restartedShelf);
 await opened(providerFrame, DAILY);
-await providerFrame.send(ChooseProviderCommand, { chat: null, id: "codex" });
+await providerFrame.send(assistant.agent.chooseProvider, { chat: null, id: "codex" });
 await opened(providerFrame, OTHER);
-await providerFrame.send(ChooseProviderCommand, { chat: null, id: "claude-code" });
+await providerFrame.send(assistant.agent.chooseProvider, { chat: null, id: "claude-code" });
 await opened(providerFrame, DAILY);
 const dailyProvider = chosen.provider;
 await restartedShelf.flush();
@@ -704,7 +697,7 @@ seeded.keep(DAILY, draftWith("with a picture"));
 await seeded.flush();
 unreadDisk.failReadsOnce.add(`chat/drafts/${DAILY}/${SHOT_ID}.bin`);
 const unreadShelf = await TauriChatDraftShelf.read(unreadAt([150]));
-const openedUnread = await chatServerOver(unreadShelf).send(OpenChatDraftCommand, { chat: DAILY });
+const openedUnread = await chatServerOver(unreadShelf).send(assistant.composer.openChatDraft, { chat: DAILY });
 const noticeOnOpen = openedUnread.ok && openedUnread.output.notice !== null;
 const notice = unreadShelf.problemOf(DAILY);
 unreadShelf.keep(DAILY, {

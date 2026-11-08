@@ -2,11 +2,24 @@ import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
 import { cardOf } from "../../shared/lib/task-cards.js";
 import { finderOfRef } from "../../shared/lib/task-refs.js";
-import { ContinueAskSchema, SendBackAskSchema, TaskAskSchema, UndeliveredAskSchema } from "../../shared/schema/task-asks.schema.js";
+import {
+	ContinueAskSchema,
+	SendBackAskSchema,
+	TaskAskSchema,
+	UndeliveredAskSchema,
+} from "../../shared/schema/task-asks.schema.js";
 import { ContinuedSchema, TaskCardSchema } from "../../shared/schema/task-view.schema.js";
-import { acceptedStep, continueMessageOf, continuedStep, keptStep, sentBackMessageOf, sentBackStep, undeliveredStep } from "./lib/person-edits.js";
+import {
+	acceptedStep,
+	continueMessageOf,
+	continuedStep,
+	keptStep,
+	sentBackMessageOf,
+	sentBackStep,
+	undeliveredStep,
+} from "./lib/person-edits.js";
 
-export const AcceptTaskCommand = command("accept-task")
+export const acceptTask = command()
 	.public()
 	.input(TaskAskSchema)
 	.output(TaskCardSchema)
@@ -17,7 +30,7 @@ export const AcceptTaskCommand = command("accept-task")
 		return changed.ok ? cardOf(changed.board, changed.task, now) : refuse(changed.refusal);
 	});
 
-export const KeepTaskCommand = command("keep-task")
+export const keepTask = command()
 	.public()
 	.input(TaskAskSchema)
 	.output(TaskCardSchema)
@@ -28,7 +41,7 @@ export const KeepTaskCommand = command("keep-task")
 		return changed.ok ? cardOf(changed.board, changed.task, now) : refuse(changed.refusal);
 	});
 
-export const SendBackTaskCommand = command("send-back-task")
+export const sendBackTask = command()
 	.public()
 	.input(SendBackAskSchema)
 	.output(ContinuedSchema)
@@ -46,7 +59,7 @@ export const SendBackTaskCommand = command("send-back-task")
 		};
 	});
 
-export const ContinueTaskCommand = command("continue-task")
+export const continueTask = command()
 	.public()
 	.input(ContinueAskSchema)
 	.output(ContinuedSchema)
@@ -64,7 +77,7 @@ export const ContinueTaskCommand = command("continue-task")
 		};
 	});
 
-export const UndeliveredTaskCommand = command("undelivered-task")
+export const undeliveredTask = command()
 	.public()
 	.input(UndeliveredAskSchema)
 	.output(TaskCardSchema)

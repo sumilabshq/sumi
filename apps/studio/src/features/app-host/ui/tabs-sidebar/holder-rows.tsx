@@ -1,7 +1,7 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { FoldTabCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import { FoldBox } from "../fold-box/fold-box.js";
 import type { RowFold } from "../tab-row/fold-chevron.js";
 import { TabRow } from "../tab-row/tab-row.js";
@@ -16,7 +16,7 @@ export function HolderRows({
 	renaming,
 	badge = null,
 }: HolderEntryProps): ReactElement {
-	const foldTab = useCommand(FoldTabCommand);
+	const foldTab = useCommand(appHost.groups.foldTab);
 	const isFolded = holder.isFolded ?? false;
 	const fold: RowFold | null =
 		children.length === 0 ? null : { isFolded, onToggle: () => void foldTab.run({ id: holder.tab.id }) };

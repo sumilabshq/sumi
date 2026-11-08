@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { ContextMenuGroup, ContextMenuSeparator } from "@widgetarium/kit";
-import { CloseTabCommand, CreateGroupCommand, PinTabCommand, SectionListSchema } from "@widgetarium/app-host";
+import { SectionListSchema, appHost } from "@widgetarium/app-host";
 import { POINTER_LINE } from "../../lib/menu-look/menu-look.js";
 import { groupsOfList } from "../../lib/tabs-sidebar/sidebar-groups.js";
 import { AddToEssentialsItem } from "./add-to-essentials-item.js";
@@ -18,9 +18,9 @@ export function TabItems({
 	onRename,
 	onGroupMade,
 }: PointerMenuProps & { readonly pointed: Extract<Pointed, { kind: "tab" }> }): ReactElement {
-	const pinTab = useCommand(PinTabCommand);
-	const newGroup = useCommand(CreateGroupCommand);
-	const closeTab = useCommand(CloseTabCommand);
+	const pinTab = useCommand(appHost.tabActions.pinTab);
+	const newGroup = useCommand(appHost.groups.createGroup);
+	const closeTab = useCommand(appHost.tabActions.closeTab);
 	const isPinned = pointed.list === PINNED_LIST;
 	const groups = groupsOfList(sidebar, pointed.list).filter((group) => group.id !== pointed.groupId);
 	const groupWithTab = async (): Promise<void> => {

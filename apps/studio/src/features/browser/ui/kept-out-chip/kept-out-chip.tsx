@@ -2,14 +2,14 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { Popover } from "@widgetarium/kit";
-import { SiteAccessQuery } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { SiteAccessPanel } from "../site-menu/site-access-panel.js";
 import { KeptOutPress } from "./kept-out-press.js";
 
 export function KeptOutChip(): ReactElement | null {
 	const [isOpen, setIsOpen] = useState(false);
-	const { shown, isKeptOut } = useQuery(SiteAccessQuery, { heldTabId: useHeldTab() }).data;
+	const { shown, isKeptOut } = useQuery(browser.sites.siteAccess, { heldTabId: useHeldTab() }).data;
 
 	if (shown === null || !isKeptOut) {
 		return null;

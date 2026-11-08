@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefCallback } from "react";
-import { OpenWebPageCommand, WebPageQuery } from "@sumi/contract";
+import { webPage } from "@sumi/contract";
 import type { WebPage } from "@sumi/contract";
 import type { Answer } from "@widgetarium/data-framework";
 import { useRuntime, useOptionalQuery } from "@widgetarium/data-framework";
@@ -20,7 +20,7 @@ interface AddressOpening {
 }
 
 export function useWebPage(tabId: string, address: string, onNavigated: (url: string) => void): WebPageControls {
-	const read = useOptionalQuery(WebPageQuery, { tab: tabId });
+	const read = useOptionalQuery(webPage.pages.webPage, { tab: tabId });
 	const heldPage = read.isLoading ? undefined : read.data;
 	const [refusal, showRefusal] = useRefusal();
 	useOpensAddress({ tabId, address, heldPage, showRefusal });
@@ -48,7 +48,7 @@ function useOpensAddress({ tabId, address, heldPage, showRefusal }: AddressOpeni
 			return;
 		}
 
-		void shell.send(OpenWebPageCommand, { tab: tabId, url: address }).then(showRefusal);
+		void shell.send(webPage.pages.openWebPage, { tab: tabId, url: address }).then(showRefusal);
 	}, [shell, tabId, address, isRead, showRefusal]);
 }
 

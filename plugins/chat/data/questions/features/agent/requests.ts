@@ -1,12 +1,27 @@
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query } from "#module";
 import { answersText } from "../../shared/lib/answer-text.js";
-import { deliverableIn, neededWithdrawn, questionsDelivered, questionsPosted } from "../../shared/lib/question-moves.js";
-import { ChangedCountSchema, ChatQuestionsAskSchema, DeliverQuestionsAskSchema, DeliveredSchema, PostQuestionsAskSchema, PostedSchema, QuestionSchema, QuestionsAskSchema, WaitingSchema } from "../../shared/schema/question.schema.js";
+import {
+	deliverableIn,
+	neededWithdrawn,
+	questionsDelivered,
+	questionsPosted,
+} from "../../shared/lib/question-moves.js";
+import {
+	ChangedCountSchema,
+	ChatQuestionsAskSchema,
+	DeliverQuestionsAskSchema,
+	DeliveredSchema,
+	PostQuestionsAskSchema,
+	PostedSchema,
+	QuestionSchema,
+	QuestionsAskSchema,
+	WaitingSchema,
+} from "../../shared/schema/question.schema.js";
 import type { Question } from "../../shared/schema/question.schema.js";
-import { ChatQuestionsQuery } from "../dock/requests.js";
+import { chatQuestions } from "../dock/requests.js";
 
-export const PostQuestionsCommand = command("post-questions")
+export const postQuestions = command()
 	.public()
 	.input(PostQuestionsAskSchema)
 	.output(PostedSchema)
@@ -17,7 +32,7 @@ export const PostQuestionsCommand = command("post-questions")
 			(held) => questionsPosted(held, ask, Date.now()),
 			`post ${ask.questions.length} ${ask.need}`,
 		);
-		invalidate(ChatQuestionsQuery);
+		invalidate(chatQuestions);
 
 		if (!changed.ok) {
 			return refuse(changed.refusal);
@@ -28,14 +43,14 @@ export const PostQuestionsCommand = command("post-questions")
 		};
 	});
 
-export const QuestionsQuery = query("questions")
+export const questions = query()
 	.public()
 	.input(QuestionsAskSchema)
 	.output(QuestionSchema.array())
 	.settlesNow()
 	.handle(({ chat, ids }, { questions }) => questions.questionsOf(chat).filter(({ id }) => ids.includes(id)));
 
-export const IsWaitingOnPersonQuery = query("is-waiting-on-person")
+export const isWaitingOnPerson = query()
 	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(WaitingSchema)
@@ -44,7 +59,7 @@ export const IsWaitingOnPersonQuery = query("is-waiting-on-person")
 		isWaiting: questions.questionsOf(chat).some(({ need, state }) => need === "needed" && state === "open"),
 	}));
 
-export const DeliverQuestionsCommand = command("deliver-questions")
+export const deliverQuestions = command()
 	.public()
 	.input(DeliverQuestionsAskSchema)
 	.output(DeliveredSchema)
@@ -61,7 +76,7 @@ export const DeliverQuestionsCommand = command("deliver-questions")
 			},
 			ask.ids === null ? "deliver settled optional" : `deliver ${ask.ids.join(", ")}`,
 		);
-		invalidate(ChatQuestionsQuery);
+		invalidate(chatQuestions);
 
 		if (!changed.ok) {
 			return refuse(changed.refusal);
@@ -73,7 +88,7 @@ export const DeliverQuestionsCommand = command("deliver-questions")
 		};
 	});
 
-export const WithdrawNeededCommand = command("withdraw-needed")
+export const withdrawNeeded = command()
 	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(ChangedCountSchema)
@@ -90,6 +105,6 @@ export const WithdrawNeededCommand = command("withdraw-needed")
 			},
 			"turn ended → withdraw needed",
 		);
-		invalidate(ChatQuestionsQuery);
+		invalidate(chatQuestions);
 		return changed.ok ? { changed: counted.open } : refuse(changed.refusal);
 	});

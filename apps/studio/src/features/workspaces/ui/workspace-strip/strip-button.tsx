@@ -4,10 +4,10 @@ import { useCommand } from "@widgetarium/data-framework";
 import { IconButton, tooltipMarks } from "@widgetarium/kit";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 import type { WorkspaceRow } from "@widgetarium/workspaces";
-import { OpenWorkspaceCommand } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 
 export const StripButton = memo(function StripButton({ row }: { readonly row: WorkspaceRow }): ReactElement {
-	const openWorkspace = useCommand(OpenWorkspaceCommand);
+	const openWorkspace = useCommand(workspaces.workspaces.openWorkspace);
 	return (
 		<IconButton
 			variant="ghost"

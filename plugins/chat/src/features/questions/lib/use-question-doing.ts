@@ -1,5 +1,5 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { AnswerQuestionCommand, ReopenQuestionCommand, SkipQuestionsCommand } from "@sumi/contract";
+import { questions } from "@sumi/contract";
 import { answerSettled } from "../../../shared/lib/answer-settled.js";
 import type { Report } from "../../../shared/lib/failure-line.js";
 
@@ -14,9 +14,9 @@ const NOT_SKIPPED = "the question was not skipped";
 const NOT_REOPENED = "the answer was not undone";
 
 export function useQuestionDoing(chat: string, report: Report): QuestionDoing {
-	const answer = useCommand(AnswerQuestionCommand);
-	const skip = useCommand(SkipQuestionsCommand);
-	const reopen = useCommand(ReopenQuestionCommand);
+	const answer = useCommand(questions.dock.answerQuestion);
+	const skip = useCommand(questions.dock.skipQuestions);
+	const reopen = useCommand(questions.dock.reopenQuestion);
 	return {
 		answer: (id, picked, own) =>
 			void report(answerSettled(answer.run({ chat, id, picked: [...picked], own })), NOT_ANSWERED),

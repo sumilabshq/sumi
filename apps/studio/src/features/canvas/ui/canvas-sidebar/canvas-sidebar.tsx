@@ -1,7 +1,7 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Slot, useQuery } from "@widgetarium/data-framework";
-import { SidebarQuery } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { SIDEBAR_LABEL } from "../../lib/sidebar-label.js";
 import { SIDEBAR_HAIRLINE_PX } from "../../lib/sidebar-hairline.js";
 import { SidebarEdge } from "../sidebar-edge/sidebar-edge.js";
@@ -16,7 +16,7 @@ const SIDEBAR =
 const SHUT = "cv:invisible cv:absolute cv:inset-y-0 cv:left-0 cv:opacity-0";
 
 export function CanvasSidebar({ top, bottom }: CanvasSidebarProps): ReactElement {
-	const { isOpen, px, keptBesidePx } = useQuery(SidebarQuery).data;
+	const { isOpen, px, keptBesidePx } = useQuery(canvas.layers.sidebar).data;
 	return (
 		<>
 			<aside

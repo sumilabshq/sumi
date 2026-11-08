@@ -1,7 +1,7 @@
-import { AppTabQuery } from "@sumi/contract";
+import { places } from "@sumi/contract";
 import type { FrameServing, WindowOffers } from "@sumi/sumi-host-plugin";
 import type { Runtime } from "@widgetarium/data-framework";
-import { WebPageModule } from "@widgetarium/web-page/module";
+import { webPage } from "@widgetarium/web-page/module";
 import type { AppTabs, NativeWebPages, WebPageConfig } from "@widgetarium/web-page/module";
 import { nativeWebPagesOver } from "./native-web-pages.js";
 
@@ -12,7 +12,7 @@ const NOT_CLOSED = "[browser-page] tab {tab}: its web page was left open on fram
 export function webPageServingOf({ platform, windowApp }: ServingOffers): FrameServing {
 	const nativePages = platform === "tauri" ? nativeWebPagesOver(windowApp) : null;
 	return {
-		module: WebPageModule(webPageConfigOf(appTabsOver(windowApp), nativePages)),
+		module: webPage(webPageConfigOf(appTabsOver(windowApp), nativePages)),
 		frameClosed: (tabId) => closeLeftPage(nativePages, tabId),
 	};
 }
@@ -35,7 +35,7 @@ function webPageConfigOf(appTabs: AppTabs, nativePages: NativeWebPages | null): 
 function appTabsOver(windowApp: Runtime): AppTabs {
 	return {
 		appOfTab: async (tab) => {
-			const answer = await windowApp.send(AppTabQuery, { id: tab });
+			const answer = await windowApp.send(places.tabFacts.appTab, { id: tab });
 			return answer.ok ? answer.output.app : null;
 		},
 	};

@@ -1,6 +1,6 @@
 import { Repeatable, deny, guard } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { ThemeChangedEvent } from "../../gateways/theme/theme.events.js";
+import { themeChanged } from "../../gateways/theme/theme.events.js";
 import { ChooseThemeInputSchema, ThemeSchema } from "../../shared/schema/theme.schema.js";
 import { schemeOf } from "./lib/scheme.js";
 
@@ -12,7 +12,7 @@ export const StudioCallerGuard = guard().handle(({ context }) => {
 	}
 });
 
-export const ThemeQuery = query("theme")
+export const theme = query()
 	.public()
 	.output(ThemeSchema)
 	.handle((_input, { theme }) => {
@@ -23,13 +23,13 @@ export const ThemeQuery = query("theme")
 		};
 	});
 
-export const ChooseThemeCommand = command("choose-theme")
+export const chooseTheme = command()
 	.public()
 	.input(ChooseThemeInputSchema)
 	.idempotencyKey(Repeatable)
 	.guard(StudioCallerGuard)
-	.handle(({ choice }, { theme, invalidate }) => {
-		const was = theme.choice();
+	.handle(({ choice }, { theme: keptTheme, invalidate }) => {
+		const was = keptTheme.choice();
 
 		if (was === choice) {
 			console.info(`[widgetarium] theme choice ${choice} kept (already chosen)`);
@@ -37,11 +37,11 @@ export const ChooseThemeCommand = command("choose-theme")
 		}
 
 		const reason = `theme choice ${was} → ${choice} (chosen in the studio)`;
-		theme.saveChoice(choice, reason);
-		invalidate(ThemeQuery);
+		keptTheme.saveChoice(choice, reason);
+		invalidate(theme);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const RereadThemeSubscriber = subscriber(ThemeChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(ThemeQuery);
+export const rereadTheme = subscriber(themeChanged).handle((_input, { invalidate }) => {
+	invalidate(theme);
 });

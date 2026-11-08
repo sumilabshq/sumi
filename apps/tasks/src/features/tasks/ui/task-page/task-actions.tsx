@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { OpenLinkCommand } from "@sumi/contract";
+import { places } from "@sumi/contract";
 import { useCommand } from "@widgetarium/data-framework";
 import { useShowsHeaderActions } from "../../../../sumi/header-actions.js";
 import { useSumiTab } from "../../../../sumi/sumi-tab.js";
@@ -13,7 +13,7 @@ const OPEN_CHAT = "Open chat";
 
 export function TaskActions({ owner }: TaskActionsProps): ReactElement | null {
 	const tab = useSumiTab();
-	const openLink = useCommand(OpenLinkCommand);
+	const openLink = useCommand(places.tabFacts.openLink);
 	useShowsHeaderActions(
 		owner === null
 			? []

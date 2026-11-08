@@ -1,5 +1,5 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { ChangeQueueCommand, SendMessageCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { answerSettled } from "../../../shared/lib/answer-settled.js";
 import type { Report } from "../../../shared/lib/failure-line.js";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
@@ -18,8 +18,8 @@ const NOT_SAVED = "the edited message was not saved";
 
 export function useQueueActions(report: Report): QueueActions {
 	const chat = useChatKey();
-	const change = useCommand(ChangeQueueCommand);
-	const sendMessage = useCommand(SendMessageCommand);
+	const change = useCommand(assistant.chat.changeQueue);
+	const sendMessage = useCommand(assistant.composer.sendMessage);
 	return {
 		remove: (id) =>
 			void report(

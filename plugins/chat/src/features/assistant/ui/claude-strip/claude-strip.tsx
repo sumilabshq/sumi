@@ -6,14 +6,14 @@ import { ClaudeOptionButtons } from "./claude-option-buttons.js";
 import { FolderButton } from "./folder-button.js";
 import { ModelButton } from "./model-button.js";
 import { UsageButton } from "./usage-button.js";
-import { AgentSetupQuery, ClaudeOptionsQuery, WorkingFoldersQuery } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export function ClaudeStrip({ isEmpty }: { readonly isEmpty: boolean }): ReactElement {
 	const chat = useChatKey();
-	const { data: setup } = useQuery(AgentSetupQuery, { chat });
-	const { data: options } = useQuery(ClaudeOptionsQuery, { chat });
-	const folders = useOptionalQuery(WorkingFoldersQuery, { chat }).data ?? null;
+	const { data: setup } = useQuery(assistant.agent.agentSetup, { chat });
+	const { data: options } = useQuery(assistant.agent.claudeOptions, { chat });
+	const folders = useOptionalQuery(assistant.agent.workingFolders, { chat }).data ?? null;
 	const claude = shownClaudeOptions(setup, options);
 	const modelButton = <ModelButton setup={setup} claude={claude} />;
 	return (

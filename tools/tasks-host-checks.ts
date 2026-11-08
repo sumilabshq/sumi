@@ -6,11 +6,10 @@ import {
 	EditTaskAskSchema,
 	MarkStepAskSchema,
 	MoveTaskAskSchema,
-	TaskQuery,
-	TasksModule as TasksContract,
+	tasks as tasksContract,
 } from "../packages/domain/tasks/generated/contract.ts";
 import type { TaskView } from "../packages/domain/tasks/generated/contract.ts";
-import { TasksModule } from "../packages/domain/tasks/module.ts";
+import { tasks as tasksModule } from "../packages/domain/tasks/module.ts";
 import { FixedClockGateway } from "../packages/domain/tasks/gateways/clock/clock.gateway.ts";
 import { MemoryTasksGateway } from "../packages/domain/tasks/gateways/tasks/memory.gateway.ts";
 import { runAgentTool } from "../apps/tauri/src/agent/run-agent-tool.ts";
@@ -55,14 +54,16 @@ function tasksApp(): Runtime {
 	const link = localTransport();
 	link.serve(
 		runtime()
-			.modules(TasksModule({ injects: { tasks: new MemoryTasksGateway(), clock: new FixedClockGateway(START) } }))
+			.modules(tasksModule({ injects: { tasks: new MemoryTasksGateway(), clock: new FixedClockGateway(START) } }))
 			.start({ platform: "server", env: {} }),
 	);
-	return runtime().imports(TasksContract({ over: link })).start();
+	return runtime()
+		.imports(tasksContract({ over: link }))
+		.start();
 }
 
 async function viewOf(tasks: Runtime, task: string): Promise<TaskView> {
-	const read = await tasks.send(TaskQuery, { task });
+	const read = await tasks.send(tasksContract.board.task, { task });
 
 	if (!read.ok) {
 		throw new Error(read.reason);

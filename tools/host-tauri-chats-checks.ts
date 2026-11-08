@@ -3,19 +3,14 @@ import { chatSessionLinkOf } from "../apps/tauri/src/assistant/chat-session-link
 import type { RunAnswer, TurnRun } from "../apps/tauri/src/assistant/turn-run.ts";
 import { readChatLogs } from "../apps/tauri/src/chat/tauri-chat-history.ts";
 import { focusedChatPortOf } from "../apps/studio/src/chats-column/focused-chat.ts";
-import { LayoutModule } from "../packages/state/layout/module.ts";
+import { layout as layoutModule } from "../packages/state/layout/module.ts";
 import { partsOf } from "./layout-rules-checks.ts";
-import { ShowChatInPaneCommand } from "../packages/state/layout/generated/contract.ts";
+import { layout } from "../packages/state/layout/generated/contract.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import {
-	ChatRecordsQuery,
-	CreateChatCommand,
-	SetWorkspaceIconCommand,
-	WorkspacesQuery,
-} from "../packages/domain/workspaces/generated/contract.ts";
-import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
+import { workspaces as workspacesContract } from "../packages/domain/workspaces/generated/contract.ts";
+import { workspaces as workspacesModule } from "../packages/domain/workspaces/module.ts";
 import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
@@ -23,7 +18,7 @@ import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.t
 import type { Doc } from "./host-tauri-fake-store.ts";
 import { placesOver } from "./places-fixture.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { MarkTabSeenCommand } from "../plugins/apps/data/places/generated/contract.ts";
+import { places } from "../plugins/apps/data/places/generated/contract.ts";
 
 interface HeldRun {
 	readonly run: TurnRun;
@@ -58,15 +53,15 @@ function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 		parts,
 		marks,
 		started: runtime()
-			.modules(LayoutModule({ injects: { ...partsOf() } }), WorkspacesModule({ injects: parts }))
+			.modules(layoutModule({ injects: { ...partsOf() } }), workspacesModule({ injects: parts }))
 			.imports(placesOver(tabs))
 			.start(),
 	};
 }
 
 async function firstChatIdIn({ started }: TauriWorkspaces): Promise<string | undefined> {
-	await waitFor(() => started.routes.readNow(ChatRecordsQuery) !== null);
-	const answer = await started.send(ChatRecordsQuery);
+	await waitFor(() => started.routes.readNow(workspacesContract.chats.chatRecords) !== null);
+	const answer = await started.send(workspacesContract.chats.chatRecords);
 	return answer.ok ? [...answer.output.chats].sort((one, other) => other.lastAt - one.lastAt)[0]?.id : undefined;
 }
 
@@ -102,7 +97,7 @@ async function perChatChecks(): Promise<void> {
 		},
 	);
 	const firstId = (await firstChatIdIn(workspaces)) ?? "";
-	await quietly(() => workspaces.started.send(ShowChatInPaneCommand, { chatId: firstId, paneId: null }));
+	await quietly(() => workspaces.started.send(layout.paneTabs.showChatInPane, { chatId: firstId, paneId: null }));
 	await waitFor(() => focusedChat.now()?.id === firstId);
 	await quietly(async () => {
 		await (await sessions.shownSession()).send("Plan the release");
@@ -111,9 +106,9 @@ async function perChatChecks(): Promise<void> {
 	check("a first ask names the chat", focusedChat.now()?.title, "Plan the release");
 	check("and marks it running", markOf(workspaces, firstId), "running");
 
-	const made = await quietly(() => workspaces.started.send(CreateChatCommand, { title: null }));
+	const made = await quietly(() => workspaces.started.send(workspacesContract.chats.createChat, { title: null }));
 	const secondId = made.answer.ok ? made.answer.output.id : "";
-	await quietly(() => workspaces.started.send(ShowChatInPaneCommand, { chatId: secondId, paneId: null }));
+	await quietly(() => workspaces.started.send(layout.paneTabs.showChatInPane, { chatId: secondId, paneId: null }));
 	check("a new chat shown in the chat pane is the focused one", focusedChat.now()?.id, secondId);
 	await waitFor(() => sessions.now().turns.length === 0);
 	check("a new chat shows its own empty conversation", sessions.now().turns.length, 0);
@@ -125,8 +120,8 @@ async function perChatChecks(): Promise<void> {
 	check("the shown chat is untouched by it", sessions.now().turns.length, 0);
 
 	await quietly(async () => {
-		await workspaces.started.send(ShowChatInPaneCommand, { chatId: firstId, paneId: null });
-		await workspaces.started.send(MarkTabSeenCommand, { id: firstId });
+		await workspaces.started.send(layout.paneTabs.showChatInPane, { chatId: firstId, paneId: null });
+		await workspaces.started.send(places.tabFacts.markTabSeen, { id: firstId });
 	});
 	await waitFor(() => sessions.now().turns.length === 2);
 	check(
@@ -167,8 +162,8 @@ async function legacyChatChecks(): Promise<void> {
 }
 
 function rowsIn({ started }: TauriWorkspaces): readonly { readonly id: string; readonly name: string }[] {
-	const read = started.routes.readNow(WorkspacesQuery);
-	return read === null ? [] : WorkspacesQuery.outputSchema.parse(read.output).rows;
+	const read = started.routes.readNow(workspacesContract.workspaces.workspaces);
+	return read === null ? [] : workspacesContract.workspaces.workspaces.outputSchema.parse(read.output).rows;
 }
 
 function iconsIn(fake: FakeStore): unknown {
@@ -187,7 +182,10 @@ async function workspaceLookChecks(): Promise<void> {
 		["Default", "Research"],
 	);
 	await quietly(() =>
-		workspaces.started.send(SetWorkspaceIconCommand, { id: RESEARCH.id, icon: { kind: "emoji", emoji: "🧪" } }),
+		workspaces.started.send(workspacesContract.workspaces.setWorkspaceIcon, {
+			id: RESEARCH.id,
+			icon: { kind: "emoji", emoji: "🧪" },
+		}),
 	);
 	await quietly(() =>
 		Promise.all([
@@ -204,7 +202,9 @@ async function workspaceLookChecks(): Promise<void> {
 		fake.calls.filter((call) => call.command.endsWith("rename_workspace")).map((call) => call.args["name"]),
 		["Home base"],
 	);
-	await quietly(() => workspaces.started.send(SetWorkspaceIconCommand, { id: RESEARCH.id, icon: null }));
+	await quietly(() =>
+		workspaces.started.send(workspacesContract.workspaces.setWorkspaceIcon, { id: RESEARCH.id, icon: null }),
+	);
 	check("Remove icon drops it", iconsIn(fake), {});
 }
 
@@ -252,10 +252,10 @@ async function entryOfAnotherShapeChecks(): Promise<void> {
 		await waitFor(
 			() => rowsIn(workspaces).length === 1 && workspaces.parts.chats.chats().chats.some((chat) => chat.id === "good"),
 		);
-		await workspaces.started.send(CreateChatCommand, { title: null });
-		const read = workspaces.started.routes.readNow(WorkspacesQuery);
-		const rows = read === null ? [] : WorkspacesQuery.outputSchema.parse(read.output).rows;
-		await workspaces.started.send(SetWorkspaceIconCommand, { id: DEFAULT.id, icon: null });
+		await workspaces.started.send(workspacesContract.chats.createChat, { title: null });
+		const read = workspaces.started.routes.readNow(workspacesContract.workspaces.workspaces);
+		const rows = read === null ? [] : workspacesContract.workspaces.workspaces.outputSchema.parse(read.output).rows;
+		await workspaces.started.send(workspacesContract.workspaces.setWorkspaceIcon, { id: DEFAULT.id, icon: null });
 		await logs.sessions.flush();
 		return { workspaces, logs, rows };
 	});

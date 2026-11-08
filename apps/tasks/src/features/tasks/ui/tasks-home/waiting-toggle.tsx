@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { BoardQuery } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks";
 import { useQuery } from "@widgetarium/data-framework";
 import { Count, Icon, Toggle } from "@widgetarium/kit";
 import type { TasksView } from "../../lib/use-tasks-view.js";
@@ -12,7 +12,7 @@ export interface WaitingToggleProps {
 const WAITING = "Waiting for you";
 
 export function WaitingToggle({ view }: WaitingToggleProps): ReactElement | null {
-	const { waitingForYou } = useQuery(BoardQuery, view.ask).data;
+	const { waitingForYou } = useQuery(tasks.board.board, view.ask).data;
 
 	if (waitingForYou === 0 && !view.ask.isYourTurnOnly) {
 		return null;

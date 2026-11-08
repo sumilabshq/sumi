@@ -5,7 +5,7 @@ import type { MenuOpening } from "../../lib/menu-spot.js";
 import { ChatMenu } from "../chat-menu/chat-menu.js";
 import { ModelsPane } from "./models-pane.js";
 import { ProvidersPane } from "./providers-pane.js";
-import { ChooseClaudeModelCommand, ChooseProviderCommand, OpenProvidersCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
@@ -18,9 +18,9 @@ export interface ModelMenuProps {
 export function ModelMenu({ opening, setup, claude }: ModelMenuProps): ReactElement {
 	const [browsedProviderId, setBrowsedProviderId] = useState<string | null>(null);
 	const chat = useChatKey();
-	const chooseProvider = useCommand(ChooseProviderCommand);
-	const chooseClaudeModel = useCommand(ChooseClaudeModelCommand);
-	const openProviders = useCommand(OpenProvidersCommand);
+	const chooseProvider = useCommand(assistant.agent.chooseProvider);
+	const chooseClaudeModel = useCommand(assistant.agent.chooseClaudeModel);
+	const openProviders = useCommand(assistant.agent.openProviders);
 	const shownProviderId = browsedProviderId ?? setup.chosen;
 	const closeMenu = (): void => {
 		setBrowsedProviderId(null);

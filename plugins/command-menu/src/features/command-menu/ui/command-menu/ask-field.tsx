@@ -1,7 +1,7 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { AttachFilesCommand, DraftAttachmentsQuery } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
 import { ASK_COMPOSER_MARK } from "../../lib/ask-composer-mark.js";
 import { carriedOf } from "../../lib/carried.js";
@@ -14,8 +14,8 @@ const ASK_COMPOSER_CHAT = {
 };
 
 export function AskField({ field }: { readonly field: MenuFieldAsk }): ReactElement {
-	const attachFiles = useCommand(AttachFilesCommand);
-	const { data: drafts } = useQuery(DraftAttachmentsQuery, ASK_COMPOSER_CHAT);
+	const attachFiles = useCommand(assistant.composer.attachFiles);
+	const { data: drafts } = useQuery(assistant.composer.draftAttachments, ASK_COMPOSER_CHAT);
 	const { bar: ComposerBar } = useAskComposer();
 	const isAsking = field.door === "ask";
 	return (

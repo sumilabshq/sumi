@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { OpenInSystemAppCommand } from "@sumi/contract";
+import { fileSystem } from "@sumi/contract";
 import { useTabHeader } from "@sumi/sumi-host-plugin";
 import { useRuntime } from "@widgetarium/data-framework";
 import { useFileTab } from "../../../../shared/lib/use-file-tab.js";
@@ -24,7 +24,7 @@ export function OpenInSystemAppAction({ tabId }: OpenInSystemAppActionProps): Re
 			onPress={() =>
 				path !== null &&
 				flash.run(async () => {
-					const opened = await shell.send(OpenInSystemAppCommand, { path });
+					const opened = await shell.send(fileSystem.files.openInSystemApp, { path });
 
 					if (!opened.ok) {
 						throw new Error(opened.reason);

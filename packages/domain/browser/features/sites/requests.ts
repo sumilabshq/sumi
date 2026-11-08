@@ -1,8 +1,8 @@
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { OnceAllowancesChangedEvent } from "../../gateways/once-allowances/once-allowances.events.js";
-import { PagesChangedEvent } from "../../gateways/browser-pages/browser-pages.events.js";
-import { GrantsChangedEvent } from "../../gateways/browser-grant-reads/browser-grant-reads.events.js";
+import { onceAllowancesChanged } from "../../gateways/once-allowances/once-allowances.events.js";
+import { pagesChanged } from "../../gateways/browser-pages/browser-pages.events.js";
+import { grantsChanged } from "../../gateways/browser-grant-reads/browser-grant-reads.events.js";
 import { decideBrowserAccess, isKeptOut } from "../../shared/lib/decide-browser-access.js";
 import { refuseSiteKey, siteLevelToWrite } from "../../shared/lib/grant-changes.js";
 import { effectiveGrants, isSameAllowances, onceKeptOnTabs } from "../../shared/lib/once-grants.js";
@@ -13,20 +13,19 @@ import type { SiteGrant, SiteRow } from "../../shared/schema/site-access.schema.
 
 const SET_IN_SITE_ACCESS = "set in site access";
 
-export const KeepOnceOnTabsSubscriber = subscriber(PagesChangedEvent)
-	.handle((_input, { onceAllowances, browserPages, clock }) => {
-		const was = onceAllowances.onceAllowances();
-		const kept = onceKeptOnTabs(was, browserPages.tabs(), clock.now());
+export const keepOnceOnTabs = subscriber(pagesChanged).handle((_input, { onceAllowances, browserPages, clock }) => {
+	const was = onceAllowances.onceAllowances();
+	const kept = onceKeptOnTabs(was, browserPages.tabs(), clock.now());
 
-		if (isSameAllowances(was, kept)) {
-			return;
-		}
+	if (isSameAllowances(was, kept)) {
+		return;
+	}
 
-		onceAllowances.saveOnceAllowances(kept);
-		console.debug(`[widgetarium] browser once allowances ${was.length} → ${kept.length} (a tab left the allowed host)`);
-	});
+	onceAllowances.saveOnceAllowances(kept);
+	console.debug(`[widgetarium] browser once allowances ${was.length} → ${kept.length} (a tab left the allowed host)`);
+});
 
-export const SiteAccessQuery = query("site-access")
+export const siteAccess = query()
 	.public()
 	.input(BrowserViewSchema)
 	.output(SiteAccessSchema)
@@ -46,12 +45,12 @@ export const SiteAccessQuery = query("site-access")
 		};
 	});
 
-export const SetSiteLevelCommand = command("set-site-level")
+export const setSiteLevel = command()
 	.public()
 	.input(SiteLevelSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ siteKey, level }, { browserGrants, clock, invalidate }) => {
-		invalidate(SiteAccessQuery);
+		invalidate(siteAccess);
 		const refusal = refuseSiteKey(siteKey);
 
 		if (refusal !== null) {
@@ -75,18 +74,16 @@ export const SetSiteLevelCommand = command("set-site-level")
 		console.info(`[widgetarium] site ${siteKey} ${written.change.was ?? "none"} → ${level} (${SET_IN_SITE_ACCESS})`);
 	});
 
-export const RereadSiteAccessSubscriber = subscriber(GrantsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(SiteAccessQuery);
+export const rereadSiteAccess = subscriber(grantsChanged).handle((_input, { invalidate }) => {
+	invalidate(siteAccess);
 });
 
-export const RereadSiteAccessForOnceAllowancesSubscriber = subscriber(OnceAllowancesChangedEvent).handle(
-	(_input, { invalidate }) => {
-		invalidate(SiteAccessQuery);
-	},
-);
+export const rereadSiteAccessForOnceAllowances = subscriber(onceAllowancesChanged).handle((_input, { invalidate }) => {
+	invalidate(siteAccess);
+});
 
-export const RereadSiteAccessForPagesSubscriber = subscriber(PagesChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(SiteAccessQuery);
+export const rereadSiteAccessForPages = subscriber(pagesChanged).handle((_input, { invalidate }) => {
+	invalidate(siteAccess);
 });
 
 function rowsOf(grants: readonly SiteGrant[]): readonly SiteRow[] {

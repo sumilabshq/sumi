@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { ReloadWebPageCommand, WebPageQuery } from "@sumi/contract";
+import { webPage } from "@sumi/contract";
 import { useTabHeader } from "@sumi/sumi-host-plugin";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 
@@ -10,8 +10,8 @@ export interface ReloadPageActionProps {
 
 export function ReloadPageAction({ tabId }: ReloadPageActionProps): ReactElement {
 	const { Action } = useTabHeader();
-	const page = useOptionalQuery(WebPageQuery, { tab: tabId }).data;
-	const reload = useCommand(ReloadWebPageCommand);
+	const page = useOptionalQuery(webPage.pages.webPage, { tab: tabId }).data;
+	const reload = useCommand(webPage.pages.reloadWebPage);
 	return (
 		<Action
 			label="Reload"

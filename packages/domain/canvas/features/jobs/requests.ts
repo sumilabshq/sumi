@@ -1,13 +1,13 @@
 import { PerCall } from "@widgetarium/data-framework";
 import { query, command, subscriber } from "#module";
-import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
-import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
+import { jobsChanged } from "../../gateways/agent-jobs/agent-jobs.events.js";
+import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import { JobIdSchema, JobStatusSchema } from "../../shared/schema/job.schema.js";
 import { PAGE_FIELDS, pagesNowOf } from "../../shared/lib/pages/pages-now.js";
 import { isTouching } from "../../shared/lib/view/canvas-moment.js";
 
-export const JobStatusQuery = query("job-status")
+export const jobStatus = query()
 	.public()
 	.output(JobStatusSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
@@ -28,7 +28,7 @@ export const JobStatusQuery = query("job-status")
 		};
 	});
 
-export const StopJobCommand = command("stop-job")
+export const stopJob = command()
 	.public()
 	.input(JobIdSchema)
 	.idempotencyKey(PerCall)
@@ -38,18 +38,16 @@ export const StopJobCommand = command("stop-job")
 		console.info(`[widgetarium] job ${id} of ${app} running → stopped (stop pressed)`);
 	});
 
-export const RereadJobStatusForMomentSubscriber = subscriber(CanvasMomentChangedEvent).handle(
-	({ fields }, { invalidate }) => {
-		if (isTouching(fields, PAGE_FIELDS)) {
-			invalidate(JobStatusQuery);
-		}
-	},
-);
-
-export const RereadJobStatusForDesignSubscriber = subscriber(DesignChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(JobStatusQuery);
+export const rereadJobStatusForMoment = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
+	if (isTouching(fields, PAGE_FIELDS)) {
+		invalidate(jobStatus);
+	}
 });
 
-export const RereadJobStatusSubscriber = subscriber(JobsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(JobStatusQuery);
+export const rereadJobStatusForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(jobStatus);
+});
+
+export const rereadJobStatus = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+	invalidate(jobStatus);
 });

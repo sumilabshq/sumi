@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { PlaceTabCommand } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { TabRef } from "../../lib/tab-drag/tab-ref.js";
 import { PointerItem } from "./pointer-item.js";
 
@@ -11,7 +11,7 @@ export interface AddToEssentialsItemProps {
 }
 
 export function AddToEssentialsItem({ pointed, at }: AddToEssentialsItemProps): ReactElement {
-	const placeTab = useCommand(PlaceTabCommand);
+	const placeTab = useCommand(appHost.tabs.placeTab);
 	return (
 		<PointerItem
 			icon="grid-plus"

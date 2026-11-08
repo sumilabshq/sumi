@@ -1,8 +1,8 @@
 import { runtime, localTransport, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
-import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
-import { FixtureBillingModule as RunnableFixtureBillingModule } from "../packages/domain/fixture-billing/module.ts";
+import { fixtureBilling } from "@widgetarium/fixture-billing";
+import { fixtureBilling as RunnableFixtureBillingModule } from "../packages/domain/fixture-billing/module.ts";
 import { MemoryLedgerGateway } from "../packages/domain/fixture-billing/gateways/ledger/memory.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
 
@@ -12,16 +12,21 @@ interface Heard {
 }
 
 function clientOver(transport: RemoteTransport): Heard {
-	const client = runtime().imports(FixtureBillingModule({ over: transport })).start();
+	const client = runtime()
+		.imports(fixtureBilling({ over: transport }))
+		.start();
 	const balanceChanges = { count: 0 };
-	client.routes.watch(BalanceQuery, undefined, () => {
+	client.routes.watch(fixtureBilling.charge.balance, undefined, () => {
 		balanceChanges.count += 1;
 	});
 	return { client, balanceChanges };
 }
 
 const overLocal = localTransport();
-const notYet = await runtime().imports(FixtureBillingModule({ over: overLocal })).start().send(BalanceQuery);
+const notYet = await runtime()
+	.imports(fixtureBilling({ over: overLocal }))
+	.start()
+	.send(fixtureBilling.charge.balance);
 check(
 	"a local transport no server listens on yet answers unreachable, never throws",
 	notYet.ok ? "answered" : notYet.code,
@@ -34,7 +39,7 @@ const localServer = runtime()
 const stopServingLocal = overLocal.serve(localServer);
 const localCharger = clientOver(overLocal);
 const localWatcher = clientOver(overLocal);
-const charged = await localCharger.client.send(ChargeCommand, { amount: 7 });
+const charged = await localCharger.client.send(fixtureBilling.charge.charge, { amount: 7 });
 check("a command crosses a local transport to the server that listens on it", charged.ok, true);
 check(
 	"and the other client of the same server hears the change it did not cause",
@@ -43,7 +48,7 @@ check(
 );
 stopServingLocal();
 localServer.stop();
-const afterStop = await localCharger.client.send(BalanceQuery);
+const afterStop = await localCharger.client.send(fixtureBilling.charge.balance);
 check(
 	"a stopped adapter leaves its local transport unreachable",
 	afterStop.ok ? "answered" : afterStop.code,
@@ -59,7 +64,7 @@ const overHttp = (): RemoteTransport => orpcTransport("http://billing.test", { f
 const httpCharger = clientOver(overHttp());
 const httpWatcher = clientOver(overHttp());
 await new Promise((settled) => setTimeout(settled, 50));
-await httpCharger.client.send(ChargeCommand, { amount: 3 });
+await httpCharger.client.send(fixtureBilling.charge.charge, { amount: 3 });
 check(
 	"over oRPC the other client hears the change through the changes stream",
 	await waitFor(() => httpWatcher.balanceChanges.count > 0),

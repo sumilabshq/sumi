@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { prefersReducedMotion } from "@widgetarium/kit";
-import { ChangeMenuDoorCommand } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu";
 import type { Door } from "@sumi/command-menu";
 
 export interface DoorSwitch {
@@ -34,7 +34,7 @@ interface SwitchSteps {
 const ROWS_LEAVE_MS = 100;
 
 export function useDoorSwitch({ door, resultsDoor, typed }: DoorSwitchAsk): DoorSwitch {
-	const changeDoor = useCommand(ChangeMenuDoorCommand);
+	const changeDoor = useCommand(commandMenu.opening.changeMenuDoor);
 	const pending = usePendingDoor(door, resultsDoor);
 	const afterRowsLeave = useDelayedCall(ROWS_LEAVE_MS);
 	return {

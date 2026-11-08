@@ -1,5 +1,5 @@
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import { AppPageQuery, RecordAppPageCommand, TakeActionPressCommand } from "./generated/apps.js";
+import { apps } from "./generated/apps.js";
 import type { AppAction } from "./generated/apps.js";
 
 export interface HeaderActionsFrame {
@@ -52,7 +52,7 @@ function appActionOf(action: HeaderAction): AppAction {
 }
 
 async function recordActions({ sumi, tabId }: HeaderActionsFrame, actions: AppAction[]): Promise<void> {
-	const recorded = await sumi.send(RecordAppPageCommand, { id: tabId, actions });
+	const recorded = await sumi.send(apps.pages.recordAppPage, { id: tabId, actions });
 
 	if (!recorded.ok) {
 		console.error(`[sumi] showing the actions of tab ${tabId} was refused: ${recorded.reason}`);
@@ -71,7 +71,7 @@ async function takeWaitingPresses(
 	seenPressIds: Set<string>,
 	onPress: (action: string) => void,
 ): Promise<void> {
-	const page = await frame.sumi.send(AppPageQuery, { id: frame.tabId });
+	const page = await frame.sumi.send(apps.pages.appPage, { id: frame.tabId });
 
 	if (!page.ok) {
 		console.error(`[sumi] reading the presses of tab ${frame.tabId} was refused: ${page.reason}`);
@@ -89,7 +89,7 @@ async function takePress(
 	pressId: string,
 	onPress: (action: string) => void,
 ): Promise<void> {
-	const taken = await sumi.send(TakeActionPressCommand, { id: tabId, press: pressId });
+	const taken = await sumi.send(apps.pages.takeActionPress, { id: tabId, press: pressId });
 
 	if (!taken.ok) {
 		console.info(`[sumi] press ${pressId} of tab ${tabId} not taken here: ${taken.reason}`);

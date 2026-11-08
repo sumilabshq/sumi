@@ -13,19 +13,19 @@ export const WithinLimitGuard = guard<ChargeInput>().handle(({ input }) => {
 	}
 });
 
-export const BalanceQuery = query("balance")
+export const balance = query()
 	.public()
 	.output(BalanceSchema)
 	.handle((_input, { ledger }) => ledger.balance());
 
-export const ChargeCommand = command("charge")
+export const charge = command()
 	.public()
 	.input(ChargeInputSchema)
 	.output(BalanceSchema)
 	.idempotencyKey(PerCall)
 	.guard(WithinLimitGuard)
 	.handle(({ amount }, { ledger, invalidate }) => {
-		invalidate(BalanceQuery);
+		invalidate(balance);
 		const was = ledger.balance();
 		const now = balanceAfterCharge(was, amount);
 		const reason = `ledger total ${was.total} → ${now.total}, charges ${was.charges} → ${now.charges} (charge ${amount})`;

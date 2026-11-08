@@ -48,7 +48,7 @@ export const BudgetServerModule = serverModule("budget")
 
 function handlerSource(at: number): string {
 	return `
-export const Item${at}Command = command("budget/item-${at}")
+export const Item${at}Command = command()
 	.idempotencyKey(PerCall)
 	.input(z.object({ id: z.string(), amount: z.number() }))
 	.output(z.object({ total: z.number() }));

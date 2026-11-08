@@ -1,33 +1,20 @@
-import {
-	profileRefusalsOf,
-	slotFillsOf,
-	slotReaderOf,
-	stampSlotName,
-	startOrderOf,
-} from "@widgetarium/plugin-framework";
+import { profileRefusalsOf, slotFillsOf, slotReaderOf, startOrderOf } from "@widgetarium/plugin-framework";
 import type { Plugin, ShownFill, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
 import type { ComponentType } from "react";
 import type { DeviceModule, ModuleContract, ServerRuns, ServerSideModule } from "@widgetarium/data-framework";
-import { AppsPlugin } from "@sumi/apps-plugin";
-import { ChatPlugin } from "@sumi/chat-plugin";
-import { CommandMenuPlugin } from "@sumi/command-menu-plugin";
-import { MainPlugin } from "@sumi/main-plugin";
+import { apps } from "@sumi/apps-plugin";
+import { chat } from "@sumi/chat-plugin";
+import { commandMenu } from "@sumi/command-menu-plugin";
+import { main } from "@sumi/main-plugin";
 import {
 	BackgroundModuleSchema,
-	BackgroundModulesSlot,
 	FrameModuleSchema,
-	FrameModulesSlot,
 	WindowServerModuleSchema,
-	WindowServerModulesSlot,
-	SumiHostPlugin,
+	sumiHost,
 	TabPageSchema,
-	TabPageSlot,
 	WindowLayerSchema,
-	WindowLayersSlot,
 	WindowModuleSchema,
-	WindowModulesSlot,
 	WindowProviderSchema,
-	WindowProvidersSlot,
 } from "@sumi/sumi-host-plugin";
 import type {
 	CoreOffers,
@@ -38,14 +25,14 @@ import type {
 	WindowProviderProps,
 	WindowServerOffers,
 } from "@sumi/sumi-host-plugin";
-import { BrowserPagePlugin } from "@sumi/browser-page-plugin";
-import { CodeViewerPlugin } from "@sumi/code-viewer-plugin";
-import { FilesPlugin } from "@sumi/files-plugin";
-import { HtmlViewerPlugin } from "@sumi/html-viewer-plugin";
-import { ImageViewerPlugin } from "@sumi/image-viewer-plugin";
-import { MarkdownViewerPlugin } from "@sumi/markdown-viewer-plugin";
-import { TerminalPlugin } from "@sumi/terminal-plugin";
-import { VideoViewerPlugin } from "@sumi/video-viewer-plugin";
+import { browserPage } from "@sumi/browser-page-plugin";
+import { codeViewer } from "@sumi/code-viewer-plugin";
+import { files } from "@sumi/files-plugin";
+import { htmlViewer } from "@sumi/html-viewer-plugin";
+import { imageViewer } from "@sumi/image-viewer-plugin";
+import { markdownViewer } from "@sumi/markdown-viewer-plugin";
+import { terminal } from "@sumi/terminal-plugin";
+import { videoViewer } from "@sumi/video-viewer-plugin";
 
 export type HostOffers = Omit<CoreOffers, "fillsOf">;
 
@@ -91,46 +78,40 @@ export interface ResolvedPlugins {
 }
 
 const INSTALLED_PLUGINS = [
-	SumiHostPlugin,
-	AppsPlugin,
-	CommandMenuPlugin,
-	ChatPlugin,
-	MainPlugin,
-	TerminalPlugin,
-	BrowserPagePlugin,
-	FilesPlugin,
-	MarkdownViewerPlugin,
-	CodeViewerPlugin,
-	ImageViewerPlugin,
-	VideoViewerPlugin,
-	HtmlViewerPlugin,
+	sumiHost,
+	apps,
+	commandMenu,
+	chat,
+	main,
+	terminal,
+	browserPage,
+	files,
+	markdownViewer,
+	codeViewer,
+	imageViewer,
+	videoViewer,
+	htmlViewer,
 ];
-const BACKGROUND_MODULES = stampSlotName(SumiHostPlugin.id, BackgroundModulesSlot);
-const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
-const WINDOW_MODULES = stampSlotName(SumiHostPlugin.id, WindowModulesSlot);
-const WINDOW_LAYERS = stampSlotName(SumiHostPlugin.id, WindowLayersSlot);
-const WINDOW_PROVIDERS = stampSlotName(SumiHostPlugin.id, WindowProvidersSlot);
-const FRAME_MODULES = stampSlotName(SumiHostPlugin.id, FrameModulesSlot);
-const WINDOW_SERVER_MODULES = stampSlotName(SumiHostPlugin.id, WindowServerModulesSlot);
+const BACKGROUND_MODULES = sumiHost.backgroundModules.name;
+const TAB_PAGE = sumiHost.tabPage.name;
+const WINDOW_MODULES = sumiHost.windowModules.name;
+const WINDOW_LAYERS = sumiHost.windowLayers.name;
+const WINDOW_PROVIDERS = sumiHost.windowProviders.name;
+const FRAME_MODULES = sumiHost.frameModules.name;
+const WINDOW_SERVER_MODULES = sumiHost.windowServerModules.name;
 
-const ALWAYS_ON_PLUGINS: readonly string[] = [
-	SumiHostPlugin.id,
-	AppsPlugin.id,
-	CommandMenuPlugin.id,
-	ChatPlugin.id,
-	MainPlugin.id,
-];
+const ALWAYS_ON_PLUGINS: readonly string[] = [sumiHost.id, apps.id, commandMenu.id, chat.id, main.id];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
-		TerminalPlugin.id,
-		BrowserPagePlugin.id,
-		FilesPlugin.id,
-		MarkdownViewerPlugin.id,
-		CodeViewerPlugin.id,
-		ImageViewerPlugin.id,
-		VideoViewerPlugin.id,
-		HtmlViewerPlugin.id,
+		terminal.id,
+		browserPage.id,
+		files.id,
+		markdownViewer.id,
+		codeViewer.id,
+		imageViewer.id,
+		videoViewer.id,
+		htmlViewer.id,
 	],
 };
 
@@ -164,7 +145,7 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 			return parsed.success
 				? [
 						{
-							id: `${fill.pluginId}/${fill.id}`,
+							id: `${fill.pluginId}.${fill.id}`,
 							layer: parsed.data.layer(readerOf(fill)),
 						},
 					]
@@ -175,7 +156,7 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 			return parsed.success
 				? [
 						{
-							id: `${fill.pluginId}/${fill.id}`,
+							id: `${fill.pluginId}.${fill.id}`,
 							providerOf: (offers: WindowOffers) => parsed.data.provider({ ...offers, ...readerOf(fill) }),
 						},
 					]
@@ -190,7 +171,7 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 			return parsed.success
 				? [
 						{
-							id: `${fill.pluginId}/${fill.id}`,
+							id: `${fill.pluginId}.${fill.id}`,
 							contract: parsed.data.contract,
 							servingOf: (offers: WindowOffers) => parsed.data.serving({ ...offers, ...readerOf(fill) }),
 						},
@@ -202,7 +183,7 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 			return parsed.success
 				? [
 						{
-							id: `${fill.pluginId}/${fill.id}`,
+							id: `${fill.pluginId}.${fill.id}`,
 							moduleOf: (offers: WindowServerOffers) => parsed.data.module({ ...offers, ...readerOf(fill) }),
 						},
 					]

@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { MenuDoorsQuery, ToggleCommandMenuCommand } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu";
 import { doorOfLetter } from "../../lib/menu-key-labels.js";
 
 const LETTER_CODE = /^Key([A-Z])$/;
 
 export function CommandMenuKeys(): null {
-	const { run } = useCommand(ToggleCommandMenuCommand);
-	const { doors } = useQuery(MenuDoorsQuery).data;
+	const { run } = useCommand(commandMenu.opening.toggleCommandMenu);
+	const { doors } = useQuery(commandMenu.opening.menuDoors).data;
 	useEffect(() => {
 		const pressed = (event: KeyboardEvent): void => {
 			const door = doorOfLetter(LETTER_CODE.exec(event.code)?.[1]?.toLowerCase() ?? "", doors);

@@ -1,5 +1,5 @@
 import type { Runtime } from "@widgetarium/data-framework";
-import { DeliverQuestionsCommand, IsWaitingOnPersonQuery, WithdrawNeededCommand } from "@widgetarium/questions";
+import { questions } from "@widgetarium/questions";
 
 export interface ChatQuestions {
 	answersTrailer(chatId: string): Promise<string | null>;
@@ -27,7 +27,7 @@ export function chatQuestionsOver(app: Runtime): ChatQuestions {
 }
 
 async function answersTrailer(app: Runtime, chatId: string): Promise<string | null> {
-	const answered = await app.send(DeliverQuestionsCommand, { chat: chatId, ids: null });
+	const answered = await app.send(questions.agent.deliverQuestions, { chat: chatId, ids: null });
 
 	if (!answered.ok) {
 		console.warn(NOT_DELIVERED.replace("{chat}", chatId).replace("{reason}", answered.reason));
@@ -38,7 +38,7 @@ async function answersTrailer(app: Runtime, chatId: string): Promise<string | nu
 }
 
 async function isWaitingOnPerson(app: Runtime, chatId: string): Promise<boolean> {
-	const answered = await app.send(IsWaitingOnPersonQuery, { chat: chatId });
+	const answered = await app.send(questions.agent.isWaitingOnPerson, { chat: chatId });
 
 	if (!answered.ok) {
 		console.warn(NOT_READ.replace("{chat}", chatId).replace("{reason}", answered.reason));
@@ -49,7 +49,7 @@ async function isWaitingOnPerson(app: Runtime, chatId: string): Promise<boolean>
 }
 
 async function turnEnded(app: Runtime, chatId: string): Promise<void> {
-	const answered = await app.send(WithdrawNeededCommand, { chat: chatId });
+	const answered = await app.send(questions.agent.withdrawNeeded, { chat: chatId });
 
 	if (!answered.ok) {
 		console.warn(NOT_WITHDRAWN.replace("{chat}", chatId).replace("{reason}", answered.reason));

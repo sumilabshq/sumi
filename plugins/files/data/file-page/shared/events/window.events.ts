@@ -1,5 +1,5 @@
 import { event, windowEvent } from "@widgetarium/data-framework";
 
-export const WindowLeftEvent = event("window-left").from(windowEvent("blur"));
+export const windowLeft = event().from(windowEvent("blur"));
 
-export const WindowCameBackEvent = event("window-came-back").from(windowEvent("focus"));
+export const windowCameBack = event().from(windowEvent("focus"));

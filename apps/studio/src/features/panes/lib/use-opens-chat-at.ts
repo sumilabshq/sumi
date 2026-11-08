@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import type { PaneEdge } from "./pane-layout.js";
-import { ResizePaneSplitCommand } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout";
 
 export interface ChatOpening {
 	readonly chatPx: number;
@@ -11,7 +11,7 @@ export interface ChatOpening {
 }
 
 export function useOpensChatAt({ chatPx, edges, plateLeastPx, isChatSettled }: ChatOpening): void {
-	const resize = useCommand(ResizePaneSplitCommand);
+	const resize = useCommand(layout.panes.resizePaneSplit);
 	const isOpened = useRef(false);
 	const chatEdge = edges.find((edge) => edge.isChatEdge && edge.spanPx > 0);
 	useLayoutEffect(() => {

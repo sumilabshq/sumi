@@ -2,7 +2,7 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { ContextMenu, ContextMenuTrigger } from "@widgetarium/kit";
-import { CanOpenOwnWindowQuery, SectionListSchema, TabsSidebarQuery } from "@widgetarium/app-host";
+import { SectionListSchema, appHost } from "@widgetarium/app-host";
 import { EssentialsGrid } from "../essentials-grid/essentials-grid.js";
 import { FlipLayout } from "../flip-layout/flip-layout.js";
 import { GroupMenu } from "../group-menu/group-menu.js";
@@ -27,13 +27,13 @@ const SCROLLER =
 	"cv:-mx-1 cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:gap-px cv:overflow-y-auto cv:px-1 cv:pb-2 cv:[scrollbar-width:none]";
 
 export function TabsSidebar(): ReactElement {
-	const sidebar = useQuery(TabsSidebarQuery).data;
+	const sidebar = useQuery(appHost.tabs.tabsSidebar).data;
 	const holder = useRef<HTMLElement | null>(null);
 	const drag = useSidebarDragParts();
 	const { preview, shown, lifted } = useArrangedSidebar(drag, sidebar);
 	const { pointed, groupMenuId, openGroupMenu, onContextMenu } = usePointedMenus();
 	const { renaming, startRenaming } = useRowRenaming();
-	useDropPlacing(holder, useQuery(CanOpenOwnWindowQuery).data, drag);
+	useDropPlacing(holder, useQuery(appHost.tabs.canOpenOwnWindow).data, drag);
 	usePreviewHearsSidebar(drag, sidebar);
 	const groupHead = useGroupHead(holder, groupMenuId, sidebar);
 	const menuGroup = groupFaceOf(sidebar, groupMenuId);

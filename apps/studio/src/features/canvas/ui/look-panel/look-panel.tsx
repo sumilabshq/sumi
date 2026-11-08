@@ -1,15 +1,14 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { LookPanelQuery } from "@widgetarium/canvas";
-import { PickLookCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { LOOK_PANEL, LOOK_SAID, LOOK_TITLE } from "../../lib/look-chrome.js";
 import { LookRow } from "./look-row.js";
 import { LookUnreadable } from "./look-unreadable.js";
 
 export function LookPanel(): ReactElement | null {
-	const panel = useQuery(LookPanelQuery).data;
-	const pick = useCommand(PickLookCommand);
+	const panel = useQuery(canvas.look.lookPanel).data;
+	const pick = useCommand(canvas.look.pickLook);
 	if (panel.kind === "none") return null;
 	if (panel.kind === "unreadable") return <LookUnreadable said={panel.said} />;
 	return (

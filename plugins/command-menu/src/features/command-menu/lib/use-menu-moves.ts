@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { DoRowCommand } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu";
 import type { Intent, Results, Row } from "@sumi/command-menu";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
 import { useRowRename } from "./use-row-rename.js";
@@ -30,7 +30,7 @@ export function useMenuMoves(results: Results): MenuMoves {
 	const [pickedAt, setPickedAt] = useState(0);
 	const [isActing, setActing] = useState(false);
 	const [toast, setToast] = useState<Toast>({ message: "", isWarning: false });
-	const doRow = useCommand(DoRowCommand);
+	const doRow = useCommand(commandMenu.doing.doRow);
 	// TRADE-OFF: the assistant runs in its own app, so the view hands the text over once the chat is made
 	const askComposer = useAskComposer();
 	const rows = results.sections.flatMap((section) => section.rows);

@@ -11,6 +11,7 @@ import {
 	query,
 	useQuery,
 } from "../packages/shared/data-framework/src/index.ts";
+import { fullyNamed } from "./requests-names.ts";
 import type { AnyQuery } from "../packages/shared/data-framework/src/index.ts";
 
 const RUNS = 12;
@@ -19,8 +20,8 @@ const FRAMES_AT_MOST = 300;
 const ASYNC_DELAY_MS = 20;
 const RunSchema = z.object({ run: z.number() });
 
-const SettledNowQuery = query("probe/settled-now").settlesNow().input(RunSchema).output(z.number());
-const AsyncQuery = query("probe/async").input(RunSchema).output(z.number());
+const SettledNowQuery = fullyNamed("probe.settled-now", query()).settlesNow().input(RunSchema).output(z.number());
+const AsyncQuery = fullyNamed("probe.async", query()).input(RunSchema).output(z.number());
 
 const ProbeClientModule = clientModule("probe");
 const SettledNowQueryHandler = handler(SettledNowQuery, ProbeClientModule).handle(({ run }) => run);

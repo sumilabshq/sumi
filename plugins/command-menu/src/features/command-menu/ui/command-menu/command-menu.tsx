@@ -3,11 +3,11 @@ import type { ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "@widgetarium/data-framework";
 import { portalLayer } from "@widgetarium/kit";
-import { CommandMenuQuery } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu";
 import { OpenMenu } from "./open-menu.js";
 
 export function CommandMenu(): ReactElement | null {
-	const menu = useQuery(CommandMenuQuery).data;
+	const menu = useQuery(commandMenu.opening.commandMenu).data;
 
 	if (!menu.isOpen) {
 		return null;

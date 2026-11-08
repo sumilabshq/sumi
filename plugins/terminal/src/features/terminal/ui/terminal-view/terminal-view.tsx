@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { TerminalOutputQuery, ThemeQuery } from "@sumi/contract";
+import { terminal as terminalContract, appearance } from "@sumi/contract";
 import type { TerminalOutput } from "@sumi/contract";
 import { useRuntime, useOptionalQuery } from "@widgetarium/data-framework";
 import type { AppViewProps } from "@sumi/apps-plugin";
@@ -16,8 +16,8 @@ const EXITED_WITH = "Exited with {code}";
 export function TerminalView({ tabId }: AppViewProps): ReactElement {
 	const screen = useRef<HTMLDivElement>(null);
 	const terminal = useScreenIn(screen);
-	const read = useOptionalQuery(TerminalOutputQuery, { session: tabId });
-	const isDark = useOptionalQuery(ThemeQuery).data?.scheme === "dark";
+	const read = useOptionalQuery(terminalContract.lines.terminalOutput, { session: tabId });
+	const isDark = useOptionalQuery(appearance.theme.theme).data?.scheme === "dark";
 	const shellRefusal = useWiresShell(terminal, useRuntime("TerminalView"), tabId);
 	const failure = read.failure ?? shellRefusal;
 	useDrawsOutput(terminal, read.data);

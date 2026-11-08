@@ -1,6 +1,6 @@
 import type { HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { Runtime } from "@widgetarium/data-framework";
-import { CreateWorkspaceCommand, OpenWorkspaceCommand } from "@widgetarium/workspaces";
+import { workspaces as workspacesContract } from "@widgetarium/workspaces";
 import type { WorkspaceClient } from "./workspace-client.js";
 import type { WorkspaceEntry } from "./workspace-docs.js";
 
@@ -17,10 +17,10 @@ export function tauriWorkspaceApps({ workspaces, workspacesApp }: WorkspaceAppsA
 	return {
 		apps: async () => (await workspaces.list()).map(hostAppOf),
 		openApp: async (id) => {
-			await workspacesApp.send(OpenWorkspaceCommand, { id });
+			await workspacesApp.send(workspacesContract.workspaces.openWorkspace, { id });
 		},
 		createApp: async () => {
-			await workspacesApp.send(CreateWorkspaceCommand);
+			await workspacesApp.send(workspacesContract.workspaces.createWorkspace);
 		},
 		renameApp: (id, name) => workspaces.rename(id, name),
 	};

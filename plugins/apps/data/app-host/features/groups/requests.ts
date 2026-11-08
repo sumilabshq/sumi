@@ -1,19 +1,11 @@
 import { z } from "zod";
 import { Repeatable } from "@widgetarium/data-framework";
 import { command } from "#module";
-import {
-	CreateGroupCommand as PlacesCreateGroupCommand,
-	FoldGroupCommand as PlacesFoldGroupCommand,
-	FoldTabCommand as PlacesFoldTabCommand,
-	PlaceGroupCommand as PlacesPlaceGroupCommand,
-	RenameGroupCommand as PlacesRenameGroupCommand,
-	SetGroupHueCommand as PlacesSetGroupHueCommand,
-	UngroupCommand as PlacesUngroupCommand,
-} from "@widgetarium/places";
-import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { places } from "@widgetarium/places";
+import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { GroupFaceSchema, GroupHueSchema } from "../../shared/schema/tab-group.schema.js";
 
-export const CreateGroupCommand = command("create-group")
+export const createGroup = command()
 	.public()
 	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]).and(GroupFaceSchema))
 	.output(z.object({ id: z.string() }))
@@ -21,44 +13,44 @@ export const CreateGroupCommand = command("create-group")
 	.handle(async (asked, { send, emit, studioWindow }) => {
 		const from =
 			"list" in asked ? { kind: "list" as const, list: asked.list } : { kind: "tab" as const, tabId: asked.withTabId };
-		const created = await send(PlacesCreateGroupCommand, {
+		const created = await send(places.tabPlacing.createGroup, {
 			window: studioWindow.windowLabel(),
 			from,
 			...(asked.name === undefined ? {} : { name: asked.name }),
 			...(asked.hue === undefined ? {} : { hue: asked.hue }),
 		});
-		emit(TabsSettledEvent);
+		emit(tabsSettled);
 		return created;
 	});
 
-export const RenameGroupCommand = command("rename-group")
+export const renameGroup = command()
 	.public()
 	.input(z.object({ id: z.string(), name: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, name }, { send, emit, studioWindow }) => {
-		await send(PlacesRenameGroupCommand, { window: studioWindow.windowLabel(), id, name });
-		emit(TabsSettledEvent);
+		await send(places.tabPlacing.renameGroup, { window: studioWindow.windowLabel(), id, name });
+		emit(tabsSettled);
 	});
 
-export const SetGroupHueCommand = command("set-group-hue")
+export const setGroupHue = command()
 	.public()
 	.input(z.object({ id: z.string(), hue: GroupHueSchema.nullable() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, hue }, { send, emit, studioWindow }) => {
-		await send(PlacesSetGroupHueCommand, { window: studioWindow.windowLabel(), id, hue });
-		emit(TabsSettledEvent);
+		await send(places.tabPlacing.setGroupHue, { window: studioWindow.windowLabel(), id, hue });
+		emit(tabsSettled);
 	});
 
-export const FoldGroupCommand = command("fold-group")
+export const foldGroup = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
-		await send(PlacesFoldGroupCommand, { window: studioWindow.windowLabel(), id });
-		emit(TabsSettledEvent);
+		await send(places.tabPlacing.foldGroup, { window: studioWindow.windowLabel(), id });
+		emit(tabsSettled);
 	});
 
-export const PlaceGroupCommand = command("place-group")
+export const placeGroup = command()
 	.public()
 	.input(
 		z.object({
@@ -71,24 +63,24 @@ export const PlaceGroupCommand = command("place-group")
 	)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, to }, { send, emit, studioWindow }) => {
-		await send(PlacesPlaceGroupCommand, { window: studioWindow.windowLabel(), id, place: to });
-		emit(TabsSettledEvent);
+		await send(places.tabPlacing.placeGroup, { window: studioWindow.windowLabel(), id, place: to });
+		emit(tabsSettled);
 	});
 
-export const FoldTabCommand = command("fold-tab")
+export const foldTab = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
-		await send(PlacesFoldTabCommand, { window: studioWindow.windowLabel(), id });
-		emit(TabsSettledEvent);
+		await send(places.tabPlacing.foldTab, { window: studioWindow.windowLabel(), id });
+		emit(tabsSettled);
 	});
 
-export const UngroupCommand = command("ungroup")
+export const ungroup = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
-		await send(PlacesUngroupCommand, { window: studioWindow.windowLabel(), id });
-		emit(TabsSettledEvent);
+		await send(places.tabPlacing.ungroup, { window: studioWindow.windowLabel(), id });
+		emit(tabsSettled);
 	});

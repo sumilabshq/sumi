@@ -1,7 +1,7 @@
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { InkActivityChangedEvent } from "../../gateways/ink-activity/ink-activity.events.js";
-import { AccessAsksChangedEvent } from "../../gateways/access-asks/access-asks.events.js";
+import { inkActivityChanged } from "../../gateways/ink-activity/ink-activity.events.js";
+import { accessAsksChanged } from "../../gateways/access-asks/access-asks.events.js";
 import { BrowserGrantsGateway } from "../../gateways/browser-grants/browser-grants.gateway.js";
 import { OnceAllowancesGateway } from "../../gateways/once-allowances/once-allowances.gateway.js";
 import { onceToWrite, siteLevelToWrite } from "../../shared/lib/grant-changes.js";
@@ -20,25 +20,25 @@ interface Answering {
 const ALREADY_ANSWERED = "that question was already answered";
 const ALLOWED_WHEN_ASKED = "allowed for this site when Sumi asked";
 
-export const AccessAsksQuery = query("access-asks")
+export const accessAsks = query()
 	.public()
 	.output(AccessAsksSchema)
 	.settlesNow()
 	.handle((_input, { accessAsks }) => accessAsks.accessAsks());
 
-export const InkReadingQuery = query("ink-reading")
+export const inkReading = query()
 	.public()
 	.output(InkReadingSchema.nullable())
 	.settlesNow()
 	.handle((_input, { inkActivity }) => inkActivity.inkActivity().reading);
 
-export const AnswerAskCommand = command("answer-ask")
+export const answerAsk = command()
 	.public()
 	.input(AnswerAskSchema)
 	.idempotencyKey((input) => input.id)
-	.handle(({ id, answer }, { accessAsks, browserGrants, onceAllowances, clock, invalidate }) => {
-		invalidate(AccessAsksQuery);
-		const asked = accessAsks.accessAsks().find((ask) => ask.id === id);
+	.handle(({ id, answer }, { accessAsks: keptAccessAsks, browserGrants, onceAllowances, clock, invalidate }) => {
+		invalidate(accessAsks);
+		const asked = keptAccessAsks.accessAsks().find((ask) => ask.id === id);
 
 		if (asked === undefined) {
 			return refuse(ALREADY_ANSWERED);
@@ -58,11 +58,11 @@ export const AnswerAskCommand = command("answer-ask")
 			allowOnce(asked, answering);
 		}
 
-		accessAsks.saveAnswer(id, answer);
+		keptAccessAsks.saveAnswer(id, answer);
 		console.info(`[widgetarium] browser ask ${id} for ${asked.siteKey} waiting → ${answer}`);
 	});
 
-export const StopInkCommand = command("stop-ink")
+export const stopInk = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { inkActivity, clock }) => {
@@ -82,12 +82,12 @@ export const StopInkCommand = command("stop-ink")
 		);
 	});
 
-export const RereadAccessAsksSubscriber = subscriber(AccessAsksChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(AccessAsksQuery);
+export const rereadAccessAsks = subscriber(accessAsksChanged).handle((_input, { invalidate }) => {
+	invalidate(accessAsks);
 });
 
-export const RereadInkReadingSubscriber = subscriber(InkActivityChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(InkReadingQuery);
+export const rereadInkReading = subscriber(inkActivityChanged).handle((_input, { invalidate }) => {
+	invalidate(inkReading);
 });
 
 function allowSite(asked: AccessAsk, { browserGrants, now }: Answering): void {

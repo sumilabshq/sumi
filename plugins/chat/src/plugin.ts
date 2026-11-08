@@ -1,43 +1,36 @@
-import { AppsPlugin, AppsSlot } from "@sumi/apps-plugin";
-import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot } from "@sumi/command-menu-plugin";
-import {
-	BackgroundModulesSlot,
-	SumiHostPlugin,
-	TabPageSlot,
-	WindowModulesSlot,
-	WindowProvidersSlot,
-	WindowServerModulesSlot,
-} from "@sumi/sumi-host-plugin";
-import { AssistantModule } from "@widgetarium/assistant/module";
-import { ChatTabsModule } from "@sumi/chat-tabs/module";
+import { apps } from "@sumi/apps-plugin";
+import { commandMenu } from "@sumi/command-menu-plugin";
+import { sumiHost } from "@sumi/sumi-host-plugin";
+import { assistant as assistantModule } from "@widgetarium/assistant/module";
+import { chatTabs } from "@sumi/chat-tabs/module";
 import { plugin } from "@widgetarium/plugin-framework";
-import { QuestionsModule as QuestionsContract } from "@widgetarium/questions";
-import { QuestionsModule } from "@widgetarium/questions/module";
+import { questions } from "@widgetarium/questions";
+import { questions as questionsModule } from "@widgetarium/questions/module";
 import { askComposerProviderOf } from "./features/ask/ui/ask-composer-provider/ask-composer-provider.js";
 import { askPageOf } from "./features/ask/lib/ask-page.js";
 import { CHAT_TAB_PAGE } from "./features/chat-page/lib/chat-tab-page.js";
 
-export const ChatPlugin = plugin("chat")
-	.require(SumiHostPlugin, AppsPlugin, CommandMenuPlugin)
+export const chat = plugin()
+	.require(sumiHost, apps, commandMenu)
 	.fill(
-		AppsSlot({
+		apps.apps.add({
 			id: "chat",
 			title: "New chat",
 			art: "chat",
 			isListed: false,
 			tabs: { holdsTabs: true, splits: true, runsInPage: false, keepsRecord: true },
 		}),
-		BackgroundModulesSlot({ id: "questions", module: () => QuestionsModule, contract: QuestionsContract }),
-		TabPageSlot({ id: "chat", tabPage: () => CHAT_TAB_PAGE }),
-		WindowModulesSlot({ id: "chat-tabs", module: () => ChatTabsModule }),
-		WindowServerModulesSlot({ id: "assistant", module: ({ assistant }) => AssistantModule(assistant) }),
-		WindowProvidersSlot({ id: "ask-composer", provider: askComposerProviderOf }),
-		MenuDoorsSlot({
+		sumiHost.backgroundModules.add({ id: "questions", module: () => questionsModule, contract: questions }),
+		sumiHost.tabPage.add({ id: "chat", tabPage: () => CHAT_TAB_PAGE }),
+		sumiHost.windowModules.add({ id: "chat-tabs", module: () => chatTabs }),
+		sumiHost.windowServerModules.add({ id: "assistant", module: ({ assistant }) => assistantModule(assistant) }),
+		sumiHost.windowProviders.add({ id: "ask-composer", provider: askComposerProviderOf }),
+		commandMenu.menuDoors.add({
 			id: "ask",
 			letter: "i",
 			label: "Ask",
 			placeholder: "Ask Sumi anything",
 			startsWith: "empty",
 		}),
-		MenuPagesSlot({ id: "ask", draftsOf: askPageOf }),
+		commandMenu.menuPages.add({ id: "ask", draftsOf: askPageOf }),
 	);

@@ -3,7 +3,7 @@ import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/data-framework";
 import type { FrameEdge } from "@widgetarium/layout";
-import { ResetFrameEdgeCommand, ResizeFrameEdgeCommand } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout";
 import { FrameEdgeDrag } from "./frame-edge-drag.js";
 
 interface PressOnEdge {
@@ -22,8 +22,8 @@ interface DragTrack {
 }
 
 export function useFrameEdge({ edge, px, plateLeastPx }: FrameEdgeAsk): EdgeResizeHandlers {
-	const resize = useCommand(ResizeFrameEdgeCommand);
-	const reset = useCommand(ResetFrameEdgeCommand);
+	const resize = useCommand(layout.frameWidths.resizeFrameEdge);
+	const reset = useCommand(layout.frameWidths.resetFrameEdge);
 	const [drag] = useState(() => new FrameEdgeDrag(plateLeastPx));
 	const handlers = useEdgeResize({
 		widthOf: () => drag.widthOr(px),

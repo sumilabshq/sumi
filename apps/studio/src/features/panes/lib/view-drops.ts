@@ -1,6 +1,6 @@
 import type { CommandHandle, OutputOf, SentOf } from "@widgetarium/data-framework";
-import type { PlaceInViewCommand } from "@widgetarium/app-host";
-import type { PaneBoard, PaneLeaf, PanePlacement, PaneView, PlacePaneCommand } from "@widgetarium/layout";
+import type { appHost } from "@widgetarium/app-host";
+import type { PaneBoard, PaneLeaf, PanePlacement, PaneView, layout } from "@widgetarium/layout";
 import { carriedTabOf, viewTargetOf } from "./split-panes.js";
 
 export interface Carrying {
@@ -21,14 +21,17 @@ export interface Dropping {
 	readonly board: OnBoard;
 }
 
-type HandleOf<R extends typeof PlacePaneCommand | typeof PlaceInViewCommand> = CommandHandle<SentOf<R>, OutputOf<R>>;
+type HandleOf<R extends typeof layout.panes.placePane | typeof appHost.splits.placeInView> = CommandHandle<
+	SentOf<R>,
+	OutputOf<R>
+>;
 
 export interface Placers {
-	readonly placePane: HandleOf<typeof PlacePaneCommand>;
-	readonly placeInView: HandleOf<typeof PlaceInViewCommand>;
+	readonly placePane: HandleOf<typeof layout.panes.placePane>;
+	readonly placeInView: HandleOf<typeof appHost.splits.placeInView>;
 }
 
-type PlaceInViewAsk = SentOf<typeof PlaceInViewCommand>;
+type PlaceInViewAsk = SentOf<typeof appHost.splits.placeInView>;
 
 export async function dropped(dropping: Dropping, { placePane, placeInView }: Placers): Promise<void> {
 	const isPlacedInView = await placedInView(dropping, placeInView);

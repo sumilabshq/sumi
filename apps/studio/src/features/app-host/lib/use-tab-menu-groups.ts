@@ -1,13 +1,5 @@
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import {
-	AppTabsQuery,
-	CloseOtherTabsCommand,
-	CloseTabCommand,
-	DuplicateTabCommand,
-	OpenTabBelowCommand,
-	ReloadTabCommand,
-	ReopenClosedTabCommand,
-} from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { AppTab } from "@widgetarium/app-host";
 import { keyHintOf } from "./shortcut/key-hint.js";
 import { CLOSE_KEY, REOPEN_KEY } from "./tab-keys.js";
@@ -39,7 +31,7 @@ interface Said {
 }
 
 export function useTabMenuGroups(tab: AppTab, { onRename, onCopyLink }: TabMenuAsks): TabMenuGroups {
-	const { tabs, canReopen } = useQuery(AppTabsQuery).data;
+	const { tabs, canReopen } = useQuery(appHost.tabs.appTabs).data;
 	const run = useTabRuns(tab);
 	const action = (key: TabActionKey, said: Said, ran: () => void): TabMenuAction => ({
 		key,
@@ -86,12 +78,12 @@ interface TabRuns {
 }
 
 function useTabRuns(tab: AppTab): TabRuns {
-	const openBelow = useCommand(OpenTabBelowCommand);
-	const duplicate = useCommand(DuplicateTabCommand);
-	const reload = useCommand(ReloadTabCommand);
-	const close = useCommand(CloseTabCommand);
-	const closeOthers = useCommand(CloseOtherTabsCommand);
-	const reopen = useCommand(ReopenClosedTabCommand);
+	const openBelow = useCommand(appHost.tabActions.openTabBelow);
+	const duplicate = useCommand(appHost.tabActions.duplicateTab);
+	const reload = useCommand(appHost.tabActions.reloadTab);
+	const close = useCommand(appHost.tabActions.closeTab);
+	const closeOthers = useCommand(appHost.tabActions.closeOtherTabs);
+	const reopen = useCommand(appHost.tabActions.reopenClosedTab);
 	const id = { id: tab.id };
 	return {
 		openBelow: () => void openBelow.run(id),

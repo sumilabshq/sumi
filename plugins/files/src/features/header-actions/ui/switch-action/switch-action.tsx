@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { FlipFileSwitchCommand } from "@sumi/file-page";
+import { filePage } from "@sumi/file-page";
 import type { FileSwitch } from "@sumi/file-page";
 import { useTabHeader } from "@sumi/sumi-host-plugin";
 import { useCommand } from "@widgetarium/data-framework";
@@ -19,7 +19,7 @@ export interface SwitchActionProps {
 
 export function SwitchAction({ name, whenOff, whenOn }: SwitchActionProps): ReactElement {
 	const { Action } = useTabHeader();
-	const flip = useCommand(FlipFileSwitchCommand);
+	const flip = useCommand(filePage.switches.flipFileSwitch);
 	const face = useFileSwitches().isOn(name) ? whenOn : whenOff;
 	return <Action label={face.label} icon={face.icon} onPress={() => void flip.run({ name })} />;
 }

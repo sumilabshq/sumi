@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { AskInkPromptQuery } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser";
 import { useQuery } from "@widgetarium/data-framework";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
 import { AskInkButton } from "../page-state/ask-ink-button.js";
@@ -11,7 +11,7 @@ export interface AskInkActionProps {
 }
 
 export function AskInkAction({ tabId, label }: AskInkActionProps): ReactElement {
-	const prompt = useQuery(AskInkPromptQuery, { tabId }).data;
+	const prompt = useQuery(browser.tabs.askInkPrompt, { tabId }).data;
 	const askComposer = useAskComposer();
 	return <AskInkButton label={label} onPress={() => askComposer.ask(prompt, false, null)} />;
 }

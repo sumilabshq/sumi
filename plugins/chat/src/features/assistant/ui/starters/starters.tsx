@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
-import { PrefillDraftCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { SKILL_ENTRIES } from "../../lib/slash-matches.js";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
@@ -13,7 +13,7 @@ const TITLE_OF: Readonly<Record<string, string>> = {
 
 export function Starters(): ReactElement {
 	const chat = useChatKey();
-	const prefillDraft = useCommand(PrefillDraftCommand);
+	const prefillDraft = useCommand(assistant.prefill.prefillDraft);
 	return (
 		<div className="wg-studio-ai-starters">
 			{SKILL_ENTRIES.map(({ name, icon }) => (

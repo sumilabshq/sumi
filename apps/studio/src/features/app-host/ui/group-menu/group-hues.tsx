@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { GroupHueSchema, SetGroupHueCommand } from "@widgetarium/app-host";
+import { GroupHueSchema, appHost } from "@widgetarium/app-host";
 import type { GroupHue } from "@widgetarium/app-host";
 import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 
@@ -24,7 +24,7 @@ const SWATCH_HUE: Readonly<Record<GroupHue, string>> = {
 };
 
 export function GroupHues({ group }: { readonly group: GroupFace }): ReactElement {
-	const colourGroup = useCommand(SetGroupHueCommand);
+	const colourGroup = useCommand(appHost.groups.setGroupHue);
 	const pick = (hue: GroupHue | null) => () =>
 		void colourGroup.run({
 			id: group.id,

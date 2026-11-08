@@ -1,5 +1,5 @@
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import { ThemeQuery } from "./generated/appearance.js";
+import { appearance } from "./generated/appearance.js";
 
 export interface ThemeWearing {
 	readonly sumi: Runtime;
@@ -10,7 +10,7 @@ const DARK_CLASSES = ["dark", "theme-dark"] as const;
 
 export function wearSumiTheme({ sumi, transport }: ThemeWearing, view: Window = window): () => void {
 	const wear = (): void => {
-		void sumi.send(ThemeQuery).then((theme) => {
+		void sumi.send(appearance.theme.theme).then((theme) => {
 			if (!theme.ok) {
 				console.error(`[sumi] reading Sumi's theme was refused: ${theme.reason}`);
 				return;

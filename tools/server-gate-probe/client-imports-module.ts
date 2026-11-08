@@ -1,3 +1,3 @@
-import { FixtureBillingModule } from "@widgetarium/fixture-billing/module";
+import { fixtureBilling } from "@widgetarium/fixture-billing/module";
 
-export const reached = FixtureBillingModule.definition.name;
+export const reached = fixtureBilling.definition.name;

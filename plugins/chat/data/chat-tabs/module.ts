@@ -1,12 +1,12 @@
 import { Device, module } from "@widgetarium/data-framework";
-import { AppHostModule } from "@widgetarium/app-host";
-import { LayoutModule } from "@widgetarium/layout";
-import { PlacesModule } from "@widgetarium/places";
-import { WorkspacesModule } from "@widgetarium/workspaces";
+import { appHost } from "@widgetarium/app-host";
+import { layout } from "@widgetarium/layout";
+import { places } from "@widgetarium/places";
+import { workspaces } from "@widgetarium/workspaces";
 import { handled } from "./generated/handled.js";
 
-export const ChatTabsModule = module("chat-tabs")
+export const chatTabs = module()
 	.on(Device)
-	.imports(AppHostModule, LayoutModule, PlacesModule, WorkspacesModule)
+	.imports(appHost, layout, places, workspaces)
 	.provide(() => ({}))
-	.handles(...handled);
+	.handles(handled);

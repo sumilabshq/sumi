@@ -1,16 +1,16 @@
 import { z } from "zod";
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.events.js";
+import { shownViewChanged } from "../../gateways/shown-view/shown-view.events.js";
 import { StudioViewSchema } from "../../shared/schema/studio-view.schema.js";
 
-export const ShownViewQuery = query("shown-view")
+export const shownView = query()
 	.public()
 	.output(StudioViewSchema)
 	.settlesNow()
 	.handle((_input, { shownView }) => shownView.shownView());
 
-export const ShowViewCommand = command("show-view")
+export const showView = command()
 	.public()
 	.input(z.object({ view: StudioViewSchema }))
 	.idempotencyKey(Repeatable)
@@ -26,6 +26,6 @@ export const ShowViewCommand = command("show-view")
 		console.info(`[widgetarium] shown ${reason}`);
 	});
 
-export const RereadShownViewSubscriber = subscriber(ShownViewChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(ShownViewQuery);
+export const rereadShownView = subscriber(shownViewChanged).handle((_input, { invalidate }) => {
+	invalidate(shownView);
 });

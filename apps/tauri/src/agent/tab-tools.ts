@@ -1,18 +1,5 @@
 import { z } from "zod";
-import {
-	CloseGroupCommand,
-	CloseTabCommand,
-	CreateGroupCommand,
-	DuplicateTabCommand,
-	GroupHueSchema,
-	OpenTabCommand,
-	PlaceTabCommand,
-	RenameGroupCommand,
-	RenameTabCommand,
-	SetGroupHueCommand,
-	TabsSidebarQuery,
-	UngroupCommand,
-} from "@widgetarium/app-host";
+import { GroupHueSchema, appHost } from "@widgetarium/app-host";
 import type { Runtime } from "@widgetarium/data-framework";
 import {
 	PlaceSchema,
@@ -94,17 +81,25 @@ export async function tabOpen({ app, chatId }: ToolContext, input: unknown) {
 	const groupId = await ensureGroupId(app, list, asked);
 	// TODO: honour show only while the person is idle
 	const opened = await outputOf(
-		app.send(OpenTabCommand, { app: asked.app, address: asked.target ?? "", list, groupId, show: asked.show }),
+		app.send(appHost.tabActions.openTab, {
+			app: asked.app,
+			address: asked.target ?? "",
+			list,
+			groupId,
+			show: asked.show,
+		}),
 	);
 	return placedAnswer(opened.id, asked);
 }
 
 export async function tabDuplicate({ app, chatId }: ToolContext, input: unknown) {
 	const asked = inputOf(TabDuplicateSchema, "tab_duplicate", input);
-	spotOfTab(await outputOf(app.send(TabsSidebarQuery)), asked.tabId);
+	spotOfTab(await outputOf(app.send(appHost.tabs.tabsSidebar)), asked.tabId);
 	const list = ownListOf(asked.place, chatId);
 	const groupId = await ensureGroupId(app, list, asked);
-	const opened = await outputOf(app.send(DuplicateTabCommand, { id: asked.tabId, list, groupId, show: asked.show }));
+	const opened = await outputOf(
+		app.send(appHost.tabActions.duplicateTab, { id: asked.tabId, list, groupId, show: asked.show }),
+	);
 	return placedAnswer(opened.id, asked);
 }
 
@@ -114,7 +109,7 @@ export async function tabUpdate({ app, chatId }: ToolContext, input: unknown) {
 	const move = placementOf(spot, asked, chatId);
 
 	if (asked.title !== undefined) {
-		await outputOf(app.send(RenameTabCommand, { id: asked.tabId, label: asked.title }));
+		await outputOf(app.send(appHost.tabActions.renameTab, { id: asked.tabId, label: asked.title }));
 	}
 
 	if (move !== null) {
@@ -127,7 +122,7 @@ export async function tabUpdate({ app, chatId }: ToolContext, input: unknown) {
 export async function tabClose({ app, chatId }: ToolContext, input: unknown) {
 	const { tabId } = inputOf(TabIdSchema, "tab_close", input);
 	await ownTabSpot({ app, chatId }, tabId);
-	await outputOf(app.send(CloseTabCommand, { id: tabId }));
+	await outputOf(app.send(appHost.tabActions.closeTab, { id: tabId }));
 	return { closed: tabId };
 }
 
@@ -139,7 +134,9 @@ export async function groupCreate({ app, chatId }: ToolContext, input: unknown) 
 		await ownTabSpot({ app, chatId }, tabId);
 	}
 
-	const created = await outputOf(app.send(CreateGroupCommand, { list, name: asked.name, hue: asked.colour ?? null }));
+	const created = await outputOf(
+		app.send(appHost.groups.createGroup, { list, name: asked.name, hue: asked.colour ?? null }),
+	);
 	await placeTabs(app, asked.tabIds, { list, groupId: created.id, before: null });
 	return {
 		...asked,
@@ -152,11 +149,11 @@ export async function groupUpdate({ app, chatId }: ToolContext, input: unknown) 
 	await ownGroupList({ app, chatId }, asked.groupId);
 
 	if (asked.name !== undefined) {
-		await outputOf(app.send(RenameGroupCommand, { id: asked.groupId, name: asked.name }));
+		await outputOf(app.send(appHost.groups.renameGroup, { id: asked.groupId, name: asked.name }));
 	}
 
 	if (asked.colour !== undefined) {
-		await outputOf(app.send(SetGroupHueCommand, { id: asked.groupId, hue: asked.colour }));
+		await outputOf(app.send(appHost.groups.setGroupHue, { id: asked.groupId, hue: asked.colour }));
 	}
 
 	return { updated: asked.groupId };
@@ -165,7 +162,9 @@ export async function groupUpdate({ app, chatId }: ToolContext, input: unknown) 
 export async function groupDelete({ app, chatId }: ToolContext, input: unknown) {
 	const asked = inputOf(GroupDeleteSchema, "group_delete", input);
 	await ownGroupList({ app, chatId }, asked.groupId);
-	await outputOf(app.send(asked.keepTabs ? UngroupCommand : CloseGroupCommand, { id: asked.groupId }));
+	await outputOf(
+		app.send(asked.keepTabs ? appHost.groups.ungroup : appHost.tabActions.closeGroup, { id: asked.groupId }),
+	);
 	return {
 		deleted: asked.groupId,
 		keptTabs: asked.keepTabs,
@@ -201,7 +200,7 @@ function ownListOf(place: string, chatId: string): string {
 
 async function placeTabs(app: Runtime, tabIds: readonly string[], place: ListPlace): Promise<void> {
 	for (const id of tabIds) {
-		await outputOf(app.send(PlaceTabCommand, { id, to: { kind: "list", ...place } }));
+		await outputOf(app.send(appHost.tabs.placeTab, { id, to: { kind: "list", ...place } }));
 	}
 }
 
@@ -215,19 +214,19 @@ async function ensureGroupId(app: Runtime, list: string, { group, newGroup }: Gr
 	}
 
 	const created = await outputOf(
-		app.send(CreateGroupCommand, { list, name: newGroup.name, hue: newGroup.colour ?? null }),
+		app.send(appHost.groups.createGroup, { list, name: newGroup.name, hue: newGroup.colour ?? null }),
 	);
 	return created.id;
 }
 
 async function ownTabSpot({ app, chatId }: ChatReach, tabId: string): Promise<TabSpot> {
-	const spot = spotOfTab(await outputOf(app.send(TabsSidebarQuery)), tabId);
+	const spot = spotOfTab(await outputOf(app.send(appHost.tabs.tabsSidebar)), tabId);
 	assertOwnList(spot.list, chatId, THE_TAB.replace("{id}", tabId));
 	return spot;
 }
 
 async function ownGroupList({ app, chatId }: ChatReach, groupId: string): Promise<void> {
-	const list = listOfGroup(await outputOf(app.send(TabsSidebarQuery)), groupId);
+	const list = listOfGroup(await outputOf(app.send(appHost.tabs.tabsSidebar)), groupId);
 	assertOwnList(list, chatId, THE_GROUP.replace("{id}", groupId));
 }
 
@@ -236,7 +235,7 @@ function keptGroupOf(spot: TabSpot, list: string): string | null {
 }
 
 async function tabNowOf({ app, chatId }: ChatReach, tabId: string) {
-	const spot = spotOfTab(await outputOf(app.send(TabsSidebarQuery)), tabId);
+	const spot = spotOfTab(await outputOf(app.send(appHost.tabs.tabsSidebar)), tabId);
 	return {
 		id: tabId,
 		title: spot.title,

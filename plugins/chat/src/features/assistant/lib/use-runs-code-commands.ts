@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { SendMessageCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { RUN_COMMAND_EVENT } from "@widgetarium/markdown";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
@@ -11,7 +11,7 @@ const RUN_ASK = "Run this command:\n\n```bash\n{command}\n```";
 
 export function useRunsCodeCommands(holder: RefObject<HTMLDivElement | null>): void {
 	const chat = useChatKey();
-	const sendMessage = useCommand(SendMessageCommand);
+	const sendMessage = useCommand(assistant.composer.sendMessage);
 	useEffect(() => {
 		const node = holder.current;
 

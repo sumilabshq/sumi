@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { ReadFileQuery } from "@sumi/contract";
+import { fileSystem } from "@sumi/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { useFileTab } from "../../../../shared/lib/use-file-tab.js";
 import { CopyAction } from "../copy-action/copy-action.js";
@@ -15,5 +15,5 @@ export function FileTextCopyAction({ tabId }: FileTextCopyActionProps): ReactEle
 }
 
 function KnownFileTextCopy({ path }: { readonly path: string }): ReactElement {
-	return <CopyAction copied={useOptionalQuery(ReadFileQuery, { path }).data} />;
+	return <CopyAction copied={useOptionalQuery(fileSystem.files.readFile, { path }).data} />;
 }

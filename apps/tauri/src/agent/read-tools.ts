@@ -1,12 +1,6 @@
 import { z } from "zod";
-import { HeldTabsQuery } from "@widgetarium/app-host";
-import {
-	CapturePageCommand,
-	PageRegionSchema,
-	ReadPageContentCommand,
-	ShotAreaSchema,
-	SiteAccessQuery,
-} from "@widgetarium/browser";
+import { appHost } from "@widgetarium/app-host";
+import { PageRegionSchema, ShotAreaSchema, browser } from "@widgetarium/browser";
 import type { AccessDecision } from "@widgetarium/browser";
 import { inputOf, outputOf } from "./tool-places.js";
 import type { ToolContext } from "./tool-places.js";
@@ -32,7 +26,7 @@ const TabReadSchema = z.strictObject({
 export async function tabAccess({ app }: ToolContext, input: unknown) {
 	const { tabId } = inputOf(TabAccessSchema, "tab_access", input);
 	const pageId = await pageIdOf({ app }, tabId);
-	const { shown } = await outputOf(app.send(SiteAccessQuery, { heldTabId: pageId }));
+	const { shown } = await outputOf(app.send(browser.sites.siteAccess, { heldTabId: pageId }));
 	return accessOf(tabId, shown);
 }
 
@@ -45,11 +39,11 @@ export async function tabRead({ app }: ToolContext, input: unknown) {
 	}
 
 	if (asked.as !== "screenshot") {
-		return outputOf(app.send(ReadPageContentCommand, { tabId: pageId, form: asked.as }));
+		return outputOf(app.send(browser.ink.readPageContent, { tabId: pageId, form: asked.as }));
 	}
 
 	return outputOf(
-		app.send(CapturePageCommand, { tabId: pageId, area: asked.area ?? "viewport", region: asked.region ?? null }),
+		app.send(browser.ink.capturePage, { tabId: pageId, area: asked.area ?? "viewport", region: asked.region ?? null }),
 	);
 }
 
@@ -72,7 +66,7 @@ function accessOf(tabId: string, shown: AccessDecision | null) {
 }
 
 async function pageIdOf({ app }: Pick<ToolContext, "app">, tabId: string): Promise<string> {
-	const held = await outputOf(app.send(HeldTabsQuery));
+	const held = await outputOf(app.send(appHost.tabs.heldTabs));
 	const tab = held.tabs.find(({ id }) => id === tabId);
 
 	if (tab === undefined) {

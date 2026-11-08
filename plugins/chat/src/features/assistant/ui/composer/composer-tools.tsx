@@ -8,7 +8,7 @@ import { ChatMenuLine } from "../chat-menu/chat-menu-line.js";
 import { ChatMenuNote } from "../chat-menu/chat-menu-note.js";
 import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
 import { useAttachesFiles } from "../../lib/use-attaches-files.js";
-import { AttachFolderCommand, AttachReachQuery } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const ADD = "Add";
@@ -20,8 +20,8 @@ export function ComposerTools(): ReactElement {
 	const picker = useRef<HTMLInputElement>(null);
 	const attach = useAttachesFiles();
 	const chat = useChatKey();
-	const attachFolder = useCommand(AttachFolderCommand);
-	const { canAttachFolders, accepted } = useQuery(AttachReachQuery, { chat }).data;
+	const attachFolder = useCommand(assistant.composer.attachFolder);
+	const { canAttachFolders, accepted } = useQuery(assistant.composer.attachReach, { chat }).data;
 	const plus = useMenuOpening();
 	return (
 		<>

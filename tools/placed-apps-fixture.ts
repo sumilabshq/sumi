@@ -1,13 +1,13 @@
 import { ListedPlacedAppsGateway } from "../plugins/apps/data/places/gateways/placed-apps/listed.gateway.ts";
 import { placedAppsOf } from "../plugins/apps/data/places/shared/lib/tabs/app-abilities.ts";
 import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app-of.ts";
-import { AppSchema, AppsSlot } from "../plugins/apps/src/slots.ts";
-import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
-import { MainPlugin } from "../plugins/main/src/plugin.ts";
+import { AppSchema, apps } from "../plugins/apps/src/index.ts";
+import { chat } from "../plugins/chat/src/index.ts";
+import { main } from "../plugins/main/src/index.ts";
 
-export const BUILT_IN_PLACED_APPS = [MainPlugin, ChatPlugin].flatMap((filler) =>
+export const BUILT_IN_PLACED_APPS = [main, chat].flatMap((filler) =>
 	filler.parts.fills
-		.filter(({ slot }) => slot === AppsSlot)
+		.flatMap(({ slot, listId, item }) => (slot === apps.apps && listId !== null ? [{ id: listId, item }] : []))
 		.map(({ id, item }) => placedAppOf({ id, ...AppSchema.parse(item) })),
 );
 

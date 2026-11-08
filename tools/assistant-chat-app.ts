@@ -1,8 +1,8 @@
-import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { assistant } from "../plugins/chat/data/assistant/module.ts";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { MascotModule } from "../plugins/chat/data/mascot/module.ts";
+import { mascot } from "../plugins/chat/data/mascot/module.ts";
 
 export interface MemoryFolder {
 	readonly files: Map<string, Uint8Array>;
@@ -26,8 +26,8 @@ export function memoryFolder(): MemoryFolder {
 export function chatAppOver(port: AssistantPort, privateFolder: MemoryFolder = memoryFolder()): Runtime {
 	return runtime()
 		.modules(
-			MascotModule,
-			AssistantModule({
+			mascot,
+			assistant({
 				kind: "obsidian",
 				obsidianAssistant: port,
 				attachments: {

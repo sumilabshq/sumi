@@ -26,7 +26,7 @@ import {
 } from "./lib/group-plans.js";
 import { foldTabPlan, makeEssentialPlan, pinPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
 
-export const PlaceTabCommand = command("place-tab")
+export const placeTab = command()
 	.public()
 	.input(PlaceTabAskSchema)
 	.output(TabsSettledSchema)
@@ -35,7 +35,7 @@ export const PlaceTabCommand = command("place-tab")
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), placeTabPlan(id, place)))),
 	);
 
-export const MakeEssentialCommand = command("make-essential")
+export const makeEssential = command()
 	.public()
 	.input(MakeEssentialAskSchema)
 	.output(EssentialFaceSchema)
@@ -46,7 +46,7 @@ export const MakeEssentialCommand = command("make-essential")
 				.extra,
 	);
 
-export const RenameTabCommand = command("rename-tab")
+export const renameTab = command()
 	.public()
 	.input(RenameTabAskSchema)
 	.idempotencyKey(Repeatable)
@@ -54,7 +54,7 @@ export const RenameTabCommand = command("rename-tab")
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), renamePlan(id, label))));
 	});
 
-export const PinTabCommand = command("pin-tab")
+export const pinTab = command()
 	.public()
 	.input(PinTabAskSchema)
 	.idempotencyKey(Repeatable)
@@ -62,7 +62,7 @@ export const PinTabCommand = command("pin-tab")
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), pinPlan(id, isPinned))));
 	});
 
-export const FoldTabCommand = command("fold-tab")
+export const foldTab = command()
 	.public()
 	.input(FoldTabAskSchema)
 	.idempotencyKey(Repeatable)
@@ -70,7 +70,7 @@ export const FoldTabCommand = command("fold-tab")
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), foldTabPlan(id))));
 	});
 
-export const CreateGroupCommand = command("create-group")
+export const createGroup = command()
 	.public()
 	.input(CreateGroupAskSchema)
 	.output(z.object({ id: z.string() }))
@@ -79,7 +79,7 @@ export const CreateGroupCommand = command("create-group")
 		id: answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), createGroupPlan(ask)))),
 	}));
 
-export const RenameGroupCommand = command("rename-group")
+export const renameGroup = command()
 	.public()
 	.input(RenameGroupAskSchema)
 	.idempotencyKey(Repeatable)
@@ -87,7 +87,7 @@ export const RenameGroupCommand = command("rename-group")
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), renameGroupPlan(id, name))));
 	});
 
-export const SetGroupHueCommand = command("set-group-hue")
+export const setGroupHue = command()
 	.public()
 	.input(GroupHueAskSchema)
 	.idempotencyKey(Repeatable)
@@ -95,7 +95,7 @@ export const SetGroupHueCommand = command("set-group-hue")
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), groupHuePlan(id, hue))));
 	});
 
-export const FoldGroupCommand = command("fold-group")
+export const foldGroup = command()
 	.public()
 	.input(GroupAskSchema)
 	.idempotencyKey(Repeatable)
@@ -103,7 +103,7 @@ export const FoldGroupCommand = command("fold-group")
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), foldGroupPlan(id))));
 	});
 
-export const PlaceGroupCommand = command("place-group")
+export const placeGroup = command()
 	.public()
 	.input(PlaceGroupAskSchema)
 	.idempotencyKey(Repeatable)
@@ -111,7 +111,7 @@ export const PlaceGroupCommand = command("place-group")
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), placeGroupPlan(id, place))));
 	});
 
-export const UngroupCommand = command("ungroup")
+export const ungroup = command()
 	.public()
 	.input(GroupAskSchema)
 	.idempotencyKey(Repeatable)

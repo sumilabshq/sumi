@@ -5,9 +5,9 @@ import { handled } from "./generated/handled.js";
 
 export type { AppearanceConfig, SystemScheme } from "./shared/host/system-scheme.host.js";
 
-export const AppearanceModule = module("appearance")
+export const appearance = module()
 	.on(Anywhere)
 	.config<AppearanceConfig>()
 	.guard(PublicGuard)
 	.provide((facts) => appearancePartsOn(facts))
-	.handles(...handled);
+	.handles(handled);

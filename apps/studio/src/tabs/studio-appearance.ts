@@ -1,5 +1,5 @@
-import { AppearanceModule as AppearanceContract, ThemeQuery } from "@widgetarium/appearance";
-import { AppearanceModule } from "@widgetarium/appearance/module";
+import { appearance as appearanceContract } from "@widgetarium/appearance";
+import { appearance as appearanceModule } from "@widgetarium/appearance/module";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
@@ -16,7 +16,7 @@ const STUDIO_SCOPE = "studio";
 export function startStudioAppearance(view: Window): StudioAppearance {
 	const transport = localTransport();
 	const appearance = runtime()
-		.modules(AppearanceModule({ systemScheme: view.matchMedia(DARK_SCHEME) }))
+		.modules(appearanceModule({ systemScheme: view.matchMedia(DARK_SCHEME) }))
 		.start({
 			platform: "server",
 			env: {},
@@ -25,9 +25,11 @@ export function startStudioAppearance(view: Window): StudioAppearance {
 			},
 		});
 	mountOrStop(appearance, (started) => transport.serve(started, { authenticate: new AppCallerAuthenticate() }));
-	const appearanceApp = runtime().imports(AppearanceContract({ over: transport })).start();
+	const appearanceApp = runtime()
+		.imports(appearanceContract({ over: transport }))
+		.start();
 	const wear = (): void => {
-		void appearanceApp.send(ThemeQuery).then((theme) => {
+		void appearanceApp.send(appearanceContract.theme.theme).then((theme) => {
 			if (!theme.ok) {
 				console.error(`[widgetarium] the studio could not read its theme: ${theme.reason}`);
 				return;

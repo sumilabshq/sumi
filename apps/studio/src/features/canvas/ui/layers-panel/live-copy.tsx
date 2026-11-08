@@ -1,11 +1,11 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
-import { LayersPanelQuery } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { LiveScreen } from "./live-screen.js";
 
 export function LiveCopy(): ReactElement | null {
-	const { liveCopy, liveWidthPx } = useQuery(LayersPanelQuery).data;
+	const { liveCopy, liveWidthPx } = useQuery(canvas.layers.layersPanel).data;
 	if (!liveCopy) return null;
 	return (
 		<div

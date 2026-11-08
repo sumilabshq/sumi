@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { HeldTabsQuery } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host";
 import type { HeldTab } from "@widgetarium/app-host";
 import { useQuery } from "@widgetarium/data-framework";
 import type { StudioBrowser } from "../browser/browser-app.js";
@@ -37,7 +37,7 @@ const NO_PAGE = "This tab has no page yet";
 const NO_MORE_ITEMS: readonly PlateMoreItem[] = [];
 
 export function PaneAppPlate({ tabId, browser, design, project }: PaneAppPlateProps): ReactElement {
-	const paneTab = useQuery(HeldTabsQuery).data.tabs.find((tab) => tab.id === tabId) ?? null;
+	const paneTab = useQuery(appHost.tabs.heldTabs).data.tabs.find((tab) => tab.id === tabId) ?? null;
 	const appTitleOf = useAppTitleOf();
 	const appTitle = paneTab === null ? NO_TAB : appTitleOf(paneTab.app);
 	return (

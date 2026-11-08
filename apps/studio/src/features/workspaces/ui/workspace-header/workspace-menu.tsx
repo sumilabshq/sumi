@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Icon, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
-import { CreateWorkspaceCommand, OpenWorkspaceCommand, WorkspacesQuery } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 
 const MENU_LABEL = "Workspaces";
 const NAME_AND_ICON = "Name and icon…";
@@ -16,9 +16,9 @@ export interface WorkspaceMenuProps {
 }
 
 export function WorkspaceMenu({ onChosen, onNameAndIcon }: WorkspaceMenuProps): ReactElement {
-	const { current, rows } = useQuery(WorkspacesQuery).data;
-	const openWorkspace = useCommand(OpenWorkspaceCommand);
-	const createWorkspace = useCommand(CreateWorkspaceCommand);
+	const { current, rows } = useQuery(workspaces.workspaces.workspaces).data;
+	const openWorkspace = useCommand(workspaces.workspaces.openWorkspace);
+	const createWorkspace = useCommand(workspaces.workspaces.createWorkspace);
 	const chose = (run: () => void) => () => {
 		onChosen();
 		run();

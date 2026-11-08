@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { ReadFileBytesQuery } from "@sumi/contract";
+import { fileSystem } from "@sumi/contract";
 import { FileNote } from "@sumi/files-plugin";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { videoSourceOf } from "../../lib/video-types.js";
@@ -10,7 +10,7 @@ export interface VideoFileProps {
 }
 
 export function VideoFile({ path }: VideoFileProps): ReactElement | null {
-	const read = useOptionalQuery(ReadFileBytesQuery, { path });
+	const read = useOptionalQuery(fileSystem.files.readFileBytes, { path });
 
 	if (read.failure !== null) {
 		return <FileNote said={read.failure} />;

@@ -1,17 +1,9 @@
 import { runtime, localTransport, messagePortTransport, servePort } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
-import {
-	CloseWebPageCommand,
-	GoBackWebPageCommand,
-	GoForwardWebPageCommand,
-	OpenWebPageCommand,
-	PlaceWebPageCommand,
-	WebPageModule,
-	WebPageQuery,
-} from "../plugins/browser-page/data/web-page/index.ts";
+import { webPage } from "../plugins/browser-page/data/web-page/index.ts";
 import { AppTabsGateway } from "../plugins/browser-page/data/web-page/gateways/app-tabs/app-tabs.gateway.ts";
 import { MemoryWebPagesGateway } from "../plugins/browser-page/data/web-page/gateways/web-pages/memory.gateway.ts";
-import { WebPageModule as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
+import { webPage as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
@@ -29,10 +21,12 @@ class FixedAppTabsGateway extends AppTabsGateway {
 const webPages = new MemoryWebPagesGateway();
 const served = runtime()
 	.modules(
-		RunnableWebPageModule({ injects: {
-			webPages,
-			appTabs: new FixedAppTabsGateway(),
-		} }),
+		RunnableWebPageModule({
+			injects: {
+				webPages,
+				appTabs: new FixedAppTabsGateway(),
+			},
+		}),
 	)
 	.start({
 		platform: "server",
@@ -44,13 +38,13 @@ function appOver(caller: string | null): Runtime {
 	const headers = caller === null ? {} : { [APP_CALLER_HEADER]: caller };
 	servePort(served, channel.port1, { authenticate: new AppCallerAuthenticate(), headers });
 	return runtime()
-		.imports(WebPageModule({ over: messagePortTransport(channel.port2) }))
+		.imports(webPage({ over: messagePortTransport(channel.port2) }))
 		.start();
 }
 
 const notes = appOver("notes");
-const opened = await notes.send(OpenWebPageCommand, { tab: "t1", url: "https://example.com/a" });
-const read = await notes.send(WebPageQuery, { tab: "t1" });
+const opened = await notes.send(webPage.pages.openWebPage, { tab: "t1", url: "https://example.com/a" });
+const read = await notes.send(webPage.pages.webPage, { tab: "t1" });
 check("open-web-page is answered ok", opened.ok, true);
 check("web-page reads the opened page, titled by its host (memory fake)", read.ok ? read.output : read.reason, {
 	url: "https://example.com/a",
@@ -60,38 +54,38 @@ check("web-page reads the opened page, titled by its host (memory fake)", read.o
 	canGoForward: false,
 });
 
-const scheme = await notes.send(OpenWebPageCommand, { tab: "t1", url: "file:///etc/passwd" });
+const scheme = await notes.send(webPage.pages.openWebPage, { tab: "t1", url: "file:///etc/passwd" });
 check(
 	"a url that is not http or https is refused",
 	scheme.ok ? "opened" : [scheme.code, scheme.reason.includes("not a web scheme")],
 	["refused", true],
 );
 
-const foreign = await notes.send(WebPageQuery, { tab: "t2" });
+const foreign = await notes.send(webPage.pages.webPage, { tab: "t2" });
 check("a tab holding another app is forbidden", foreign.ok ? "answered" : foreign.code, "forbidden");
-const foreignOpen = await notes.send(OpenWebPageCommand, { tab: "t9", url: "https://example.com" });
+const foreignOpen = await notes.send(webPage.pages.openWebPage, { tab: "t9", url: "https://example.com" });
 check("a tab no app holds is forbidden", foreignOpen.ok ? "opened" : foreignOpen.code, "forbidden");
 
-const anonymous = await appOver(null).send(WebPageQuery, { tab: "t1" });
+const anonymous = await appOver(null).send(webPage.pages.webPage, { tab: "t1" });
 check("a call with no app caller is unauthenticated", anonymous.ok ? "answered" : anonymous.code, "unauthenticated");
 
-await notes.send(OpenWebPageCommand, { tab: "t1", url: "https://example.org/b" });
-const back = await notes.send(GoBackWebPageCommand, { tab: "t1" });
-const afterBack = await notes.send(WebPageQuery, { tab: "t1" });
+await notes.send(webPage.pages.openWebPage, { tab: "t1", url: "https://example.org/b" });
+const back = await notes.send(webPage.pages.goBackWebPage, { tab: "t1" });
+const afterBack = await notes.send(webPage.pages.webPage, { tab: "t1" });
 check(
 	"go-back-web-page moves to the page before",
 	[back.ok, afterBack.ok ? afterBack.output?.url : afterBack.reason],
 	[true, "https://example.com/a"],
 );
-const forward = await notes.send(GoForwardWebPageCommand, { tab: "t1" });
-const noForward = await notes.send(GoForwardWebPageCommand, { tab: "t1" });
+const forward = await notes.send(webPage.pages.goForwardWebPage, { tab: "t1" });
+const noForward = await notes.send(webPage.pages.goForwardWebPage, { tab: "t1" });
 check(
 	"go-forward-web-page moves on, and refuses when there is nothing ahead",
 	[forward.ok, noForward.ok ? "moved" : noForward.code],
 	[true, "refused"],
 );
 
-const placed = await notes.send(PlaceWebPageCommand, {
+const placed = await notes.send(webPage.pages.placeWebPage, {
 	tab: "t1",
 	area: {
 		x: 10,
@@ -116,7 +110,7 @@ check(
 
 const outOfBounds = await Promise.all(
 	[-1, 16_385, Number.POSITIVE_INFINITY].map((x) =>
-		notes.send(PlaceWebPageCommand, {
+		notes.send(webPage.pages.placeWebPage, {
 			tab: "t1",
 			area: {
 				x,
@@ -139,15 +133,15 @@ const heard = {
 const local = localTransport();
 const stopLocal = local.serve(served, { authenticate: new AppCallerAuthenticate() });
 local.changes((invalidated) => {
-	heard.changes += invalidated.filter(({ query }) => query === WebPageQuery.name).length;
+	heard.changes += invalidated.filter(({ query }) => query === webPage.pages.webPage.name).length;
 });
 await webPages.reloadPage("t1");
 check("a page changing outside any call re-reads web-page for listeners", await waitFor(() => heard.changes > 0), true);
 stopLocal();
 
-const closed = await notes.send(CloseWebPageCommand, { tab: "t1" });
-const gone = await notes.send(WebPageQuery, { tab: "t1" });
-const placeGone = await notes.send(PlaceWebPageCommand, { tab: "t1", area: null });
+const closed = await notes.send(webPage.pages.closeWebPage, { tab: "t1" });
+const gone = await notes.send(webPage.pages.webPage, { tab: "t1" });
+const placeGone = await notes.send(webPage.pages.placeWebPage, { tab: "t1", area: null });
 check(
 	"close-web-page leaves no page, and placing it is refused",
 	[closed.ok, gone.ok ? gone.output : gone.reason, placeGone.ok ? "placed" : placeGone.code],

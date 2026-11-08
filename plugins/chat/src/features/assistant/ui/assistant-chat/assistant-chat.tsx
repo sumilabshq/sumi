@@ -4,7 +4,7 @@ import { useOptionalQuery } from "@widgetarium/data-framework";
 import type { ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { ReadyChat } from "../ready-chat/ready-chat.js";
 import { SetupUnread } from "../setup-unread/setup-unread.js";
-import { AgentSetupQuery } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 
 export interface AssistantChatProps {
 	readonly lead?: ReactNode;
@@ -16,7 +16,7 @@ export interface AssistantChatProps {
 const NOT_READ = "The assistant's setup could not be read: {why}";
 
 export function AssistantChat({ lead, title, cards, chatId }: AssistantChatProps): ReactElement {
-	const { data: setup, failure } = useOptionalQuery(AgentSetupQuery, { chat: chatId ?? null });
+	const { data: setup, failure } = useOptionalQuery(assistant.agent.agentSetup, { chat: chatId ?? null });
 
 	if (setup === null && failure === null) {
 		return <SetupUnread lead={lead} title={title} />;

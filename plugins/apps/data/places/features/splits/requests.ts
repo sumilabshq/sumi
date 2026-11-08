@@ -1,6 +1,6 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
+import { placedTabsChanged } from "../../gateways/tabs/tabs.events.js";
 import { answered, settledOf, settlingWith } from "../../shared/lib/settling/settling.js";
 import { momentOfWindow } from "../../shared/lib/tabs/kept-tabs.js";
 import { shownSplitOf } from "../../shared/lib/splits/split-members.js";
@@ -17,7 +17,7 @@ import {
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { placeInViewPlan, removeFromSplitPlan, reorderSplitMemberPlan, resizeSplitPlan } from "./lib/split-plans.js";
 
-export const ShownSplitQuery = query("shown-split")
+export const shownSplit = query()
 	.public()
 	.input(WindowLabelSchema)
 	.output(ShownSplitSchema)
@@ -29,7 +29,7 @@ export const ShownSplitQuery = query("shown-split")
 		};
 	});
 
-export const PlaceInViewCommand = command("place-in-view")
+export const placeInView = command()
 	.public()
 	.input(PlaceInViewAskSchema)
 	.output(PlacedInViewSchema)
@@ -45,7 +45,7 @@ export const PlaceInViewCommand = command("place-in-view")
 		};
 	});
 
-export const RemoveFromSplitCommand = command("remove-from-split")
+export const removeFromSplit = command()
 	.public()
 	.input(SplitMemberAskSchema)
 	.output(LeftSplitSchema)
@@ -61,7 +61,7 @@ export const RemoveFromSplitCommand = command("remove-from-split")
 		};
 	});
 
-export const ReorderSplitMemberCommand = command("reorder-split-member")
+export const reorderSplitMember = command()
 	.public()
 	.input(ReorderSplitMemberAskSchema)
 	.output(TabsSettledSchema)
@@ -72,7 +72,7 @@ export const ReorderSplitMemberCommand = command("reorder-split-member")
 		),
 	);
 
-export const ResizeSplitCommand = command("resize-split")
+export const resizeSplit = command()
 	.public()
 	.input(ResizeSplitAskSchema)
 	.output(TabsSettledSchema)
@@ -85,6 +85,6 @@ export const ResizeSplitCommand = command("resize-split")
 		),
 	);
 
-export const RereadShownSplitSubscriber = subscriber(PlacedTabsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(ShownSplitQuery);
+export const rereadShownSplit = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
+	invalidate(shownSplit);
 });

@@ -5,8 +5,7 @@ import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { treeRowProps } from "@widgetarium/behaviors";
 import type { TreeDrag } from "@widgetarium/behaviors";
-import { PickLayerCommand } from "@widgetarium/canvas";
-import { ToggleLayerFoldCommand } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import type { LayerRow as Row } from "@widgetarium/canvas";
 import { LayerName } from "./layer-name.js";
 import { LAYER_ROW_BASE, PANEL_ROW_INDENT_PX, PANEL_ROW_INSET_PX } from "../../lib/panel-row-look.js";
@@ -22,8 +21,8 @@ const OPENER =
 	"cv:absolute cv:top-1/2 cv:grid cv:size-3 cv:-translate-y-1/2 cv:cursor-pointer cv:place-items-center cv:border-0 cv:bg-transparent cv:p-0 cv:text-muted-foreground cv:opacity-0 cv:shadow-none cv:transition-opacity cv:group-hover/row:opacity-100 cv:hover:text-ink cv:focus-visible:opacity-100 cv:data-[state=closed]:opacity-100";
 
 export function LayerRow({ row, drag, onHover }: LayerRowProps): ReactElement {
-	const pick = useCommand(PickLayerCommand);
-	const fold = useCommand(ToggleLayerFoldCommand);
+	const pick = useCommand(canvas.layers.pickLayer);
+	const fold = useCommand(canvas.layers.toggleLayerFold);
 	const hasChildren = row.children.length > 0;
 	return (
 		<Collapsible.Root open={row.isOpen} onOpenChange={() => void fold.run({ id: row.id })}>

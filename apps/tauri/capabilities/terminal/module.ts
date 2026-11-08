@@ -3,10 +3,10 @@ import { terminalPartsOn } from "./gateways/terminal-parts/terminal-parts.gatewa
 import { TerminalAccessGuard, TerminalCallLoggerMiddleware } from "./features/lines/requests.js";
 import { handled } from "./generated/handled.js";
 
-export const TerminalModule = module("terminal")
+export const terminal = module()
 	.on(Server)
 	.guard(AuthenticatedGuard)
 	.guard(TerminalAccessGuard)
 	.use(TerminalCallLoggerMiddleware)
 	.provide((facts) => terminalPartsOn(facts))
-	.handles(...handled);
+	.handles(handled);

@@ -1,20 +1,9 @@
 import { runtime, orpcTransport } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
 import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
-import {
-	AppendFileCommand,
-	CopyCommand,
-	FileInfoQuery,
-	FileSystemModule,
-	MakeFolderCommand,
-	ReadFileQuery,
-	ReadFolderQuery,
-	RemoveCommand,
-	RenameCommand,
-	WriteFileCommand,
-} from "../apps/tauri/capabilities/file-system/index.ts";
+import { fileSystem } from "../apps/tauri/capabilities/file-system/index.ts";
 import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
-import { FileSystemModule as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
 import { placedPathOf } from "../apps/tauri/capabilities/file-system/shared/lib/app-path.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -36,7 +25,7 @@ const served = dataFrameworkMiddleware(
 function appOver(id: string | null): Runtime {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
 	return runtime()
-		.imports(FileSystemModule({ over: orpcTransport("http://checks.test", { fetch: served.fetch, headers }) }))
+		.imports(fileSystem({ over: orpcTransport("http://checks.test", { fetch: served.fetch, headers }) }))
 		.start();
 }
 
@@ -58,38 +47,38 @@ check(
 	true,
 );
 
-const written = await notes.send(WriteFileCommand, { path: "todo.txt", content: "one" });
-await notes.send(AppendFileCommand, { path: "todo.txt", content: " two" });
-const read = await notes.send(ReadFileQuery, { path: "todo.txt" });
+const written = await notes.send(fileSystem.files.writeFile, { path: "todo.txt", content: "one" });
+await notes.send(fileSystem.files.appendFile, { path: "todo.txt", content: " two" });
+const read = await notes.send(fileSystem.files.readFile, { path: "todo.txt" });
 check("write then append then read answers both", [written.ok, read.ok ? read.output : read.reason], [true, "one two"]);
 check("the write landed in that app's folder", await files.readFile("/data/app-data/ws-1/notes/todo.txt"), "one two");
 
-const othersRead = await other.send(ReadFileQuery, { path: "todo.txt" });
+const othersRead = await other.send(fileSystem.files.readFile, { path: "todo.txt" });
 check(
 	"another app's relative path is its own folder, so it misses",
 	othersRead.ok ? "read" : othersRead.code,
 	"refused",
 );
 
-const missing = await notes.send(FileInfoQuery, { path: "nothing.txt" });
+const missing = await notes.send(fileSystem.files.fileInfo, { path: "nothing.txt" });
 check(
 	"file info of a missing path answers without throwing",
 	missing.ok ? missing.output.exists : missing.reason,
 	false,
 );
 
-await notes.send(MakeFolderCommand, { path: "box" });
-await notes.send(CopyCommand, { from: "todo.txt", to: "box/copy.txt" });
-await notes.send(RenameCommand, { from: "box/copy.txt", to: "box/moved.txt" });
-const listed = await notes.send(ReadFolderQuery, { path: "box" });
+await notes.send(fileSystem.files.makeFolder, { path: "box" });
+await notes.send(fileSystem.files.copy, { from: "todo.txt", to: "box/copy.txt" });
+await notes.send(fileSystem.files.rename, { from: "box/copy.txt", to: "box/moved.txt" });
+const listed = await notes.send(fileSystem.files.readFolder, { path: "box" });
 check("make, copy and rename leave one moved file", listed.ok ? listed.output.entries : listed.reason, [
 	{ name: "moved.txt", kind: "file" },
 ]);
-await notes.send(RemoveCommand, { path: "box" });
-const gone = await notes.send(FileInfoQuery, { path: "box" });
+await notes.send(fileSystem.files.remove, { path: "box" });
+const gone = await notes.send(fileSystem.files.fileInfo, { path: "box" });
 check("remove takes a folder away", gone.ok ? gone.output.exists : gone.reason, false);
 
-const anonymous = await nobody.send(ReadFileQuery, { path: "todo.txt" });
+const anonymous = await nobody.send(fileSystem.files.readFile, { path: "todo.txt" });
 check("a caller with no app is refused before any handler", anonymous.ok ? "read" : anonymous.code, "unauthenticated");
 
 console.log(

@@ -3,13 +3,13 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 import type { WorkspaceRow } from "@widgetarium/workspaces";
-import { RenameWorkspaceCommand } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces";
 
 const NAME_LABEL = "Workspace name";
 
 export function LookName({ workspace }: { readonly workspace: WorkspaceRow }): ReactElement {
 	const [typed, setTyped] = useState(workspace.name);
-	const rename = useCommand(RenameWorkspaceCommand);
+	const rename = useCommand(workspaces.workspaces.renameWorkspace);
 	const typedName = (name: string): void => {
 		setTyped(name);
 		if (name.trim() !== "") {

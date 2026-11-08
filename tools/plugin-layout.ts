@@ -13,6 +13,8 @@ const INDEX_FILE = "src/index.ts";
 const ALLOWED_TOP = new Set(["src", "data", "node_modules", "package.json", "tsconfig.json", "LICENSE"]);
 const SRC_TOP_FILES = new Set(["plugin.ts", "slots.ts", "index.ts"]);
 const SRC_AREAS = new Set(["features", "shared"]);
+const GENERATED_FOLDER = "generated";
+const GENERATED_FILES = new Set(["plugin.ts"]);
 const AREA_PARTS = new Set(["ui", "lib"]);
 const UI_FILE = /\.(tsx|css)$/;
 const LIB_FILE = /(?<!\.d)\.ts$/;
@@ -23,6 +25,7 @@ const NOT_A_BLOCK = "ui/ holds only block folders, ui/<block>/";
 const NOT_UI_FILE = "a block folder holds only its .tsx and the .css it uses";
 const NOT_LIB_FILE = "lib/ holds only .ts files, no folder, no .tsx, no .css";
 const FOREIGN_LIB = "a feature's lib/ is its own; what two features use goes to shared/lib/";
+const NOT_GENERATED = "src/generated/ holds only what widgetarium generate writes, plugin.ts";
 
 export function layoutRefusalsOf(pluginsRoot: string): readonly string[] {
 	return readdirSync(pluginsRoot)
@@ -55,6 +58,10 @@ function srcPlacementRefusalsOf(folder: string, at: (relative: string) => string
 	return entriesOf(src).flatMap(({ name, isFolder }) => {
 		const relative = `src/${name}`;
 
+		if (isFolder && name === GENERATED_FOLDER) {
+			return generatedRefusalsOf(folder, relative, at);
+		}
+
 		if (isFolder && SRC_AREAS.has(name)) {
 			return name === "shared"
 				? areaPartsRefusalsOf(folder, relative, at)
@@ -67,6 +74,12 @@ function srcPlacementRefusalsOf(folder: string, at: (relative: string) => string
 
 		return isFolder || !SRC_TOP_FILES.has(name) ? [`${at(relative)}: ${LOOSE_IN_SRC}`] : [];
 	});
+}
+
+function generatedRefusalsOf(folder: string, relative: string, at: (relative: string) => string): readonly string[] {
+	return entriesOf(path.join(folder, relative))
+		.filter((entry) => entry.isFolder || !GENERATED_FILES.has(entry.name))
+		.map((entry) => `${at(`${relative}/${entry.name}`)}: ${NOT_GENERATED}`);
 }
 
 function areaPartsRefusalsOf(folder: string, relative: string, at: (relative: string) => string): readonly string[] {
@@ -115,9 +128,7 @@ function foreignLibRefusalsOf(folder: string, at: (relative: string) => string):
 					const theirs = featureOf(features, target);
 					return theirs !== null && theirs !== own && isInLib(features, theirs, target);
 				})
-				.map(
-					({ source, line }) => `${at(path.relative(folder, file))}:${line}: imports ${source}; ${FOREIGN_LIB}`,
-				);
+				.map(({ source, line }) => `${at(path.relative(folder, file))}:${line}: imports ${source}; ${FOREIGN_LIB}`);
 		});
 }
 
@@ -159,8 +170,7 @@ function importsOf(file: string): readonly FoundImport[] {
 
 function isDynamicImport(node: AstNode): boolean {
 	return (
-		node.type === "ImportExpression" ||
-		(node.type === "CallExpression" && nodeAt(node, "callee")?.type === "Import")
+		node.type === "ImportExpression" || (node.type === "CallExpression" && nodeAt(node, "callee")?.type === "Import")
 	);
 }
 

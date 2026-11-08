@@ -1,20 +1,10 @@
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
-import {
-	CreateGroupCommand,
-	HeldTabsQuery,
-	PlaceTabCommand,
-	RenameTabCommand,
-	RestoreTabsCommand,
-	ShowTabCommand,
-	ShowViewCommand,
-	ShownViewQuery,
-	TearOffTabCommand,
-} from "../plugins/apps/data/app-host/generated/contract.ts";
+import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { PaneTreeQuery, PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
+import { layout } from "../packages/state/layout/generated/contract.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { WORKSPACE_LIST } from "../plugins/apps/data/places/shared/lib/tabs/tab-lists.ts";
@@ -55,13 +45,13 @@ function restoredStudio() {
 }
 
 async function pageIdOf(studioApp: Runtime, tabId: string): Promise<string | null> {
-	const held = await studioApp.send(HeldTabsQuery);
+	const held = await studioApp.send(appHost.tabs.heldTabs);
 	return held.ok ? (held.output.tabs.find((tab) => tab.id === tabId)?.pageId ?? null) : null;
 }
 
 async function tearOffChecks(): Promise<void> {
 	const { pages, studioApp } = restoredStudio();
-	const torn = await studioApp.send(TearOffTabCommand, { id: "tab-12" });
+	const torn = await studioApp.send(appHost.tabActions.tearOffTab, { id: "tab-12" });
 	const pageId = await pageIdOf(studioApp, "tab-12");
 	check(
 		"a restored tab with no page is given one before the host is asked to tear it off",
@@ -69,7 +59,7 @@ async function tearOffChecks(): Promise<void> {
 		[true, true, [`open ${pageId}`, `tear off ${pageId} as tab-12`]],
 	);
 	const callsBefore = pages.calls.length;
-	await studioApp.send(TearOffTabCommand, { id: "tab-12" });
+	await studioApp.send(appHost.tabActions.tearOffTab, { id: "tab-12" });
 	check(
 		"a second drag keeps the page the tab was given and opens nothing new",
 		[(await pageIdOf(studioApp, "tab-12")) === pageId, pages.calls.slice(callsBefore)],
@@ -113,7 +103,7 @@ function terminalTabs(): SeededTabs {
 
 async function pagelessTearOffChecks(): Promise<void> {
 	const { pages, studioApp } = studioFakesOf({ tabs: terminalTabs(), pages: [BROWSER_FIRST_PAGE] });
-	const torn = await studioApp.send(TearOffTabCommand, { id: "tab-20" });
+	const torn = await studioApp.send(appHost.tabActions.tearOffTab, { id: "tab-20" });
 	check(
 		"a tab of an app with no page tears off through the same command: places opens a studio window holding the tab",
 		[torn.ok, await pageIdOf(studioApp, "tab-20"), pages.calls.at(-1)],
@@ -123,7 +113,7 @@ async function pagelessTearOffChecks(): Promise<void> {
 
 async function ownWindowDropChecks(): Promise<void> {
 	const { pages, studioApp } = restoredStudio();
-	const placed = await studioApp.send(PlaceTabCommand, { id: "tab-15", to: { kind: "own-window" } });
+	const placed = await studioApp.send(appHost.tabs.placeTab, { id: "tab-15", to: { kind: "own-window" } });
 	const pageId = await pageIdOf(studioApp, "tab-15");
 	check(
 		"a restored tab dropped outside the studio opens its page, then its own window",
@@ -139,18 +129,18 @@ async function showAndPaneChecks(): Promise<void> {
 		await pageIdOf(studioApp, "tab-10"),
 		null,
 	);
-	await studioApp.send(ShowTabCommand, { id: "tab-12" });
+	await studioApp.send(appHost.tabs.showTab, { id: "tab-12" });
 	const shownPage = await pageIdOf(studioApp, "tab-12");
 	check(
 		"showing a restored tab with no page opens and shows a page of its own",
 		[shownPage === BROWSER_FIRST_PAGE, pages.calls.slice(-2)],
 		[false, [`open ${shownPage}`, `show ${shownPage}`]],
 	);
-	const board = await studioApp.send(PaneTreeQuery);
+	const board = await studioApp.send(layout.panes.paneTree);
 	const shownPane = board.ok
 		? board.output.leaves.find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === null)
 		: undefined;
-	await studioApp.send(PlacePaneCommand, {
+	await studioApp.send(layout.panes.placePane, {
 		view: { kind: "app", tabId: "tab-15" },
 		targetId: shownPane?.id ?? null,
 		side: "right",
@@ -168,14 +158,14 @@ async function showAndPaneChecks(): Promise<void> {
 
 async function handlerRuleChecks(): Promise<void> {
 	const { studioApp } = restoredStudio();
-	const renamed = await studioApp.send(RenameTabCommand, { id: "tab-99", label: "Gone" });
-	const grouped = await studioApp.send(CreateGroupCommand, { list: "chat-elsewhere" });
+	const renamed = await studioApp.send(appHost.tabActions.renameTab, { id: "tab-99", label: "Gone" });
+	const grouped = await studioApp.send(appHost.groups.createGroup, { list: "chat-elsewhere" });
 	check(
 		"renaming a tab places does not hold and grouping into a list no chat owns are refused by places",
 		[renamed.ok ? null : renamed.reason, grouped.ok ? null : grouped.reason],
 		[
-			'places/rename-tab answered refused: the host holds no tab "tab-99"',
-			'places/create-group answered refused: no tab list "chat-elsewhere" is here',
+			'places.tab-placing.rename-tab answered refused: the host holds no tab "tab-99"',
+			'places.tab-placing.create-group answered refused: no tab list "chat-elsewhere" is here',
 		],
 	);
 }
@@ -204,14 +194,14 @@ async function pagesAfterRestoreOf(keepsPages: boolean): Promise<readonly (strin
 	const places = new MemoryTabsGateway(placedTabsOf(pagedTabs(), [HOST_CHAT]));
 	const studioWindow = new MemoryStudioWindowGateway({ label: "main", isBeside: false, keepsPages });
 	const { studioApp } = studioFakesOf({ places, studioWindow, pages: [BROWSER_FIRST_PAGE] });
-	await studioApp.send(RestoreTabsCommand);
+	await studioApp.send(appHost.tabs.restoreTabs);
 	return (await places.placedTabs()).tabs.filter((tab) => tab.app !== "chat").map((tab) => tab.pageId);
 }
 
 async function viewChecks(): Promise<void> {
 	const { studioApp } = studioFakesOf();
-	await studioApp.send(ShowViewCommand, { view: "app" });
-	const shown = await studioApp.send(ShownViewQuery);
+	await studioApp.send(appHost.shownView.showView, { view: "app" });
+	const shown = await studioApp.send(appHost.shownView.shownView);
 	check("which app is shown is app-host's data", shown.ok && shown.output, "app");
 }
 

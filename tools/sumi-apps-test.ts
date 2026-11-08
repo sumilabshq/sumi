@@ -12,13 +12,13 @@ import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
-import { FileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { fileSystem } from "../apps/tauri/capabilities/file-system/module.ts";
 import { NodeTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/node.gateway.ts";
-import { TerminalModule } from "../apps/tauri/capabilities/terminal/module.ts";
-import { TasksModule } from "../packages/domain/tasks/module.ts";
+import { terminal as terminalModule } from "../apps/tauri/capabilities/terminal/module.ts";
+import { tasks } from "../packages/domain/tasks/module.ts";
 import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
-import { PlacesModule } from "../plugins/apps/data/places/module.ts";
-import { QuestionsModule } from "../plugins/chat/data/questions/module.ts";
+import { places } from "../plugins/apps/data/places/module.ts";
+import { questions } from "../plugins/chat/data/questions/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
@@ -140,21 +140,21 @@ const terminal = new NodeTerminalSessionsGateway(appData);
 const own = localTransport();
 const sumiCore = runtime()
 	.modules(
-		FileSystemModule({
+		fileSystem({
 			injects: {
 				files: new NodeFilesGateway(appData, SUMI_APPS_WORKSPACE),
 			},
 		}),
-		TerminalModule({
+		terminalModule({
 			injects: {
 				sessions: terminal,
 			},
 		}),
-		TasksModule({
+		tasks({
 			file: tasksBoardFileOver(own),
 		}),
-		QuestionsModule,
-		PlacesModule({
+		questions,
+		places({
 			injects: {
 				placedApps: builtInPlacedApps(),
 				windows: new MemoryWindowsGateway({

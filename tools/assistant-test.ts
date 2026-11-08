@@ -17,38 +17,10 @@ import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { toastRefusal } from "../packages/shared/data-framework/src/command-refusals.ts";
 import { toast } from "../packages/shared/kit/src/utils/toast.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { assistant as assistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { turnStepsOf } from "../plugins/chat/data/assistant/features/chat/lib/turn-steps.ts";
 import { toolsSummaryOf } from "../plugins/chat/src/features/assistant/lib/tools-summary.ts";
-import {
-	AttachFilesCommand,
-	ChooseClaudeModelCommand,
-	ChooseClaudeOptionCommand,
-	PickWorkingFolderCommand,
-	ChooseWorkingFolderCommand,
-	WorkingFoldersQuery,
-	AttachFolderCommand,
-	AttachReachQuery,
-	AgentSetupQuery,
-	ChatQuery,
-	ClaudeOptionsQuery,
-	ClearChatCommand,
-	DraftAttachmentsQuery,
-	FileDragQuery,
-	HearPageDragCommand,
-	RemoveAttachmentCommand,
-	SendMessageCommand,
-	SweepAttachmentsCommand,
-	CompactChatCommand,
-	SlashCommandsQuery,
-	HoldDraftTextCommand,
-	OpenChatDraftCommand,
-	TakeDraftCommand,
-	AdoptDraftCommand,
-	ComposerPrefillQuery,
-	PrefillDraftCommand,
-	TakePrefillCommand,
-} from "../plugins/chat/data/assistant/index.ts";
+import { assistant } from "../plugins/chat/data/assistant/index.ts";
 import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../plugins/chat/src/features/assistant/lib/slash-matches.ts";
 import { AssistantSessionGateway } from "../plugins/chat/data/assistant/gateways/assistant-session/assistant-session.gateway.ts";
 import { AssistantSetupGateway } from "../plugins/chat/data/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
@@ -252,7 +224,7 @@ function benchWith(reads: ProviderReads): Bench {
 
 function chatOver(parts: AssistantParts): Runtime {
 	return runtime()
-		.modules(AssistantModule({ injects: oneChatParts(parts) }))
+		.modules(assistantModule({ injects: oneChatParts(parts) }))
 		.start({
 			platform: "browser",
 			scope: {
@@ -264,7 +236,7 @@ function chatOver(parts: AssistantParts): Runtime {
 function webChatApp(): Runtime {
 	return runtime()
 		.modules(
-			AssistantModule({
+			assistantModule({
 				kind: "web",
 				webAssistant: NO_ASSISTANT,
 			}),
@@ -328,36 +300,51 @@ check(
 const claude = benchWith(CLAUDE);
 check(
 	"a pdf is refused by type",
-	reasonOf(await claude.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("report.pdf", "x")] })),
+	reasonOf(await claude.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("report.pdf", "x")] })),
 	"report.pdf can't be attached: only images (png, jpg, gif, webp) and text files (md, txt, json, ts, tsx, js, css, html, csv) can",
 );
 check(
 	"an image over 10 MB is refused by size",
 	reasonOf(
-		await claude.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("big.png", new Uint8Array(10 * MEGABYTE + 1))] }),
+		await claude.chat.send(assistant.composer.attachFiles, {
+			chat: null,
+			files: [fileOf("big.png", new Uint8Array(10 * MEGABYTE + 1))],
+		}),
 	),
 	"big.png is 10.0 MB, over the 10.0 MB limit for an image",
 );
 check(
 	"a text file over 1 MB is refused by size",
-	reasonOf(await claude.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("log.txt", "a".repeat(MEGABYTE + 1))] })),
+	reasonOf(
+		await claude.chat.send(assistant.composer.attachFiles, {
+			chat: null,
+			files: [fileOf("log.txt", "a".repeat(MEGABYTE + 1))],
+		}),
+	),
 	"log.txt is 1.0 MB, over the 1.0 MB limit for a text file",
 );
 check(
 	"a binary file named as text is refused",
-	reasonOf(await claude.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("fake.md", new Uint8Array([0, 159, 146]))] })),
+	reasonOf(
+		await claude.chat.send(assistant.composer.attachFiles, {
+			chat: null,
+			files: [fileOf("fake.md", new Uint8Array([0, 159, 146]))],
+		}),
+	),
 	"fake.md is not a text file",
 );
 check(
 	"a refused drop attaches nothing",
-	(await claude.chat.send(DraftAttachmentsQuery, { chat: null })).ok && claude.parts.draftAttachments.draftAttachments().length,
+	(await claude.chat.send(assistant.composer.draftAttachments, { chat: null })).ok &&
+		claude.parts.draftAttachments.draftAttachments().length,
 	0,
 );
 
-const attached = await claude.chat.send(AttachFilesCommand, { chat: null,
+const attached = await claude.chat.send(assistant.composer.attachFiles, {
+	chat: null,
 	files: [fileOf("shot.png", PNG_BYTES), fileOf("notes.md", "# Notes\n")],
 });
-const chips = await claude.chat.send(DraftAttachmentsQuery, { chat: null });
+const chips = await claude.chat.send(assistant.composer.draftAttachments, { chat: null });
 check(
 	"an image and a text file attach as chips, the image with a thumbnail",
 	[
@@ -375,19 +362,21 @@ check(
 	],
 );
 
-await claude.chat.send(SendMessageCommand, { chat: null, said: "What is on the screen?" });
+await claude.chat.send(assistant.composer.sendMessage, { chat: null, said: "What is on the screen?" });
 
 const webChat = webChatApp();
-const webReach = await webChat.send(AttachReachQuery, { chat: null });
+const webReach = await webChat.send(assistant.composer.attachReach, { chat: null });
 check("the web host offers no folder to attach", webReach.ok ? webReach.output.canAttachFolders : null, false);
 check(
 	"the web host refuses a folder even when asked directly",
-	reasonOf(await webChat.send(AttachFolderCommand, { chat: null })),
+	reasonOf(await webChat.send(assistant.composer.attachFolder, { chat: null })),
 	"Folders cannot be attached on this host",
 );
 check(
 	"the web host offers no Claude options, so no strip is drawn",
-	await webChat.send(ClaudeOptionsQuery, { chat: null }).then((answer) => (answer.ok ? answer.output : "refused")),
+	await webChat
+		.send(assistant.agent.claudeOptions, { chat: null })
+		.then((answer) => (answer.ok ? answer.output : "refused")),
 	null,
 );
 const folderTrailer = withAttachments("Read it", [
@@ -422,7 +411,7 @@ check(
 	["600", "600"],
 );
 check("sending clears the draft", claude.parts.draftAttachments.draftAttachments().length, 0);
-const shownChat = await claude.chat.send(ChatQuery, { chat: null });
+const shownChat = await claude.chat.send(assistant.chat.chat, { chat: null });
 check(
 	"the sent message shows its words without the trailer, and its attachments as chips with the image's thumbnail",
 	shownChat.ok
@@ -442,14 +431,14 @@ check(
 
 claude.session.busy = true;
 claude.clock.at += KEPT_AT_MOST_MS - 1;
-await claude.chat.send(SweepAttachmentsCommand, { chat: null });
+await claude.chat.send(assistant.composer.sweepAttachments, { chat: null });
 check(
 	"a sweep while the turn runs keeps its files under an hour old",
 	written.map((at) => existsSync(at)),
 	[true, true],
 );
 claude.session.busy = false;
-await claude.chat.send(SweepAttachmentsCommand, { chat: null });
+await claude.chat.send(assistant.composer.sweepAttachments, { chat: null });
 check(
 	"once the turn ends the sweep removes them",
 	written.map((at) => existsSync(at)),
@@ -464,21 +453,21 @@ check(
 	[0, 1],
 );
 
-await claude.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("again.png", PNG_BYTES)] });
-await claude.chat.send(SendMessageCommand, { chat: null, said: "again" });
+await claude.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("again.png", PNG_BYTES)] });
+await claude.chat.send(assistant.composer.sendMessage, { chat: null, said: "again" });
 const again = attachmentsIn(claude.session.sent[1] ?? "").entries[0]?.path ?? "";
 claude.session.busy = true;
 claude.clock.at += KEPT_AT_MOST_MS;
-await claude.chat.send(SweepAttachmentsCommand, { chat: null });
+await claude.chat.send(assistant.composer.sweepAttachments, { chat: null });
 check("a file kept an hour is swept even while the turn runs", existsSync(again), false);
 claude.session.busy = false;
 
-await claude.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("kept.md", "kept")] });
+await claude.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("kept.md", "kept")] });
 const draftId = claude.parts.draftAttachments.draftAttachments()[0]?.id ?? "";
 check(
 	"removing a chip takes it off the draft",
 	[
-		(await claude.chat.send(RemoveAttachmentCommand, { chat: null, id: draftId })).ok,
+		(await claude.chat.send(assistant.composer.removeAttachment, { chat: null, id: draftId })).ok,
 		claude.parts.draftAttachments.draftAttachments().length,
 	],
 	[true, 0],
@@ -486,15 +475,15 @@ check(
 check(
 	"removing it again answers the first removal, and removing a chip that is not there is refused",
 	[
-		(await claude.chat.send(RemoveAttachmentCommand, { chat: null, id: draftId })).ok,
-		reasonOf(await claude.chat.send(RemoveAttachmentCommand, { chat: null, id: "never-attached" })),
+		(await claude.chat.send(assistant.composer.removeAttachment, { chat: null, id: draftId })).ok,
+		reasonOf(await claude.chat.send(assistant.composer.removeAttachment, { chat: null, id: "never-attached" })),
 	],
 	[true, "That attachment was already removed"],
 );
 
-await claude.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("held.md", "held")] });
+await claude.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("held.md", "held")] });
 claude.session.refusesWith = "The assistant is still answering";
-const refusedSend = await claude.chat.send(SendMessageCommand, { chat: null, said: "now" });
+const refusedSend = await claude.chat.send(assistant.composer.sendMessage, { chat: null, said: "now" });
 check(
 	"a send the session refuses keeps the draft and leaves no file behind",
 	[
@@ -509,11 +498,13 @@ claude.session.refusesWith = null;
 const ollama = benchWith(OLLAMA);
 check(
 	"a provider that cannot read images refuses an image before anything is sent",
-	reasonOf(await ollama.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("photo.jpg", PNG_BYTES)] })),
+	reasonOf(
+		await ollama.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("photo.jpg", PNG_BYTES)] }),
+	),
 	"Ollama can't read images",
 );
-await ollama.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("plan.md", "step one")] });
-await ollama.chat.send(SendMessageCommand, { chat: null, said: "Read it" });
+await ollama.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("plan.md", "step one")] });
+await ollama.chat.send(assistant.composer.sendMessage, { chat: null, said: "Read it" });
 const inline = ollama.session.sent[0] ?? "";
 check(
 	"a provider with no reach to the disk gets a text file inline, fenced, and nothing is written",
@@ -524,13 +515,13 @@ check(
 const codex = benchWith(CODEX);
 check(
 	"a provider that reads no attached files refuses them",
-	reasonOf(await codex.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("plan.md", "x")] })),
+	reasonOf(await codex.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("plan.md", "x")] })),
 	"Ollama can't read attached files",
 );
 
 const rendering = benchWith(CLAUDE);
 rendering.setup.renderMarkdown = () => () => undefined;
-const renderingSetup = await rendering.chat.send(AgentSetupQuery, { chat: null });
+const renderingSetup = await rendering.chat.send(assistant.agent.agentSetup, { chat: null });
 check(
 	"the agent's setup crosses a MessagePort: it carries no function, even from a host that renders markdown",
 	renderingSetup.ok ? isCloned(renderingSetup.output) : renderingSetup.reason,
@@ -547,11 +538,14 @@ function isCloned(output: unknown): boolean {
 }
 
 const switched = benchWith(CLAUDE);
-await switched.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("photo.png", PNG_BYTES)] });
+await switched.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("photo.png", PNG_BYTES)] });
 switched.setup.reads = OLLAMA;
 check(
 	"switching to a provider that cannot read images refuses the send with the reason",
-	[reasonOf(await switched.chat.send(SendMessageCommand, { chat: null, said: "see" })), switched.session.sent.length],
+	[
+		reasonOf(await switched.chat.send(assistant.composer.sendMessage, { chat: null, said: "see" })),
+		switched.session.sent.length,
+	],
 	["Ollama can't read images", 0],
 );
 
@@ -562,35 +556,37 @@ const filesOf = (count: number): ReturnType<typeof fileOf>[] =>
 check(
 	"a provider that sets no limit takes any number of files; one that sets a limit refuses past it",
 	[
-		reasonOf(await crowded.chat.send(AttachFilesCommand, { chat: null, files: filesOf(25) })),
-		await crowded.chat.send(DraftAttachmentsQuery, { chat: null }).then((answer) => (answer.ok ? answer.output.length : -1)),
-		reasonOf(await capped.chat.send(AttachFilesCommand, { chat: null, files: filesOf(4) })),
+		reasonOf(await crowded.chat.send(assistant.composer.attachFiles, { chat: null, files: filesOf(25) })),
+		await crowded.chat
+			.send(assistant.composer.draftAttachments, { chat: null })
+			.then((answer) => (answer.ok ? answer.output.length : -1)),
+		reasonOf(await capped.chat.send(assistant.composer.attachFiles, { chat: null, files: filesOf(4) })),
 	],
 	[null, 25, "At most 3 files can be attached to one message"],
 );
 
 const cleared = benchWith(CLAUDE);
-await cleared.chat.send(AttachFilesCommand, { chat: null, files: [fileOf("a.png", PNG_BYTES)] });
+await cleared.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("a.png", PNG_BYTES)] });
 cleared.session.busy = true;
-await cleared.chat.send(SendMessageCommand, { chat: null, said: "x" });
-await cleared.chat.send(ClearChatCommand, { chat: null });
+await cleared.chat.send(assistant.composer.sendMessage, { chat: null, said: "x" });
+await cleared.chat.send(assistant.composer.clearChat, { chat: null });
 check("clearing the chat removes every attached file", fs.readdirSync(cleared.folder).length, 0);
 
 const pageDrag = webChatApp();
 const isPageOver = async (): Promise<unknown> => {
-	const drag = await pageDrag.send(FileDragQuery, { chat: null });
+	const drag = await pageDrag.send(assistant.composer.fileDrag, { chat: null });
 	return drag.ok ? drag.output.isOver : null;
 };
 check("no file drag, no drop zone", await isPageOver(), false);
-await pageDrag.send(HearPageDragCommand, { chat: null, drag: "enter" });
-await pageDrag.send(HearPageDragCommand, { chat: null, drag: "enter" });
-await pageDrag.send(HearPageDragCommand, { chat: null, drag: "leave" });
+await pageDrag.send(assistant.composer.hearPageDrag, { chat: null, drag: "enter" });
+await pageDrag.send(assistant.composer.hearPageDrag, { chat: null, drag: "enter" });
+await pageDrag.send(assistant.composer.hearPageDrag, { chat: null, drag: "leave" });
 check("a drag that leaves a child of the chat but not the chat keeps the zone", await isPageOver(), true);
-await pageDrag.send(HearPageDragCommand, { chat: null, drag: "leave" });
+await pageDrag.send(assistant.composer.hearPageDrag, { chat: null, drag: "leave" });
 check("a drag that leaves the chat hides the zone", await isPageOver(), false);
-await pageDrag.send(HearPageDragCommand, { chat: null, drag: "enter" });
-await pageDrag.send(HearPageDragCommand, { chat: null, drag: "drop" });
-const pageDropped = await pageDrag.send(FileDragQuery, { chat: null });
+await pageDrag.send(assistant.composer.hearPageDrag, { chat: null, drag: "enter" });
+await pageDrag.send(assistant.composer.hearPageDrag, { chat: null, drag: "drop" });
+const pageDropped = await pageDrag.send(assistant.composer.fileDrag, { chat: null });
 check(
 	"a page drop hides the zone and leaves nothing for the host path to attach",
 	pageDropped.ok ? pageDropped.output : null,
@@ -599,7 +595,7 @@ check(
 
 const slashed = benchWith(CLAUDE);
 const slashNames = async (): Promise<unknown> => {
-	const names = await slashed.chat.send(SlashCommandsQuery, { chat: null });
+	const names = await slashed.chat.send(assistant.slashCommands.slashCommands, { chat: null });
 	return names.ok ? names.output : names.reason;
 };
 check("a provider that cannot compact offers only /clear", await slashNames(), ["clear"]);
@@ -665,11 +661,13 @@ check(
 		null,
 	],
 );
-await slashed.chat.send(CompactChatCommand, { chat: null });
+await slashed.chat.send(assistant.slashCommands.compactChat, { chat: null });
 check("/compact asks the session to compact, once", slashed.session.compacted, 1);
 check(
 	"web has no session, so no commands",
-	await pageDrag.send(SlashCommandsQuery, { chat: null }).then((names) => (names.ok ? names.output : names.reason)),
+	await pageDrag
+		.send(assistant.slashCommands.slashCommands, { chat: null })
+		.then((names) => (names.ok ? names.output : names.reason)),
 	[],
 );
 
@@ -696,7 +694,7 @@ const folderChat = chatOver({
 	claudeOptions: new CellClaudeOptionsGateway(claudeOptionsCell()),
 });
 const currentFolder = async (): Promise<unknown> => {
-	const folders = await folderChat.send(WorkingFoldersQuery, { chat: null });
+	const folders = await folderChat.send(assistant.agent.workingFolders, { chat: null });
 	return folders.ok ? folders.output : folders.reason;
 };
 check("a working folder with no recent ones offers its current folder as the recent one", await currentFolder(), {
@@ -704,13 +702,13 @@ check("a working folder with no recent ones offers its current folder as the rec
 	current: "/Users/me/habits",
 	recent: ["/Users/me/habits"],
 });
-await folderChat.send(PickWorkingFolderCommand, { chat: null });
+await folderChat.send(assistant.agent.pickWorkingFolder, { chat: null });
 check("a pick the person cancels keeps the current folder", await currentFolder(), {
 	workspace: "Habits",
 	current: "/Users/me/habits",
 	recent: ["/Users/me/habits"],
 });
-await folderChat.send(PickWorkingFolderCommand, { chat: null });
+await folderChat.send(assistant.agent.pickWorkingFolder, { chat: null });
 check("a picked folder becomes the current one", await currentFolder(), {
 	workspace: "Habits",
 	current: "/Users/me/other",
@@ -731,11 +729,11 @@ const folderAppOver = (): Runtime =>
 const askFolders = folderAppOver();
 const chatFolders = folderAppOver();
 const folderIn = async (started: Runtime): Promise<unknown> => {
-	const folders = await started.send(WorkingFoldersQuery, { chat: null });
+	const folders = await started.send(assistant.agent.workingFolders, { chat: null });
 	return folders.ok ? folders.output?.current : folders.reason;
 };
 await folderIn(chatFolders);
-await askFolders.send(ChooseWorkingFolderCommand, { chat: null, path: "/Users/me/asked" });
+await askFolders.send(assistant.agent.chooseWorkingFolder, { chat: null, path: "/Users/me/asked" });
 check(
 	"a folder chosen in the Ask composer is the folder every chat app reads next",
 	[await folderIn(askFolders), await folderIn(chatFolders)],
@@ -743,18 +741,20 @@ check(
 );
 check(
 	"the web host refuses a working folder pick before anything opens",
-	reasonOf(await webChat.send(PickWorkingFolderCommand, { chat: null })),
+	reasonOf(await webChat.send(assistant.agent.pickWorkingFolder, { chat: null })),
 	"A working folder cannot be chosen on this host",
 );
-await folderChat.send(ChooseClaudeOptionCommand, { chat: null, option: { model: "sonnet" } });
+await folderChat.send(assistant.agent.chooseClaudeOption, { chat: null, option: { model: "sonnet" } });
 check(
 	"choosing a Claude option changes only that option",
-	await folderChat.send(ClaudeOptionsQuery, { chat: null }).then((answer) => (answer.ok ? answer.output : answer.reason)),
+	await folderChat
+		.send(assistant.agent.claudeOptions, { chat: null })
+		.then((answer) => (answer.ok ? answer.output : answer.reason)),
 	{ mode: "auto", model: "sonnet", effort: "medium", usage: null },
 );
 check(
 	"the web host refuses a Claude option, for it offers none",
-	reasonOf(await webChat.send(ChooseClaudeOptionCommand, { chat: null, option: { model: "sonnet" } })),
+	reasonOf(await webChat.send(assistant.agent.chooseClaudeOption, { chat: null, option: { model: "sonnet" } })),
 	"Claude Code's options are not offered on this host",
 );
 
@@ -795,8 +795,8 @@ async function claudeModelPickedWith(providerIds: readonly string[]): Promise<re
 		assistantSetup: setup,
 		claudeOptions: new CellClaudeOptionsGateway(claudeOptionsCell()),
 	});
-	const answer = await picker.send(ChooseClaudeModelCommand, { chat: null, model: "sonnet" });
-	const options = await picker.send(ClaudeOptionsQuery, { chat: null });
+	const answer = await picker.send(assistant.agent.chooseClaudeModel, { chat: null, model: "sonnet" });
+	const options = await picker.send(assistant.agent.claudeOptions, { chat: null });
 	return [answer.ok, setup.chosenLog, setup.chosenProviderId, options.ok ? options.output?.model : options.reason];
 }
 
@@ -867,8 +867,10 @@ check(
 const saidOf = (answer: { readonly ok: boolean; readonly output?: { readonly said: string } }): string | null =>
 	answer.ok ? (answer.output?.said ?? null) : null;
 const draftNames = async (): Promise<string[]> =>
-	slashed.chat.send(DraftAttachmentsQuery, { chat: null }).then((answer) => (answer.ok ? answer.output.map(({ name }) => name) : []));
-await slashed.chat.send(OpenChatDraftCommand, { chat: "chat-a" });
+	slashed.chat
+		.send(assistant.composer.draftAttachments, { chat: null })
+		.then((answer) => (answer.ok ? answer.output.map(({ name }) => name) : []));
+await slashed.chat.send(assistant.composer.openChatDraft, { chat: "chat-a" });
 slashed.parts.draftAttachments.saveDraftAttachments([
 	{
 		id: "shot",
@@ -880,10 +882,10 @@ slashed.parts.draftAttachments.saveDraftAttachments([
 		path: null,
 	},
 ]);
-await slashed.chat.send(HoldDraftTextCommand, { chat: null, said: "make the header blue" });
-const inB = saidOf(await slashed.chat.send(OpenChatDraftCommand, { chat: "chat-b" }));
+await slashed.chat.send(assistant.composer.holdDraftText, { chat: null, said: "make the header blue" });
+const inB = saidOf(await slashed.chat.send(assistant.composer.openChatDraft, { chat: "chat-b" }));
 const filesInB = await draftNames();
-const backInA = saidOf(await slashed.chat.send(OpenChatDraftCommand, { chat: "chat-a" }));
+const backInA = saidOf(await slashed.chat.send(assistant.composer.openChatDraft, { chat: "chat-a" }));
 const filesBackInA = await draftNames();
 check(
 	"a draft belongs to its chat: another chat opens clean, and coming back brings the text and the files",
@@ -902,9 +904,11 @@ const askedShot = {
 };
 const asking = benchWith(CLAUDE);
 const namesIn = async (bench: Bench): Promise<string[]> =>
-	bench.chat.send(DraftAttachmentsQuery, { chat: null }).then((answer) => (answer.ok ? answer.output.map(({ name }) => name) : []));
+	bench.chat
+		.send(assistant.composer.draftAttachments, { chat: null })
+		.then((answer) => (answer.ok ? answer.output.map(({ name }) => name) : []));
 asking.parts.draftAttachments.saveDraftAttachments([askedShot]);
-const taken = await asking.chat.send(TakeDraftCommand, { chat: null });
+const taken = await asking.chat.send(assistant.composer.takeDraft, { chat: null });
 const takenFiles = taken.ok ? taken.output.attachments : [];
 check(
 	"the ask composer hands its files over once and keeps none",
@@ -913,14 +917,14 @@ check(
 );
 const drafted = benchWith(CLAUDE);
 const heldForLater = saidOf(
-	await drafted.chat.send(AdoptDraftCommand, {
+	await drafted.chat.send(assistant.composer.adoptDraft, {
 		chat: "new-chat",
 		said: "why does the build fail",
 		attachments: [...takenFiles],
 		sends: false,
 	}),
 );
-const openedDraft = saidOf(await drafted.chat.send(OpenChatDraftCommand, { chat: "new-chat" }));
+const openedDraft = saidOf(await drafted.chat.send(assistant.composer.openChatDraft, { chat: "new-chat" }));
 check(
 	"Create only: the new chat opens with the text and the files in its composer, and nothing is sent",
 	[heldForLater, openedDraft, await namesIn(drafted), drafted.session.sent],
@@ -928,21 +932,23 @@ check(
 );
 const prefilled = benchWith(CLAUDE);
 const prefillNow = async (): Promise<unknown> =>
-	prefilled.chat.send(ComposerPrefillQuery, { chat: null }).then((answer) => (answer.ok ? answer.output : "refused"));
-await prefilled.chat.send(PrefillDraftCommand, { chat: null, text: "fix the header" });
+	prefilled.chat
+		.send(assistant.prefill.composerPrefill, { chat: null })
+		.then((answer) => (answer.ok ? answer.output : "refused"));
+await prefilled.chat.send(assistant.prefill.prefillDraft, { chat: null, text: "fix the header" });
 const waiting = await prefillNow();
-await prefilled.chat.send(TakePrefillCommand, { chat: null, id: 1 });
+await prefilled.chat.send(assistant.prefill.takePrefill, { chat: null, id: 1 });
 const afterTake = await prefillNow();
-await prefilled.chat.send(PrefillDraftCommand, { chat: null, text: "and the footer" });
+await prefilled.chat.send(assistant.prefill.prefillDraft, { chat: null, text: "and the footer" });
 check(
 	"a prefill waits for a late composer, is taken once, and the next one gets a new id",
 	[waiting, afterTake, await prefillNow()],
 	[{ id: 1, text: "fix the header" }, null, { id: 2, text: "and the footer" }],
 );
 const alreadyOpen = benchWith(CLAUDE);
-await alreadyOpen.chat.send(OpenChatDraftCommand, { chat: "shown-chat" });
+await alreadyOpen.chat.send(assistant.composer.openChatDraft, { chat: "shown-chat" });
 const fillNow = saidOf(
-	await alreadyOpen.chat.send(AdoptDraftCommand, {
+	await alreadyOpen.chat.send(assistant.composer.adoptDraft, {
 		chat: "shown-chat",
 		said: "look at this",
 		attachments: [askedShot],
@@ -955,7 +961,7 @@ check(
 	["look at this", ["asked.png"]],
 );
 const askedAndSent = benchWith(CLAUDE);
-await askedAndSent.chat.send(AdoptDraftCommand, {
+await askedAndSent.chat.send(assistant.composer.adoptDraft, {
 	chat: "sent-chat",
 	said: "fix the build",
 	attachments: [askedShot],
@@ -967,14 +973,14 @@ check(
 	[
 		sentTrailer.said,
 		sentTrailer.entries.map(({ name }) => name),
-		saidOf(await askedAndSent.chat.send(OpenChatDraftCommand, { chat: "sent-chat" })),
+		saidOf(await askedAndSent.chat.send(assistant.composer.openChatDraft, { chat: "sent-chat" })),
 		await namesIn(askedAndSent),
 	],
 	["fix the build", ["asked.png"], "", []],
 );
 
 const tooMany = {
-	name: "assistant/attach-files",
+	name: "assistant.composer.attach-files",
 	reason: "At most 3 files can be attached to one message",
 	ran: false,
 };

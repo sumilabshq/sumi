@@ -2,7 +2,7 @@ import { createElement as h, useState, useTransition } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { PAGE_UNASKED } from "@widgetarium/core/gateway/page.js";
-import { PagesQuery } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas";
 import { useTurnToPage } from "../../lib/use-turn-to-page.js";
 import { PanelHeader } from "../side-panel/panel-header.js";
 import { PAGE_ROW_SHAPE } from "../../lib/panel-row-look.js";
@@ -15,7 +15,7 @@ const LIST = "cv:flex cv:flex-col cv:gap-0.5 cv:overflow-auto cv:[scrollbar-widt
 export function PagesList(): ReactElement {
 	const [limit, setLimit] = useState(PAGE_UNASKED);
 	const [, startTransition] = useTransition();
-	const pages = useQuery(PagesQuery, { cursor: null, limit }).data;
+	const pages = useQuery(canvas.pages.pages, { cursor: null, limit }).data;
 	const turnToPage = useTurnToPage();
 	return (
 		<section className="cv:pointer-events-auto cv:flex cv:max-h-[40%] cv:flex-none cv:flex-col" data-canvas-pages="">

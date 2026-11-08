@@ -8,10 +8,10 @@ export type { AppTabs } from "./shared/host/app-tabs.host.js";
 export type { NativeWebPages } from "./shared/host/native-web-pages.host.js";
 export type { WebPageConfig } from "./gateways/web-page-parts/web-page-parts.gateway.js";
 
-export const WebPageModule = module("web-page")
+export const webPage = module()
 	.on(Server)
 	.config<WebPageConfig>()
 	.guard(AuthenticatedGuard)
 	.use(WebPageCallLoggerMiddleware)
 	.provide((facts) => webPagePartsOn(facts))
-	.handles(...handled);
+	.handles(handled);

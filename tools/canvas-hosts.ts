@@ -3,8 +3,8 @@ import type { Runtime } from "@widgetarium/data-framework";
 import type { SpecRead } from "../packages/shared/core/src/app-spec.ts";
 import type { StartedProject } from "../packages/shared/core/src/app/widgetarium-app.js";
 import { ModuleRegistry } from "../packages/shared/core/src/engine/module-registry.js";
-import { CanvasModule } from "../packages/domain/canvas/module.ts";
-import { OpenCanvasCommand } from "../packages/domain/canvas/index.ts";
+import { canvas as canvasModule } from "../packages/domain/canvas/module.ts";
+import { canvas as canvasContract } from "../packages/domain/canvas/index.ts";
 import { projectCanvasParts } from "../packages/domain/canvas/gateways/canvas-parts/project.gateway.ts";
 import type { CanvasParts } from "../packages/domain/canvas/gateways/canvas-parts/canvas-parts.gateway.ts";
 import { DesignFolderGateway } from "../packages/domain/canvas/gateways/design-folder/design-folder.gateway.ts";
@@ -37,13 +37,13 @@ export function canvasPartsOver(chosen: Partial<CanvasParts> = {}): CanvasParts 
 
 export function canvasAppOver(parts: CanvasParts): Runtime {
 	return runtime()
-		.modules(CanvasModule({ injects: parts }))
+		.modules(canvasModule({ injects: parts }))
 		.start({ platform: "browser", scope: { workspaceId: FARM_OPENED.app } });
 }
 
 export async function openedCanvasOver(parts: CanvasParts, opened: CanvasOpened = FARM_OPENED): Promise<Runtime> {
 	const canvas = canvasAppOver(parts);
-	const answer = await canvas.send(OpenCanvasCommand, opened);
+	const answer = await canvas.send(canvasContract.view.openCanvas, opened);
 
 	if (!answer.ok) {
 		throw new Error(`the test canvas did not open: ${answer.reason}`);

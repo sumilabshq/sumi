@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Button, Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
-import { OpenProvidersCommand } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const NO_PROVIDER_LEAD = "{label} is not on this machine yet.";
@@ -12,7 +12,7 @@ const SET_UP = "Set up a provider";
 
 export function NoProviderChat({ label }: { readonly label: string }): ReactElement {
 	const chat = useChatKey();
-	const openProviders = useCommand(OpenProvidersCommand);
+	const openProviders = useCommand(assistant.agent.openProviders);
 	return (
 		<div className="wg-studio-ai-empty">
 			<Icon name="gear" size={28} />

@@ -6,12 +6,13 @@ layJsdomGlobals();
 
 const { createElement: h } = await import("react");
 const { createRoot } = await import("react-dom/client");
-const { AssistantPanel } = await import("../plugins/chat/src/features/assistant/ui/assistant-panel/assistant-panel.tsx");
+const { AssistantPanel } =
+	await import("../plugins/chat/src/features/assistant/ui/assistant-panel/assistant-panel.tsx");
 const { NO_ASSISTANT } = await import("../packages/shared/core/src/engine/assistant-port.ts");
 const { RuntimeProvider } = await import("../packages/shared/data-framework/src/index.ts");
 const { chatAppOver } = await import("./assistant-chat-app.ts");
 
-const LOCAL_REFUSAL = "places/app-tab was called too often; try again shortly";
+const LOCAL_REFUSAL = "places.tab-facts.app-tab was called too often; try again shortly";
 const READY_SETUP = {
 	isReady: true,
 	providerLabel: "Claude Code",
@@ -40,7 +41,9 @@ const setupRefused = drawnPanel({
 	can: true,
 	setup: () => Promise.reject(new Error(LOCAL_REFUSAL)),
 });
-await waitFor(() => setupRefused.querySelector("[role=alert]") !== null && setupRefused.querySelector("textarea") !== null);
+await waitFor(
+	() => setupRefused.querySelector("[role=alert]") !== null && setupRefused.querySelector("textarea") !== null,
+);
 check(
 	"a refused setup read is said in one line above the composer, and the chat stays",
 	[
