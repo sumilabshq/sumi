@@ -5,6 +5,8 @@ export const GLYPHS: Readonly<Record<string, string>> = {
 	fold: '<path d="M11.75 5.5l-4.5 4.5 4.5 4.5"/>',
 	expand: '<path d="M11.8 4.6h3.6v3.6"/><path d="M8.2 15.4H4.6v-3.6"/><path d="M15.4 4.6l-4.4 4.4M4.6 15.4l4.4-4.4"/>',
 	collapse: '<path d="M15 9.2h-3.6V5.6"/><path d="M5 10.8h3.6v3.6"/><path d="M11.4 9.2l4-4M8.6 10.8l-4 4"/>',
+	"corners-out": '<path d="M11 4.5h4.5V9"/><path d="M9 15.5H4.5V11"/>',
+	"corners-in": '<path d="M15.5 8.5h-4v-4"/><path d="M4.5 11.5h4v4"/>',
 	search: '<circle cx="9.25" cy="9.25" r="4.75"/><path d="M12.9 12.9l3.35 3.35"/>',
 	filter: '<path d="M3.6 5.4h12.8l-4.9 5.7v4.5l-3-1.7v-2.8z"/>',
 	curve: '<path d="M3.6 13.2l3.5-4.3 3 2.6 3.2-4.6 3.1 3"/>',
