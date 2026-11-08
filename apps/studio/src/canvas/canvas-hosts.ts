@@ -1,4 +1,4 @@
-import type { CanvasHosts as CanvasConfig } from "@widgetarium/canvas/module";
+import type { CanvasHosts as CanvasConfig } from "@widgetarium/canvas/implementation";
 
 export type VaultCanvasHosts = Omit<Extract<CanvasConfig, { readonly kind: "vault" }>, "kind">;
 

@@ -1,4 +1,4 @@
-import type { AgentSetup, ClaudeEffort, ClaudeModel, PermissionMode } from "@widgetarium/assistant";
+import type { AgentSetup, ClaudeEffort, ClaudeModel, PermissionMode } from "@widgetarium/assistant/contract";
 
 export function providerLabelOf(setup: AgentSetup, id: string): string {
 	return setup.providers.find((provider) => provider.id === id)?.label ?? setup.providerLabel;

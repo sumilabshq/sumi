@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { PrimaryAction } from "../page-state/primary-action.js";
 

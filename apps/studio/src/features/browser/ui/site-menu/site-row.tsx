@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Segmented } from "@widgetarium/kit";
-import type { AccessLevel } from "@widgetarium/browser";
+import type { AccessLevel } from "@widgetarium/browser/contract";
 
 export interface SiteRowProps {
 	readonly siteKey: string;

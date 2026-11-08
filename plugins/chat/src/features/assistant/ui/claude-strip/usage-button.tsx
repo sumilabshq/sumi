@@ -5,7 +5,7 @@ import { percentOf } from "../../lib/usage-said.js";
 import { StripButton } from "./strip-button.js";
 import { UsageMenu } from "./usage-menu.js";
 import { UsageRing } from "./usage-ring.js";
-import type { ClaudeOptions } from "@widgetarium/assistant";
+import type { ClaudeOptions } from "@widgetarium/assistant/contract";
 
 const USAGE = "Usage";
 const NO_USAGE = "—";

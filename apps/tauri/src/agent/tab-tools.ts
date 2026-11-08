@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GroupHueSchema, appHost } from "@widgetarium/app-host";
+import { GroupHueSchema, appHost } from "@widgetarium/app-host/contract";
 import type { Runtime } from "@widgetarium/data-framework";
 import {
 	PlaceSchema,

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SidebarTab, SplitMark } from "@widgetarium/app-host";
+import type { SidebarTab, SplitMark } from "@widgetarium/app-host/contract";
 import { TabRow } from "../tab-row/tab-row.js";
 import type { RowBadge } from "../tab-row/row-badge.js";
 import { HolderEntry } from "./holder-entry.js";

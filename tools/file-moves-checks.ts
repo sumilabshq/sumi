@@ -5,12 +5,12 @@ import { runtime, orpcTransport } from "../packages/shared/data-framework/src/in
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { places, fileSystem } from "@sumi/contract";
-import { places as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { places as RunnablePlacesModule } from "../plugins/apps/data/places/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
-import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
-import { filePage } from "../plugins/files/data/file-page/module.ts";
+import { filePage } from "../plugins/files/data/file-page/generated/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 import { builtInPlacedApps } from "./placed-apps-fixture.ts";

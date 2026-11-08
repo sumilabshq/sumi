@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Row } from "@sumi/command-menu";
+import type { Row } from "@sumi/command-menu/contract";
 
 export interface RowTitleProps {
 	readonly title: string;

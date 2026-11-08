@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TestPlan, TestRun } from "@widgetarium/tasks";
+import type { TestPlan, TestRun } from "@widgetarium/tasks/contract";
 import { Icon } from "@widgetarium/kit";
 import { agoOf } from "../../lib/task-times.js";
 import { TestCaseRow } from "./test-case-row.js";

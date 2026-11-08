@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { REFUSAL_HANDLER } from "@widgetarium/data-framework/command-refusals";
 import type { RefusalHandler, Runtime } from "@widgetarium/data-framework";
 

@@ -1,4 +1,4 @@
-import type { SlashName } from "@widgetarium/assistant";
+import type { SlashName } from "@widgetarium/assistant/contract";
 
 export type SlashKind = "command" | "skill";
 

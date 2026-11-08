@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskView } from "@widgetarium/tasks";
+import type { TaskView } from "@widgetarium/tasks/contract";
 import { TaskProps } from "./task-props.js";
 
 export interface TaskSideProps {

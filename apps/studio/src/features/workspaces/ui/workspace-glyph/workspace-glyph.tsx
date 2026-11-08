@@ -1,6 +1,6 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement } from "react";
-import type { WorkspaceIcon } from "@widgetarium/workspaces";
+import type { WorkspaceIcon } from "@widgetarium/workspaces/contract";
 import { EmojiGlyph } from "./emoji-glyph.js";
 import { FilledIcon } from "./filled-icon.js";
 

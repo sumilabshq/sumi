@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Row } from "@sumi/command-menu";
+import type { Row } from "@sumi/command-menu/contract";
 import type { MenuMoves } from "../../lib/use-menu-moves.js";
 import { useScrollsIntoViewWhen } from "../../lib/use-scrolls-into-view-when.js";
 import { RowEnd } from "./row-end.js";

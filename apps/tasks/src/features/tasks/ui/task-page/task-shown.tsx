@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import type { TaskView } from "@widgetarium/tasks";
+import type { TaskView } from "@widgetarium/tasks/contract";
 import { useTaskPageLayout } from "../../lib/use-task-page-layout.js";
 import { useRereadsAtContinue } from "../../lib/use-rereads-at-continue.js";
 import { NarrowTask } from "./narrow-task.js";

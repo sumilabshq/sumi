@@ -1,5 +1,5 @@
 import { runtime, orpcTransport } from "@widgetarium/data-framework";
-import { fixtureBilling } from "@widgetarium/fixture-billing";
+import { fixtureBilling } from "@widgetarium/fixture-billing/contract";
 
 const SERVER = "http://localhost:8787";
 

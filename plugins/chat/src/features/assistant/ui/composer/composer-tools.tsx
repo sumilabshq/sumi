@@ -8,7 +8,7 @@ import { ChatMenuLine } from "../chat-menu/chat-menu-line.js";
 import { ChatMenuNote } from "../chat-menu/chat-menu-note.js";
 import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
 import { useAttachesFiles } from "../../lib/use-attaches-files.js";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const ADD = "Add";

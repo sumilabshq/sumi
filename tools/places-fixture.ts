@@ -3,7 +3,7 @@ import type { z } from "zod";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport } from "../packages/shared/data-framework/src/index.ts";
 import { places } from "../plugins/apps/data/places/generated/contract.ts";
-import { places as placesModule } from "../plugins/apps/data/places/module.ts";
+import { places as placesModule } from "../plugins/apps/data/places/generated/module.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { KeptSessionTabsSchema, migratedTabsOf } from "../plugins/apps/data/places/gateways/tabs/tauri/kept-session.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";

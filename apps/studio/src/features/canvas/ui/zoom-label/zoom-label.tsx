@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { GHOST_LABEL, RAISED_PILL } from "../../lib/top-bar-look.js";
 import { useTopBarLook } from "../../lib/top-bar-look-context.js";
 import { ZOOM_LEAVES } from "../../lib/app-zone-steps.js";

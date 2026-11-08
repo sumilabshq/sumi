@@ -5,7 +5,7 @@ import { useStepsThroughPictures } from "../../lib/use-steps-through-pictures.js
 import { ViewerHead } from "./viewer-head.js";
 import { ViewerStage } from "./viewer-stage.js";
 import { ViewerThumbs } from "./viewer-thumbs.js";
-import type { AttachmentChip } from "@widgetarium/assistant";
+import type { AttachmentChip } from "@widgetarium/assistant/contract";
 
 export interface PictureViewerProps {
 	readonly pictures: readonly AttachmentChip[];

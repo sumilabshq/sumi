@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Spinner, useNow } from "@widgetarium/kit";
 import { doingOf } from "@widgetarium/core/job-words.js";
-import type { Job } from "@widgetarium/canvas";
+import type { Job } from "@widgetarium/canvas/contract";
 
 export interface JobLineProps {
 	readonly job: Job;

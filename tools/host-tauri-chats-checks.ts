@@ -3,14 +3,14 @@ import { chatSessionLinkOf } from "../apps/tauri/src/assistant/chat-session-link
 import type { RunAnswer, TurnRun } from "../apps/tauri/src/assistant/turn-run.ts";
 import { readChatLogs } from "../apps/tauri/src/chat/tauri-chat-history.ts";
 import { focusedChatPortOf } from "../apps/studio/src/chats-column/focused-chat.ts";
-import { layout as layoutModule } from "../packages/state/layout/module.ts";
+import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
 import { partsOf } from "./layout-rules-checks.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { workspaces as workspacesContract } from "../packages/domain/workspaces/generated/contract.ts";
-import { workspaces as workspacesModule } from "../packages/domain/workspaces/module.ts";
+import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
 import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";

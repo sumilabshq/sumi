@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { PopoverSeparator } from "@widgetarium/kit";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { useGitPage } from "../../lib/git-page-context.js";

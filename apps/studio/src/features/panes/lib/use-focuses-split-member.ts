@@ -1,8 +1,8 @@
 import { useCallback, useRef } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import type { ShownSplit } from "@widgetarium/app-host";
-import type { PaneBoard } from "@widgetarium/layout";
+import { appHost } from "@widgetarium/app-host/contract";
+import type { ShownSplit } from "@widgetarium/app-host/contract";
+import type { PaneBoard } from "@widgetarium/layout/contract";
 import { viewTargetOf } from "./split-panes.js";
 
 interface Seen {

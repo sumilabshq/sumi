@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useOpensPictures } from "../../lib/use-opens-pictures.js";
 import { SentPicture } from "./sent-picture.js";
-import type { AttachmentChip } from "@widgetarium/assistant";
+import type { AttachmentChip } from "@widgetarium/assistant/contract";
 
 export function SentPictures({ pictures }: { readonly pictures: readonly AttachmentChip[] }): ReactElement {
 	const { holder, open, viewer } = useOpensPictures<HTMLDivElement>(pictures);

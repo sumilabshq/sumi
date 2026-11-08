@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, tooltipMarks } from "@widgetarium/kit";
-import type { AttachmentKind } from "@widgetarium/assistant";
+import type { AttachmentKind } from "@widgetarium/assistant/contract";
 import type { Carried } from "../../lib/carried.js";
 
 export interface CarriedAttachmentsProps {

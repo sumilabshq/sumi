@@ -19,9 +19,9 @@ import { OutfitIdSchema } from "../apps/studio/src/features/mascot/lib/outfit.sc
 import type { MascotState } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
 import { activityAfter } from "../plugins/chat/data/mascot/features/activity/lib/activity-after.ts";
 import { MemoryAgentActivityGateway } from "../plugins/chat/data/mascot/gateways/agent-activity/memory.gateway.ts";
-import { AgentActivitySchema, mascot } from "../plugins/chat/data/mascot/index.ts";
-import type { AgentActivity, AgentEvent } from "../plugins/chat/data/mascot/index.ts";
-import { mascot as mascotModule } from "../plugins/chat/data/mascot/module.ts";
+import { AgentActivitySchema, mascot } from "../plugins/chat/data/mascot/generated/contract.ts";
+import type { AgentActivity, AgentEvent } from "../plugins/chat/data/mascot/generated/contract.ts";
+import { mascot as mascotModule } from "../plugins/chat/data/mascot/generated/module.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";

@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { filePage } from "@sumi/file-page";
-import type { FileSwitch } from "@sumi/file-page";
+import { filePage } from "@sumi/file-page/contract";
+import type { FileSwitch } from "@sumi/file-page/contract";
 import { ToggleAction } from "@sumi/sumi-host-plugin";
 import type { ToggleFace } from "@sumi/sumi-host-plugin";
 import { useCommand } from "@widgetarium/data-framework";

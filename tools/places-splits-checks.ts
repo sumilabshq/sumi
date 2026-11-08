@@ -1,8 +1,8 @@
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { places } from "../plugins/apps/data/places/index.ts";
-import type { TabsAsk } from "../plugins/apps/data/places/index.ts";
+import { places } from "../plugins/apps/data/places/generated/contract.ts";
+import type { TabsAsk } from "../plugins/apps/data/places/generated/contract.ts";
 import type { SidebarEntry } from "../plugins/apps/data/places/shared/schema/tab-rows.schema.ts";
 import type { SplitDir, SplitNode } from "../plugins/apps/data/places/shared/schema/splits.schema.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";

@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
-import type { FrameBounds, PaneView } from "@widgetarium/layout";
+import type { FrameBounds, PaneView } from "@widgetarium/layout/contract";
 import { useBoardLook } from "../../lib/use-board-look.js";
 import { useFocusesSplitMember } from "../../lib/use-focuses-split-member.js";
 import { PaneSlot, rectStyleOf } from "./pane-slot.js";

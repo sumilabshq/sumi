@@ -1,4 +1,4 @@
-import type { TabArt } from "@widgetarium/app-host";
+import type { TabArt } from "@widgetarium/app-host/contract";
 
 export interface ArtShape {
 	readonly tag: "path" | "rect" | "circle" | "text";

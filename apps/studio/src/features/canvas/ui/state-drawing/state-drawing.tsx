@@ -4,7 +4,7 @@ import { Contained } from "@widgetarium/core/catalogue-contained.js";
 import { PictureContext } from "@widgetarium/core/engine/picture-scope.js";
 import { leaseFor } from "@widgetarium/core/engine/render.js";
 import type { MountEntry } from "@widgetarium/core";
-import type { MountPicture, StatePicture } from "@widgetarium/canvas";
+import type { MountPicture, StatePicture } from "@widgetarium/canvas/contract";
 import type { Drawing } from "../../lib/drawing.js";
 import { RefusedDrawing } from "./refused-drawing.js";
 

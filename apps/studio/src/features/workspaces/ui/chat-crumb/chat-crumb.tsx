@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { NEW_CHAT_TITLE } from "@widgetarium/core/engine/focused-chat-port.js";
-import { workspaces } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import type { ChatRenaming } from "../../lib/chat-renaming.js";
 import { useRenamingIdIn } from "../../lib/chat-renaming.js";
 import { useChatRow } from "../../lib/use-chat-row.js";

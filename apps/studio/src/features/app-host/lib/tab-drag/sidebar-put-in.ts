@@ -6,7 +6,7 @@ import type {
 	TabChild,
 	TabDrop,
 	TabsSidebar,
-} from "@widgetarium/app-host";
+} from "@widgetarium/app-host/contract";
 import { keptMap } from "./kept-list.js";
 import { insertedBefore, keyedSpot } from "./keyed-spot.js";
 import { groupStateOf } from "./sidebar-take-out.js";

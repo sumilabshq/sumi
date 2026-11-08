@@ -1,7 +1,7 @@
 import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { tasks } from "@widgetarium/tasks";
-import type { BoardColumn as Column, TaskStatus } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks/contract";
+import type { BoardColumn as Column, TaskStatus } from "@widgetarium/tasks/contract";
 import { useQuery } from "@widgetarium/data-framework";
 import { useGlidesBoard } from "../../lib/use-glides-board.js";
 import { useRereadsAtContinue } from "../../lib/use-rereads-at-continue.js";

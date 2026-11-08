@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskCard } from "@widgetarium/tasks";
+import type { TaskCard } from "@widgetarium/tasks/contract";
 import { Button } from "@widgetarium/kit";
 import { useContinueTask } from "../../lib/use-continue-task.js";
 import { ContinueLink } from "../task-card/continue-link.js";

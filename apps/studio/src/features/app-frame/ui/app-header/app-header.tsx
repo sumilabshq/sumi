@@ -1,8 +1,8 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { apps as appsContract } from "@sumi/apps";
+import { apps as appsContract } from "@sumi/apps/contract";
 import { useCommand, useOptionalQuery, useQuery } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 import { PlateCrumb } from "../../../plate/ui/plate-header/plate-crumb.js";
 import { PlateHeaderPart } from "../../../plate/ui/plate-header/plate-header-part.js";

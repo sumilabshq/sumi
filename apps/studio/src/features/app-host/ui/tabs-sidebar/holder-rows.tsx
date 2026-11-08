@@ -1,7 +1,7 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import { FoldBox } from "../fold-box/fold-box.js";
 import type { RowFold } from "../tab-row/fold-chevron.js";
 import { TabRow } from "../tab-row/tab-row.js";

@@ -4,7 +4,7 @@ import { useMenuOpening } from "../../lib/menu-spot.js";
 import { MODEL_FACES, providerLabelOf } from "../../lib/strip-faces.js";
 import { ModelMenu } from "./model-menu.js";
 import { StripButton } from "./strip-button.js";
-import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant";
+import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant/contract";
 
 const MODEL = "Model";
 

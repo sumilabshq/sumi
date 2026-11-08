@@ -1,4 +1,4 @@
-import type { TabDrop, TabsSidebar } from "@widgetarium/app-host";
+import type { TabDrop, TabsSidebar } from "@widgetarium/app-host/contract";
 import { arrangedSidebar } from "./arranged-sidebar.js";
 import { arrangementKeyOf } from "./arrangement-key.js";
 import { isSameDrop } from "./tab-drops.js";

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { FileDiff } from "@sumi/git";
+import type { FileDiff } from "@sumi/git/contract";
 import { IconButton, tooltipMarks } from "@widgetarium/kit";
 import { fileFolderOf, fileNameOf } from "../../lib/git-names.js";
 import { ChangeNums } from "../change-nums/change-nums.js";

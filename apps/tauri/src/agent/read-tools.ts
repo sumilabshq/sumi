@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { appHost } from "@widgetarium/app-host";
-import { PageRegionSchema, ShotAreaSchema, browser } from "@widgetarium/browser";
-import type { AccessDecision } from "@widgetarium/browser";
+import { appHost } from "@widgetarium/app-host/contract";
+import { PageRegionSchema, ShotAreaSchema, browser } from "@widgetarium/browser/contract";
+import type { AccessDecision } from "@widgetarium/browser/contract";
 import { inputOf, outputOf } from "./tool-places.js";
 import type { ToolContext } from "./tool-places.js";
 

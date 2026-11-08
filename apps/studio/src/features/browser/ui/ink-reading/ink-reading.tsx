@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import type { ReadKind } from "@widgetarium/browser";
-import { browser } from "@widgetarium/browser";
+import type { ReadKind } from "@widgetarium/browser/contract";
+import { browser } from "@widgetarium/browser/contract";
 
 const PILL =
 	"cv:absolute cv:bottom-6 cv:left-1/2 cv:z-[2] cv:flex cv:h-12 cv:-translate-x-1/2 cv:items-center cv:gap-3 cv:rounded-full cv:bg-ink cv:ps-5 cv:pe-1 cv:text-sm cv:whitespace-nowrap cv:text-page";

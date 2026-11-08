@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { TaskStatusSchema, tasks } from "@widgetarium/tasks";
-import type { TaskCard, TaskStatus } from "@widgetarium/tasks";
+import { TaskStatusSchema, tasks } from "@widgetarium/tasks/contract";
+import type { TaskCard, TaskStatus } from "@widgetarium/tasks/contract";
 import { useQuery } from "@widgetarium/data-framework";
 import { useOpenTask } from "../../lib/use-open-task.js";
 import type { TasksView } from "../../lib/use-tasks-view.js";

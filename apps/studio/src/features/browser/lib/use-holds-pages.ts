@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import { useCommand } from "@widgetarium/data-framework";
 import { useHeldTab } from "./held-tab.js";
 

@@ -1,7 +1,7 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { useOptionalQuery } from "@widgetarium/data-framework";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { shownClaudeOptions } from "../../../../shared/lib/shown-claude-options.js";
 import { ClaudeOptionButtons } from "../../../assistant/ui/claude-strip/claude-option-buttons.js";
 import { FolderButton } from "../../../assistant/ui/claude-strip/folder-button.js";

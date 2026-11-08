@@ -7,7 +7,7 @@ import { EndLine } from "./end-line.js";
 import { LiveRow } from "./live-row.js";
 import { NoTurns } from "./no-turns.js";
 import { TurnRows } from "./turn-rows.js";
-import type { Chat } from "@widgetarium/assistant";
+import type { Chat } from "@widgetarium/assistant/contract";
 
 export interface ChatTurnsProps {
 	readonly chat: Chat;

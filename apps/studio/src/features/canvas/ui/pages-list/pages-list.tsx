@@ -2,7 +2,7 @@ import { createElement as h, useState, useTransition } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { PAGE_UNASKED } from "@widgetarium/core/gateway/page.js";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { useTurnToPage } from "../../lib/use-turn-to-page.js";
 import { PanelHeader } from "../side-panel/panel-header.js";
 import { PAGE_ROW_SHAPE } from "../../lib/panel-row-look.js";

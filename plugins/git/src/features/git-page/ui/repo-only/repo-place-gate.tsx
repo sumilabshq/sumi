@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 
 export interface RepoPlaceGateProps {

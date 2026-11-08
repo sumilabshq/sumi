@@ -2,7 +2,7 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
-import { workspaces } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import { useFadesAtEdges } from "../../lib/use-fades-at-edges.js";
 import { StripButton } from "./strip-button.js";
 

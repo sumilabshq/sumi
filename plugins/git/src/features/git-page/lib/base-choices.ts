@@ -1,4 +1,4 @@
-import type { BranchRow } from "@sumi/git";
+import type { BranchRow } from "@sumi/git/contract";
 import { LAST_COMMIT } from "./git-address.js";
 import type { GlyphName } from "./glyph-paths.js";
 

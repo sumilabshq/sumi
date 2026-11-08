@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Region } from "@widgetarium/canvas";
+import type { Region } from "@widgetarium/canvas/contract";
 import { DocsRegion } from "./regions/docs-region.js";
 import { NothingDrawn } from "./regions/nothing-drawn.js";
 import { PagesRegion } from "./regions/pages-region.js";

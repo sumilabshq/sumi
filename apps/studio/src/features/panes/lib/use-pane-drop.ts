@@ -5,7 +5,7 @@ import type { CarriedItem, CarryMoment } from "@widgetarium/behaviors";
 import { sideAt } from "./pane-layout.js";
 import type { PaneRect } from "./pane-layout.js";
 import { aimTargetIdsOf, homeOfCarried } from "./aim-targets.js";
-import type { PaneBoard, PaneLeaf, PanePlacement, PaneView } from "@widgetarium/layout";
+import type { PaneBoard, PaneLeaf, PanePlacement, PaneView } from "@widgetarium/layout/contract";
 import { dropped } from "./view-drops.js";
 import { usePlacers } from "./use-placers.js";
 import type { Carrying, Placers } from "./view-drops.js";

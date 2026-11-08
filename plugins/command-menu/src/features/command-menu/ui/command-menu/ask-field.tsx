@@ -1,7 +1,7 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
 import { ASK_COMPOSER_MARK } from "../../lib/ask-composer-mark.js";
 import { carriedOf } from "../../lib/carried.js";

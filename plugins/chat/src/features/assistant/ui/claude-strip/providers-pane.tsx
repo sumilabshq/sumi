@@ -4,7 +4,7 @@ import { Icon } from "@widgetarium/kit";
 import { ChatMenuLabel } from "../chat-menu/chat-menu-label.js";
 import { ChatMenuLine } from "../chat-menu/chat-menu-line.js";
 import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
-import type { AgentSetup } from "@widgetarium/assistant";
+import type { AgentSetup } from "@widgetarium/assistant/contract";
 
 export interface ProvidersPaneProps {
 	readonly setup: AgentSetup;

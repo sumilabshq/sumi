@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SidebarTab } from "@widgetarium/app-host";
+import type { SidebarTab } from "@widgetarium/app-host/contract";
 import { TabFaceIcon } from "../tab-face/tab-face-icon.js";
 
 export function RowIcon({ item }: { readonly item: SidebarTab }): ReactElement {

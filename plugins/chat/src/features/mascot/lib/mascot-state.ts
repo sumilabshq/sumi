@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
-import type { AgentActivity } from "@widgetarium/mascot";
+import type { AgentActivity } from "@widgetarium/mascot/contract";
 import type { MascotState } from "./mascot-state.schema.js";
 
 export interface MascotTouchHandlers {

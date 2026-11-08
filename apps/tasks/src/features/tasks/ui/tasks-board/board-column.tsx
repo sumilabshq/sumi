@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import type { BoardColumn as Column, TaskCard as Card } from "@widgetarium/tasks";
+import type { BoardColumn as Column, TaskCard as Card } from "@widgetarium/tasks/contract";
 import { Button, Icon, IconButton } from "@widgetarium/kit";
 import type { TasksView } from "../../lib/use-tasks-view.js";
 import { StatusGlyph } from "../status-glyph/status-glyph.js";

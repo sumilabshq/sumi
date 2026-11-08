@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { BoardColumn, TaskStatus } from "@widgetarium/tasks";
+import type { BoardColumn, TaskStatus } from "@widgetarium/tasks/contract";
 import { Segmented } from "@widgetarium/kit";
 import { StatusGlyph } from "../status-glyph/status-glyph.js";
 

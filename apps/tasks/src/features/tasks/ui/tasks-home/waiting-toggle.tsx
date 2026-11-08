@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { tasks } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks/contract";
 import { useQuery } from "@widgetarium/data-framework";
 import { Count, Icon, Toggle } from "@widgetarium/kit";
 import type { TasksView } from "../../lib/use-tasks-view.js";

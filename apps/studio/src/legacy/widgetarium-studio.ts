@@ -11,7 +11,7 @@ import { openApp, startOpenedProject } from "@widgetarium/core/app/widgetarium-a
 import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import type { Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import type { PaneView } from "@widgetarium/layout";
+import type { PaneView } from "@widgetarium/layout/contract";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { DrawnTabPage, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
@@ -19,7 +19,7 @@ import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
 import type { ResolvedPlugins, WindowLayer } from "../plugins/sumi-plugins.js";
 import { TabFaceContext } from "@sumi/sumi-host-plugin";
 import { MenuTabFace } from "../features/app-host/ui/tab-face/menu-tab-face.js";
-import type { AssistantHosts } from "@widgetarium/assistant/module";
+import type { AssistantHosts } from "@widgetarium/assistant/implementation";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
 import { AppPlate } from "../frame/app-plate.js";

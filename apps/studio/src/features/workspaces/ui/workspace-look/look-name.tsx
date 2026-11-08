@@ -2,8 +2,8 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
-import type { WorkspaceRow } from "@widgetarium/workspaces";
-import { workspaces } from "@widgetarium/workspaces";
+import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
 
 const NAME_LABEL = "Workspace name";
 

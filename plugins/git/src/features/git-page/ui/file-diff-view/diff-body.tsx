@@ -1,6 +1,6 @@
 import { createElement as h, Fragment, useMemo } from "react";
 import type { CSSProperties, ReactElement } from "react";
-import type { FileDiff } from "@sumi/git";
+import type { FileDiff } from "@sumi/git/contract";
 import { diffRowsOf, lineNumberDigitsOf } from "../../lib/diff-rows.js";
 import { GitNote } from "../git-note/git-note.js";
 import { Glyph } from "../glyph/glyph.js";
@@ -29,10 +29,7 @@ export function DiffBody({ file }: DiffBodyProps): ReactElement {
 
 	return (
 		<Fragment>
-			<div
-				className="wg-git-rows"
-				style={{ "--wg-git-digits": digits } as CSSProperties}
-			>
+			<div className="wg-git-rows" style={{ "--wg-git-digits": digits } as CSSProperties}>
 				{rows.map((row, index) =>
 					row.kind === "gap" ? (
 						<div key={index} className="wg-git-hidden">

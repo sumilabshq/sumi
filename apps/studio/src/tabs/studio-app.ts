@@ -1,8 +1,8 @@
 import type { CoreChanges, WindowModuleOffers } from "@sumi/sumi-host-plugin";
 import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-store";
-import { appHost } from "@widgetarium/app-host";
-import { browser } from "@widgetarium/browser/module";
-import type { BrowserPagesIpc } from "@widgetarium/browser/module";
+import { appHost } from "@widgetarium/app-host/contract";
+import { browser } from "@widgetarium/browser/implementation";
+import type { BrowserPagesIpc } from "@widgetarium/browser/implementation";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type {
 	DeviceModule,
@@ -13,12 +13,12 @@ import type {
 	ServerRuns,
 } from "@widgetarium/data-framework";
 import { fileSystem, terminal } from "@sumi/contract";
-import { layout } from "@widgetarium/layout/module";
-import type { StudioWindows } from "@widgetarium/layout/module";
-import type { BoardFile } from "@widgetarium/tasks/module";
-import { fileSystem as fileSystemModule } from "@widgetarium/file-system/module";
-import { terminal as terminalModule } from "@widgetarium/terminal/module";
-import { workspaces } from "@widgetarium/workspaces/module";
+import { layout } from "@widgetarium/layout/implementation";
+import type { StudioWindows } from "@widgetarium/layout/implementation";
+import type { BoardFile } from "@widgetarium/tasks/implementation";
+import { fileSystem as fileSystemModule } from "@widgetarium/file-system/implementation";
+import { terminal as terminalModule } from "@widgetarium/terminal/implementation";
+import { workspaces } from "@widgetarium/workspaces/implementation";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import type { BackgroundModule, WindowModule } from "../plugins/sumi-plugins.js";
 

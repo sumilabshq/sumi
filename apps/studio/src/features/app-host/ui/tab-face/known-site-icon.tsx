@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useOptionalQuery } from "@widgetarium/data-framework";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import { FaviconImage } from "./favicon-image.js";
 import type { TabArtSize } from "./tab-art.js";
 

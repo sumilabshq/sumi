@@ -1,4 +1,4 @@
-import type { TabDrop } from "@widgetarium/app-host";
+import type { TabDrop } from "@widgetarium/app-host/contract";
 import { isDraggedRow, placeholderRectOf } from "./drag-placeholder.js";
 import { isNestableSource } from "./drag-source.js";
 import type { DragSource } from "./drag-source.js";

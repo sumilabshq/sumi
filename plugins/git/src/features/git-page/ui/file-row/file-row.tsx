@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { FileDiff } from "@sumi/git";
+import type { FileDiff } from "@sumi/git/contract";
 import { fileFolderOf, fileNameOf } from "../../lib/git-names.js";
 import { ChangeNums } from "../change-nums/change-nums.js";
 import { Glyph } from "../glyph/glyph.js";
@@ -30,7 +30,11 @@ export function FileRow({ file, depth, isPicked, isViewed, onPick }: FileRowProp
 		>
 			<StatusLetter status={file.status} />
 			<span className="wg-git-nm">{fileNameOf(file.path)}</span>
-			{depth === undefined ? <span className="wg-git-dim">{fileFolderOf(file.path)}</span> : <span className="wg-git-gap" />}
+			{depth === undefined ? (
+				<span className="wg-git-dim">{fileFolderOf(file.path)}</span>
+			) : (
+				<span className="wg-git-gap" />
+			)}
 			{isViewed ? (
 				<span className="is-faint">
 					<Glyph name="tick" size={14} />

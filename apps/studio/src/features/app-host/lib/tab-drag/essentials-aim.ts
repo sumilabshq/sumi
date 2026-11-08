@@ -1,4 +1,4 @@
-import type { TabDrop } from "@widgetarium/app-host";
+import type { TabDrop } from "@widgetarium/app-host/contract";
 import type { DragSource } from "./drag-source.js";
 import type { DropAim } from "./drop-aim.js";
 import { GRID_GAP_PX, bottomOf, middleOf, scrolledOf } from "./sidebar-layout.js";

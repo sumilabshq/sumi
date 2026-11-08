@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SplitMember } from "@widgetarium/app-host";
+import type { SplitMember } from "@widgetarium/app-host/contract";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 import { HolderEntry } from "../tabs-sidebar/holder-entry.js";
 import { TabRow } from "../tab-row/tab-row.js";

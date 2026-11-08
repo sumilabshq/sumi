@@ -6,11 +6,11 @@ import { CONTRACT_VERSION, contractRefusal, defineApp } from "../packages/shared
 import { fileSystem } from "../packages/shared/contract/index.ts";
 import { assistant, webPage } from "../packages/shared/contract/index.ts";
 import type { RemoteModule, RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import { webPage as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
-import { assistant as RunnableAssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { webPage as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/generated/module.ts";
+import { assistant as RunnableAssistantModule } from "../plugins/chat/data/assistant/generated/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
 import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
-import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 

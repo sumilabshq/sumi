@@ -1,8 +1,8 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import type { EssentialTile as EssentialTileState } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
+import type { EssentialTile as EssentialTileState } from "@widgetarium/app-host/contract";
 import { DropTint } from "../drop-tint/drop-tint.js";
 import { TabFaceIcon } from "../tab-face/tab-face-icon.js";
 import { LIFTED_HIDDEN, useLiftedMark } from "../../lib/tab-drag/lifted-look.js";

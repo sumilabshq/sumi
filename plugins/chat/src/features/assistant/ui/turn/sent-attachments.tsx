@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { AttachmentChipView } from "../attachment-chip/attachment-chip.js";
-import type { AttachmentChip } from "@widgetarium/assistant";
+import type { AttachmentChip } from "@widgetarium/assistant/contract";
 
 const ROW = "cv:flex cv:flex-wrap cv:justify-end cv:gap-1.5";
 

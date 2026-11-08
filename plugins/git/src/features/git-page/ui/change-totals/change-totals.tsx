@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { comparisonInputOf, useGitPage } from "../../lib/git-page-context.js";
 import { fileCountOf } from "../../lib/git-names.js";

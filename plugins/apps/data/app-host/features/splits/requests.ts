@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { places } from "@widgetarium/places";
-import { layout } from "@widgetarium/layout";
+import { places } from "@widgetarium/places/contract";
+import { layout } from "@widgetarium/layout/contract";
 import { studioCoreChanged } from "../../gateways/core-changes/core-changes.events.js";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";

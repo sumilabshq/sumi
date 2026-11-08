@@ -1,7 +1,7 @@
 import { createElement as h, useRef, useState } from "react";
 import type { ReactElement, RefObject } from "react";
 import { PictureViewer } from "../ui/turn/picture-viewer.js";
-import type { AttachmentChip } from "@widgetarium/assistant";
+import type { AttachmentChip } from "@widgetarium/assistant/contract";
 
 interface Opened {
 	readonly at: number;

@@ -1,9 +1,9 @@
 import { createElement as h, useContext, useEffect } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { chatTabs } from "@sumi/chat-tabs";
-import { layout } from "@widgetarium/layout";
-import { workspaces } from "@widgetarium/workspaces";
+import { chatTabs } from "@sumi/chat-tabs/contract";
+import { layout } from "@widgetarium/layout/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import { PaneCloseContext } from "../features/panes/lib/pane-close-context.js";
 import { Plate } from "../features/plate/ui/plate/plate.js";
 import { ChatPage } from "./chat-page.js";

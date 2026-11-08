@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import type { AccessLevel, AccessSource } from "@widgetarium/browser";
+import type { AccessLevel, AccessSource } from "@widgetarium/browser/contract";
 import { useHeldTab } from "../../lib/held-tab.js";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import { SiteRow } from "./site-row.js";
 
 const MENU_LABEL = "Site access";

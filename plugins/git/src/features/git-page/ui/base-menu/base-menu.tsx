@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { presetBasesOf } from "../../lib/base-choices.js";
 import { headLabelOf, rangeInputOf, useGitPage } from "../../lib/git-page-context.js";

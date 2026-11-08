@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { ZodType } from "zod";
-import { ClosedOrderSchema, ClosedWithinSchema } from "@widgetarium/tasks";
-import type { ClosedOrder, ClosedWithin } from "@widgetarium/tasks";
+import { ClosedOrderSchema, ClosedWithinSchema } from "@widgetarium/tasks/contract";
+import type { ClosedOrder, ClosedWithin } from "@widgetarium/tasks/contract";
 import {
 	DropdownMenu,
 	DropdownMenuContent,

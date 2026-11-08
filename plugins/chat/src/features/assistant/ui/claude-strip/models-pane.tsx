@@ -4,8 +4,8 @@ import { CLAUDE_CODE_PROVIDER_ID } from "../../../../shared/lib/shown-claude-opt
 import { MODEL_FACES, providerLabelOf } from "../../lib/strip-faces.js";
 import { ChatMenuLabel } from "../chat-menu/chat-menu-label.js";
 import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
-import { ClaudeModelSchema } from "@widgetarium/assistant";
-import type { AgentSetup, ClaudeModel, ClaudeOptions } from "@widgetarium/assistant";
+import { ClaudeModelSchema } from "@widgetarium/assistant/contract";
+import type { AgentSetup, ClaudeModel, ClaudeOptions } from "@widgetarium/assistant/contract";
 
 export interface ModelsPaneProps {
 	readonly setup: AgentSetup;

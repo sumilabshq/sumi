@@ -1,6 +1,6 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import type { SidebarTab } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
+import type { SidebarTab } from "@widgetarium/app-host/contract";
 
 export interface RowPick {
 	readonly show: () => void;

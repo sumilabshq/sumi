@@ -1,10 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import type { FrameBounds } from "@widgetarium/layout";
+import { appHost } from "@widgetarium/app-host/contract";
+import type { FrameBounds } from "@widgetarium/layout/contract";
 import type { PaneEdge } from "../../lib/pane-layout.js";
-import { layout } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout/contract";
 import { useEdgeDrag } from "../../lib/use-edge-drag.js";
 
 export interface PaneSplitEdgeProps {

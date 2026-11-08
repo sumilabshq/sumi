@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
 import { linkOf } from "@widgetarium/core/engine/sumi-link.js";
 import { OPENS_LAYER_MARK } from "@sumi/sumi-host-plugin";
 import { CrumbSaid } from "../../../plate/ui/plate-header/crumb-said.js";

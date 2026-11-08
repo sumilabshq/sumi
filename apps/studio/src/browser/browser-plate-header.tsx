@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useHeldTab } from "../features/browser/lib/held-tab.js";
 import { KeptOutChip } from "../features/browser/ui/kept-out-chip/kept-out-chip.js";

@@ -1,4 +1,4 @@
-import type { DroppedFile, FileDragEvent } from "@widgetarium/assistant";
+import type { DroppedFile, FileDragEvent } from "@widgetarium/assistant/contract";
 import { isObject } from "@widgetarium/data-framework/is-object";
 import type { AssistantBridge, DroppedEntry } from "./assistant-bridge.js";
 

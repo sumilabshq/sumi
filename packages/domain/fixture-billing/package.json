@@ -6,11 +6,11 @@
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"exports": {
-		".": {
-			"source": "./index.ts"
+		"./contract": {
+			"source": "./generated/contract.ts"
 		},
-		"./module": {
-			"server": "./module.ts"
+		"./implementation": {
+			"server": "./generated/module.ts"
 		}
 	},
 	"imports": {

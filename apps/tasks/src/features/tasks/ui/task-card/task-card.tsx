@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskCard as Card } from "@widgetarium/tasks";
+import type { TaskCard as Card } from "@widgetarium/tasks/contract";
 import { Collapsible, CollapsibleContent } from "@widgetarium/kit";
 import { KIND_WORDS } from "../../lib/task-words.js";
 import { ageOf } from "../../lib/task-times.js";

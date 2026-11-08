@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SidebarSplitState } from "@widgetarium/app-host";
+import type { SidebarSplitState } from "@widgetarium/app-host/contract";
 import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 import { SplitMapIcon } from "../split-map/split-map-icon.js";

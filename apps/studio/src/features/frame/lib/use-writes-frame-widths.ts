@@ -1,6 +1,6 @@
 import { useLayoutEffect } from "react";
 import type { RefObject } from "react";
-import type { FrameWidths } from "@widgetarium/layout";
+import type { FrameWidths } from "@widgetarium/layout/contract";
 import { FRAME_WIDTH_VARS } from "../../frame-widths/lib/frame-width-vars.js";
 
 export function useWritesFrameWidths(frame: RefObject<HTMLDivElement | null>, widths: FrameWidths): void {

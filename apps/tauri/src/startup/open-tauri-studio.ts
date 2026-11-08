@@ -5,7 +5,7 @@ import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import { openAgentTools } from "../agent/agent-tools.js";
 import { tabLinksRenderer } from "../agent/tab-links.js";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import { chatSessionLinkOf } from "../assistant/chat-session-link.js";
 import { startTauriAssistant } from "../assistant/tauri-assistant.js";
 import type { TauriAssistant } from "../assistant/tauri-assistant.js";

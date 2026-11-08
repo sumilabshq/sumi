@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useDrawing } from "../../../lib/drawing.js";
-import type { Frame } from "@widgetarium/canvas";
+import type { Frame } from "@widgetarium/canvas/contract";
 import { GpuScreen } from "./gpu-screen.js";
 
 const BOARD_NOT_ON_GPU = "a whole board is not drawn on the GPU yet; only widget states are";

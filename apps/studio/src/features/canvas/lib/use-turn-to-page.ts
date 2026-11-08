@@ -1,6 +1,6 @@
 import { useCommand } from "@widgetarium/data-framework";
 import { fadedTurn } from "./faded-turn.js";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 
 export type TurnToPage = (from: Element | null, page: string) => void;
 

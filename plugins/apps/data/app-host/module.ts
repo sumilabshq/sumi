@@ -1,18 +1,16 @@
 import { Device, module } from "@widgetarium/data-framework";
-import { browser } from "@widgetarium/browser";
-import { layout } from "@widgetarium/layout";
-import { places } from "@widgetarium/places";
-import { workspaces } from "@widgetarium/workspaces";
-import { apps } from "@sumi/apps";
+import { browser } from "@widgetarium/browser/contract";
+import { layout } from "@widgetarium/layout/contract";
+import { places } from "@widgetarium/places/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
+import { apps } from "@sumi/apps/contract";
 import { appHostPartsOn } from "./gateways/app-host-parts/app-host-parts.gateway.js";
 import type { AppHostConfig } from "./shared/host/app-host.host.js";
-import { handled } from "./generated/handled.js";
 
 export type { AppHostConfig, CoreChanges } from "./shared/host/app-host.host.js";
 
-export const appHost = module()
+export const appHost = module("app-host")
 	.on(Device)
 	.imports(apps, browser, layout, places, workspaces)
 	.config<AppHostConfig>()
-	.provide((facts) => ({ ...appHostPartsOn(facts) }))
-	.handles(handled);
+	.provide((facts) => ({ ...appHostPartsOn(facts) }));

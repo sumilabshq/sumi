@@ -1,9 +1,9 @@
 import { runtime, localTransport, messagePortTransport, servePort } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
-import { webPage } from "../plugins/browser-page/data/web-page/index.ts";
+import { webPage } from "../plugins/browser-page/data/web-page/generated/contract.ts";
 import { AppTabsGateway } from "../plugins/browser-page/data/web-page/gateways/app-tabs/app-tabs.gateway.ts";
 import { MemoryWebPagesGateway } from "../plugins/browser-page/data/web-page/gateways/web-pages/memory.gateway.ts";
-import { webPage as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
+import { webPage as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/generated/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 

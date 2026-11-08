@@ -1,6 +1,6 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement } from "react";
-import type { FrameEdge } from "@widgetarium/layout";
+import type { FrameEdge } from "@widgetarium/layout/contract";
 import { useFrameEdge } from "../../lib/use-frame-edge.js";
 
 export interface FrameEdgeHandleProps {

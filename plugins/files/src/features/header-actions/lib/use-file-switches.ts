@@ -1,5 +1,5 @@
-import { filePage } from "@sumi/file-page";
-import type { FileSwitch } from "@sumi/file-page";
+import { filePage } from "@sumi/file-page/contract";
+import type { FileSwitch } from "@sumi/file-page/contract";
 import { useQuery } from "@widgetarium/data-framework";
 
 export interface FileSwitches {

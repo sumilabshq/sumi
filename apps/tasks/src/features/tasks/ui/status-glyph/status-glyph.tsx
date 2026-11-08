@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import type { TaskStatus } from "@widgetarium/tasks";
+import type { TaskStatus } from "@widgetarium/tasks/contract";
 
 export interface StatusGlyphProps {
 	readonly status: TaskStatus;

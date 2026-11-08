@@ -1,4 +1,4 @@
-import type { PageTitle } from "@sumi/apps";
+import type { PageTitle } from "@sumi/apps/contract";
 import type { AppTabState, SidebarEntry, SidebarTab, TabsSidebar } from "../../schema/app-tab.schema.js";
 import type { ClosedTabRow } from "../../schema/closed-tab.schema.js";
 

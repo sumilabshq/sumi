@@ -1,5 +1,5 @@
-import { appHost } from "@widgetarium/app-host";
-import { chatTabs } from "@sumi/chat-tabs";
+import { appHost } from "@widgetarium/app-host/contract";
+import { chatTabs } from "@sumi/chat-tabs/contract";
 import { useQuery } from "@widgetarium/data-framework";
 
 export function useTabIdIfOpen(tabId: string | null): string | null {

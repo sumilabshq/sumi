@@ -1,6 +1,6 @@
 import type { ServerSideModule } from "@widgetarium/data-framework";
-import { fileSystem } from "@widgetarium/file-system/module";
-import { terminal } from "@widgetarium/terminal/module";
+import { fileSystem } from "@widgetarium/file-system/implementation";
+import { terminal } from "@widgetarium/terminal/implementation";
 
 export const HOST_CAPABILITY_MODULES: readonly ServerSideModule[] = [fileSystem, terminal];
 

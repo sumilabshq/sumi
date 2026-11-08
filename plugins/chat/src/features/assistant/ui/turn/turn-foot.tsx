@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactNode } from "react";
 import type { AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
-import type { TurnStep } from "@widgetarium/assistant";
+import type { TurnStep } from "@widgetarium/assistant/contract";
 import { AnswerLine } from "./answer-line.js";
 import { MineLine } from "./mine-line.js";
 

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { FileStatus } from "@sumi/git";
+import type { FileStatus } from "@sumi/git/contract";
 import { statusLetterOf } from "../../lib/git-names.js";
 
 export interface StatusLetterProps {

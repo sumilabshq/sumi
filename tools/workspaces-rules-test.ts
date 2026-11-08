@@ -1,7 +1,7 @@
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { workspaces as workspacesContract } from "../packages/domain/workspaces/generated/contract.ts";
-import { workspaces as workspacesModule } from "../packages/domain/workspaces/module.ts";
+import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
 import { MemoryWorkspacesGateway } from "../packages/domain/workspaces/gateways/workspaces/memory.gateway.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";

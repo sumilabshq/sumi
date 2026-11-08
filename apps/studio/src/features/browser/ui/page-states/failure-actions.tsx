@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import type { BrowserTabState, PageFailure } from "@widgetarium/browser";
+import type { BrowserTabState, PageFailure } from "@widgetarium/browser/contract";
 import { CertificateActions } from "./certificate-actions.js";
 import { NotFoundActions } from "./not-found-actions.js";
 import { RetryActions } from "./retry-actions.js";

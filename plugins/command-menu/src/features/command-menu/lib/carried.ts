@@ -1,4 +1,4 @@
-import type { AttachmentChip, AttachmentKind } from "@widgetarium/assistant";
+import type { AttachmentChip, AttachmentKind } from "@widgetarium/assistant/contract";
 
 export interface Carried {
 	readonly kinds: readonly AttachmentKind[];

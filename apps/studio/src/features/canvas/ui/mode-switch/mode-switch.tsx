@@ -2,8 +2,8 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, Segmented } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { canvas } from "@widgetarium/canvas";
-import type { CanvasMode } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
+import type { CanvasMode } from "@widgetarium/canvas/contract";
 import { Tip } from "../tip/tip.js";
 
 export function ModeSwitch(): ReactElement {

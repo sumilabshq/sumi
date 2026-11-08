@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import type { SidebarEntry } from "@widgetarium/app-host";
+import type { SidebarEntry } from "@widgetarium/app-host/contract";
 import { GroupBox } from "../group-box/group-box.js";
 import { SplitEntry } from "../split-entry/split-entry.js";
 import { ListedItem } from "./listed-item.js";

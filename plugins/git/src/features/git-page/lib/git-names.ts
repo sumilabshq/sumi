@@ -1,4 +1,4 @@
-import type { FileStatus } from "@sumi/git";
+import type { FileStatus } from "@sumi/git/contract";
 import { LAST_COMMIT } from "./git-address.js";
 
 const SEPARATOR = "/";

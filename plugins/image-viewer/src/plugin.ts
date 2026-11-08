@@ -5,7 +5,7 @@ import { IMAGE_TYPES } from "./features/image/lib/image-types.js";
 import { LazyImageView } from "./features/image/lib/lazy-image-view.js";
 import { SizeAction } from "./features/image/ui/size-action/size-action.js";
 
-export const imageViewer = plugin()
+export const imageViewer = plugin("image-viewer")
 	.require(files)
 	.fill(
 		files.fileViewers.add({

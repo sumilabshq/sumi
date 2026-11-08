@@ -1,4 +1,4 @@
-import { browser } from "@widgetarium/browser/module";
+import { browser } from "@widgetarium/browser/implementation";
 import { runtime } from "@widgetarium/data-framework";
 import type { Platform, Runtime } from "@widgetarium/data-framework";
 

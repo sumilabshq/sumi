@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
-import type { Intent, Results, Row } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
+import type { Intent, Results, Row } from "@sumi/command-menu/contract";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
 import { useRowRename } from "./use-row-rename.js";
 import type { RowRename } from "./use-row-rename.js";

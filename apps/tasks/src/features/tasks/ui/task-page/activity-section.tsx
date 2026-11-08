@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import type { LogEntry } from "@widgetarium/tasks";
+import type { LogEntry } from "@widgetarium/tasks/contract";
 import { ageOf } from "../../lib/task-times.js";
 import { ActorSaid } from "./actor-said.js";
 

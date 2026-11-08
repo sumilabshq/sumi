@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskView } from "@widgetarium/tasks";
+import type { TaskView } from "@widgetarium/tasks/contract";
 import { Paragraphs, paragraphsOf } from "./paragraphs.js";
 import { TaskBanner } from "./task-banner.js";
 import { TaskChips } from "./task-chips.js";

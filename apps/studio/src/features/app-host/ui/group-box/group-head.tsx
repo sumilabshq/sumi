@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { Icon } from "@widgetarium/kit";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import {
 	CARD_HEAD,
 	CARD_HEAD_COUNT,

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Row } from "@sumi/command-menu";
+import type { Row } from "@sumi/command-menu/contract";
 import { RowEndKeys } from "./row-end-keys.js";
 
 export interface RowEndProps {

@@ -1,6 +1,6 @@
 import type { HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { Runtime } from "@widgetarium/data-framework";
-import { workspaces as workspacesContract } from "@widgetarium/workspaces";
+import { workspaces as workspacesContract } from "@widgetarium/workspaces/contract";
 import type { WorkspaceClient } from "./workspace-client.js";
 import type { WorkspaceEntry } from "./workspace-docs.js";
 

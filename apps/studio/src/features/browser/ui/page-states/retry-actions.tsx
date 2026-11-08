@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import { AskInkAction } from "../ask-ink-action/ask-ink-action.js";
 import { PrimaryAction } from "../page-state/primary-action.js";
 import { StateActions } from "./state-actions.js";

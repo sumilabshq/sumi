@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TestCase, TestRun } from "@widgetarium/tasks";
+import type { TestCase, TestRun } from "@widgetarium/tasks/contract";
 import { Icon } from "@widgetarium/kit";
 import { CASE_ICONS, CASE_WORDS } from "../../lib/task-words.js";
 import type { CaseLook } from "../../lib/task-words.js";

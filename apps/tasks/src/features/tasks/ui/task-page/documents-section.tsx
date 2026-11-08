@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskDoc } from "@widgetarium/tasks";
+import type { TaskDoc } from "@widgetarium/tasks/contract";
 import { Icon } from "@widgetarium/kit";
 import { agoOf } from "../../lib/task-times.js";
 import { DOC_ICONS, DOC_WORDS } from "../../lib/task-words.js";

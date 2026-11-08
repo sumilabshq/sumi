@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import type { PaneEdge } from "./pane-layout.js";
-import { layout } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout/contract";
 
 export interface ChatOpening {
 	readonly chatPx: number;

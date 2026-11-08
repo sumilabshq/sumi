@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SplitMap } from "@widgetarium/app-host";
+import type { SplitMap } from "@widgetarium/app-host/contract";
 import { SplitMapIcon } from "../split-map/split-map-icon.js";
 import { PinnedMark } from "./pinned-mark.js";
 

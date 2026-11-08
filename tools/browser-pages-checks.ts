@@ -1,7 +1,7 @@
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { browser as browserModule } from "../packages/domain/browser/module.ts";
-import { browser } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/generated/module.ts";
+import { browser } from "../packages/domain/browser/generated/contract.ts";
 import { onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import type { CommittedPage } from "../packages/domain/browser/shared/schema/page-read.schema.ts";

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskView } from "@widgetarium/tasks";
+import type { TaskView } from "@widgetarium/tasks/contract";
 import { FoldedSections } from "./folded-sections.js";
 import { Paragraphs } from "./paragraphs.js";
 import { TaskActionBar, hasActionBar } from "./task-action-bar.js";

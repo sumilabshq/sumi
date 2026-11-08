@@ -3,7 +3,7 @@ import type { ReactNode, RefObject } from "react";
 import { GPU_FRAMES, useGpuFailure } from "@widgetarium/gpu";
 import type { GpuFrames } from "@widgetarium/gpu";
 import { DRAWS_INLINE } from "@widgetarium/core/draws-inline.js";
-import type { StatePicture } from "@widgetarium/canvas";
+import type { StatePicture } from "@widgetarium/canvas/contract";
 import type { Drawing } from "./drawing.js";
 import { REPORTS_DRAW_FAILURE } from "./draw-contexts.js";
 import { StateDrawing } from "../ui/state-drawing/state-drawing.js";

@@ -5,9 +5,9 @@ import type { RemoteTransport, Runtime } from "../packages/shared/data-framework
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { places } from "../plugins/apps/data/places/index.ts";
-import type { TabsAsk } from "../plugins/apps/data/places/index.ts";
-import { places as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { places } from "../plugins/apps/data/places/generated/contract.ts";
+import type { TabsAsk } from "../plugins/apps/data/places/generated/contract.ts";
+import { places as RunnablePlacesModule } from "../plugins/apps/data/places/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { TauriTabsGateway } from "../plugins/apps/data/places/gateways/tabs/tauri/tauri.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";

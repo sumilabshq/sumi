@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskView } from "@widgetarium/tasks";
+import type { TaskView } from "@widgetarium/tasks/contract";
 import { Badge, Popover, PopoverContent, PopoverTrigger } from "@widgetarium/kit";
 import { KIND_WORDS } from "../../lib/task-words.js";
 import { workingChatOf } from "../../lib/working-chat.js";

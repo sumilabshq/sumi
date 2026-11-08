@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import type { TaskView } from "@widgetarium/tasks";
+import type { TaskView } from "@widgetarium/tasks/contract";
 import { Icon } from "@widgetarium/kit";
 import { agoOf, dayAndClockOf } from "../../lib/task-times.js";
 import { KIND_WORDS } from "../../lib/task-words.js";

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/data-framework";
-import type { FrameEdge } from "@widgetarium/layout";
-import { layout } from "@widgetarium/layout";
+import type { FrameEdge } from "@widgetarium/layout/contract";
+import { layout } from "@widgetarium/layout/contract";
 import { FrameEdgeDrag } from "./frame-edge-drag.js";
 
 interface PressOnEdge {

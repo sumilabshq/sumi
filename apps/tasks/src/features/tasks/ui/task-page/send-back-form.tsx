@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import type { TaskCard } from "@widgetarium/tasks";
+import type { TaskCard } from "@widgetarium/tasks/contract";
 import { Button, TextArea } from "@widgetarium/kit";
 import { useSendBack } from "../../lib/use-send-back.js";
 

@@ -1,9 +1,9 @@
 import { runtime, orpcTransport } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
 import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
-import { fileSystem } from "../apps/tauri/capabilities/file-system/index.ts";
+import { fileSystem } from "../apps/tauri/capabilities/file-system/generated/contract.ts";
 import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
-import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { placedPathOf } from "../apps/tauri/capabilities/file-system/shared/lib/app-path.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";

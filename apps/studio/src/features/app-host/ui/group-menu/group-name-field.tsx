@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 
 const GROUP_NAME = "Group name";

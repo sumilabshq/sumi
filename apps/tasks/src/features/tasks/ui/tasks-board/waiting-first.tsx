@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { BoardColumn } from "@widgetarium/tasks";
+import type { BoardColumn } from "@widgetarium/tasks/contract";
 import { TaskCard } from "../task-card/task-card.js";
 
 export interface WaitingFirstProps {

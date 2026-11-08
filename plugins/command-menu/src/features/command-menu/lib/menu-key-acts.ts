@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from "react";
-import type { Door, Intent, MenuDoor, Results } from "@sumi/command-menu";
+import type { Door, Intent, MenuDoor, Results } from "@sumi/command-menu/contract";
 import { doorOfMenuLetter } from "./menu-key-labels.js";
 import type { MenuMoves } from "./use-menu-moves.js";
 

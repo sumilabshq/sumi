@@ -1,4 +1,4 @@
-import type { TabDrop } from "@widgetarium/app-host";
+import type { TabDrop } from "@widgetarium/app-host/contract";
 import type { DragSource } from "./drag-source.js";
 import { splitUnitOf } from "./sidebar-layout.js";
 import type { Measured, Rect, SidebarLayout } from "./sidebar-layout.js";

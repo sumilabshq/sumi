@@ -1,6 +1,6 @@
 import { useOptionalQuery } from "@widgetarium/data-framework";
-import { tasks } from "@widgetarium/tasks";
-import type { TaskCard, TaskStatus } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks/contract";
+import type { TaskCard, TaskStatus } from "@widgetarium/tasks/contract";
 
 const WORKED_ON: TaskStatus[] = ["in_progress"];
 const NO_CARDS: readonly TaskCard[] = [];

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { AskedQuestionSchema, questions } from "@widgetarium/questions";
-import type { QuestionNeed } from "@widgetarium/questions";
+import { AskedQuestionSchema, questions } from "@widgetarium/questions/contract";
+import type { QuestionNeed } from "@widgetarium/questions/contract";
 import { fieldsOf, inputOf, outputOf } from "./tool-places.js";
 import type { ToolContext } from "./tool-places.js";
 

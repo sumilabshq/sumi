@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { AppViewProps } from "@sumi/apps-plugin";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { ToggleAction } from "@sumi/sumi-host-plugin";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { RepoOnly } from "../repo-only/repo-only.js";

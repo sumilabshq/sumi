@@ -1,5 +1,5 @@
-import { tasks } from "@widgetarium/tasks";
-import type { Continued, TaskCard } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks/contract";
+import type { Continued, TaskCard } from "@widgetarium/tasks/contract";
 import { useCommand } from "@widgetarium/data-framework";
 import { toast } from "@widgetarium/kit";
 import { useSendToChat } from "./chat-delivery.js";

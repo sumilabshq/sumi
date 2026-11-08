@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import type { Door, Results } from "@sumi/command-menu";
+import type { Door, Results } from "@sumi/command-menu/contract";
 import { hintsOf } from "../../lib/menu-hints.js";
 import type { MenuMoves } from "../../lib/use-menu-moves.js";
 

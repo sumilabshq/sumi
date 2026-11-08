@@ -1,10 +1,10 @@
 import { query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import { chatTabs } from "@sumi/chat-tabs";
-import { apps as appsContract } from "@sumi/apps";
-import { browser as browserContract } from "@widgetarium/browser";
-import { workspaces as workspacesContract } from "@widgetarium/workspaces";
+import { appHost } from "@widgetarium/app-host/contract";
+import { chatTabs } from "@sumi/chat-tabs/contract";
+import { apps as appsContract } from "@sumi/apps/contract";
+import { browser as browserContract } from "@widgetarium/browser/contract";
+import { workspaces as workspacesContract } from "@widgetarium/workspaces/contract";
 import { commandMenuChanged } from "../../gateways/command-menu/command-menu.events.js";
 import type { FilledRowSource, Pools, RowsOf } from "../../shared/host/command-menu.host.js";
 import { FoundSchema, ResultsAskSchema, ResultsSchema } from "../../shared/schema/command-menu.schema.js";

@@ -1,5 +1,5 @@
 import { useMemo, useSyncExternalStore } from "react";
-import type { TabsSidebar } from "@widgetarium/app-host";
+import type { TabsSidebar } from "@widgetarium/app-host/contract";
 import { arrangedSidebar } from "../tab-drag/arranged-sidebar.js";
 import type { DragPreviewState } from "../tab-drag/drag-preview.js";
 import { useLiftedLook } from "../tab-drag/lifted-look.js";

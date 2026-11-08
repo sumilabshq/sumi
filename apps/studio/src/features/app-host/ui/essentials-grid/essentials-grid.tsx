@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { TokenStyle } from "@widgetarium/kit";
 import { columnsOf } from "../../lib/tab-drag/sidebar-layout.js";
-import type { EssentialTile as EssentialTileState } from "@widgetarium/app-host";
+import type { EssentialTile as EssentialTileState } from "@widgetarium/app-host/contract";
 import { EssentialTile } from "./essential-tile.js";
 
 const ESSENTIALS = "Essentials";

@@ -5,8 +5,8 @@ import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { treeRowProps } from "@widgetarium/behaviors";
 import type { TreeDrag } from "@widgetarium/behaviors";
-import { canvas } from "@widgetarium/canvas";
-import type { LayerRow as Row } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
+import type { LayerRow as Row } from "@widgetarium/canvas/contract";
 import { LayerName } from "./layer-name.js";
 import { LAYER_ROW_BASE, PANEL_ROW_INDENT_PX, PANEL_ROW_INSET_PX } from "../../lib/panel-row-look.js";
 

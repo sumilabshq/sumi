@@ -1,4 +1,4 @@
-import type { SidebarTab } from "@widgetarium/app-host";
+import type { SidebarTab } from "@widgetarium/app-host/contract";
 
 export interface RowFace {
 	readonly id: string;

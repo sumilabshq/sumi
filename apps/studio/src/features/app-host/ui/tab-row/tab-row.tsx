@@ -1,6 +1,6 @@
 import { createElement as h, memo } from "react";
 import type { KeyboardEvent, MouseEvent, ReactElement } from "react";
-import type { SidebarTab } from "@widgetarium/app-host";
+import type { SidebarTab } from "@widgetarium/app-host/contract";
 import { CHAT_TAB_ICON_HOST } from "../../../mascot/ui/chat-tab-icon/chat-tab-icon.js";
 import { FOLD_HOST_ROW, ROW_WORDS, SIDEBAR_ROW, SIDEBAR_ROW_SHOWN } from "../../lib/tabs-look/tabs-look.js";
 import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";

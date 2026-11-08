@@ -2,7 +2,7 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { ContextMenu, ContextMenuTrigger } from "@widgetarium/kit";
-import { SectionListSchema, appHost } from "@widgetarium/app-host";
+import { SectionListSchema, appHost } from "@widgetarium/app-host/contract";
 import { EssentialsGrid } from "../essentials-grid/essentials-grid.js";
 import { FlipLayout } from "../flip-layout/flip-layout.js";
 import { GroupMenu } from "../group-menu/group-menu.js";

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import type { PaneLeaf } from "@widgetarium/layout";
+import { appHost } from "@widgetarium/app-host/contract";
+import type { PaneLeaf } from "@widgetarium/layout/contract";
 import { carriedTabOf } from "./split-panes.js";
 
 export function usePaneClosing(leaf: PaneLeaf): () => void {

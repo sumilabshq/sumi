@@ -1,4 +1,4 @@
-import type { Door, Results } from "@sumi/command-menu";
+import type { Door, Results } from "@sumi/command-menu/contract";
 import type { MenuMoves } from "./use-menu-moves.js";
 
 export interface Hint {

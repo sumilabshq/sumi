@@ -1,7 +1,7 @@
 import { createElement as h, useEffect } from "react";
 import type { ReactElement } from "react";
 import { catchLinks, wearSumiTheme, apps } from "@sumi/contract";
-import { TaskRefSchema } from "@widgetarium/tasks";
+import { TaskRefSchema } from "@widgetarium/tasks/contract";
 import { RuntimeProvider } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
 import { BOARD_ADDRESS } from "./features/tasks/lib/use-open-task.js";

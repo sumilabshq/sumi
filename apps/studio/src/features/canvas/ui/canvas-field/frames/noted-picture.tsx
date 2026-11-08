@@ -2,7 +2,7 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { CALLOUT_COLUMN, useLaidCallouts } from "@widgetarium/behaviors";
 import type { NoteSide } from "@widgetarium/behaviors";
-import type { ReferenceShown } from "@widgetarium/canvas";
+import type { ReferenceShown } from "@widgetarium/canvas/contract";
 import { CalloutNote } from "./callout-note.js";
 
 const SIDES: readonly NoteSide[] = ["left", "right"];

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Door, MenuDoor } from "@sumi/command-menu";
+import type { Door, MenuDoor } from "@sumi/command-menu/contract";
 
 export interface MenuHeadProps {
 	readonly door: Door;

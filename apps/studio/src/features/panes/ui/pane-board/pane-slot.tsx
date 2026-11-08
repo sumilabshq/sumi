@@ -4,9 +4,9 @@ import { useCommand } from "@widgetarium/data-framework";
 import { PaneCloseContext } from "../../lib/pane-close-context.js";
 import type { PanePlace, PaneRect } from "../../lib/pane-layout.js";
 import type { SlotLook } from "../../lib/use-board-look.js";
-import type { PaneLeaf, PaneView } from "@widgetarium/layout";
-import { layout } from "@widgetarium/layout";
-import { places } from "@widgetarium/places";
+import type { PaneLeaf, PaneView } from "@widgetarium/layout/contract";
+import { layout } from "@widgetarium/layout/contract";
+import { places } from "@widgetarium/places/contract";
 import { usePaneClosing } from "../../lib/use-pane-closing.js";
 
 export interface PaneSlotProps {

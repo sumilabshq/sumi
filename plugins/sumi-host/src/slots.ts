@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import { z } from "zod";
-import type { AssistantHosts } from "@widgetarium/assistant/module";
+import type { AssistantHosts } from "@widgetarium/assistant/implementation";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { isModuleContract } from "@widgetarium/data-framework";
 import type {
@@ -15,7 +15,7 @@ import type {
 } from "@widgetarium/data-framework";
 import { slot } from "@widgetarium/plugin-framework";
 import type { SlotReader } from "@widgetarium/plugin-framework";
-import type { BoardFile } from "@widgetarium/tasks/module";
+import type { BoardFile } from "@widgetarium/tasks/implementation";
 
 export interface CoreOffers extends SlotReader {
 	readonly store: StoreClient;

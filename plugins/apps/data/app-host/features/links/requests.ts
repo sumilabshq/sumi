@@ -3,7 +3,7 @@ import { command } from "#module";
 import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
 import type { LinkTarget } from "@widgetarium/core/engine/sumi-link.js";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
-import { apps as appsContract } from "@sumi/apps";
+import { apps as appsContract } from "@sumi/apps/contract";
 import { openTabSettled, showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { AppKindSchema } from "../../shared/schema/app-tab.schema.js";

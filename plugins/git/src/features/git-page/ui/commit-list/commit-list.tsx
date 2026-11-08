@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { tooltipMarks } from "@widgetarium/kit";
 import { UNCOMMITTED } from "../../lib/git-address.js";

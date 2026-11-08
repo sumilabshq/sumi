@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { FinishLine } from "../finish-line/finish-line.js";
 import { FailureCard } from "../failure-card/failure-card.js";
-import { assistant } from "@widgetarium/assistant";
-import type { Chat } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
+import type { Chat } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const RETRY = "Try again";

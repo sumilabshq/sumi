@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { CALLOUT } from "@widgetarium/behaviors";
 import type { NoteSide, PlacedNote } from "@widgetarium/behaviors";
-import { canvas } from "@widgetarium/canvas";
-import type { CalloutShown } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
+import type { CalloutShown } from "@widgetarium/canvas/contract";
 
 export interface CalloutNoteProps {
 	readonly callout: CalloutShown;

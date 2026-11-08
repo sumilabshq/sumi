@@ -1,5 +1,5 @@
 import { apps } from "@sumi/apps-plugin";
-import { git as gitModule } from "@sumi/git/module";
+import { git as gitModule } from "@sumi/git/implementation";
 import { plugin } from "@widgetarium/plugin-framework";
 import { gitTitleOf } from "./features/git-page/lib/git-address.js";
 import { GIT_ICON } from "./features/git-page/lib/git-icon.js";
@@ -8,7 +8,7 @@ import { RereadAction } from "./features/git-page/ui/reread-action/reread-action
 import { WrapAction } from "./features/git-page/ui/wrap-action/wrap-action.js";
 import { FileListAction } from "./features/git-page/ui/file-list-action/file-list-action.js";
 
-export const git = plugin()
+export const git = plugin("git")
 	.require(apps)
 	.fill(
 		apps.apps.add({

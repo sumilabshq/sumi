@@ -1,7 +1,7 @@
 import { createElement as h, useId, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import type { SidebarSection as SidebarSectionData } from "@widgetarium/app-host";
+import type { SidebarSection as SidebarSectionData } from "@widgetarium/app-host/contract";
 import { SidebarEntries } from "./sidebar-entries.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 

@@ -11,8 +11,8 @@ import {
 	TaskAskSchema,
 	TasksAskSchema,
 	tasks,
-} from "@widgetarium/tasks";
-import type { TaskCard, TaskView } from "@widgetarium/tasks";
+} from "@widgetarium/tasks/contract";
+import type { TaskCard, TaskView } from "@widgetarium/tasks/contract";
 import { fieldsOf, inputOf, outputOf } from "./tool-places.js";
 import type { ToolContext } from "./tool-places.js";
 

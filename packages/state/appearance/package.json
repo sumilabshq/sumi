@@ -7,15 +7,15 @@
 		"dist"
 	],
 	"exports": {
-		".": {
-			"source": "./index.ts",
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
+		"./contract": {
+			"source": "./generated/contract.ts",
+			"types": "./dist/generated/contract.d.ts",
+			"default": "./dist/generated/contract.js"
 		},
-		"./module": {
-			"source": "./module.ts",
-			"types": "./dist/module.d.ts",
-			"default": "./dist/module.js"
+		"./implementation": {
+			"source": "./generated/module.ts",
+			"types": "./dist/generated/module.d.ts",
+			"default": "./dist/generated/module.js"
 		}
 	},
 	"imports": {

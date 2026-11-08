@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { LOOK_PANEL, LOOK_SAID, LOOK_TITLE } from "../../lib/look-chrome.js";
 import { LookRow } from "./look-row.js";
 import { LookUnreadable } from "./look-unreadable.js";

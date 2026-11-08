@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { Button } from "@widgetarium/kit";
-import { layout } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout/contract";
 
 const OPEN_CHAT = "Open chat";
 const OPEN_TAB = "Open tab";

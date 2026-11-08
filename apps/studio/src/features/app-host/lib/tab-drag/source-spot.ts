@@ -1,4 +1,4 @@
-import type { SidebarEntry, SidebarTab, TabChild, TabsSidebar } from "@widgetarium/app-host";
+import type { SidebarEntry, SidebarTab, TabChild, TabsSidebar } from "@widgetarium/app-host/contract";
 
 type Container = readonly [string, readonly string[]];
 

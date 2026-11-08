@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { GroupHueSchema, appHost } from "@widgetarium/app-host";
-import type { GroupHue } from "@widgetarium/app-host";
+import { GroupHueSchema, appHost } from "@widgetarium/app-host/contract";
+import type { GroupHue } from "@widgetarium/app-host/contract";
 import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 
 const COLOUR = "Colour";

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { CanvasOpening } from "@widgetarium/canvas";
+import type { CanvasOpening } from "@widgetarium/canvas/contract";
 import type { Runtime } from "@widgetarium/data-framework";
 import type { CanvasSurroundings } from "../features/canvas/lib/canvas-surroundings.js";
 import { CanvasPage } from "./canvas-page.js";

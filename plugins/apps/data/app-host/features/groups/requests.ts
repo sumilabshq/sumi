@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Repeatable } from "@widgetarium/data-framework";
 import { command } from "#module";
-import { places } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { GroupFaceSchema, GroupHueSchema } from "../../shared/schema/tab-group.schema.js";
 

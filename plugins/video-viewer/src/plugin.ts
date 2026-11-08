@@ -4,7 +4,7 @@ import { LazyVideoView } from "./features/video/lib/lazy-video-view.js";
 import { VIDEO_ICON } from "./features/video/lib/video-icon.js";
 import { VIDEO_TYPES } from "./features/video/lib/video-types.js";
 
-export const videoViewer = plugin()
+export const videoViewer = plugin("video-viewer")
 	.require(files)
 	.fill(
 		files.fileViewers.add({

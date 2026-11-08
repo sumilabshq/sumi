@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState } from "react";
 import type { RefObject } from "react";
-import type { TabsSidebar } from "@widgetarium/app-host";
+import type { TabsSidebar } from "@widgetarium/app-host/contract";
 import { groupHeadOf } from "./pointed-of.js";
 
 export function useGroupHead(

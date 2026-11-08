@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Spot } from "@widgetarium/canvas";
+import type { Spot } from "@widgetarium/canvas/contract";
 
 const LEAVES_AFTER_MS = 200;
 

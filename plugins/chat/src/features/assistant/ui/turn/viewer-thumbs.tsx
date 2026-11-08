@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { AttachmentChip } from "@widgetarium/assistant";
+import type { AttachmentChip } from "@widgetarium/assistant/contract";
 
 export interface ViewerThumbsProps {
 	readonly pictures: readonly AttachmentChip[];

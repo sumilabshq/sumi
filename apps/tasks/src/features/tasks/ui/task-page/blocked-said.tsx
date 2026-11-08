@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskCard } from "@widgetarium/tasks";
+import type { TaskCard } from "@widgetarium/tasks/contract";
 import { BLOCKER_HEADS } from "../../lib/task-words.js";
 
 export interface BlockedSaidProps {

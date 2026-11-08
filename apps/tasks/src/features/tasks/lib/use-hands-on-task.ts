@@ -1,4 +1,4 @@
-import type { Continued, TaskCard } from "@widgetarium/tasks";
+import type { Continued, TaskCard } from "@widgetarium/tasks/contract";
 import type { CommandAnswer } from "@widgetarium/data-framework/gateway/run-handler";
 import { useListedChat } from "./chat-delivery.js";
 import { useDeliverTask } from "./use-deliver-task.js";

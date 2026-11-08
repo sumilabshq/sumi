@@ -1,5 +1,5 @@
 import { appearance, places } from "@sumi/contract";
-import { tasks } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks/contract";
 import { runtime, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 

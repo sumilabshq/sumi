@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
 import { useCommand } from "@widgetarium/data-framework";
-import { AgentEventSchema, mascot } from "@widgetarium/mascot";
-import type { AgentEvent } from "@widgetarium/mascot";
+import { AgentEventSchema, mascot } from "@widgetarium/mascot/contract";
+import type { AgentEvent } from "@widgetarium/mascot/contract";
 
 export interface ChatMoment {
 	readonly isBusy: boolean;

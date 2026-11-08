@@ -1,7 +1,7 @@
 import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { useLinkCopied } from "../../lib/link-copied/use-link-copied.js";
-import type { AppTab } from "@widgetarium/app-host";
+import type { AppTab } from "@widgetarium/app-host/contract";
 import { LinkCopiedNote } from "../link-copied/link-copied.js";
 import type { PointedTab, PointerMenu } from "../../lib/use-pointer-menu.js";
 import { PointerPopover } from "../pointer-popover/pointer-popover.js";

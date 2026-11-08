@@ -1,5 +1,5 @@
 import type { GhostShape, TearOffGhost } from "@widgetarium/behaviors";
-import type { TabDrop } from "@widgetarium/app-host";
+import type { TabDrop } from "@widgetarium/app-host/contract";
 import type { DragPreview } from "./drag-preview.js";
 import type { DragSource } from "./drag-source.js";
 import { placeholderRectOf } from "./drag-placeholder.js";

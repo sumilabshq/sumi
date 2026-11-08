@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { headLabelOf, useGitPage } from "../../lib/git-page-context.js";
 import { fuzzyFiltered } from "../../lib/fuzzy-rank.js";
@@ -36,20 +36,20 @@ export function BranchMenu({ filter, close }: MenuProps): ReactElement | null {
 		<Fragment>
 			<MenuSection label={BRANCHES} isShown hasRule={false}>
 				{fuzzyFiltered(read.data.branches, filter, ({ name }) => name).map((branch) => (
-						<MenuRow
-							key={branch.name}
-							glyph="branch"
-							isChosen={branch.name === head}
-							label={branch.name}
-							hint={
-								<Fragment>
-									{(branch.changed ?? 0) > 0 ? <span className="wg-git-dot" /> : null}
-									{branch.worktree === null ? null : <Glyph name="folder" size={WORKTREE_GLYPH} />}
-								</Fragment>
-							}
-							onPick={() => pick({ head: branch.name, only: null })}
-						/>
-					))}
+					<MenuRow
+						key={branch.name}
+						glyph="branch"
+						isChosen={branch.name === head}
+						label={branch.name}
+						hint={
+							<Fragment>
+								{(branch.changed ?? 0) > 0 ? <span className="wg-git-dot" /> : null}
+								{branch.worktree === null ? null : <Glyph name="folder" size={WORKTREE_GLYPH} />}
+							</Fragment>
+						}
+						onPick={() => pick({ head: branch.name, only: null })}
+					/>
+				))}
 			</MenuSection>
 			<MenuSection label={STASHES} isShown={stashes.length > 0} hasRule>
 				{stashes.map((stash) => (

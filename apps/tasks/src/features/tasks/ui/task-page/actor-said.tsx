@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactNode } from "react";
-import type { Actor } from "@widgetarium/tasks";
+import type { Actor } from "@widgetarium/tasks/contract";
 import { ChatLink } from "./chat-link.js";
 
 export interface ActorSaidProps {

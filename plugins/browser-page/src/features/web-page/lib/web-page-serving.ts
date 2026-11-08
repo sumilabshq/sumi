@@ -1,8 +1,8 @@
 import { places } from "@sumi/contract";
 import type { FrameServing, WindowOffers } from "@sumi/sumi-host-plugin";
 import type { Runtime } from "@widgetarium/data-framework";
-import { webPage } from "@widgetarium/web-page/module";
-import type { AppTabs, NativeWebPages, WebPageConfig } from "@widgetarium/web-page/module";
+import { webPage } from "@widgetarium/web-page/implementation";
+import type { AppTabs, NativeWebPages, WebPageConfig } from "@widgetarium/web-page/implementation";
 import { nativeWebPagesOver } from "./native-web-pages.js";
 
 type ServingOffers = Pick<WindowOffers, "platform" | "windowApp">;

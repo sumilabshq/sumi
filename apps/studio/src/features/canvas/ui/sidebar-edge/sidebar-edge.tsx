@@ -3,7 +3,7 @@ import type { ReactElement, RefObject } from "react";
 import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { SIDEBAR_HAIRLINE_PX } from "../../lib/sidebar-hairline.js";
 
 const EDGE_LABEL = "Sidebar width";

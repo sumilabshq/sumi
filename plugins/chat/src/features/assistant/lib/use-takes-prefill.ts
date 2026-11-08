@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export function useTakesPrefill(

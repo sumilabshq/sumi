@@ -1,5 +1,5 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
 
 export const SHOWN_TAB_SECTION = null;
 

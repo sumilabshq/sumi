@@ -1,8 +1,8 @@
 import { runtime, localTransport, orpcTransport } from "@widgetarium/data-framework";
 import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
-import { appearance as appearanceContract } from "../packages/state/appearance/index.ts";
-import type { SystemScheme } from "../packages/state/appearance/module.ts";
-import { appearance as appearanceModule } from "../packages/state/appearance/module.ts";
+import { appearance as appearanceContract } from "../packages/state/appearance/generated/contract.ts";
+import type { SystemScheme } from "../packages/state/appearance/generated/module.ts";
+import { appearance as appearanceModule } from "../packages/state/appearance/generated/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 

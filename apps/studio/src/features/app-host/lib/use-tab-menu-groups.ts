@@ -1,6 +1,6 @@
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import type { AppTab } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
+import type { AppTab } from "@widgetarium/app-host/contract";
 import { keyHintOf } from "./shortcut/key-hint.js";
 import { CLOSE_KEY, REOPEN_KEY } from "./tab-keys.js";
 

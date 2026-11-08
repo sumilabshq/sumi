@@ -1,4 +1,4 @@
-import type { TabStatus } from "@widgetarium/app-host";
+import type { TabStatus } from "@widgetarium/app-host/contract";
 
 export const STATUS_MARK: Readonly<Record<TabStatus, string>> = {
 	reading: "cv:absolute cv:inset-0 cv:rounded-full cv:ring-2 cv:ring-brand",

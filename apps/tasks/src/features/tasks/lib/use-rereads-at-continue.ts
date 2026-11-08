@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { tasks } from "@widgetarium/tasks";
-import type { TaskCard } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks/contract";
+import type { TaskCard } from "@widgetarium/tasks/contract";
 import { useRuntime } from "@widgetarium/data-framework";
 
 const REREAD = [tasks.board.board, tasks.board.task, tasks.board.tasks];

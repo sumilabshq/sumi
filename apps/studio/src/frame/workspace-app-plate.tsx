@@ -11,7 +11,7 @@ import { PlateMore } from "../features/plate/ui/plate-header/plate-more.js";
 import { PlateShown } from "../features/plate/ui/plate-header/plate-shown.js";
 import type { CrumbWords } from "../features/plate/ui/plate-header/plate-crumb.js";
 import type { PlateMoreItem } from "../features/plate/ui/plate-header/plate-more.js";
-import { workspaces } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
 import { AppPage } from "../features/app-frame/ui/app-page/app-page.js";

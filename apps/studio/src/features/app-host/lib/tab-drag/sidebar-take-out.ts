@@ -8,7 +8,7 @@ import type {
 	SidebarTab,
 	TabChild,
 	TabsSidebar,
-} from "@widgetarium/app-host";
+} from "@widgetarium/app-host/contract";
 import type { DragSource } from "./drag-source.js";
 import { isSameList, keptMap } from "./kept-list.js";
 

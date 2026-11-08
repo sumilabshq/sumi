@@ -5,7 +5,7 @@ import { useOverflowsAcross } from "../../lib/use-overflows-across.js";
 import { hasPreview, isPicture, useOpensPictures } from "../../lib/use-opens-pictures.js";
 import { AttachmentCard } from "./attachment-card.js";
 import { AttachmentsMore } from "./attachments-more.js";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export function DraftAttachments(): ReactElement | null {

@@ -33,7 +33,7 @@ import {
 	showTabInTargetPane,
 } from "../packages/state/layout/features/pane-tabs/requests.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
-import { layout as layoutModule } from "../packages/state/layout/module.ts";
+import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
 import { edgePxWithin, widthsWithin } from "../packages/state/layout/shared/lib/frame-bounds.ts";
 import type { PaneTree } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
 

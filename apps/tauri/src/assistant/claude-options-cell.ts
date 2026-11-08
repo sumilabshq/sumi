@@ -1,4 +1,4 @@
-import type { ClaudeOptions } from "@widgetarium/assistant";
+import type { ClaudeOptions } from "@widgetarium/assistant/contract";
 
 export interface ClaudeOptionsCell {
 	value(): ClaudeOptions;

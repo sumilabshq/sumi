@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
-import type { KeptMenu } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
+import type { KeptMenu } from "@sumi/command-menu/contract";
 import { useClosesOnPressOutside } from "../../lib/use-closes-on-press-outside.js";
 import { MenuPanel } from "./menu-panel.js";
 

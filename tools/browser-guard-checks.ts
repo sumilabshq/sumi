@@ -1,7 +1,7 @@
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { browser as browserModule } from "../packages/domain/browser/module.ts";
-import { browser } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/generated/module.ts";
+import { browser } from "../packages/domain/browser/generated/contract.ts";
 import { BrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/browser-grants.gateway.ts";
 import { decideBrowserAccess } from "../packages/domain/browser/shared/lib/decide-browser-access.ts";
 import { effectiveGrants } from "../packages/domain/browser/shared/lib/once-grants.ts";

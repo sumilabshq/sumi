@@ -1,6 +1,6 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Chat } from "@widgetarium/assistant";
+import type { Chat } from "@widgetarium/assistant/contract";
 import type { CardAsks, ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import type { LiveTools } from "../../lib/live-tools.js";
 import { TurnRow } from "./turn-row.js";

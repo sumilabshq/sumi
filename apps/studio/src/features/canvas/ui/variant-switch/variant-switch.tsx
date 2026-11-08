@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { PillSwitch } from "../pill-switch/pill-switch.js";
 import { VARIANTS_LEAVE } from "../../lib/app-zone-steps.js";
 

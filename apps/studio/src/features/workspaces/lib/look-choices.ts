@@ -1,5 +1,5 @@
 import { FILLED_ICONS } from "./filled-icons.js";
-import type { WorkspaceIcon } from "@widgetarium/workspaces";
+import type { WorkspaceIcon } from "@widgetarium/workspaces/contract";
 
 export type LookTab = "icon" | "emoji";
 

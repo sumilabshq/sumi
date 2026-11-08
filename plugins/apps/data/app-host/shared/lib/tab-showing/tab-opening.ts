@@ -1,4 +1,4 @@
-import { places } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
 import type { TabToOpen } from "../../schema/app-tab.schema.js";
 import type { TabToShow } from "../../schema/tab-to-show.schema.js";
 import { settleAsked } from "./tab-settling.js";

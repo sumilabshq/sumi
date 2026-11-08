@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import type { BrowserTabs } from "@widgetarium/browser";
+import type { BrowserTabs } from "@widgetarium/browser/contract";
 import { FailurePage } from "./failure-page.js";
 import { NewTabPage } from "./new-tab-page.js";
 import { NotAvailableNote } from "./not-available-note.js";

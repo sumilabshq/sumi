@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useOptionalQuery } from "@widgetarium/data-framework";
-import { AgentActivitySchema, mascot } from "@widgetarium/mascot";
+import { AgentActivitySchema, mascot } from "@widgetarium/mascot/contract";
 import { useMascotState } from "../../lib/mascot-state.js";
 import type { OutfitId } from "../../lib/outfit.schema.js";
 import { MascotFigure } from "../mascot-figure/mascot-figure.js";

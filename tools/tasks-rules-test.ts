@@ -1,7 +1,7 @@
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { tasks as tasksContract } from "../packages/domain/tasks/generated/contract.ts";
-import { tasks as tasksModule } from "../packages/domain/tasks/module.ts";
+import { tasks as tasksModule } from "../packages/domain/tasks/generated/module.ts";
 import { FixedClockGateway } from "../packages/domain/tasks/gateways/clock/clock.gateway.ts";
 import { MemoryTasksGateway } from "../packages/domain/tasks/gateways/tasks/memory.gateway.ts";
 import { BoardSchema, MOST_PROGRESSED } from "../packages/domain/tasks/shared/schema/task.schema.ts";

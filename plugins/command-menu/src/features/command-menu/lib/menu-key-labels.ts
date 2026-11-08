@@ -1,4 +1,4 @@
-import type { MenuDoor } from "@sumi/command-menu";
+import type { MenuDoor } from "@sumi/command-menu/contract";
 
 const IN_MENU_ALIASES: Readonly<Partial<Record<string, string>>> = {
 	t: "new-tab",

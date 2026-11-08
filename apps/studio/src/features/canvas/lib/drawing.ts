@@ -1,6 +1,6 @@
 import { useQuery } from "@widgetarium/data-framework";
 import type { WidgetSurfaceProps } from "@widgetarium/core/surface/widget-surface.js";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 
 export interface Drawing {
 	readonly registry: WidgetSurfaceProps["registry"];

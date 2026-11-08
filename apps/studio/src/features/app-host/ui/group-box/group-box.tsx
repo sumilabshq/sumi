@@ -1,6 +1,6 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement, ReactNode } from "react";
-import type { GroupState } from "@widgetarium/app-host";
+import type { GroupState } from "@widgetarium/app-host/contract";
 import { DropTint } from "../drop-tint/drop-tint.js";
 import { FoldBox } from "../fold-box/fold-box.js";
 import { SidebarCard } from "../sidebar-card/sidebar-card.js";

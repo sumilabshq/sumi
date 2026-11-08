@@ -1,4 +1,4 @@
-import type { DiffLine, FileDiff, Hunk } from "@sumi/git";
+import type { DiffLine, FileDiff, Hunk } from "@sumi/git/contract";
 
 export type DiffRow =
 	| {
@@ -22,7 +22,10 @@ export function placeholderHeightOf({ added, removed }: FileDiff): number {
 }
 
 export function lineNumberDigitsOf(rows: readonly DiffRow[]): number {
-	const largest = rows.reduce((most, row) => (row.kind === "gap" ? most : Math.max(most, row.oldNo ?? 0, row.newNo ?? 0)), 0);
+	const largest = rows.reduce(
+		(most, row) => (row.kind === "gap" ? most : Math.max(most, row.oldNo ?? 0, row.newNo ?? 0)),
+		0,
+	);
 	return String(largest).length;
 }
 

@@ -1,6 +1,6 @@
 import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement } from "react";
-import type { CaseResult, TestCase, TestRun } from "@widgetarium/tasks";
+import type { CaseResult, TestCase, TestRun } from "@widgetarium/tasks/contract";
 import { Button, Icon } from "@widgetarium/kit";
 import { agoOf } from "../../lib/task-times.js";
 import { statesSaidOf } from "../../lib/task-counts.js";

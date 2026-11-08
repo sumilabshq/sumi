@@ -9,7 +9,7 @@ import { ObsidianDesignFilesGateway } from "../packages/domain/canvas/gateways/d
 import { canvasPartsOver, openedCanvasOver } from "./canvas-hosts.ts";
 import { polledChanges } from "../packages/domain/canvas/gateways/design-folder/obsidian/design-changes.ts";
 import { shownWidgetsOf } from "../packages/domain/canvas/shared/lib/design/shown-widgets.ts";
-import { canvas } from "../packages/domain/canvas/index.ts";
+import { canvas } from "../packages/domain/canvas/generated/contract.ts";
 import { normalizeBoard } from "../packages/shared/core/src/model.ts";
 import type { WidgetDefinition } from "../packages/shared/core/src/registry.ts";
 import { present } from "./page-dom.ts";

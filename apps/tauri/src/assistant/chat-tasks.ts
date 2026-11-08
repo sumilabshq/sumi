@@ -1,6 +1,6 @@
 import type { Runtime } from "@widgetarium/data-framework";
-import { tasks } from "@widgetarium/tasks";
-import type { SettleTurnAsk, TurnFollowUp, TurnTrailer } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks/contract";
+import type { SettleTurnAsk, TurnFollowUp, TurnTrailer } from "@widgetarium/tasks/contract";
 import type { SettledTurn } from "./turn-session.js";
 
 export type ChatReleased = "cleared" | "deleted";

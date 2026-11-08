@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
-import type { Row } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
+import type { Row } from "@sumi/command-menu/contract";
 import type { Toast } from "./use-menu-moves.js";
 
 export interface RowRename {

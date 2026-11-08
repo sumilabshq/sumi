@@ -4,8 +4,8 @@ import type { ReactElement } from "react";
 import { useHoverIntent } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
-import type { FrameSide } from "@widgetarium/layout";
-import { layout } from "@widgetarium/layout";
+import type { FrameSide } from "@widgetarium/layout/contract";
+import { layout } from "@widgetarium/layout/contract";
 import { SIDE_KEYS } from "../../lib/side-keys.js";
 
 export interface FrameSideToggleProps {

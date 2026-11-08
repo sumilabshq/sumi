@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
-import type { TabsSidebar } from "@widgetarium/app-host";
+import type { TabsSidebar } from "@widgetarium/app-host/contract";
 import type { DragPreviewState } from "./drag-preview.js";
 import { liftedSplitIdOf } from "./drag-placeholder.js";
 

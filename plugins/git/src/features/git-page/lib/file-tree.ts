@@ -1,4 +1,4 @@
-import type { FileDiff } from "@sumi/git";
+import type { FileDiff } from "@sumi/git/contract";
 
 export type FileTreeRow =
 	| {
@@ -97,10 +97,9 @@ function countsOf(folder: FolderNode): { added: number; removed: number } {
 		(sum, file) => ({ added: sum.added + file.added, removed: sum.removed + file.removed }),
 		{ added: 0, removed: 0 },
 	);
-	return [...folder.folders.values()].map(countsOf).reduce(
-		(sum, child) => ({ added: sum.added + child.added, removed: sum.removed + child.removed }),
-		own,
-	);
+	return [...folder.folders.values()]
+		.map(countsOf)
+		.reduce((sum, child) => ({ added: sum.added + child.added, removed: sum.removed + child.removed }), own);
 }
 
 function byName(a: FolderNode, b: FolderNode): number {

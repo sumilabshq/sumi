@@ -3,7 +3,7 @@ import type { Runtime } from "@widgetarium/data-framework";
 import { DesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/design-files.gateway.ts";
 import { MemoryCanvasMomentGateway } from "../packages/domain/canvas/gateways/canvas-moment/memory.gateway.ts";
 import { AgentJobsGateway } from "../packages/domain/canvas/gateways/agent-jobs/agent-jobs.gateway.ts";
-import { canvas as canvasContract } from "../packages/domain/canvas/index.ts";
+import { canvas as canvasContract } from "../packages/domain/canvas/generated/contract.ts";
 import { canDragLayer } from "../packages/domain/canvas/features/layers/lib/layer-drag.ts";
 import type { CanvasLayer } from "../packages/domain/canvas/shared/schema/layer.schema.ts";
 import type { DrawnDesign } from "../packages/domain/canvas/shared/schema/drawn-design.schema.ts";

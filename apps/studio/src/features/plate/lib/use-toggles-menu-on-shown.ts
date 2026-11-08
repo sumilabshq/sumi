@@ -1,5 +1,5 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
 
 export function useTogglesMenuOnShown(shownName: string, pageId: string | null): () => void {
 	const openMenu = useCommand(commandMenu.opening.toggleCommandMenu);

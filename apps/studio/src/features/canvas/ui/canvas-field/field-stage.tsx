@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { GPU_FRAMES } from "@widgetarium/gpu";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { usePanZoom } from "@widgetarium/behaviors";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { FieldRegions } from "./field-regions.js";
 import { PRESSABLE } from "../../lib/field-marks.js";
 import { Highlight } from "./highlight.js";

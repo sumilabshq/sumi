@@ -1,6 +1,6 @@
 import { createElement as h, Fragment, useRef } from "react";
 import type { ReactElement } from "react";
-import type { Section } from "@sumi/command-menu";
+import type { Section } from "@sumi/command-menu/contract";
 import { useBox } from "@widgetarium/core/use-width.js";
 import type { MenuMoves } from "../../lib/use-menu-moves.js";
 import { MenuRow } from "./menu-row.js";

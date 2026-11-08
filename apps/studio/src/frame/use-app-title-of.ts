@@ -1,6 +1,6 @@
 import { useQuery } from "@widgetarium/data-framework";
-import { apps as appsContract } from "@sumi/apps";
-import type { TabApp } from "@widgetarium/app-host";
+import { apps as appsContract } from "@sumi/apps/contract";
+import type { TabApp } from "@widgetarium/app-host/contract";
 
 export type AppTitleOf = (app: TabApp) => string;
 

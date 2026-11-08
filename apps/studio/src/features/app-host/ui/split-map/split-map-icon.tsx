@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SplitMap } from "@widgetarium/app-host";
+import type { SplitMap } from "@widgetarium/app-host/contract";
 
 export interface SplitMapIconProps {
 	readonly map: SplitMap;

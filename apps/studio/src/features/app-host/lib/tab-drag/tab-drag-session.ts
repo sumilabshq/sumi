@@ -7,7 +7,7 @@ import {
 	TearOffGhost,
 } from "@widgetarium/behaviors";
 import type { GhostFace, ListSizes, OverlayPort, WindowZone } from "@widgetarium/behaviors";
-import type { TabDrop } from "@widgetarium/app-host";
+import type { TabDrop } from "@widgetarium/app-host/contract";
 import { BoardCarry } from "./board-carry.js";
 import { DeafSidebar } from "./deaf-sidebar.js";
 import type { DragPreview } from "./drag-preview.js";

@@ -3,7 +3,7 @@ import type { ChildProcess } from "node:child_process";
 import path from "node:path";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { fixtureBilling } from "@widgetarium/fixture-billing";
+import { fixtureBilling } from "@widgetarium/fixture-billing/contract";
 import { check } from "./check-helpers.ts";
 
 const REPO = path.resolve(import.meta.dirname, "..");

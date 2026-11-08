@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ClipboardEvent, DragEvent, ReactElement, ReactNode } from "react";
 import { Icon } from "@widgetarium/kit";
-import type { Door } from "@sumi/command-menu";
+import type { Door } from "@sumi/command-menu/contract";
 import { useSelectsFieldOnMount } from "../../lib/use-selects-field-on-mount.js";
 import { FieldIcon } from "./field-icon.js";
 import type { FieldGlyph } from "./field-icon.js";

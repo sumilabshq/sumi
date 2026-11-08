@@ -1,7 +1,7 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import { layout } from "@widgetarium/layout";
-import { workspaces } from "@widgetarium/workspaces";
+import { appHost } from "@widgetarium/app-host/contract";
+import { layout } from "@widgetarium/layout/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import { command } from "#module";
 import { ChatOpenedSchema, ChatPaneSchema, NewChatTitleSchema } from "../../shared/schema/chat-opening.schema.js";
 import { chatIdForPane } from "./lib/chat-for-pane.js";

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 const SWEEP_EVERY_MS = 600000;

@@ -1,4 +1,4 @@
-import type { PaneBoard } from "@widgetarium/layout";
+import type { PaneBoard } from "@widgetarium/layout/contract";
 
 function windowHoldingChat(board: PaneBoard, chatId: string): string | null {
 	return board.elsewhere.find((window) => window.chatIds.includes(chatId))?.window ?? null;

@@ -1,5 +1,5 @@
-import { canvas } from "@widgetarium/canvas/module";
-import type { CanvasHosts as CanvasConfig } from "@widgetarium/canvas/module";
+import { canvas } from "@widgetarium/canvas/implementation";
+import type { CanvasHosts as CanvasConfig } from "@widgetarium/canvas/implementation";
 import { runtime } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
 import type { CanvasHosts } from "./canvas-hosts.js";

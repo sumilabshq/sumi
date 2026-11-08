@@ -1,7 +1,7 @@
 import { useCommand } from "@widgetarium/data-framework";
 import type { AttachedChange, CardAsks } from "./chat-cards-slot.js";
 import type { Report } from "../../../shared/lib/failure-line.js";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { answerSettled } from "../../../shared/lib/answer-settled.js";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 

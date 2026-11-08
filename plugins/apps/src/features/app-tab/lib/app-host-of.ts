@@ -1,4 +1,4 @@
-import { appHost } from "@widgetarium/app-host/module";
+import { appHost } from "@widgetarium/app-host/implementation";
 import type { WindowModuleOffers } from "@sumi/sumi-host-plugin";
 import type { DeviceModule } from "@widgetarium/data-framework";
 

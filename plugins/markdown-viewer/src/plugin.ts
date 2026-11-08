@@ -3,7 +3,7 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { LazyMarkdownView } from "./features/markdown/lib/lazy-markdown-view.js";
 import { MARKDOWN_ICON } from "./features/markdown/lib/markdown-icon.js";
 
-export const markdownViewer = plugin()
+export const markdownViewer = plugin("markdown-viewer")
 	.require(files)
 	.fill(
 		files.fileViewers.add({

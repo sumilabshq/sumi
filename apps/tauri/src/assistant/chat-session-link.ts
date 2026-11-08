@@ -1,6 +1,6 @@
 import type { Runtime } from "@widgetarium/data-framework";
 import { focusedChatPortOf } from "@widgetarium/studio";
-import { workspaces } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import { chatQuestionsOver } from "./chat-questions.js";
 import { chatTasksOver } from "./chat-tasks.js";
 import type { ChatSessionLink } from "./chat-sessions.js";

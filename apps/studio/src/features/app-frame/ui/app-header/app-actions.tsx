@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { apps } from "@sumi/apps";
+import { apps } from "@sumi/apps/contract";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 

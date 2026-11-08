@@ -1,4 +1,4 @@
-import type { PaneNode, PaneSide, PaneSplit, SplitDir } from "@widgetarium/layout";
+import type { PaneNode, PaneSide, PaneSplit, SplitDir } from "@widgetarium/layout/contract";
 import { branchIdOfPane } from "./split-panes.js";
 
 export interface PaneRect {

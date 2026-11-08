@@ -1,4 +1,4 @@
-import type { FrameSide } from "@widgetarium/layout";
+import type { FrameSide } from "@widgetarium/layout/contract";
 
 export interface SideKeys {
 	readonly code: string;

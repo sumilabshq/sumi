@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { LinkCopied } from "../../lib/link-copied/use-link-copied.js";
-import type { AppTab } from "@widgetarium/app-host";
+import type { AppTab } from "@widgetarium/app-host/contract";
 import type { PointedTab, PointerMenu } from "../../lib/use-pointer-menu.js";
 import { useTabMenuGroups } from "../../lib/use-tab-menu-groups.js";
 import { TabMenuLook } from "./tab-menu-look.js";

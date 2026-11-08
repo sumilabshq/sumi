@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskCard } from "@widgetarium/tasks";
+import type { TaskCard } from "@widgetarium/tasks/contract";
 import { countSaid } from "../../lib/task-counts.js";
 import { ageOf } from "../../lib/task-times.js";
 import type { OpenTask } from "../../lib/use-open-task.js";

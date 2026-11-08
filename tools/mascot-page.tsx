@@ -6,9 +6,9 @@ import { MascotFigure } from "../apps/studio/src/features/mascot/ui/mascot-figur
 import { MascotStateSchema } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
 import { OutfitIdSchema } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
 import type { OutfitId } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
-import { mascot } from "../plugins/chat/data/mascot/index.ts";
-import type { AgentEvent } from "../plugins/chat/data/mascot/index.ts";
-import { mascot as mascotModule } from "../plugins/chat/data/mascot/module.ts";
+import { mascot } from "../plugins/chat/data/mascot/generated/contract.ts";
+import type { AgentEvent } from "../plugins/chat/data/mascot/generated/contract.ts";
+import { mascot as mascotModule } from "../plugins/chat/data/mascot/generated/module.ts";
 import { reportsFailures } from "./page-harness.ts";
 
 reportsFailures();

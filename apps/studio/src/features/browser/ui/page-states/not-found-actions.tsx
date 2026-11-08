@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import type { BrowserTabState, PageFailure } from "@widgetarium/browser";
-import { browser } from "@widgetarium/browser";
+import type { BrowserTabState, PageFailure } from "@widgetarium/browser/contract";
+import { browser } from "@widgetarium/browser/contract";
 import { hostOf } from "../../lib/failure-copy.js";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { AskInkAction } from "../ask-ink-action/ask-ink-action.js";

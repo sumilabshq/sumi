@@ -3,20 +3,20 @@ import assert from "node:assert/strict";
 import { filledWithShown } from "../plugins/command-menu/data/command-menu/features/opening/lib/shown-text.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer } from "../packages/shared/data-framework/src/index.ts";
-import { appHost as appHostModule } from "../plugins/apps/data/app-host/module.ts";
-import { appHost } from "../plugins/apps/data/app-host/index.ts";
-import { browser } from "../packages/domain/browser/module.ts";
-import { layout } from "../packages/state/layout/module.ts";
-import { workspaces as workspacesModule } from "../packages/domain/workspaces/module.ts";
-import { workspaces } from "../packages/domain/workspaces/index.ts";
-import { chatTabs } from "../plugins/chat/data/chat-tabs/index.ts";
+import { appHost as appHostModule } from "../plugins/apps/data/app-host/generated/module.ts";
+import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { browser } from "../packages/domain/browser/generated/module.ts";
+import { layout } from "../packages/state/layout/generated/module.ts";
+import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
+import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
+import { chatTabs } from "../plugins/chat/data/chat-tabs/generated/contract.ts";
 import {
 	firstChats,
 	memoryWorkspacesParts,
 } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
-import { commandMenu } from "../plugins/command-menu/data/command-menu/index.ts";
-import type { Intent, Results, ResultsAsk } from "../plugins/command-menu/data/command-menu/index.ts";
+import { commandMenu } from "../plugins/command-menu/data/command-menu/generated/contract.ts";
+import type { Intent, Results, ResultsAsk } from "../plugins/command-menu/data/command-menu/generated/contract.ts";
 import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";

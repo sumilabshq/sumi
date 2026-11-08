@@ -21,7 +21,7 @@ import { ChatTurns } from "./chat-turns.js";
 import { QueueZone } from "../queue/queue-zone.js";
 import { useQueueActions } from "../../lib/use-queue-actions.js";
 import { ChatDock } from "./chat-dock.js";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 
 export interface ReadyChatProps {
 	readonly setupFailure: string | null;

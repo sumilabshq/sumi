@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { filePage } from "@sumi/file-page";
+import { filePage } from "@sumi/file-page/contract";
 import { useTabHeader } from "@sumi/sumi-host-plugin";
 import { useCommand } from "@widgetarium/data-framework";
 import { useFlashesDone } from "../../lib/use-flashes-done.js";

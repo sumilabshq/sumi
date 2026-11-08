@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { ContextMenuGroup, ContextMenuSeparator } from "@widgetarium/kit";
-import { SectionListSchema, appHost } from "@widgetarium/app-host";
+import { SectionListSchema, appHost } from "@widgetarium/app-host/contract";
 import { POINTER_LINE } from "../../lib/menu-look/menu-look.js";
 import { groupsOfList } from "../../lib/tabs-sidebar/sidebar-groups.js";
 import { AddToEssentialsItem } from "./add-to-essentials-item.js";

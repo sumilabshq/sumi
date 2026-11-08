@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
 
 const NOT_OPENED = "[widgetarium] the link {href} asked from tab {from} was not opened: {reason}";
 

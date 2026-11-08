@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { RUN_COMMAND_EVENT } from "@widgetarium/markdown";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 

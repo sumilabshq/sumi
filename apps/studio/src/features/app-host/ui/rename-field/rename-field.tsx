@@ -1,7 +1,7 @@
 import { createElement as h, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import { useSelectsOnMount } from "../../lib/use-selects-on-mount.js";
 
 export interface Named {

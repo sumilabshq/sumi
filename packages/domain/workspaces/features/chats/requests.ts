@@ -1,7 +1,7 @@
 import { PerCall, Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
 import { workspacesChanged } from "../../gateways/workspaces/workspaces.events.js";
 import { currentWorkspaceChanged } from "../../gateways/current-workspace/current-workspace.events.js";
 import { chatsChanged } from "../../gateways/chats/chats.events.js";

@@ -1,4 +1,4 @@
-import { apps as appsModule } from "../plugins/apps/data/apps/module.ts";
+import { apps as appsModule } from "../plugins/apps/data/apps/generated/module.ts";
 import { faceOf } from "../plugins/apps/src/features/app-tab/lib/face-of.ts";
 import { AppSchema, apps } from "../plugins/apps/src/index.ts";
 import { BROWSER_PAGE_ICON } from "../plugins/browser-page/src/features/browser-page/lib/browser-page-icon.ts";

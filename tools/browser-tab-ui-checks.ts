@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
-import { browser as browserModule } from "../packages/domain/browser/module.ts";
-import { browser as browserContract } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/generated/module.ts";
+import { browser as browserContract } from "../packages/domain/browser/generated/contract.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";

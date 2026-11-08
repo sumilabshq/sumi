@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { Popover } from "@widgetarium/kit";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { SiteAccessPanel } from "../site-menu/site-access-panel.js";
 import { KeptOutPress } from "./kept-out-press.js";

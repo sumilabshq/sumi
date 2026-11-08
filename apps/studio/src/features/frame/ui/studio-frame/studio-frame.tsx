@@ -5,7 +5,7 @@ import type { ReadCursor } from "@widgetarium/behaviors";
 import { Slot, useCommand, useQuery } from "@widgetarium/data-framework";
 import { NewChatShortcut } from "../../../app-host/ui/new-chat-shortcut/new-chat-shortcut.js";
 import { LinkOpener } from "../../../app-host/ui/link-opener/link-opener.js";
-import { layout } from "@widgetarium/layout";
+import { layout } from "@widgetarium/layout/contract";
 import { FrameSideReveal } from "../../../frame-sides/ui/frame-side-reveal/frame-side-reveal.js";
 import { FrameSideToggle } from "../../../frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
 import { FrameEdgeHandle } from "../../../frame-widths/ui/frame-edge/frame-edge.js";

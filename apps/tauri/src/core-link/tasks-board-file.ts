@@ -1,8 +1,8 @@
 import { runtime } from "@widgetarium/data-framework";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import { fileSystem } from "@widgetarium/file-system";
+import { fileSystem } from "@widgetarium/file-system/contract";
 import { APP_CALLER_HEADER } from "@widgetarium/studio";
-import type { BoardFile } from "@widgetarium/tasks/module";
+import type { BoardFile } from "@widgetarium/tasks/implementation";
 
 const TASKS_APP_ID = "tasks";
 const BOARD_FILE_PATH = "tasks.json";

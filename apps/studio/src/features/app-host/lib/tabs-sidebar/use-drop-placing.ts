@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { TabDropSchema, appHost } from "@widgetarium/app-host";
-import type { TabDrop } from "@widgetarium/app-host";
+import { TabDropSchema, appHost } from "@widgetarium/app-host/contract";
+import type { TabDrop } from "@widgetarium/app-host/contract";
 import type { DragSource } from "../tab-drag/drag-source.js";
 import type { SidebarDragParts } from "../tab-drag/sidebar-drag-parts.js";
 import { useSidebarDrag } from "../tab-drag/use-sidebar-drag.js";

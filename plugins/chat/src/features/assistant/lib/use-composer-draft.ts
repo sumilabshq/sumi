@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent, RefObject } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { toast } from "@widgetarium/kit";
 import { sendState } from "./send-state.js";
 import type { SendState } from "./send-state.js";

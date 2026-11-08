@@ -2,7 +2,7 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useTreeDrag, useTreeScroll } from "@widgetarium/behaviors";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { DropSlot } from "./drop-slot.js";
 import { LayersHeader } from "./layers-header.js";
 import { LayerRow } from "./layer-row.js";

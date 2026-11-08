@@ -1,4 +1,4 @@
-import type { PageArea } from "@widgetarium/web-page";
+import type { PageArea } from "@widgetarium/web-page/contract";
 
 const NO_ANCHOR = "no app frame or view holds tab {tab}, so its web page has nowhere to stand";
 

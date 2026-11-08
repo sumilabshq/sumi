@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { appHost } from "@widgetarium/app-host";
-import type { HeldTab } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
+import type { HeldTab } from "@widgetarium/app-host/contract";
 import { useQuery } from "@widgetarium/data-framework";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";

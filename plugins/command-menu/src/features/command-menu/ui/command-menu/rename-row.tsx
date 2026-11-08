@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Row } from "@sumi/command-menu";
+import type { Row } from "@sumi/command-menu/contract";
 import type { MenuMoves } from "../../lib/use-menu-moves.js";
 import { useSelectsFieldOnMount } from "../../lib/use-selects-field-on-mount.js";
 import { RowIcon } from "./row-icon.js";

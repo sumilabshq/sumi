@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { TabArtSchema } from "@widgetarium/app-host";
+import { TabArtSchema } from "@widgetarium/app-host/contract";
 import type { TabFaceProps } from "@sumi/sumi-host-plugin";
 import { TabFaceIcon } from "./tab-face-icon.js";
 

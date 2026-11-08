@@ -1,7 +1,7 @@
-import { apps } from "@sumi/apps";
+import { apps } from "@sumi/apps/contract";
 import type { Send } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places";
-import type { TabsAsk } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
+import type { TabsAsk } from "@widgetarium/places/contract";
 import type { PageTab, PageTitles } from "./page-titles.js";
 
 export async function pageTitlesOf(send: Send, tabs: readonly PageTab[]): Promise<PageTitles> {

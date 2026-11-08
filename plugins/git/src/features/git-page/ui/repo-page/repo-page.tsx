@@ -1,7 +1,7 @@
 import { createElement as h, useCallback, useMemo, useState } from "react";
 import type { CSSProperties, ReactElement } from "react";
-import { git } from "@sumi/git";
-import type { GitPlace } from "@sumi/git";
+import { git } from "@sumi/git/contract";
+import type { GitPlace } from "@sumi/git/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import type { GitAddress } from "../../lib/git-address.js";
 import { GitPageContext } from "../../lib/git-page-context.js";

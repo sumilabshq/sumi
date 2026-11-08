@@ -2,7 +2,7 @@ import { Fragment, createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { Icon, Popover, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
 import { useQuery } from "@widgetarium/data-framework";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { useTurnToPage } from "../../lib/use-turn-to-page.js";
 import { PAGE_NAME_AND_PHOTO_LEAVE } from "../../lib/app-zone-steps.js";
 import { GHOST_TEXT_BUTTON } from "../../lib/top-bar-look.js";

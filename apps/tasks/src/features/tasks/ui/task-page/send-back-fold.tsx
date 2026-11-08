@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { TaskCard } from "@widgetarium/tasks";
+import type { TaskCard } from "@widgetarium/tasks/contract";
 import { Collapsible, CollapsibleContent } from "@widgetarium/kit";
 import { SendBackForm } from "./send-back-form.js";
 

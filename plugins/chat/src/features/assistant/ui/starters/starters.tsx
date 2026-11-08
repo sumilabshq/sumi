@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { SKILL_ENTRIES } from "../../lib/slash-matches.js";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 

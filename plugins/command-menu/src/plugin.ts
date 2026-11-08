@@ -1,10 +1,10 @@
-import { commandMenu as commandMenuModule } from "@sumi/command-menu/module";
+import { commandMenu as commandMenuModule } from "@sumi/command-menu/implementation";
 import { sumiHost } from "@sumi/sumi-host-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
 import { CommandMenuLayer } from "./features/command-menu/ui/command-menu-layer/command-menu-layer.js";
 import { menuDoors, menuPages, menuRowSources } from "./slots.js";
 
-export const commandMenu = plugin()
+export const commandMenu = plugin("command-menu")
 	.require(sumiHost)
 	.declare(menuDoors, menuPages, menuRowSources)
 	.fill(

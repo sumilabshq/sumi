@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/data-framework";

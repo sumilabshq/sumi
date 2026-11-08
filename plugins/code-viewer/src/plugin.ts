@@ -6,7 +6,7 @@ import { CodeCopyAction } from "./features/code/ui/code-copy-action/code-copy-ac
 import { ValuesAction } from "./features/code/ui/values-action/values-action.js";
 import { WrapAction } from "./features/code/ui/wrap-action/wrap-action.js";
 
-export const codeViewer = plugin()
+export const codeViewer = plugin("code-viewer")
 	.require(files)
 	.fill(
 		files.fileViewers.add({

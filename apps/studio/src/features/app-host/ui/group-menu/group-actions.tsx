@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { Icon, PopoverItem } from "@widgetarium/kit";
 import { BOARD_ITEM } from "../../lib/menu-look/menu-look.js";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 
 const UNGROUP = "Ungroup";

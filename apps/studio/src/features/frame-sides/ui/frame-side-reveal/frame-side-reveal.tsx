@@ -3,8 +3,8 @@ import type { ReactElement, RefObject } from "react";
 import { useEdgeReveal } from "@widgetarium/behaviors";
 import type { EdgeLook, ReadCursor } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import type { FrameSide, SideLook } from "@widgetarium/layout";
-import { layout } from "@widgetarium/layout";
+import type { FrameSide, SideLook } from "@widgetarium/layout/contract";
+import { layout } from "@widgetarium/layout/contract";
 import { SIDE_KEYS } from "../../lib/side-keys.js";
 
 export interface FrameSideRevealProps {

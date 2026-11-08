@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { appHost } from "@widgetarium/app-host";
-import type { chatTabs } from "@sumi/chat-tabs";
+import type { appHost } from "@widgetarium/app-host/contract";
+import type { chatTabs } from "@sumi/chat-tabs/contract";
 import type { OutputOf } from "@widgetarium/data-framework";
 import { tabListsOf } from "./sidebar-lists.js";
 import type { ListedEntry, ListedGroup, Sidebar, SidebarTab, TabList } from "./sidebar-lists.js";

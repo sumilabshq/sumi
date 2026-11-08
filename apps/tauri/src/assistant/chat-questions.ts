@@ -1,5 +1,5 @@
 import type { Runtime } from "@widgetarium/data-framework";
-import { questions } from "@widgetarium/questions";
+import { questions } from "@widgetarium/questions/contract";
 
 export interface ChatQuestions {
 	answersTrailer(chatId: string): Promise<string | null>;

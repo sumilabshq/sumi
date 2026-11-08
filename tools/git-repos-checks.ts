@@ -5,13 +5,13 @@ import path from "node:path";
 import { orpcTransport, runtime } from "@widgetarium/data-framework";
 import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import { fileSystem, terminal } from "@sumi/contract";
-import { git as gitContract } from "../plugins/git/data/git/index.ts";
-import { git as gitModule } from "../plugins/git/data/git/module.ts";
+import { git as gitContract } from "../plugins/git/data/git/generated/contract.ts";
+import { git as gitModule } from "../plugins/git/data/git/generated/module.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
-import { fileSystem as fileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { fileSystem as fileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { NodeProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/node.gateway.ts";
 import { MemoryTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/memory.gateway.ts";
-import { terminal as terminalModule } from "../apps/tauri/capabilities/terminal/module.ts";
+import { terminal as terminalModule } from "../apps/tauri/capabilities/terminal/generated/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 
@@ -137,17 +137,29 @@ check(
 	true,
 );
 
-const uncommitted = await app.send(gitContract.repos.comparison, { root: repo, head: "feat", base: "HEAD", only: null });
+const uncommitted = await app.send(gitContract.repos.comparison, {
+	root: repo,
+	head: "feat",
+	base: "HEAD",
+	only: null,
+});
 check(
 	"against the last commit: only what is not committed",
-	uncommitted.ok ? uncommitted.output.files.map(({ path: file, added, removed }) => [file, added, removed]) : uncommitted,
+	uncommitted.ok
+		? uncommitted.output.files.map(({ path: file, added, removed }) => [file, added, removed])
+		: uncommitted,
 	[
 		["a.txt", 1, 0],
 		["new.txt", 1, 0],
 	],
 );
 
-const oneCommit = await app.send(gitContract.repos.comparison, { root: repo, head: "feat", base: "main", only: featSha });
+const oneCommit = await app.send(gitContract.repos.comparison, {
+	root: repo,
+	head: "feat",
+	base: "main",
+	only: featSha,
+});
 check(
 	"one commit shows only its own change",
 	oneCommit.ok ? oneCommit.output.files.map(({ path: file, added, removed }) => [file, added, removed]) : oneCommit,

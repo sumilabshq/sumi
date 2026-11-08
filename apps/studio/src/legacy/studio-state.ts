@@ -1,4 +1,4 @@
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import { STUDIO_OPENED_ON } from "@widgetarium/core/engine/studio-state-port.js";
 import type { StudioMoment, StudioState, StudioView } from "@widgetarium/core/engine/studio-state-port.js";
 import type { Runtime } from "@widgetarium/data-framework";

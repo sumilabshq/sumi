@@ -1,8 +1,8 @@
 import { runtime, localTransport, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
-import { fixtureBilling } from "@widgetarium/fixture-billing";
-import { fixtureBilling as RunnableFixtureBillingModule } from "../packages/domain/fixture-billing/module.ts";
+import { fixtureBilling } from "@widgetarium/fixture-billing/contract";
+import { fixtureBilling as RunnableFixtureBillingModule } from "../packages/domain/fixture-billing/generated/module.ts";
 import { MemoryLedgerGateway } from "../packages/domain/fixture-billing/gateways/ledger/memory.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
 

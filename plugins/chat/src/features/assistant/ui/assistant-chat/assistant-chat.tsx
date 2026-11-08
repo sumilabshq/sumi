@@ -4,7 +4,7 @@ import { useOptionalQuery } from "@widgetarium/data-framework";
 import type { ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { ReadyChat } from "../ready-chat/ready-chat.js";
 import { SetupUnread } from "../setup-unread/setup-unread.js";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 
 export interface AssistantChatProps {
 	readonly lead?: ReactNode;

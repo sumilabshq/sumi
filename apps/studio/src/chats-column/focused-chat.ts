@@ -1,8 +1,8 @@
 import type { FocusedChat, FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { Runtime } from "@widgetarium/data-framework";
-import { layout } from "@widgetarium/layout";
-import type { PaneBoard } from "@widgetarium/layout";
-import { chatTabs } from "@sumi/chat-tabs";
+import { layout } from "@widgetarium/layout/contract";
+import type { PaneBoard } from "@widgetarium/layout/contract";
+import { chatTabs } from "@sumi/chat-tabs/contract";
 
 export function focusedChatPortOf(studioApp: Runtime): FocusedChatPort {
 	return {

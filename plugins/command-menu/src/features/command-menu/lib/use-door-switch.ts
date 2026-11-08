@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { prefersReducedMotion } from "@widgetarium/kit";
-import { commandMenu } from "@sumi/command-menu";
-import type { Door } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
+import type { Door } from "@sumi/command-menu/contract";
 
 export interface DoorSwitch {
 	readonly shownDoor: Door;

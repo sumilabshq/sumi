@@ -1,7 +1,7 @@
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { browser as browserModule } from "../packages/domain/browser/module.ts";
-import { browser } from "../packages/domain/browser/index.ts";
+import { browser as browserModule } from "../packages/domain/browser/generated/module.ts";
+import { browser } from "../packages/domain/browser/generated/contract.ts";
 import { LocalStorageBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/local-storage.gateway.ts";
 import { hasReadContentThisTurn } from "../packages/domain/browser/features/ink/lib/ink-turn.ts";
 import { check, thrownBy, waitFor } from "./check-helpers.ts";

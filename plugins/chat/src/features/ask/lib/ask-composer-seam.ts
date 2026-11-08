@@ -1,6 +1,6 @@
-import { assistant } from "@widgetarium/assistant";
-import type { AdoptedDraft } from "@widgetarium/assistant";
-import { chatTabs } from "@sumi/chat-tabs";
+import { assistant } from "@widgetarium/assistant/contract";
+import type { AdoptedDraft } from "@widgetarium/assistant/contract";
+import { chatTabs } from "@sumi/chat-tabs/contract";
 import { toastRefusal } from "@widgetarium/data-framework/command-refusals";
 import type { Runtime } from "@widgetarium/data-framework";
 import type { AskComposer } from "@sumi/sumi-host-plugin";

@@ -1,8 +1,8 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { RuntimeProvider, useOptionalQuery, useQuery } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
-import type { Door, Results } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
+import type { Door, Results } from "@sumi/command-menu/contract";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
 import { useMenuKeys } from "../../lib/use-menu-keys.js";
 import { useMenuMoves } from "../../lib/use-menu-moves.js";

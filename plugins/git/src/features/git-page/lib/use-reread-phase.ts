@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { useCommand, useIsRereading } from "@widgetarium/data-framework";
 
 export type RereadPhase = "idle" | "asking" | "rereading" | "done";

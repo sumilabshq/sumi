@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "@widgetarium/data-framework";
 import { portalLayer } from "@widgetarium/kit";
-import { commandMenu } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
 import { OpenMenu } from "./open-menu.js";
 
 export function CommandMenu(): ReactElement | null {

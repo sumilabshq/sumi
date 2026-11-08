@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import type { Step, StepState } from "@widgetarium/tasks";
+import type { Step, StepState } from "@widgetarium/tasks/contract";
 import { statesSaidOf } from "../../lib/task-counts.js";
 import { STEP_WORDS } from "../../lib/task-words.js";
 

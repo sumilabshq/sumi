@@ -1,9 +1,9 @@
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { places } from "../plugins/apps/data/places/index.ts";
-import type { TabsAsk } from "../plugins/apps/data/places/index.ts";
+import { places } from "../plugins/apps/data/places/generated/contract.ts";
+import type { TabsAsk } from "../plugins/apps/data/places/generated/contract.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import type { SidebarEntry, TabDrop, TabsSidebar } from "../plugins/apps/data/app-host/index.ts";
+import type { SidebarEntry, TabDrop, TabsSidebar } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { arrangedSidebar } from "../apps/studio/src/features/app-host/lib/tab-drag/arranged-sidebar.ts";
 import type { DragSource } from "../apps/studio/src/features/app-host/lib/tab-drag/drag-source.ts";
 import { BARE_SCREEN, MAIN_WINDOW, placedTabsOf, placesLinkOf } from "./places-fixture.ts";

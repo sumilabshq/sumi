@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import type { TaskView } from "@widgetarium/tasks";
+import type { TaskView } from "@widgetarium/tasks/contract";
 import { ActivityList } from "./activity-section.js";
 import { CriteriaList, criteriaSaidOf } from "./criteria-section.js";
 import { DocumentsList, documentsSaidOf } from "./documents-section.js";

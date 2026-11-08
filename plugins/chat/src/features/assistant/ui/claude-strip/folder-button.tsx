@@ -8,8 +8,8 @@ import { ChatMenu } from "../chat-menu/chat-menu.js";
 import { ChatMenuLine } from "../chat-menu/chat-menu-line.js";
 import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
 import { StripButton } from "./strip-button.js";
-import { assistant } from "@widgetarium/assistant";
-import type { WorkingFolders } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
+import type { WorkingFolders } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const CHOOSE_A_FOLDER = "Choose a folder";

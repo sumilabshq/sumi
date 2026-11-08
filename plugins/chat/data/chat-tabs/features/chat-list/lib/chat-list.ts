@@ -1,4 +1,4 @@
-import type { ChatTabs } from "@widgetarium/places";
+import type { ChatTabs } from "@widgetarium/places/contract";
 import type { ChatListData, ChatRowData } from "../../../shared/schema/chat-list.schema.js";
 
 type ChatTabRow = ChatTabs["pinned"][number];

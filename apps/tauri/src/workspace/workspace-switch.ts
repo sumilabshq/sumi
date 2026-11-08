@@ -1,5 +1,5 @@
 import type { Runtime } from "@widgetarium/data-framework";
-import { workspaces } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces/contract";
 
 export function reopensOnWorkspaceSwitch(
 	workspacesApp: Runtime,

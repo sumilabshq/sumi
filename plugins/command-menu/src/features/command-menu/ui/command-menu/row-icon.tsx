@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ComponentType, ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import type { RowIcon as RowIconData } from "@sumi/command-menu";
+import type { RowIcon as RowIconData } from "@sumi/command-menu/contract";
 import { useTabFace } from "@sumi/sumi-host-plugin";
 import type { TabFaceProps } from "@sumi/sumi-host-plugin";
 

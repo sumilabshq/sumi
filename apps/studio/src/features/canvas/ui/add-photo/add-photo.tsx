@@ -3,7 +3,7 @@ import type { ChangeEvent, ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { useCanvasSurroundings } from "../../lib/canvas-surroundings.js";
 import { RoundButton } from "../round-button/round-button.js";
 import { PAGE_NAME_AND_PHOTO_LEAVE } from "../../lib/app-zone-steps.js";

@@ -6,7 +6,7 @@ import type {
 	QueueChange,
 	RenderMarkdown,
 } from "@widgetarium/core/engine/assistant-port.js";
-import type { ClaudeOptions } from "@widgetarium/assistant";
+import type { ClaudeOptions } from "@widgetarium/assistant/contract";
 import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
 import { NO_CHAT_QUESTIONS } from "./chat-questions.js";

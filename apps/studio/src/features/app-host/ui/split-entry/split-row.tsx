@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SidebarSplitState, SidebarTab } from "@widgetarium/app-host";
+import type { SidebarSplitState, SidebarTab } from "@widgetarium/app-host/contract";
 import { SIDEBAR_ROW, ROW_WORDS } from "../../lib/tabs-look/tabs-look.js";
 import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";
 import { useRowPick } from "../../lib/tabs-sidebar/use-row-pick.js";

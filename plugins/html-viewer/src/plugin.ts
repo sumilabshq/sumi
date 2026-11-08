@@ -3,7 +3,7 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { HTML_ICON } from "./features/html/lib/html-icon.js";
 import { LazyHtmlView } from "./features/html/lib/lazy-html-view.js";
 
-export const htmlViewer = plugin()
+export const htmlViewer = plugin("html-viewer")
 	.require(files)
 	.fill(
 		files.fileViewers.add({

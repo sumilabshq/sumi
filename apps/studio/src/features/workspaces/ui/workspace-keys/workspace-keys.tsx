@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { workspaces } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces/contract";
 
 const DIGIT_KEY = /^Digit([1-9])$/;
 

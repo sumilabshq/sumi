@@ -4,7 +4,7 @@ import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import type { MenuSpot } from "./menu-spot.js";
 import { slashAskOf, slashEntriesOf } from "./slash-matches.js";
 import type { SlashAsk, SlashEntry } from "./slash-matches.js";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export interface SlashMenuAsk {

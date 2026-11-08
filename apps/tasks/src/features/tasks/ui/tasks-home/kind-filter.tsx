@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { TaskKindSchema } from "@widgetarium/tasks";
+import { TaskKindSchema } from "@widgetarium/tasks/contract";
 import {
 	DropdownMenu,
 	DropdownMenuContent,

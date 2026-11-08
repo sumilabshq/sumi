@@ -6,7 +6,7 @@ import type {
 	DocKind,
 	StepState,
 	TaskKind,
-} from "@widgetarium/tasks";
+} from "@widgetarium/tasks/contract";
 
 export const KIND_WORDS: Readonly<Record<TaskKind, string>> = {
 	code: "code",

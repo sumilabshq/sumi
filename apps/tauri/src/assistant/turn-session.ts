@@ -1,7 +1,7 @@
 import type { AssistantSession, QueueChange, QueuedMessage } from "@widgetarium/core/engine/assistant-port.js";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import type { Emit, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
-import type { TurnEnded, TurnStarter } from "@widgetarium/tasks";
+import type { TurnEnded, TurnStarter } from "@widgetarium/tasks/contract";
 import {
 	EMPTY_SESSION,
 	endedTurn,

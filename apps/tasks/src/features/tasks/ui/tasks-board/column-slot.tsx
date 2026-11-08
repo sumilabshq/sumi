@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import type { BoardColumn as Column } from "@widgetarium/tasks";
+import type { BoardColumn as Column } from "@widgetarium/tasks/contract";
 import type { TasksView } from "../../lib/use-tasks-view.js";
 import { BoardColumn } from "./board-column.js";
 import { FoldedStrip } from "./folded-strip.js";

@@ -24,7 +24,7 @@ import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../apps/tauri/src/workspac
 import { WorkspaceClient } from "../apps/tauri/src/workspace/workspace-client.ts";
 import { reopensOnWorkspaceSwitch } from "../apps/tauri/src/workspace/workspace-switch.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { workspaces } from "../packages/domain/workspaces/module.ts";
+import { workspaces } from "../packages/domain/workspaces/generated/module.ts";
 import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import type { AssistantTurn } from "../packages/shared/core/src/engine/assistant-port.ts";

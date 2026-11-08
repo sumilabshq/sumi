@@ -4,7 +4,7 @@ import { MASK_KEEP, TAB_ART_SHAPES } from "../../lib/tab-art/tab-art-shapes.js";
 import type { ArtShape } from "../../lib/tab-art/tab-art-shapes.js";
 import { siteLetterOf } from "../../lib/tab-art/site-letter.js";
 import { webOriginOf } from "../../lib/tab-art/site-origin.js";
-import type { TabArt as TabArtName } from "@widgetarium/app-host";
+import type { TabArt as TabArtName } from "@widgetarium/app-host/contract";
 import { FaviconImage } from "./favicon-image.js";
 import { KnownSiteIcon } from "./known-site-icon.js";
 import { SiteLetter } from "./site-letter.js";

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import type { BrowserTabState, PageFailure } from "@widgetarium/browser";
+import type { BrowserTabState, PageFailure } from "@widgetarium/browser/contract";
 import { failureCopyOf } from "../../lib/failure-copy.js";
 import { FailureActions } from "./failure-actions.js";
 import { StateCard } from "./state-card.js";

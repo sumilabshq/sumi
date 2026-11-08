@@ -1,9 +1,9 @@
 import type { Send } from "@widgetarium/data-framework";
-import { browser } from "@widgetarium/browser";
-import { layout } from "@widgetarium/layout";
-import { places } from "@widgetarium/places";
-import type { TabEffect, TabsAsk, TabsSettled } from "@widgetarium/places";
-import { workspaces } from "@widgetarium/workspaces";
+import { browser } from "@widgetarium/browser/contract";
+import { layout } from "@widgetarium/layout/contract";
+import { places } from "@widgetarium/places/contract";
+import type { TabEffect, TabsAsk, TabsSettled } from "@widgetarium/places/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import type { KeptEssentials } from "../../schema/essential.schema.js";
 import type { MovedEssentials } from "../essentials/essentials.js";
 import { screenOf } from "./screen-of.js";

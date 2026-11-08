@@ -1,7 +1,7 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { RenderMarkdown } from "@widgetarium/core/engine/assistant-port.js";
-import type { TurnStep } from "@widgetarium/assistant";
+import type { TurnStep } from "@widgetarium/assistant/contract";
 import { StepView } from "./step-view.js";
 
 export interface TurnStepsProps {

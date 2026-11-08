@@ -1,4 +1,4 @@
-import type { SidebarEntry, SidebarSection, TabDrop, TabsSidebar } from "@widgetarium/app-host";
+import type { SidebarEntry, SidebarSection, TabDrop, TabsSidebar } from "@widgetarium/app-host/contract";
 import { insertedBefore, keyedSpot } from "./keyed-spot.js";
 import { entryKeysOf } from "./sidebar-put-in.js";
 

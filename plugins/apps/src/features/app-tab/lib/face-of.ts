@@ -1,4 +1,4 @@
-import type { AppFace } from "@sumi/apps";
+import type { AppFace } from "@sumi/apps/contract";
 import type { FilledApp } from "../ui/app-tab/app-tab.js";
 import { iconUrlOf } from "./icon-url.js";
 

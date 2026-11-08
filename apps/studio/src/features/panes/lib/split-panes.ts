@@ -1,4 +1,4 @@
-import type { PaneBoard, PaneLeaf, PaneView } from "@widgetarium/layout";
+import type { PaneBoard, PaneLeaf, PaneView } from "@widgetarium/layout/contract";
 
 type ChatGroups = PaneBoard["chatGroups"];
 

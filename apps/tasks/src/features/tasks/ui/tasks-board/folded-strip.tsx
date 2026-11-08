@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { BoardColumn, ClosedWithin } from "@widgetarium/tasks";
+import type { BoardColumn, ClosedWithin } from "@widgetarium/tasks/contract";
 import { CLOSED_WITHIN_WORDS } from "../../lib/task-words.js";
 import { StatusGlyph } from "../status-glyph/status-glyph.js";
 

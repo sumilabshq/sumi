@@ -1,6 +1,6 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import type { Send, User } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
 import { command, query, subscriber } from "#module";
 import {
 	AppPageAskSchema,

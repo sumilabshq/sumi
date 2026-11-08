@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { runtime } from "@widgetarium/data-framework";
 import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
-import { fixtureBilling } from "@widgetarium/fixture-billing/module";
+import { fixtureBilling } from "@widgetarium/fixture-billing/implementation";
 import { DEV_WEB_ORIGIN, rpcApp } from "./rpc-app.js";
 
 const DEFAULT_PORT = 8787;

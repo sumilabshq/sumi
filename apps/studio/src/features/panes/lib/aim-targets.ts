@@ -1,6 +1,6 @@
 import { CARRIED_PANE, CARRIED_TAB } from "@widgetarium/behaviors";
 import type { CarriedItem } from "@widgetarium/behaviors";
-import type { PaneBoard, PaneLeaf } from "@widgetarium/layout";
+import type { PaneBoard, PaneLeaf } from "@widgetarium/layout/contract";
 
 type ChatGroups = PaneBoard["chatGroups"];
 

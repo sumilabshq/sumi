@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { ContextMenuGroup } from "@widgetarium/kit";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import { useTogglesNewTabMenu } from "../../lib/use-toggles-new-tab-menu.js";
 import { PointerItem } from "./pointer-item.js";
 import type { Pointed, PointerMenuProps } from "./pointer-menu.js";

@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
 import { ASK_COMPOSER_SELECTOR } from "./ask-composer-mark.js";
 import { MENU_KEY_ACTS } from "./menu-key-acts.js";
 import type { KeyedMenu } from "./menu-key-acts.js";

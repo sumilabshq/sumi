@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { ContextMenuContent } from "@widgetarium/kit";
 import { POINTER_MENU } from "../../lib/menu-look/menu-look.js";
 import type { PointedOutsideGroup } from "../../lib/tabs-sidebar/use-pointed-menus.js";
-import type { TabsSidebar } from "@widgetarium/app-host";
+import type { TabsSidebar } from "@widgetarium/app-host/contract";
 import { EssentialItems } from "./essential-items.js";
 import { SpaceItems } from "./space-items.js";
 import { TabItems } from "./tab-items.js";

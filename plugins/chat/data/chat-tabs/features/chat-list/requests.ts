@@ -1,5 +1,5 @@
-import { appHost } from "@widgetarium/app-host";
-import { places } from "@widgetarium/places";
+import { appHost } from "@widgetarium/app-host/contract";
+import { places } from "@widgetarium/places/contract";
 import { query, subscriber } from "#module";
 import { ChatListSchema } from "../../shared/schema/chat-list.schema.js";
 import { chatListOf } from "./lib/chat-list.js";

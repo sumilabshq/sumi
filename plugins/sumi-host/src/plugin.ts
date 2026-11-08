@@ -9,7 +9,7 @@ import {
 	windowServerModules,
 } from "./slots.js";
 
-export const sumiHost = plugin().declare(
+export const sumiHost = plugin("sumi-host").declare(
 	backgroundModules,
 	tabPage,
 	windowModules,

@@ -1,5 +1,5 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import type { OverlayPort } from "@widgetarium/behaviors";
 
 export function useTearOffOverlay(): OverlayPort {

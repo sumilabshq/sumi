@@ -2,7 +2,7 @@ import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { sizeSaid } from "../../lib/size-said.js";
-import type { AttachmentChip } from "@widgetarium/assistant";
+import type { AttachmentChip } from "@widgetarium/assistant/contract";
 
 export interface AttachmentsMoreProps {
 	readonly drafts: readonly AttachmentChip[];

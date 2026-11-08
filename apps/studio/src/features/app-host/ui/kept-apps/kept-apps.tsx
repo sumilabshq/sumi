@@ -1,7 +1,7 @@
 import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { appHost } from "@widgetarium/app-host";
-import type { AppKind, HeldTabs } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
+import type { AppKind, HeldTabs } from "@widgetarium/app-host/contract";
 import { useQuery } from "@widgetarium/data-framework";
 
 export interface KeptInstance {

@@ -1,6 +1,6 @@
 import { createElement as h, Fragment, useMemo } from "react";
 import type { ReactElement } from "react";
-import type { FileDiff } from "@sumi/git";
+import type { FileDiff } from "@sumi/git/contract";
 import { fileTreeRowsOf } from "../../lib/file-tree.js";
 import { useClosedFolders } from "../../lib/use-closed-folders.js";
 import { TreeRow } from "../tree-row/tree-row.js";

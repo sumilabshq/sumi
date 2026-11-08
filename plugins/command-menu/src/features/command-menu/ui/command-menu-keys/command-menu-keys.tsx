@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu";
+import { commandMenu } from "@sumi/command-menu/contract";
 import { doorOfLetter } from "../../lib/menu-key-labels.js";
 
 const LETTER_CODE = /^Key([A-Z])$/;

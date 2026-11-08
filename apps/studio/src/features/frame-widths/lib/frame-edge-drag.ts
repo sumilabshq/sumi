@@ -1,5 +1,5 @@
 import { FRAME_WIDTH_VARS } from "./frame-width-vars.js";
-import type { FrameEdge } from "@widgetarium/layout";
+import type { FrameEdge } from "@widgetarium/layout/contract";
 
 interface EdgePress {
 	readonly edge: FrameEdge;

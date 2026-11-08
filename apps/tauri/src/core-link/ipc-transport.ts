@@ -2,11 +2,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Repeatable, refusalOf, wireAnswerOf } from "@widgetarium/data-framework";
 import type { Answer, HearChanges, RemoteTransport } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places";
-import { questions } from "@widgetarium/questions";
-import { tasks } from "@widgetarium/tasks";
-import { fileSystem } from "@widgetarium/file-system";
-import { terminal } from "@widgetarium/terminal";
+import { places } from "@widgetarium/places/contract";
+import { questions } from "@widgetarium/questions/contract";
+import { tasks } from "@widgetarium/tasks/contract";
+import { fileSystem } from "@widgetarium/file-system/contract";
+import { terminal } from "@widgetarium/terminal/contract";
 import { CORE_CALL, CORE_CHANGED_EVENT, CORE_RESTARTED, CORE_SERVING_EVENT, CoreChangeSchema } from "./core-wire.js";
 import type { CoreCall } from "./core-wire.js";
 

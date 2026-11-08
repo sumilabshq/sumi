@@ -1,5 +1,5 @@
-import { tasks } from "@widgetarium/tasks";
-import type { TaskCard } from "@widgetarium/tasks";
+import { tasks } from "@widgetarium/tasks/contract";
+import type { TaskCard } from "@widgetarium/tasks/contract";
 import { useCommand } from "@widgetarium/data-framework";
 import { useHandsOnTask } from "./use-hands-on-task.js";
 

@@ -1,5 +1,5 @@
 import { CARRIED_CHAT, CARRIED_TAB, announceCarry } from "@widgetarium/behaviors";
-import { SectionListSchema } from "@widgetarium/app-host";
+import { SectionListSchema } from "@widgetarium/app-host/contract";
 import type { CarriedItem, CarryPhase } from "@widgetarium/behaviors";
 import type { PickedItem } from "./picked-item.js";
 import type { TabRef } from "./tab-ref.js";

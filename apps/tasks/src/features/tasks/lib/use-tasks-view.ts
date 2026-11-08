@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { BoardAsk, TaskStatus } from "@widgetarium/tasks";
+import type { BoardAsk, TaskStatus } from "@widgetarium/tasks/contract";
 
 export type TasksMode = "board" | "list";
 

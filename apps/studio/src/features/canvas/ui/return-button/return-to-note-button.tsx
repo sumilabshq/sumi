@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { REFUSAL_HANDLER } from "@widgetarium/data-framework/command-refusals";
 import { useQuery } from "@widgetarium/data-framework";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { RoundButton } from "../round-button/round-button.js";
 import { returned } from "../../lib/returned.js";
 

@@ -9,9 +9,9 @@ import {
 } from "../apps/tauri/src/assistant/assistant-bridge.ts";
 import { cssPointOf, dragStepOf, isInside } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
 import type { ChatSpot, WebviewDragSource } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
-import { assistant as assistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { assistant as assistantModule } from "../plugins/chat/data/assistant/generated/module.ts";
 import { attachmentFilesIn } from "../plugins/chat/data/assistant/gateways/assistant-parts/port.gateway.ts";
-import { assistant as assistantContract } from "../plugins/chat/data/assistant/index.ts";
+import { assistant as assistantContract } from "../plugins/chat/data/assistant/generated/contract.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {

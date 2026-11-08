@@ -1,6 +1,6 @@
 import type { Send } from "@widgetarium/data-framework";
-import type { PaneBoard } from "@widgetarium/layout";
-import { workspaces } from "@widgetarium/workspaces";
+import type { PaneBoard } from "@widgetarium/layout/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import { isChatHeld } from "./chat-holders.js";
 
 export async function chatIdForPane(send: Send, board: PaneBoard, askedId: string | null): Promise<string> {

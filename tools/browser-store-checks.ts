@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import { browser } from "../packages/domain/browser/index.ts";
-import { browser as browserModule } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/generated/contract.ts";
+import { browser as browserModule } from "../packages/domain/browser/generated/module.ts";
 import { MemoryOnceAllowancesGateway } from "../packages/domain/browser/gateways/once-allowances/memory.gateway.ts";
 import { activityWith, isSameActivity } from "../packages/domain/browser/shared/lib/ink-activity.ts";
 import { effectiveGrants, onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";

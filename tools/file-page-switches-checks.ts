@@ -1,8 +1,8 @@
 import { localTransport, runtime } from "@widgetarium/data-framework";
 import { fileSystem, places } from "@sumi/contract";
 import type { Runtime } from "@widgetarium/data-framework";
-import { filePage } from "../plugins/files/data/file-page/index.ts";
-import { filePage as filePageModule } from "../plugins/files/data/file-page/module.ts";
+import { filePage } from "../plugins/files/data/file-page/generated/contract.ts";
+import { filePage as filePageModule } from "../plugins/files/data/file-page/generated/module.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const UNUSED_CORE = localTransport();

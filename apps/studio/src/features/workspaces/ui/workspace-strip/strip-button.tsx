@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { IconButton, tooltipMarks } from "@widgetarium/kit";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
-import type { WorkspaceRow } from "@widgetarium/workspaces";
-import { workspaces } from "@widgetarium/workspaces";
+import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
 
 export const StripButton = memo(function StripButton({ row }: { readonly row: WorkspaceRow }): ReactElement {
 	const openWorkspace = useCommand(workspaces.workspaces.openWorkspace);

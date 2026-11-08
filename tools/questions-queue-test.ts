@@ -1,7 +1,7 @@
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { questions as questionsContract } from "../plugins/chat/data/questions/generated/contract.ts";
-import { questions as questionsModule } from "../plugins/chat/data/questions/module.ts";
+import { questions as questionsModule } from "../plugins/chat/data/questions/generated/module.ts";
 import { MemoryQuestionsGateway } from "../plugins/chat/data/questions/gateways/questions/memory.gateway.ts";
 import { check, tally } from "./check-helpers.ts";
 

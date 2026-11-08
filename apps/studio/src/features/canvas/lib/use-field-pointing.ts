@@ -4,8 +4,8 @@ import { useCommand } from "@widgetarium/data-framework";
 import type { OutputOf } from "@widgetarium/data-framework";
 import { useEscape, useFlyToElement, usePointedLayer, useResolvedSpot } from "@widgetarium/behaviors";
 import type { PanZoom, PointedLayer } from "@widgetarium/behaviors";
-import { canvas } from "@widgetarium/canvas";
-import type { Selection, Spot } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
+import type { Selection, Spot } from "@widgetarium/canvas/contract";
 import { LOOK_ROOM, POINTING, groupSelectorOf } from "./field-marks.js";
 
 type FieldState = OutputOf<typeof canvas.field.fieldState>;

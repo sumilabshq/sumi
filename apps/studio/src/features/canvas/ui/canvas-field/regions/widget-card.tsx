@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useDrawing } from "../../../lib/drawing.js";
-import type { WidgetCard as Card } from "@widgetarium/canvas";
+import type { WidgetCard as Card } from "@widgetarium/canvas/contract";
 import { GpuScreen } from "../frames/gpu-screen.js";
 
 const CARD_MIN_PX = 160;

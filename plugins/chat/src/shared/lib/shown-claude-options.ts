@@ -1,4 +1,4 @@
-import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant";
+import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant/contract";
 
 export const CLAUDE_CODE_PROVIDER_ID = "claude-code";
 

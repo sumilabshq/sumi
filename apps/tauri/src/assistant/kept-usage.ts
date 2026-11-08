@@ -1,5 +1,5 @@
-import { PlanUsageSchema } from "@widgetarium/assistant";
-import type { PlanUsage } from "@widgetarium/assistant";
+import { PlanUsageSchema } from "@widgetarium/assistant/contract";
+import type { PlanUsage } from "@widgetarium/assistant/contract";
 import { localJsonMemory } from "@widgetarium/behaviors";
 import type { JsonMemory } from "@widgetarium/behaviors";
 import { DEFAULT_CLAUDE_OPTIONS, claudeOptionsCell } from "./claude-options-cell.js";

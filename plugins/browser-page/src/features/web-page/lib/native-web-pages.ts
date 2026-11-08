@@ -1,9 +1,9 @@
-import { browser } from "@widgetarium/browser";
-import type { BrowserTabs } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
+import type { BrowserTabs } from "@widgetarium/browser/contract";
 import type { Answer, Runtime } from "@widgetarium/data-framework";
-import type { PageArea, WebPage } from "@widgetarium/web-page";
+import type { PageArea, WebPage } from "@widgetarium/web-page/contract";
 import { PageHole } from "./page-hole.js";
-import type { NativeWebPages } from "@widgetarium/web-page/module";
+import type { NativeWebPages } from "@widgetarium/web-page/implementation";
 
 const REFUSED = "the browser refused {request} for tab {tab}: {reason}";
 

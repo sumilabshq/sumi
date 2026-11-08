@@ -1,4 +1,4 @@
-import type { GroupHue, SidebarEntry, SidebarTab, TabChild, TabsSidebar } from "@widgetarium/app-host";
+import type { GroupHue, SidebarEntry, SidebarTab, TabChild, TabsSidebar } from "@widgetarium/app-host/contract";
 
 export interface GroupFace {
 	readonly id: string;

@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { PrimaryAction } from "../page-state/primary-action.js";
 import { QuietAction } from "../page-state/quiet-action.js";
-import type { PageFailure } from "@widgetarium/browser";
-import { browser } from "@widgetarium/browser";
+import type { PageFailure } from "@widgetarium/browser/contract";
+import { browser } from "@widgetarium/browser/contract";
 import { StateActions } from "./state-actions.js";
 
 export interface CertificateActionsProps {

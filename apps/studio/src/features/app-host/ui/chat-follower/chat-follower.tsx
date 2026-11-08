@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
-import { layout } from "@widgetarium/layout";
+import { appHost } from "@widgetarium/app-host/contract";
+import { layout } from "@widgetarium/layout/contract";
 
 export function ChatFollower(): null {
 	const chatId = useQuery(layout.panes.paneTree).data.focusedChatId;

@@ -1,4 +1,4 @@
-import type { AppTabState, SidebarEntry, SidebarTab, TabChild, TabsSidebar } from "@widgetarium/app-host";
+import type { AppTabState, SidebarEntry, SidebarTab, TabChild, TabsSidebar } from "@widgetarium/app-host/contract";
 
 export interface ListedTab {
 	readonly tab: AppTabState;

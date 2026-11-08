@@ -1,7 +1,7 @@
 import { createElement as h, useRef, useState } from "react";
 import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { Icon } from "@widgetarium/kit";
-import type { QueuedShown } from "@widgetarium/assistant";
+import type { QueuedShown } from "@widgetarium/assistant/contract";
 import { useSetsDraftAside } from "../../lib/use-sets-draft-aside.js";
 import { useComposerDraft } from "../../lib/use-composer-draft.js";
 import { useFitsDraft } from "../../lib/use-fits-draft.js";
@@ -55,7 +55,11 @@ export function Composer({
 	const mirror = useRef<HTMLDivElement>(null);
 	const [isFocused, setFocused] = useState(false);
 	const sendOrSave = editing === null ? onSend : (said: string) => onSaveEdit(editing.id, said);
-	const { draft, state, sendDraft, onChange, onKeyDown, onPaste, fill } = useComposerDraft({ busy, onSend: sendOrSave, onTyped });
+	const { draft, state, sendDraft, onChange, onKeyDown, onPaste, fill } = useComposerDraft({
+		busy,
+		onSend: sendOrSave,
+		onTyped,
+	});
 	useSetsDraftAside(editing, { draft, fill, composerBox });
 	useFitsDraft(composerBox, draft);
 	useFocusesWhen(composerBox, attached?.label ?? null);
@@ -134,7 +138,15 @@ function scrollMirror(mirror: HTMLDivElement | null, scrollTop: number): void {
 	mirror.scrollTop = scrollTop;
 }
 
-function placeholderOf({ isFirst, busy, isEditing }: { readonly isFirst: boolean; readonly busy: boolean; readonly isEditing: boolean }): string {
+function placeholderOf({
+	isFirst,
+	busy,
+	isEditing,
+}: {
+	readonly isFirst: boolean;
+	readonly busy: boolean;
+	readonly isEditing: boolean;
+}): string {
 	if (isEditing) {
 		return EDIT_PLACEHOLDER;
 	}

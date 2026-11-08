@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { browser } from "@widgetarium/browser";
+import { browser } from "@widgetarium/browser/contract";
 import { useQuery } from "@widgetarium/data-framework";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
 import { AskInkButton } from "../page-state/ask-ink-button.js";

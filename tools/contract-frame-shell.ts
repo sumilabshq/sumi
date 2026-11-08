@@ -5,7 +5,7 @@ import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/us
 import type { FrameOpened } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { frameRoutesOf } from "../apps/studio/src/tabs/frame-routes.ts";
 import { webPageServingOf } from "../plugins/browser-page/src/features/web-page/lib/web-page-serving.ts";
-import { webPage } from "../plugins/browser-page/data/web-page/index.ts";
+import { webPage } from "../plugins/browser-page/data/web-page/generated/contract.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 
 declare global {

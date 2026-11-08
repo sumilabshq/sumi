@@ -1,4 +1,4 @@
-import type { SidebarEntry, TabChild, TabsSidebar } from "@widgetarium/app-host";
+import type { SidebarEntry, TabChild, TabsSidebar } from "@widgetarium/app-host/contract";
 
 export function arrangementKeyOf(sidebar: TabsSidebar): string {
 	const tiles = sidebar.essentials.map((tile) => tile.id).join(",");

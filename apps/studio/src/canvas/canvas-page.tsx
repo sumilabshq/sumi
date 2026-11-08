@@ -1,7 +1,7 @@
 import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { canvas } from "@widgetarium/canvas";
-import type { CanvasOpened, CanvasOpening } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
+import type { CanvasOpened, CanvasOpening } from "@widgetarium/canvas/contract";
 import { RuntimeProvider, OnRefused, toastRefusal, useQuery } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
 import { Toaster } from "@widgetarium/kit";

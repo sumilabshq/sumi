@@ -1,5 +1,5 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import type { TabRef } from "../tab-drag/tab-ref.js";
 
 export function useTearsOffRows(): (row: TabRef) => void {

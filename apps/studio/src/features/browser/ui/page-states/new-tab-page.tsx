@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import type { RecentSite } from "@widgetarium/browser";
-import { browser } from "@widgetarium/browser";
+import type { RecentSite } from "@widgetarium/browser/contract";
+import { browser } from "@widgetarium/browser/contract";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { AskInkAction } from "../ask-ink-action/ask-ink-action.js";
 import { NewTabField } from "./new-tab-field.js";

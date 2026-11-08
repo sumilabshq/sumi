@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { appHost } from "@widgetarium/app-host";
-import { chatTabs } from "@sumi/chat-tabs";
+import { appHost } from "@widgetarium/app-host/contract";
+import { chatTabs } from "@sumi/chat-tabs/contract";
 import { AppStateInputSchema, appStateOf } from "./app-state.js";
 import type { AppState } from "./app-state.js";
 import { inputOf, outputOf } from "./tool-places.js";

@@ -1,8 +1,15 @@
 import { useRef } from "react";
 import type { RefObject } from "react";
 import { useOptionalQuery, useQuery } from "@widgetarium/data-framework";
-import type { FrameBounds, PaneBoard, PaneLeaf, PaneNode, PanePlacement, PlacementPreview } from "@widgetarium/layout";
-import { layout } from "@widgetarium/layout";
+import type {
+	FrameBounds,
+	PaneBoard,
+	PaneLeaf,
+	PaneNode,
+	PanePlacement,
+	PlacementPreview,
+} from "@widgetarium/layout/contract";
+import { layout } from "@widgetarium/layout/contract";
 import { focusedGroupOf } from "./aim-targets.js";
 import { drawLayout } from "./draw-layout.js";
 import { cornersOf, fixedPlaceOf, nodeWithId, paneLayoutOf, panePlacesOf } from "./pane-layout.js";

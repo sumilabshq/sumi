@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { headLabelOf, useGitPage } from "../../lib/git-page-context.js";
 import { baseLabelOf, fileNameOf } from "../../lib/git-names.js";
@@ -22,10 +22,7 @@ export function SidePanel(): ReactElement {
 	const page = useGitPage();
 	const isShown = useOptionalQuery(git.gitLook.gitLook).data?.isFileListShown ?? true;
 	return (
-		<aside
-			className="wg-git-side"
-			inert={!isShown}
-		>
+		<aside className="wg-git-side" inert={!isShown}>
 			<Picker
 				glyph="folder"
 				lead={REPO_LEAD.replace("{parent}", fileNameOf(page.parent))}

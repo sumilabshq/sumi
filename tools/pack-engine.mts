@@ -45,6 +45,7 @@ const INTERNAL_PACKAGE = /^@widgetarium\/.+$/;
 const BUILT_TO = "dist";
 const SOURCE_FOLDER = "src";
 const GENERATED_ENTRY_FOLDER = "generated";
+const CONTRACT_EXPORT = "./contract";
 const KIT_THEME = /^@widgetarium\/kit\/theme\.css$/;
 const ENTRY_SOURCE = /\.tsx?$/;
 const DECLARATION = /\.d\.ts$/;
@@ -269,7 +270,8 @@ function copyHandWrittenDeclarations(folder: string, built: string): void {
 }
 
 function sourceRootOf(folder: string): string {
-	const entry = sourceOfExport(fieldOf(fieldOf(rawManifestIn(folder), "exports"), "."));
+	const exported = fieldOf(rawManifestIn(folder), "exports");
+	const entry = sourceOfExport(fieldOf(exported, ".")) ?? sourceOfExport(fieldOf(exported, CONTRACT_EXPORT));
 	if (entry === null) return path.join(folder, SOURCE_FOLDER);
 	const entryFolder = path.dirname(path.join(folder, entry));
 	return path.basename(entryFolder) === GENERATED_ENTRY_FOLDER ? path.dirname(entryFolder) : entryFolder;

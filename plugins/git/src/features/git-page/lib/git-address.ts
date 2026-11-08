@@ -1,4 +1,4 @@
-import { LastCommitSchema, UncommittedSchema } from "@sumi/git";
+import { LastCommitSchema, UncommittedSchema } from "@sumi/git/contract";
 
 export interface GitAddress {
 	readonly folder: string;

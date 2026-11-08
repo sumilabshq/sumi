@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import { commandMenuChanged } from "../../gateways/command-menu/command-menu.events.js";
 import {
 	DoorSchema,

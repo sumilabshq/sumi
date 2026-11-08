@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
-import { places } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import {

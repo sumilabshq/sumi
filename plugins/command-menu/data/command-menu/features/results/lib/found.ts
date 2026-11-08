@@ -1,8 +1,8 @@
-import type { AppTabState, ChatMark, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host";
-import type { AppFace } from "@sumi/apps";
-import type { RecentSite } from "@widgetarium/browser";
-import type { ChatListData, ChatRowData } from "@sumi/chat-tabs";
-import type { ChatElsewhereRow, WorkspacesView } from "@widgetarium/workspaces";
+import type { AppTabState, ChatMark, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { AppFace } from "@sumi/apps/contract";
+import type { RecentSite } from "@widgetarium/browser/contract";
+import type { ChatListData, ChatRowData } from "@sumi/chat-tabs/contract";
+import type { ChatElsewhereRow, WorkspacesView } from "@widgetarium/workspaces/contract";
 import { hostOf } from "../../../shared/lib/address.js";
 import type { Found, Intent, RowIcon } from "../../../shared/schema/command-menu.schema.js";
 import { chatActionsOf, openActionsOf, tabActionsOf, workspaceActionsOf } from "./row-actions.js";

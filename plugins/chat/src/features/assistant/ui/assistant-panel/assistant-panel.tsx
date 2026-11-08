@@ -9,7 +9,7 @@ import type { ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { AssistantChat } from "../assistant-chat/assistant-chat.js";
 import { ChatLeadHead } from "../chat-lead/chat-lead.js";
 import { ChatUnread } from "../chat-unread/chat-unread.js";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { ChatKeyContext } from "../../../../shared/lib/chat-key-context.js";
 
 export interface AssistantPanelProps {

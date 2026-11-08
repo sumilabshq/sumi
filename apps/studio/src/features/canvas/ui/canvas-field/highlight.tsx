@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Spot } from "@widgetarium/canvas";
+import type { Spot } from "@widgetarium/canvas/contract";
 import { useLingeringSpot } from "../../lib/use-lingering-spot.js";
 
 export type SpotTone = "hover" | "picked";

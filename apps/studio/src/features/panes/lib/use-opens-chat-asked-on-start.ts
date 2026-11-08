@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { studioWindowOf } from "@widgetarium/behaviors";
-import { chatTabs } from "@sumi/chat-tabs";
-import { layout } from "@widgetarium/layout";
-import { workspaces } from "@widgetarium/workspaces";
+import { chatTabs } from "@sumi/chat-tabs/contract";
+import { layout } from "@widgetarium/layout/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
 import { hasUnnamedChatPane } from "./unnamed-chat-pane.js";
 
 export function useOpensChatAskedOnStart(): void {

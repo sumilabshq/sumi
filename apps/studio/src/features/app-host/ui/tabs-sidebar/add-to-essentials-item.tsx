@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import type { TabRef } from "../../lib/tab-drag/tab-ref.js";
 import { PointerItem } from "./pointer-item.js";
 

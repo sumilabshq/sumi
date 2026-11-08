@@ -1,6 +1,6 @@
 import { createElement as h, useCallback, useState } from "react";
 import type { ReactElement } from "react";
-import type { DiffRange, FileDiff } from "@sumi/git";
+import type { DiffRange, FileDiff } from "@sumi/git/contract";
 import { placeholderHeightOf } from "../../lib/diff-rows.js";
 import { anchorOf } from "../../lib/git-names.js";
 import { useReportsHeight } from "../../lib/use-reports-height.js";
@@ -52,12 +52,7 @@ export function FileDiffView({
 	}
 
 	return (
-		<section
-			ref={setSection}
-			className="wg-git-file"
-			id={anchorOf(file.path)}
-			data-path={file.path}
-		>
+		<section ref={setSection} className="wg-git-file" id={anchorOf(file.path)} data-path={file.path}>
 			<FileDiffHead
 				file={file}
 				isOpen={isOpen}

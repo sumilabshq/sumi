@@ -1,4 +1,4 @@
-import type { TabDrop } from "@widgetarium/app-host";
+import type { TabDrop } from "@widgetarium/app-host/contract";
 
 export type ListDrop = Extract<TabDrop, { kind: "list" }>;
 

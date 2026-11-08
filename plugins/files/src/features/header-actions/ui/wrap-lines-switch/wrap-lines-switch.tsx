@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { filePage } from "@sumi/file-page";
+import { filePage } from "@sumi/file-page/contract";
 import { WrapLinesAction } from "@sumi/sumi-host-plugin";
 import { useCommand } from "@widgetarium/data-framework";
 import { useFileSwitches } from "../../lib/use-file-switches.js";

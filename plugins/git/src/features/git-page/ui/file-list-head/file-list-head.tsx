@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { git } from "@sumi/git";
+import { git } from "@sumi/git/contract";
 import { IconButton, Icon, tooltipMarks } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 

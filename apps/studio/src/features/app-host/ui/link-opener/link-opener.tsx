@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
-import { appHost } from "@widgetarium/app-host";
+import { appHost } from "@widgetarium/app-host/contract";
 import { useCommand } from "@widgetarium/data-framework";
 import { PRESSED_EVENTS, linkPressOf } from "../../lib/link-presses/link-press.js";
 

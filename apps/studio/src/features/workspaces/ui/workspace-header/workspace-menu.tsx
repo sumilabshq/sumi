@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Icon, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
-import { workspaces } from "@widgetarium/workspaces";
+import { workspaces } from "@widgetarium/workspaces/contract";
 
 const MENU_LABEL = "Workspaces";
 const NAME_AND_ICON = "Name and icon…";

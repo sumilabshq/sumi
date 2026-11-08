@@ -1,6 +1,6 @@
 import { toastRefusal } from "@widgetarium/data-framework";
 import type { CommandRefusal } from "@widgetarium/data-framework";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 
 const TOASTED: ReadonlySet<string> = new Set([
 	assistant.composer.attachFiles.name,

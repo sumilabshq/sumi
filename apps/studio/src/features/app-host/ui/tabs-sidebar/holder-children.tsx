@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SidebarTab, TabChild } from "@widgetarium/app-host";
+import type { SidebarTab, TabChild } from "@widgetarium/app-host/contract";
 import { GroupBox } from "../group-box/group-box.js";
 import { TabRow } from "../tab-row/tab-row.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import type { QueuedShown } from "@widgetarium/assistant";
+import type { QueuedShown } from "@widgetarium/assistant/contract";
 
 export interface DraftHands {
 	readonly draft: string;

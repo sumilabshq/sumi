@@ -4,7 +4,7 @@ import type { MenuOpening } from "../../lib/menu-spot.js";
 import { ChatMenu } from "../chat-menu/chat-menu.js";
 import { ChatMenuNote } from "../chat-menu/chat-menu-note.js";
 import { UsageMeter } from "./usage-meter.js";
-import type { PlanUsage } from "@widgetarium/assistant";
+import type { PlanUsage } from "@widgetarium/assistant/contract";
 
 export interface UsageMenuProps {
 	readonly opening: MenuOpening;

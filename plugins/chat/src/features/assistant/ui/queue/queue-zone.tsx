@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import type { QueuedShown } from "@widgetarium/assistant";
+import type { QueuedShown } from "@widgetarium/assistant/contract";
 import type { QueueActions } from "../../lib/use-queue-actions.js";
 import { QueuedMessage } from "./queued-message.js";
 

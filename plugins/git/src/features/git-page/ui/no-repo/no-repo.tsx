@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { RepoRow } from "@sumi/git";
+import type { RepoRow } from "@sumi/git/contract";
 import { LAST_COMMIT } from "../../lib/git-address.js";
 import type { GitAddress } from "../../lib/git-address.js";
 import { useOpensPickedFolder } from "../../lib/use-opens-picked-folder.js";

@@ -1,15 +1,15 @@
 import { apps } from "@sumi/apps-plugin";
-import { chatTabs } from "@sumi/chat-tabs/module";
+import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { WindowModuleSchema, sumiHost } from "@sumi/sumi-host-plugin";
-import { namedPlugin, plugin, slotFillsOf, slotReaderOf, startOrderOf } from "@widgetarium/plugin-framework";
+import { plugin, slotFillsOf, slotReaderOf, startOrderOf } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { appHost } from "../plugins/apps/data/app-host/module.ts";
-import { browser } from "../packages/domain/browser/module.ts";
-import { layout } from "../packages/state/layout/module.ts";
-import { workspaces } from "../packages/domain/workspaces/module.ts";
-import { commandMenu as commandMenuContract } from "../plugins/command-menu/data/command-menu/index.ts";
+import { appHost } from "../plugins/apps/data/app-host/generated/module.ts";
+import { browser } from "../packages/domain/browser/generated/module.ts";
+import { layout } from "../packages/state/layout/generated/module.ts";
+import { workspaces } from "../packages/domain/workspaces/generated/module.ts";
+import { commandMenu as commandMenuContract } from "../plugins/command-menu/data/command-menu/generated/contract.ts";
 import type { Found } from "../plugins/command-menu/data/command-menu/shared/schema/command-menu.schema.ts";
 import { check, tally } from "./check-helpers.ts";
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
@@ -36,40 +36,36 @@ const PROBE_ROW: Found = {
 	isOnScreen: false,
 };
 
-const probe = namedPlugin(
-	"probe",
-	plugin()
-		.require(commandMenu)
-		.fill(
-			commandMenu.menuDoors.add({
-				id: "probe",
-				letter: "p",
-				label: "Probe",
-				placeholder: "Probe things",
-				startsWith: "empty",
+const probe = plugin("probe")
+	.require(commandMenu)
+	.fill(
+		commandMenu.menuDoors.add({
+			id: "probe",
+			letter: "p",
+			label: "Probe",
+			placeholder: "Probe things",
+			startsWith: "empty",
+		}),
+		commandMenu.menuPages.add({
+			id: "probe",
+			draftsOf: ({ pools }) => ({
+				foundCount: null,
+				drafts: [
+					{
+						label: "Probed",
+						layout: "list",
+						rows: pools["probe-rows"] ?? [],
+						isFallback: false,
+					},
+				],
 			}),
-			commandMenu.menuPages.add({
-				id: "probe",
-				draftsOf: ({ pools }) => ({
-					foundCount: null,
-					drafts: [
-						{
-							label: "Probed",
-							layout: "list",
-							rows: pools["probe-rows"] ?? [],
-							isFallback: false,
-						},
-					],
-				}),
-			}),
-			commandMenu.menuRowSources.add({
-				id: "probe-rows",
-				isFindable: true,
-				rowsOf: () => Promise.resolve([PROBE_ROW]),
-			}),
-		),
-	{},
-);
+		}),
+		commandMenu.menuRowSources.add({
+			id: "probe-rows",
+			isFindable: true,
+			rowsOf: () => Promise.resolve([PROBE_ROW]),
+		}),
+	);
 
 const ENABLED = [sumiHost.id, apps.id, commandMenu.id, chat.id, probe.id];
 const startOrder = startOrderOf([sumiHost, apps, commandMenu, chat, probe], ENABLED);

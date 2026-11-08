@@ -1,5 +1,5 @@
 import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
-import type { Chat, ShownTurn, TurnStep } from "@widgetarium/assistant";
+import type { Chat, ShownTurn, TurnStep } from "@widgetarium/assistant/contract";
 
 export type ToolsStep = Extract<TurnStep, { readonly kind: "tools" }>;
 

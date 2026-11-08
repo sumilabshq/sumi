@@ -5,8 +5,8 @@ import type { MenuOpening } from "../../lib/menu-spot.js";
 import { ChatMenu } from "../chat-menu/chat-menu.js";
 import { ModelsPane } from "./models-pane.js";
 import { ProvidersPane } from "./providers-pane.js";
-import { assistant } from "@widgetarium/assistant";
-import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
+import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export interface ModelMenuProps {

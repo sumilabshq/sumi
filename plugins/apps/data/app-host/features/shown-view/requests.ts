@@ -1,6 +1,6 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { places } from "@widgetarium/places";
+import { places } from "@widgetarium/places/contract";
 import { studioCoreChanged } from "../../gateways/core-changes/core-changes.events.js";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { StudioViewSchema } from "../../shared/schema/studio-view.schema.js";

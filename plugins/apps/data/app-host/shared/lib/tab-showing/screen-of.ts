@@ -1,6 +1,6 @@
-import type { AccessAsk, BrowserTabState, BrowserTabs, InkReading } from "@widgetarium/browser";
-import type { PaneBoard } from "@widgetarium/layout";
-import type { PageFacts, Screen } from "@widgetarium/places";
+import type { AccessAsk, BrowserTabState, BrowserTabs, InkReading } from "@widgetarium/browser/contract";
+import type { PaneBoard } from "@widgetarium/layout/contract";
+import type { PageFacts, Screen } from "@widgetarium/places/contract";
 
 export interface ScreenSources {
 	readonly browserTabs: BrowserTabs;

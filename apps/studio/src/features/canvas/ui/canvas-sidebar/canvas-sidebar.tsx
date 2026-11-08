@@ -1,7 +1,7 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Slot, useQuery } from "@widgetarium/data-framework";
-import { canvas } from "@widgetarium/canvas";
+import { canvas } from "@widgetarium/canvas/contract";
 import { SIDEBAR_LABEL } from "../../lib/sidebar-label.js";
 import { SIDEBAR_HAIRLINE_PX } from "../../lib/sidebar-hairline.js";
 import { SidebarEdge } from "../sidebar-edge/sidebar-edge.js";

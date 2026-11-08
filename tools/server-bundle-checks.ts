@@ -8,13 +8,13 @@ const PROBE = "tools/server-gate-probe";
 const CLIENT_APP = `${PROBE}/client-app.ts`;
 const CLIENT_IMPORTS_MODULE = `${PROBE}/client-imports-module.ts`;
 const TSC = path.join(REPO, "node_modules/.bin/tsc");
-const MODULE_SPECIFIER = "@widgetarium/fixture-billing/module";
+const MODULE_SPECIFIER = "@widgetarium/fixture-billing/implementation";
 const FIXTURE = /packages\/domain\/fixture-billing\//;
 const FIXTURE_CONTRACT = /packages\/domain\/fixture-billing\/generated\/contract\.ts$/;
 const SERVER_ONLY_CODE =
-	/packages\/domain\/fixture-billing\/(module\.ts|features\/[^/]+\/requests\.ts|gateways\/)|node_modules\/(hono|@orpc\/server)\//;
+	/packages\/domain\/fixture-billing\/(module\.ts|generated\/module\.ts|features\/[^/]+\/requests\.ts|gateways\/)|node_modules\/(hono|@orpc\/server)\//;
 const SERVER_CONDITION = "server";
-const SERVER_MODULE = "packages/domain/fixture-billing/module.ts";
+const SERVER_MODULE = "packages/domain/fixture-billing/generated/module.ts";
 const GUARD_REASON = "a charge is at most";
 
 interface Bundled {
@@ -79,7 +79,11 @@ check(
 );
 
 const clientTypes = typeCheckOf("tsconfig.client.json");
-check("tsc refuses a client import of a server module's ./module", clientTypes.includes(`'${MODULE_SPECIFIER}'`), true);
+check(
+	"tsc refuses a client import of a server module's ./implementation",
+	clientTypes.includes(`'${MODULE_SPECIFIER}'`),
+	true,
+);
 check("and accepts it under the server condition", typeCheckOf("tsconfig.server.json"), "");
 check(
 	"a handler with no guard has no .handle, and tsc names the fix",
@@ -90,5 +94,9 @@ check(
 );
 
 const clientBundle = await bundleFailureOf(["source"]);
-check("esbuild refuses a client import of a server module's ./module", clientBundle.includes(MODULE_SPECIFIER), true);
+check(
+	"esbuild refuses a client import of a server module's ./implementation",
+	clientBundle.includes(MODULE_SPECIFIER),
+	true,
+);
 check("and builds it under the server condition", await bundleFailureOf(["source", SERVER_CONDITION]), "");

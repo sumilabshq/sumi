@@ -1,5 +1,5 @@
-import { appearance as appearanceContract } from "@widgetarium/appearance";
-import { appearance as appearanceModule } from "@widgetarium/appearance/module";
+import { appearance as appearanceContract } from "@widgetarium/appearance/contract";
+import { appearance as appearanceModule } from "@widgetarium/appearance/implementation";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";

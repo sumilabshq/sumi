@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import type { AskAnswer } from "@widgetarium/browser";
-import { browser } from "@widgetarium/browser";
+import type { AskAnswer } from "@widgetarium/browser/contract";
+import { browser } from "@widgetarium/browser/contract";
 import { AskChips } from "./ask-chips.js";
 
 const CARD =

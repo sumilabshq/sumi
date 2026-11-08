@@ -1,6 +1,6 @@
 import { createElement as h, useContext } from "react";
 import type { CSSProperties, ReactElement } from "react";
-import type { SidebarTab, TabChild } from "@widgetarium/app-host";
+import type { SidebarTab, TabChild } from "@widgetarium/app-host/contract";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 import type { RowBadge } from "../tab-row/row-badge.js";
 import { SidebarCard } from "../sidebar-card/sidebar-card.js";

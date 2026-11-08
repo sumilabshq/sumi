@@ -1,17 +1,17 @@
 import { apps } from "@sumi/apps-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { sumiHost } from "@sumi/sumi-host-plugin";
-import { assistant as assistantModule } from "@widgetarium/assistant/module";
-import { chatTabs } from "@sumi/chat-tabs/module";
+import { assistant as assistantModule } from "@widgetarium/assistant/implementation";
+import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { plugin } from "@widgetarium/plugin-framework";
-import { questions } from "@widgetarium/questions";
-import { questions as questionsModule } from "@widgetarium/questions/module";
+import { questions } from "@widgetarium/questions/contract";
+import { questions as questionsModule } from "@widgetarium/questions/implementation";
 import { askComposerProviderOf } from "./features/ask/ui/ask-composer-provider/ask-composer-provider.js";
 import { askPageOf } from "./features/ask/lib/ask-page.js";
 import { CHAT_TAB_PAGE } from "./features/chat-page/lib/chat-tab-page.js";
 import { isOutsideHolders } from "./features/chat-page/lib/chat-standing.js";
 
-export const chat = plugin()
+export const chat = plugin("chat")
 	.require(sumiHost, apps, commandMenu)
 	.fill(
 		apps.apps.add({

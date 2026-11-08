@@ -1,4 +1,4 @@
-import type { AppTabState } from "@widgetarium/app-host";
+import type { AppTabState } from "@widgetarium/app-host/contract";
 import { linkOf } from "@widgetarium/core/engine/sumi-link.js";
 import { bareAddressOf } from "../../../shared/lib/address.js";
 import type { Door } from "../../../shared/schema/command-menu.schema.js";

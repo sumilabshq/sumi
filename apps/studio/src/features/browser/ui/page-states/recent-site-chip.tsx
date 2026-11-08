@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { RecentSite } from "@widgetarium/browser";
+import type { RecentSite } from "@widgetarium/browser/contract";
 import { BUTTON_RESET, EDGED } from "../../lib/page-state-look.js";
 
 export interface RecentSiteChipProps {

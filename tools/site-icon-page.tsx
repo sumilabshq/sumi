@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { TabArt } from "../apps/studio/src/features/app-host/ui/tab-face/tab-art.tsx";
 import type { TabArtSize } from "../apps/studio/src/features/app-host/ui/tab-face/tab-art.tsx";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
-import { browser } from "../packages/domain/browser/module.ts";
+import { browser } from "../packages/domain/browser/generated/module.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import { WebBrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/web.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";

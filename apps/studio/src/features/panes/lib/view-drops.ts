@@ -1,6 +1,6 @@
 import type { CommandHandle, OutputOf, SentOf } from "@widgetarium/data-framework";
-import type { appHost } from "@widgetarium/app-host";
-import type { PaneBoard, PaneLeaf, PanePlacement, PaneView, layout } from "@widgetarium/layout";
+import type { appHost } from "@widgetarium/app-host/contract";
+import type { PaneBoard, PaneLeaf, PanePlacement, PaneView, layout } from "@widgetarium/layout/contract";
 import { carriedTabOf, viewTargetOf } from "./split-panes.js";
 
 export interface Carrying {

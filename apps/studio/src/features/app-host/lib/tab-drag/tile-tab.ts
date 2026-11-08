@@ -1,4 +1,4 @@
-import type { AppTabState, EssentialTile } from "@widgetarium/app-host";
+import type { AppTabState, EssentialTile } from "@widgetarium/app-host/contract";
 
 const TAB_OF_TILE = {
 	app: "browser",

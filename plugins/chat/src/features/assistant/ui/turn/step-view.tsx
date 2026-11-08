@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import type { RenderMarkdown } from "@widgetarium/core/engine/assistant-port.js";
 import { ToolCalls } from "../tool-calls/tool-calls.js";
 import { Said } from "./said.js";
-import type { TurnStep } from "@widgetarium/assistant";
+import type { TurnStep } from "@widgetarium/assistant/contract";
 
 export interface StepViewProps {
 	readonly step: TurnStep;

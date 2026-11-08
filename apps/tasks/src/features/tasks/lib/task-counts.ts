@@ -1,4 +1,4 @@
-import type { Count } from "@widgetarium/tasks";
+import type { Count } from "@widgetarium/tasks/contract";
 
 export function countSaid(words: string, { done, total }: Count): string {
 	return words.replace("{done}", String(done)).replace("{total}", String(total));

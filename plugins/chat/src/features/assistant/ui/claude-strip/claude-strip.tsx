@@ -6,7 +6,7 @@ import { ClaudeOptionButtons } from "./claude-option-buttons.js";
 import { FolderButton } from "./folder-button.js";
 import { ModelButton } from "./model-button.js";
 import { UsageButton } from "./usage-button.js";
-import { assistant } from "@widgetarium/assistant";
+import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export function ClaudeStrip({ isEmpty }: { readonly isEmpty: boolean }): ReactElement {

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ClaudeOptionsSchema, DraftAttachmentSchema } from "@widgetarium/assistant";
-import type { ClaudeOptions, DraftAttachment } from "@widgetarium/assistant";
+import { ClaudeOptionsSchema, DraftAttachmentSchema } from "@widgetarium/assistant/contract";
+import type { ClaudeOptions, DraftAttachment } from "@widgetarium/assistant/contract";
 import { HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind, StoreClient, WorkspaceRoot } from "@widgetarium/behaviors/tauri-store";
 
