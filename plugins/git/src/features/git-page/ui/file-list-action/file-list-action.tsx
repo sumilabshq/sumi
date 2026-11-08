@@ -1,8 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import type { AppViewProps } from "@sumi/apps-plugin";
 import { GitLookQuery, ToggleFileListCommand } from "@sumi/git";
 import { ToggleAction } from "@sumi/sumi-host-plugin";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
+import { RepoOnly } from "../repo-only/repo-only.js";
 
 const SHOWN = {
 	label: "Hide file list",
@@ -13,14 +15,16 @@ const HIDDEN = {
 	icon: "panel-left-open",
 };
 
-export function FileListAction(): ReactElement {
+export function FileListAction({ tabId }: AppViewProps): ReactElement {
 	const toggle = useCommand(ToggleFileListCommand);
 	return (
-		<ToggleAction
-			isOn={useOptionalQuery(GitLookQuery).data?.isFileListShown ?? true}
-			whenOn={SHOWN}
-			whenOff={HIDDEN}
-			onToggle={() => void toggle.run()}
-		/>
+		<RepoOnly tabId={tabId}>
+			<ToggleAction
+				isOn={useOptionalQuery(GitLookQuery).data?.isFileListShown ?? true}
+				whenOn={SHOWN}
+				whenOff={HIDDEN}
+				onToggle={() => void toggle.run()}
+			/>
+		</RepoOnly>
 	);
 }
