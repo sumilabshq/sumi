@@ -1,6 +1,8 @@
 import { apps as appsContract } from "@sumi/apps/contract";
 import { apps as appsModule } from "@sumi/apps/implementation";
 import { backend, shell, windows } from "@sumi/sumi-host-plugin";
+import { mcp } from "@sumi/mcp-plugin";
+import { tabs } from "@sumi/tabs/implementation";
 import { plugin } from "@widgetarium/plugin-framework";
 import { places } from "@widgetarium/places/contract";
 import { places as placesModule } from "@widgetarium/places/implementation";
@@ -12,7 +14,7 @@ import { placedAppOf } from "./features/app-tab/lib/placed-app-of.js";
 import { titlesOfApps } from "./features/app-tab/lib/titles-of-apps.js";
 
 export const apps = plugin("apps")
-	.require(backend, windows, shell)
+	.require(backend, windows, shell, mcp)
 	.apply((app) => {
 		const filled: FilledApp[] = [];
 		app.use(backend).moduleOf(({ store }) => placesModule({ store, apps: filled.map(placedAppOf) }), places);
@@ -24,6 +26,7 @@ export const apps = plugin("apps")
 			);
 		app.use(windows).moduleOf(appHostOf);
 		app.use(shell).tabPage(appsTabPageOf(filled));
+		app.use(mcp).server({ name: "apps", modules: [tabs] });
 		return {
 			app: (entry: FilledApp): void => {
 				filled.push(entry);

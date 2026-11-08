@@ -10,6 +10,7 @@ import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/cor
 import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
 import type { StudioView } from "../plugins/apps/data/app-host/shared/schema/studio-view.schema.ts";
 import { places as placesContract } from "../plugins/apps/data/places/generated/contract.ts";
+import { apps as appsContract } from "../plugins/apps/data/apps/generated/contract.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesLinkOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
@@ -125,6 +126,7 @@ export interface StudioSeed {
 	readonly isBrowserAvailable?: boolean;
 	readonly tree?: PaneTree;
 	readonly chatTitle?: string;
+	readonly isAppsInCore?: boolean;
 }
 
 export function appHostFakesOf({ studioWindow, essentials = null }: StudioSeed): AppHostFakes {
@@ -141,16 +143,18 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const places = seed.places ?? createSeededPlaces(seed);
 	const pages = new RecordedPagesGateway(seed.pages ?? [], seed.isBrowserAvailable ?? true);
 	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
+	const isAppsInCore = seed.isAppsInCore === true;
+	const core = placesLinkOf(places, isAppsInCore ? [PluginAppsModule] : []);
 	const studioApp = runtime()
 		.modules(
 			appHostModule({ injects: { ...appHost } }),
-			PluginAppsModule,
+			...(isAppsInCore ? [] : [PluginAppsModule]),
 			browser({ injects: fakeBrowser(pages).parts }),
 			layoutModule({ injects: { ...layout } }),
 			workspaces({ injects: workspacesOf(seed.chatTitle ?? null) }),
 			...PLUGIN_WINDOW_MODULES,
 		)
-		.imports(placesContract({ over: placesLinkOf(places) }))
+		.imports(placesContract({ over: core }), ...(isAppsInCore ? [appsContract({ over: core })] : []))
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });
 	return {
 		appHost,

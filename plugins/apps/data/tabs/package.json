@@ -1,0 +1,42 @@
+{
+	"name": "@sumi/tabs",
+	"version": "0.1.0",
+	"description": "The tab tools an agent reaches over MCP: the apps a tab opens, tabs and groups",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		"./contract": {
+			"source": "./generated/contract.ts",
+			"types": "./dist/generated/contract.d.ts",
+			"default": "./dist/generated/contract.js"
+		},
+		"./implementation": {
+			"source": "./generated/module.ts",
+			"types": "./dist/generated/module.d.ts",
+			"default": "./dist/generated/module.js"
+		}
+	},
+	"imports": {
+		"#module": {
+			"source": "./generated/command.ts",
+			"types": "./dist/generated/command.d.ts",
+			"default": "./dist/generated/command.js"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/data-framework": "0.1.0",
+		"@sumi/apps": "0.1.0",
+		"@sumi/chat-tabs": "0.1.0",
+		"@widgetarium/app-host": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}

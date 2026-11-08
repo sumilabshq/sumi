@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { recentSitesChanged } from "../../gateways/recent-sites/recent-sites.events.js";
 import { onceAllowancesChanged } from "../../gateways/once-allowances/once-allowances.events.js";
@@ -91,7 +91,7 @@ export const askInkPrompt = query()
 export const openAddress = command()
 	.public()
 	.input(OpenAddressSchema)
-	.idempotencyKey(PerCall)
+	.idempotencyKey(Repeatable)
 	.handle(({ tabId, address, heldTabId }, { browserPages, invalidate }) => {
 		invalidate(all);
 		const url = urlOf(webAddressOf(address));

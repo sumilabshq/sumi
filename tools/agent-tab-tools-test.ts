@@ -1,49 +1,128 @@
+import { z } from "zod";
+import { JSDOM } from "jsdom";
+import type { McpServer } from "../packages/shared/data-framework/src/index.ts";
+import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
 import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
-import { AGENT_TOOLS, runAgentTool } from "../apps/tauri/src/agent/run-agent-tool.ts";
-import { readFileSync } from "node:fs";
-import { AgentAppSchema, appState, appsList } from "../apps/tauri/src/agent/state-tools.ts";
-import {
-	groupCreate,
-	groupDelete,
-	groupUpdate,
-	tabClose,
-	tabDuplicate,
-	tabOpen,
-	tabUpdate,
-} from "../apps/tauri/src/agent/tab-tools.ts";
-import { assertOwnList } from "../apps/tauri/src/agent/tool-places.ts";
+import { apps as appsContract } from "../plugins/apps/data/apps/generated/contract.ts";
+import { layout } from "../packages/state/layout/generated/contract.ts";
+import { refusePlace } from "../plugins/apps/data/tabs/shared/lib/tab-places.ts";
+import type { WorkspaceState } from "../plugins/apps/data/tabs/shared/schema/workspace.schema.ts";
+import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { regionOnPage } from "../packages/domain/browser/shared/lib/region-within.ts";
 import { READ_DOM } from "../packages/domain/browser/shared/lib/page-scripts.ts";
-import { JSDOM } from "jsdom";
 import { tabLinksRenderer } from "../apps/tauri/src/agent/tab-links.ts";
-import type { AppState } from "../apps/tauri/src/agent/app-state.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 
 console.info = () => undefined;
 
-type Section = AppState["sections"][number];
+type Section = WorkspaceState["sections"][number];
 
-const fakes = studioFakesOf();
-const context = {
-	app: fakes.studioApp,
-	chatId: HOST_CHAT,
-	queue: {
-		handQueueToAgent: () => null,
-	},
-};
+interface ToolAnswer {
+	readonly isError: boolean;
+	readonly text: string;
+}
 
-async function refusalOf(name: string, input: unknown): Promise<string> {
+const ToolReplySchema = z.union([
+	z.object({
+		result: z.object({
+			content: z.array(z.object({ text: z.string().optional() })),
+			isError: z.boolean().optional(),
+		}),
+	}),
+	z.object({ error: z.object({ message: z.string() }) }),
+]);
+const PlacedSchema = z.object({ id: z.string() });
+const TabNowSchema = z.object({
+	title: z.string(),
+	place: z.string(),
+});
+const AppsSchema = z.object({ apps: z.array(z.object({ id: z.string() })) });
+const ListedToolsSchema = z.object({
+	result: z.object({
+		tools: z.array(
+			z.object({
+				name: z.string(),
+				inputSchema: z.object({
+					properties: z.record(z.string(), z.object({ description: z.string().optional() }).loose()),
+				}),
+			}),
+		),
+	}),
+});
+
+const fakes = studioFakesOf({ isAppsInCore: true });
+
+function offersOf(): WindowOffers {
+	return {
+		workspaceId: "workspace-1",
+		platform: "browser",
+		windowApp: fakes.studioApp,
+		core: { call: () => Promise.reject(new Error("no core here")), changes: () => () => undefined },
+		windowServer: { call: () => Promise.reject(new Error("no window server here")), changes: () => () => undefined },
+		focusedChatId: () => null,
+	};
+}
+
+function servedOrNull(serve: (offers: WindowOffers) => McpServer): McpServer | null {
 	try {
-		await runAgentTool(context, name, input);
-		return "";
-	} catch (failure) {
-		return failure instanceof Error ? failure.message : String(failure);
+		return serve(offersOf());
+	} catch {
+		return null;
 	}
 }
 
+const served = startSumiPlugins(builtInPluginState()).agentMcpServers.map(({ serve }) => servedOrNull(serve));
+const appsServer = served.find((server) => server?.name === "apps") ?? null;
+const browserServer = served.find((server) => server?.name === "browser") ?? null;
+let callId = 0;
+
+async function replyOf(server: McpServer | null, method: string, params: unknown): Promise<unknown> {
+	callId += 1;
+	return server?.answer(
+		{ jsonrpc: "2.0", id: callId, method, params },
+		{ headers: new Headers({ "sumi-chat": HOST_CHAT }) },
+	);
+}
+
+async function toolOf(server: McpServer | null, name: string, args: unknown): Promise<ToolAnswer> {
+	const reply = ToolReplySchema.parse(await replyOf(server, "tools/call", { name, arguments: args }));
+
+	if ("error" in reply) {
+		return {
+			isError: true,
+			text: reply.error.message,
+		};
+	}
+
+	return {
+		isError: reply.result.isError === true,
+		text: reply.result.content.map(({ text }) => text ?? "").join(""),
+	};
+}
+
+async function tabTool(name: string, args: unknown): Promise<unknown> {
+	const answer = await toolOf(appsServer, name, args);
+
+	if (answer.isError) {
+		throw new Error(`${name} refused: ${answer.text}`);
+	}
+
+	return JSON.parse(answer.text);
+}
+
+async function refusalOf(name: string, args: unknown): Promise<string> {
+	const answer = await toolOf(name.startsWith("pages_") ? browserServer : appsServer, name, args);
+	return answer.isError ? answer.text : "";
+}
+
+async function opened(args: unknown): Promise<string> {
+	return PlacedSchema.parse(await tabTool("tabs_tab_open", args)).id;
+}
+
 async function sectionOf(place: string): Promise<Section | undefined> {
-	return (await appState(context, {})).sections.find((section) => section.place === place);
+	const state = z.custom<WorkspaceState>().parse(await tabTool("tabs_workspace_state", {}));
+	return state.sections.find((section) => section.place === place);
 }
 
 function tabsIn(section: Section | undefined) {
@@ -82,21 +161,24 @@ async function shownTabId(): Promise<string | null> {
 await fakes.studioApp.send(appHost.tabActions.openTab, { app: "browser" });
 const shownBefore = await shownTabId();
 
-const hidden = await tabOpen(context, { app: "browser", target: "https://jira.example.com" });
+const hidden = await opened({ app: "browser", target: "https://jira.example.com" });
 check("a tab opened without show leaves the person's tab on screen", await shownTabId(), shownBefore);
-check("it opens in this chat by default", idsIn(await sectionOf("this-chat")).includes(hidden.id), true);
-check("it is not shown", await isShown(hidden.id), false);
-check("its page loads the address without ever being shown", await pageWasShown(hidden.id), false);
+check("it opens in this chat by default", idsIn(await sectionOf("this-chat")).includes(hidden), true);
+check("it is not shown", await isShown(hidden), false);
+check("its page loads the address without ever being shown", await pageWasShown(hidden), false);
 
-const workspaceShown = await tabOpen(context, { app: "browser", place: "workspace", show: true });
-check("a workspace tab opened with show is the one on screen", await shownTabId(), workspaceShown.id);
-await tabOpen(context, { app: "browser", target: "https://mail.example.com", place: "workspace" });
-check("a workspace tab opened without show leaves it there", await shownTabId(), workspaceShown.id);
+const workspaceShown = await opened({ app: "browser", place: "workspace", show: true });
+check("a workspace tab opened with show is the one on screen", await shownTabId(), workspaceShown);
+await opened({ app: "browser", target: "https://mail.example.com", place: "workspace" });
+check("a workspace tab opened without show leaves it there", await shownTabId(), workspaceShown);
 
-const shown = await tabOpen(context, { app: "browser", show: true });
-check("show: true shows the new tab", await isShown(shown.id), true);
+const offBoard = await opened({ app: "browser", show: true });
+check("show: true leaves a tab of a chat off the board off screen", await isShown(offBoard), false);
+await fakes.studioApp.send(layout.paneTabs.showChat, { chatId: HOST_CHAT, paneId: null });
+const shown = await opened({ app: "browser", show: true });
+check("show: true shows the new tab of a chat on the board", await isShown(shown), true);
 
-const grouped = await tabOpen(context, {
+const grouped = await opened({
 	app: "browser",
 	target: "https://slack.example.com",
 	newGroup: { name: "Work", colour: "blue" },
@@ -105,149 +187,154 @@ const work = firstGroupOf(await sectionOf("this-chat"));
 check(
 	"newGroup creates the named, coloured group and opens the tab in it",
 	work?.kind === "group" ? [work.name, work.colour, work.tabs.map((tab) => tab.id)] : null,
-	["Work", "blue", [grouped.id]],
+	["Work", "blue", [grouped]],
 );
 
-const copy = await tabDuplicate(context, { tabId: hidden.id, place: "workspace" });
-check("tab_duplicate copies into the place asked", idsIn(await sectionOf("workspace")).includes(copy.id), true);
+const copy = PlacedSchema.parse(await tabTool("tabs_tab_duplicate", { tabId: hidden, place: "workspace" })).id;
+check("tabs_tab_duplicate copies into the place asked", idsIn(await sectionOf("workspace")).includes(copy), true);
 
-const renamed = await tabUpdate(context, { tabId: hidden.id, title: "Board" });
-check("tab_update renames and answers the tab as it is now", [renamed.title, renamed.place], ["Board", "this-chat"]);
+const renamed = TabNowSchema.parse(await tabTool("tabs_tab_update", { tabId: hidden, title: "Board" }));
+check(
+	"tabs_tab_update renames and answers the tab as it is now",
+	[renamed.title, renamed.place],
+	["Board", "this-chat"],
+);
 
-const moved = await tabUpdate(context, { tabId: hidden.id, place: "workspace" });
-check("tab_update moves a tab to the workspace", moved.place, "workspace");
+const moved = TabNowSchema.parse(await tabTool("tabs_tab_update", { tabId: hidden, place: "workspace" }));
+check("tabs_tab_update moves a tab to the workspace", moved.place, "workspace");
 
 const groupId = work?.kind === "group" ? work.id : "";
-await groupUpdate(context, { groupId, name: "Client", colour: "green" });
+await tabTool("tabs_group_edit", { groupId, name: "Client", colour: "green" });
 const recoloured = firstGroupOf(await sectionOf("this-chat"));
 check(
-	"group_update renames and recolours",
+	"tabs_group_edit renames and recolours",
 	recoloured?.kind === "group" ? [recoloured.name, recoloured.colour] : null,
 	["Client", "green"],
 );
 
-await groupDelete(context, { groupId });
+await tabTool("tabs_group_remove", { groupId });
 const afterUngroup = await sectionOf("this-chat");
 check(
-	"group_delete keeps the tabs by default",
-	[firstGroupOf(afterUngroup) === undefined, idsIn(afterUngroup).includes(grouped.id)],
+	"tabs_group_remove keeps the tabs by default",
+	[firstGroupOf(afterUngroup) === undefined, idsIn(afterUngroup).includes(grouped)],
 	[true, true],
 );
 
-const made = await groupCreate(context, { name: "Docs", tabIds: [grouped.id] });
+const made = PlacedSchema.parse(
+	await tabTool("tabs_group_create", { name: "Docs", place: "this-chat", tabIds: [grouped] }),
+).id;
 const docs = firstGroupOf(await sectionOf("this-chat"));
 check(
-	"group_create makes the group and moves the tabs asked into it",
+	"tabs_group_create makes the group and moves the tabs asked into it",
 	docs?.kind === "group" ? [docs.id, docs.name, docs.tabs.map((tab) => tab.id)] : null,
-	[made.id, "Docs", [grouped.id]],
+	[made, "Docs", [grouped]],
 );
 
-await groupDelete(context, { groupId: made.id, keepTabs: false });
+await tabTool("tabs_group_remove", { groupId: made, keepTabs: false });
 check(
-	"group_delete with keepTabs false closes its tabs",
-	idsIn(await sectionOf("this-chat")).includes(grouped.id),
+	"tabs_group_remove with keepTabs false closes its tabs",
+	idsIn(await sectionOf("this-chat")).includes(grouped),
 	false,
 );
 
-await tabClose(context, { tabId: copy.id });
-check("tab_close closes the tab", idsIn(await sectionOf("workspace")).includes(copy.id), false);
+await tabTool("tabs_tab_close", { tabId: copy });
+check("tabs_tab_close closes the tab", idsIn(await sectionOf("workspace")).includes(copy), false);
 
 check(
 	"a tab is never opened into another chat's list",
-	(await refusalOf("tab_open", { app: "browser", place: "chat-other" })).includes("belongs to another chat"),
+	(await refusalOf("tabs_tab_open", { app: "browser", place: "chat-other" })).includes("place"),
 	true,
 );
-const before = tabsIn(await sectionOf("workspace")).find((tab) => tab.id === hidden.id);
+const before = tabsIn(await sectionOf("workspace")).find((tab) => tab.id === hidden);
 check(
 	"a move into a group that is not in the list is refused",
-	(await refusalOf("tab_update", { tabId: hidden.id, group: "group-404" })).includes("no group"),
+	(await refusalOf("tabs_tab_update", { tabId: hidden, group: "group-404" })).includes("no group"),
 	true,
 );
 check(
 	"and the tab stays where it was",
-	tabsIn(await sectionOf("workspace")).some((tab) => tab.id === hidden.id),
+	tabsIn(await sectionOf("workspace")).some((tab) => tab.id === hidden),
 	true,
 );
 check(
 	"a refused move renames nothing",
 	[
-		(await refusalOf("tab_update", { tabId: hidden.id, title: "Should not land", place: "chat-other" })).includes(
-			"another chat",
+		(await refusalOf("tabs_tab_update", { tabId: hidden, title: "Should not land", place: "chat-other" })).includes(
+			"place",
 		),
-		tabsIn(await sectionOf("workspace")).find((tab) => tab.id === hidden.id)?.title,
+		tabsIn(await sectionOf("workspace")).find((tab) => tab.id === hidden)?.title,
 	],
 	[true, before?.title],
 );
 check(
 	"area on a text read is refused",
-	await refusalOf("tab_read", { tabId: hidden.id, area: "page" }),
+	await refusalOf("pages_tab_read", { tabId: hidden, area: "page" }),
 	"area and region apply only to a screenshot.",
 );
 
+const listedApps = await fakes.studioApp.send(appsContract.apps.all);
+const moduleAppIds = listedApps.ok ? listedApps.output.apps.map(({ id }) => id) : [];
+const toolAppIds = AppsSchema.parse(await tabTool("tabs_apps_all", {})).apps.map(({ id }) => id);
 check(
-	"apps_list names every app the person can open a tab with",
-	(await appsList()).apps.map((app) => app.id),
-	[...AgentAppSchema.options],
+	"tabs_apps_all names every app the apps module holds but the chat, not a fixed list",
+	[toolAppIds, moduleAppIds.includes("chat"), toolAppIds.length > 0],
+	[moduleAppIds.filter((id) => id !== "chat"), true, true],
 );
 
-const openedTask = (await runAgentTool(context, "tab_open", { app: "tasks", target: "T-12" })) as { id: string };
-const taskTab = tabsIn(await sectionOf("this-chat")).find((tab) => tab.id === openedTask.id);
+const openedTask = await opened({ app: "tasks", target: "T-12" });
+const taskTab = tabsIn(await sectionOf("this-chat")).find((tab) => tab.id === openedTask);
 check(
-	"tab_open with app tasks opens that task, not a web address",
+	"tabs_tab_open with app tasks opens that task, not a web address",
 	[taskTab?.app, taskTab?.address],
 	["tasks", "T-12"],
 );
 check(
-	"tab_open without an app is refused, so a task id never turns into a web search",
-	(await refusalOf("tab_open", { target: "T-12" })).includes("tab_open input"),
+	"tabs_tab_open without an app is refused, so a task id never turns into a web search",
+	(await refusalOf("tabs_tab_open", { target: "T-12" })).includes("app"),
 	true,
 );
-const openedBoard = (await runAgentTool(context, "tab_open", { app: "tasks" })) as { id: string };
-const boardTab = tabsIn(await sectionOf("this-chat")).find((tab) => tab.id === openedBoard.id);
+const openedBoard = await opened({ app: "tasks" });
+const boardTab = tabsIn(await sectionOf("this-chat")).find((tab) => tab.id === openedBoard);
 check(
-	"tab_open with app tasks and no target opens the board",
+	"tabs_tab_open with app tasks and no target opens the board",
 	[boardTab?.app, boardTab?.address ?? null],
 	["tasks", null],
 );
 
 check(
-	"a wrong input is refused with the tool's name",
-	(await refusalOf("tab_open", { place: "workspace" })).includes("tab_open input"),
+	"a wrong input is refused with the request's name",
+	(await refusalOf("tabs_tab_open", { place: "workspace" })).includes("tabs.tab.open"),
 	true,
 );
 check(
 	"both group and newGroup are refused",
-	(await refusalOf("tab_open", { app: "browser", group: "g", newGroup: { name: "n" } })).includes(
+	(await refusalOf("tabs_tab_open", { app: "browser", group: "g", newGroup: { name: "n" } })).includes(
 		"either group or newGroup",
 	),
 	true,
 );
-check("an unknown tool is refused", await refusalOf("tab_fly", {}), "Sumi has no tool named tab_fly.");
+check("an unknown tool is refused", await refusalOf("tab_fly", {}), "The MCP server apps has no tool tab_fly.");
 check(
 	"a missing tab is refused",
-	(await refusalOf("tab_close", { tabId: "tab-404" })).includes("No tab tab-404"),
+	(await refusalOf("tabs_tab_close", { tabId: "tab-404" })).includes("No tab tab-404"),
 	true,
 );
 check(
-	"tab_read of a tab with no such id is refused",
-	(await refusalOf("tab_read", { tabId: "tab-404" })).includes("No tab tab-404 is open"),
+	"pages_tab_read of a tab with no such id is refused",
+	(await refusalOf("pages_tab_read", { tabId: "tab-404" })).includes("No tab tab-404 is open"),
 	true,
 );
 check(
 	"another chat's list may not be changed",
-	thrownBy(() => assertOwnList("chat-other", HOST_CHAT, "The tab t")).includes("another chat"),
+	(refusePlace("chat-other", HOST_CHAT) ?? "").includes("another chat"),
 	true,
 );
 check(
 	"this chat's list may be changed",
-	thrownBy(() => assertOwnList(HOST_CHAT, HOST_CHAT, "The tab t")),
-	"",
+	[refusePlace(HOST_CHAT, HOST_CHAT), refusePlace("this-chat", HOST_CHAT)],
+	[null, null],
 );
-check(
-	"the workspace list may be changed",
-	thrownBy(() => assertOwnList("workspace", HOST_CHAT, "The tab t")),
-	"",
-);
+check("the workspace list may be changed", refusePlace("workspace", HOST_CHAT), null);
 
 const page = {
 	width: 1200,
@@ -392,21 +479,45 @@ check(
 unrender();
 check("unrendering empties the holder", said.childNodes.length, 0);
 
-const listedTools: unknown = JSON.parse(readFileSync("apps/tauri/src-tauri/src/agent/tools.json", "utf8"));
+const appsTools = ListedToolsSchema.parse(await replyOf(appsServer, "tools/list", {})).result.tools;
+const browserTools = ListedToolsSchema.parse(await replyOf(browserServer, "tools/list", {})).result.tools;
 check(
-	"the app answers exactly the tools Claude is told about",
-	Array.isArray(listedTools) ? listedTools.map((tool: { name: string }) => tool.name).toSorted() : null,
-	Object.keys(AGENT_TOOLS).toSorted(),
+	"the agent is told exactly the tab and page tools the servers answer",
+	[appsTools.map(({ name }) => name).toSorted(), browserTools.map(({ name }) => name).toSorted()],
+	[
+		[
+			"tabs_apps_all",
+			"tabs_group_create",
+			"tabs_group_edit",
+			"tabs_group_remove",
+			"tabs_tab_close",
+			"tabs_tab_duplicate",
+			"tabs_tab_open",
+			"tabs_tab_update",
+			"tabs_workspace_state",
+		],
+		["pages_tab_access", "pages_tab_read"],
+	],
 );
-const listedTabOpen: unknown = Array.isArray(listedTools)
-	? listedTools.find((tool: { name: string }) => tool.name === "tab_open")
-	: null;
+const appProperty = appsTools.find(({ name }) => name === "tabs_tab_open")?.inputSchema.properties["app"];
 check(
-	"tab_open tells Claude about every app the person can open",
-	(listedTabOpen as { inputSchema?: { properties?: { app?: { enum?: unknown } } } } | null)?.inputSchema?.properties
-		?.app?.enum,
-	[...AgentAppSchema.options],
+	"tabs_tab_open names no fixed apps: it points the agent at tabs_apps_all",
+	[appProperty !== undefined && "enum" in appProperty, appProperty?.description?.includes("tabs_apps_all")],
+	[false, true],
 );
+const refusedApps: string[] = [];
+
+for (const app of toolAppIds) {
+	const answer = await toolOf(appsServer, "tabs_tab_open", { app });
+
+	if (answer.isError) {
+		refusedApps.push(`${app}: ${answer.text}`);
+	}
+}
+
+check("tabs_tab_open opens a tab in every app tabs_apps_all lists", refusedApps, []);
+
+fakes.studioApp.stop();
 
 if (tally.failed > 0) {
 	console.log(`${tally.failed} agent tab tool check(s) failed`);

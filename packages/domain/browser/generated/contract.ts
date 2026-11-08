@@ -379,7 +379,7 @@ export const browser = moduleContract("browser", Device, {
 		openAddress: named("tabs.open-address", command()
 			.public()
 			.input(OpenAddressSchema)
-			.idempotencyKey(PerCall)),
+			.idempotencyKey(Repeatable)),
 		openInOwnWindow: named("tabs.open-in-own-window", command()
 			.public()
 			.input(TabIdSchema)

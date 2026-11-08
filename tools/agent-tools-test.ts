@@ -1,5 +1,5 @@
-import { appStateOf } from "../apps/tauri/src/agent/app-state.ts";
-import type { AppTabs, ChatList, Sidebar } from "../apps/tauri/src/agent/app-state.ts";
+import { workspaceStateOf } from "../plugins/apps/data/tabs/features/workspace/lib/workspace-state.ts";
+import type { StateSources } from "../plugins/apps/data/tabs/features/workspace/lib/workspace-state.ts";
 import type { TabChild } from "../plugins/apps/data/app-host/generated/contract.ts";
 
 let failed = 0;
@@ -38,7 +38,7 @@ function chat(id: string, title: string, children: readonly TabChild[]) {
 	return { kind: "tab" as const, tab: face, children };
 }
 
-const sidebar: Sidebar = {
+const sidebar: StateSources["sidebar"] = {
 	essentials: [{ id: "e1", title: "Mail", icon: "site", favicon: null, isShown: false, isLive: true }],
 	sections: [
 		{
@@ -64,14 +64,14 @@ const sidebar: Sidebar = {
 	newTabList: "chat-a",
 };
 
-const chats: ChatList = {
+const chats: StateSources["chats"] = {
 	pinned: [{ id: "chat-b", title: "Billing", isPinned: true, mark: "none" }],
 	recents: [{ id: "chat-a", title: "Pane bugs", isPinned: false, mark: "running" }],
 };
 
-const tabs: AppTabs = { tabs: [tab("t1", "Linear"), tab("t2", "localhost", true)], canReopen: false };
+const tabs: StateSources["tabs"] = { tabs: [tab("t1", "Linear"), tab("t2", "localhost", true)], canReopen: false };
 
-const whole = appStateOf({ sidebar, chats, tabs }, "chat-a", { scope: "workspace" });
+const whole = workspaceStateOf({ sidebar, chats, tabs }, "chat-a", { scope: "workspace" });
 check("the asking chat is named", whole.thisChat, "chat-a");
 check(
 	"every chat is listed, pinned first, this chat marked",
@@ -108,7 +108,7 @@ check("groups keep their tabs and colour", whole.sections[3]?.entries[1], {
 check("the tab the person sees is named", whole.shownTab, "t2");
 check("essentials come with the workspace scope", whole.essentials, [{ id: "e1", title: "Mail", isShown: false }]);
 
-const own = appStateOf({ sidebar, chats, tabs }, "chat-a", { scope: "this-chat" });
+const own = workspaceStateOf({ sidebar, chats, tabs }, "chat-a", { scope: "this-chat" });
 check(
 	"this-chat scope keeps only this chat's section",
 	own.sections.map((section) => section.list),
@@ -116,7 +116,7 @@ check(
 );
 check("this-chat scope drops the essentials", own.essentials, []);
 
-const other = appStateOf({ sidebar, chats, tabs }, "chat-b", { scope: "workspace" });
+const other = workspaceStateOf({ sidebar, chats, tabs }, "chat-b", { scope: "workspace" });
 check(
 	"the same tabs read from another chat swap places",
 	other.sections.map((section) => section.place),

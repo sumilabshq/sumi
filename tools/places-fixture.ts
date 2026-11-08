@@ -1,7 +1,7 @@
 import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
 import type { z } from "zod";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
-import type { RemoteModule, RemoteTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { RemoteModule, RemoteTransport, ServerSideModule } from "../packages/shared/data-framework/src/index.ts";
 import { places } from "../plugins/apps/data/places/generated/contract.ts";
 import { places as placesModule } from "../plugins/apps/data/places/generated/module.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
@@ -69,7 +69,7 @@ export function withWindowView(placed: PlacedTabs, view: StudioView, windowLabel
 	};
 }
 
-export function placesLinkOf(tabs: MemoryTabsGateway): RemoteTransport {
+export function placesLinkOf(tabs: MemoryTabsGateway, besidePlaces: readonly ServerSideModule[] = []): RemoteTransport {
 	const link = localTransport();
 	link.serve(
 		runtime()
@@ -77,8 +77,9 @@ export function placesLinkOf(tabs: MemoryTabsGateway): RemoteTransport {
 				placesModule({
 					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
 				}),
+				...besidePlaces,
 			)
-			.start({ platform: "server", env: {} }),
+			.start({ platform: "server", env: {}, scope: { workspaceId: "places-core" } }),
 		{ authenticate: new AppCallerAuthenticate() },
 	);
 	return link;
