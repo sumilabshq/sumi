@@ -1,5 +1,5 @@
 import type { PlacedApp } from "@widgetarium/places/implementation";
-import type { TabRules } from "../../../slots.js";
+import type { TabRules } from "./app-types.js";
 import type { FilledApp } from "../ui/app-tab/app-tab.js";
 
 type AppAbilities = PlacedApp["abilities"];

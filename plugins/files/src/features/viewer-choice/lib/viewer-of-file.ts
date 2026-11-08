@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ANY_EXTENSION } from "../../../slots.js";
-import type { FileViewer } from "../../../slots.js";
+import { ANY_EXTENSION } from "./file-viewer.js";
+import type { FileViewer } from "./file-viewer.js";
 
 export interface ChosenViewer {
 	readonly viewer: FileViewer | null;

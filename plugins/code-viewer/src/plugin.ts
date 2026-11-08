@@ -8,13 +8,13 @@ import { WrapAction } from "./features/code/ui/wrap-action/wrap-action.js";
 
 export const codeViewer = plugin("code-viewer")
 	.require(files)
-	.fill(
-		files.fileViewers.add({
+	.apply((app) => {
+		app.use(files).viewer({
 			id: "code-viewer",
 			title: "Code",
 			icon: CODE_ICON,
 			extensions: [ANY_EXTENSION, "json", "yaml", "yml", "xml", "env", "toml", "txt", "log"],
 			view: LazyCodeView,
 			actions: [ValuesAction, WrapAction, CodeCopyAction, OpenInSystemAppAction],
-		}),
-	);
+		});
+	});

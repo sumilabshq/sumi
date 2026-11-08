@@ -5,13 +5,13 @@ import { MARKDOWN_ICON } from "./features/markdown/lib/markdown-icon.js";
 
 export const markdownViewer = plugin("markdown-viewer")
 	.require(files)
-	.fill(
-		files.fileViewers.add({
+	.apply((app) => {
+		app.use(files).viewer({
 			id: "markdown-viewer",
 			title: "Markdown",
 			icon: MARKDOWN_ICON,
 			extensions: ["md", "markdown", "mdx"],
 			view: LazyMarkdownView,
 			actions: [SourceAction, FileTextCopyAction, OpenInSystemAppAction],
-		}),
-	);
+		});
+	});
