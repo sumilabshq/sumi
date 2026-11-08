@@ -8,11 +8,12 @@ export interface HeaderButtonProps extends ButtonHTMLAttributes<HTMLButtonElemen
 	readonly keys?: string;
 	readonly isOff?: boolean;
 	readonly isInert?: boolean;
+	readonly isBusy?: boolean;
 	readonly href?: string;
 }
 
 export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(function HeaderButton(
-	{ label, icon, keys, isOff = false, isInert = false, href, ...pressed },
+	{ label, icon, keys, isOff = false, isInert = false, isBusy = false, href, ...pressed },
 	ref,
 ) {
 	return (
@@ -29,6 +30,7 @@ export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(fun
 			})}
 			aria-disabled={isOff || isInert ? true : undefined}
 			data-off={isOff ? "" : undefined}
+			isLoading={isBusy}
 			{...pressed}
 		>
 			{href === undefined ? (

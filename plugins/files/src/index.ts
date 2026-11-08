@@ -14,4 +14,5 @@ export { OpenInSystemAppAction } from "./features/header-actions/ui/open-in-syst
 export { ReloadAction } from "./features/header-actions/ui/reload-action/reload-action.js";
 export { SourceAction } from "./features/header-actions/ui/source-action/source-action.js";
 export { SwitchAction } from "./features/header-actions/ui/switch-action/switch-action.js";
-export type { SwitchActionProps, SwitchFace } from "./features/header-actions/ui/switch-action/switch-action.js";
+export { WrapLinesSwitch } from "./features/header-actions/ui/wrap-lines-switch/wrap-lines-switch.js";
+export type { SwitchActionProps } from "./features/header-actions/ui/switch-action/switch-action.js";

@@ -12,24 +12,32 @@ export interface FrameSideToggleProps {
 	readonly side: FrameSide;
 }
 
-const ICON: Readonly<Record<FrameSide, string>> = {
-	left: "panel-left",
-};
-
-interface SideLabels {
-	readonly hide: string;
-	readonly show: string;
+interface SideFace {
+	readonly label: string;
+	readonly icon: string;
 }
 
-const LABEL: Readonly<Record<FrameSide, SideLabels>> = {
+interface SideFaces {
+	readonly docked: SideFace;
+	readonly undocked: SideFace;
+}
+
+const FACES: Readonly<Record<FrameSide, SideFaces>> = {
 	left: {
-		hide: "Hide sidebar",
-		show: "Show sidebar",
+		docked: {
+			label: "Hide sidebar",
+			icon: "panel-left",
+		},
+		undocked: {
+			label: "Show sidebar",
+			icon: "panel-left",
+		},
 	},
 };
 
 export function FrameSideToggle({ side }: FrameSideToggleProps): ReactElement {
 	const look = useQuery(FrameSidesQuery).data[side];
+	const face = look === "docked" ? FACES[side].docked : FACES[side].undocked;
 	const toggle = useCommand(ToggleFrameSideCommand);
 	const peek = useCommand(PeekFrameSideCommand);
 	const hover = useHoverIntent(() => void peek.run({ side }));
@@ -38,9 +46,9 @@ export function FrameSideToggle({ side }: FrameSideToggleProps): ReactElement {
 	return (
 		<div ref={floating} className="wg-root wg-shell-toggle" data-side={side}>
 			<HeaderButton
-				label={look === "docked" ? LABEL[side].hide : LABEL[side].show}
+				label={face.label}
 				keys={SIDE_KEYS[side].said}
-				icon={ICON[side]}
+				icon={face.icon}
 				aria-expanded={look !== "hidden"}
 				data-side-toggle={side}
 				onClick={() => void toggle.run({ side })}

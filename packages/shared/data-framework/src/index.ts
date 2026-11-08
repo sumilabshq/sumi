@@ -144,6 +144,7 @@ export type { BoundaryProps } from "./slot";
 export { useRuntime } from "./runtime-context";
 export { useCommand } from "./use-command";
 export { useOptionalQuery } from "./use-optional-query";
+export { useIsRereading } from "./use-is-rereading";
 export type { OptionalQueryRead } from "./use-optional-query";
 export { useQuery } from "./use-query";
 export type { QueryRead } from "./use-query";

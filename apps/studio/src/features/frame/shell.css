@@ -339,13 +339,6 @@ body:has([data-browser-pages-live]),
 	transition-duration: 0ms;
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[aria-pressed="true"] {
-	color: var(--sumi-text);
-}
-
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[aria-pressed="true"]::before {
-	background: var(--sumi-active);
-}
 :is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon svg {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);

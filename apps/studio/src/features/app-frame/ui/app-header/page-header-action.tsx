@@ -6,6 +6,7 @@ import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 const DONE_LOOK = {
 	color: "var(--sumi-hue-green)",
 };
+const DONE_ICON = "tick";
 
 export function PageHeaderAction({
 	label,
@@ -18,11 +19,11 @@ export function PageHeaderAction({
 	return (
 		<HeaderButton
 			label={label}
-			icon={icon}
+			icon={isDone ? DONE_ICON : icon}
 			isOff={isOff}
-			aria-busy={isBusy || undefined}
+			isBusy={isBusy}
 			style={isDone ? DONE_LOOK : undefined}
-			onClick={() => !isOff && onPress()}
+			onClick={() => !isOff && !isBusy && onPress()}
 		/>
 	);
 }
