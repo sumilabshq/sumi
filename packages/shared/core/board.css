@@ -2421,6 +2421,7 @@ body {
 	opacity: 0;
 	pointer-events: none;
 	overflow: hidden;
+	--wg-kit-pop-pad: 0px;
 	/* A PANEL IS NEVER NARROWER THAN WHAT IT OPENED FROM. Over the trigger, a narrow panel
 	   left the control sticking out from under it; 200 is the floor, the anchor is the rule. */
 	min-width: max(200px, var(--wg-kit-anchor-width, 200px));
@@ -2575,6 +2576,8 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-pop-list {
 	display: flex;
 	flex-direction: column;
+	margin-inline: calc(-1 * var(--wg-kit-pop-pad, 0px));
+	padding-inline: var(--wg-kit-pop-pad, 0px);
 	max-height: calc(var(--wg-kit-pop-rows, 10) * var(--wg-kit-pop-row, 34px));
 	overflow-y: auto;
 	scrollbar-width: none;
@@ -2612,7 +2615,7 @@ body {
 	flex: none;
 	height: 1px;
 	background: var(--wg-line);
-	margin: var(--size-2-2, 4px) var(--size-4-3, 12px);
+	margin: var(--size-2-2, 4px) calc(-1 * var(--wg-kit-pop-pad, 0px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-search {
@@ -14169,7 +14172,8 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) :is(.wg-kit-pop, .wg-kit-menu) {
 	box-sizing: border-box;
 	min-width: 250px;
-	padding: var(--sumi-sp-2);
+	--wg-kit-pop-pad: var(--sumi-sp-2);
+	padding: var(--wg-kit-pop-pad);
 	line-height: 1.4;
 	border-radius: var(--sumi-r-lg);
 	background: var(--sumi-overlay);
@@ -14246,7 +14250,7 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-sep {
 	height: 1px;
-	margin: var(--sumi-sp-2) calc(-1 * var(--sumi-sp-2));
+	margin: var(--sumi-sp-2) calc(-1 * var(--wg-kit-pop-pad, var(--sumi-sp-2)));
 	background: var(--sumi-line);
 }
 

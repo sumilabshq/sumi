@@ -1,4 +1,4 @@
-import { createElement as h } from "react";
+import { createElement as h, useMemo } from "react";
 import type { ReactElement } from "react";
 import { cn } from "../utils/cn";
 import { EMOJI_TABLE, EMOJI_VIEW_BOX } from "./emoji-table";
@@ -16,6 +16,7 @@ const EMOJI_PX = 20;
 
 export function Emoji({ name, size = EMOJI_PX, className: cls, label }: EmojiProps): ReactElement | null {
 	const body = Object.hasOwn(EMOJI_BODIES, String(name)) ? EMOJI_BODIES[String(name)] : undefined;
+	const markup = useMemo(() => ({ __html: body ?? "" }), [body]);
 	if (!body) {
 		if (name) console.warn(`Widgetarium: no emoji is drawn under the name "${name}"`);
 		return null;
@@ -28,7 +29,7 @@ export function Emoji({ name, size = EMOJI_PX, className: cls, label }: EmojiPro
 			height={size}
 			role="img"
 			aria-label={label ?? spokenEmoji(name)}
-			dangerouslySetInnerHTML={{ __html: body }}
+			dangerouslySetInnerHTML={markup}
 		/>
 	);
 }

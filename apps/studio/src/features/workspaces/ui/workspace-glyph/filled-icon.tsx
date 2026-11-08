@@ -1,4 +1,4 @@
-import { createElement as h, useId } from "react";
+import { createElement as h, useId, useMemo } from "react";
 import type { ReactElement } from "react";
 import { FILLED_ICONS } from "../../lib/filled-icons.js";
 
@@ -8,16 +8,10 @@ const MASKED =
 export function FilledIcon({ name }: { readonly name: string }): ReactElement | null {
 	const id = `wg-ws-mask-${useId().replaceAll(":", "")}`;
 	const body = FILLED_ICONS[name];
+	const markup = useMemo(() => ({ __html: MASKED.replaceAll("{id}", id).replace("{body}", body ?? "") }), [id, body]);
 	if (body === undefined) {
 		return null;
 	}
 
-	return (
-		<svg
-			className="wg-ws-filled"
-			viewBox="0 0 24 24"
-			aria-hidden="true"
-			dangerouslySetInnerHTML={{ __html: MASKED.replaceAll("{id}", id).replace("{body}", body) }}
-		/>
-	);
+	return <svg className="wg-ws-filled" viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={markup} />;
 }
