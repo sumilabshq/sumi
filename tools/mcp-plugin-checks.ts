@@ -62,7 +62,7 @@ const exposures = background.flatMap(({ item }) =>
 exposures.forEach((expose) => expose());
 check("serveMcp mounts the questions module over MCP, and only it", exposures.length, 1);
 
-const listed = await core.send(mcpContract.servers.mcpServers);
+const listed = await core.send(mcpContract.servers.all);
 check(
 	"the mcp module lists every module of its slot as a server, with its tools",
 	listed.ok ? listed.output.map(({ name, kind, tools }) => [name, kind, tools.length > 0]) : listed.reason,
@@ -70,7 +70,7 @@ check(
 );
 check(
 	"a listed tool is named by its path in the module",
-	listed.ok ? listed.output[0]?.tools.some(({ name }) => name === "dock_chat-questions") : listed.reason,
+	listed.ok ? listed.output[0]?.tools.some(({ name }) => name === "dock_questions-of-chat") : listed.reason,
 	true,
 );
 
