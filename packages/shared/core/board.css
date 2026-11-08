@@ -17406,13 +17406,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	width: var(--wg-shell-left-w);
 	min-width: var(--sumi-sidebar-min);
 	min-height: 0;
-	transition:
-		width var(--wg-shell-slide),
-		min-width var(--wg-shell-slide);
 }
-.wg-shell-left:not([data-state="docked"]) {
+.wg-shell-left:not([data-state="docked"]),
+.wg-shell.is-sliding-in > .wg-shell-left {
 	width: 0;
 	min-width: 0;
+}
+.wg-shell.is-sliding-in > .wg-shell-edge {
+	width: 0;
 }
 .wg-shell-side {
 	position: absolute;
@@ -17526,7 +17527,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	cursor: col-resize;
 	touch-action: none;
 	outline: none;
-	transition: width var(--wg-shell-slide);
 }
 .wg-shell-edge::after {
 	content: "";
