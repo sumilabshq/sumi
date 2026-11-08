@@ -2,6 +2,18 @@
 import { Device, Repeatable, command, moduleContract, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
+export const GitLookSchema = z.object({
+	isWrapped: z.boolean(),
+	isFileListShown: z.boolean(),
+	fileListPx: z.number(),
+});
+
+export type GitLook = z.infer<typeof GitLookSchema>;
+
+export const FileListWidthInputSchema = z.object({
+	px: z.number(),
+});
+
 export const FolderPathSchema = z.string().min(1).max(4096);
 
 export const RevisionSchema = z
@@ -180,6 +192,20 @@ export const UntrackedFileInputSchema = z.object({
 
 export type Comparison = z.infer<typeof ComparisonSchema>;
 
+export const GitLookQuery = query("git/git-look")
+	.public()
+	.output(GitLookSchema)
+	.settlesNow();
+export const ToggleDiffWrapCommand = command("git/toggle-diff-wrap")
+	.public()
+	.idempotencyKey(Repeatable);
+export const ToggleFileListCommand = command("git/toggle-file-list")
+	.public()
+	.idempotencyKey(Repeatable);
+export const ResizeFileListCommand = command("git/resize-file-list")
+	.public()
+	.input(FileListWidthInputSchema)
+	.idempotencyKey(Repeatable);
 export const GitPlaceQuery = query("git/git-place")
 	.public()
 	.input(FolderInputSchema)
@@ -212,4 +238,4 @@ export const RereadGitCommand = command("git/reread-git")
 	.public()
 	.idempotencyKey(Repeatable);
 
-export const GitModule = moduleContract("git", Device, [GitPlaceQuery, NearbyReposQuery, BranchesQuery, CommitsQuery, ComparisonQuery, FileDiffQuery, UntrackedFileQuery, RereadGitCommand]);
+export const GitModule = moduleContract("git", Device, [GitLookQuery, ToggleDiffWrapCommand, ToggleFileListCommand, ResizeFileListCommand, GitPlaceQuery, NearbyReposQuery, BranchesQuery, CommitsQuery, ComparisonQuery, FileDiffQuery, UntrackedFileQuery, RereadGitCommand]);
