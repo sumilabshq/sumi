@@ -6,6 +6,7 @@ export const GitLookSchema = z.object({
 	isWrapped: z.boolean(),
 	isFileListShown: z.boolean(),
 	fileListPx: z.number(),
+	isFileTree: z.boolean(),
 });
 
 export type GitLook = z.infer<typeof GitLookSchema>;
@@ -202,6 +203,9 @@ export const ToggleDiffWrapCommand = command("git/toggle-diff-wrap")
 export const ToggleFileListCommand = command("git/toggle-file-list")
 	.public()
 	.idempotencyKey(Repeatable);
+export const ToggleFileTreeCommand = command("git/toggle-file-tree")
+	.public()
+	.idempotencyKey(Repeatable);
 export const ResizeFileListCommand = command("git/resize-file-list")
 	.public()
 	.input(FileListWidthInputSchema)
@@ -238,4 +242,4 @@ export const RereadGitCommand = command("git/reread-git")
 	.public()
 	.idempotencyKey(Repeatable);
 
-export const GitModule = moduleContract("git", Device, [GitLookQuery, ToggleDiffWrapCommand, ToggleFileListCommand, ResizeFileListCommand, GitPlaceQuery, NearbyReposQuery, BranchesQuery, CommitsQuery, ComparisonQuery, FileDiffQuery, UntrackedFileQuery, RereadGitCommand]);
+export const GitModule = moduleContract("git", Device, [GitLookQuery, ToggleDiffWrapCommand, ToggleFileListCommand, ToggleFileTreeCommand, ResizeFileListCommand, GitPlaceQuery, NearbyReposQuery, BranchesQuery, CommitsQuery, ComparisonQuery, FileDiffQuery, UntrackedFileQuery, RereadGitCommand]);

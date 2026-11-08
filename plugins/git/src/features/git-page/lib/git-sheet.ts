@@ -28,6 +28,13 @@ export const GIT_SHEET = `
 .wg-git-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sumi-warning); flex: none; }
 .wg-git-sec { height: var(--sumi-h-row); flex: none; display: flex; align-items: center; gap: 6px; padding: 0 10px; margin-top: 16px; font-size: var(--sumi-fs-12); color: var(--sumi-text-2); }
 .wg-git-sec b { font-weight: var(--sumi-fw-semi); color: var(--sumi-text); }
+.wg-git-fold-mark { width: 14px; flex: none; display: inline-flex; color: var(--sumi-text-3); transition: transform var(--sumi-dur-fast) var(--sumi-ease-out); }
+.wg-git-folder[aria-expanded="true"] .wg-git-fold-mark { transform: rotate(90deg); }
+.wg-git-tree-row { animation: wg-git-row-in var(--sumi-dur-fast) var(--sumi-ease-out); }
+@keyframes wg-git-row-in { from { opacity: 0; transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .wg-git-tree-row { animation: none; } .wg-git-fold-mark { transition: none; } }
+.wg-git-folder > .wg-git-glyph { color: var(--sumi-text-2); }
+.wg-git-sec > .wg-kit-icon { margin-right: -6px; }
 .wg-git-meta { display: flex; gap: 6px; padding: 2px 10px 8px 34px; font-size: var(--sumi-fs-12); color: var(--sumi-text-2); }
 .wg-git-field { height: var(--sumi-h-md); flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px; margin: 2px 0 4px; border-radius: var(--sumi-r-md); background: var(--sumi-hover); color: var(--sumi-text-3); }
 .wg-git-field input { flex: 1; min-width: 0; height: 100%; outline: none; color: var(--sumi-text); }

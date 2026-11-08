@@ -32,6 +32,16 @@ export const ToggleFileListCommand = command("toggle-file-list")
 		);
 	});
 
+export const ToggleFileTreeCommand = command("toggle-file-tree")
+	.public()
+	.idempotencyKey(Repeatable)
+	.handle((_input, { gitLook, invalidate }) => {
+		const was = gitLook.gitLook();
+		gitLook.saveGitLook({ ...was, isFileTree: !was.isFileTree });
+		invalidate(GitLookQuery);
+		console.info(`[widgetarium] git file tree ${String(was.isFileTree)} → ${String(!was.isFileTree)} (toggle)`);
+	});
+
 export const ResizeFileListCommand = command("resize-file-list")
 	.public()
 	.input(FileListWidthInputSchema)

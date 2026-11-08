@@ -6,6 +6,7 @@ import { useOptionalQuery } from "@widgetarium/data-framework";
 import type { GitAddress } from "../../lib/git-address.js";
 import { GitPageContext } from "../../lib/git-page-context.js";
 import { useRereadsWhileShown } from "../../lib/use-rereads-while-shown.js";
+import { withToggled } from "../../lib/toggled-set.js";
 import { FILE_LIST_WIDTH_VAR } from "../../lib/use-file-list-resize.js";
 import { FileListEdge } from "../file-list-edge/file-list-edge.js";
 import { DiffList } from "../diff-list/diff-list.js";
@@ -25,7 +26,7 @@ export function RepoPage({ place, address, go }: RepoPageProps): ReactElement {
 	const isFileListShown = look?.isFileListShown ?? true;
 	const fileListPx = look?.fileListPx ?? DEFAULT_FILE_LIST_PX;
 	const [viewed, setViewed] = useState<ReadonlySet<string>>(new Set());
-	const toggleViewed = useCallback((path: string) => setViewed((was) => toggled(was, path)), []);
+	const toggleViewed = useCallback((path: string) => setViewed((was) => withToggled(was, path)), []);
 	const page = useMemo(
 		() => ({
 			root: place.root,
@@ -55,16 +56,4 @@ export function RepoPage({ place, address, go }: RepoPageProps): ReactElement {
 			</div>
 		</GitPageContext.Provider>
 	);
-}
-
-function toggled(paths: ReadonlySet<string>, path: string): ReadonlySet<string> {
-	const next = new Set(paths);
-
-	if (next.has(path)) {
-		next.delete(path);
-		return next;
-	}
-
-	next.add(path);
-	return next;
 }

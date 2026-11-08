@@ -4,6 +4,7 @@ export const GitLookSchema = z.object({
 	isWrapped: z.boolean(),
 	isFileListShown: z.boolean(),
 	fileListPx: z.number(),
+	isFileTree: z.boolean(),
 });
 
 export type GitLook = z.infer<typeof GitLookSchema>;
