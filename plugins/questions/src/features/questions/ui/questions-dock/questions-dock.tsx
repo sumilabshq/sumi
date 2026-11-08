@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
-import { questions } from "@sumi/contract";
-import type { Report } from "../../../../shared/lib/failure-line.js";
+import { questions } from "@widgetarium/questions/contract";
+import type { Report } from "@sumi/chat-plugin";
 import { useQuestionDoing } from "../../lib/use-question-doing.js";
 import { useQueuesAnswers } from "../../lib/use-queues-answers.js";
 import { NeededBlock } from "./needed-block.js";

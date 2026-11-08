@@ -1,12 +1,8 @@
 import { MOST_NEEDED_AT_ONCE } from "../schema/question.schema.js";
-import type {
-	AnswerQuestionAsk,
-	PostQuestionsAsk,
-	Question,
-	QuestionState,
-} from "../schema/question.schema.js";
+import type { AnswerQuestionAsk, PostQuestionsAsk, Question, QuestionState } from "../schema/question.schema.js";
 
-export type Moved = { readonly ok: true; readonly held: readonly Question[] } | { readonly ok: false; readonly refusal: string };
+export type Moved =
+	{ readonly ok: true; readonly held: readonly Question[] } | { readonly ok: false; readonly refusal: string };
 
 const KEPT_PER_CHAT = 200;
 
@@ -18,12 +14,12 @@ const ALLOWED_MOVES: Readonly<Record<QuestionState, readonly QuestionState[]>> =
 };
 
 const TOO_MANY_NEEDED = "Ask at most {most} needed questions at once; the person answers them one by one.";
-const NEEDS_SKIP_SAYS = "An optional question says what you do when it is skipped: \"{question}\" has no skipSays.";
+const NEEDS_SKIP_SAYS = 'An optional question says what you do when it is skipped: "{question}" has no skipSays.';
 const NO_SUCH = "Chat {chat} has no question {id}.";
 const NOT_MOVABLE = "Question {id} is {state}, so it cannot become {next}.";
 const NEEDED_NOT_SKIPPED = "Question {id} is needed: Sumi cannot go on without its answer, so it cannot be skipped.";
 const ALREADY_DELIVERED = "Question {id} was already handed to the agent, so its answer stays.";
-const NOT_AN_OPTION = "Question {id} has no option \"{label}\".";
+const NOT_AN_OPTION = 'Question {id} has no option "{label}".';
 const ONE_OPTION_ONLY = "Question {id} takes one option, not {count}.";
 const EMPTY_ANSWER = "Question {id} needs an option or the person's own words.";
 const NO_OWN_ANSWER = "Question {id} takes only its options.";
@@ -40,20 +36,18 @@ export function questionsPosted(held: readonly Question[], ask: PostQuestionsAsk
 	}
 
 	const first = nextNumberOf(held);
-	const posted = ask.questions.map(
-		(asked, at): Question => ({
-			...asked,
-			id: String(first + at),
-			chat: ask.chat,
-			need: ask.need,
-			state: "open",
-			picked: [],
-			own: null,
-			askedAt: now,
-			settledAt: null,
-			isDelivered: false,
-		}),
-	);
+	const posted = ask.questions.map((asked, at): Question => ({
+		...asked,
+		id: String(first + at),
+		chat: ask.chat,
+		need: ask.need,
+		state: "open",
+		picked: [],
+		own: null,
+		askedAt: now,
+		settledAt: null,
+		isDelivered: false,
+	}));
 	return moved([...held, ...posted].slice(-KEPT_PER_CHAT));
 }
 
@@ -111,7 +105,10 @@ export function questionsSkipped(
 	}, moved(held));
 }
 
-export function questionReopened(held: readonly Question[], { chat, id }: { readonly chat: string; readonly id: string }): Moved {
+export function questionReopened(
+	held: readonly Question[],
+	{ chat, id }: { readonly chat: string; readonly id: string },
+): Moved {
 	const found = findIn(held, chat, id);
 
 	if (!found.ok) {
@@ -232,9 +229,7 @@ function changedOne(
 	{ next, fields }: { readonly next: QuestionState; readonly fields: Partial<Question> },
 ): Moved {
 	if (!ALLOWED_MOVES[question.state].includes(next)) {
-		return refused(
-			NOT_MOVABLE.replace("{id}", question.id).replace("{state}", question.state).replace("{next}", next),
-		);
+		return refused(NOT_MOVABLE.replace("{id}", question.id).replace("{state}", question.state).replace("{next}", next));
 	}
 
 	return moved(

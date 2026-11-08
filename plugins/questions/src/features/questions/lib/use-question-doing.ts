@@ -1,7 +1,7 @@
 import { useCommand } from "@widgetarium/data-framework";
-import { questions } from "@sumi/contract";
-import { answerSettled } from "../../../shared/lib/answer-settled.js";
-import type { Report } from "../../../shared/lib/failure-line.js";
+import { questions } from "@widgetarium/questions/contract";
+import { answerSettled } from "@sumi/chat-plugin";
+import type { Report } from "@sumi/chat-plugin";
 
 export interface QuestionDoing {
 	answer(id: string, picked: readonly string[], own: string | null): void;

@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import type { Question } from "@sumi/contract";
+import type { Question } from "@widgetarium/questions/contract";
 import type { QuestionDoing } from "../../lib/use-question-doing.js";
 import { SkipButton } from "./skip-button.js";
 
@@ -86,7 +86,9 @@ export function QuestionCard({ question, number, doing }: QuestionCardProps): Re
 					</button>
 				</form>
 			) : null}
-			{isOptional ? <p className="wg-questions-card-default">{SKIP_SAYS.replace("{skipSays}", question.skipSays)}</p> : null}
+			{isOptional ? (
+				<p className="wg-questions-card-default">{SKIP_SAYS.replace("{skipSays}", question.skipSays)}</p>
+			) : null}
 		</div>
 	);
 }

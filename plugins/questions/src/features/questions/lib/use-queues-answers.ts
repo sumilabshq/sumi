@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useRuntime, useCommand } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
-import { questions } from "@sumi/contract";
-import type { Question } from "@sumi/contract";
+import { questions } from "@widgetarium/questions/contract";
+import type { Question } from "@widgetarium/questions/contract";
 import { assistant } from "@widgetarium/assistant/contract";
-import type { Report } from "../../../shared/lib/failure-line.js";
+import type { Report } from "@sumi/chat-plugin";
 
 const NOT_QUEUED = "the answers did not reach the queue";
 const QUEUED_NOT_MARKED =

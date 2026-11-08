@@ -3,7 +3,8 @@ import type { Question } from "../../shared/schema/question.schema.js";
 
 export type QuestionsChange = (held: readonly Question[]) => Moved;
 
-export type Changed = { readonly ok: true; readonly held: readonly Question[] } | { readonly ok: false; readonly refusal: string };
+export type Changed =
+	{ readonly ok: true; readonly held: readonly Question[] } | { readonly ok: false; readonly refusal: string };
 
 export abstract class QuestionsGateway {
 	abstract questionsOf(chat: string): readonly Question[];
