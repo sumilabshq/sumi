@@ -1,17 +1,11 @@
-export { ListSlot, SingleSlot, slot } from "./declared-slot";
-export type { FilledItem, ItemsDerive, ListItemInput, SlotCardinality, SlotDraft, SlotShape } from "./declared-slot";
-export { DerivedFill, Fill } from "./fill";
 export { Plugin, PluginDraft, plugin } from "./plugin";
 export type { ApiOf, App, CallerFacts, Dependency, ProvideFor } from "./plugin-app";
 export { Service, service } from "./service";
-export { namedSlot, pluginWithSlots } from "./plugin-namespace";
+export { pluginWithSlots } from "./plugin-namespace";
 export { PROFILE_FILE, PluginIdSchema, SumiProfileSchema } from "./profile";
 export type { SumiProfile } from "./profile";
-export { fillKeyOf } from "./fill-outcome";
-export type { FilledSlot, ShownFill } from "./fill-outcome";
 export { PluginRuntimeBuilder, runtime } from "./plugin-runtime";
 export type { PluginRuntime } from "./plugin-runtime";
 export { PLUGIN_STATE_FILE } from "./plugin-state";
 export type { PluginState, PluginStateStore } from "./plugin-state";
 export { MemoryPluginStateStore } from "./memory-plugin-state";
-export type { SlotReader } from "./slot-reader";

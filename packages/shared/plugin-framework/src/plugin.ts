@@ -1,5 +1,3 @@
-import type { SlotShape } from "./declared-slot";
-import { DerivedFill, Fill } from "./fill";
 import { checkedAlias, checkedName } from "./identity";
 import type { AnyApp, App, Dependency } from "./plugin-app";
 import { Service } from "./service";
@@ -9,9 +7,6 @@ interface PluginParts {
 	readonly optionalPlugins: readonly Plugin[];
 	readonly requiredServices: readonly Service<unknown>[];
 	readonly optionalServices: readonly Service<unknown>[];
-	readonly declaredSlots: readonly SlotShape[];
-	readonly fills: readonly Fill[];
-	readonly derivedFills: readonly DerivedFill[];
 }
 
 type Applying<Api> = (app: AnyApp) => Api;
@@ -44,10 +39,6 @@ export class Plugin<out Api = unknown> {
 
 	applyWith(app: AnyApp): Api | undefined {
 		return this.applying?.(app);
-	}
-
-	hasDependencyOn(pluginId: string): boolean {
-		return [...this.parts.requiredPlugins, ...this.parts.optionalPlugins].some((each) => each.id === pluginId);
 	}
 
 	isRequired(dependency: Dependency): boolean {
@@ -84,29 +75,6 @@ export class PluginDraft<Required extends Dependency, Optional extends Dependenc
 		);
 	}
 
-	declare(...slots: readonly SlotShape[]): PluginDraft<Required, Optional> {
-		return new PluginDraft<Required, Optional>(
-			this.id,
-			{
-				...this.parts,
-				declaredSlots: [...this.parts.declaredSlots, ...slots],
-			},
-			this.slotOwnerId,
-		);
-	}
-
-	fill(...fills: readonly (Fill | DerivedFill)[]): PluginDraft<Required, Optional> {
-		return new PluginDraft<Required, Optional>(
-			this.id,
-			{
-				...this.parts,
-				fills: [...this.parts.fills, ...fills.filter((each) => each instanceof Fill)],
-				derivedFills: [...this.parts.derivedFills, ...fills.filter((each) => each instanceof DerivedFill)],
-			},
-			this.slotOwnerId,
-		);
-	}
-
 	apply<A>(run: (app: App<Required, Optional>) => A): Plugin<A> {
 		return new Plugin<A>(this.id, this.parts, this.slotOwnerId, (app: AnyApp) => run(app));
 	}
@@ -118,9 +86,6 @@ export function plugin(id: string): PluginDraft<never, never> {
 		optionalPlugins: [],
 		requiredServices: [],
 		optionalServices: [],
-		declaredSlots: [],
-		fills: [],
-		derivedFills: [],
 	});
 }
 
