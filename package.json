@@ -32,7 +32,7 @@
 		"test:streak": "node --single-threaded --import ./tools/loader/register.mts tools/streak-test.ts",
 		"test:model": "node --single-threaded --import ./tools/loader/register.mts tools/model-test.ts",
 		"test:version": "node --single-threaded --import ./tools/loader/register.mts tools/version-test.ts",
-		"test:plugin-framework": "node --single-threaded --import ./tools/loader/register.mts tools/plugin-framework-checks.ts",
+		"test:plugin-framework": "node --single-threaded --import ./tools/loader/register.mts tools/plugin-framework-checks.ts && node --single-threaded --import ./tools/loader/register.mts tools/plugin-apply-checks.ts",
 		"test:sumi-plugins": "node --single-threaded --import ./tools/loader/register.mts tools/sumi-plugins-test.ts",
 		"test:mcp": "node --single-threaded --import ./tools/loader/register.mts tools/mcp-server-checks.ts && node --single-threaded --import ./tools/loader/register.mts tools/mcp-plugin-checks.ts",
 		"test:file-viewers": "node --single-threaded --import ./tools/loader/register.mts tools/file-viewers-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/file-page-switches-checks.ts && node --single-threaded --import ./tools/loader/register.mts tools/file-moves-checks.ts",
