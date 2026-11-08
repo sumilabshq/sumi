@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { reasonOf } from "./answer";
+import type { Authenticate } from "./authenticate";
 import type { Exposed } from "./exposure";
 import { toolResultOf } from "./mcp-content";
 import type { ToolResult } from "./mcp-content";
@@ -33,10 +34,20 @@ export type McpReply = {
 	readonly id: string | number | null;
 } & JsonRpcOutcome;
 
+export interface McpServerAsk {
+	readonly name: string;
+	readonly modules?: readonly string[] | undefined;
+	readonly authenticate?: Authenticate | undefined;
+}
+
+export interface McpCall {
+	readonly headers?: Headers | undefined;
+}
+
 export interface McpServer {
 	readonly name: string;
 	readonly tools: readonly McpTool[];
-	answer(message: unknown): Promise<McpReply | null>;
+	answer(message: unknown, call?: McpCall): Promise<McpReply | null>;
 }
 
 interface ServedTools {
@@ -73,8 +84,12 @@ const ToolCallSchema = z.object({
 	arguments: z.record(z.string(), z.unknown()).default({}),
 });
 
-export function mcpServerOf(runtime: Runtime, { name }: { readonly name: string }): McpServer {
-	const exposed = runtime.expose({ adapter: ADAPTER.replace("{server}", name) });
+export function mcpServerOf(runtime: Runtime, { name, modules, authenticate }: McpServerAsk): McpServer {
+	const exposed = runtime.expose({
+		adapter: ADAPTER.replace("{server}", name),
+		authenticate,
+		modules,
+	});
 	const tools = servedToolsOf(exposed.requests);
 	const served = {
 		name,
@@ -85,11 +100,11 @@ export function mcpServerOf(runtime: Runtime, { name }: { readonly name: string 
 	return {
 		name,
 		tools: served.listed,
-		answer: (message) => replyTo(served, message),
+		answer: (message, call) => replyTo(served, message, call?.headers),
 	};
 }
 
-async function replyTo(served: ServedTools, message: unknown): Promise<McpReply | null> {
+async function replyTo(served: ServedTools, message: unknown, headers: Headers | undefined): Promise<McpReply | null> {
 	const parsed = MessageSchema.safeParse(message);
 
 	if (!parsed.success) {
@@ -109,11 +124,17 @@ async function replyTo(served: ServedTools, message: unknown): Promise<McpReply 
 	return {
 		jsonrpc: "2.0",
 		id,
-		...(await outcomeOf(served, method, params)),
+		...(await outcomeOf(served, { method, params, headers })),
 	};
 }
 
-async function outcomeOf(served: ServedTools, method: string, params: unknown): Promise<JsonRpcOutcome> {
+interface Asked {
+	readonly method: string;
+	readonly params: unknown;
+	readonly headers: Headers | undefined;
+}
+
+async function outcomeOf(served: ServedTools, { method, params, headers }: Asked): Promise<JsonRpcOutcome> {
 	switch (method) {
 		case "initialize":
 			return { result: initializeResultOf(served.name, params) };
@@ -122,7 +143,7 @@ async function outcomeOf(served: ServedTools, method: string, params: unknown): 
 		case "tools/list":
 			return { result: { tools: served.listed } };
 		case "tools/call":
-			return toolCallOutcomeOf(served, params);
+			return toolCallOutcomeOf(served, params, headers);
 		default:
 			return errorOutcomeOf(
 				METHOD_NOT_FOUND,
@@ -152,7 +173,11 @@ function protocolOf(params: unknown): string {
 	return asked.data.protocolVersion;
 }
 
-async function toolCallOutcomeOf(served: ServedTools, params: unknown): Promise<JsonRpcOutcome> {
+async function toolCallOutcomeOf(
+	served: ServedTools,
+	params: unknown,
+	headers: Headers | undefined,
+): Promise<JsonRpcOutcome> {
 	const call = ToolCallSchema.safeParse(params);
 
 	if (!call.success) {
@@ -175,6 +200,7 @@ async function toolCallOutcomeOf(served: ServedTools, params: unknown): Promise<
 			// TRADE-OFF: MCP carries no idempotency key, so each tools/call is a new command
 			idempotencyKey: tool.isCommand ? crypto.randomUUID() : null,
 			signal: new AbortController().signal,
+			headers,
 		});
 		return { result: toolResultOf(answered) };
 	} catch (thrown) {
