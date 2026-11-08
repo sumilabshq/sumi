@@ -1,0 +1,29 @@
+{
+	"name": "@sumi/git-plugin",
+	"version": "0.1.0",
+	"description": "The Git app: a repository's changes against a branch, a commit or the last commit",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/apps-plugin": "0.1.0",
+		"@sumi/contract": "0.6.0",
+		"@sumi/git": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

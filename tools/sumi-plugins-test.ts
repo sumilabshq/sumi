@@ -50,6 +50,7 @@ const APPS_SLOT_OWNERS = [
 	"plugins/files/",
 	"plugins/main/",
 	"plugins/chat/",
+	"plugins/git/",
 ];
 const VIEWER_APP_IDS = ["markdown-viewer", "code-viewer", "image-viewer", "video-viewer", "html-viewer"];
 const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];

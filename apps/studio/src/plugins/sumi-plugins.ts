@@ -41,6 +41,7 @@ import type {
 import { BrowserPagePlugin } from "@sumi/browser-page-plugin";
 import { CodeViewerPlugin } from "@sumi/code-viewer-plugin";
 import { FilesPlugin } from "@sumi/files-plugin";
+import { GitPlugin } from "@sumi/git-plugin";
 import { HtmlViewerPlugin } from "@sumi/html-viewer-plugin";
 import { ImageViewerPlugin } from "@sumi/image-viewer-plugin";
 import { MarkdownViewerPlugin } from "@sumi/markdown-viewer-plugin";
@@ -104,6 +105,7 @@ const INSTALLED_PLUGINS = [
 	ImageViewerPlugin,
 	VideoViewerPlugin,
 	HtmlViewerPlugin,
+	GitPlugin,
 ];
 const BACKGROUND_MODULES = stampSlotName(SumiHostPlugin.id, BackgroundModulesSlot);
 const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
@@ -131,6 +133,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		ImageViewerPlugin.id,
 		VideoViewerPlugin.id,
 		HtmlViewerPlugin.id,
+		GitPlugin.id,
 	],
 };
 
