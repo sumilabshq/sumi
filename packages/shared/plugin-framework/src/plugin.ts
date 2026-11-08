@@ -1,7 +1,7 @@
 import type { SlotShape } from "./declared-slot";
 import { DerivedFill, Fill } from "./fill";
 import { checkedAlias, checkedName } from "./identity";
-import type { App, Dependency } from "./plugin-app";
+import type { AnyApp, App, Dependency } from "./plugin-app";
 import { Service } from "./service";
 
 interface PluginParts {
@@ -14,18 +14,16 @@ interface PluginParts {
 	readonly derivedFills: readonly DerivedFill[];
 }
 
-interface Applying<Api, Required extends Dependency, Optional extends Dependency> {
-	run(app: App<Required, Optional>): Api;
-}
+type Applying<Api> = (app: AnyApp) => Api;
 
-export class Plugin<Api = unknown, Required extends Dependency = Dependency, Optional extends Dependency = Dependency> {
+export class Plugin<out Api = unknown> {
 	declare readonly api: Api;
 
 	constructor(
 		readonly id: string,
 		readonly parts: PluginParts,
 		readonly slotOwnerId: string = id,
-		private readonly applying: Applying<Api, Required, Optional> | null = null,
+		private readonly applying: Applying<Api> | null = null,
 	) {}
 
 	get isAliased(): boolean {
@@ -36,65 +34,12 @@ export class Plugin<Api = unknown, Required extends Dependency = Dependency, Opt
 		return this.applying !== null;
 	}
 
-	aliased(alias: string): Plugin<Api, Required, Optional> {
+	aliased(alias: string): Plugin<Api> {
 		return new Plugin(checkedAlias(alias), this.parts, this.id, this.applying);
 	}
 
-	require<const D extends readonly Dependency[]>(...dependencies: D): Plugin<Api, Required | D[number], Optional> {
-		return new Plugin<Api, Required | D[number], Optional>(
-			this.id,
-			{
-				...this.parts,
-				requiredPlugins: [...this.parts.requiredPlugins, ...dependencies.filter(isPlugin)],
-				requiredServices: [...this.parts.requiredServices, ...dependencies.filter(isService)],
-			},
-			this.slotOwnerId,
-		);
-	}
-
-	optional<const D extends readonly Dependency[]>(...dependencies: D): Plugin<Api, Required, Optional | D[number]> {
-		return new Plugin<Api, Required, Optional | D[number]>(
-			this.id,
-			{
-				...this.parts,
-				optionalPlugins: [...this.parts.optionalPlugins, ...dependencies.filter(isPlugin)],
-				optionalServices: [...this.parts.optionalServices, ...dependencies.filter(isService)],
-			},
-			this.slotOwnerId,
-		);
-	}
-
-	declare(...slots: readonly SlotShape[]): Plugin<Api, Required, Optional> {
-		return new Plugin(
-			this.id,
-			{
-				...this.parts,
-				declaredSlots: [...this.parts.declaredSlots, ...slots],
-			},
-			this.slotOwnerId,
-			this.applying,
-		);
-	}
-
-	fill(...fills: readonly (Fill | DerivedFill)[]): Plugin<Api, Required, Optional> {
-		return new Plugin(
-			this.id,
-			{
-				...this.parts,
-				fills: [...this.parts.fills, ...fills.filter((each) => each instanceof Fill)],
-				derivedFills: [...this.parts.derivedFills, ...fills.filter((each) => each instanceof DerivedFill)],
-			},
-			this.slotOwnerId,
-			this.applying,
-		);
-	}
-
-	apply<A>(run: (app: App<Required, Optional>) => A): Plugin<A, Required, Optional> {
-		return new Plugin<A, Required, Optional>(this.id, this.parts, this.slotOwnerId, { run });
-	}
-
-	applyWith(app: App<Required, Optional>): Api | undefined {
-		return this.applying?.run(app);
+	applyWith(app: AnyApp): Api | undefined {
+		return this.applying?.(app);
 	}
 
 	hasDependencyOn(pluginId: string): boolean {
@@ -110,8 +55,61 @@ export class Plugin<Api = unknown, Required extends Dependency = Dependency, Opt
 	}
 }
 
-export function plugin(id: string): Plugin<void, never, never> {
-	return new Plugin<void, never, never>(checkedName(id), {
+export class PluginDraft<Required extends Dependency, Optional extends Dependency> extends Plugin<void> {
+	require<const D extends readonly Dependency[]>(...dependencies: D): PluginDraft<Required | D[number], Optional> {
+		return new PluginDraft<Required | D[number], Optional>(
+			this.id,
+			{
+				...this.parts,
+				requiredPlugins: [...this.parts.requiredPlugins, ...dependencies.filter(isPlugin)],
+				requiredServices: [...this.parts.requiredServices, ...dependencies.filter(isService)],
+			},
+			this.slotOwnerId,
+		);
+	}
+
+	optional<const D extends readonly Dependency[]>(...dependencies: D): PluginDraft<Required, Optional | D[number]> {
+		return new PluginDraft<Required, Optional | D[number]>(
+			this.id,
+			{
+				...this.parts,
+				optionalPlugins: [...this.parts.optionalPlugins, ...dependencies.filter(isPlugin)],
+				optionalServices: [...this.parts.optionalServices, ...dependencies.filter(isService)],
+			},
+			this.slotOwnerId,
+		);
+	}
+
+	declare(...slots: readonly SlotShape[]): PluginDraft<Required, Optional> {
+		return new PluginDraft<Required, Optional>(
+			this.id,
+			{
+				...this.parts,
+				declaredSlots: [...this.parts.declaredSlots, ...slots],
+			},
+			this.slotOwnerId,
+		);
+	}
+
+	fill(...fills: readonly (Fill | DerivedFill)[]): PluginDraft<Required, Optional> {
+		return new PluginDraft<Required, Optional>(
+			this.id,
+			{
+				...this.parts,
+				fills: [...this.parts.fills, ...fills.filter((each) => each instanceof Fill)],
+				derivedFills: [...this.parts.derivedFills, ...fills.filter((each) => each instanceof DerivedFill)],
+			},
+			this.slotOwnerId,
+		);
+	}
+
+	apply<A>(run: (app: App<Required, Optional>) => A): Plugin<A> {
+		return new Plugin<A>(this.id, this.parts, this.slotOwnerId, (app: AnyApp) => run(app));
+	}
+}
+
+export function plugin(id: string): PluginDraft<never, never> {
+	return new PluginDraft<never, never>(checkedName(id), {
 		requiredPlugins: [],
 		optionalPlugins: [],
 		requiredServices: [],

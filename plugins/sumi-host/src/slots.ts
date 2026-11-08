@@ -13,7 +13,7 @@ import type {
 	ServerRuns,
 	ServerSideModule,
 } from "@widgetarium/data-framework";
-import { slot } from "@widgetarium/plugin-framework";
+import { service, slot } from "@widgetarium/plugin-framework";
 import type { SlotReader } from "@widgetarium/plugin-framework";
 import type { BoardFile } from "@widgetarium/tasks/implementation";
 
@@ -161,3 +161,32 @@ export const WindowServerModuleSchema = z.object({
 });
 
 export const windowServerModules = slot().item(WindowServerModuleSchema).list();
+
+export interface BackendOffers {
+	readonly store: StoreClient;
+	readonly file: BoardFile;
+}
+
+export interface Backend {
+	module(module: ServerSideModule, contract: ModuleContract<ServerRuns>): void;
+	moduleOf(build: (offers: BackendOffers) => ServerSideModule, contract: ModuleContract<ServerRuns>): void;
+}
+
+export interface Windows {
+	module(module: DeviceModule): void;
+	moduleOf(build: (offers: WindowModuleOffers) => DeviceModule): void;
+	serverModule(build: (offers: WindowServerOffers) => ServerSideModule): void;
+}
+
+export interface Shell {
+	tabPage(page: DrawnTabPage): void;
+	layer(layer: ComponentType): void;
+	provider(provider: (offers: WindowOffers) => ComponentType<WindowProviderProps>): void;
+	frameModule(contract: ModuleContract<ServerRuns>, serving: (offers: WindowOffers) => FrameServing): void;
+}
+
+export const backend = service<Backend>("backend");
+
+export const windows = service<Windows>("windows");
+
+export const shell = service<Shell>("shell");

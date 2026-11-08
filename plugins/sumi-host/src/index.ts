@@ -6,8 +6,15 @@ export {
 	WindowModuleSchema,
 	WindowProviderSchema,
 	WindowServerModuleSchema,
+	backend,
+	shell,
+	windows,
 } from "./slots.js";
 export type {
+	Backend,
+	BackendOffers,
+	Shell,
+	Windows,
 	BackgroundModuleOf,
 	CoreChanges,
 	CoreOffers,

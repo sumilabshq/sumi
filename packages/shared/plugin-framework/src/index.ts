@@ -1,8 +1,8 @@
 export { ListSlot, SingleSlot, slot } from "./declared-slot";
 export type { FilledItem, ItemsDerive, ListItemInput, SlotCardinality, SlotDraft, SlotShape } from "./declared-slot";
 export { DerivedFill, Fill } from "./fill";
-export { Plugin, plugin } from "./plugin";
-export type { ApiOf, App, CallerFacts, Dependency, ProvideFor, UsedApi } from "./plugin-app";
+export { Plugin, PluginDraft, plugin } from "./plugin";
+export type { ApiOf, App, CallerFacts, Dependency, ProvideFor } from "./plugin-app";
 export { Service, service } from "./service";
 export { namedSlot, pluginWithSlots } from "./plugin-namespace";
 export { PROFILE_FILE, PluginIdSchema, SumiProfileSchema } from "./profile";

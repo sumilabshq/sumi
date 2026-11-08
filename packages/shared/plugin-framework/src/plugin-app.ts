@@ -5,13 +5,12 @@ export interface Dependency {
 
 export type ApiOf<D extends Dependency> = D["api"];
 
-export type UsedApi<D extends Dependency, Required extends Dependency> = D extends Required
-	? ApiOf<D>
-	: ApiOf<D> | null;
-
 export interface App<Required extends Dependency, Optional extends Dependency> {
-	use<D extends Required | Optional>(dependency: D): UsedApi<D, Required>;
+	use<D extends Required>(dependency: D): ApiOf<D>;
+	use<D extends Optional>(dependency: D): ApiOf<D> | null;
 }
+
+export type AnyApp = App<Dependency, Dependency>;
 
 export interface CallerFacts {
 	readonly pluginId: string;

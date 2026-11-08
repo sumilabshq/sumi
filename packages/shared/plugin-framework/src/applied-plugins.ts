@@ -1,5 +1,5 @@
 import type { Plugin } from "./plugin";
-import type { App, CallerFacts, Dependency, ProvideFor, UsedApi } from "./plugin-app";
+import type { AnyApp, ApiOf, CallerFacts, Dependency, ProvideFor } from "./plugin-app";
 import { sentenceOf } from "./sentence";
 import { Service } from "./service";
 
@@ -82,23 +82,20 @@ function refusalBeforeApply(target: Plugin, run: ApplyRun): string | null {
 	return unprovided === undefined ? null : sentenceOf(NO_PROVIDER, { plugin: target.id, service: unprovided.id });
 }
 
-function appFor<Required extends Dependency, Optional extends Dependency>(
-	target: Plugin,
-	run: ApplyRun,
-): App<Required, Optional> {
+function appFor(target: Plugin, run: ApplyRun): AnyApp {
 	const caller: CallerFacts = {
 		pluginId: target.id,
 		prefix: target.isAliased ? target.id : null,
 	};
 	const provided = new Map<string, unknown>();
 	return {
-		use: <D extends Required | Optional>(dependency: D): UsedApi<D, Required> => {
+		use: <D extends Dependency>(dependency: D): ApiOf<D> => {
 			if (!target.isRequired(dependency) && !target.isOptional(dependency)) {
 				throw new Error(sentenceOf(NOT_LISTED, { plugin: target.id, used: dependency.id }));
 			}
 
 			// TRADE-OFF: the one cast of the container: an API is stored untyped and read back by its dependency's type
-			return usedApiOf(dependency, { caller, provided, run }) as UsedApi<D, Required>;
+			return usedApiOf(dependency, { caller, provided, run }) as ApiOf<D>;
 		},
 	};
 }
