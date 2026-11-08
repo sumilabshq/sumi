@@ -4,7 +4,6 @@ use serde_json::{json, Value};
 use std::io::{self, Read};
 
 pub const HOOK_FLAG: &str = "--hook";
-pub const SETTLED_TOOL: &str = "questions_settled";
 
 const HOOK_TIMEOUT_SECONDS: u64 = 10;
 
@@ -32,8 +31,9 @@ pub fn context_of(text: &str) -> Value {
 }
 
 fn settled_text(args: &[String]) -> Option<String> {
-    let answer = mcp::call_sumi(&mcp::flag_value(args, "--socket"), &mcp::flag_value(args, "--token"), &mcp::flag_value(args, "--chat"), SETTLED_TOOL, json!({}));
-    let value = answer.map_err(|refusal| eprintln!("[questions] hook: {refusal}")).ok()?;
+    let bridge = mcp::Bridge { socket: mcp::flag_value(args, "--socket"), token: mcp::flag_value(args, "--token") };
+    let answer = mcp::call_sumi(&bridge, json!({ "kind": "between-steps", "chat": mcp::flag_value(args, "--chat") }));
+    let value = answer.map_err(|refusal| eprintln!("[agent] between-steps hook: {refusal}")).ok()?;
     value.get("text").and_then(Value::as_str).filter(|text| !text.is_empty()).map(str::to_string)
 }
 

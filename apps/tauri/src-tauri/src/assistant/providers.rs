@@ -1,4 +1,4 @@
-use crate::agent::claude_flags;
+use crate::agent::{claude_flags, TurnHeaders};
 use crate::agent::hub::AgentLink;
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
@@ -158,7 +158,8 @@ fn claude_args(ask: &TurnAsk, places: &TurnPlaces) -> Vec<String> {
         argv.extend(["--effort".into(), choice.effort.into()]);
     }
     if let Some(agent) = ask.agent {
-        argv.extend(claude_flags(agent));
+        let headers = TurnHeaders { folder: &shown(places.project), model: ask.claude.as_ref().map(|choice| choice.model) };
+        argv.extend(claude_flags(agent, &headers));
     }
     if let Some(session) = ask.resume {
         argv.extend(["--resume".into(), session.to_string()]);

@@ -9,7 +9,7 @@ use std::thread;
 
 const OWNER_ONLY: u32 = 0o600;
 const WRONG_TOKEN: &str = "This call does not carry the token of the running Sumi.";
-const NOT_A_CALL: &str = "A call names its token, chat, tool and input.";
+const NOT_A_CALL: &str = "A call names its token and its kind: mcp with server, headers and message, or between-steps with chat.";
 
 pub fn listen(hub: Arc<AgentHub>) -> Result<(), String> {
     if hub.socket.exists() {
@@ -42,12 +42,19 @@ fn serve_one(hub: &AgentHub, stream: UnixStream) {
 }
 
 fn answer_call(hub: &AgentHub, line: &str) -> ToolAnswer {
-    let call: Value = serde_json::from_str(line).map_err(|_| NOT_A_CALL.to_string())?;
-    let text = |name: &str| call.get(name).and_then(Value::as_str).filter(|text| !text.is_empty()).ok_or(NOT_A_CALL);
-    if text("token")? != hub.token {
+    let mut call: Value = serde_json::from_str(line).map_err(|_| NOT_A_CALL.to_string())?;
+    let token = call.as_object_mut().and_then(|fields| fields.remove("token")).ok_or(NOT_A_CALL)?;
+    if token.as_str() != Some(hub.token.as_str()) {
         return Err(WRONG_TOKEN.into());
     }
 
-    let input = call.get("input").filter(|input| input.is_object()).cloned().ok_or(NOT_A_CALL)?;
-    hub.ask_studio(text("chat")?, text("tool")?, input)
+    match call.get("kind").and_then(Value::as_str) {
+        Some("mcp") if call.get("server").is_some_and(Value::is_string) && has_text_headers(&call) => hub.ask_studio(call, true),
+        Some("between-steps") if call.get("chat").is_some_and(Value::is_string) => hub.ask_studio(call, false),
+        _ => Err(NOT_A_CALL.into()),
+    }
+}
+
+fn has_text_headers(call: &Value) -> bool {
+    call.get("headers").and_then(Value::as_object).is_some_and(|headers| headers.values().all(Value::is_string))
 }

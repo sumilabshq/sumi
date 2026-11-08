@@ -16,34 +16,10 @@ pub const PLUGIN_NAME: &str = "agent";
 pub const PROMPT: &str = include_str!("sumi-prompt.md");
 
 const SOCKET_FILE: &str = "agent-tools.sock";
-pub const ALLOWED_TOOLS: &[&str] = &[
-    "app_state",
-    "apps_list",
-    "tab_open",
-    "tab_duplicate",
-    "tab_update",
-    "tab_close",
-    "tab_access",
-    "tab_read",
-    "group_create",
-    "group_update",
-    "group_delete",
-    "task_search",
-    "task_list",
-    "task_get",
-    "task_create",
-    "task_update",
-    "task_start",
-    "task_step",
-    "task_check",
-    "task_attach",
-    "task_move",
-    "ask_needed",
-    "ask_optional",
-];
 pub const DISALLOWED_TOOLS: &[&str] = &["AskUserQuestion"];
 const MISSING_ARGUMENT: &str = "The call is missing its {name} argument.";
 const NOT_A_CHANNEL: &str = "The call's onEvent argument is not a channel.";
+const NOT_SERVER_NAMES: &str = "The call's servers argument is not a list of MCP server names.";
 const NO_HUB: &str = "The agent tools have not started.";
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
@@ -60,14 +36,19 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .build()
 }
 
-pub fn claude_flags(link: &hub::AgentLink) -> Vec<String> {
+pub struct TurnHeaders<'a> {
+    pub folder: &'a str,
+    pub model: Option<&'a str>,
+}
+
+pub fn claude_flags(link: &hub::AgentLink, headers: &TurnHeaders) -> Vec<String> {
     vec![
         "--append-system-prompt".into(),
         PROMPT.into(),
         "--mcp-config".into(),
-        mcp_config_of(link),
+        mcp_config_of(link, headers),
         "--allowedTools".into(),
-        allowed_tools(),
+        allowed_tools(link),
         "--disallowedTools".into(),
         DISALLOWED_TOOLS.join(","),
         "--settings".into(),
@@ -75,15 +56,20 @@ pub fn claude_flags(link: &hub::AgentLink) -> Vec<String> {
     ]
 }
 
-pub fn mcp_config_of(link: &hub::AgentLink) -> String {
-    let args = [mcp::MCP_FLAG, "--socket", &link.socket, "--token", &link.token, "--chat", &link.chat];
+pub fn mcp_config_of(link: &hub::AgentLink, headers: &TurnHeaders) -> String {
     let mut servers = serde_json::Map::new();
-    servers.insert(mcp::SERVER_NAME.to_string(), json!({ "command": link.exe, "args": args }));
+    for server in &link.servers {
+        let mut args = vec![mcp::MCP_FLAG, "--server", server, "--socket", &link.socket, "--token", &link.token, "--chat", &link.chat, "--folder", headers.folder];
+        if let Some(model) = headers.model {
+            args.extend(["--model", model]);
+        }
+        servers.insert(server.clone(), json!({ "command": link.exe, "args": args }));
+    }
     json!({ "mcpServers": servers }).to_string()
 }
 
-pub fn allowed_tools() -> String {
-    ALLOWED_TOOLS.iter().map(|tool| format!("mcp__{}__{tool}", mcp::SERVER_NAME)).collect::<Vec<_>>().join(",")
+pub fn allowed_tools(link: &hub::AgentLink) -> String {
+    link.servers.iter().map(|server| format!("mcp__{server}")).collect::<Vec<_>>().join(",")
 }
 
 fn dispatch<R: Runtime>(invoke: Invoke<R>) -> bool {
@@ -127,7 +113,9 @@ fn open_channel<R: Runtime>(message: &InvokeMessage<R>) -> Result<Value, String>
     let named = argument(message, "onEvent")?.as_str().ok_or(NOT_A_CHANNEL)?;
     let id = JavaScriptChannelId::from_str(named).map_err(|_| NOT_A_CHANNEL.to_string())?;
     let channel: Channel<Value> = id.channel_on(message.webview());
-    hub_of(message)?.open_studio(channel);
+    let servers = argument(message, "servers")?.as_array().ok_or(NOT_SERVER_NAMES)?;
+    let names = servers.iter().map(|name| name.as_str().map(str::to_string).ok_or(NOT_SERVER_NAMES)).collect::<Result<Vec<_>, _>>()?;
+    hub_of(message)?.open_studio(channel, names);
     Ok(Value::Null)
 }
 

@@ -3,7 +3,7 @@ import { startStudio, startStudioApp, startSumiPlugins } from "@widgetarium/stud
 import type { ResolvedPlugins, StartedStudio, StudioStart } from "@widgetarium/studio";
 import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
-import { openAgentTools } from "../agent/agent-tools.js";
+import { openAgentRelay } from "../agent/agent-relay.js";
 import { tabLinksRenderer } from "../agent/tab-links.js";
 import { appHost } from "@widgetarium/app-host/contract";
 import { chatSessionLinkOf } from "../assistant/chat-session-link.js";
@@ -98,9 +98,10 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 			historyOf: docs.logs.historyOf,
 		},
 	});
-	openAgentTools(studioApp, assistant.port);
 	await assistant.port.shownRead();
-	return startedStudioOf(opening, { plugins, studioApp, assistant, core });
+	const started = startedStudioOf(opening, { plugins, studioApp, assistant, core });
+	openAgentRelay(started.agentMcpServers, assistant.port);
+	return started;
 }
 
 function startTauriStudioApp(
