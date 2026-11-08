@@ -17407,13 +17407,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	min-width: var(--sumi-sidebar-min);
 	min-height: 0;
 }
-.wg-shell-left:not([data-state="docked"]),
-.wg-shell.is-sliding-in > .wg-shell-left {
+.wg-shell-left:not([data-state="docked"]) {
 	width: 0;
 	min-width: 0;
-}
-.wg-shell.is-sliding-in > .wg-shell-edge {
-	width: 0;
 }
 .wg-shell-side {
 	position: absolute;
