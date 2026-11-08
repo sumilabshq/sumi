@@ -8,6 +8,8 @@ const RENAME_OPTIONS = {
 	module: { type: "boolean" },
 	plugin: { type: "boolean" },
 	"skip-types": { type: "boolean" },
+	strings: { type: "boolean" },
+	"breaking-contract": { type: "boolean" },
 } as const;
 
 const RENAME_USAGE =
@@ -20,6 +22,8 @@ const RenameArgsSchema = z.object({
 	isDry: z.boolean(),
 	kind: z.enum(["module", "plugin"]).nullable(),
 	isTypeChecked: z.boolean(),
+	isStringRewritten: z.boolean(),
+	isContractBreakAllowed: z.boolean(),
 });
 
 export type RenameArgs = z.output<typeof RenameArgsSchema>;
@@ -36,6 +40,8 @@ export function parseRenameArgs(argv: readonly string[]): RenameArgs {
 		isDry: values.dry === true,
 		kind: kindOf(values.module === true, values.plugin === true),
 		isTypeChecked: values["skip-types"] !== true,
+		isStringRewritten: values.strings === true,
+		isContractBreakAllowed: values["breaking-contract"] === true,
 	});
 }
 

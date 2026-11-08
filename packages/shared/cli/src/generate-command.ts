@@ -19,7 +19,7 @@ const STRAY = "{module}/{entry} is a file generate no longer writes; run it to r
 const NO_MODULES = 'no module found: name a module folder, or mark one with widgetarium.level "domain" or "client"';
 
 export function runGenerate({ modules, check }: GenerateArgs, output: CliOutput, cwd: string): number {
-	const named = modules.length > 0 ? modules : [...generatedPackagesIn(cwd), ...pluginPackagesIn(cwd)];
+	const named = modules.length > 0 ? modules : allGeneratedPackagesIn(cwd);
 	if (named.length === 0) {
 		output.out(NO_MODULES);
 		return 0;
@@ -29,6 +29,15 @@ export function runGenerate({ modules, check }: GenerateArgs, output: CliOutput,
 	if (check) return staleReported(drifted, output);
 	for (const entry of drifted) writeEntry(entry, output);
 	return 0;
+}
+
+export function driftedEntriesIn(cwd: string): ModuleEntry[] {
+	const entries = allGeneratedPackagesIn(cwd).flatMap((module) => entriesOf(cwd, module));
+	return [...entries, ...appRegistryEntriesOf(cwd)].filter(isDrifted);
+}
+
+function allGeneratedPackagesIn(cwd: string): string[] {
+	return [...generatedPackagesIn(cwd), ...pluginPackagesIn(cwd)];
 }
 
 function entriesOf(cwd: string, module: string): ModuleEntry[] {

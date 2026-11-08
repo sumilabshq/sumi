@@ -52,8 +52,10 @@ const KIND_SUFFIXED = "{name} ends with a kind word; a building block is named w
 const NOT_AN_IDENTIFIER = "{name} cannot name a JavaScript constant";
 const TAKEN = "{to} is already the name of the {method} in {folder}";
 const MODULE_WIRE = "wire names of module {from} now start with {to}.";
-const PLUGIN_NAMES =
-	"slot names of plugin {from} now start with {to}.; a workspace's sumi.plugins.json keeps its {from} entry";
+const PLUGIN_STATE =
+	"plugin {from} is not renamed: a workspace's sumi.plugins.json keys its state by plugin id, so a rename would re-enable the plugin wherever a user disabled it";
+const CONTRACT_LISTED =
+	"module {from} is listed in {files}, the contract outside apps call by wire name; renaming it breaks them. Pass --breaking-contract to rename it anyway";
 
 export function renamePlan(args: RenameArgs, root: string): RenamePlan {
 	const homes = homesIn(root);
@@ -79,6 +81,7 @@ function identityPlan({ args, root, homes, lists }: PlanAsk): RenamePlan {
 		homes.filter(({ id, method }) => id === args.target && (args.kind === null || method === args.kind)),
 		{ target: args.target, root, fix: "pass --module or --plugin" },
 	);
+	refusePluginRename(home);
 	const to = checkedSegment(args.to);
 	refuseSame(args.target, to);
 	const taken = homes.find(({ id, method }) => id === to && method === home.method);
@@ -87,8 +90,10 @@ function identityPlan({ args, root, homes, lists }: PlanAsk): RenamePlan {
 		throw new CliRefusal(fillTemplate(TAKEN, { to, method: home.method, folder: shown(root, taken.folder) }));
 	}
 
+	const listing = lists.filter(({ modules }) => modules.includes(home.id));
+	refuseContractBreak(home, listing, { args, root });
 	const newName = checkedConstant(camelOf(to));
-	const wires = home.method === "module" ? wireNamesOf(home) : [];
+	const wires = wireNamesOf(home);
 	return {
 		from: home.id,
 		to,
@@ -98,11 +103,28 @@ function identityPlan({ args, root, homes, lists }: PlanAsk): RenamePlan {
 		namespace: null,
 		strings: new Map(wires.map((wire) => [`${home.id}.${wire}`, `${to}.${wire}`])),
 		identity: { file: home.file, method: home.method, from: home.id, to },
-		lists: lists
-			.filter(({ modules }) => home.method === "module" && modules.includes(home.id))
-			.map(({ file }) => ({ file, from: home.id, to })),
-		notes: [fillTemplate(home.method === "module" ? MODULE_WIRE : PLUGIN_NAMES, { from: home.id, to })],
+		lists: listing.map(({ file }) => ({ file, from: home.id, to })),
+		notes: [fillTemplate(MODULE_WIRE, { from: home.id, to })],
 	};
+}
+
+function refusePluginRename(home: Home): void {
+	if (home.method === "plugin") {
+		// TODO: migrate plugin state on rename
+		throw new CliRefusal(fillTemplate(PLUGIN_STATE, { from: home.id }));
+	}
+}
+
+function refuseContractBreak(
+	home: Home,
+	listing: readonly ContractList[],
+	{ args, root }: Pick<PlanAsk, "args" | "root">,
+): void {
+	// TODO: rename the module folder too, generate finds a contract module by folder name
+	if (listing.length > 0 && !args.isContractBreakAllowed) {
+		const files = listing.map(({ file }) => path.relative(root, file)).join(", ");
+		throw new CliRefusal(fillTemplate(CONTRACT_LISTED, { from: home.id, files }));
+	}
 }
 
 function itemPlan({ args, root, homes, lists }: PlanAsk): RenamePlan {

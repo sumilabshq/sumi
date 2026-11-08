@@ -40,10 +40,14 @@ export const CLI_HELP = `widgetarium <command>
       under generated/; with no folder, every package marked widgetarium.level "domain" or
       "client"; --check writes nothing and exits 1 naming each package whose files are stale
 
-  rename <full-name> <new-name> [--dry] [--module | --plugin] [--skip-types]
-      renames a request, event or subscriber (file-system.files.read-folder folder), a module or a
-      plugin, and every use bound to it: imports, aliases, namespace uses, wire-name strings; refuses
-      and writes nothing when the new name is taken where it is used; then runs generate and the
-      type check; --dry prints every change and writes nothing`;
+  rename <full-name> <new-name> [--dry] [--module | --plugin] [--strings] [--breaking-contract] [--skip-types]
+      renames a request, event or subscriber (file-system.files.read-folder folder) or a module, and
+      every use bound to it: imports, aliases, namespace uses; lists each string equal to an old wire
+      name and rewrites them only with --strings; refuses and writes nothing when the new name is
+      taken where it is used, a use cannot be followed (computed access, destructuring, JSX member,
+      export * as, dynamic import), the module is in a sumi-contract.json (unless
+      --breaking-contract) or the target is a plugin; writes all or nothing, runs generate and
+      restores every file when it fails, then the type check; --dry prints every change and writes
+      nothing`;
 
 export const HELP_WORDS: readonly string[] = ["help", "--help", "-h"];

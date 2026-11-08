@@ -2,6 +2,18 @@ import { traverse } from "@babel/core";
 import type { NodePath, types } from "@babel/core";
 import type { ParsedScript, Resolve } from "./rename-files.js";
 import type { RenamePlan } from "./rename-plan.js";
+import {
+	addUnsafe,
+	noteDynamicImport,
+	noteImportType,
+	noteJsxMember,
+	noteRequire,
+	noteStarAs,
+	unsafeStepOf,
+} from "./rename-unsafe-uses.js";
+import type { UnsafeScan, UnsafeUse } from "./rename-unsafe-uses.js";
+import { identifierSpan, isReference, lineOf, nameOf, spanOf } from "./rename-nodes.js";
+import type { Binding, Span } from "./rename-nodes.js";
 
 export interface SourceChange {
 	readonly start: number;
@@ -13,17 +25,25 @@ export interface SourceChange {
 
 export interface ScriptChanges {
 	readonly file: string;
+	readonly text: string;
 	readonly changes: readonly SourceChange[];
 	readonly clashLines: readonly number[];
+	readonly stringLines: readonly number[];
+	readonly unsafeUses: readonly UnsafeUse[];
 }
 
-type Binding = NonNullable<ReturnType<NodePath["scope"]["getBinding"]>>;
+export interface ScanContext {
+	readonly resolve: Resolve;
+	readonly sources: ReadonlySet<string>;
+	readonly namespaceSources: ReadonlySet<string>;
+	readonly isStringRewritten: boolean;
+}
 
-interface Renaming {
-	readonly script: ParsedScript;
-	readonly plan: RenamePlan;
+interface Renaming extends UnsafeScan {
+	readonly context: ScanContext;
 	readonly changes: Map<string, SourceChange>;
 	readonly clashLines: number[];
+	readonly stringLines: number[];
 	readonly locals: Map<Binding, LocalRename>;
 	readonly namespaces: Map<Binding, readonly string[]>;
 }
@@ -33,89 +53,92 @@ interface LocalRename {
 	readonly to: string;
 }
 
-const SKIPPED_KEY_PARENTS: ReadonlySet<string> = new Set([
-	"ObjectProperty",
-	"ObjectMethod",
-	"ClassMethod",
-	"ClassProperty",
-	"ClassPrivateProperty",
-	"TSPropertySignature",
-	"TSMethodSignature",
-	"TSEnumMember",
-]);
-const DECLARING_PARENTS: ReadonlySet<string> = new Set([
-	"ImportSpecifier",
-	"ImportDefaultSpecifier",
-	"ImportNamespaceSpecifier",
-	"LabeledStatement",
-	"BreakStatement",
-	"ContinueStatement",
-]);
-
-export function scriptChangesOf(
-	script: ParsedScript,
-	plan: RenamePlan,
-	{ resolve, sources }: { readonly resolve: Resolve; readonly sources: ReadonlySet<string> },
-): ScriptChanges {
+export function scriptChangesOf(script: ParsedScript, plan: RenamePlan, context: ScanContext): ScriptChanges {
 	const renaming: Renaming = {
 		script,
 		plan,
+		context,
+		resolve: context.resolve,
+		contractSources: new Set([...context.sources, ...context.namespaceSources]),
 		changes: new Map(),
 		clashLines: [],
+		stringLines: [],
+		unsafeUses: [],
 		locals: new Map(),
 		namespaces: new Map(),
 	};
 	traverse(script.ast, {
 		Program(program) {
-			bindingsIn(program, renaming, { resolve, sources });
+			bindingsIn(program, renaming);
 			program.traverse({
 				Identifier: (identifier) => identifierChange(identifier, renaming),
+				JSXMemberExpression: (member) => noteJsxMember(member, renaming),
 				StringLiteral: (literal) => stringChange(literal, renaming),
-				CallExpression: (call) => identityChange(call, renaming),
+				CallExpression: (call) => {
+					identityChange(call, renaming);
+					noteRequire(call, renaming);
+				},
+				Import: (keyword) => noteDynamicImport(keyword, renaming),
+				TSImportType: (imported) => noteImportType(imported, renaming),
 			});
-			refuseClashes(program, renaming);
+			noteShadowing(program, renaming);
 			program.stop();
 		},
 	});
 	return {
 		file: script.file,
+		text: script.text,
 		changes: [...renaming.changes.values()].sort((one, other) => one.start - other.start),
 		clashLines: renaming.clashLines,
+		stringLines: renaming.stringLines,
+		unsafeUses: renaming.unsafeUses,
 	};
 }
 
-function bindingsIn(
-	program: NodePath<types.Program>,
-	renaming: Renaming,
-	{ resolve, sources }: { readonly resolve: Resolve; readonly sources: ReadonlySet<string> },
-): void {
-	const { plan, script } = renaming;
-	const declared = sources.has(script.file) ? program.scope.getBinding(plan.oldName) : undefined;
+function bindingsIn(program: NodePath<types.Program>, renaming: Renaming): void {
+	const { script, context } = renaming;
+
+	if (context.sources.has(script.file) && !hasStarExportFromSource(program, renaming)) {
+		localDeclaration(program, renaming);
+	}
+
+	for (const statement of program.get("body")) {
+		if (statement.isImportDeclaration()) {
+			importBindings(statement, renaming, context.resolve(script.file, statement.node.source.value));
+		}
+
+		if (statement.isExportNamedDeclaration() && statement.node.source != null) {
+			const from = context.resolve(script.file, statement.node.source.value);
+			reExportChanges(statement.node, renaming, from !== null && context.sources.has(from));
+			noteStarAs(statement.node, renaming, from);
+		}
+	}
+}
+
+function localDeclaration(program: NodePath<types.Program>, renaming: Renaming): void {
+	const { plan } = renaming;
+	const declared = program.scope.getBinding(plan.oldName);
 
 	if (declared !== undefined && declared.kind !== "module") {
 		renaming.locals.set(declared, { from: plan.oldName, to: plan.newName });
 		addChange(renaming, identifierSpan(declared.identifier, plan.oldName), plan.newName);
 	}
-
-	for (const statement of program.get("body")) {
-		if (statement.isImportDeclaration()) {
-			importBindings(statement, renaming, resolve(script.file, statement.node.source.value), sources);
-		}
-
-		if (statement.isExportNamedDeclaration() && statement.node.source != null) {
-			const from = resolve(script.file, statement.node.source.value);
-			reExportChanges(statement.node, renaming, from !== null && sources.has(from));
-		}
-	}
 }
 
-function importBindings(
-	statement: NodePath<types.ImportDeclaration>,
-	renaming: Renaming,
-	from: string | null,
-	sources: ReadonlySet<string>,
-): void {
-	const { plan } = renaming;
+function hasStarExportFromSource(program: NodePath<types.Program>, renaming: Renaming): boolean {
+	const { script, context } = renaming;
+	return program.node.body.some((statement) => {
+		if (statement.type !== "ExportAllDeclaration") {
+			return false;
+		}
+
+		const from = context.resolve(script.file, statement.source.value);
+		return from !== null && from !== script.file && context.sources.has(from);
+	});
+}
+
+function importBindings(statement: NodePath<types.ImportDeclaration>, renaming: Renaming, from: string | null): void {
+	const { plan, context } = renaming;
 
 	if (from === null) {
 		return;
@@ -128,8 +151,8 @@ function importBindings(
 			continue;
 		}
 
-		if (specifier.type === "ImportNamespaceSpecifier" && sources.has(from)) {
-			renaming.namespaces.set(binding, []);
+		if (specifier.type === "ImportNamespaceSpecifier") {
+			namespaceImport(binding, renaming, from);
 			continue;
 		}
 
@@ -139,24 +162,40 @@ function importBindings(
 
 		const imported = nameOf(specifier.imported);
 
-		if (plan.namespace !== null && imported === plan.namespace.constant && plan.namespace.sources.has(from)) {
+		if (plan.namespace !== null && imported === plan.namespace.constant && context.namespaceSources.has(from)) {
 			renaming.namespaces.set(binding, plan.namespace.path);
 		}
 
-		if (imported !== plan.oldName || !sources.has(from)) {
-			continue;
+		if (imported === plan.oldName && context.sources.has(from)) {
+			importedTargetChange(specifier, binding, renaming);
 		}
-
-		const local = specifier.local.name;
-		const isLocalRenamed = local === plan.oldName;
-
-		if (isLocalRenamed) {
-			renaming.locals.set(binding, { from: local, to: plan.newName });
-		}
-
-		const newLocal = isLocalRenamed ? plan.newName : local;
-		addChange(renaming, spanOf(specifier), newLocal === plan.newName ? plan.newName : `${plan.newName} as ${newLocal}`);
 	}
+}
+
+function namespaceImport(binding: Binding, renaming: Renaming, from: string): void {
+	const { plan, context } = renaming;
+
+	if (context.sources.has(from)) {
+		renaming.namespaces.set(binding, []);
+		return;
+	}
+
+	if (plan.namespace !== null && context.namespaceSources.has(from)) {
+		renaming.namespaces.set(binding, [plan.namespace.constant, ...plan.namespace.path]);
+	}
+}
+
+function importedTargetChange(specifier: types.ImportSpecifier, binding: Binding, renaming: Renaming): void {
+	const { plan } = renaming;
+	const local = specifier.local.name;
+
+	if (local !== plan.oldName) {
+		addChange(renaming, spanOf(specifier), `${plan.newName} as ${local}`);
+		return;
+	}
+
+	renaming.locals.set(binding, { from: local, to: plan.newName });
+	addChange(renaming, spanOf(specifier), plan.newName);
 }
 
 function reExportChanges(node: types.ExportNamedDeclaration, renaming: Renaming, isFromSource: boolean): void {
@@ -220,22 +259,33 @@ function localChange(identifier: NodePath<types.Identifier>, renaming: Renaming,
 }
 
 function memberChange(identifier: NodePath<types.Identifier>, renaming: Renaming, path: readonly string[]): void {
-	const { plan } = renaming;
-	const segments = [...path, plan.oldName];
+	const segments = [...path, renaming.plan.oldName];
 	let reached: NodePath = identifier;
 
 	for (const [at, segment] of segments.entries()) {
 		const step = reached.parentPath;
-		const property = step === null ? null : propertyNamed(step.node, reached.node, segment);
 
-		if (step === null || property === null) {
+		if (step === null) {
+			return;
+		}
+
+		const unsafe = unsafeStepOf({ step: step.node, object: reached.node, segment, isGroup: at > 0 });
+
+		if (unsafe !== null) {
+			addUnsafe(renaming, step.node, unsafe);
+			return;
+		}
+
+		const property = propertyNamed(step.node, reached.node, segment);
+
+		if (property === null) {
 			return;
 		}
 
 		reached = step;
 
 		if (at === segments.length - 1) {
-			addChange(renaming, spanOf(property), plan.newName);
+			addChange(renaming, spanOf(property), renaming.plan.newName);
 		}
 	}
 }
@@ -261,6 +311,11 @@ function stringChange(literal: NodePath<types.StringLiteral>, renaming: Renaming
 		return;
 	}
 
+	if (!renaming.context.isStringRewritten) {
+		renaming.stringLines.push(lineOf(literal.node));
+		return;
+	}
+
 	const { start, end } = spanOf(literal.node);
 	addChange(renaming, { start: start + 1, end: end - 1 }, renamed);
 }
@@ -282,7 +337,7 @@ function identityChange(call: NodePath<types.CallExpression>, renaming: Renaming
 	addChange(renaming, { start: start + 1, end: end - 1 }, identity.to);
 }
 
-function refuseClashes(program: NodePath<types.Program>, renaming: Renaming): void {
+function noteShadowing(program: NodePath<types.Program>, renaming: Renaming): void {
 	for (const [binding, { to }] of renaming.locals) {
 		const shadowing = binding.scope.getBinding(to);
 
@@ -298,38 +353,6 @@ function refuseClashes(program: NodePath<types.Program>, renaming: Renaming): vo
 	}
 }
 
-function isReference(node: types.Identifier, parent: types.Node): boolean {
-	if (DECLARING_PARENTS.has(parent.type)) {
-		return false;
-	}
-
-	if (parent.type === "ObjectProperty" && parent.shorthand && parent.value === node) {
-		return true;
-	}
-
-	if (parent.type === "ExportSpecifier") {
-		return parent.local === node;
-	}
-
-	if ((parent.type === "MemberExpression" || parent.type === "OptionalMemberExpression") && !parent.computed) {
-		return parent.property !== node;
-	}
-
-	if (parent.type === "TSQualifiedName") {
-		return parent.right !== node;
-	}
-
-	return !(SKIPPED_KEY_PARENTS.has(parent.type) && "key" in parent && parent.key === node && !isComputed(parent));
-}
-
-function isComputed(node: types.Node): boolean {
-	return "computed" in node && node.computed === true;
-}
-
-function nameOf(node: types.Identifier | types.StringLiteral): string {
-	return node.type === "Identifier" ? node.name : node.value;
-}
-
 function addChange(renaming: Renaming, { start, end }: Span, text: string): void {
 	const { script } = renaming;
 	renaming.changes.set(`${start}:${end}`, {
@@ -339,28 +362,4 @@ function addChange(renaming: Renaming, { start, end }: Span, text: string): void
 		line: script.text.slice(0, start).split("\n").length,
 		was: script.text.slice(start, end),
 	});
-}
-
-interface Span {
-	readonly start: number;
-	readonly end: number;
-}
-
-function spanOf(node: types.Node): Span {
-	return {
-		start: node.start ?? 0,
-		end: node.end ?? 0,
-	};
-}
-
-function identifierSpan(node: types.Node, name: string): Span {
-	const start = node.start ?? 0;
-	return {
-		start,
-		end: start + name.length,
-	};
-}
-
-function lineOf(node: types.Node): number {
-	return node.loc?.start.line ?? 0;
 }

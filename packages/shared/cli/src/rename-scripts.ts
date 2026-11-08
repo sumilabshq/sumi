@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { types } from "@babel/core";
-import { isHandWritten, parsedScript, scriptsUnder, textFilesUnder } from "./rename-files.js";
+import { isHandWritten, mentionFilesUnder, parsedScript, scriptsUnder } from "./rename-files.js";
 import type { ParsedScript, Resolve } from "./rename-files.js";
 import type { RenamePlan } from "./rename-plan.js";
 
@@ -22,17 +22,22 @@ export function candidateScripts(root: string, plan: RenamePlan): ParsedScript[]
 	});
 }
 
+export interface ReExportRoot {
+	readonly sources: ReadonlySet<string>;
+	readonly name: string;
+}
+
 export function sourcesReached(
 	scripts: readonly ParsedScript[],
-	plan: RenamePlan,
+	{ sources, name }: ReExportRoot,
 	resolve: Resolve,
 ): ReadonlySet<string> {
-	const reached = new Set(plan.sources);
+	const reached = new Set(sources);
 	let isGrowing = true;
 
 	while (isGrowing) {
 		const joined = scripts.filter(
-			({ file, ast }) => !reached.has(file) && reExportsFrom(ast.program.body, { file, plan, resolve, reached }),
+			({ file, ast }) => !reached.has(file) && reExportsFrom(ast.program.body, { file, name, resolve, reached }),
 		);
 		joined.forEach(({ file }) => reached.add(file));
 		isGrowing = joined.length > 0;
@@ -41,35 +46,43 @@ export function sourcesReached(
 	return reached;
 }
 
+export interface MentionScan {
+	readonly scriptTexts: ReadonlyMap<string, string>;
+	readonly shownLines: ReadonlySet<string>;
+}
+
 export function textMentionsIn(
 	root: string,
 	plan: RenamePlan,
-	scriptTexts: ReadonlyMap<string, string>,
+	{ scriptTexts, shownLines }: MentionScan,
 ): TextMention[] {
-	const needles = mentionNeedlesOf(plan).map((needle) => new RegExp(`${escapedOf(needle)}(?![\\w-])`));
+	const needles = mentionNeedlesOf(plan).map((needle) => new RegExp(`(?<![\\w-])${escapedOf(needle)}(?![\\w-])`));
 	const texts = new Map([
-		...textFilesUnder(root).map((file) => [file, fs.readFileSync(file, "utf8")] as const),
+		...mentionFilesUnder(root).map((file) => [file, fs.readFileSync(file, "utf8")] as const),
 		...scriptTexts,
 	]);
-	return [...texts].flatMap(([file, text]) =>
-		text
-			.split("\n")
-			.flatMap((said, at) =>
-				needles.some((needle) => needle.test(said))
-					? [{ file: path.relative(root, file), line: at + 1, said: said.trim() }]
-					: [],
-			),
-	);
+	return [...texts]
+		.flatMap(([file, text]) =>
+			text.split("\n").flatMap((said, at) => {
+				const mention = { file: path.relative(root, file), line: at + 1, said: said.trim() };
+				return needles.some((needle) => needle.test(said)) ? [mention] : [];
+			}),
+		)
+		.filter(({ file, line }) => !shownLines.has(lineKeyOf(file, line)));
+}
+
+export function lineKeyOf(file: string, line: number): string {
+	return `${file}:${line}`;
 }
 
 interface ReExportAsk {
 	readonly file: string;
-	readonly plan: RenamePlan;
+	readonly name: string;
 	readonly resolve: Resolve;
 	readonly reached: ReadonlySet<string>;
 }
 
-function reExportsFrom(body: readonly types.Statement[], { file, plan, resolve, reached }: ReExportAsk): boolean {
+function reExportsFrom(body: readonly types.Statement[], { file, name, resolve, reached }: ReExportAsk): boolean {
 	const isReached = (specifier: string): boolean => {
 		const resolved = resolve(file, specifier);
 		return resolved !== null && reached.has(resolved);
@@ -78,9 +91,7 @@ function reExportsFrom(body: readonly types.Statement[], { file, plan, resolve, 
 		body.flatMap((statement) =>
 			statement.type === "ImportDeclaration" && isReached(statement.source.value)
 				? statement.specifiers.flatMap((specifier) =>
-						specifier.type === "ImportSpecifier" && importedNameOf(specifier) === plan.oldName
-							? [specifier.local.name]
-							: [],
+						specifier.type === "ImportSpecifier" && importedNameOf(specifier) === name ? [specifier.local.name] : [],
 					)
 				: [],
 		),
@@ -99,7 +110,7 @@ function reExportsFrom(body: readonly types.Statement[], { file, plan, resolve, 
 		);
 		return statement.source == null
 			? locals.some((local) => importedLocals.has(local))
-			: isReached(statement.source.value) && locals.includes(plan.oldName);
+			: isReached(statement.source.value) && locals.includes(name);
 	});
 }
 
@@ -112,7 +123,8 @@ function escapedOf(text: string): string {
 }
 
 function needlesOf(plan: RenamePlan): string[] {
-	return [plan.oldName, ...plan.strings.keys()];
+	const namespaceConstant = plan.namespace === null ? [] : [plan.namespace.constant];
+	return [plan.oldName, ...namespaceConstant, ...plan.strings.keys()];
 }
 
 function mentionNeedlesOf(plan: RenamePlan): string[] {

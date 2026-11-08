@@ -34,7 +34,6 @@ const MODULE_SOURCES: readonly string[] = [
 	"generated/server.ts",
 	"server.ts",
 ];
-const PLUGIN_SOURCES: readonly string[] = [PLUGIN_FILE, "src/generated/plugin.ts", "src/index.ts"];
 
 const ContractListSchema = z.object({ modules: z.array(z.string()) });
 
@@ -58,10 +57,6 @@ export function contractListsIn(root: string): ContractList[] {
 }
 
 export function sourcesOf(home: Home, lists: readonly ContractList[]): Set<string> {
-	if (home.method === "plugin") {
-		return new Set(PLUGIN_SOURCES.map((relative) => path.join(home.folder, relative)));
-	}
-
 	const listing = lists.filter(({ modules }) => modules.includes(home.id));
 	return new Set([
 		...MODULE_SOURCES.map((relative) => path.join(home.folder, relative)),
