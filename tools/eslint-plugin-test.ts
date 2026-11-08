@@ -205,11 +205,13 @@ tested("no-choice-strings", {
 		ok(`${REQUESTS}export const H = handler(PagesQuery, M).handle(() => "a string is data here");`),
 		ok(`${PLUGINS}export const chat = plugin("chat").fill(apps.tabFaces.add({ id: "chat", title: "New chat" }));`),
 		ok(`${PLUGINS}export const chat = plugin("chat").require(apps);`),
+		ok(`${REQUESTS}export const pages = query().metadata({ description: "Free-form text an adapter reads." });`),
 	],
 	invalid: [
 		bad(`${REQUESTS}export const add = command().idempotencyKey("per-call");`, "choiceString"),
 		bad(`${MODULE_REQUESTS}export const bump = command("bump");`, "choiceString", COUNT_REQUESTS),
 		bad(`${REQUESTS}export const pages = query().cache({ freshFor: "5m" });`, "choiceString"),
+		bad(`${REQUESTS}export const pages = query().metadata({ a: 1 }).cache({ freshFor: "5m" });`, "choiceString"),
 		bad(`${REQUESTS}export const NotesClientModule = clientModule("notes").provide("parts");`, "choiceString"),
 		bad(`${PLUGINS}export const chat = plugin("chat").require("apps");`, "choiceString"),
 		bad(`${PLUGINS}export const chat = plugin("chat", "extra");`, "choiceString"),

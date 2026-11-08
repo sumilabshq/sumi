@@ -38,16 +38,17 @@ export const toggleFrameSide = command()
 
 ### The contract
 
-| Declaration                                    | On      | Means                                                       |
-| ---------------------------------------------- | ------- | ----------------------------------------------------------- |
-| `query()`, `command()`                         | both    | no name: the exported camelCase constant names it           |
-| no mark                                        | both    | callable only in the same process: any module or view there |
-| `.public()`                                    | both    | callable by anyone, through guards; enters the contract     |
-| `.callableBy(otherModule, …)`                  | both    | callable only by those services, resolved at start          |
-| `.input(S)`, `.output(S)`                      | both    | zod schemas from `shared/schema`; omitted means `void`      |
-| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error         |
-| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)     |
-| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module  |
+| Declaration                                    | On      | Means                                                                                                                                             |
+| ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `query()`, `command()`                         | both    | no name: the exported camelCase constant names it                                                                                                 |
+| no mark                                        | both    | callable only in the same process: any module or view there                                                                                       |
+| `.public()`                                    | both    | callable by anyone, through guards; enters the contract                                                                                           |
+| `.callableBy(otherModule, …)`                  | both    | callable only by those services, resolved at start                                                                                                |
+| `.input(S)`, `.output(S)`                      | both    | zod schemas from `shared/schema`; omitted means `void`                                                                                            |
+| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error                                                                                               |
+| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)                                                                                           |
+| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module                                                                                        |
+| `.metadata({ … })`                             | both    | free fields an adapter reads (`description` for MCP); a second call merges, `.metadata()` reads them; an event takes it too; kept in the contract |
 
 **Visibility is one check, and it fails closed.** The mediator runs `refuseCaller` (`local-routes.ts`) before it parses the input. A call counts as from outside unless its in-process sender marks it: a handler's or subscriber's `send` names its module, the runtime's own views send as a view. Every served call (HTTP, `MessagePort`, the studio's IPC relay) is outside. Outside, only `.public()` passes; anything else answers `not-found` with one message, whatever the request's visibility. In the process, `.callableBy(...)` lets only its own module and the listed modules through (a view is refused `forbidden`). `.callableBy` stays refused over a transport until modules have an identity there. `.public()` and `.callableBy()` on one request throw.
 

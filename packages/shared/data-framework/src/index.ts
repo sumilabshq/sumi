@@ -8,6 +8,7 @@ export { RouteQueries } from "./route-queries";
 export type { SettledNow } from "./route-queries";
 export type { DeviceModule, Runtime, RuntimeHost, RuntimeStartOptions, ServerSideModule } from "./runtime";
 export { event } from "./event";
+export type { Metadata } from "./metadata";
 export type { AnyEvent, Emit, Emitter, Event, EventArgs, EventInputOf } from "./event";
 export { subscriber } from "./subscriber";
 export type { AnySubscriber, Subscriber, SubscriberBuilder } from "./subscriber";

@@ -4,6 +4,7 @@ import { builderTracker, chainCallsOf } from "../builders.js";
 import type { BuilderCall } from "../builders.js";
 
 const NAMED_BY_STRING: ReadonlySet<string> = new Set(["serverModule", "clientModule", "module", "plugin"]);
+const STEPS_TAKING_FREE_TEXT: ReadonlySet<string> = new Set(["metadata"]);
 
 export const noChoiceStrings: Rule.RuleModule = {
 	meta: {
@@ -25,10 +26,22 @@ export const noChoiceStrings: Rule.RuleModule = {
 
 function checkStrings(context: Rule.RuleContext, { builder, call }: BuilderCall): void {
 	for (const chained of chainCallsOf(call)) {
+		if (takesFreeText(chained)) {
+			continue;
+		}
+
 		const named = chained === call && NAMED_BY_STRING.has(builder) ? 1 : 0;
 		for (const argument of chained.arguments.slice(named))
 			for (const found of stringsIn(argument)) context.report({ node: found, messageId: "choiceString" });
 	}
+}
+
+function takesFreeText({ callee }: ESTree.CallExpression): boolean {
+	return (
+		callee.type === "MemberExpression" &&
+		callee.property.type === "Identifier" &&
+		STEPS_TAKING_FREE_TEXT.has(callee.property.name)
+	);
 }
 
 function stringsIn(node: ESTree.Node): ESTree.Node[] {
