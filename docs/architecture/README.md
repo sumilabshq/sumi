@@ -99,7 +99,7 @@ flowchart TB
 	dg --> handler
 ```
 
-**What a package exports.** `"./contract"` holds the public contract: one object named like the module, its descriptor (`layout({ over })`) and its namespace (`layout.frameSides.current`) at once, enough to call it at a URL and nothing that runs; `"./server"` holds the non-public requests of a `Server` or `Anywhere` module, imported only by server modules; `"./implementation"` holds the runnable module with its handlers and gateways (`generated/module.ts`), imported only by the app that runs it. A device bundle therefore carries the code of the modules it runs and the contracts of the ones it imports, never a server module's code.
+**What a package exports.** `"./contract"` holds the public contract: one object named like the module, its descriptor (`layout({ over })`) and its namespace (`layout.frameSides.frameSides`) at once, enough to call it at a URL and nothing that runs; `"./server"` holds the non-public requests of a `Server` or `Anywhere` module, imported only by server modules; `"./implementation"` holds the runnable module with its handlers and gateways (`generated/module.ts`), imported only by the app that runs it. A device bundle therefore carries the code of the modules it runs and the contracts of the ones it imports, never a server module's code.
 
 ### Starting a module or a feature
 

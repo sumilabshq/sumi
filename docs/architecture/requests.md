@@ -124,8 +124,8 @@ canvas({ kind: "project", project });
 
 Two modules of one name run in one runtime only under two prefixes. `prefix` is a reserved key of the module call and of the contract call: `questions({ prefix: "chat-2" })` or `tasks({ file, prefix })` in `.modules`, `questions({ over, prefix: "chat-2" })` in `.imports`. A prefix is one kebab segment, a numeric suffix allowed (`chat-2`).
 
-- **Routes register `<prefix>.<name>`** (`chat-2.questions.agent.ask`): an adapter serves that name, and done keys and in-flight dedup are kept under it. No prefix leaves every name as it was.
-- **Sends through a contract imported with a prefix go as `<prefix>.<name>`**; the caller still sends `questions.agent.ask`, through the namespace.
+- **Routes register `<prefix>.<name>`** (`chat-2.questions.agent.post`): an adapter serves that name, and done keys and in-flight dedup are kept under it. No prefix leaves every name as it was.
+- **Sends through a contract imported with a prefix go as `<prefix>.<name>`**; the caller still sends `questions.agent.post`, through the namespace.
 - **A send with the bare name** reaches the module of the sender's own prefix first, then the unprefixed one, then the only prefixed one: in process (`local-routes.ts`), through imported contracts (`remote-modules.ts`) and in the studio's frame relay, by one function, `addressingOf` (`addressing.ts`). A handler's and a subscriber's send carry their module's prefix, a view's none. Two or more candidates and none picked answer `not-found`, naming them. TODO: prefix invalidations and events.
 - **A module config field named `prefix` is refused**: by the types (`.config<{ prefix }>()` does not compile), and where the module is called, with a value that is not one kebab segment.
 - `prefixedModule(module, prefix)` prefixes a module a starter did not call itself, such as the one a plugin's fill builds; `null` leaves it as it is.

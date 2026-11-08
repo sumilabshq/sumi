@@ -7,8 +7,8 @@ Views live in client packages (`packages/client/<name>`, `"level": "client"`). A
 1. **A view makes no decision about data.** A query answers already shaped for what is drawn; a command receives the bare intent and decides.
 
    ```ts skip-check
-   canvas.layers.panel → { isShown, rows: [{ id, title, depth, isPicked, isOpen }] }
-   useCommand(canvas.layers.pick).run({ id: row.id })
+   canvas.layers.layersPanel → { isShown, rows: [{ id, title, depth, isPicked, isOpen }] }
+   useCommand(canvas.layers.pickLayer).run({ id: row.id })
    ```
 
    Toggling the pick is the handler's rule, not the view's.
@@ -36,8 +36,8 @@ A block imports requests from the data module's `"./contract"` and reads them th
 ```tsx skip-check
 export function TaskList() {
 	const open = useQuery(tasks.board.all, { status: "open" });
-	const stats = useOptionalQuery(tasks.board.taskStats, {});
-	const complete = useCommand(tasks.board.completeTask);
+	const stats = useOptionalQuery(tasks.board.trailer, {});
+	const complete = useCommand(tasks.person.accept);
 	if (open.data.items.length === 0) return <EmptyTasks />;
 	return open.data.items.map((task) => {
 		const done = complete.with({ id: task.id });
