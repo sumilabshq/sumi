@@ -37,12 +37,14 @@ export function FileDiffHead({ file, isOpen, isViewed, onFold, onToggleViewed }:
 			<span className="wg-git-fold">
 				<Glyph name={isOpen ? "chevronDown" : "chevronRight"} size={14} />
 			</span>
-			<StatusLetter status={file.status} />
-			<span className="wg-git-fpath">
-				<span className="wg-git-dir">{fileFolderOf(file.path)}</span>
-				<span className="wg-git-base">{fileNameOf(file.path)}</span>
+			<span className="wg-git-ftitle">
+				<StatusLetter status={file.status} />
+				<span className="wg-git-fpath">
+					<span className="wg-git-dir">{fileFolderOf(file.path)}</span>
+					<span className="wg-git-base">{fileNameOf(file.path)}</span>
+				</span>
+				<ChangeNums added={file.added} removed={file.removed} hidesZero={false} />
 			</span>
-			<ChangeNums added={file.added} removed={file.removed} hidesZero={false} />
 			<span className="wg-git-gap" />
 			<IconButton
 				variant="ghost"

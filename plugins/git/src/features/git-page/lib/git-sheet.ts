@@ -56,6 +56,7 @@ export const GIT_SHEET = `
 .wg-git-fold { width: 24px; height: 24px; flex: none; display: inline-flex; align-items: center; justify-content: center; color: var(--sumi-text-2); }
 .wg-git-fhead:focus-visible { outline: 2px solid var(--sumi-focus-ring); outline-offset: -2px; }
 .wg-git-fpath { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.wg-git-ftitle { min-width: 0; display: flex; align-items: baseline; gap: 8px; }
 .wg-git-fhead { position: sticky; top: 0; z-index: 1; height: 40px; display: flex; align-items: center; gap: 8px; margin-left: calc(-1 * var(--wg-git-diff-inset)); padding: 0 12px 0 calc(16px + var(--wg-git-diff-inset)); background: var(--sumi-plate); white-space: nowrap; cursor: pointer; user-select: none; transition: background var(--sumi-dur-hover) var(--sumi-ease); }
 .wg-git-fhead:hover { background: linear-gradient(var(--sumi-hover), var(--sumi-hover)), var(--sumi-plate); }
 .wg-git-dir { color: var(--sumi-text-3); }
