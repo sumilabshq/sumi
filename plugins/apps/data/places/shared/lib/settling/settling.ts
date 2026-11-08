@@ -47,11 +47,7 @@ export function answered<T>(answer: Answer<T>): T {
 }
 
 export function settledOf(answer: Answer<TabsSettled>): TabsSettled {
-	const { view, effects } = answered(answer);
-	return {
-		view,
-		effects,
-	};
+	return { effects: answered(answer).effects };
 }
 
 export function refusal(reason: string): Refusal {
@@ -78,7 +74,7 @@ export function settling(at: TabsAsk, apps: PlacedApps, plan: ShowingPlan): Move
 
 export function settlingWith<E>(at: TabsAsk, apps: PlacedApps, plan: ExtraPlan<E>): MovePlacedTabs<Answer<Settled<E>>> {
 	return (placed) => {
-		const was = showingOf(momentOfWindow(placed, at.window, apps), at.view);
+		const was = showingOf(momentOfWindow(placed, at.window, apps));
 		const facts = tabFactsOf(at.screen);
 		const planned = plan(was, facts);
 
@@ -104,7 +100,7 @@ export function moving<E>(window: string | null, apps: PlacedApps, plan: MomentP
 }
 
 export function movedPlan<E>(was: HostTabsMoment, moved: MovedTabs | null, extra: E): Planned<E> {
-	const shown = showingOf(was, "app");
+	const shown = showingOf(was);
 	return plannedWith(moved === null ? shown : { ...shown, moment: moved.moment, reasons: [moved.reason] }, extra);
 }
 
@@ -181,7 +177,6 @@ function refusedMove<T>(reason: string): PlacedTabsMove<Answer<T>> {
 
 function settledValueOf<E>({ showing, extra }: Planned<E>): Settled<E> {
 	return {
-		view: showing.shownView,
 		effects: [...showing.effects],
 		extra,
 	};

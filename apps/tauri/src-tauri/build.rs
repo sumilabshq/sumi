@@ -72,7 +72,7 @@ const STUDIO_LOG_COMMANDS: &[&str] = &["line"];
 
 const AGENT_COMMANDS: &[&str] = &["open_channel", "answer"];
 
-const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close"];
+const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close", "run"];
 
 const FILES_COMMANDS: &[&str] =
     &[
@@ -88,6 +88,7 @@ const FILES_COMMANDS: &[&str] =
     "rename",
     "copy",
     "open_in_system_app",
+    "pick_folder",
 ];
 
 const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows", "quit_listening", "flushed_before_quit"];

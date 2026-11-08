@@ -7,7 +7,7 @@ import { tabIdsInPanesOf } from "./tab-facts.js";
 import type { TabFacts } from "./tab-facts.js";
 
 export function withHomeFollowed(was: Showing, next: Showing, facts: TabFacts): Showing {
-	const shownBefore = facts.shownTabPaneId === null ? null : shownTabIdOf(was.moment, shownAppOf(was.shownView));
+	const shownBefore = facts.shownTabPaneId === null ? null : shownTabIdOf(was.moment, shownAppOf(was.moment.view));
 	const moved = next.moment.tabs.filter(
 		(tab) =>
 			chatHomeOf(was.moment, tab.id) !== chatHomeOf(next.moment, tab.id) &&
@@ -26,9 +26,9 @@ export function withTabsAtHome(showing: Showing, facts: TabFacts): Showing {
 	const strays = facts.tabPanes.flatMap(({ paneId, tabId }) => {
 		const tab = showing.moment.tabs.find((one) => one.id === tabId);
 		const home = tab === undefined ? undefined : chatHomeOf(showing.moment, tabId);
-		const standsIn = facts.groupOfPane.get(paneId) ?? null;
+		const paneGroupId = facts.groupOfPane.get(paneId) ?? null;
 		const isReachable = home === null || (home !== undefined && facts.chatGroupIds.includes(home));
-		return tab !== undefined && isReachable && home !== standsIn ? [tab] : [];
+		return tab !== undefined && isReachable && home !== paneGroupId ? [tab] : [];
 	});
 
 	if (strays.length === 0) {

@@ -1,6 +1,6 @@
 import type { TabDrop } from "@widgetarium/app-host";
 import { placeholderRectOf } from "./drag-placeholder.js";
-import { isChatSource } from "./drag-source.js";
+import { isNestableSource } from "./drag-source.js";
 import type { DragSource } from "./drag-source.js";
 import { allChatRowsOf, bottomOf, chatRowOf, scrolledOf } from "./sidebar-layout.js";
 import type { Measured, MeasuredRow, MeasuredUnit, SidebarLayout } from "./sidebar-layout.js";
@@ -18,7 +18,7 @@ export interface RefusedSlotAim {
 const REFUSED_EDGE_SHARE = 0.25;
 
 export function refusedChatOf(layout: SidebarLayout, source: DragSource, y: number): Measured | undefined {
-	if (!isChatSource(source)) {
+	if (source.kind !== "tab" || isNestableSource(source)) {
 		return undefined;
 	}
 

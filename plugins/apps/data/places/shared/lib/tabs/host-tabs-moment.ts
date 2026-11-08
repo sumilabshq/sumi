@@ -1,4 +1,12 @@
-import type { AppKind, GroupHue, HeldList, ListEntry, TabHistory, TabMark } from "../../schema/tabs.schema.js";
+import type {
+	AppKind,
+	GroupHue,
+	HeldList,
+	ListEntry,
+	StudioView,
+	TabHistory,
+	TabMark,
+} from "../../schema/tabs.schema.js";
 import type { KeptSplit } from "../../schema/splits.schema.js";
 import {
 	WORKSPACE_LIST,
@@ -49,6 +57,8 @@ export interface ClosedTab {
 export interface HostTabsMoment extends TabLayout {
 	readonly tabs: readonly HostTab[];
 	readonly shownId: string | null;
+	readonly selectedId: string | null;
+	readonly view: StudioView;
 	readonly lastShown: Readonly<Record<string, string>>;
 	readonly minted: number;
 	readonly closed: readonly ClosedTab[];
@@ -72,6 +82,8 @@ export function emptyMoment(apps: PlacedApps): HostTabsMoment {
 		lists: {},
 		groups: [],
 		shownId: null,
+		selectedId: null,
+		view: "app",
 		lastShown: {},
 		minted: 0,
 		closed: [],

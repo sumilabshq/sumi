@@ -5,7 +5,7 @@ import { layout } from "@widgetarium/layout";
 
 export function ChatFollower(): null {
 	const chatId = useQuery(layout.panes.paneTree).data.focusedChatId;
-	const showChatTab = useCommand(appHost.tabs.showChatTab);
+	const showTab = useCommand(appHost.tabs.showTab);
 	const followedId = useRef<string | null>(null);
 	useLayoutEffect(() => {
 		if (followedId.current === chatId) {
@@ -15,8 +15,8 @@ export function ChatFollower(): null {
 		followedId.current = chatId;
 
 		if (chatId !== null) {
-			void showChatTab.run({ chatId });
+			void showTab.run({ id: chatId, isFollowingFocus: true });
 		}
-	}, [chatId, showChatTab]);
+	}, [chatId, showTab]);
 	return null;
 }

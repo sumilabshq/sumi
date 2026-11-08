@@ -67,7 +67,11 @@ export const AppTabSchema = z.object({
 
 export type AppTab = z.infer<typeof AppTabSchema>;
 
-export const AppTabStateSchema = AppTabSchema.extend({ isShown: z.boolean() });
+export const AppTabStateSchema = AppTabSchema.extend({
+	isShown: z.boolean(),
+	isNestable: z.boolean(),
+	isTearable: z.boolean(),
+});
 
 export type AppTabState = z.infer<typeof AppTabStateSchema>;
 
@@ -227,13 +231,6 @@ export const HeldTabsSchema = z.object({
 
 export type HeldTabs = z.infer<typeof HeldTabsSchema>;
 
-export const ChatToShowSchema = z.object({
-	chatId: z.string().min(1),
-	paneId: z.string().nullable(),
-});
-
-export type ChatToShow = z.infer<typeof ChatToShowSchema>;
-
 export const ClosedTabRowSchema = z.object({
 	tabId: z.string().min(1),
 	title: z.string(),
@@ -319,13 +316,17 @@ export const TabPinSchema = z.object({
 	isPinned: z.boolean(),
 });
 
+export const TabToShowSchema = z.object({
+	id: z.string().min(1),
+	paneId: z.string().min(1).nullable().default(null),
+	isFollowingFocus: z.boolean().default(false),
+});
+
+export type TabToShow = z.input<typeof TabToShowSchema>;
+
+export const ViewToShowSchema = z.object({ view: StudioViewSchema });
+
 export const appHost = moduleContract("app-host", Device, {
-	chatOpening: {
-		openChat: named("chat-opening.open-chat", command()
-			.public()
-			.input(ChatToShowSchema)
-			.idempotencyKey(Repeatable)),
-	},
 	closedTabs: {
 		closedTabs: named("closed-tabs.closed-tabs", query()
 			.public()
@@ -401,11 +402,10 @@ export const appHost = moduleContract("app-host", Device, {
 	shownView: {
 		shownView: named("shown-view.shown-view", query()
 			.public()
-			.output(StudioViewSchema)
-			.settlesNow()),
+			.output(StudioViewSchema)),
 		showView: named("shown-view.show-view", command()
 			.public()
-			.input(z.object({ view: StudioViewSchema }))
+			.input(ViewToShowSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	splits: {
@@ -507,11 +507,10 @@ export const appHost = moduleContract("app-host", Device, {
 			.idempotencyKey(Repeatable)),
 		showTab: named("tabs.show-tab", command()
 			.public()
-			.input(z.object({ id: z.string() }))
+			.input(TabToShowSchema)
 			.idempotencyKey(Repeatable)),
-		showChatTab: named("tabs.show-chat-tab", command()
+		syncChatTabs: named("tabs.sync-chat-tabs", command()
 			.public()
-			.input(z.object({ chatId: z.string().min(1) }))
 			.idempotencyKey(Repeatable)),
 		placeTab: named("tabs.place-tab", command()
 			.public()

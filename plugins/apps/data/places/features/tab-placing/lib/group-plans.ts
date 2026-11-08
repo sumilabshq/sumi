@@ -4,14 +4,15 @@ import type { MomentPlan, Refusal } from "../../../shared/lib/settling/settling.
 import { chatOfTab, findGroup, heldTabOf, isKnownList } from "../../../shared/lib/tabs/host-tabs.js";
 import type { GroupChange, HostTabsMoment, TabGroup } from "../../../shared/lib/tabs/host-tabs.js";
 import { addGroup, changeGroup, placeGroup, ungroup } from "../../../shared/lib/tabs/tab-groups.js";
-import { beforeIdOfBlock, isHolderInChat } from "./placing-plans.js";
+import { beforeIdOfBlock } from "./placing-plans.js";
+import { refuseStanding } from "../../../shared/lib/tabs/tab-invariants.js";
 import type { AddedGroup } from "../../../shared/lib/tabs/tab-groups.js";
 
 const NO_GROUP = 'no group "{id}"';
 const NOT_LISTED = 'the tab "{id}" stands in no list';
 const UNKNOWN_LIST = 'no tab list "{list}" is here';
 const NAMELESS = "a group needs a name";
-const HOLDER_IN_CHAT = 'the group "{id}" holds a tab that holds tabs: it cannot stand inside "{list}"';
+const REFUSED_IN_GROUP = 'the group "{id}" holds a tab whose app does not let it stand inside "{list}"';
 
 interface GroupBirth {
 	readonly listId: string;
@@ -118,9 +119,9 @@ function groupPlaceRefusalOf(moment: HostTabsMoment, group: TabGroup, { list }: 
 		return UNKNOWN_LIST.replace("{list}", list);
 	}
 
-	const holdsHolder = group.tabIds.some((tabId) => {
+	const holdsRefused = group.tabIds.some((tabId) => {
 		const tab = heldTabOf(moment, tabId);
-		return tab !== undefined && isHolderInChat(moment.apps, tab, list);
+		return tab !== undefined && refuseStanding(moment, tab, list) !== null;
 	});
-	return holdsHolder ? HOLDER_IN_CHAT.replace("{id}", group.id).replace("{list}", list) : null;
+	return holdsRefused ? REFUSED_IN_GROUP.replace("{id}", group.id).replace("{list}", list) : null;
 }

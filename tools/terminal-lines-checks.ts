@@ -3,13 +3,14 @@ import type { Runtime } from "@widgetarium/data-framework";
 import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import { terminal as terminalContract } from "../apps/tauri/capabilities/terminal/index.ts";
 import { MemoryTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/memory.gateway.ts";
+import { MemoryProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/memory.gateway.ts";
 import { terminal as RunnableTerminalModule } from "../apps/tauri/capabilities/terminal/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
 const sessions = new MemoryTerminalSessionsGateway();
 const terminal = runtime()
-	.modules(RunnableTerminalModule({ injects: { sessions } }))
+	.modules(RunnableTerminalModule({ injects: { sessions, programs: new MemoryProgramsGateway() } }))
 	.start({ platform: "server", env: {} });
 const authenticate = new AppCallerAuthenticate();
 const served = dataFrameworkMiddleware(terminal, { authenticate });

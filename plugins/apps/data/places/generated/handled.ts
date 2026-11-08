@@ -6,8 +6,8 @@ import { appTab, askedLinks, forgetRunningTurns, keepChatTabs, markTabSeen, open
 import { goBackInTab, goForwardInTab } from "../features/tab-history/requests.js";
 import { duplicateTab, openTab, openTabBelow, releaseEssentialTab, reopenClosedTab, showEssentialTab } from "../features/tab-opening/requests.js";
 import { createGroup, foldGroup, foldTab, makeEssential, pinTab, placeGroup, placeTab, renameGroup, renameTab, setGroupHue, ungroup } from "../features/tab-placing/requests.js";
-import { fitTabsToPanes, openTabInOwnWindow, reloadTab, rememberPages, restoreTabs, showChatTab, showTab, tearOffTab } from "../features/tab-showing/requests.js";
-import { chatTabs, closedTabs, heldTabs, placedTabs, rereadPlacedTabs, sidebar, tabRows } from "../features/tabs/requests.js";
+import { fitTabsToPanes, openTabInOwnWindow, reloadTab, rememberPages, restoreTabs, showTab, showView, tearOffTab } from "../features/tab-showing/requests.js";
+import { chatTabs, closedTabs, heldTabs, placedTabs, rereadPlacedTabs, shownView, sidebar, tabRows } from "../features/tabs/requests.js";
 import { closeWindow, keepLiveWindows, openWindow, openWindows, rereadWindows } from "../features/windows/requests.js";
 import { placedTabsChanged } from "../gateways/tabs/tabs.events.js";
 import { windowsChanged } from "../gateways/windows/windows.events.js";
@@ -61,14 +61,15 @@ export const handled = handledItems("places", [
 	named("tab-showing.reload-tab", reloadTab),
 	named("tab-showing.remember-pages", rememberPages),
 	named("tab-showing.restore-tabs", restoreTabs),
-	named("tab-showing.show-chat-tab", showChatTab),
 	named("tab-showing.show-tab", showTab),
+	named("tab-showing.show-view", showView),
 	named("tab-showing.tear-off-tab", tearOffTab),
 	named("tabs.chat-tabs", chatTabs),
 	named("tabs.closed-tabs", closedTabs),
 	named("tabs.held-tabs", heldTabs),
 	named("tabs.placed-tabs", placedTabs),
 	named("tabs.placed-tabs-changed", placedTabsChanged),
+	named("tabs.shown-view", shownView),
 	named("tabs.sidebar", sidebar),
 	named("tabs.tab-rows", tabRows),
 	named("windows.close-window", closeWindow),

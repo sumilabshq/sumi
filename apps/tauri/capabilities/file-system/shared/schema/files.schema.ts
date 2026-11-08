@@ -59,3 +59,7 @@ export const LocateFileInputSchema = z.object({
 export const LocatedFileSchema = z.object({
 	path: z.string().nullable(),
 });
+
+export const PickedFolderSchema = z.object({
+	path: z.string().nullable(),
+});

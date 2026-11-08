@@ -62,6 +62,10 @@ export const LocatedFileSchema = z.object({
 	path: z.string().nullable(),
 });
 
+export const PickedFolderSchema = z.object({
+	path: z.string().nullable(),
+});
+
 export const fileSystem = moduleContract("file-system", Server, {
 	files: {
 		readFile: named("files.read-file", query()
@@ -88,6 +92,10 @@ export const fileSystem = moduleContract("file-system", Server, {
 			.public()
 			.input(LocateFileInputSchema)
 			.output(LocatedFileSchema)),
+		pickFolder: named("files.pick-folder", command()
+			.public()
+			.output(PickedFolderSchema)
+			.idempotencyKey(PerCall)),
 		writeFile: named("files.write-file", command()
 			.public()
 			.input(WriteFileInputSchema)

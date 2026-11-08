@@ -1,11 +1,10 @@
 import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "./host-tabs-moment.js";
-import { holderIdsOf } from "./app-abilities.js";
+import { canStandIn, holderIdsOf } from "./app-abilities.js";
 import { findGroup, isSectionList } from "./tab-lists.js";
 
 const LIST_OF_NO_HOLDER = 'the list "{list}" belongs to no tab that holds tabs: only such an app owns a list';
-const HOLDER_IN_HOLDER =
-	'the tab "{id}" holds tabs and stands inside "{list}": a tab that holds tabs stands in no other';
+const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": its app does not let it';
 const NOT_ONE_PLACE = 'the tab "{id}" stands in {count} places: a tab stands in exactly one list';
 const UNKNOWN_ENTRY = 'the list "{list}" names "{id}", which is no tab or group here';
 const GROUP_NOT_ONE_LIST = 'the group "{id}" stands in {count} lists: a group stands in exactly one';
@@ -17,12 +16,23 @@ interface Standing {
 
 type TabLaws = Pick<HostTabsMoment, "tabs" | "lists" | "groups" | "apps">;
 
+export function refuseStanding(
+	moment: TabLaws,
+	tab: { readonly id: string; readonly app: string },
+	list: string,
+): string | null {
+	const holderApp = isSectionList(list) ? null : (moment.tabs.find((one) => one.id === list)?.app ?? null);
+	return canStandIn(moment.apps, tab, holderApp)
+		? null
+		: REFUSED_STANDING.replace("{id}", tab.id).replace("{list}", list);
+}
+
 export function tabBreaksOf(moment: TabLaws): readonly string[] {
 	return [
 		...listsOfNoHolder(moment),
 		...unknownEntries(moment),
 		...groupsNotInOneList(moment),
-		...holdersInHolders(moment),
+		...tabsStandingRefused(moment),
 		...tabsNotInOnePlace(moment),
 	];
 }
@@ -54,11 +64,13 @@ function groupsNotInOneList(moment: TabLaws): readonly string[] {
 		.map((group) => GROUP_NOT_ONE_LIST.replace("{id}", group.id).replace("{count}", String(countOf(group.id))));
 }
 
-function holdersInHolders(moment: TabLaws): readonly string[] {
-	const holderIds = holderIdsOf(moment.apps, moment.tabs);
-	return standingsOf(moment)
-		.filter(({ list, tabId }) => !isSectionList(list) && holderIds.has(tabId))
-		.map(({ list, tabId }) => HOLDER_IN_HOLDER.replace("{id}", tabId).replace("{list}", list));
+function tabsStandingRefused(moment: TabLaws): readonly string[] {
+	const tabOf = new Map(moment.tabs.map((tab) => [tab.id, tab]));
+	return standingsOf(moment).flatMap(({ list, tabId }) => {
+		const tab = tabOf.get(tabId);
+		const refusal = tab === undefined ? null : refuseStanding(moment, tab, list);
+		return refusal === null ? [] : [refusal];
+	});
 }
 
 function tabsNotInOnePlace(moment: TabLaws): readonly string[] {

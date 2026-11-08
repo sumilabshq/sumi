@@ -1,12 +1,7 @@
 import { z } from "zod";
 import { SplitNodeSchema } from "./splits.schema.js";
-import { PageAppSchema } from "./tabs.schema.js";
 
 export const TornViewSchema = z.enum(["chat", "app"]);
-
-export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
-
-export type StudioView = z.infer<typeof StudioViewSchema>;
 
 export const PageFactsSchema = z.object({
 	pageId: z.string(),
@@ -37,7 +32,6 @@ export type Screen = z.infer<typeof ScreenSchema>;
 
 export const TabsAskSchema = z.object({
 	window: z.string().min(1),
-	view: StudioViewSchema,
 	screen: ScreenSchema,
 });
 
@@ -59,7 +53,7 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("open-shown-tab-pane") }),
 	z.object({ kind: z.literal("close-shown-tab-pane") }),
 	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
-	z.object({ kind: z.literal("show-chat"), chatId: z.string() }),
+	z.object({ kind: z.literal("show-chat"), chatId: z.string(), paneId: z.string().nullable() }),
 	z.object({
 		kind: z.literal("show-in-chat-group"),
 		chatId: z.string(),
@@ -80,7 +74,6 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 export type TabEffect = z.infer<typeof TabEffectSchema>;
 
 export const TabsSettledSchema = z.object({
-	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 });
 
@@ -88,6 +81,5 @@ export type TabsSettled = z.infer<typeof TabsSettledSchema>;
 
 export const OpenedTabSettledSchema = z.object({
 	id: z.string(),
-	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 });

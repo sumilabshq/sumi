@@ -70,6 +70,7 @@ export function openTab(moment: HostTabsMoment, opened: OpenedTab, place: TabPla
 			...withTabAt(moment, tab.id, place),
 			tabs: [...moment.tabs, tab],
 			shownId: tab.id,
+			selectedId: tab.id,
 			lastShown: lastShownWith(moment.lastShown, place.chatId, tab.id),
 			minted: moment.minted + 1,
 		},
@@ -84,6 +85,7 @@ export function openTabUnshown(moment: HostTabsMoment, opened: OpenedTab, place:
 		moment: {
 			...shown.moment,
 			shownId: moment.shownId,
+			selectedId: moment.selectedId,
 			lastShown: moment.lastShown,
 		},
 	};
@@ -132,6 +134,7 @@ export function openEssentialTab(moment: HostTabsMoment, essentialId: string, op
 			...moment,
 			tabs: [...moment.tabs, tab],
 			shownId: tab.id,
+			selectedId: tab.id,
 			minted: moment.minted + 1,
 		},
 		reason: `open ${tab.id} for essential ${essentialId}`,
@@ -141,7 +144,7 @@ export function openEssentialTab(moment: HostTabsMoment, essentialId: string, op
 export function markShown(moment: HostTabsMoment, id: string): MovedTabs | null {
 	tabOf(moment, id);
 
-	if (moment.shownId === id) {
+	if (moment.shownId === id && moment.selectedId === id) {
 		return null;
 	}
 
@@ -150,9 +153,26 @@ export function markShown(moment: HostTabsMoment, id: string): MovedTabs | null 
 		moment: {
 			...moment,
 			shownId: id,
+			selectedId: id,
 			lastShown: chatId === null ? moment.lastShown : lastShownWith(moment.lastShown, chatId, id),
 		},
 		reason: `show ${id}`,
+	};
+}
+
+export function markSelected(moment: HostTabsMoment, id: string): MovedTabs | null {
+	tabOf(moment, id);
+
+	if (moment.selectedId === id) {
+		return null;
+	}
+
+	return {
+		moment: {
+			...moment,
+			selectedId: id,
+		},
+		reason: `select ${id} (was ${moment.selectedId ?? "nothing"})`,
 	};
 }
 

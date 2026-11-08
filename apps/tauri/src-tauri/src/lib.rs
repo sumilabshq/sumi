@@ -5,6 +5,7 @@ pub mod browser;
 pub mod drive_files;
 pub mod files;
 pub mod path_guard;
+pub mod program_run;
 pub mod store;
 pub mod studio_caller;
 pub mod studio_core;

@@ -15,19 +15,17 @@ import {
 	renameTab,
 } from "../../../shared/lib/tabs/host-tabs.js";
 import type { HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
+import { refuseStanding } from "../../../shared/lib/tabs/tab-invariants.js";
 import { carryOutOfSplit, isSplitRefusal } from "../../../shared/lib/splits/split-moves.js";
 import type { SplitMove } from "../../../shared/lib/splits/split-moves.js";
 import { blockListOf, firstListedMember, splitOfTab } from "../../../shared/lib/splits/split-members.js";
 import { holdsTabs } from "../../../shared/lib/tabs/app-abilities.js";
-import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
-import type { AppKind } from "../../../shared/schema/tabs.schema.js";
-import { chatOfGroup, isSectionList, locationOf } from "../../../shared/lib/tabs/tab-lists.js";
+import { chatOfGroup, locationOf } from "../../../shared/lib/tabs/tab-lists.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
 const UNKNOWN_LIST = 'no tab list "{list}" is here: a tab stands in Open, Pinned or a chat';
 const GROUP_NOT_IN_LIST = 'no group "{group}" stands in the tab list "{list}"';
 const HOLDS_NOTHING = 'the tab "{id}" holds no tabs: there is nothing under it to fold';
-const HOLDER_IN_HOLDER = 'the tab "{id}" holds tabs of its own: it cannot stand inside "{list}"';
 
 export function placeTabPlan(id: string, asked: TabPlaceAsked): ShowingPlan {
 	return (showing, facts) => {
@@ -104,10 +102,6 @@ export function pinPlan(id: string, isPinned: boolean): MomentPlan<null> {
 			: refusal(NOT_HELD.replace("{id}", id));
 }
 
-export function isHolderInChat(apps: PlacedApps, tab: { readonly app: AppKind }, list: string): boolean {
-	return holdsTabs(apps, tab) && !isSectionList(list);
-}
-
 function freedFromBlock(moment: HostTabsMoment, id: string): SplitMove | null {
 	const split = splitOfTab(moment, id);
 
@@ -125,11 +119,7 @@ function placeRefusalOf(moment: HostTabsMoment, id: string, asked: TabPlaceAsked
 		return NOT_HELD.replace("{id}", id);
 	}
 
-	if (isHolderInChat(moment.apps, tab, asked.list)) {
-		return HOLDER_IN_HOLDER.replace("{id}", id).replace("{list}", asked.list);
-	}
-
-	return listRefusalOf(moment, asked);
+	return refuseStanding(moment, tab, asked.list) ?? listRefusalOf(moment, asked);
 }
 
 function listRefusalOf(moment: HostTabsMoment, asked: TabPlaceAsked): string | null {

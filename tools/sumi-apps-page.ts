@@ -125,13 +125,7 @@ const driver: SumiAppsDriver = {
 			}),
 		),
 	chooseTheme: (choice) => outputOf(appearance.appearanceApp.send(appearanceContract.theme.chooseTheme, { choice })),
-	openChat: () =>
-		outputOf(
-			studioApp.send(appHost.chatOpening.openChat, {
-				chatId: SUMI_CHAT_TAB,
-				paneId: null,
-			}),
-		),
+	openChat: () => outputOf(studioApp.send(appHost.tabs.showTab, { id: SUMI_CHAT_TAB })),
 };
 void restoreTabs(studioApp).then(() => {
 	window.__sumiApps = driver;

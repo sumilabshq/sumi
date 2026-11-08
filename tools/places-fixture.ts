@@ -9,9 +9,28 @@ import { KeptSessionTabsSchema, migratedTabsOf } from "../plugins/apps/data/plac
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { momentOfWindow, windowTabsOf } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
-import type { PlacedTabs, TabMark, WindowTabs } from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
+import { WindowViewSchema } from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
+import type { Screen } from "../plugins/apps/data/places/shared/schema/screen.schema.ts";
+import type {
+	PlacedTabs,
+	StudioView,
+	TabMark,
+	WindowTabs,
+} from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
 
 export const MAIN_WINDOW = "main";
+
+export const BARE_SCREEN: Screen = {
+	pages: [],
+	isBrowserAvailable: false,
+	canOpenOwnWindow: false,
+	tabPanes: [],
+	shownTabPaneId: null,
+	tabTargetId: null,
+	chatGroups: [],
+	elsewhere: [],
+	focusedChatId: null,
+};
 
 export type SeededTabs = z.input<typeof KeptSessionTabsSchema>;
 
@@ -33,6 +52,20 @@ export function placedTabsOf(
 	return {
 		...placed,
 		tabs: placed.tabs.map((tab) => ({ ...tab, ...factsOf[tab.id] })),
+	};
+}
+
+export function withWindowView(placed: PlacedTabs, view: StudioView, windowLabel = MAIN_WINDOW): PlacedTabs {
+	const was = placed.views[windowLabel] ?? WindowViewSchema.parse({ shownId: null });
+	return {
+		...placed,
+		views: {
+			...placed.views,
+			[windowLabel]: {
+				...was,
+				view,
+			},
+		},
 	};
 }
 

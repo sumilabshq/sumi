@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TabsAskSchema } from "./screen.schema.js";
 import { EssentialSchema } from "./tab-rows.schema.js";
-import { AppKindSchema, GroupHueSchema, PageAppSchema } from "./tabs.schema.js";
+import { AppKindSchema, GroupHueSchema, PageAppSchema, StudioViewSchema } from "./tabs.schema.js";
 
 export const TabPlaceSchema = z.object({
 	list: z.string().min(1),
@@ -18,10 +18,12 @@ export const TabAskSchema = z.object({
 	id: z.string().min(1),
 });
 
-export const ChatTabAskSchema = z.object({
-	at: TabsAskSchema,
-	chatId: z.string().min(1),
+export const ShowTabAskSchema = TabAskSchema.extend({
+	paneId: z.string().min(1).nullable().default(null),
+	isFollowingFocus: z.boolean().default(false),
 });
+
+export type ShowTabAsk = z.infer<typeof ShowTabAskSchema>;
 
 export const RestoreTabsAskSchema = z.object({
 	at: TabsAskSchema,
@@ -145,4 +147,9 @@ export const MakeEssentialAskSchema = z.object({
 	at: TabsAskSchema,
 	id: z.string().min(1),
 	essentialId: z.string().min(1),
+});
+
+export const ShowViewAskSchema = z.object({
+	window: z.string().min(1),
+	view: StudioViewSchema,
 });

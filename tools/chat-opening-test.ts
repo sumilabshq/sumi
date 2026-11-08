@@ -38,7 +38,7 @@ async function namingChecks(): Promise<void> {
 async function unknownChatChecks(): Promise<void> {
 	const { studioApp } = studioFakesOf();
 	const before = await boardChatsOf(studioApp);
-	const opened = await studioApp.send(appHostContract.chatOpening.openChat, { chatId: "chat-gone", paneId: null });
+	const opened = await studioApp.send(appHostContract.tabs.showTab, { id: "chat-gone" });
 	check(
 		"opening a chat that does not exist is refused before the layout changes",
 		[opened.ok, await boardChatsOf(studioApp)],

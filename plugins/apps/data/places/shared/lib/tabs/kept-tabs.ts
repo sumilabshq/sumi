@@ -1,12 +1,14 @@
 import { PlacedTabsSchema } from "../../schema/tabs.schema.js";
-import type { PlacedTabs, WindowTabs } from "../../schema/tabs.schema.js";
+import type { PlacedTabs, WindowTabs, WindowView } from "../../schema/tabs.schema.js";
 import { emptyMoment, momentSaid } from "./host-tabs.js";
 import type { HostTabsMoment } from "./host-tabs.js";
 import { placedAppsOf } from "./app-abilities.js";
 import type { PlacedApps } from "./app-abilities.js";
 
-const NO_VIEW = {
+const NO_VIEW: WindowView = {
 	shownId: null,
+	selectedId: null,
+	view: "app",
 	lastShown: {},
 	shownSplitId: null,
 };
@@ -14,6 +16,8 @@ const NO_VIEW = {
 export function emptyPlacedTabs(): PlacedTabs {
 	const {
 		shownId: _shown,
+		selectedId: _selected,
+		view: _view,
 		lastShown: _last,
 		shownSplitId: _split,
 		apps: _apps,
@@ -48,14 +52,17 @@ export function windowTabsOf(moment: HostTabsMoment): WindowTabs {
 
 export function placedWith(placed: PlacedTabs, window: string | null, moment: HostTabsMoment): PlacedTabs {
 	const { shownId, lastShown, ...shared } = windowTabsOf(moment);
-	const { splits, mintedSplits, shownSplitId } = moment;
+	const { splits, mintedSplits, shownSplitId, selectedId, view } = moment;
 	return PlacedTabsSchema.parse({
 		...shared,
 		splits,
 		mintedSplits,
 		askedLinks: placed.askedLinks,
 		mintedLinks: placed.mintedLinks,
-		views: window === null ? placed.views : { ...placed.views, [window]: { shownId, lastShown, shownSplitId } },
+		views:
+			window === null
+				? placed.views
+				: { ...placed.views, [window]: { shownId, selectedId, view, lastShown, shownSplitId } },
 	});
 }
 

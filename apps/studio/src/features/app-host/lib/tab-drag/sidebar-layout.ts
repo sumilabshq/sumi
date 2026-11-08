@@ -12,7 +12,7 @@ export interface Measured {
 }
 
 export interface MeasuredRow extends Measured {
-	readonly isChat: boolean;
+	readonly isHolder: boolean;
 	readonly isFolded: boolean;
 	readonly cardRect: Rect;
 }
@@ -115,7 +115,7 @@ export function chatRowsOf(list: MeasuredList): readonly MeasuredRow[] {
 
 		return unit.kind === "group" && unit.isOpen ? unit.rows : [];
 	});
-	return rows.filter((row) => row.isChat);
+	return rows.filter((row) => row.isHolder);
 }
 
 export function allChatRowsOf(layout: SidebarLayout): readonly MeasuredRow[] {

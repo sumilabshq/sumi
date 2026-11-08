@@ -102,6 +102,10 @@ export class NodeFilesGateway extends FilesGateway {
 		const at = identities.indexOf(identity);
 		return at === -1 ? null : nodePath.join(folder, names[at] ?? "");
 	}
+
+	override pickedFolder(): Promise<string | null> {
+		return Promise.resolve(null);
+	}
 }
 
 async function identityAt(path: string): Promise<string | null> {

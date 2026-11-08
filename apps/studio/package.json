@@ -29,6 +29,7 @@
 		"@sumi/terminal-plugin": "0.1.0",
 		"@sumi/browser-page-plugin": "0.1.0",
 		"@sumi/files-plugin": "0.1.0",
+		"@sumi/git-plugin": "0.1.0",
 		"@sumi/markdown-viewer-plugin": "0.1.0",
 		"@sumi/code-viewer-plugin": "0.1.0",
 		"@sumi/image-viewer-plugin": "0.1.0",

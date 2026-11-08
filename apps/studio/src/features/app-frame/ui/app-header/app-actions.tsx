@@ -19,7 +19,7 @@ export function AppActions({ tabId }: AppActionsProps): ReactElement {
 					label={label}
 					icon={icon}
 					isOff={isOff}
-					aria-busy={isBusy || undefined}
+					isBusy={isBusy === true}
 					data-app-action={id}
 					onClick={() => !isOff && void press.run({ tab: tabId, action: id })}
 				/>

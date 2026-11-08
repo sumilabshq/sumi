@@ -18,7 +18,7 @@ export function withGroupClosed(showing: Showing, facts: TabFacts, group: TabGro
 }
 
 function withClosing(showing: Showing, facts: TabFacts, closing: (pages: TabPages) => MovedTabs): Showing {
-	const shownId = shownTabIdOf(showing.moment, shownAppOf(showing.shownView));
+	const shownId = shownTabIdOf(showing.moment, shownAppOf(showing.moment.view));
 	const pages = tabPagesOf(showing.moment.tabs, facts.pages);
 	const closed = withMoved(showing, closing(pages));
 	const held = new Set(closed.moment.tabs.map((tab) => tab.id));

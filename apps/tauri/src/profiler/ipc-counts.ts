@@ -3,10 +3,17 @@ import type { TallyRow } from "./tallies.js";
 
 type EventCallback = (payload: unknown) => unknown;
 
+interface CoreRequestRow {
+	readonly name: string;
+	readonly calls: number;
+	readonly answerKb: number;
+}
+
 interface IpcReport {
 	readonly ipcCalls: number;
 	readonly ipcSentKb: number;
 	readonly ipc: TallyRow[];
+	readonly core: CoreRequestRow[];
 	readonly heardEvents: number;
 	readonly heard: TallyRow[];
 }
@@ -14,9 +21,12 @@ interface IpcReport {
 const INTERNALS = "__TAURI_INTERNALS__";
 const IPC_URL = "ipc://localhost/";
 const EVENT_LISTEN = "plugin:event|listen";
+const CORE_CALL = "plugin:studio-core|call";
+const BYTES_PER_KB = 1024;
 
 export class IpcCounts {
 	private readonly calls = new Tallies();
+	private readonly answerKbByCoreRequest = new Tallies();
 	private readonly heard = new Tallies();
 	private sentBytes = 0;
 	private readonly eventOfCallback = new Map<number, string>();
@@ -37,6 +47,11 @@ export class IpcCounts {
 			ipcCalls: this.calls.totalCalls(),
 			ipcSentKb: Math.round(this.sentBytes / 1024),
 			ipc: this.calls.drain(rowLimit),
+			core: this.answerKbByCoreRequest.drain(rowLimit).map(({ name, calls, ms }) => ({
+				name,
+				calls,
+				answerKb: ms,
+			})),
 			heardEvents: this.heard.totalCalls(),
 			heard: this.heard.drain(rowLimit),
 		};
@@ -53,8 +68,23 @@ export class IpcCounts {
 			}
 
 			this.recordSent(command, init?.body);
-			return this.timed(command, fetch(input, init));
+			const answer = this.timed(command, fetch(input, init));
+			this.recordCoreAnswer(command, init?.body, answer);
+			return answer;
 		};
+	}
+
+	private recordCoreAnswer(command: string, body: unknown, answer: Promise<Response>): void {
+		const request = command === CORE_CALL && typeof body === "string" ? coreRequestNameOf(body) : null;
+
+		if (request === null) {
+			return;
+		}
+
+		void answer
+			.then((response) => response.clone().text())
+			.then((text) => this.answerKbByCoreRequest.add(request, text.length / BYTES_PER_KB))
+			.catch(() => undefined);
 	}
 
 	private recordSent(command: string, body: unknown): void {
@@ -145,6 +175,18 @@ function urlOf(input: RequestInfo | URL): string {
 	}
 
 	return input.url;
+}
+
+function coreRequestNameOf(body: string): string | null {
+	const asked = parseJsonOrNull(body);
+
+	if (typeof asked !== "object" || asked === null) {
+		return null;
+	}
+
+	const call: unknown = Reflect.get(asked, "call");
+	const named: unknown = typeof call === "object" && call !== null ? Reflect.get(call, "name") : Reflect.get(asked, "name");
+	return typeof named === "string" ? named : null;
 }
 
 function isEventCallback(value: unknown): value is EventCallback {

@@ -13,10 +13,6 @@ export type DragSource =
 			readonly list: string;
 	  };
 
-export function isChatSource(source: DragSource): boolean {
-	return source.kind === "tab" && source.isChat;
-}
-
 export function isNestableSource(source: DragSource): boolean {
-	return source.kind !== "group" && !isChatSource(source);
+	return source.kind === "essential" || (source.kind === "tab" && source.isNestable);
 }

@@ -106,22 +106,6 @@ export function nodeWithId(node: PaneNode | null, id: string): PaneNode | null {
 		: node.children.reduce<PaneNode | null>((found, child) => found ?? nodeWithId(child, id), null);
 }
 
-const RIM = "3px";
-
-export function rimOf(rect: PaneRect | undefined, group: PaneRect | undefined): string {
-	if (rect === undefined || group === undefined) {
-		return RIM;
-	}
-
-	const sides = [
-		Math.abs(rect.top - group.top) < 1,
-		Math.abs(rect.left + rect.width - group.left - group.width) < 1,
-		Math.abs(rect.top + rect.height - group.top - group.height) < 1,
-		Math.abs(rect.left - group.left) < 1,
-	];
-	return sides.map((isOuter) => (isOuter ? RIM : "0")).join(" ");
-}
-
 export function cornersOf(rect: PaneRect | undefined, group: PaneRect | undefined): string | undefined {
 	if (rect === undefined || group === undefined) {
 		return undefined;

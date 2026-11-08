@@ -45,7 +45,11 @@ export const AppTabSchema = z.object({
 
 export type AppTab = z.infer<typeof AppTabSchema>;
 
-export const AppTabStateSchema = AppTabSchema.extend({ isShown: z.boolean() });
+export const AppTabStateSchema = AppTabSchema.extend({
+	isShown: z.boolean(),
+	isNestable: z.boolean(),
+	isTearable: z.boolean(),
+});
 
 export type AppTabState = z.infer<typeof AppTabStateSchema>;
 
@@ -196,6 +200,8 @@ export const HeldTabsSchema = z.object({
 	tabs: z.array(HeldTabSchema).readonly(),
 	shownTabId: z.string().nullable(),
 });
+
+export type HeldTabs = z.infer<typeof HeldTabsSchema>;
 
 export const ClosedTabRowSchema = z.object({
 	tabId: z.string().min(1),

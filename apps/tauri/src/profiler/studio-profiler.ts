@@ -1,6 +1,7 @@
 import { Profiler, createElement as h } from "react";
 import type { ReactElement } from "react";
 import { STUDIO_MARK } from "../studio-log.js";
+import "./bench/bench-plan.js";
 import { CommitTimes } from "./commit-times.js";
 import { DomChurn } from "./dom-churn.js";
 import { FrameGaps } from "./frame-gaps.js";

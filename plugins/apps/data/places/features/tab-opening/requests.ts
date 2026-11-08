@@ -76,10 +76,9 @@ export const releaseEssentialTab = command()
 	);
 
 function openedOf(answer: Answer<Settled<string>>): TabsSettled & { readonly id: string } {
-	const { view, effects, extra } = answered(answer);
+	const { effects, extra } = answered(answer);
 	return {
 		id: extra,
-		view,
 		effects,
 	};
 }

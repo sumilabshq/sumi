@@ -28,6 +28,7 @@ import type {
 import { browserPage } from "@sumi/browser-page-plugin";
 import { codeViewer } from "@sumi/code-viewer-plugin";
 import { files } from "@sumi/files-plugin";
+import { git } from "@sumi/git-plugin";
 import { htmlViewer } from "@sumi/html-viewer-plugin";
 import { imageViewer } from "@sumi/image-viewer-plugin";
 import { markdownViewer } from "@sumi/markdown-viewer-plugin";
@@ -91,6 +92,7 @@ const INSTALLED_PLUGINS = [
 	imageViewer,
 	videoViewer,
 	htmlViewer,
+	git,
 ];
 const BACKGROUND_MODULES = sumiHost.backgroundModules.name;
 const TAB_PAGE = sumiHost.tabPage.name;
@@ -112,6 +114,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		imageViewer.id,
 		videoViewer.id,
 		htmlViewer.id,
+		git.id,
 	],
 };
 

@@ -84,13 +84,12 @@ async function performOpening(
 ): Promise<void> {
 	switch (intent.do) {
 		case "show-tab":
+		case "open-chat":
 			return send(appHost.tabs.showTab, { id: intent.id });
 		case "reopen-closed":
 			return send(appHost.closedTabs.reopenClosedTabById, { tabId: intent.tabId });
 		case "show-essential":
 			return send(appHost.essentials.showEssential, { id: intent.id });
-		case "open-chat":
-			return send(appHost.chatOpening.openChat, { chatId: intent.id, paneId: null });
 		case "open-chat-elsewhere":
 			return send(workspaces.workspaces.openChatElsewhere, { workspaceId: intent.workspaceId, chatId: intent.chatId });
 		case "open-workspace":

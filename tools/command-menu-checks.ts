@@ -20,12 +20,15 @@ import type { Intent, Results, ResultsAsk } from "../plugins/command-menu/data/c
 import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
-import { placesOver } from "./places-fixture.ts";
+import { placesOver, withWindowView } from "./places-fixture.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { emptyPlacedTabs } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
 
 const studio = runtime()
 	.modules(browser, layout, workspacesModule, appHostModule, PluginAppsModule, ...PLUGIN_WINDOW_MODULES)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
+await studio.send(appHost.tabs.restoreTabs);
 
 await check("opens anywhere and the door changes", async () => {
 	ok(await studio.send(commandMenu.opening.toggleCommandMenu, { door: "anywhere", text: "" }));
@@ -208,7 +211,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 			workspacesModule,
 			...PLUGIN_WINDOW_MODULES,
 		)
-		.imports(placesOver())
+		.imports(placesOver(new MemoryTabsGateway(withWindowView(emptyPlacedTabs(), "browser"))))
 		.start({ platform: "browser", scope: { workspaceId: "studio" } });
 	const tabsBefore = ok(await withPages.send(appHost.tabs.appTabs)).tabs.length;
 	ok(

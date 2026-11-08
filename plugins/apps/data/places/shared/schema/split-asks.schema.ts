@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TabEffectSchema, TabsAskSchema, StudioViewSchema } from "./screen.schema.js";
+import { TabEffectSchema, TabsAskSchema } from "./screen.schema.js";
 import { KeptSplitSchema, SplitSideSchema } from "./splits.schema.js";
 
 export const ReorderSplitMemberAskSchema = z.object({
@@ -29,13 +29,11 @@ export const ResizeSplitAskSchema = z.object({
 });
 
 export const PlacedInViewSchema = z.object({
-	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 	isPlaced: z.boolean(),
 });
 
 export const LeftSplitSchema = z.object({
-	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 	isMember: z.boolean(),
 });

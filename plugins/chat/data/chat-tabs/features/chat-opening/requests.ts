@@ -16,7 +16,8 @@ export const openNewChat = command()
 	.idempotencyKey(PerCall)
 	.handle(async ({ title }, { send }) => {
 		const created = await send(workspaces.chats.createChat, { title });
-		await send(appHost.chatOpening.openChat, { chatId: created.id, paneId: null });
+		await send(appHost.tabs.syncChatTabs);
+		await send(appHost.tabs.showTab, { id: created.id });
 		return created;
 	});
 
@@ -39,7 +40,8 @@ export const nameChatPane = command()
 		}
 
 		const chatId = await chatIdForPane(send, board, asked.id);
-		await send(appHost.chatOpening.openChat, { chatId, paneId });
+		await send(appHost.tabs.syncChatTabs);
+		await send(appHost.tabs.showTab, { id: chatId, paneId });
 		return { id: chatId };
 	});
 
@@ -58,6 +60,7 @@ export const openChatAskedOnStart = command()
 		}
 
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
-		await send(appHost.chatOpening.openChat, { chatId: asked.id, paneId: null });
+		await send(appHost.tabs.syncChatTabs);
+		await send(appHost.tabs.showTab, { id: asked.id });
 		await send(workspaces.chats.forgetChatToOpen, { id: asked.id });
 	});

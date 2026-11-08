@@ -2421,6 +2421,7 @@ body {
 	opacity: 0;
 	pointer-events: none;
 	overflow: hidden;
+	--wg-kit-pop-pad: 0px;
 	/* A PANEL IS NEVER NARROWER THAN WHAT IT OPENED FROM. Over the trigger, a narrow panel
 	   left the control sticking out from under it; 200 is the floor, the anchor is the rule. */
 	min-width: max(200px, var(--wg-kit-anchor-width, 200px));
@@ -2575,6 +2576,8 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-pop-list {
 	display: flex;
 	flex-direction: column;
+	margin-inline: calc(-1 * var(--wg-kit-pop-pad, 0px));
+	padding-inline: var(--wg-kit-pop-pad, 0px);
 	max-height: calc(var(--wg-kit-pop-rows, 10) * var(--wg-kit-pop-row, 34px));
 	overflow-y: auto;
 	scrollbar-width: none;
@@ -2612,7 +2615,7 @@ body {
 	flex: none;
 	height: 1px;
 	background: var(--wg-line);
-	margin: var(--size-2-2, 4px) var(--size-4-3, 12px);
+	margin: var(--size-2-2, 4px) calc(-1 * var(--wg-kit-pop-pad, 0px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-search {
@@ -14169,7 +14172,8 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) :is(.wg-kit-pop, .wg-kit-menu) {
 	box-sizing: border-box;
 	min-width: 250px;
-	padding: var(--sumi-sp-2);
+	--wg-kit-pop-pad: var(--sumi-sp-2);
+	padding: var(--wg-kit-pop-pad);
 	line-height: 1.4;
 	border-radius: var(--sumi-r-lg);
 	background: var(--sumi-overlay);
@@ -14186,6 +14190,15 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-inner {
 	padding: 0;
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-search input {
+	font-size: inherit;
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-search .wg-kit-pop-search-field:focus-within {
+	box-shadow: none;
+	outline: none;
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-menu-label {
@@ -14246,7 +14259,7 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-sep {
 	height: 1px;
-	margin: var(--sumi-sp-2) calc(-1 * var(--sumi-sp-2));
+	margin: var(--sumi-sp-2) calc(-1 * var(--wg-kit-pop-pad, var(--sumi-sp-2)));
 	background: var(--sumi-line);
 }
 
@@ -17402,9 +17415,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	width: var(--wg-shell-left-w);
 	min-width: var(--sumi-sidebar-min);
 	min-height: 0;
-	transition:
-		width var(--wg-shell-slide),
-		min-width var(--wg-shell-slide);
 }
 .wg-shell-left:not([data-state="docked"]) {
 	width: 0;
@@ -17522,7 +17532,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	cursor: col-resize;
 	touch-action: none;
 	outline: none;
-	transition: width var(--wg-shell-slide);
 }
 .wg-shell-edge::after {
 	content: "";
@@ -17667,12 +17676,6 @@ body:has([data-browser-pages-live]),
 	background: var(--sumi-hover);
 	transition-duration: 0ms;
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[aria-pressed="true"] {
-	color: var(--sumi-text);
-}
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[aria-pressed="true"]::before {
-	background: var(--sumi-active);
-}
 :is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon svg {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
@@ -17692,6 +17695,13 @@ body:has([data-browser-pages-live]),
 :is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-icon-glyph.is-lucide {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
+	stroke-width: 1.6;
+}
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner {
+	width: var(--sumi-icon);
+	height: var(--sumi-icon);
+}
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner circle {
 	stroke-width: 1.6;
 }
 .wg-plate-crumb {
@@ -17788,20 +17798,6 @@ body:has([data-browser-pages-live]),
 	flex: 1 1 0;
 	width: auto;
 	min-width: 0;
-}
-.wg-pane > .wg-shell-plate::after {
-	content: "";
-	position: absolute;
-	z-index: 3;
-	inset: 0;
-	border-color: var(--sumi-plate);
-	border-style: solid;
-	border-width: var(--wg-pane-rim, 0);
-	border-radius: inherit;
-	pointer-events: none;
-}
-.wg-pane > .wg-shell-plate:has([data-browser-pages-live])::after {
-	border-width: 0;
 }
 .wg-pane-group {
 	position: absolute;

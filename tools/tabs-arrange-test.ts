@@ -25,6 +25,8 @@ function tabOf(id: string): AppTabState {
 		isInOwnWindow: false,
 		mark: "none",
 		isShown: false,
+		isNestable: true,
+		isTearable: true,
 	};
 }
 
@@ -71,7 +73,17 @@ const SIDEBAR: TabsSidebar = {
 };
 
 function tab(id: string, more: Partial<Extract<DragSource, { kind: "tab" }>> = {}): DragSource {
-	return { kind: "tab", id, groupId: null, splitId: null, list: "workspace", isChat: false, ...more };
+	return {
+		kind: "tab",
+		id,
+		groupId: null,
+		splitId: null,
+		list: "workspace",
+		isHolder: false,
+		isNestable: true,
+		isTearable: true,
+		...more,
+	};
 }
 
 function shapeOf(sidebar: TabsSidebar): unknown {

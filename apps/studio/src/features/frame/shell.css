@@ -32,9 +32,6 @@
 	width: var(--wg-shell-left-w);
 	min-width: var(--sumi-sidebar-min);
 	min-height: 0;
-	transition:
-		width var(--wg-shell-slide),
-		min-width var(--wg-shell-slide);
 }
 
 .wg-shell-left:not([data-state="docked"]) {
@@ -173,7 +170,6 @@
 	cursor: col-resize;
 	touch-action: none;
 	outline: none;
-	transition: width var(--wg-shell-slide);
 }
 
 .wg-shell-edge::after {
@@ -343,13 +339,6 @@ body:has([data-browser-pages-live]),
 	transition-duration: 0ms;
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[aria-pressed="true"] {
-	color: var(--sumi-text);
-}
-
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[aria-pressed="true"]::before {
-	background: var(--sumi-active);
-}
 :is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon svg {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
@@ -373,6 +362,15 @@ body:has([data-browser-pages-live]),
 :is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-icon-glyph.is-lucide {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
+	stroke-width: 1.6;
+}
+
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner {
+	width: var(--sumi-icon);
+	height: var(--sumi-icon);
+}
+
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner circle {
 	stroke-width: 1.6;
 }
 
@@ -488,22 +486,6 @@ body:has([data-browser-pages-live]),
 	flex: 1 1 0;
 	width: auto;
 	min-width: 0;
-}
-
-.wg-pane > .wg-shell-plate::after {
-	content: "";
-	position: absolute;
-	z-index: 3;
-	inset: 0;
-	border-color: var(--sumi-plate);
-	border-style: solid;
-	border-width: var(--wg-pane-rim, 0);
-	border-radius: inherit;
-	pointer-events: none;
-}
-
-.wg-pane > .wg-shell-plate:has([data-browser-pages-live])::after {
-	border-width: 0;
 }
 
 .wg-pane-group {

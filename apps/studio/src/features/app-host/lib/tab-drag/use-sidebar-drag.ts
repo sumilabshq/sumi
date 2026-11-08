@@ -16,7 +16,6 @@ import type { TabRef } from "./tab-ref.js";
 const NOT_A_HANDLE = "button:not([data-tabs-item]), input";
 const DRAGGED_ITEM = '[data-tabs-item="tab"], [data-tabs-item="essential"], [data-tabs-item="group"]';
 const DRAGGED_WORDS = "[data-tabs-words]";
-const TEARABLE_APPS: ReadonlySet<string | undefined> = new Set(["browser", "chat"]);
 
 export interface SidebarDragging {
 	readonly parts: SidebarDragParts;
@@ -159,5 +158,5 @@ function essentialSourceOf(holder: HTMLElement, element: HTMLElement, id: string
 }
 
 function isTearableApp(element: HTMLElement): boolean {
-	return TEARABLE_APPS.has(element.dataset["hostTabApp"]);
+	return element.dataset["tabsTearable"] !== undefined;
 }

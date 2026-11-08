@@ -9,7 +9,6 @@ import type { TabsAsk, TabsSettled } from "@widgetarium/places";
 import { workspaces } from "@widgetarium/workspaces";
 import { essentialsChanged } from "../../gateways/essentials/essentials.events.js";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
-import { shownViewChanged } from "../../gateways/shown-view/shown-view.events.js";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { studioCoreChanged } from "../../gateways/core-changes/core-changes.events.js";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
@@ -32,6 +31,7 @@ import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import { AppTabsSchema, HeldTabsSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
+import { TabToShowSchema } from "../../shared/schema/tab-to-show.schema.js";
 import type { TabDrop } from "../../shared/schema/tab-drop.schema.js";
 
 const ALL_PAGES = { heldTabId: null };
@@ -100,18 +100,18 @@ export const restoreTabs = command()
 
 export const showTab = command()
 	.public()
-	.input(z.object({ id: z.string() }))
+	.input(TabToShowSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ id }, { send, emit, ...injects }) => showTabSettled({ injects, send, told: () => emit(tabsSettled) }, id));
+	.handle((asked, { send, emit, ...injects }) =>
+		showTabSettled({ injects, send, told: () => emit(tabsSettled) }, asked),
+	);
 
-export const showChatTab = command()
+export const syncChatTabs = command()
 	.public()
-	.input(z.object({ chatId: z.string().min(1) }))
 	.idempotencyKey(Repeatable)
-	.handle(async ({ chatId }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
-			send(places.tabShowing.showChatTab, { at, chatId }),
-		);
+	.handle(async (_input, { send, emit }) => {
+		await sendKeepChatTabs(send);
+		emit(tabsSettled);
 	});
 
 export const placeTab = command()
@@ -158,10 +158,6 @@ export const rereadTabs = subscriber(tabsSettled).handle((_input, { invalidate }
 });
 
 export const rereadTabsForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
-	invalidateTabReads(invalidate);
-});
-
-export const rereadTabsForShownView = subscriber(shownViewChanged).handle((_input, { invalidate }) => {
 	invalidateTabReads(invalidate);
 });
 

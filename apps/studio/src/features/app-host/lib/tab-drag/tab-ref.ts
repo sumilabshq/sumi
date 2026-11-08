@@ -3,5 +3,7 @@ export interface TabRef {
 	readonly groupId: string | null;
 	readonly splitId: string | null;
 	readonly list: string;
-	readonly isChat: boolean;
+	readonly isHolder: boolean;
+	readonly isNestable: boolean;
+	readonly isTearable: boolean;
 }

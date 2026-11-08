@@ -123,6 +123,10 @@ export class MemoryFilesGateway extends FilesGateway {
 	override locatedFile(): Promise<string | null> {
 		return Promise.resolve(null);
 	}
+
+	override pickedFolder(): Promise<string | null> {
+		return Promise.resolve(null);
+	}
 }
 
 function parentOf(path: string): string {

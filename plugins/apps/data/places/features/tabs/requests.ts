@@ -10,7 +10,7 @@ import {
 	PlacedSidebarSchema,
 	SidebarAskSchema,
 } from "../../shared/schema/tab-rows.schema.js";
-import { ChatTabsSchema, WindowTabsSchema } from "../../shared/schema/tabs.schema.js";
+import { ChatTabsSchema, StudioViewSchema, WindowTabsSchema } from "../../shared/schema/tabs.schema.js";
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { chatTabsOf, heldTabsAt, placedSidebarOf, rowsAt } from "./lib/tab-reads.js";
 
@@ -40,6 +40,15 @@ export const heldTabs = query()
 	.output(HeldTabsSchema)
 	.handle(async ({ at }, { tabs, placedApps }) => heldTabsAt(await tabs.placedTabs(), placedApps.placedApps(), at));
 
+export const shownView = query()
+	.public()
+	.input(WindowLabelSchema)
+	.output(StudioViewSchema)
+	.handle(
+		async ({ window }, { tabs, placedApps }) =>
+			momentOfWindow(await tabs.placedTabs(), window, placedApps.placedApps()).view,
+	);
+
 export const closedTabs = query()
 	.public()
 	.output(ClosedTabsSchema)
@@ -57,6 +66,7 @@ export const rereadPlacedTabs = subscriber(placedTabsChanged).handle((_input, { 
 	invalidate(tabRows);
 	invalidate(sidebar);
 	invalidate(heldTabs);
+	invalidate(shownView);
 	invalidate(closedTabs);
 	invalidate(chatTabs);
 });
