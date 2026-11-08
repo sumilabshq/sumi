@@ -365,6 +365,15 @@ body:has([data-browser-pages-live]),
 	stroke-width: 1.6;
 }
 
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner {
+	width: var(--sumi-icon);
+	height: var(--sumi-icon);
+}
+
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner circle {
+	stroke-width: 1.6;
+}
+
 .wg-plate-crumb {
 	display: inline-flex;
 	align-items: center;
