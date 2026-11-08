@@ -13,7 +13,7 @@ const NOT_OWN_SLOT = "plugin {plugin} reads slot {slot}, which it does not decla
 export function slotReaderOf(slotFills: SlotFills, reader: Plugin): SlotReader {
 	return {
 		fillsOf: <S extends z.ZodObject>(slot: SlotShape<S>): readonly FilledItem<S>[] => {
-			if (!reader.parts.declaredSlots.includes(slot)) {
+			if (!reader.parts.declaredSlots.some((declared) => declared.identity === slot.identity)) {
 				throw new Error(
 					sentenceOf(NOT_OWN_SLOT, {
 						plugin: reader.id,

@@ -61,6 +61,10 @@ export function fillOutcomeOf(
 	return parsedOutcomeOf(offer, claim);
 }
 
+export function fillKeyOf({ pluginId, id }: ShownFill): string {
+	return `${pluginId}.${id}`;
+}
+
 export function isParsedFill(outcome: FillOutcome): outcome is ParsedFill {
 	return "stampedName" in outcome;
 }

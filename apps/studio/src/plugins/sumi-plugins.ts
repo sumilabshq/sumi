@@ -1,4 +1,4 @@
-import { profileRefusalsOf, slotFillsOf, slotReaderOf, startOrderOf } from "@widgetarium/plugin-framework";
+import { fillKeyOf, profileRefusalsOf, slotFillsOf, slotReaderOf, startOrderOf } from "@widgetarium/plugin-framework";
 import type { Plugin, ShownFill, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
 import type { ComponentType } from "react";
 import type { DeviceModule, ModuleContract, ServerRuns, ServerSideModule } from "@widgetarium/data-framework";
@@ -145,7 +145,7 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 			return parsed.success
 				? [
 						{
-							id: `${fill.pluginId}.${fill.id}`,
+							id: fillKeyOf(fill),
 							layer: parsed.data.layer(readerOf(fill)),
 						},
 					]
@@ -156,7 +156,7 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 			return parsed.success
 				? [
 						{
-							id: `${fill.pluginId}.${fill.id}`,
+							id: fillKeyOf(fill),
 							providerOf: (offers: WindowOffers) => parsed.data.provider({ ...offers, ...readerOf(fill) }),
 						},
 					]
@@ -171,7 +171,7 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 			return parsed.success
 				? [
 						{
-							id: `${fill.pluginId}.${fill.id}`,
+							id: fillKeyOf(fill),
 							contract: parsed.data.contract,
 							servingOf: (offers: WindowOffers) => parsed.data.serving({ ...offers, ...readerOf(fill) }),
 						},
@@ -183,7 +183,7 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 			return parsed.success
 				? [
 						{
-							id: `${fill.pluginId}.${fill.id}`,
+							id: fillKeyOf(fill),
 							moduleOf: (offers: WindowServerOffers) => parsed.data.module({ ...offers, ...readerOf(fill) }),
 						},
 					]

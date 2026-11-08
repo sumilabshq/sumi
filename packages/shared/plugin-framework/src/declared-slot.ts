@@ -27,6 +27,9 @@ export interface SlotDraft {
 const SLOT = "a slot";
 const UNNAMED_LABEL = "(not named yet)";
 const LIST_NEEDS_ID = "a fill of slot {slot}, a list, needs a non-empty string id: add({ id, … })";
+const LIST_ID_DOTTED =
+	'a fill of slot {slot} has the id "{id}": a list fill id holds no ".", since its key is the plugin id and the fill id joined by one';
+const LIST_NEEDS_OBJECTS = "slot {slot} is a list, and a list holds objects: give .item() a z.object() schema";
 const DERIVED_NEEDS_SLOT_AND_FUNCTION =
 	"a fill of slot {slot} built from another slot takes that slot and a function: addFrom(sourceSlot, (items) => [ … ])";
 const SOURCE_NOT_OBJECTS =
@@ -49,7 +52,7 @@ abstract class DeclaredSlot<S extends z.ZodType, C extends SlotCardinality> impl
 	}
 }
 
-export class ListSlot<S extends z.ZodType> extends DeclaredSlot<S, "list"> {
+export class ListSlot<S extends z.ZodObject> extends DeclaredSlot<S, "list"> {
 	readonly cardinality = "list";
 
 	add(item: ListItemInput<S>): Fill {
@@ -75,7 +78,11 @@ export class SingleSlot<S extends z.ZodType> extends DeclaredSlot<S, "single"> {
 		return createDerivedFill(this, source, derive, (answered) => [answered]);
 	}
 
-	list(): ListSlot<S> {
+	list<O extends z.ZodObject>(this: SingleSlot<O>): ListSlot<O> {
+		if (!(this.itemSchema instanceof z.ZodObject)) {
+			throw new Error(sentenceOf(LIST_NEEDS_OBJECTS, { slot: this.label }));
+		}
+
 		return new ListSlot(this.identity, this.itemSchema);
 	}
 }
@@ -96,6 +103,11 @@ export function createFill(target: SlotShape, input: unknown): Fill {
 	}
 
 	const { id, ...item } = input;
+
+	if (id.includes(".")) {
+		throw new Error(sentenceOf(LIST_ID_DOTTED, { slot: target.label, id }));
+	}
+
 	return new Fill(target, id, item);
 }
 

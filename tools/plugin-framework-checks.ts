@@ -3,6 +3,7 @@ import { check, tally, thrownBy } from "./check-helpers.ts";
 import {
 	DerivedFill,
 	SumiProfileSchema,
+	fillKeyOf,
 	namedPlugin,
 	namedSlot,
 	plugin,
@@ -251,9 +252,23 @@ check(
 
 const redeclaring = namedPlugin("redeclaring", plugin().declare(layout.plate), {});
 check(
-	"a second declaration of the same slot is refused",
+	"a slot declared by a plugin other than the one its name places it under is refused",
 	slotFillsOf([layout, redeclaring], ["layout", "redeclaring"]).refusals,
-	["slot layout.plate is declared by layout and again by redeclaring"],
+	["plugin redeclaring declares slot layout.plate, which is named as a slot of plugin layout"],
+);
+
+const declaredTwice = namedPlugin("layout", plugin().declare(layoutPlate, layoutPlate), { plate: layoutPlate });
+check("a second declaration of the same slot is refused", slotFillsOf([declaredTwice], ["layout"]).refusals, [
+	"slot layout.plate is declared by layout and again by layout",
+]);
+
+const strayShelf = slot().item(z.object({ title: z.string() }));
+namedSlot("shelf", strayShelf);
+const shelfless = namedPlugin("shelfless", plugin().declare(strayShelf), {});
+check(
+	"a slot its plugin's generated namespace does not name is refused, naming the fix",
+	slotFillsOf([shelfless], ["shelfless"]).refusals,
+	["plugin shelfless declares slot shelf, which no generated plugin namespace names as its own; run npm run generate"],
 );
 const firstTwin = slot().item(z.string());
 const secondTwin = slot().item(z.string());
@@ -587,7 +602,7 @@ check(
 	"a fill of slot layout.plate built from another slot takes that slot and a function: addFrom(sourceSlot, (items) => [ … ])",
 );
 
-const listedNames = slot().item(z.string()).list();
+const listedNames = slot().item(z.string());
 const lists = namedPlugin("lists", plugin().declare(listedNames), { names: namedSlot("names", listedNames) });
 check(
 	"a fill built from a slot whose items are not objects throws, past the types, naming both slots",
@@ -601,12 +616,40 @@ export const builtByTypes: DerivedFill = layout.plate.addFrom(files.viewers, (vi
 
 export function buildRefusedByTypes(): void {
 	// @ts-expect-error
+	slot().item(z.string()).list();
+	// @ts-expect-error
 	layout.plate.addFrom(lists.names, () => []);
 	// @ts-expect-error
 	layout.plate.addFrom(files.viewers, (viewers) => viewers.map((viewer) => ({ title: viewer.title })));
 	// @ts-expect-error
 	layout.plate.addFrom(files.viewers, (viewers) => viewers.map((viewer) => ({ id: viewer.id, title: viewer.size })));
 }
+
+check(
+	"a list slot over items that are not objects throws, past the types, naming the slot",
+	thrownBy(() => Reflect.apply(slot().item(z.string()).list, slot().item(z.string()), [])),
+	"slot (not named yet) is a list, and a list holds objects: give .item() a z.object() schema",
+);
+
+check(
+	"a list fill whose id holds a dot throws, naming the slot and the id",
+	thrownBy(() => layout.plate.add({ id: "chat.plate", title: "dotted" })),
+	'a fill of slot layout.plate has the id "chat.plate": a list fill id holds no ".", since its key is the plugin id and the fill id joined by one',
+);
+
+check(
+	"a fill's key is its plugin id and its id joined by a dot",
+	fillKeyOf({ pluginId: "chat", id: "plate", item: null }),
+	"chat.plate",
+);
+
+const shownPlate = slot().item(z.object({ title: z.string() }));
+const shownFrom = namedPlugin("shown-from", plugin().declare(shownPlate), { plate: namedSlot("plate", shownPlate) });
+check(
+	"a reader reads a declared slot through its list() handle, the same slot by identity",
+	thrownBy(() => slotReaderOf(slotFillsOf([shownFrom], ["shown-from"]), shownFrom).fillsOf(shownPlate.list())),
+	"",
+);
 
 if (tally.failed > 0) {
 	process.exit(1);

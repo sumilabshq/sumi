@@ -6,6 +6,7 @@ export { namedPlugin, namedSlot } from "./plugin-namespace";
 export { PROFILE_FILE, PluginIdSchema, SumiProfileSchema, profileRefusalsOf } from "./profile";
 export type { SumiProfile } from "./profile";
 export { slotFillsOf } from "./slot-fills";
+export { fillKeyOf } from "./fill-outcome";
 export type { FilledSlot, ShownFill } from "./fill-outcome";
 export type { SlotFills } from "./slot-fills";
 export { startOrderOf } from "./start-order";

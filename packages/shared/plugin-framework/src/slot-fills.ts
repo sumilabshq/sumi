@@ -13,6 +13,9 @@ export interface SlotFills {
 
 const DECLARED_TWICE = "slot {slot} is declared by {owner} and again by {other}";
 const SAME_NAME_TWICE = "plugin {plugin} declares two slots named {name}";
+const OWNED_ELSEWHERE = "plugin {plugin} declares slot {slot}, which is named as a slot of plugin {owner}";
+const OWNER_UNNAMED =
+	"plugin {plugin} declares slot {slot}, which no generated plugin namespace names as its own; run npm run generate";
 
 export function slotFillsOf(started: readonly Plugin[], rankedIds: readonly string[]): SlotFills {
 	const resolved = resolveOwnership(claimsOf(started));
@@ -65,6 +68,13 @@ function resolveOwnership(claims: readonly SlotClaim[]): ResolvedOwnership {
 	const refusals: string[] = [];
 
 	for (const each of claims) {
+		const ownerRefusal = refuseOwner(each);
+
+		if (ownerRefusal !== null) {
+			refusals.push(ownerRefusal);
+			continue;
+		}
+
 		const firstClaim = bySlot.get(each.slot);
 
 		if (firstClaim !== undefined) {
@@ -97,6 +107,20 @@ function resolveOwnership(claims: readonly SlotClaim[]): ResolvedOwnership {
 		bySlot,
 		refusals,
 	};
+}
+
+function refuseOwner({ slot, ownerId }: SlotClaim): string | null {
+	const { owner } = slot.identity;
+
+	if (owner === ownerId) {
+		return null;
+	}
+
+	if (owner === null) {
+		return sentenceOf(OWNER_UNNAMED, { plugin: ownerId, slot: slot.label });
+	}
+
+	return sentenceOf(OWNED_ELSEWHERE, { plugin: ownerId, slot: slot.label, owner });
 }
 
 function offersOf(started: readonly Plugin[]): readonly FillOffer[] {
