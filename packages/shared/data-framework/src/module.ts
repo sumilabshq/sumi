@@ -171,6 +171,18 @@ interface ModulePlan<R extends Runs> {
 	readonly subscribers: readonly AnySubscriber[];
 }
 
+interface PlacedParts {
+	readonly listed: readonly AnyHandledRequest[];
+	readonly ownedEvents: readonly AnyEvent[];
+	readonly listedSubscribers: readonly AnySubscriber[];
+}
+
+const NOTHING_PLACED: PlacedParts = {
+	listed: [],
+	ownedEvents: [],
+	listedSubscribers: [],
+};
+
 const NO_FACTS =
 	'module "{module}" picks its parts from the platform and scope, and its starter was told neither: pass platform and scope';
 const LISTED_TWICE = 'module "{module}" handles {request} twice: a request belongs to one module, once';
@@ -202,18 +214,13 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 	readonly handlers: readonly AnyHandler[];
 
 	constructor(private readonly plan: ModulePlan<R>) {
-		const name = plan.name ?? "";
+		const placed = plan.name === null ? NOTHING_PLACED : placedPartsOf(plan, plan.name);
 		this.runs = plan.runs;
 		this.steps = plan.steps;
-		this.listedSubscribers = plan.subscribers.map((listed) => subscriberInModule(listed, name));
-		this.ownedEvents = ownedEventsOf(
-			plan.events.map((listed) => listed.inModule(name)),
-			this.listedSubscribers,
-			name,
-		);
-		this.handlers = plan.listed.map((listed) => ({
+		this.listedSubscribers = placed.listedSubscribers;
+		this.ownedEvents = placed.ownedEvents;
+		this.handlers = placed.listed.map((listed) => ({
 			...listed,
-			request: listed.request.inModule(name),
 			module: this,
 		}));
 	}
@@ -367,6 +374,22 @@ function ownedEventsOf(
 ): readonly AnyEvent[] {
 	const heardOwn = subscribers.map(({ event }) => event).filter((heard) => heard.module === module);
 	return [...new Map([...events, ...heardOwn].map((owned) => [owned.name, owned])).values()];
+}
+
+function placedPartsOf(plan: ModulePlan<Runs>, module: string): PlacedParts {
+	const listedSubscribers = plan.subscribers.map((listed) => subscriberInModule(listed, module));
+	return {
+		listed: plan.listed.map((listed) => ({
+			...listed,
+			request: listed.request.inModule(module),
+		})),
+		ownedEvents: ownedEventsOf(
+			plan.events.map((listed) => listed.inModule(module)),
+			listedSubscribers,
+			module,
+		),
+		listedSubscribers,
+	};
 }
 
 function subscriberInModule(listed: AnySubscriber, module: string): AnySubscriber {

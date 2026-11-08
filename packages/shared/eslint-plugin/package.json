@@ -42,6 +42,11 @@
 			"source": "./src/domain-file.ts",
 			"types": "./dist/domain-file.d.ts",
 			"default": "./dist/domain-file.js"
+		},
+		"./building-block-name": {
+			"source": "./src/building-block-name.ts",
+			"types": "./dist/building-block-name.d.ts",
+			"default": "./dist/building-block-name.js"
 		}
 	},
 	"dependencies": {

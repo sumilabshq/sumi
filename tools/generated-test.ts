@@ -742,6 +742,26 @@ try {
 		[1, true],
 	);
 
+	const grouping = await generatedIn("grouping", {
+		"features/count/count/requests.ts": [
+			'import { z } from "zod";',
+			'import { query } from "#module";',
+			"",
+			"export const total = query()",
+			"\t.output(z.number())",
+			"\t.handle(() => 1);",
+			"",
+		].join("\n"),
+	});
+	check(
+		"a name that is the group of another name in the module is refused, naming both",
+		refusedWith(
+			grouping,
+			"features/count/requests.ts: count is count.count, and total is named under it as count.count.total",
+		),
+		[1, true],
+	);
+
 	const inProcess = await generatedIn("in-process", {
 		"features/count/requests.ts": COUNT_REQUESTS.replace(PUBLIC_BUMP, "command()"),
 	});

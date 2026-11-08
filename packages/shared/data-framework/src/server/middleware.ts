@@ -15,6 +15,9 @@ interface WireContext {
 
 const ADAPTER = "dataFrameworkMiddleware()";
 const NOT_A_CALL = "the body is not a widgetarium call";
+const EMPTY_PATH = "request {request} has no wire path: a request is named by at least one segment";
+const LEAF_AND_GROUP =
+	"request {request} cannot be placed on the wire: {segment} is both a request and a group of requests there";
 
 export function dataFrameworkMiddleware(runtime: Runtime, { authenticate }: AdapterOptions = {}): Hono {
 	const exposed = runtime.expose({ adapter: ADAPTER, authenticate });
@@ -42,28 +45,49 @@ interface WireRouter {
 	[segment: string]: WireRouter | WireProcedure;
 }
 
+interface PlacedProcedure {
+	readonly request: string;
+	readonly path: readonly string[];
+	readonly procedure: WireProcedure;
+}
+
 function routerOf(exposed: Exposed): WireRouter {
 	const router: WireRouter = {};
 	for (const request of exposed.requests) {
-		placeProcedure(router, wirePathOf(request), wireProcedureOf(request, exposed));
+		placeProcedure(router, {
+			request: request.name,
+			path: wirePathOf(request),
+			procedure: wireProcedureOf(request, exposed),
+		});
 	}
 	return router;
 }
 
-function placeProcedure(
-	router: WireRouter,
-	[segment = "", ...rest]: readonly string[],
-	procedure: WireProcedure,
-): void {
-	if (rest.length === 0) {
-		router[segment] = procedure;
-		return;
+function placeProcedure(router: WireRouter, placed: PlacedProcedure): void {
+	const [segment, ...rest] = placed.path;
+
+	if (segment === undefined) {
+		throw new Error(EMPTY_PATH.replace("{request}", placed.request));
 	}
 
 	const held = router[segment];
+	const isLeaf = rest.length === 0;
+
+	if (held !== undefined && isProcedure(held) !== isLeaf) {
+		throw new Error(LEAF_AND_GROUP.replace("{request}", placed.request).replace("{segment}", segment));
+	}
+
+	if (isLeaf) {
+		router[segment] = placed.procedure;
+		return;
+	}
+
 	const branch: WireRouter = held === undefined || isProcedure(held) ? {} : held;
 	router[segment] = branch;
-	placeProcedure(branch, rest, procedure);
+	placeProcedure(branch, {
+		...placed,
+		path: rest,
+	});
 }
 
 function isProcedure(held: WireRouter | WireProcedure): held is WireProcedure {

@@ -1,8 +1,4 @@
-export const KEBAB_NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
-
 export const SEGMENT_NAME = /^[a-z]+(-[a-z]+)*$/;
-
-export const CAMEL_NAME = /^[a-z]+([A-Z][a-z]*)*$/;
 
 export const FRAMEWORK = "@widgetarium/data-framework";
 

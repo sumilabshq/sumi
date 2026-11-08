@@ -2,7 +2,8 @@ import { parseArgs } from "node:util";
 import { z } from "zod";
 import { parsedArgs, parsedWith, refuseExtraPositionals } from "./arg-parsing.js";
 import { inputSchemaOf } from "./feature-files.js";
-import { CAMEL_NAME, SEGMENT_NAME, camelOf, pascalOf } from "./scaffold-names.js";
+import { CAMEL_NAME, KIND_SUFFIX } from "@widgetarium/eslint-plugin/building-block-name";
+import { SEGMENT_NAME, camelOf, pascalOf } from "./scaffold-names.js";
 
 const ADD_MODULE_OPTIONS = {
 	on: { type: "string" },
@@ -37,7 +38,6 @@ const FEATURE_RULE =
 	"add feature takes <module>/<feature>, each kebab case of letters: widgetarium add feature notes/tasks";
 const REQUEST_RULE =
 	"--query and --command take a camelCase name of letters with no kind suffix: --query tasks, --command addTask";
-const KIND_SUFFIX = /(Query|Command)$/;
 const ON_RULE = "--on takes Server, Device or Anywhere: where the module may run";
 const IN_RULE = "--in takes domain (a business area) or state (the app's own state)";
 const RESERVED_RULE = `a feature is not named for a word its scaffold already binds: ${RESERVED_FEATURE_KEYS.join(", ")}`;

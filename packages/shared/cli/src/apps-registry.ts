@@ -3,8 +3,8 @@ import path from "node:path";
 import { APP_MANIFEST_FILE, AppManifestSchema, CONTRACT_VERSION, contractRefusal } from "@sumi/contract";
 import type { AppManifest } from "@sumi/contract";
 import { CliRefusal } from "./cli-output.js";
-import { camelOf } from "./item-names.js";
 import { GENERATED_HEADER } from "./module-entry.js";
+import { moduleConstOf } from "./module-files.js";
 import { moduleFolderOf } from "./workspace-root.js";
 
 export interface RegistryFile {
@@ -120,7 +120,7 @@ function appModuleImportsOf(cwd: string, rows: readonly RegisteredRow[]): readon
 }
 
 function moduleImportOf(cwd: string, module: string): readonly AppModuleImport[] {
-	const name = camelOf(module);
+	const name = moduleConstOf(module);
 	const declares = new RegExp(`export const ${name}\\b`);
 	const folder = moduleFolderOf(cwd, module);
 	const isDeclared = folder !== null && declares.test(fs.readFileSync(path.join(cwd, folder, "module.ts"), "utf8"));

@@ -2,6 +2,7 @@ import type { Rule } from "eslint";
 import type * as ESTree from "estree";
 import { builderTracker, chainCallsOf } from "../builders.js";
 import type { Builder, BuilderCall } from "../builders.js";
+import { CAMEL_NAME, KIND_SUFFIX } from "../building-block-name.js";
 
 type SuffixedBuilder = "guard" | "middleware" | "serverModule" | "clientModule";
 
@@ -12,8 +13,6 @@ const SUFFIX: Readonly<Record<SuffixedBuilder, string>> = {
 	clientModule: "ClientModule",
 };
 const PASCAL_CASE = /^[A-Z][A-Za-z0-9]*$/;
-const CAMEL_NAME = /^[a-z]+([A-Z][a-z]*)*$/;
-const KIND_SUFFIX = /(Query|Command|Event|Subscriber|Module|Plugin|Slot)$/;
 const REQUEST_NAME = /(Command|Query)$/;
 
 export const buildingBlockNames: Rule.RuleModule = {

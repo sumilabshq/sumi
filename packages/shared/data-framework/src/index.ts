@@ -58,7 +58,7 @@ export {
 	module,
 	serverModule,
 } from "./module";
-export { isModuleContract, moduleContract, moduleNamespace } from "./module-contract";
+export { isDescriptorKey, isModuleContract, moduleContract, moduleNamespace } from "./module-contract";
 export type {
 	ContractLeaf,
 	ContractShape,

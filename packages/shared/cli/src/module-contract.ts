@@ -10,8 +10,8 @@ import type { SchemasElsewhere } from "./contract-schemas.js";
 import { refuseKeyFunction } from "./contract-key.js";
 import { usesOf } from "./free-names.js";
 import type { NameUse } from "./free-names.js";
-import { FRAMEWORK } from "./scaffold-names.js";
-import { camelOf, checkedCamelName, groupOf, kebabOf, pathOf, refuseSamePaths } from "./item-names.js";
+import { FRAMEWORK, camelOf, kebabOf } from "./scaffold-names.js";
+import { checkedCamelName, groupOf, pathOf, refuseClashingPaths } from "./item-names.js";
 import { filesUnder } from "./template-files.js";
 import { chainOf, exportedConstsOf, rootCallOf } from "@widgetarium/eslint-plugin/babel-chain";
 import type { ChainStep } from "@widgetarium/eslint-plugin/babel-chain";
@@ -164,7 +164,7 @@ function declaredItemsOf(folder: string): DeclaredItem[] {
 		scripts.filter((relative) => !isItemFile(relative)),
 	);
 	const items = scripts.filter(isItemFile).flatMap((relative) => itemsIn(sourceOf(folder, relative)));
-	refuseSamePaths(items.filter(({ root }) => root !== "subscriber").map(pathedOf));
+	refuseClashingPaths(items.filter(({ root }) => root !== "subscriber").map(pathedOf));
 	refuseUnhandledRequests(items);
 	return items;
 }

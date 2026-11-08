@@ -14,6 +14,7 @@ import {
 	guard,
 	module,
 	moduleContract,
+	moduleNamespace,
 	query,
 } from "../packages/shared/data-framework/src/index.ts";
 import { handledItems, named } from "../packages/shared/data-framework/src/index.ts";
@@ -788,4 +789,54 @@ check(
 	"a module called with injects that are not an object is refused",
 	thrownBy(() => TallyDeclared.provide(() => ({ counter }))(nullInjects)),
 	"a module called with { injects } takes the object of its provided parts as injects",
+);
+
+check(
+	"a contract key every module descriptor already holds is refused at run time, naming the key",
+	thrownBy(() => moduleContract("ledger", Server, { name: fullyNamed("ledger.name", query()).output(z.string()) })),
+	'module "ledger" names a contract key "name", which every module descriptor already holds: rename the feature folder or the constant',
+);
+
+check(
+	"a contract key of a name every function holds is refused too",
+	thrownBy(() =>
+		moduleNamespace("ledger", {
+			toString: { total: fullyNamed("ledger.to-string.total", query()).output(z.number()) },
+		}),
+	),
+	'module "ledger" names a contract key "toString", which every module descriptor already holds: rename the feature folder or the constant',
+);
+
+check(
+	"a contract item held under a key path other than its name is refused, naming both",
+	thrownBy(() =>
+		moduleNamespace("ledger", { entries: { total: fullyNamed("ledger.entries.count", query()).output(z.number()) } }),
+	),
+	'module "ledger" holds entries.count under the key entries.total: a contract key path is its name in camel case, so run npm run generate',
+);
+
+const tabs = named("pages.tabs", query())
+	.public()
+	.output(z.number())
+	.handle(() => 1);
+const tabById = named("pages.tabs.by-id", query())
+	.public()
+	.output(z.number())
+	.handle(() => 2);
+check(
+	"a request whose name is the group of another request is refused when the wire is laid, naming both",
+	thrownBy(() =>
+		dataFrameworkMiddleware(
+			runtime()
+				.modules(
+					module()
+						.on(Server)
+						.guard(PublicGuard)
+						.provide(() => ({}))
+						.handles(handledItems("shelves", [tabs, tabById])),
+				)
+				.start({ platform: "server", env: {}, scope: SCOPE }),
+		),
+	),
+	"request shelves.pages.tabs.by-id cannot be placed on the wire: tabs is both a request and a group of requests there",
 );

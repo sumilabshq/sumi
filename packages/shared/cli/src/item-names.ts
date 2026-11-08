@@ -1,5 +1,8 @@
 import { CliRefusal } from "./cli-output.js";
+import { isDescriptorKey } from "@widgetarium/data-framework";
+import { CAMEL_NAME } from "@widgetarium/eslint-plugin/building-block-name";
 import { fillTemplate } from "@widgetarium/eslint-plugin/fill-template";
+import { SEGMENT_NAME, camelOf, kebabOf } from "./scaffold-names.js";
 
 export interface PathedItem {
 	readonly name: string;
@@ -7,25 +10,14 @@ export interface PathedItem {
 	readonly group: readonly string[];
 }
 
-const CAMEL_NAME = /^[a-z]+([A-Z][a-z]*)*$/;
+interface PathedEntry {
+	readonly item: PathedItem;
+	readonly under: string;
+}
+
 const FEATURE_FILE = /^features\/(.+)\/requests\.tsx?$/;
 const GATEWAY_EVENTS = /^gateways\/([^/]+)\/.+\.events\.ts$/;
 const TOPIC_EVENTS = /^shared\/events\/([^/]+)\.events\.ts$/;
-const SEGMENT = /^[a-z]+(-[a-z]+)*$/;
-const DESCRIPTOR_FIELDS: ReadonlySet<string> = new Set([
-	"name",
-	"length",
-	"runs",
-	"requests",
-	"call",
-	"apply",
-	"bind",
-	"toString",
-	"prototype",
-	"arguments",
-	"caller",
-	"constructor",
-]);
 const NOT_CAMEL =
 	"{file}: {name} is not a building block name; name it by a camelCase constant of letters with no kind suffix, such as frameSides or toggleFrameSide";
 const BAD_SEGMENT =
@@ -34,14 +26,8 @@ const NO_GROUP = "{file} is not a place generate names items from";
 const FIELD_KEY =
 	"{file}: the group {group} is a field of the module's descriptor; rename the feature or gateway folder";
 const SAME_PATH = "{file}: {name} and {other} are both {path}; a module names each item once";
-
-export function kebabOf(camel: string): string {
-	return camel.replace(/[A-Z]/g, (capital) => `-${capital.toLowerCase()}`);
-}
-
-export function camelOf(kebab: string): string {
-	return kebab.replace(/-([a-z])/g, (_dash, letter: string) => letter.toUpperCase());
-}
+const PATH_UNDER_PATH =
+	"{file}: {name} is {path}, and {other} is named under it as {under}; a name is never a group of another, so rename one";
 
 export function checkedCamelName(name: string, file: string): string {
 	if (!CAMEL_NAME.test(name)) {
@@ -58,7 +44,7 @@ export function groupOf(file: string): readonly string[] {
 		throw new CliRefusal(fillTemplate(NO_GROUP, { file }));
 	}
 
-	const bad = group.find((segment) => !SEGMENT.test(segment));
+	const bad = group.find((segment) => !SEGMENT_NAME.test(segment));
 
 	if (bad !== undefined) {
 		throw new CliRefusal(fillTemplate(BAD_SEGMENT, { file, segment: bad }));
@@ -66,7 +52,7 @@ export function groupOf(file: string): readonly string[] {
 
 	const [top = ""] = group;
 
-	if (DESCRIPTOR_FIELDS.has(camelOf(top))) {
+	if (isDescriptorKey(camelOf(top))) {
 		throw new CliRefusal(fillTemplate(FIELD_KEY, { file, group: top }));
 	}
 
@@ -77,7 +63,7 @@ export function pathOf({ name, group }: PathedItem): string {
 	return [...group, kebabOf(name)].join(".");
 }
 
-export function refuseSamePaths(items: readonly PathedItem[]): void {
+export function refuseClashingPaths(items: readonly PathedItem[]): void {
 	const seen = new Map<string, PathedItem>();
 
 	for (const item of items) {
@@ -90,6 +76,8 @@ export function refuseSamePaths(items: readonly PathedItem[]): void {
 
 		seen.set(path, item);
 	}
+
+	seen.forEach((item, under) => refusePathUnderPath(seen, { item, under }));
 }
 
 export function localsOf<T extends PathedItem>(items: readonly T[], taken: ReadonlySet<string>): Map<T, string> {
@@ -117,4 +105,19 @@ function foldersOf(file: string): readonly string[] {
 
 	const gateway = GATEWAY_EVENTS.exec(file)?.[1] ?? TOPIC_EVENTS.exec(file)?.[1];
 	return gateway === undefined ? [] : [gateway];
+}
+
+function refusePathUnderPath(seen: ReadonlyMap<string, PathedItem>, { item, under }: PathedEntry): void {
+	const segments = under.split(".");
+
+	for (let length = 1; length < segments.length; length++) {
+		const path = segments.slice(0, length).join(".");
+		const named = seen.get(path);
+
+		if (named !== undefined) {
+			throw new CliRefusal(
+				fillTemplate(PATH_UNDER_PATH, { file: named.file, name: named.name, path, other: item.name, under }),
+			);
+		}
+	}
 }
