@@ -1,17 +1,16 @@
 import { Fragment, createElement as h } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import type { AssistantCall, AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
 import { saidSpent } from "../../lib/spent.js";
 import { useTicking } from "../../lib/use-ticking.js";
-import { LiveTasksCount } from "./live-tasks-count.js";
 
 export interface LiveTailProps {
 	readonly calls: readonly AssistantCall[];
 	readonly session: AssistantSession;
-	readonly tasks: number;
+	readonly children: ReactNode;
 }
 
-export function LiveTail({ calls, session, tasks }: LiveTailProps): ReactElement {
+export function LiveTail({ calls, session, children }: LiveTailProps): ReactElement {
 	useTicking();
 	const spent = saidSpent({
 		ms: Date.now() - liveStartOf(calls, session),
@@ -20,7 +19,7 @@ export function LiveTail({ calls, session, tasks }: LiveTailProps): ReactElement
 	return (
 		<Fragment>
 			<span className="wg-studio-ai-tools-took">{spent}</span>
-			{tasks === 0 ? null : <LiveTasksCount tasks={tasks} />}
+			{children}
 		</Fragment>
 	);
 }

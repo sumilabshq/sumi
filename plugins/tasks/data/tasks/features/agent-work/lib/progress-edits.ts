@@ -12,7 +12,7 @@ import type {
 } from "../../../shared/schema/task-asks.schema.js";
 import { agentOf, editableOrRefusal, nextDocIdOf, stepWith } from "./agent-edits.js";
 
-const NOT_YOURS_YET = "{id} has no owner yet: start it with task_start before marking its steps.";
+const NOT_YOURS_YET = "{id} has no owner yet: start it with task-work_tasks_start before marking its steps.";
 const STEP_NOTE = "Marking a step {state} needs a note saying why.";
 const NO_CRITERION = "{id} has no criterion {criterion}. Its criteria: {known}.";
 const NO_TEST_PLAN = "{id} has no test plan yet: attach a test_plan before a test_run.";

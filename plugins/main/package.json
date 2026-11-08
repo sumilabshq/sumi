@@ -11,10 +11,7 @@
 	},
 	"dependencies": {
 		"@sumi/apps-plugin": "0.1.0",
-		"@sumi/sumi-host-plugin": "0.1.0",
-		"@widgetarium/data-framework": "0.1.0",
-		"@widgetarium/plugin-framework": "0.1.0",
-		"@widgetarium/tasks": "0.1.0"
+		"@widgetarium/plugin-framework": "0.1.0"
 	},
 	"widgetarium": {
 		"level": "plugin"

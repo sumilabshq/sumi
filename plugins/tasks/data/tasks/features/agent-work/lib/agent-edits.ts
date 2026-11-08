@@ -6,10 +6,12 @@ import { idOf, nextIdOf, numberOfRef, taskOfNumber, taskOfRef, withTask } from "
 import type { Actor, Board, Task } from "../../../shared/schema/task.schema.js";
 import type { CreateTaskAsk, EditTaskAsk, MoveTaskAsk, StartTaskAsk } from "../../../shared/schema/task-asks.schema.js";
 
-const FOREIGN = "{id} is worked by another chat ({owner}). Read it with task_get; only that chat changes it.";
+const FOREIGN =
+	"{id} is worked by another chat ({owner}). Read it with task-work_tasks_one; only that chat changes it.";
 const NO_REF = "There is no task {ref}.";
 const SELF_REF = "{id} cannot wait for itself.";
-const BLOCKER_NEEDS_TASK = "A task blocker needs the task it waits for: set it with task_update blockedBy first.";
+const BLOCKER_NEEDS_TASK =
+	"A task blocker needs the task it waits for: set it with task-work_tasks_update blockedBy first.";
 
 export interface Edited {
 	readonly board: Board;

@@ -4,7 +4,7 @@ export const DAY_MS = 86_400_000;
 
 const TASK_PREFIX = "T-";
 const REF_PATTERN = /^(?:T-)?(\d{1,7})$/i;
-const NO_TASK = "There is no task {ref}. Find one with task_search or task_list.";
+const NO_TASK = "There is no task {ref}. Find one with task-work_tasks_search or task-work_tasks_all.";
 const CLOSED: ReadonlySet<TaskStatus> = new Set(["done", "cancelled"]);
 const SHOWN_TEXT_MOST = 80;
 

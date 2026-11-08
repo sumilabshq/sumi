@@ -1,24 +1,24 @@
 import { z } from "zod";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { McpServer, Runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
+import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import {
 	CreateTaskAskSchema,
 	EditTaskAskSchema,
 	MarkStepAskSchema,
 	MoveTaskAskSchema,
 	tasks as tasksContract,
-} from "../packages/domain/tasks/generated/contract.ts";
-import type { TaskView } from "../packages/domain/tasks/generated/contract.ts";
-import { tasks as tasksModule } from "../packages/domain/tasks/generated/module.ts";
-import { FixedClockGateway } from "../packages/domain/tasks/gateways/clock/clock.gateway.ts";
-import { MemoryTasksGateway } from "../packages/domain/tasks/gateways/tasks/memory.gateway.ts";
-import { runAgentTool } from "../apps/tauri/src/agent/run-agent-tool.ts";
+} from "../plugins/tasks/data/tasks/generated/contract.ts";
+import type { TaskView } from "../plugins/tasks/data/tasks/generated/contract.ts";
+import { tasks as tasksModule } from "../plugins/tasks/data/tasks/generated/module.ts";
+import { FixedClockGateway } from "../plugins/tasks/data/tasks/gateways/clock/clock.gateway.ts";
+import { MemoryTasksGateway } from "../plugins/tasks/data/tasks/gateways/tasks/memory.gateway.ts";
 import { ChatSessions, ONE_CHAT_LINK } from "../apps/tauri/src/assistant/chat-sessions.ts";
 import { chatTasksOver, settleAskOf } from "../apps/tauri/src/assistant/chat-tasks.ts";
 import type { ChatTasks } from "../apps/tauri/src/assistant/chat-tasks.ts";
-import type { SettleTurnAsk } from "../packages/domain/tasks/generated/contract.ts";
+import type { SettleTurnAsk } from "../plugins/tasks/data/tasks/generated/contract.ts";
 import { failureAnswerOf } from "../apps/tauri/src/assistant/turn-run.ts";
-import TOOLS from "../apps/tauri/src-tauri/src/agent/tools.json" with { type: "json" };
 import type { RunAnswer, TurnRun } from "../apps/tauri/src/assistant/turn-run.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
@@ -50,6 +50,35 @@ interface HeldRun {
 	readonly finish: (answer: RunAnswer) => void;
 }
 
+interface ToolAnswer {
+	readonly isError: boolean;
+	readonly text: string;
+}
+
+const ToolReplySchema = z.union([
+	z.object({
+		result: z.object({
+			content: z.array(z.object({ text: z.string().optional() })),
+			isError: z.boolean().optional(),
+		}),
+	}),
+	z.object({ error: z.object({ message: z.string() }) }),
+]);
+const ListedToolsSchema = z.object({
+	result: z.object({
+		tools: z.array(
+			z.object({
+				name: z.string(),
+				inputSchema: z.object({ properties: z.record(z.string(), z.unknown()).optional() }),
+			}),
+		),
+	}),
+});
+const SUMI_PLUGINS = startSumiPlugins(builtInPluginState());
+const TASK_WORK = SUMI_PLUGINS.windowModules
+	.map(({ moduleOf }) => moduleOf({}))
+	.filter(({ definition }) => definition.name === "task-work");
+
 function tasksApp(): Runtime {
 	const link = localTransport();
 	link.serve(
@@ -58,8 +87,73 @@ function tasksApp(): Runtime {
 			.start({ platform: "server", env: {} }),
 	);
 	return runtime()
+		.modules(...TASK_WORK)
 		.imports(tasksContract({ over: link }))
-		.start();
+		.start({ platform: "browser", scope: { workspaceId: "tasks-host" } });
+}
+
+function offersOf(tasks: Runtime): WindowOffers {
+	return {
+		workspaceId: "tasks-host",
+		platform: "browser",
+		windowApp: tasks,
+		core: localTransport(),
+		windowServer: localTransport(),
+		focusedChatId: () => null,
+	};
+}
+
+function servedOrNull(serve: (offers: WindowOffers) => McpServer, tasks: Runtime): McpServer | null {
+	try {
+		return serve(offersOf(tasks));
+	} catch {
+		return null;
+	}
+}
+
+function tasksServerOf(tasks: Runtime): McpServer | null {
+	const served = SUMI_PLUGINS.agentMcpServers.map(({ serve }) => servedOrNull(serve, tasks));
+	return served.find((server) => server?.name === "tasks") ?? null;
+}
+
+async function replyOf(tasks: Runtime, chatId: string, message: unknown): Promise<unknown> {
+	return tasksServerOf(tasks)?.answer(message, { headers: new Headers({ "sumi-chat": chatId }) });
+}
+
+async function toolOf(tasks: Runtime, chatId: string, call: { readonly name: string; readonly args: unknown }) {
+	const reply = ToolReplySchema.parse(
+		await replyOf(tasks, chatId, {
+			jsonrpc: "2.0",
+			id: 1,
+			method: "tools/call",
+			params: {
+				name: call.name,
+				arguments: call.args,
+			},
+		}),
+	);
+
+	if ("error" in reply) {
+		return {
+			isError: true,
+			text: reply.error.message,
+		};
+	}
+
+	return {
+		isError: reply.result.isError === true,
+		text: reply.result.content.map(({ text }) => text ?? "").join(""),
+	} satisfies ToolAnswer;
+}
+
+async function answeredOf(tasks: Runtime, chatId: string, call: { readonly name: string; readonly args: unknown }) {
+	const answer = await toolOf(tasks, chatId, call);
+
+	if (answer.isError) {
+		throw new Error(`${call.name} refused: ${answer.text}`);
+	}
+
+	return JSON.parse(answer.text);
 }
 
 async function viewOf(tasks: Runtime, task: string): Promise<TaskView> {
@@ -91,72 +185,73 @@ async function statusComes(
 	return false;
 }
 
-async function thrownMessageOf(run: () => Promise<unknown>): Promise<string> {
-	try {
-		await run();
-		return "";
-	} catch (failure) {
-		return failure instanceof Error ? failure.message : String(failure);
-	}
-}
-
 async function startedTask(tasks: Runtime, chatId: string, title: string): Promise<string> {
-	const context = {
-		app: tasks,
-		chatId,
-		queue: {
-			handQueueToAgent: () => null,
+	const created = await answeredOf(tasks, chatId, {
+		name: "task-work_tasks_create",
+		args: {
+			title,
+			kind: "code",
+			acceptance: ["the line shows above the composer"],
+			plan: ["draw the line", "test it"],
 		},
-	};
-	const created = await runAgentTool(context, "task_create", {
-		title,
-		kind: "code",
-		acceptance: ["the line shows above the composer"],
-		plan: ["draw the line", "test it"],
 	});
 	const id = createdIdOf(created);
-	await runAgentTool(context, "task_attach", {
-		task: id,
-		item: WORKPLACE,
+	await answeredOf(tasks, chatId, {
+		name: "task-work_tasks_attach",
+		args: {
+			task: id,
+			item: WORKPLACE,
+		},
 	});
-	await runAgentTool(context, "task_start", { task: id });
+	await answeredOf(tasks, chatId, {
+		name: "task-work_tasks_start",
+		args: { task: id },
+	});
 	return id;
 }
 
 async function toolsTakeTheChatFromContext(): Promise<void> {
 	const tasks = tasksApp();
-	const context = {
-		app: tasks,
-		chatId: A,
-		queue: {
-			handQueueToAgent: () => null,
+	const created = await answeredOf(tasks, A, {
+		name: "task-work_tasks_create",
+		args: {
+			chat: FOREIGN,
+			title: "Draw the task line",
+			kind: "code",
+			acceptance: ["the line shows above the composer"],
+			plan: ["draw the line", "test it"],
 		},
-	};
-	const created = await runAgentTool(context, "task_create", {
-		chat: FOREIGN,
-		title: "Draw the task line",
-		kind: "code",
-		acceptance: ["the line shows above the composer"],
-		plan: ["draw the line", "test it"],
 	});
 	const id = createdIdOf(created);
-	check("task_create writes the asking chat, not the one the model sent", (await viewOf(tasks, id)).createdBy, A);
-	await runAgentTool(context, "task_attach", {
-		chat: FOREIGN,
-		task: id,
-		item: WORKPLACE,
+	check(
+		"task-work_tasks_create writes the chat of the sumi-chat header, not the one the model sent",
+		(await viewOf(tasks, id)).createdBy,
+		A,
+	);
+	await answeredOf(tasks, A, {
+		name: "task-work_tasks_attach",
+		args: {
+			chat: FOREIGN,
+			task: id,
+			item: WORKPLACE,
+		},
 	});
-	await runAgentTool(context, "task_start", {
-		chat: FOREIGN,
-		task: id,
+	await answeredOf(tasks, A, {
+		name: "task-work_tasks_start",
+		args: {
+			chat: FOREIGN,
+			task: id,
+		},
 	});
-	check("task_start makes the context's chat the owner", (await viewOf(tasks, id)).card.owner, A);
-	const refused = await thrownMessageOf(() =>
-		runAgentTool(context, "task_move", {
+	check("task-work_tasks_start makes the header's chat the owner", (await viewOf(tasks, id)).card.owner, A);
+	const moved = await toolOf(tasks, A, {
+		name: "task-work_tasks_move",
+		args: {
 			task: id,
 			to: "ready_to_test",
-		}),
-	);
+		},
+	});
+	const refused = moved.isError ? moved.text : "";
 	check("a refused move reaches the agent as an error", refused.includes("cannot go to ready_to_test yet"), true);
 	check("the error lists what is missing", refused.includes("draw the line"), true);
 	check("the refused task stays in progress", (await viewOf(tasks, id)).card.status, "in_progress");
@@ -416,23 +511,29 @@ async function personTurnsAreNotCounted(): Promise<void> {
 
 async function toolInputs(): Promise<void> {
 	const tasks = tasksApp();
-	const context = {
-		app: tasks,
-		chatId: A,
-		queue: {
-			handQueueToAgent: () => null,
-		},
-	};
-	const notObject = await thrownMessageOf(() => runAgentTool(context, "task_list", "everything"));
-	check("a non-object input is refused", notObject.includes("input is not an object"), true);
-	const created = await runAgentTool(context, "task_create", {
-		title: "Nulls are fine",
-		kind: "ops",
-		description: null,
-		acceptance: null,
-		parent: null,
+	const notObject = await toolOf(tasks, A, {
+		name: "task-work_tasks_all",
+		args: "everything",
 	});
-	check("null optional fields are taken as left out", createdIdOf(created), "T-1");
+	check("a non-object input is refused", notObject, {
+		isError: true,
+		text: "tools/call takes { name, arguments }.",
+	});
+	const created = await toolOf(tasks, A, {
+		name: "task-work_tasks_create",
+		args: {
+			title: "Nulls are fine",
+			kind: "ops",
+			description: null,
+			acceptance: null,
+			parent: null,
+		},
+	});
+	check(
+		"null optional fields are taken as left out",
+		created.isError ? created.text : createdIdOf(JSON.parse(created.text)),
+		"T-1",
+	);
 }
 
 const LIMITS = ["minLength", "maxLength", "minItems", "maxItems", "minimum", "maximum"];
@@ -457,20 +558,30 @@ function limitsOf(property: unknown): string {
 	return [...own, `items(${limitsOf(branch["items"])})`].join(",");
 }
 
-function toolLimitsMatchTheSchemas(): void {
+async function toolLimitsMatchTheSchemas(): Promise<void> {
 	const toolSchemas = {
-		task_create: CreateTaskAskSchema,
-		task_update: EditTaskAskSchema,
-		task_step: MarkStepAskSchema,
-		task_move: MoveTaskAskSchema,
+		"task-work_tasks_create": CreateTaskAskSchema,
+		"task-work_tasks_update": EditTaskAskSchema,
+		"task-work_tasks_mark-step": MarkStepAskSchema,
+		"task-work_tasks_move": MoveTaskAskSchema,
 	};
+	const served = ListedToolsSchema.parse(
+		await replyOf(tasksApp(), A, {
+			jsonrpc: "2.0",
+			id: 1,
+			method: "tools/list",
+		}),
+	).result.tools;
 
 	for (const [name, schema] of Object.entries(toolSchemas)) {
-		const tool = TOOLS.find((listed) => listed.name === name);
+		const listed = served.find((tool) => tool.name === name)?.inputSchema.properties ?? {};
 		const declared = z.toJSONSchema(schema, { io: "input" }).properties ?? {};
-		const listed: Record<string, unknown> = tool?.inputSchema.properties ?? {};
 		const drift = Object.keys(listed).filter((key) => limitsOf(listed[key]) !== limitsOf(declared[key]));
-		check(`${name} in tools.json carries the zod limits`, drift, []);
+		check(
+			`${name} as served carries the tasks module's zod limits`,
+			[Object.keys(listed).length > 0, drift],
+			[true, []],
+		);
 	}
 }
 
@@ -485,7 +596,7 @@ await clearedChatGetsNoNudge();
 await taskStartedInTheTurnIsGuarded();
 await personTurnsAreNotCounted();
 await toolInputs();
-toolLimitsMatchTheSchemas();
+await toolLimitsMatchTheSchemas();
 
 if (tally.failed > 0) {
 	console.log(`tasks host: ${tally.failed} check(s) failed`);

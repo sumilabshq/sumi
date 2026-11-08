@@ -1,11 +1,10 @@
-import { Fragment, createElement as h, useRef } from "react";
+import { Fragment, createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { useMessageScroller } from "@widgetarium/kit";
 import type { AssistantCall, AssistantSession, CallFace } from "@widgetarium/core/engine/assistant-port.js";
 import { Fold } from "../fold/fold.js";
 import { CallRows } from "../tool-calls/call-rows.js";
-import { TaskRow } from "../active-tasks/task-row.js";
-import { useChatTasks } from "../../lib/use-chat-tasks.js";
+import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import { useIsStuckBelow } from "../../lib/use-is-stuck-below.js";
 import { useRemembersGroupOpen } from "../../lib/use-remembers-group-open.js";
 import { LiveHead } from "./live-head.js";
@@ -17,13 +16,20 @@ export interface LiveGroupProps {
 	readonly chatId?: string | undefined;
 }
 
+interface LiveSlots {
+	readonly tail: ReactElement | null;
+	readonly rows: ReactElement | null;
+}
+
 export function LiveGroup({ calls, faces, session, chatId }: LiveGroupProps): ReactElement {
 	const end = useRef<HTMLDivElement | null>(null);
 	const isStuck = useIsStuckBelow(end);
 	const [isOpen, setOpen] = useRemembersGroupOpen(calls[0]?.ref);
 	const { scrollToEnd } = useMessageScroller();
-	const tasks = useChatTasks(chatId);
-	const canOpen = calls.length > 0 || tasks.length > 0;
+	// TRADE-OFF: a fill reports its rows through a prop, so a second fill of chat.live-tail overwrites the first's count
+	const [slotRows, setSlotRows] = useState(0);
+	const { tail, rows } = liveSlotsOf(chatId, setSlotRows);
+	const canOpen = calls.length > 0 || slotRows > 0;
 	const isShownOpen = canOpen && isOpen && !isStuck;
 	const press = (): void => {
 		if (isStuck) {
@@ -41,19 +47,28 @@ export function LiveGroup({ calls, faces, session, chatId }: LiveGroupProps): Re
 					calls={calls}
 					faces={faces}
 					session={session}
-					tasks={tasks.length}
+					tail={tail}
 					isOpen={canOpen ? isShownOpen : undefined}
 					onPress={press}
 				/>
 				<Fold isOpen={isShownOpen}>
 					<CallRows calls={calls} faces={faces}>
-						{tasks.map((card) => (
-							<TaskRow key={card.id} card={card} />
-						))}
+						{rows}
 					</CallRows>
 				</Fold>
 			</div>
 			<div className="wg-studio-ai-live-end" ref={end} aria-hidden="true" />
 		</Fragment>
 	);
+}
+
+function liveSlotsOf(chatId: string | undefined, onRowsCounted: (rows: number) => void): LiveSlots {
+	if (chatId === undefined) {
+		return { tail: null, rows: null };
+	}
+
+	return {
+		tail: <ListPluginSlot name="chat.live-tail" props={{ chatId, onRowsCounted }} />,
+		rows: <ListPluginSlot name="chat.live-rows" props={{ chatId }} />,
+	};
 }

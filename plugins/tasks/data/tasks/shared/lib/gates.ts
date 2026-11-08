@@ -192,10 +192,12 @@ function missingForStart(board: Board, task: Task, move: Asked): readonly string
 
 function missingPartsOf(task: Task): readonly string[] {
 	return [
-		...(task.acceptance.length === 0 ? ["add at least one acceptance criterion (task_update addCriteria)"] : []),
-		...(task.plan.length === 0 ? ["add at least one plan step (task_update addSteps)"] : []),
+		...(task.acceptance.length === 0
+			? ["add at least one acceptance criterion (task-work_tasks_update addCriteria)"]
+			: []),
+		...(task.plan.length === 0 ? ["add at least one plan step (task-work_tasks_update addSteps)"] : []),
 		...(task.kind === "code" && task.workplaces.length === 0
-			? ["attach the folder and branch it works in (task_attach workplace)"]
+			? ["attach the folder and branch it works in (task-work_tasks_attach workplace)"]
 			: []),
 	];
 }
@@ -224,7 +226,7 @@ function missingTests(task: Task): readonly string[] {
 	const run = task.testPlan?.runs.at(-1);
 
 	if (task.testPlan === null || run === undefined) {
-		return ["attach a test plan and a test run on a test stand (task_attach test_plan, then test_run)"];
+		return ["attach a test plan and a test run on a test stand (task-work_tasks_attach test_plan, then test_run)"];
 	}
 
 	const failed = Object.entries(run.results)

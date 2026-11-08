@@ -122,7 +122,7 @@ export function nudgeOf(task: Task): string {
 	const criteria = criteriaCountOf(task);
 	return [
 		`[Sumi] ${idOf(task.number)} "${oneLine(task.title)}" is still in progress: ${steps.total - steps.done} of ${steps.total} steps open, ${criteria.done} of ${criteria.total} criteria met or dropped.`,
-		"Go on with it, or move it with task_move: ready_to_test when every step and criterion is settled, paused or blocked with a note when you cannot go on.",
+		"Go on with it, or move it with task-work_tasks_move: ready_to_test when every step and criterion is settled, paused or blocked with a note when you cannot go on.",
 	].join(" ");
 }
 
@@ -158,7 +158,7 @@ function trailerOf(board: Board, chat: string): string | null {
 		`[Sumi] This chat's task: ${idOf(task.number)} "${oneLine(task.title)}", ${task.status}, ${steps.done} of ${steps.total} steps done.`,
 		next === null ? null : `Next step: ${stepForAgentOf(next)}.`,
 		task.status === "in_progress"
-			? "Mark each step with task_step as you finish it; move the task before you stop."
+			? "Mark each step with task-work_tasks_mark-step as you finish it; move the task before you stop."
 			: null,
 	];
 	return lines.filter((line) => line !== null).join(" ");

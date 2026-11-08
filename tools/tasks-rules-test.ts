@@ -1,13 +1,13 @@
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { tasks as tasksContract } from "../packages/domain/tasks/generated/contract.ts";
-import { tasks as tasksModule } from "../packages/domain/tasks/generated/module.ts";
-import { FixedClockGateway } from "../packages/domain/tasks/gateways/clock/clock.gateway.ts";
-import { MemoryTasksGateway } from "../packages/domain/tasks/gateways/tasks/memory.gateway.ts";
-import { BoardSchema, MOST_PROGRESSED } from "../packages/domain/tasks/shared/schema/task.schema.ts";
+import { tasks as tasksContract } from "../plugins/tasks/data/tasks/generated/contract.ts";
+import { tasks as tasksModule } from "../plugins/tasks/data/tasks/generated/module.ts";
+import { FixedClockGateway } from "../plugins/tasks/data/tasks/gateways/clock/clock.gateway.ts";
+import { MemoryTasksGateway } from "../plugins/tasks/data/tasks/gateways/tasks/memory.gateway.ts";
+import { BoardSchema, MOST_PROGRESSED } from "../plugins/tasks/data/tasks/shared/schema/task.schema.ts";
 import { undeliveredWordsOf } from "../apps/tasks/src/features/tasks/lib/use-deliver-task.ts";
-import type { Task } from "../packages/domain/tasks/shared/schema/task.schema.ts";
-import type { TaskView } from "../packages/domain/tasks/shared/schema/task-view.schema.ts";
+import type { Task } from "../plugins/tasks/data/tasks/shared/schema/task.schema.ts";
+import type { TaskView } from "../plugins/tasks/data/tasks/shared/schema/task-view.schema.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const DAY = 86_400_000;
@@ -440,7 +440,7 @@ async function watchdog(): Promise<void> {
 	const todo = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
 		"continuing a task with no chat puts it back in To do for any chat",
-		[takeOver.chat, todo.card.status, takeOver.message.includes("task_start")],
+		[takeOver.chat, todo.card.status, takeOver.message.includes("task-work_tasks_start")],
 		[null, "todo", true],
 	);
 }
@@ -1165,7 +1165,7 @@ async function continuing(): Promise<void> {
 	const reopened = outputOf(await sent.tasks.send(tasksContract.board.one, { task: back }));
 	check(
 		"send back with no live chat puts it in To do for any chat",
-		[answer.chat, reopened.card.status, reopened.card.owner, answer.message.includes("task_start")],
+		[answer.chat, reopened.card.status, reopened.card.owner, answer.message.includes("task-work_tasks_start")],
 		[null, "todo", null, true],
 	);
 	check("with the note as a new criterion", reopened.acceptance.at(-1)?.text, "still overlaps");

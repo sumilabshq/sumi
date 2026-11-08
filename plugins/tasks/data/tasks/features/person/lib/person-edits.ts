@@ -15,11 +15,12 @@ const UNDELIVERED = "its chat did not get the message ({reason})";
 const NOTE_DOES_NOT_FIT =
 	"{id} already holds {most} acceptance criteria, so your note cannot be added. Accept it, or cancel it and create a follow-up task with your note.";
 const KEPT = "{id} kept by you: quiet for 0 days";
-const CONTINUE_MESSAGE = 'Continue {id} "{title}".{next} Read it with task_get first.';
-const START_MESSAGE = 'Take over {id} "{title}": read it with task_get, then task_start it and go on.';
+const CONTINUE_MESSAGE = 'Continue {id} "{title}".{next} Read it with task-work_tasks_one first.';
+const START_MESSAGE =
+	'Take over {id} "{title}": read it with task-work_tasks_one, then task-work_tasks_start it and go on.';
 const SENT_BACK_MESSAGE = 'The person sent {id} back: "{note}". Fix it, then move it to ready_to_test again.';
 const SENT_BACK_TODO_MESSAGE =
-	'The person sent {id} "{title}" back: "{note}". Take it over: read it with task_get, task_start it, fix it, then move it to ready_to_test again.';
+	'The person sent {id} "{title}" back: "{note}". Take it over: read it with task-work_tasks_one, task-work_tasks_start it, fix it, then move it to ready_to_test again.';
 const MINUTE_MS = 60_000;
 
 const HOST: Move["by"] = {

@@ -1,5 +1,5 @@
 import { createElement as h } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { Icon } from "@widgetarium/kit";
 import type { AssistantCall, AssistantSession, CallFace } from "@widgetarium/core/engine/assistant-port.js";
 import { BusyMark } from "../busy-mark/busy-mark.js";
@@ -13,12 +13,12 @@ export interface LiveHeadProps {
 	readonly calls: readonly AssistantCall[];
 	readonly faces: readonly CallFace[];
 	readonly session: AssistantSession;
-	readonly tasks: number;
+	readonly tail: ReactNode;
 	readonly isOpen: boolean | undefined;
 	readonly onPress: () => void;
 }
 
-export function LiveHead({ calls, faces, session, tasks, isOpen, onPress }: LiveHeadProps): ReactElement {
+export function LiveHead({ calls, faces, session, tail, isOpen, onPress }: LiveHeadProps): ReactElement {
 	const { done, now } = liveSaidOf(calls, faces, saidWaiting(session.phase));
 	const changed = changedLinesOf(faces);
 	return (
@@ -29,7 +29,9 @@ export function LiveHead({ calls, faces, session, tasks, isOpen, onPress }: Live
 				{now === "" ? null : <span className="wg-studio-ai-live-now">{now}</span>}
 			</span>
 			{changed === null ? null : <LineCounts added={changed.added} removed={changed.removed} />}
-			<LiveTail calls={calls} session={session} tasks={tasks} />
+			<LiveTail calls={calls} session={session}>
+				{tail}
+			</LiveTail>
 			{isOpen === undefined ? null : (
 				<Icon
 					name="chevron-right"

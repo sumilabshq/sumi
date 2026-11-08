@@ -13,7 +13,7 @@ export const STATUS_WORDS: Readonly<Record<TaskStatus, string>> = {
 
 export const STATUS_GUIDE: Readonly<Record<TaskStatus, string>> = {
 	backlog: "known, not planned now; never start it without the person",
-	todo: "next; any agent may start it with task_start",
+	todo: "next; any agent may start it with task-work_tasks_start",
 	in_progress: "you are working; mark each step the moment it is done; you may not stop here",
 	ready_to_test: "the person's turn; stop and say what to try and where; move it on only when they say so in this chat",
 	done: "accepted; only when the person said so in this chat, their words as the note",

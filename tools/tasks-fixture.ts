@@ -1,4 +1,4 @@
-import type { Board, Task, TaskStatus, Transition } from "../packages/domain/tasks/shared/schema/task.schema.ts";
+import type { Board, Task, TaskStatus, Transition } from "../plugins/tasks/data/tasks/shared/schema/task.schema.ts";
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
