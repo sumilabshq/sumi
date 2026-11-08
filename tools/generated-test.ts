@@ -1065,6 +1065,58 @@ try {
 		refusedWith(await cli(["plugins/notes-board"], scratch), "plugin() takes its id as one kebab-case string"),
 		[1, true],
 	);
+	const BOARD_VIEW = "src/features/board/ui/board-view/board-view.tsx";
+	const boardViewOf = (slots: string): Readonly<Record<string, string>> => ({
+		...BOARD_PLUGIN_FILES,
+		[BOARD_VIEW]: `export function BoardView({ noteId }) {\n\treturn <div>${slots}</div>;\n}\n`,
+	});
+	layFiles(
+		board,
+		boardViewOf(
+			'<PluginSlot name="notes-board.note-title" props={{ noteId }}>title</PluginSlot><ListPluginSlot name="notes-board.note-marks" />',
+		),
+	);
+	check(
+		"generate types each PluginSlot and ListPluginSlot drawn in the plugin's .tsx under slots, keyed by the slot's camelCase name",
+		[(await cli(["plugins/notes-board"], scratch)).code, entryIn(board, PLUGIN_ENTRY)],
+		[
+			0,
+			[
+				GENERATED_HEADER.trimEnd(),
+				'import { listPluginSlot, pluginSlot, pluginWithSlots } from "@widgetarium/plugin-framework";',
+				'import { notesBoard as definition } from "../plugin.js";',
+				"",
+				"export const notesBoard = pluginWithSlots(definition, {",
+				"\tslots: {",
+				'\t\tnoteTitle: pluginSlot<{ readonly noteId: never }>("notes-board.note-title"),',
+				'\t\tnoteMarks: listPluginSlot<{}>("notes-board.note-marks"),',
+				"\t},",
+				"});",
+				"",
+			].join("\n"),
+		],
+	);
+	layFiles(board, boardViewOf('<PluginSlot name="chat.note-title" />'));
+	check(
+		"a slot named under another plugin's id is refused",
+		refusedWith(await cli(["plugins/notes-board"], scratch), 'must be named "notes-board.<slot>"'),
+		[1, true],
+	);
+	layFiles(
+		board,
+		boardViewOf('<PluginSlot name="notes-board.note-title" /><ListPluginSlot name="notes-board.note-title" />'),
+	);
+	check(
+		"one slot name drawn twice is refused",
+		refusedWith(await cli(["plugins/notes-board"], scratch), "is already drawn in"),
+		[1, true],
+	);
+	layFiles(board, boardViewOf('<PluginSlot name="notes-board.note-title" props={note} />'));
+	check(
+		"slot props that are not an object literal are refused",
+		refusedWith(await cli(["plugins/notes-board"], scratch), "takes props as an object literal"),
+		[1, true],
+	);
 } finally {
 	fs.rmSync(scratch, { recursive: true, force: true });
 }
