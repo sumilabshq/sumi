@@ -4,9 +4,9 @@ import {
 	DerivedFill,
 	SumiProfileSchema,
 	fillKeyOf,
-	namedPlugin,
 	namedSlot,
 	plugin,
+	pluginWithSlots,
 	profileRefusalsOf,
 	slot,
 	slotFillsOf,
@@ -36,18 +36,17 @@ function sizedSlot(): ListSlot<z.ZodObject<{ title: z.ZodString; size: z.ZodNumb
 }
 
 const layoutPlate = titledSlot();
-const layout = namedPlugin("layout", plugin().declare(layoutPlate), { plate: namedSlot("plate", layoutPlate) });
+const layout = pluginWithSlots(plugin("layout").declare(layoutPlate), { plate: namedSlot("plate", layoutPlate) });
 const menuDoors = slot()
 	.item(z.strictObject({ key: z.string().min(1) }))
 	.list();
-const menu = namedPlugin("command-menu", plugin().declare(menuDoors), { doors: namedSlot("doors", menuDoors) });
+const menu = pluginWithSlots(plugin("command-menu").declare(menuDoors), { doors: namedSlot("doors", menuDoors) });
 const composerStatus = slot()
 	.item(z.object({ text: z.string() }))
 	.list();
 const chatTitle = slot().item(z.object({ text: z.string().default("Chat") }));
-const chat = namedPlugin(
-	"chat",
-	plugin()
+const chat = pluginWithSlots(
+	plugin("chat")
 		.require(layout)
 		.optional(menu)
 		.declare(composerStatus, chatTitle)
@@ -61,26 +60,15 @@ const chat = namedPlugin(
 		chatTitle: namedSlot("chat-title", chatTitle),
 	},
 );
-const agents = namedPlugin(
-	"background-agents",
-	plugin()
-		.require(chat)
-		.fill(
-			chat.composerStatus.add({ id: "agents", text: "3 background agents" }),
-			chat.chatTitle.set({ text: "Agents" }),
-		),
-	{},
-);
-const usage = namedPlugin(
-	"usage-meter",
-	plugin()
-		.require(chat)
-		.fill(
-			chat.composerStatus.add({ id: "usage", text: "12k tokens" }),
-			chat.composerStatus.add({ id: "agents", text: "agents, counted by usage" }),
-		),
-	{},
-);
+const agents = plugin("background-agents")
+	.require(chat)
+	.fill(chat.composerStatus.add({ id: "agents", text: "3 background agents" }), chat.chatTitle.set({ text: "Agents" }));
+const usage = plugin("usage-meter")
+	.require(chat)
+	.fill(
+		chat.composerStatus.add({ id: "usage", text: "12k tokens" }),
+		chat.composerStatus.add({ id: "agents", text: "agents, counted by usage" }),
+	);
 const installedPlugins = [usage, agents, chat, layout, menu];
 const profile = SumiProfileSchema.parse({
 	plugins: ["layout", "chat", "background-agents", "usage-meter", "command-menu"],
@@ -98,19 +86,14 @@ export function refusedByTypes(): void {
 }
 
 check(
-	"a plugin's id comes from naming it, and reading it before throws, naming the fix",
-	thrownBy(() => plugin().id),
-	"a plugin has no name yet: its name comes from the variable it is exported as, written in by the generator; run npm run generate",
-);
-check(
-	"a slot's name before it is named throws the same way",
+	"a slot's name before it is named throws, naming the fix",
 	thrownBy(() => titledSlot().name),
 	"a slot has no name yet: its name comes from the variable it is exported as, written in by the generator; run npm run generate",
 );
 check(
-	"a plugin named twice differently throws",
-	thrownBy(() => namedPlugin("other-layout", layout, {})),
-	'a plugin is already named "layout", and is named "other-layout" again: name each building block once',
+	"a slot handed to a second plugin throws, naming both owners",
+	thrownBy(() => pluginWithSlots(plugin("other-layout"), { plate: layout.plate })),
+	'a slot is already named "layout", and is named "other-layout" again: name each building block once',
 );
 check(
 	"a slot is named by its owner and its own name, joined by a dot",
@@ -119,7 +102,7 @@ check(
 );
 check(
 	"a plugin id that is not kebab case throws where it is named",
-	thrownBy(() => namedPlugin("Chat", plugin(), {})),
+	thrownBy(() => plugin("Chat")),
 	'"Chat" is not a name: one kebab-case segment of a-z, such as "command-menu", no digits, capitals, "." or "/"',
 );
 check(
@@ -129,7 +112,7 @@ check(
 );
 check(
 	"a slot whose key is a field of every plugin is refused",
-	thrownBy(() => namedPlugin("fielded", plugin(), { id: namedSlot("id", titledSlot()) })),
+	thrownBy(() => pluginWithSlots(plugin("fielded"), { id: namedSlot("id", titledSlot()) })),
 	"plugin fielded declares a slot named id, which is a field of every plugin: rename the slot's constant",
 );
 
@@ -152,9 +135,9 @@ check(
 const withoutMenu = startOrderOf(installedPlugins, ["layout", "chat"]);
 check("a plugin starts when an optional plugin it wants is off", idsOf(withoutMenu.plugins), ["layout", "chat"]);
 
-const loopEnd = namedPlugin("loop-end", plugin(), {});
-const loopMiddle = namedPlugin("loop-middle", plugin().require(loopEnd), {});
-const loopEndClosed = namedPlugin("loop-end", plugin().require(loopMiddle), {});
+const loopEnd = plugin("loop-end");
+const loopMiddle = plugin("loop-middle").require(loopEnd);
+const loopEndClosed = plugin("loop-end").require(loopMiddle);
 check(
 	"a requirement cycle is refused on both sides",
 	startOrderOf([loopEndClosed, loopMiddle], ["loop-end", "loop-middle"]).refusals,
@@ -164,9 +147,9 @@ check(
 	],
 );
 
-const wantsBack = namedPlugin("wants-back", plugin(), {});
-const wantsFirst = namedPlugin("wants-first", plugin().optional(wantsBack), {});
-const wantsBackClosed = namedPlugin("wants-back", plugin().optional(wantsFirst), {});
+const wantsBack = plugin("wants-back");
+const wantsFirst = plugin("wants-first").optional(wantsBack);
+const wantsBackClosed = plugin("wants-back").optional(wantsFirst);
 const optionalLoop = startOrderOf([wantsFirst, wantsBackClosed], ["wants-first", "wants-back"]);
 check(
 	"two plugins wanting each other optionally both start, with no refusal",
@@ -241,8 +224,8 @@ check(
 
 const onePages = slot().item(z.string());
 const otherPages = slot().item(z.string());
-const one = namedPlugin("one", plugin().declare(onePages), { pages: namedSlot("pages", onePages) });
-const other = namedPlugin("other", plugin().declare(otherPages), { pages: namedSlot("pages", otherPages) });
+const one = pluginWithSlots(plugin("one").declare(onePages), { pages: namedSlot("pages", onePages) });
+const other = pluginWithSlots(plugin("other").declare(otherPages), { pages: namedSlot("pages", otherPages) });
 const twoPages = slotFillsOf([one, other], ["one", "other"]);
 check(
 	"two plugins may each declare a slot of the same name",
@@ -250,21 +233,21 @@ check(
 	[["one.pages", "other.pages"], []],
 );
 
-const redeclaring = namedPlugin("redeclaring", plugin().declare(layout.plate), {});
+const redeclaring = plugin("redeclaring").declare(layout.plate);
 check(
 	"a slot declared by a plugin other than the one its name places it under is refused",
 	slotFillsOf([layout, redeclaring], ["layout", "redeclaring"]).refusals,
 	["plugin redeclaring declares slot layout.plate, which is named as a slot of plugin layout"],
 );
 
-const declaredTwice = namedPlugin("layout", plugin().declare(layoutPlate, layoutPlate), { plate: layoutPlate });
+const declaredTwice = pluginWithSlots(plugin("layout").declare(layoutPlate, layoutPlate), { plate: layoutPlate });
 check("a second declaration of the same slot is refused", slotFillsOf([declaredTwice], ["layout"]).refusals, [
 	"slot layout.plate is declared by layout and again by layout",
 ]);
 
 const strayShelf = slot().item(z.object({ title: z.string() }));
 namedSlot("shelf", strayShelf);
-const shelfless = namedPlugin("shelfless", plugin().declare(strayShelf), {});
+const shelfless = plugin("shelfless").declare(strayShelf);
 check(
 	"a slot its plugin's generated namespace does not name is refused, naming the fix",
 	slotFillsOf([shelfless], ["shelfless"]).refusals,
@@ -272,7 +255,7 @@ check(
 );
 const firstTwin = slot().item(z.string());
 const secondTwin = slot().item(z.string());
-const twice = namedPlugin("twice", plugin().declare(firstTwin, secondTwin), {
+const twice = pluginWithSlots(plugin("twice").declare(firstTwin, secondTwin), {
 	firstTwin: namedSlot("pages", firstTwin),
 	secondTwin: namedSlot("pages", secondTwin),
 });
@@ -281,13 +264,13 @@ check("a plugin declaring two slots of one name is refused", slotFillsOf([twice]
 ]);
 
 const nowhereSpot = slot().item(z.string());
-const nowhere = namedPlugin("nowhere", plugin().declare(nowhereSpot), { spot: namedSlot("spot", nowhereSpot) });
-const orphan = namedPlugin("orphan", plugin().fill(nowhere.spot.set("x")), {});
+const nowhere = pluginWithSlots(plugin("nowhere").declare(nowhereSpot), { spot: namedSlot("spot", nowhereSpot) });
+const orphan = plugin("orphan").fill(nowhere.spot.set("x"));
 check("a fill of a slot no started plugin declares is refused", slotFillsOf([orphan], ["orphan"]).refusals, [
 	"plugin orphan fills slot nowhere.spot, which no started plugin declares",
 ]);
 
-const stranger = namedPlugin("stranger", plugin().fill(layout.plate.add({ id: "stranger", title: "Stranger" })), {});
+const stranger = plugin("stranger").fill(layout.plate.add({ id: "stranger", title: "Stranger" }));
 check(
 	"a fill of a plugin the filler neither requires nor marks optional is refused",
 	slotFillsOf([layout, stranger], ["layout", "stranger"]).refusals,
@@ -297,55 +280,39 @@ check(
 const lookalikePlate = slot()
 	.item(z.object({ count: z.number() }))
 	.list();
-const lookalikeLayout = namedPlugin("layout", plugin().declare(lookalikePlate), {
+const lookalikeLayout = pluginWithSlots(plugin("layout").declare(lookalikePlate), {
 	plate: namedSlot("plate", lookalikePlate),
 });
-const lookalike = namedPlugin(
-	"lookalike",
-	plugin()
-		.require(layout)
-		.fill(lookalikeLayout.plate.add({ id: "lookalike", count: 1 })),
-	{},
-);
+const lookalike = plugin("lookalike")
+	.require(layout)
+	.fill(lookalikeLayout.plate.add({ id: "lookalike", count: 1 }));
 check(
 	"a fill of a lookalike slot of the same full name is refused even when the filler requires its namesake's owner",
 	slotFillsOf([layout, lookalike], ["layout", "lookalike"]).refusals,
 	["plugin lookalike fills slot layout.plate, which no started plugin declares"],
 );
 
-const undeclaredDependency = namedPlugin(
-	"undeclared-dependency",
-	plugin()
-		.require(layout)
-		.fill(layout.plate.add({ id: "undeclared", title: "Undeclared" }), chat.chatTitle.set({})),
-	{},
-);
+const undeclaredDependency = plugin("undeclared-dependency")
+	.require(layout)
+	.fill(layout.plate.add({ id: "undeclared", title: "Undeclared" }), chat.chatTitle.set({}));
 check(
 	"a fill of a slot owned by a plugin it does not depend on is refused, naming the owner",
 	slotFillsOf([layout, chat, undeclaredDependency], ["layout", "chat", "undeclared-dependency"]).refusals,
 	["plugin undeclared-dependency fills slot chat.chat-title without requiring chat or marking it optional"],
 );
 
-const emptyDoor = namedPlugin(
-	"empty-door",
-	plugin()
-		.require(menu)
-		.fill(menu.doors.add({ id: "empty", key: "" })),
-	{},
-);
+const emptyDoor = plugin("empty-door")
+	.require(menu)
+	.fill(menu.doors.add({ id: "empty", key: "" }));
 check(
 	"a fill the slot's schema refuses, with the types satisfied, is refused",
 	slotFillsOf([menu, emptyDoor], ["command-menu", "empty-door"]).refusals,
 	["plugin empty-door fills slot command-menu.doors with an item the slot refuses"],
 );
 
-const keyDoor = namedPlugin(
-	"key-door",
-	plugin()
-		.require(menu)
-		.fill(menu.doors.add({ id: "keys", key: "K" })),
-	{},
-);
+const keyDoor = plugin("key-door")
+	.require(menu)
+	.fill(menu.doors.add({ id: "keys", key: "K" }));
 const keyDoorFills = slotFillsOf([menu, keyDoor], ["command-menu", "key-door"]);
 check(
 	"the declaring plugin reads its slot's fills, parsed, each with its id",
@@ -361,9 +328,8 @@ check(
 );
 
 const filesViewers = sizedSlot();
-const files = namedPlugin(
-	"files",
-	plugin()
+const files = pluginWithSlots(
+	plugin("files")
 		.require(layout)
 		.declare(filesViewers)
 		.fill(
@@ -373,20 +339,12 @@ const files = namedPlugin(
 		),
 	{ viewers: namedSlot("viewers", filesViewers) },
 );
-const markdownViewer = namedPlugin(
-	"markdown-viewer",
-	plugin()
-		.require(files)
-		.fill(files.viewers.add({ id: "markdown", title: "Markdown", size: 1 })),
-	{},
-);
-const imageViewer = namedPlugin(
-	"image-viewer",
-	plugin()
-		.require(files)
-		.fill(files.viewers.add({ id: "image", title: "Image", size: 2 })),
-	{},
-);
+const markdownViewer = plugin("markdown-viewer")
+	.require(files)
+	.fill(files.viewers.add({ id: "markdown", title: "Markdown", size: 1 }));
+const imageViewer = plugin("image-viewer")
+	.require(files)
+	.fill(files.viewers.add({ id: "image", title: "Image", size: 2 }));
 const viewerFills = slotFillsOf(
 	[layout, files, markdownViewer, imageViewer],
 	["layout", "files", "markdown-viewer", "image-viewer"],
@@ -417,9 +375,8 @@ check(
 );
 
 const filteringSized = sizedSlot();
-const filtering = namedPlugin(
-	"filtering",
-	plugin()
+const filtering = pluginWithSlots(
+	plugin("filtering")
 		.require(layout)
 		.declare(filteringSized)
 		.fill(
@@ -438,9 +395,8 @@ check(
 );
 
 const countedSlot = titledSlot();
-const counting = namedPlugin(
-	"counting",
-	plugin()
+const counting = pluginWithSlots(
+	plugin("counting")
 		.require(chat)
 		.declare(countedSlot)
 		.fill(
@@ -459,9 +415,8 @@ check(
 
 const firstSlot = titledSlot();
 const secondSlot = titledSlot();
-const chain = namedPlugin(
-	"chain",
-	plugin()
+const chain = pluginWithSlots(
+	plugin("chain")
 		.require(layout)
 		.declare(firstSlot, secondSlot)
 		.fill(
@@ -482,9 +437,8 @@ check(
 
 const loopFirst = titledSlot();
 const loopSecond = titledSlot();
-const looping = namedPlugin(
-	"looping",
-	plugin()
+const looping = pluginWithSlots(
+	plugin("looping")
 		.declare(loopFirst, loopSecond)
 		.fill(
 			loopSecond.addFrom(loopFirst, (items) => items),
@@ -498,9 +452,8 @@ check("two slots built from each other are both refused as a loop", slotFillsOf(
 ]);
 
 const selfSlot = titledSlot();
-const selfBuilding = namedPlugin(
-	"self-building",
-	plugin()
+const selfBuilding = pluginWithSlots(
+	plugin("self-building")
 		.declare(selfSlot)
 		.fill(selfSlot.addFrom(selfSlot, (items) => items)),
 	{ self: namedSlot("self", selfSlot) },
@@ -509,13 +462,9 @@ check("a slot built from itself is refused as a loop", slotFillsOf([selfBuilding
 	"plugin self-building derives fills of slot self-building.self from slot self-building.self, which waits on those fills: a loop",
 ]);
 
-const borrowing = namedPlugin(
-	"borrowing",
-	plugin()
-		.require(layout, files)
-		.fill(layout.plate.addFrom(files.viewers, (viewers) => viewers.map(({ id, title }) => ({ id, title })))),
-	{},
-);
+const borrowing = plugin("borrowing")
+	.require(layout, files)
+	.fill(layout.plate.addFrom(files.viewers, (viewers) => viewers.map(({ id, title }) => ({ id, title }))));
 check(
 	"building from a slot the plugin does not declare is refused, even from a plugin it requires",
 	slotFillsOf([layout, files, borrowing], ["layout", "files", "borrowing"]).refusals,
@@ -525,9 +474,8 @@ check(
 );
 
 const unownedSized = sizedSlot();
-const unownedBuild = namedPlugin(
-	"unowned-build",
-	plugin()
+const unownedBuild = pluginWithSlots(
+	plugin("unowned-build")
 		.declare(unownedSized)
 		.fill(
 			unownedSized.add({ id: "only", title: "Only", size: 1 }),
@@ -549,9 +497,8 @@ function pluginBuildingPlate(id: string, derive: unknown): Plugin {
 		throw new Error(`plate built for ${id} is not a derived fill`);
 	}
 
-	return namedPlugin(
-		id,
-		plugin()
+	return pluginWithSlots(
+		plugin(id)
 			.require(layout)
 			.declare(sized)
 			.fill(sized.add({ id: "seed", title: "Seed", size: 1 }), built),
@@ -603,7 +550,7 @@ check(
 );
 
 const listedNames = slot().item(z.string());
-const lists = namedPlugin("lists", plugin().declare(listedNames), { names: namedSlot("names", listedNames) });
+const lists = pluginWithSlots(plugin("lists").declare(listedNames), { names: namedSlot("names", listedNames) });
 check(
 	"a fill built from a slot whose items are not objects throws, past the types, naming both slots",
 	thrownBy(() => Reflect.apply(layout.plate.addFrom, layout.plate, [lists.names, () => []])),
@@ -644,7 +591,7 @@ check(
 );
 
 const shownPlate = slot().item(z.object({ title: z.string() }));
-const shownFrom = namedPlugin("shown-from", plugin().declare(shownPlate), { plate: namedSlot("plate", shownPlate) });
+const shownFrom = pluginWithSlots(plugin("shown-from").declare(shownPlate), { plate: namedSlot("plate", shownPlate) });
 check(
 	"a reader reads a declared slot through its list() handle, the same slot by identity",
 	thrownBy(() => slotReaderOf(slotFillsOf([shownFrom], ["shown-from"]), shownFrom).fillsOf(shownPlate.list())),

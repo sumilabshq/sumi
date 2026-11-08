@@ -1,13 +1,12 @@
-import { checkedModuleName, nameIdentity, placeIdentity } from "./identity";
+import { nameIdentity, placeIdentity } from "./identity";
 import type { Identified, Identity } from "./identity";
 import type { ModuleItem } from "./module";
 import type { AnySubscriber } from "./subscriber";
 
 export type NamedItem = Identified | { readonly request: Identified };
 
-export interface HandledItems {
-	readonly module: string;
-	readonly items: readonly ModuleItem[];
+export interface HandlesItems<M> {
+	handles(items: readonly ModuleItem[]): M;
 }
 
 const ITEM = "a request or an event";
@@ -17,11 +16,8 @@ export function named<T extends NamedItem>(path: string, item: T): T {
 	return item;
 }
 
-export function handledItems(module: string, items: readonly ModuleItem[]): HandledItems {
-	return {
-		module: checkedModuleName(module),
-		items,
-	};
+export function handledModule<M extends HandlesItems<M>>(definition: M, items: readonly ModuleItem[]): M {
+	return definition.handles(items);
 }
 
 export function placeItem(item: ModuleItem | NamedItem, module: string): void {

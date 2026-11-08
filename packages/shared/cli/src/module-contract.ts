@@ -10,7 +10,7 @@ import type { SchemasElsewhere } from "./contract-schemas.js";
 import { refuseKeyFunction } from "./contract-key.js";
 import { usesOf } from "./free-names.js";
 import type { NameUse } from "./free-names.js";
-import { FRAMEWORK, camelOf, kebabOf } from "./scaffold-names.js";
+import { FRAMEWORK, SEGMENT_NAME, camelOf } from "./scaffold-names.js";
 import { checkedCamelName, groupOf, pathOf, refuseClashingPaths } from "./item-names.js";
 import { filesUnder } from "./template-files.js";
 import { chainOf, exportedConstsOf, rootCallOf } from "@widgetarium/eslint-plugin/babel-chain";
@@ -101,8 +101,8 @@ const UNREADABLE = "{file} cannot be read: {reason}";
 const NO_POSITION = "{file}: the chain of {name} carries no source position, so its contract cannot be cut from it";
 const NAMED_BY_STRING =
 	"{file}: {name} passes {root}() a name; a building block is named by its constant, so call {root}() with no argument";
-const MODULE_NAMED_BY_STRING =
-	"{module}: module() takes no name; the module is named by its constant, written in by generate";
+const MODULE_NOT_NAMED =
+	'{module}: module() takes its name as one kebab-case string of a-z, such as module("chat-tabs"); wire names start with it';
 const NAMES_A_REQUEST =
 	"{file}: the contract of {name} names the request {used}; a contract step names no other request";
 const CONTRACT_FUNCTION = "moduleContract";
@@ -141,10 +141,6 @@ export function moduleContractsOf(folder: string, moduleName: string): ModuleCon
 		handledItems: items.filter(({ root, isHandled }) => root === "event" || isHandled).map(handledItemOf),
 		ownedEvents: items.filter(({ root }) => root === "event").map(handledItemOf),
 	};
-}
-
-export function moduleTagOfName(moduleName: string): string {
-	return kebabOf(checkedCamelName(moduleName, MODULE_FILE));
 }
 
 function handledItemOf(item: DeclaredItem): HandledItem {
@@ -353,13 +349,13 @@ function placementOf(init: Expression | undefined, moduleName: string): string {
 }
 
 function moduleTagOf(init: Expression | undefined, moduleName: string): string {
-	const passed = init === undefined ? [] : (rootCallOf(init)?.call.arguments ?? []);
+	const [passed, ...others] = init === undefined ? [] : (rootCallOf(init)?.call.arguments ?? []);
 
-	if (passed.length > 0) {
-		throw new CliRefusal(fillTemplate(MODULE_NAMED_BY_STRING, { module: moduleName }));
+	if (passed?.type !== "StringLiteral" || others.length > 0 || !SEGMENT_NAME.test(passed.value)) {
+		throw new CliRefusal(fillTemplate(MODULE_NOT_NAMED, { module: moduleName }));
 	}
 
-	return moduleTagOfName(moduleName);
+	return passed.value;
 }
 
 function contractStepsOf(chain: readonly ChainStep[]): readonly ChainStep[] {

@@ -4,7 +4,7 @@ import type { Expression, Statement } from "@babel/types";
 import { CliRefusal } from "./cli-output.js";
 import { importsIn } from "./contract-imports.js";
 import { checkedCamelName } from "./item-names.js";
-import { kebabOf } from "./scaffold-names.js";
+import { SEGMENT_NAME, kebabOf } from "./scaffold-names.js";
 import { GENERATED_HEADER } from "./module-entry.js";
 import type { GeneratedPackage } from "./module-entry.js";
 import { filesUnder } from "./template-files.js";
@@ -25,9 +25,10 @@ const SLOTS_FILE = "src/slots.ts";
 const SLOTS_SPECIFIER = "./slots.js";
 const GENERATED_FOLDER = "src/generated/";
 const FRAMEWORK = "@widgetarium/plugin-framework";
-const GENERATED_LOCALS: ReadonlySet<string> = new Set(["namedPlugin", "namedSlot", "definition", "slots"]);
-const NOT_ONE_PLUGIN =
-	"{file} exports {count} consts built by plugin(); the generator names the plugin from exactly one";
+const GENERATED_LOCALS: ReadonlySet<string> = new Set(["pluginWithSlots", "namedSlot", "definition", "slots"]);
+const NOT_ONE_PLUGIN = "{file} exports {count} consts built by plugin(); the generator reads exactly one";
+const PLUGIN_NOT_NAMED =
+	'{file}: plugin() takes its id as one kebab-case string of a-z, such as plugin("command-menu"); its slot and fill names start with it';
 const TAKEN_NAME = "{file}: {name} is a name the generated plugin file uses itself; rename the plugin's constant";
 const NOT_A_SLOT =
 	"{file} declares {name}, which is not a slot exported by {slots}; declare only the plugin's own slots";
@@ -55,6 +56,11 @@ function pluginDefinitionOf(folder: string, shownAs: string): PluginDefinition {
 	}
 
 	const name = checkedCamelName(only.name, file);
+	const [id, ...others] = rootCallOf(only.init)?.call.arguments ?? [];
+
+	if (id?.type !== "StringLiteral" || others.length > 0 || !SEGMENT_NAME.test(id.value)) {
+		throw new CliRefusal(fillTemplate(PLUGIN_NOT_NAMED, { file }));
+	}
 
 	if (GENERATED_LOCALS.has(name)) {
 		throw new CliRefusal(fillTemplate(TAKEN_NAME, { file, name }));
@@ -125,10 +131,10 @@ function pluginTextOf(name: string, slots: readonly string[]): string {
 	const named = slots.map((slot) => `\t${slot}: namedSlot(${JSON.stringify(kebabOf(slot))}, slots.${slot}),\n`);
 	const listed = hasSlots ? `{\n${named.join("")}}` : "{}";
 	return [
-		`import { ${hasSlots ? "namedPlugin, namedSlot" : "namedPlugin"} } from "${FRAMEWORK}";\n`,
+		`import { ${hasSlots ? "namedSlot, pluginWithSlots" : "pluginWithSlots"} } from "${FRAMEWORK}";\n`,
 		`import { ${name} as definition } from "../plugin.js";\n`,
 		slotsImport,
 		"\n",
-		`export const ${name} = namedPlugin(${JSON.stringify(kebabOf(name))}, definition, ${listed});\n`,
+		`export const ${name} = pluginWithSlots(definition, ${listed});\n`,
 	].join("");
 }

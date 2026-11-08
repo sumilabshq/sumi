@@ -266,7 +266,11 @@ function dataRefusalsOf(folder: string, at: (relative: string) => string): reado
 }
 
 function modulePlacesUnder(folder: string): readonly string[] {
-	return filesUnder(folder).filter((file) => path.basename(file) === "module.ts" || isDomainPackage(file));
+	return filesUnder(folder).filter((file) => isModuleDefinition(file) || isDomainPackage(file));
+}
+
+function isModuleDefinition(file: string): boolean {
+	return path.basename(file) === "module.ts" && path.basename(path.dirname(file)) !== "generated";
 }
 
 function isDomainPackage(file: string): boolean {

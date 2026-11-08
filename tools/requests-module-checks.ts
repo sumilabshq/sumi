@@ -17,7 +17,7 @@ import {
 	moduleNamespace,
 	query,
 } from "../packages/shared/data-framework/src/index.ts";
-import { handledItems, named } from "../packages/shared/data-framework/src/index.ts";
+import { named } from "../packages/shared/data-framework/src/index.ts";
 import { fullyNamed } from "./requests-names.ts";
 import type { ModuleFacts } from "../packages/shared/data-framework/src/index.ts";
 import { orpcTransport, servePort } from "../packages/shared/data-framework/src/index.ts";
@@ -71,10 +71,10 @@ const BumpContract = fullyNamed("tally.bump", command())
 	.idempotencyKey(Repeatable)
 	.invalidates([CountContract]);
 
-const TallyDeclared = module().on(Anywhere);
+const TallyDeclared = module("tally").on(Anywhere);
 
 function tallyOver(counter: Counter) {
-	return TallyDeclared.provide(() => ({ counter })).handles(handledItems("tally", [count, bump]));
+	return TallyDeclared.provide(() => ({ counter })).handles([count, bump]);
 }
 
 const ChargeContract = fullyNamed("payments.charge", command())
@@ -108,15 +108,15 @@ const BuyContract = fullyNamed("shop.buy", command())
 	.output(z.string())
 	.idempotencyKey(Repeatable);
 
-const PaymentsModule = module()
+const PaymentsModule = module("payments")
 	.on(Anywhere)
 	.provide(() => ({}))
-	.handles(handledItems("payments", [charge]));
-const ShopModule = module()
+	.handles([charge]);
+const ShopModule = module("shop")
 	.on(Anywhere)
 	.imports(PaymentsContract)
 	.provide(() => ({}))
-	.handles(handledItems("shop", [buy]));
+	.handles([buy]);
 
 const invoicesRequest = named("invoices", query())
 	.public()
@@ -135,11 +135,11 @@ const CreateCustomerContract = fullyNamed("billing.create-customer", command())
 	.output(z.string())
 	.idempotencyKey((input) => input.userId);
 
-const BillingModule = module()
+const BillingModule = module("billing")
 	.on(Server)
 	.guard(PublicGuard)
 	.provide(() => ({}))
-	.handles(handledItems("billing", [invoicesRequest, createCustomer]));
+	.handles([invoicesRequest, createCustomer]);
 const BillingContract = moduleContract("billing", Server, { invoices: InvoicesContract });
 
 const signUp = named("sign-up", command())
@@ -154,17 +154,17 @@ const SignUpContract = fullyNamed("auth.sign-up", command())
 	.output(z.string())
 	.idempotencyKey((input) => input.userId);
 
-const AuthModule = module()
+const AuthModule = module("auth")
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(BillingContract)
 	.provide(() => ({}))
-	.handles(handledItems("auth", [signUp]));
+	.handles([signUp]);
 
-const DeviceTallyModule = module()
+const DeviceTallyModule = module("tally")
 	.on(Device)
 	.provide(() => ({ counter: new Counter() }))
-	.handles(handledItems("tally", [count, bump]));
+	.handles([count, bump]);
 
 export function typedOnly(): void {
 	const tally = buildersOf<typeof DeviceTallyModule>();
@@ -185,7 +185,7 @@ export function typedOnly(): void {
 			await send(ChargeContract, { cents: "five" });
 		});
 	// @ts-expect-error
-	module().handles(handledItems("tally", [count]));
+	module("tally").handles([count]);
 	// @ts-expect-error
 	runtime().imports(PaymentsContract);
 	// @ts-expect-error
@@ -194,7 +194,7 @@ export function typedOnly(): void {
 	// @ts-expect-error
 	buildersOf<{ readonly counter: Counter }>();
 	// @ts-expect-error
-	module().on(Device).config<{ readonly injects: number }>();
+	module("tally").on(Device).config<{ readonly injects: number }>();
 }
 
 const counter = new Counter();
@@ -228,8 +228,18 @@ const refused = await started.send(BumpContract, { by: 11 });
 check("its own input guard refuses on the client", refused.ok ? "ran" : refused.code, "forbidden");
 
 check(
+	"a module's name is the one kebab segment module() takes, refused where it is written otherwise",
+	[thrownBy(() => module("Tally")), tallyOver(new Counter()).definition.name],
+	['"Tally" is not a module name: one kebab-case segment of a-z, such as "chat-tabs"', "tally"],
+);
+check(
+	"a module handed its list a second time is refused, naming the module",
+	thrownBy(() => tallyOver(new Counter()).handles([count])),
+	'module "tally" already handles its list, and is handed another: the generated module hands it its list once',
+);
+check(
 	"a request handled twice by one module is refused by name",
-	thrownBy(() => TallyDeclared.provide(() => ({ counter })).handles(handledItems("tally", [count, count]))),
+	thrownBy(() => TallyDeclared.provide(() => ({ counter })).handles([count, count])),
 	'module "tally" handles count twice: a request belongs to one module, once',
 );
 
@@ -259,7 +269,7 @@ runtime()
 		TallyDeclared.provide((facts) => {
 			seenFacts = facts;
 			return { counter };
-		}).handles(handledItems("tally", [count, bump])),
+		}).handles([count, bump]),
 	)
 	.start({ platform: "tauri", scope: { workspaceId: "w-1" } });
 check("provide receives the platform and scope its starter was told", seenFacts, {
@@ -286,7 +296,7 @@ check(
 			.modules(
 				TallyDeclared.guard(PublicGuard)
 					.provide(() => ({ counter: new Counter() }))
-					.handles(handledItems("tally", [count, bump])),
+					.handles([count, bump]),
 			)
 			.start({ platform: "server", env: {}, scope: SCOPE }),
 	),
@@ -303,11 +313,11 @@ check(
 
 const closed = runtime()
 	.modules(
-		module()
+		module("tally")
 			.on(Anywhere)
 			.guard(guard().handle(() => deny("the tally is closed")))
 			.provide(() => ({ counter: new Counter() }))
-			.handles(handledItems("tally", [count, bump])),
+			.handles([count, bump]),
 	)
 	.start(ON_BROWSER);
 const closedRead = await closed.send(CountContract);
@@ -321,7 +331,7 @@ const signedInTally = runtime()
 	.modules(
 		TallyDeclared.guard(AuthenticatedGuard)
 			.provide(() => ({ counter: new Counter() }))
-			.handles(handledItems("tally", [count, bump])),
+			.handles([count, bump]),
 	)
 	.start(ON_BROWSER);
 const signedInRead = await signedInTally.send(CountContract);
@@ -350,11 +360,11 @@ check(
 	thrownBy(() =>
 		runtime()
 			.modules(
-				module()
+				module("tally")
 					.on(Anywhere)
 					.guard(ClockGuard)
 					.provide(() => ({}))
-					.handles(handledItems("tally", [clocked])),
+					.handles([clocked]),
 			)
 			.start(ON_BROWSER),
 	).split("\n")[1],
@@ -366,11 +376,11 @@ check(
 	thrownBy(() =>
 		runtime()
 			.modules(
-				module()
+				module("tally")
 					.on(Anywhere)
 					.guard(ClockGuard)
 					.provide(() => ({}))
-					.handles(handledItems("tally", [clocked])),
+					.handles([clocked]),
 			)
 			.provide(() => ({ rateLimits: new MemoryRateLimits(), clock: new Clock() }))
 			.start(ON_BROWSER),
@@ -405,10 +415,10 @@ check(
 
 const unimportedBuy = await runtime()
 	.modules(
-		module()
+		module("shop")
 			.on(Anywhere)
 			.provide(() => ({}))
-			.handles(handledItems("shop", [buy])),
+			.handles([buy]),
 		PaymentsModule,
 	)
 	.start(ON_BROWSER)
@@ -448,11 +458,11 @@ const forget = named("forget", command())
 	.handle(({ id }) => {
 		forgotten.push(id);
 	});
-const NotesModule = module()
+const NotesModule = module("notes")
 	.on(Server)
 	.guard(PublicGuard)
 	.provide(() => ({}))
-	.handles(handledItems("notes", [forget]));
+	.handles([forget]);
 const ForgetContract = fullyNamed("notes.forget", command())
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
@@ -519,11 +529,11 @@ const ProvisionContract = fullyNamed("accounts.provision", command())
 const accountsServer = dataFrameworkMiddleware(
 	runtime()
 		.modules(
-			module()
+			module("accounts")
 				.on(Server)
 				.guard(PublicGuard)
 				.provide(() => ({}))
-				.handles(handledItems("accounts", [provision])),
+				.handles([provision]),
 		)
 		.start({ platform: "server", env: {}, scope: SCOPE }),
 );
@@ -541,12 +551,12 @@ check(
 	["not-found", "accounts.provision: the server exposes no such request"],
 );
 
-const AnywhereSignUp = module()
+const AnywhereSignUp = module("auth")
 	.on(Anywhere)
 	.guard(PublicGuard)
 	.imports(BillingContract)
 	.provide(() => ({}))
-	.handles(handledItems("auth", [signUp]));
+	.handles([signUp]);
 const anywhereServer = dataFrameworkMiddleware(
 	runtime().modules(AnywhereSignUp, BillingModule).start({ platform: "server", env: {}, scope: SCOPE }),
 );
@@ -591,12 +601,12 @@ const report = named("report", query())
 		return invoices.length;
 	});
 const ReportContract = fullyNamed("reports.report", query()).output(z.number());
-const ReportsModule = module()
+const ReportsModule = module("reports")
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(BillingContract)
 	.provide(() => ({}))
-	.handles(handledItems("reports", [report]));
+	.handles([report]);
 let headerAtBilling: string | null = null;
 const reportsServer = dataFrameworkMiddleware(
 	runtime()
@@ -670,11 +680,11 @@ const read = named("read", query())
 	.output(z.string())
 	.handle(async (_input, { send }) => `read ${await send(SecretContract)}`);
 const ReadContract = fullyNamed("vault.read", query()).output(z.string());
-const VaultModule = module()
+const VaultModule = module("vault")
 	.on(Anywhere)
 	.guard(PublicGuard)
 	.provide(() => ({}))
-	.handles(handledItems("vault", [read, secret]));
+	.handles([read, secret]);
 
 const vaultOnDevice = runtime().modules(VaultModule).start(ON_BROWSER);
 check(
@@ -693,12 +703,12 @@ const peek = named("peek", query())
 	.output(z.string())
 	.handle(async (_input, { send }) => send(SecretContract));
 const PeekContract = fullyNamed("audit.peek", query()).output(z.string());
-const AuditModule = module()
+const AuditModule = module("audit")
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(VaultModule)
 	.provide(() => ({}))
-	.handles(handledItems("audit", [peek]));
+	.handles([peek]);
 const vaultServer = dataFrameworkMiddleware(
 	runtime().modules(VaultModule, AuditModule).start({ platform: "server", env: {}, scope: SCOPE }),
 );
@@ -733,21 +743,21 @@ const entry = named("entry", query())
 	.output(z.string())
 	.handle(() => "entry");
 const EntryContract = fullyNamed("ledger.entry", query()).output(z.string());
-const LedgerModule = module()
+const LedgerModule = module("ledger")
 	.on(Anywhere)
 	.provide(() => ({}))
-	.handles(handledItems("ledger", [entry]));
+	.handles([entry]);
 const readEntryQuery = () =>
 	named("read", query())
 		.public()
 		.output(z.string())
 		.handle(async (_input, { send }) => send(EntryContract));
 const ledgerReaderModuleOf = (name: string) =>
-	module()
+	module(name)
 		.on(Anywhere)
 		.imports(LedgerModule)
 		.provide(() => ({}))
-		.handles(handledItems(name, [readEntryQuery()]));
+		.handles([readEntryQuery()]);
 const ledgerApp = runtime()
 	.modules(LedgerModule, ledgerReaderModuleOf("clerk"), ledgerReaderModuleOf("stranger"))
 	.start(ON_BROWSER);
@@ -774,10 +784,10 @@ check(
 	thrownBy(() =>
 		runtime()
 			.modules(
-				module()
+				module("tally")
 					.on(Anywhere)
 					.provide(() => ({ send: new Counter(), counter: new Counter() }))
-					.handles(handledItems("tally", [count])),
+					.handles([count]),
 			)
 			.start(ON_BROWSER),
 	).split("\n")[1],
@@ -829,11 +839,11 @@ check(
 		dataFrameworkMiddleware(
 			runtime()
 				.modules(
-					module()
+					module("shelves")
 						.on(Server)
 						.guard(PublicGuard)
 						.provide(() => ({}))
-						.handles(handledItems("shelves", [tabs, tabById])),
+						.handles([tabs, tabById]),
 				)
 				.start({ platform: "server", env: {}, scope: SCOPE }),
 		),

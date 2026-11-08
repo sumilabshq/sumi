@@ -2,8 +2,8 @@ import { Event } from "./event";
 import type { AnyEvent } from "./event";
 import type { Guard, OpenGuard } from "./guard";
 import type { AnyHandledRequest } from "./handled-request";
-import type { HandledItems } from "./handled-items";
 import type { AnyHandler, GuardedState, Handler, Inject } from "./handler";
+import { checkedModuleName } from "./identity";
 import { requireStep } from "./middleware";
 import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
 import type { ModuleContract } from "./module-contract";
@@ -50,7 +50,7 @@ export type ModuleItem = AnyHandledRequest | AnyEvent | AnySubscriber;
 export interface HandlingDefinition<R extends Runs = Runs> extends ModuleDefinition {
 	readonly runs: R;
 	readonly handlers: readonly AnyHandler[];
-	withHandled(handled: HandledItems): HandlingDefinition<R>;
+	withHandled(items: readonly ModuleItem[]): HandlingDefinition<R>;
 }
 
 export type ImportedModule = ModuleContract | AnyPlatformModule;
@@ -162,7 +162,8 @@ export class ClientModule<P extends Provided = NothingProvided, Q = void> implem
 }
 
 interface ModulePlan<R extends Runs> {
-	readonly name: string | null;
+	readonly name: string;
+	readonly isHandled: boolean;
 	readonly runs: R;
 	readonly imports: readonly ImportedModule[];
 	readonly steps: readonly Step[];
@@ -177,25 +178,20 @@ interface PlacedParts {
 	readonly listedSubscribers: readonly AnySubscriber[];
 }
 
-const NOTHING_PLACED: PlacedParts = {
-	listed: [],
-	ownedEvents: [],
-	listedSubscribers: [],
-};
-
 const NO_FACTS =
 	'module "{module}" picks its parts from the platform and scope, and its starter was told neither: pass platform and scope';
 const LISTED_TWICE = 'module "{module}" handles {request} twice: a request belongs to one module, once';
 const SUBSCRIBER_LISTED_TWICE = 'module "{module}" lists a subscriber of {event} twice: list each subscriber once';
-const UNNAMED_MODULE =
-	"a module() takes its name from .handles(handled), the list the generator writes; end it with .handles(handled) and run npm run generate";
 const HANDLED_TWICE =
-	'module "{module}" already handles its list, and .handles() is given the list of "{other}": call it once';
+	'module "{module}" already handles its list, and is handed another: the generated module hands it its list once';
 
 export class ModuleDraft {
+	constructor(private readonly name: string) {}
+
 	on<R extends Runs>(placement: Placement<R>): RequestsModule<R> {
 		return new RequestsModule({
-			name: null,
+			name: this.name,
+			isHandled: false,
 			runs: placement.runs,
 			imports: [],
 			steps: [],
@@ -207,6 +203,7 @@ export class ModuleDraft {
 }
 
 export class RequestsModule<R extends Runs, C extends object = NoConfig> implements HandlingDefinition<R> {
+	readonly name: string;
 	readonly runs: R;
 	readonly steps: readonly Step[];
 	readonly ownedEvents: readonly AnyEvent[];
@@ -214,7 +211,8 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 	readonly handlers: readonly AnyHandler[];
 
 	constructor(private readonly plan: ModulePlan<R>) {
-		const placed = plan.name === null ? NOTHING_PLACED : placedPartsOf(plan, plan.name);
+		const placed = placedPartsOf(plan, plan.name);
+		this.name = plan.name;
 		this.runs = plan.runs;
 		this.steps = plan.steps;
 		this.listedSubscribers = placed.listedSubscribers;
@@ -223,14 +221,6 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 			...listed,
 			module: this,
 		}));
-	}
-
-	get name(): string {
-		if (this.plan.name === null) {
-			throw new Error(UNNAMED_MODULE);
-		}
-
-		return this.plan.name;
 	}
 
 	get importedModuleNames(): readonly string[] {
@@ -271,14 +261,16 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 		return new PlatformModule<P, R>(this, { provide }).callable<C>();
 	}
 
-	withHandled({ module, items }: HandledItems): RequestsModule<R, C> {
-		if (this.plan.name !== null) {
-			throw new Error(HANDLED_TWICE.replace("{module}", this.plan.name).replace("{other}", module));
+	withHandled(items: readonly ModuleItem[]): RequestsModule<R, C> {
+		const module = this.plan.name;
+
+		if (this.plan.isHandled) {
+			throw new Error(HANDLED_TWICE.replace("{module}", module));
 		}
 
 		return new RequestsModule({
 			...this.plan,
-			name: module,
+			isHandled: true,
 			listed: this.withListed(items.filter(isHandledRequest), module),
 			events: [...this.plan.events, ...items.filter(isEvent)],
 			subscribers: this.withSubscribers(items.filter(isSubscriber), module),
@@ -316,8 +308,8 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 	}
 }
 
-export function module(): ModuleDraft {
-	return new ModuleDraft();
+export function module(name: string): ModuleDraft {
+	return new ModuleDraft(checkedModuleName(name));
 }
 
 export type AnyModule = ClientModule<Provided, never> | ServerModule<Provided, Cover, Added>;

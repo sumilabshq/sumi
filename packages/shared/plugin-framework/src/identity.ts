@@ -1,4 +1,4 @@
-// TRADE-OFF: named by the generated namespace, since JavaScript cannot read a variable's name.
+// TRADE-OFF: a slot is named by the generated plugin file, since JavaScript cannot read a variable's name.
 export interface Identity {
 	name: string | null;
 	owner: string | null;
@@ -42,7 +42,7 @@ function renamedTo(was: string | null, now: string, kind: string): string {
 	return now;
 }
 
-function checkedName(name: string): string {
+export function checkedName(name: string): string {
 	if (!SEGMENT.test(name)) {
 		throw new Error(BAD_NAME.replace("{name}", name));
 	}

@@ -130,9 +130,10 @@ function keepNoteInModule(): CliRun {
 
 function checksLaidFiles(): void {
 	check(
-		"module.ts ends with .handles(handled) and add feature leaves it alone, handled names every feature's requests, and a server module is guarded",
+		"module.ts names the module, calls no .handles() and add feature leaves it alone, generated/module.ts hands it every feature's requests, and a server module is guarded",
 		[
-			probeText(`${NOTES}/module.ts`).includes(".handles(handled);"),
+			probeText(`${NOTES}/module.ts`).includes('module("notes")') &&
+				!probeText(`${NOTES}/module.ts`).includes(".handles("),
 			probeText(`${NOTES}/module.ts`).includes(KEPT_NOTE),
 			handledIn(NOTES),
 			handledIn(BILLING),
@@ -171,12 +172,12 @@ function checksLaidFiles(): void {
 		[true, true],
 	);
 	check(
-		"a server module's package exports its module only under the server condition, and the LICENSE is the sibling's",
+		"a server module's package exports its implementation only under the server condition, and the LICENSE is the sibling's",
 		[
-			JSON.parse(probeText(`${BILLING}/package.json`)).exports["./module"],
+			JSON.parse(probeText(`${BILLING}/package.json`)).exports["./implementation"],
 			probeText(`${BILLING}/LICENSE`) === probeText("packages/domain/fixture-billing/LICENSE"),
 		],
-		[{ server: "./module.ts" }, true],
+		[{ server: "./generated/module.ts" }, true],
 	);
 	check(
 		"no empty folder is laid ahead: shared/lib waits for a feature that needs it",
@@ -281,8 +282,8 @@ async function isFormatted(file: string): Promise<boolean> {
 }
 
 function handledIn(folder: string): string {
-	const code = probeText(`${folder}/generated/handled.ts`).replace(/\s+/g, " ");
-	return /handled = handledItems\("[a-z-]+", \[([^\]]*)\]/.exec(code)?.[1]?.trim().replace(/,$/, "") ?? "";
+	const code = probeText(`${folder}/generated/module.ts`).replace(/\s+/g, " ");
+	return /= handledModule\(definition, \[([^\]]*)\]/.exec(code)?.[1]?.trim().replace(/,$/, "") ?? "";
 }
 
 function probeText(file: string): string {

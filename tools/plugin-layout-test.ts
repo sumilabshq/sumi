@@ -9,10 +9,10 @@ type Files = Readonly<Record<string, string>>;
 const GOOD: Files = {
 	"package.json": '{ "widgetarium": { "level": "plugin" } }',
 	"src/plugin.ts":
-		'import { plugin } from "x";\nimport { pinned } from "./slots.js";\nexport const notes = plugin().declare(pinned);\n',
+		'import { plugin } from "x";\nimport { pinned } from "./slots.js";\nexport const notes = plugin("notes").declare(pinned);\n',
 	"src/slots.ts": 'import { slot } from "x";\nexport const pinned = slot().item(schema).list();\n',
 	"src/generated/plugin.ts":
-		'import { namedPlugin, namedSlot } from "x";\nimport { notes as definition } from "../plugin.js";\nimport * as slots from "../slots.js";\n\nexport const notes = namedPlugin("notes", definition, { pinned: namedSlot("pinned", slots.pinned) });\n',
+		'import { namedSlot, pluginWithSlots } from "x";\nimport { notes as definition } from "../plugin.js";\nimport * as slots from "../slots.js";\n\nexport const notes = pluginWithSlots(definition, { pinned: namedSlot("pinned", slots.pinned) });\n',
 	"src/index.ts": 'export * from "./generated/plugin.js";\n',
 	"data/notes/package.json": '{ "widgetarium": { "level": "domain" } }',
 	"data/notes/module.ts": "export const NotesModule = 1;\n",
@@ -49,7 +49,7 @@ check(
 	"a plugin with no slots and no modules needs neither slots.ts nor data/",
 	refusalsOf({
 		"package.json": "{}",
-		"src/plugin.ts": 'import { plugin } from "x";\nexport const notes = plugin();\n',
+		"src/plugin.ts": 'import { plugin } from "x";\nexport const notes = plugin("notes");\n',
 		"src/index.ts": 'export * from "./generated/plugin.js";\n',
 	}),
 	[],

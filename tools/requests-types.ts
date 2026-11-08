@@ -59,7 +59,7 @@ class Clock {
 	}
 }
 
-const LedgerDeclared = module()
+const LedgerDeclared = module("ledger")
 	.on(Device)
 	.provide(() => ({ ledger: new Ledger() }));
 const OwnChangedEvent = named("own-changed", event());
@@ -115,7 +115,7 @@ export function optionsTypedOnly(): void {
 	limited.use(RateLimitMiddleware) satisfies TakesOptionsFirst;
 	// @ts-expect-error
 	limited.use(RateLimitMiddleware).handle(() => "");
-	module().on(Device).use(RateLimitMiddleware) satisfies TakesOptionsFirst;
+	module("limited").on(Device).use(RateLimitMiddleware) satisfies TakesOptionsFirst;
 	// @ts-expect-error
 	RateLimitMiddleware();
 	limited.use(OptionalOptionsMiddleware);

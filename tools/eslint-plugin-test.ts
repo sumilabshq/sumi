@@ -28,19 +28,18 @@ const CLIENT_MODULE =
 	'import { clientModule } from "@widgetarium/data-framework";\nexport const NotesClientModule = clientModule("notes");\n';
 
 const TALLY_MODULE =
-	'import { Device, module } from "@widgetarium/data-framework";\nimport { handled } from "./generated/handled.js";\nexport const tally = module().on(Device).handles(handled);\n';
+	'import { Device, module } from "@widgetarium/data-framework";\nexport const tally = module("tally").on(Device);\n';
 const COUNT_REQUESTS = "packages/tally/features/count/requests.ts";
 const MODULE_REQUESTS = 'import { command, query } from "#module";\n';
 const CONFIGURED_MODULE = [
 	'import { Device, module } from "@widgetarium/data-framework";',
 	'import type { CanvasConfig } from "./shared/host/canvas.host.js";',
-	'import { handled } from "./generated/handled.js";',
 	'export type { Adapter, CanvasConfig } from "./shared/host/canvas.host.js";',
-	"export const canvas = module().on(Device).config<CanvasConfig>().handles(handled);",
+	'export const canvas = module("canvas").on(Device).config<CanvasConfig>();',
 	"",
 ].join("\n");
 const PLACED_MODULE =
-	'import { {on}, module } from "@widgetarium/data-framework";\nexport const {name} = module().on({on});\n';
+	'import { {on}, module } from "@widgetarium/data-framework";\nexport const {name} = module("{name}").on({on});\n';
 
 const WORKSPACE: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "fixture", workspaces: ["apps/*", "packages/*"] }),
@@ -154,15 +153,21 @@ tested("building-block-names", {
 			`${MODULE_REQUESTS}export const count = query().public().handle((_input, { counter }) => counter.value);`,
 			COUNT_REQUESTS,
 		),
-		ok(`${PLUGINS}export const commandMenu = plugin().require(sumiHost).declare(menuDoors);`),
+		ok(`${PLUGINS}export const commandMenu = plugin("command-menu").require(sumiHost).declare(menuDoors);`),
 		ok(`${PLUGINS}export const tabFaces = slot().item(TabFaceSchema).list();`),
 	],
 	invalid: [
 		bad(`${MODULE_REQUESTS}export const Count = query().public();`, "notCamel", COUNT_REQUESTS),
 		bad(`${MODULE_REQUESTS}export const countQuery = query().public();`, "kindSuffix", COUNT_REQUESTS),
 		bad(`${MODULE_REQUESTS}const bump = command();`, "unnamed", COUNT_REQUESTS),
-		bad('import { module } from "@widgetarium/data-framework";\nexport const TallyModule = module();', "notCamel"),
-		bad('import { module } from "@widgetarium/data-framework";\nexport const tallyModule = module();', "kindSuffix"),
+		bad(
+			'import { module } from "@widgetarium/data-framework";\nexport const TallyModule = module("tally");',
+			"notCamel",
+		),
+		bad(
+			'import { module } from "@widgetarium/data-framework";\nexport const tallyModule = module("tally");',
+			"kindSuffix",
+		),
 		bad(
 			'import { event } from "@widgetarium/data-framework";\nexport const panesChangedEvent = event();',
 			"kindSuffix",
@@ -185,11 +190,11 @@ tested("building-block-names", {
 			'import { query as read } from "@widgetarium/data-framework";\nexport const pagesQuery = read();',
 			"kindSuffix",
 		),
-		bad(`${PLUGINS}export const ChatPlugin = plugin().require(apps);`, "notCamel"),
-		bad(`${PLUGINS}export const chatPlugin = plugin().require(apps);`, "kindSuffix"),
+		bad(`${PLUGINS}export const ChatPlugin = plugin("chat").require(apps);`, "notCamel"),
+		bad(`${PLUGINS}export const chatPlugin = plugin("chat").require(apps);`, "kindSuffix"),
 		bad(`${PLUGINS}export const TabFaces = slot().item(TabFaceSchema).list();`, "notCamel"),
 		bad(`${PLUGINS}export const tabFacesSlot = slot().item(TabFaceSchema).list();`, "kindSuffix"),
-		bad(`${PLUGINS}const probe = plugin();`, "unnamed"),
+		bad(`${PLUGINS}const probe = plugin("probe");`, "unnamed"),
 	],
 });
 
@@ -198,14 +203,17 @@ tested("no-choice-strings", {
 		ok(TALLY_MODULE, "packages/tally/module.ts"),
 		ok(`${REQUESTS}export const pages = query().cache({ freshFor: minutes(5) });`),
 		ok(`${REQUESTS}export const H = handler(PagesQuery, M).handle(() => "a string is data here");`),
-		ok(`${PLUGINS}export const chat = plugin().fill(apps.tabFaces.add({ id: "chat", title: "New chat" }));`),
+		ok(`${PLUGINS}export const chat = plugin("chat").fill(apps.tabFaces.add({ id: "chat", title: "New chat" }));`),
+		ok(`${PLUGINS}export const chat = plugin("chat").require(apps);`),
 	],
 	invalid: [
 		bad(`${REQUESTS}export const add = command().idempotencyKey("per-call");`, "choiceString"),
 		bad(`${MODULE_REQUESTS}export const bump = command("bump");`, "choiceString", COUNT_REQUESTS),
 		bad(`${REQUESTS}export const pages = query().cache({ freshFor: "5m" });`, "choiceString"),
 		bad(`${REQUESTS}export const NotesClientModule = clientModule("notes").provide("parts");`, "choiceString"),
-		bad(`${PLUGINS}export const chat = plugin("chat").require(apps);`, "choiceString"),
+		bad(`${PLUGINS}export const chat = plugin("chat").require("apps");`, "choiceString"),
+		bad(`${PLUGINS}export const chat = plugin("chat", "extra");`, "choiceString"),
+		bad(TALLY_MODULE.replace("on(Device)", 'on("Device")'), "choiceString", "packages/tally/module.ts"),
 		bad(`${PLUGINS}export const tabFaces = slot("tab-faces").item(TabFaceSchema).list();`, "choiceString"),
 	],
 });
@@ -235,8 +243,9 @@ tested("module-imports", {
 		ok('import { webNotesParts } from "@fixture/notes/gateways";', "apps/host-web/src/start.ts"),
 		ok('import { BillingServerModule } from "@fixture/billing/module";', "apps/api/src/main.ts"),
 		ok('import { ChargeCommand } from "@fixture/billing";', "packages/notes/features/search/handlers.ts"),
-		ok('import { TallyModule } from "@fixture/tally/module";', "apps/web/src/main.ts"),
-		ok('import { TallyModule } from "@fixture/tally/module";', "apps/api/src/main.ts"),
+		ok('import { tally } from "@fixture/tally/implementation";', "apps/web/src/main.ts"),
+		ok('import { tally } from "@fixture/tally/implementation";', "apps/api/src/main.ts"),
+		ok('import { tally } from "@fixture/tally/contract";', "packages/notes/shared/lib/clock.ts"),
 		ok('import { RecountCommand } from "@fixture/tally/server";', "packages/ledger/features/post/requests.ts"),
 	],
 	invalid: [
@@ -254,7 +263,9 @@ tested("module-imports", {
 		),
 		bad('import { charge } from "@fixture/billing/features/charge/handlers";', "noSuchEntry", "apps/api/src/main.ts"),
 		bad('import { tallyParts } from "@fixture/tally/gateways";', "noSuchEntry", "apps/host-web/src/start.ts"),
-		bad('import { TallyModule } from "@fixture/tally/module";', "appWiring", "packages/notes/shared/lib/clock.ts"),
+		bad('import { tally } from "@fixture/tally/implementation";', "appWiring", "packages/notes/shared/lib/clock.ts"),
+		bad('import { tally } from "@fixture/tally";', "noSuchEntry", "packages/notes/shared/lib/clock.ts"),
+		bad('import { tally } from "@fixture/tally/module";', "noSuchEntry", "apps/web/src/main.ts"),
 		bad('import { RecountCommand } from "@fixture/tally/server";', "serverContract", "apps/web/src/main.ts"),
 		bad(
 			'import { RecountCommand } from "@fixture/tally/server";',
@@ -295,6 +306,11 @@ tested("module-definition", {
 		bad(`${CLIENT_MODULE}export function notesPartsOf() {}`, "notTheModule", "packages/notes/module.ts"),
 		bad(`${CLIENT_MODULE}export { clock } from "./shared/lib/clock.js";`, "notTheModule", "packages/notes/module.ts"),
 		bad(`${CLIENT_MODULE}export type Notes = string;`, "notTheModule", "packages/notes/module.ts"),
+		bad(
+			TALLY_MODULE.replace(".on(Device)", ".on(Device).handles(handled)"),
+			"handlesCalled",
+			"packages/tally/module.ts",
+		),
 	],
 });
 

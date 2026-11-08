@@ -128,7 +128,7 @@ function moduleImportOf(cwd: string, module: string): readonly AppModuleImport[]
 		? [
 				{
 					name,
-					specifier: `@widgetarium/${module}/module`,
+					specifier: `@widgetarium/${module}/implementation`,
 				},
 			]
 		: [];

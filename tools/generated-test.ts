@@ -22,7 +22,7 @@ const JOINED = "generated/module.ts";
 const ROOT = "index.ts";
 const CONTRACT = "generated/contract.ts";
 const BUILDERS = "generated/command.ts";
-const HANDLED = "generated/handled.ts";
+const IMPLEMENTATION = "generated/module.ts";
 const IMPORTED_FROM = /^import .* from "([^"]+)";$/gm;
 const RE_EXPORT = /export\s+(\*|\{[^}]*\})\s+from\s/;
 const LAYOUT_HANDLING = /packages\/state\/layout\/(features\/.+\/requests\.ts|gateways\/)/;
@@ -105,21 +105,25 @@ const COUNT_REQUESTS = [
 
 const SERVICE_COUNT_REQUESTS = COUNT_REQUESTS.replace(PUBLIC_BUMP, SERVICE_BUMP);
 
-function moduleOn(placement: string, chainEnd = ".handles(handled)"): string {
+function moduleOn(placement: string, chainEnd = ""): string {
 	return [
 		`import { ${placement}, module } from "@widgetarium/data-framework";`,
 		'import { counterPartsOn } from "./gateways/counter/counter.gateway.js";',
-		'import { handled } from "./generated/handled.js";',
 		"",
-		`export const tally = module().on(${placement}).provide((facts) => counterPartsOn(facts))${chainEnd};`,
+		`export const tally = module("tally").on(${placement}).provide((facts) => counterPartsOn(facts))${chainEnd};`,
 		"",
 	].join("\n");
 }
 
-function manifestOf(name: string, exported?: Readonly<Record<string, string>>): string {
+const MODULE_EXPORTS: Readonly<Record<string, string>> = {
+	"./contract": "./generated/contract.ts",
+	"./implementation": "./generated/module.ts",
+};
+
+function manifestOf(name: string, exported: Readonly<Record<string, string>> = MODULE_EXPORTS): string {
 	return JSON.stringify({
 		name: `@fixture/${name}`,
-		...(exported === undefined ? {} : { exports: exported }),
+		exports: exported,
 		imports: {
 			"#module": {
 				source: "./generated/command.ts",
@@ -132,7 +136,7 @@ function manifestOf(name: string, exported?: Readonly<Record<string, string>>): 
 }
 
 function servingManifest(name: string): string {
-	return manifestOf(name, { ".": "./index.ts", "./server": "./server.ts" });
+	return manifestOf(name, { ...MODULE_EXPORTS, "./server": "./server.ts" });
 }
 
 const REQUESTS_FILES: Readonly<Record<string, string>> = {
@@ -177,12 +181,13 @@ const REQUESTS_BUILDERS = [
 	"",
 ].join("\n");
 
-const REQUESTS_HANDLED = [
+const REQUESTS_IMPLEMENTATION = [
 	GENERATED_HEADER.trimEnd(),
-	'import { handledItems, named } from "@widgetarium/data-framework";',
+	'import { handledModule, named } from "@widgetarium/data-framework";',
+	'import { tally as definition } from "../module.js";',
 	'import { bump, count } from "../features/count/requests.js";',
 	"",
-	'export const handled = handledItems("tally", [',
+	"export const tally = handledModule(definition, [",
 	'\tnamed("count.bump", bump),',
 	'\tnamed("count.count", count),',
 	"]);",
@@ -230,8 +235,6 @@ const CLIENT_PACKAGE_FILES: Readonly<Record<string, string>> = {
 };
 
 const CLIENT_PACKAGE_ENTRY = `${GENERATED_HEADER}export * from "./shared/ui/index.js";\nexport * from "./shared/lib/index.js";\n`;
-
-const REQUESTS_ENTRY = `${GENERATED_HEADER}export * from "./generated/contract.js";\n`;
 
 const TYPED_REQUESTS = [
 	'import { z } from "zod";',
@@ -338,7 +341,7 @@ const BOARD_PLUGIN_FILES: Readonly<Record<string, string>> = {
 		'import { plugin } from "@widgetarium/plugin-framework";',
 		'import { boardRows, pinnedNotes as pinned } from "./slots.js";',
 		"",
-		"export const notesBoard = plugin().declare(pinned, boardRows);",
+		'export const notesBoard = plugin("notes-board").declare(pinned, boardRows);',
 		"",
 	].join("\n"),
 	"src/slots.ts": [
@@ -352,11 +355,11 @@ const BOARD_PLUGIN_FILES: Readonly<Record<string, string>> = {
 
 const BOARD_PLUGIN_ENTRY = [
 	GENERATED_HEADER.trimEnd(),
-	'import { namedPlugin, namedSlot } from "@widgetarium/plugin-framework";',
+	'import { namedSlot, pluginWithSlots } from "@widgetarium/plugin-framework";',
 	'import { notesBoard as definition } from "../plugin.js";',
 	'import * as slots from "../slots.js";',
 	"",
-	'export const notesBoard = namedPlugin("notes-board", definition, {',
+	"export const notesBoard = pluginWithSlots(definition, {",
 	'\tpinnedNotes: namedSlot("pinned-notes", slots.pinnedNotes),',
 	'\tboardRows: namedSlot("board-rows", slots.boardRows),',
 	"});",
@@ -543,12 +546,20 @@ try {
 		entryIn(tally, BUILDERS),
 		REQUESTS_BUILDERS,
 	);
-	check("its generated/handled.ts lists every handled request, sorted", entryIn(tally, HANDLED), REQUESTS_HANDLED);
-	check("its public entry is the root index.ts, re-exporting the contract alone", entryIn(tally, ROOT), REQUESTS_ENTRY);
 	check(
-		"its generated/ holds the contract, the builders and the handled list: no index.ts, no module.ts, no gateways.ts",
+		"its generated/module.ts hands the definition every handled request, sorted, as the runnable module",
+		entryIn(tally, IMPLEMENTATION),
+		REQUESTS_IMPLEMENTATION,
+	);
+	check(
+		'its public entry is "./contract", the generated contract itself: generate writes no root index.ts',
+		fs.existsSync(path.join(tally, ROOT)),
+		false,
+	);
+	check(
+		"its generated/ holds the contract, the builders and the runnable module: no index.ts, no handled.ts, no gateways.ts",
 		filesIn(path.join(tally, "generated")),
-		["command.ts", "contract.ts", "handled.ts"],
+		["command.ts", "contract.ts", "module.ts"],
 	);
 	check(
 		"the contract is self-contained: it imports only zod and @widgetarium/data-framework, never #module",
@@ -619,9 +630,9 @@ try {
 		[0, true, false, true],
 	);
 	check(
-		"generated/handled.ts lists every event, public or not, beside the handled requests",
+		"generated/module.ts lists every event, public or not, beside the handled requests",
 		['named("count.counted", counted)', 'named("count.recounted", recounted)'].every((text) =>
-			entryIn(eventedFolder, HANDLED).includes(text),
+			entryIn(eventedFolder, IMPLEMENTATION).includes(text),
 		),
 		true,
 	);
@@ -772,7 +783,7 @@ try {
 			inProcess.code,
 			entryIn(inProcessFolder, CONTRACT).includes("bump:"),
 			fs.existsSync(path.join(inProcessFolder, SERVER_CONTRACT)),
-			entryIn(inProcessFolder, HANDLED).includes('named("count.bump", bump)'),
+			entryIn(inProcessFolder, IMPLEMENTATION).includes('named("count.bump", bump)'),
 		],
 		[0, false, false, true],
 	);
@@ -877,37 +888,55 @@ try {
 		[1, true],
 	);
 
-	const unhandled = await generatedIn("unhandled", { "module.ts": moduleOn("Device", "") });
+	const handling = await generatedIn("handling", { "module.ts": moduleOn("Device", ".handles(handled)") });
 	check(
-		"a module.ts whose chain does not end with .handles(handled) is refused by name",
-		refusedWith(unhandled, "tally: module.ts must end with .handles(handled)"),
+		"a module.ts calling .handles() is refused by name: generate hands the module its requests",
+		refusedWith(handling, "tally: module.ts holds only the module's decisions and calls no .handles()"),
 		[1, true],
 	);
 
-	const elsewhereHandled = await generatedIn("elsewhere-handled", {
-		"module.ts": moduleOn("Device").replace("./generated/handled.js", "./handled.js"),
+	const unimplemented = await generatedIn("unimplemented", {
+		"package.json": manifestOf("unimplemented", { "./contract": "./generated/contract.ts" }),
 	});
 	check(
-		'a .handles(handled) whose handled is not imported from "./generated/handled.js" is refused',
-		refusedWith(elsewhereHandled, 'importing handled from "./generated/handled.js"'),
+		'a package.json exporting no "./implementation" is refused by name',
+		refusedWith(unimplemented, '@fixture/unimplemented: a module package exports "./implementation"'),
 		[1, true],
+	);
+
+	const rooted = await generatedIn("rooted", {
+		"package.json": manifestOf("rooted", { ...MODULE_EXPORTS, ".": "./index.ts" }),
+	});
+	check(
+		'a package.json still exporting "." is refused by name',
+		refusedWith(rooted, '@fixture/rooted exports ".", and a module package is imported only by "./contract"'),
+		[1, true],
+	);
+
+	const definitionTyped = await generatedIn("definition-typed", {
+		"module.ts": `${moduleOn("Device")}export type { Counter, Tally } from "./shared/host/tally.host.js";\n`,
+	});
+	check(
+		"the types module.ts re-exports reach the runnable module, re-exported from module.ts",
+		[
+			definitionTyped.code,
+			entryIn(path.join(scratch, "packages/definition-typed"), IMPLEMENTATION).includes(
+				'export type { Counter, Tally } from "../module.js";',
+			),
+		],
+		[0, true],
 	);
 
 	const unbuilt = await generatedIn("unbuilt", {
-		"package.json": JSON.stringify({ name: "@fixture/unbuilt", widgetarium: { level: "domain" } }),
+		"package.json": JSON.stringify({
+			name: "@fixture/unbuilt",
+			exports: MODULE_EXPORTS,
+			widgetarium: { level: "domain" },
+		}),
 	});
 	check(
 		'a package.json whose "imports" names no "#module" is refused by name',
 		refusedWith(unbuilt, '@fixture/unbuilt: its requests take command and query from "#module"'),
-		[1, true],
-	);
-
-	const extraHandled = await generatedIn("extra-handled", {
-		"module.ts": moduleOn("Device", ".handles(handled, count)"),
-	});
-	check(
-		"a .handles() given anything besides the single handled is refused",
-		refusedWith(extraHandled, "tally: module.ts must end with .handles(handled)"),
 		[1, true],
 	);
 
@@ -992,13 +1021,19 @@ try {
 		[1, true],
 	);
 
-	const moduleNamed = await generatedIn("module-named", {
-		"module.ts": moduleOn("Device").replace("module()", 'module("tally")'),
+	const moduleUnnamed = await generatedIn("module-unnamed", {
+		"module.ts": moduleOn("Device").replace('module("tally")', "module()"),
+	});
+	const moduleBadlyNamed = await generatedIn("module-badly-named", {
+		"module.ts": moduleOn("Device").replace('module("tally")', 'module("Tally")'),
 	});
 	check(
-		"a module() given a string name is refused: it is named by its constant",
-		refusedWith(moduleNamed, "tally: module() takes no name"),
-		[1, true],
+		"a module() given no name, or one that is not a kebab segment, is refused: its name is the string it takes",
+		[
+			...refusedWith(moduleUnnamed, "tally: module() takes its name as one kebab-case string"),
+			...refusedWith(moduleBadlyNamed, "tally: module() takes its name as one kebab-case string"),
+		],
+		[1, true, 1, true],
 	);
 
 	const unread = await cli(["packages/odd"], scratch);
@@ -1044,11 +1079,20 @@ try {
 	layFiles(board, {
 		...BOARD_PLUGIN_FILES,
 		"src/plugin.ts":
-			'import { plugin } from "@widgetarium/plugin-framework";\nimport { tabFaces } from "@sumi/apps-plugin";\n\nexport const notesBoard = plugin().declare(tabFaces);\n',
+			'import { plugin } from "@widgetarium/plugin-framework";\nimport { tabFaces } from "@sumi/apps-plugin";\n\nexport const notesBoard = plugin("notes-board").declare(tabFaces);\n',
 	});
 	check(
 		"a declared slot that is not the plugin's own is refused",
 		refusedWith(await cli(["plugins/notes-board"], scratch), "declares tabFaces, which is not a slot exported by"),
+		[1, true],
+	);
+	layFiles(board, {
+		...BOARD_PLUGIN_FILES,
+		"src/plugin.ts": (BOARD_PLUGIN_FILES["src/plugin.ts"] ?? "").replace('plugin("notes-board")', "plugin()"),
+	});
+	check(
+		"a plugin() given no id is refused: its id is the string it takes",
+		refusedWith(await cli(["plugins/notes-board"], scratch), "plugin() takes its id as one kebab-case string"),
 		[1, true],
 	);
 } finally {
@@ -1090,7 +1134,7 @@ check(
 );
 
 const frameInputs = await bundledInputsOf("apps/studio/src/features/frame/ui/studio-frame/studio-frame.tsx");
-const startedInputs = await bundledInputsOf("packages/state/layout/module.ts");
+const startedInputs = await bundledInputsOf("packages/state/layout/generated/module.ts");
 check(
 	"the studio frame's bundle reads layout through its contract: it holds the generated contract",
 	frameInputs.some((input) => input.endsWith("packages/state/layout/generated/contract.ts")),

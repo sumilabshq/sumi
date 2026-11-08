@@ -50,10 +50,10 @@ function importsOf({ module, folder, names, isServer, moduleConst }: CheckPlan):
 	return [
 		`import { ${isServer ? "Authenticate, orpcTransport, " : ""}runtime${isServer ? ", type User" : ""} } from "${FRAMEWORK}";`,
 		...(isServer ? [`import { dataFrameworkMiddleware } from "${FRAMEWORK}/server";`] : []),
-		`import { ${moduleConst} } from "../${folder}/index.ts";`,
+		`import { ${moduleConst} } from "../${folder}/generated/contract.ts";`,
 		`import { ${memoryPartsOf(module)} } from "../${folder}/${pickerPathOf(module)}";`,
 		`import { ${names.memoryGateway} } from "../${folder}/${names.memoryFile}";`,
-		`import { ${moduleConst} as ${moduleConst}Module } from "../${folder}/module.ts";`,
+		`import { ${moduleConst} as ${moduleConst}Module } from "../${folder}/generated/module.ts";`,
 		'import { check, tally } from "./check-helpers.ts";',
 	];
 }

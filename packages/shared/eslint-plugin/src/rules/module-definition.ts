@@ -4,6 +4,7 @@ import { MODULE_FILE, domainFileOf } from "../domain-file.js";
 
 const STARTERS: ReadonlySet<string> = new Set(["serverModule", "clientModule", "module"]);
 const TYPE_EXPORT = "type";
+const HANDLES = "handles";
 
 export const moduleDefinition: Rule.RuleModule = {
 	meta: {
@@ -14,6 +15,8 @@ export const moduleDefinition: Rule.RuleModule = {
 		},
 		schema: [],
 		messages: {
+			handlesCalled:
+				"module.ts holds only the module's decisions: generate hands it its requests in generated/module.ts, so drop .handles(...)",
 			notTheModule:
 				"module.ts exports only its module(...), serverModule(...) or clientModule(...) const and type re-exports for its config; move this export to gateways/, shared/ or a feature",
 		},
@@ -22,6 +25,9 @@ export const moduleDefinition: Rule.RuleModule = {
 		const file = domainFileOf(context.filename);
 		if (file === null || file.inside.join("/") !== MODULE_FILE) return {};
 		return {
+			CallExpression(node) {
+				if (isHandlesCall(node)) context.report({ node, messageId: "handlesCalled" });
+			},
 			Program(program) {
 				for (const statement of program.body)
 					if (isExport(statement) && !isModuleConst(statement) && !isTypeReexport(statement))
@@ -30,6 +36,13 @@ export const moduleDefinition: Rule.RuleModule = {
 		};
 	},
 };
+
+function isHandlesCall(node: ESTree.CallExpression): boolean {
+	const { callee } = node;
+	return (
+		callee.type === "MemberExpression" && callee.property.type === "Identifier" && callee.property.name === HANDLES
+	);
+}
 
 function isExport(statement: ESTree.Node): boolean {
 	return (

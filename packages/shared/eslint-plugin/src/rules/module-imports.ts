@@ -23,8 +23,9 @@ interface Importing {
 
 const DOMAIN_LEVEL = "domain";
 const WIRING_ENTRIES: ReadonlySet<string> = new Set(["module", "gateways"]);
-const REQUESTS_MODULE_ENTRIES: ReadonlySet<string> = new Set(["module", "server"]);
+const REQUESTS_MODULE_ENTRIES: ReadonlySet<string> = new Set(["contract", "implementation", "server"]);
 const SERVER_ENTRY_NAME = "server";
+const CONTRACT_ENTRY_NAME = "contract";
 const SERVER_CONDITION = "server";
 const DECLARATION_FILE = /\.d\.ts$/;
 const CLIENT_STARTER = /^apps\/[^/]+$/;
@@ -43,9 +44,9 @@ export const moduleImports: Rule.RuleModule = {
 			serverContract:
 				"{{specifier}} is a module's server-only contract: only a data module whose module(...) runs .on(Server) imports it",
 			appWiring:
-				'{{specifier}} starts a module(...): only an app (apps/*) imports it; a package reaches it through its "." entry',
+				'{{specifier}} starts a module(...): only an app (apps/*) imports it; a package reaches it through its "./contract" entry',
 			noSuchEntry:
-				'{{specifier}} is not an entry of {{name}}: a module exports only ".", "./module" and "./gateways", a module(...) only ".", "./server" and "./module"',
+				'{{specifier}} is not an entry of {{name}}: a module exports only ".", "./module" and "./gateways", a module(...) only "./contract", "./server" and "./implementation"',
 		},
 	},
 	create(context) {
@@ -69,19 +70,28 @@ function findingOf(importing: Importing, specifier: string): Said | null {
 			? { messageId: "acrossPackages", data: { specifier, owner: reached.folder } }
 			: null;
 	}
-	const domain = packages.find((one) => one.level === DOMAIN_LEVEL && specifier.startsWith(`${one.name}/`));
+	const domain = packages.find((one) => one.level === DOMAIN_LEVEL && isEntryOf(importing.cwd, specifier, one));
 	if (domain === undefined || domain === owner) return null;
 	if (!wiringEntriesOf(importing.cwd, domain).has(specifier.slice(domain.name.length + 1)))
 		return { messageId: "noSuchEntry", data: { specifier, name: domain.name } };
 	return wiringFinding(importing, domain, specifier);
 }
 
+function isEntryOf(cwd: string, specifier: string, domain: WorkspacePackage): boolean {
+	return specifier.startsWith(`${domain.name}/`) || (specifier === domain.name && isRequestsModule(cwd, domain));
+}
+
+function isRequestsModule(cwd: string, domain: WorkspacePackage): boolean {
+	return moduleOfDomain(path.join(cwd, domain.folder))?.runs === "anywhere";
+}
+
 function wiringEntriesOf(cwd: string, domain: WorkspacePackage): ReadonlySet<string> {
-	return moduleOfDomain(path.join(cwd, domain.folder))?.runs === "anywhere" ? REQUESTS_MODULE_ENTRIES : WIRING_ENTRIES;
+	return isRequestsModule(cwd, domain) ? REQUESTS_MODULE_ENTRIES : WIRING_ENTRIES;
 }
 
 function wiringFinding({ place, cwd, owner }: Importing, domain: WorkspacePackage, specifier: string): Said | null {
 	const runs = moduleOfDomain(path.join(cwd, domain.folder))?.runs;
+	if (runs === "anywhere" && specifier.endsWith(`/${CONTRACT_ENTRY_NAME}`)) return null;
 	if (runs === "anywhere" && specifier.endsWith(`/${SERVER_ENTRY_NAME}`))
 		return isServerDataModule(cwd, owner) ? null : { messageId: "serverContract", data: { specifier } };
 	if (runs === "anywhere") return place === "elsewhere" ? { messageId: "appWiring", data: { specifier } } : null;

@@ -67,8 +67,8 @@ export type {
 	ModuleUse,
 	ReachableContract,
 } from "./module-contract";
-export { handledItems, named } from "./handled-items";
-export type { HandledItems, NamedItem } from "./handled-items";
+export { handledModule, named } from "./handled-items";
+export type { HandlesItems, NamedItem } from "./handled-items";
 export { ChangeBroadcast } from "./transport";
 export type { Answering, HearChanges, RemoteTransport, ServedCall } from "./transport";
 export { LocalTransport, localTransport } from "./local-transport";

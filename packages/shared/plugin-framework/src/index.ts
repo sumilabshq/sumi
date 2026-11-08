@@ -2,7 +2,7 @@ export { ListSlot, SingleSlot, slot } from "./declared-slot";
 export type { FilledItem, ItemsDerive, ListItemInput, SlotCardinality, SlotDraft, SlotShape } from "./declared-slot";
 export { DerivedFill, Fill } from "./fill";
 export { Plugin, plugin } from "./plugin";
-export { namedPlugin, namedSlot } from "./plugin-namespace";
+export { namedSlot, pluginWithSlots } from "./plugin-namespace";
 export { PROFILE_FILE, PluginIdSchema, SumiProfileSchema, profileRefusalsOf } from "./profile";
 export type { SumiProfile } from "./profile";
 export { slotFillsOf } from "./slot-fills";
