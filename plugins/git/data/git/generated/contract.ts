@@ -195,7 +195,7 @@ export type Comparison = z.infer<typeof ComparisonSchema>;
 
 export const git = moduleContract("git", Device, {
 	gitLook: {
-		gitLook: named("git-look.git-look", query()
+		current: named("git-look.current", query()
 			.public()
 			.output(GitLookSchema)
 			.settlesNow()),
@@ -214,11 +214,11 @@ export const git = moduleContract("git", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	repos: {
-		gitPlace: named("repos.git-place", query()
+		place: named("repos.place", query()
 			.public()
 			.input(FolderInputSchema)
 			.output(GitPlaceSchema)),
-		nearbyRepos: named("repos.nearby-repos", query()
+		nearby: named("repos.nearby", query()
 			.public()
 			.input(RootInputSchema)
 			.output(NearbyReposSchema)),
@@ -242,7 +242,7 @@ export const git = moduleContract("git", Device, {
 			.public()
 			.input(UntrackedFileInputSchema)
 			.output(FileDiffSchema)),
-		rereadGit: named("repos.reread-git", command()
+		reread: named("repos.reread", command()
 			.public()
 			.idempotencyKey(Repeatable)),
 	},

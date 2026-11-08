@@ -27,9 +27,9 @@ export function ChatPlate({ chatId, crumb, more }: ChatPlateProps): ReactElement
 
 function useNamesUnnamedPane(chatId: string | null): void {
 	const pane = useContext(PaneCloseContext);
-	const isBoardRead = useQuery(layout.panes.paneTree).data.isLoaded;
-	const areChatsRead = useQuery(workspaces.chats.chatToOpen).data.isRead;
-	const nameChatPane = useCommand(chatTabs.chatOpening.nameChatPane);
+	const isBoardRead = useQuery(layout.panes.current).data.isLoaded;
+	const areChatsRead = useQuery(workspaces.chats.toOpen).data.isRead;
+	const nameChatPane = useCommand(chatTabs.chatOpening.namePane);
 	const paneId = pane?.paneId ?? null;
 	useEffect(() => {
 		if (chatId !== null || paneId === null || !isBoardRead || !areChatsRead) {

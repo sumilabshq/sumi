@@ -24,13 +24,13 @@ export const FileAccessGuard = guard()
 
 export const FileCallLoggerMiddleware = CallLoggerMiddleware("file-system", (input) => JSON.stringify(pathsOf(input)));
 
-export const readFile = query()
+export const read = query()
 	.public()
 	.input(PathInputSchema)
 	.output(FileContentSchema)
 	.handle(async ({ path }, { files, user }) => files.readFile(await placedIn(files, user, path)).catch(refuseFailure));
 
-export const readFileBytes = query()
+export const readBytes = query()
 	.public()
 	.input(PathInputSchema)
 	.output(FileBytesSchema)
@@ -59,13 +59,13 @@ export const readFolder = query()
 		};
 	});
 
-export const fileInfo = query()
+export const info = query()
 	.public()
 	.input(PathInputSchema)
 	.output(FileInfoSchema)
 	.handle(async ({ path }, { files, user }) => files.fileInfo(await placedIn(files, user, path)));
 
-export const locatedFile = query()
+export const located = query()
 	.public()
 	.input(LocateFileInputSchema)
 	.output(LocatedFileSchema)
@@ -85,7 +85,7 @@ export const pickFolder = command()
 		};
 	});
 
-export const writeFile = command()
+export const write = command()
 	.public()
 	.input(WriteFileInputSchema)
 	.idempotencyKey(Repeatable)
@@ -94,7 +94,7 @@ export const writeFile = command()
 		rereadFiles(invalidate);
 	});
 
-export const appendFile = command()
+export const append = command()
 	.public()
 	.input(WriteFileInputSchema)
 	.idempotencyKey(PerCall)
@@ -141,9 +141,9 @@ export const copy = command()
 
 // TRADE-OFF: any write re-reads every read; matching a written path to each read's input is planned
 function rereadFiles(invalidate: Invalidate): void {
-	invalidate(readFile);
+	invalidate(read);
 	invalidate(readFolder);
-	invalidate(fileInfo);
+	invalidate(info);
 }
 
 function pathsOf(input: unknown): readonly unknown[] {

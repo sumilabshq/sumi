@@ -72,9 +72,7 @@ const started = pluginRuntime()
 	.builtInPlugins(sumiHost, apps, commandMenu, chat, probe)
 	.state(new MemoryPluginStateStore(ENABLED))
 	.start();
-const windowModuleFill = started
-	.fillsOf(sumiHost.windowModules)
-	.find(({ pluginId }) => pluginId === commandMenu.id);
+const windowModuleFill = started.fillsOf(sumiHost.windowModules).find(({ pluginId }) => pluginId === commandMenu.id);
 
 if (windowModuleFill === undefined) {
 	throw new Error("the command menu plugin filled no window module");
@@ -96,22 +94,16 @@ async function outputOf<T>(answer: Promise<{ ok: true; output: T } | { ok: false
 	return answered.output;
 }
 
-check(
-	"a plugin filling the menu's slots resolves with no refusal",
-	started.refusals,
-	[],
-);
+check("a plugin filling the menu's slots resolves with no refusal", started.refusals, []);
 
-const { doors } = await outputOf(studio.send(commandMenuContract.opening.menuDoors));
+const { doors } = await outputOf(studio.send(commandMenuContract.opening.doors));
 check(
 	"the menu's own doors come first, then the doors other plugins filled (the chat's Ask, the probe), with their keys",
 	doors.map(({ id, keys }) => `${id} ${keys}`),
 	["anywhere ⌘K", "new-tab ⌘N", "this-tab ⌘L", "ask ⌘I", "probe ⌘P"],
 );
 
-const probed = await outputOf(
-	studio.send(commandMenuContract.results.commandMenuResults, { text: "", door: "probe", pageId: null }),
-);
+const probed = await outputOf(studio.send(commandMenuContract.results.all, { text: "", door: "probe", pageId: null }));
 check(
 	"the filled door draws the filled page over the filled row source",
 	probed.sections.map(({ label, rows }) => [label, rows.map(({ title }) => title)]),
@@ -119,7 +111,7 @@ check(
 );
 
 const found = await outputOf(
-	studio.send(commandMenuContract.results.commandMenuResults, { text: "lantern", door: "anywhere", pageId: null }),
+	studio.send(commandMenuContract.results.all, { text: "lantern", door: "anywhere", pageId: null }),
 );
 check(
 	"a findable row source's rows are found from ⌘K",
@@ -127,11 +119,11 @@ check(
 	["Probe Lantern"],
 );
 
-await outputOf(studio.send(commandMenuContract.opening.toggleCommandMenu, { door: "probe", text: "" }));
-const opened = await outputOf(studio.send(commandMenuContract.opening.commandMenu));
+await outputOf(studio.send(commandMenuContract.opening.toggle, { door: "probe", text: "" }));
+const opened = await outputOf(studio.send(commandMenuContract.opening.current));
 check("the filled door opens the menu", [opened.isOpen, opened.door], [true, "probe"]);
 
-const refused = await studio.send(commandMenuContract.opening.toggleCommandMenu, { door: "nope", text: "" });
+const refused = await studio.send(commandMenuContract.opening.toggle, { door: "nope", text: "" });
 check(
 	"a door nobody filled is refused",
 	refused.ok ? "opened" : refused.reason,

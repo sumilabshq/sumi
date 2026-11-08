@@ -4,17 +4,15 @@ import { query, subscriber } from "#module";
 import { ChatListSchema } from "../../shared/schema/chat-list.schema.js";
 import { chatListOf } from "./lib/chat-list.js";
 
-export const chatList = query()
+export const all = query()
 	.public()
 	.output(ChatListSchema)
-	.handle(async (_input, { send }) => chatListOf(await send(places.tabs.chatTabs)));
+	.handle(async (_input, { send }) => chatListOf(await send(places.tabs.chat)));
 
-export const rereadChatList = subscriber(appHost.tabs.tabsSettled).handle((_input, { invalidate }) => {
-	invalidate(chatList);
+export const reread = subscriber(appHost.tabs.tabsSettled).handle((_input, { invalidate }) => {
+	invalidate(all);
 });
 
-export const rereadChatListForCore = subscriber(appHost.coreChanges.studioCoreChanged).handle(
-	(_input, { invalidate }) => {
-		invalidate(chatList);
-	},
-);
+export const rereadForCore = subscriber(appHost.coreChanges.studioCoreChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
+});

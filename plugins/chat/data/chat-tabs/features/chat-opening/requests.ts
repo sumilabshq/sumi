@@ -9,25 +9,25 @@ import { chatIdForPane } from "./lib/chat-for-pane.js";
 const NOT_READ = "the layout or the chats are not read yet";
 const NOT_AN_EMPTY_CHAT_PANE = "pane {pane} is not a chat pane waiting for a chat";
 
-export const openNewChat = command()
+export const openNew = command()
 	.public()
 	.input(NewChatTitleSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey(PerCall)
 	.handle(async ({ title }, { send }) => {
-		const created = await send(workspaces.chats.createChat, { title });
-		await send(appHost.tabs.syncChatTabs);
-		await send(appHost.tabs.showTab, { id: created.id });
+		const created = await send(workspaces.chats.create, { title });
+		await send(appHost.tabs.syncChat);
+		await send(appHost.tabs.show, { id: created.id });
 		return created;
 	});
 
-export const nameChatPane = command()
+export const namePane = command()
 	.public()
 	.input(ChatPaneSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey((input) => input.paneId)
 	.handle(async ({ paneId }, { send }) => {
-		const [board, asked] = await Promise.all([send(layout.panes.paneTree), send(workspaces.chats.chatToOpen)]);
+		const [board, asked] = await Promise.all([send(layout.panes.current), send(workspaces.chats.toOpen)]);
 
 		if (!board.isLoaded || !asked.isRead) {
 			return refuse(NOT_READ);
@@ -40,16 +40,16 @@ export const nameChatPane = command()
 		}
 
 		const chatId = await chatIdForPane(send, board, asked.id);
-		await send(appHost.tabs.syncChatTabs);
-		await send(appHost.tabs.showTab, { id: chatId, paneId });
+		await send(appHost.tabs.syncChat);
+		await send(appHost.tabs.show, { id: chatId, paneId });
 		return { id: chatId };
 	});
 
-export const openChatAskedOnStart = command()
+export const openAskedOnStart = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle(async (_input, { send }) => {
-		const [board, asked] = await Promise.all([send(layout.panes.paneTree), send(workspaces.chats.chatToOpen)]);
+		const [board, asked] = await Promise.all([send(layout.panes.current), send(workspaces.chats.toOpen)]);
 
 		if (!board.isLoaded || !asked.isRead) {
 			return refuse(NOT_READ);
@@ -60,7 +60,7 @@ export const openChatAskedOnStart = command()
 		}
 
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
-		await send(appHost.tabs.syncChatTabs);
-		await send(appHost.tabs.showTab, { id: asked.id });
-		await send(workspaces.chats.forgetChatToOpen, { id: asked.id });
+		await send(appHost.tabs.syncChat);
+		await send(appHost.tabs.show, { id: asked.id });
+		await send(workspaces.chats.forgetToOpen, { id: asked.id });
 	});

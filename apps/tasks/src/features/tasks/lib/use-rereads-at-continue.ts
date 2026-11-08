@@ -3,7 +3,7 @@ import { tasks } from "@widgetarium/tasks/contract";
 import type { TaskCard } from "@widgetarium/tasks/contract";
 import { useRuntime } from "@widgetarium/data-framework";
 
-const REREAD = [tasks.board.board, tasks.board.task, tasks.board.tasks];
+const REREAD = [tasks.board.current, tasks.board.one, tasks.board.all];
 
 export function useRereadsAtContinue(cards: readonly TaskCard[]): void {
 	const { queryClient } = useRuntime("useRereadsAtContinue");

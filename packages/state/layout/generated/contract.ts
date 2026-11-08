@@ -200,29 +200,29 @@ export type SplitDrawing = z.infer<typeof SplitDrawingSchema>;
 
 export const layout = moduleContract("layout", Device, {
 	frameSides: {
-		frameSides: named("frame-sides.frame-sides", query()
+		current: named("frame-sides.current", query()
 			.public()
 			.output(FrameSidesSchema)
 			.settlesNow()),
-		toggleFrameSide: named("frame-sides.toggle-frame-side", command()
+		toggle: named("frame-sides.toggle", command()
 			.public()
 			.input(FrameSideInputSchema)
 			.idempotencyKey(Repeatable)),
-		peekFrameSide: named("frame-sides.peek-frame-side", command()
+		peek: named("frame-sides.peek", command()
 			.public()
 			.input(FrameSideInputSchema)
 			.idempotencyKey(Repeatable)),
-		concealFrameSide: named("frame-sides.conceal-frame-side", command()
+		conceal: named("frame-sides.conceal", command()
 			.public()
 			.input(FrameSideInputSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	frameWidths: {
-		frameWidths: named("frame-widths.frame-widths", query()
+		current: named("frame-widths.current", query()
 			.public()
 			.output(FrameWidthsAnswerSchema)
 			.settlesNow()),
-		resizeFrameEdge: named("frame-widths.resize-frame-edge", command()
+		resizeEdge: named("frame-widths.resize-edge", command()
 			.public()
 			.input(
 				z.object({
@@ -232,7 +232,7 @@ export const layout = moduleContract("layout", Device, {
 				}),
 			)
 			.idempotencyKey(Repeatable)),
-		resetFrameEdge: named("frame-widths.reset-frame-edge", command()
+		resetEdge: named("frame-widths.reset-edge", command()
 			.public()
 			.input(
 				z.object({
@@ -243,11 +243,11 @@ export const layout = moduleContract("layout", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	paneTabs: {
-		showTabInTargetPane: named("pane-tabs.show-tab-in-target-pane", command()
+		showInTarget: named("pane-tabs.show-in-target", command()
 			.public()
 			.input(z.object({ tabId: z.string() }))
 			.idempotencyKey(Repeatable)),
-		showChatInPane: named("pane-tabs.show-chat-in-pane", command()
+		showChat: named("pane-tabs.show-chat", command()
 			.public()
 			.input(
 				z.object({
@@ -256,21 +256,21 @@ export const layout = moduleContract("layout", Device, {
 				}),
 			)
 			.idempotencyKey(Repeatable)),
-		openShownTabPane: named("pane-tabs.open-shown-tab-pane", command()
+		openShown: named("pane-tabs.open-shown", command()
 			.public()
 			.idempotencyKey(Repeatable)),
-		closeShownTabPane: named("pane-tabs.close-shown-tab-pane", command()
+		closeShown: named("pane-tabs.close-shown", command()
 			.public()
 			.idempotencyKey(Repeatable)),
-		closePanesOfTabs: named("pane-tabs.close-panes-of-tabs", command()
+		closeShowing: named("pane-tabs.close-showing", command()
 			.public()
 			.input(z.object({ tabIds: z.array(z.string()).readonly() }))
 			.idempotencyKey(Repeatable)),
-		dropGoneTabs: named("pane-tabs.drop-gone-tabs", command()
+		dropGone: named("pane-tabs.drop-gone", command()
 			.public()
 			.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
 			.idempotencyKey(Repeatable)),
-		showTabInChatGroup: named("pane-tabs.show-tab-in-chat-group", command()
+		showInChatGroup: named("pane-tabs.show-in-chat-group", command()
 			.public()
 			.input(
 				z.object({
@@ -282,7 +282,7 @@ export const layout = moduleContract("layout", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	panes: {
-		paneTree: named("panes.pane-tree", query()
+		current: named("panes.current", query()
 			.public()
 			.output(PaneBoardSchema)
 			.settlesNow()),
@@ -291,15 +291,15 @@ export const layout = moduleContract("layout", Device, {
 			.input(PanePlacementSchema.nullable())
 			.output(PlacementPreviewSchema.nullable())
 			.settlesNow()),
-		placePane: named("panes.place-pane", command()
+		place: named("panes.place", command()
 			.public()
 			.input(PanePlacementSchema)
 			.idempotencyKey(Repeatable)),
-		closePane: named("panes.close-pane", command()
+		close: named("panes.close", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		resizePaneSplit: named("panes.resize-pane-split", command()
+		resizeSplit: named("panes.resize-split", command()
 			.public()
 			.input(
 				z.object({
@@ -309,20 +309,20 @@ export const layout = moduleContract("layout", Device, {
 				}),
 			)
 			.idempotencyKey(Repeatable)),
-		aimPane: named("panes.aim-pane", command()
+		aim: named("panes.aim", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
 	},
 	splitBoard: {
-		showSplit: named("split-board.show-split", command()
+		show: named("split-board.show", command()
 			.public()
 			.input(SplitDrawingSchema)
 			.idempotencyKey(Repeatable)),
-		leaveSplit: named("split-board.leave-split", command()
+		leave: named("split-board.leave", command()
 			.public()
 			.idempotencyKey(Repeatable)),
-		focusSplit: named("split-board.focus-split", command()
+		focus: named("split-board.focus", command()
 			.public()
 			.input(z.object({ focusedId: z.string().min(1) }))
 			.idempotencyKey(Repeatable)),

@@ -35,7 +35,7 @@ function webPageConfigOf(appTabs: AppTabs, nativePages: NativeWebPages | null): 
 function appTabsOver(windowApp: Runtime): AppTabs {
 	return {
 		appOfTab: async (tab) => {
-			const answer = await windowApp.send(places.tabFacts.appTab, { id: tab });
+			const answer = await windowApp.send(places.tabFacts.app, { id: tab });
 			return answer.ok ? answer.output.app : null;
 		},
 	};

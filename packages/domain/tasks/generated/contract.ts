@@ -522,17 +522,17 @@ export type Transition = z.infer<typeof TransitionSchema>;
 
 export const tasks = moduleContract("tasks", Server, {
 	agentWork: {
-		createTask: named("agent-work.create-task", command()
+		create: named("agent-work.create", command()
 			.public()
 			.input(CreateTaskAskSchema)
 			.output(CreatedSchema)
 			.idempotencyKey(Repeatable)),
-		editTask: named("agent-work.edit-task", command()
+		edit: named("agent-work.edit", command()
 			.public()
 			.input(EditTaskAskSchema)
 			.output(TaskViewSchema)
 			.idempotencyKey(Repeatable)),
-		startTask: named("agent-work.start-task", command()
+		start: named("agent-work.start", command()
 			.public()
 			.input(StartTaskAskSchema)
 			.output(TaskViewSchema)
@@ -547,65 +547,65 @@ export const tasks = moduleContract("tasks", Server, {
 			.input(CheckCriterionAskSchema)
 			.output(TaskViewSchema)
 			.idempotencyKey(Repeatable)),
-		attachToTask: named("agent-work.attach-to-task", command()
+		attach: named("agent-work.attach", command()
 			.public()
 			.input(AttachToTaskAskSchema)
 			.output(TaskViewSchema)
 			.idempotencyKey(Repeatable)),
-		moveTask: named("agent-work.move-task", command()
+		move: named("agent-work.move", command()
 			.public()
 			.input(MoveTaskAskSchema)
 			.output(TaskViewSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	board: {
-		board: named("board.board", query()
+		current: named("board.current", query()
 			.public()
 			.input(BoardAskSchema)
 			.output(BoardAnswerSchema)),
-		tasks: named("board.tasks", query()
+		all: named("board.all", query()
 			.public()
 			.input(TasksAskSchema)
 			.output(TaskPageSchema)),
-		task: named("board.task", query()
+		one: named("board.one", query()
 			.public()
 			.input(TaskAskSchema)
 			.output(TaskViewSchema)),
-		searchTasks: named("board.search-tasks", query()
+		search: named("board.search", query()
 			.public()
 			.input(SearchAskSchema)
 			.output(SearchHitsSchema)),
-		chatTaskLine: named("board.chat-task-line", query()
+		chatLine: named("board.chat-line", query()
 			.public()
 			.input(ChatAskSchema)
 			.output(ChatTaskLineSchema)),
-		taskTrailer: named("board.task-trailer", query()
+		trailer: named("board.trailer", query()
 			.public()
 			.input(ChatAskSchema)
 			.output(TurnTrailerSchema)),
 	},
 	person: {
-		acceptTask: named("person.accept-task", command()
+		accept: named("person.accept", command()
 			.public()
 			.input(TaskAskSchema)
 			.output(TaskCardSchema)
 			.idempotencyKey(Repeatable)),
-		keepTask: named("person.keep-task", command()
+		keep: named("person.keep", command()
 			.public()
 			.input(TaskAskSchema)
 			.output(TaskCardSchema)
 			.idempotencyKey(Repeatable)),
-		sendBackTask: named("person.send-back-task", command()
+		sendBack: named("person.send-back", command()
 			.public()
 			.input(SendBackAskSchema)
 			.output(ContinuedSchema)
 			.idempotencyKey(Repeatable)),
-		continueTask: named("person.continue-task", command()
+		resume: named("person.resume", command()
 			.public()
 			.input(ContinueAskSchema)
 			.output(ContinuedSchema)
 			.idempotencyKey(Repeatable)),
-		undeliveredTask: named("person.undelivered-task", command()
+		undelivered: named("person.undelivered", command()
 			.public()
 			.input(UndeliveredAskSchema)
 			.output(TaskCardSchema)
@@ -617,17 +617,17 @@ export const tasks = moduleContract("tasks", Server, {
 			.input(SettleTurnAskSchema)
 			.output(TurnFollowUpSchema)
 			.idempotencyKey((input) => `${input.chat}:${input.turn}`)),
-		releaseChatTasks: named("supervision.release-chat-tasks", command()
+		releaseChat: named("supervision.release-chat", command()
 			.public()
 			.input(ReleaseChatAskSchema)
 			.output(ChangedCountSchema)
 			.idempotencyKey(Repeatable)),
-		reconcileTasks: named("supervision.reconcile-tasks", command()
+		reconcile: named("supervision.reconcile", command()
 			.public()
 			.input(ReconcileAskSchema)
 			.output(ChangedCountSchema)
 			.idempotencyKey(Repeatable)),
-		sweepStaleTasks: named("supervision.sweep-stale-tasks", command()
+		sweepStale: named("supervision.sweep-stale", command()
 			.public()
 			.output(ChangedCountSchema)
 			.idempotencyKey(Repeatable)),

@@ -63,7 +63,7 @@ function tasksApp(): Runtime {
 }
 
 async function viewOf(tasks: Runtime, task: string): Promise<TaskView> {
-	const read = await tasks.send(tasksContract.board.task, { task });
+	const read = await tasks.send(tasksContract.board.one, { task });
 
 	if (!read.ok) {
 		throw new Error(read.reason);

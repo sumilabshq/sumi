@@ -406,7 +406,7 @@ export const FolderAskedSchema = ChatKeySchema.extend({ path: z.string().min(1) 
 
 export const assistant = moduleContract("assistant", Anywhere, {
 	agent: {
-		agentSetup: named("agent.agent-setup", query()
+		current: named("agent.current", query()
 			.public()
 			.input(ChatKeySchema)
 			.output(AgentSetupSchema)),
@@ -414,7 +414,7 @@ export const assistant = moduleContract("assistant", Anywhere, {
 			.public()
 			.input(ProviderAskedSchema)
 			.idempotencyKey(PerCall)),
-		setHelperAgents: named("agent.set-helper-agents", command()
+		setHelpers: named("agent.set-helpers", command()
 			.public()
 			.input(HelperAgentsAskedSchema)
 			.idempotencyKey(PerCall)),
@@ -449,7 +449,7 @@ export const assistant = moduleContract("assistant", Anywhere, {
 			.idempotencyKey(PerCall)),
 	},
 	chat: {
-		chat: named("chat.chat", query()
+		one: named("chat.one", query()
 			.public()
 			.input(ChatKeySchema)
 			.output(ChatSchema)
@@ -541,7 +541,7 @@ export const assistant = moduleContract("assistant", Anywhere, {
 			.idempotencyKey(PerCall)),
 	},
 	prefill: {
-		composerPrefill: named("prefill.composer-prefill", query()
+		composer: named("prefill.composer", query()
 			.public()
 			.input(ChatKeySchema)
 			.output(ComposerPrefillSchema.nullable())
@@ -550,13 +550,13 @@ export const assistant = moduleContract("assistant", Anywhere, {
 			.public()
 			.input(PrefillAskedSchema)
 			.idempotencyKey(PerCall)),
-		takePrefill: named("prefill.take-prefill", command()
+		take: named("prefill.take", command()
 			.public()
 			.input(PrefillTakenSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	slashCommands: {
-		slashCommands: named("slash-commands.slash-commands", query()
+		all: named("slash-commands.all", query()
 			.public()
 			.input(ChatKeySchema)
 			.output(SlashNamesSchema)),

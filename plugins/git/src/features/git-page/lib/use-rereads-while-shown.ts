@@ -5,7 +5,7 @@ import { useCommand } from "@widgetarium/data-framework";
 const REREAD_EVERY_MS = 5000;
 
 export function useRereadsWhileShown(): void {
-	const reread = useCommand(git.repos.rereadGit);
+	const reread = useCommand(git.repos.reread);
 	const latestReread = useRef(reread);
 	latestReread.current = reread;
 	useEffect(() => {

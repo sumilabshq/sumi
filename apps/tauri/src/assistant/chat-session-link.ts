@@ -12,7 +12,7 @@ export function chatSessionLinkOf(workspacesApp: Runtime): ChatSessionLink {
 		tasks: chatTasksOver(workspacesApp),
 		questions: chatQuestionsOver(workspacesApp),
 		onSessionChanged: (chatId, session) =>
-			void workspacesApp.send(workspaces.chats.recordChatTurn, {
+			void workspacesApp.send(workspaces.chats.recordTurn, {
 				chatId,
 				isBusy: session.busy,
 				isSeen: focusedChat.isOnScreen(chatId),

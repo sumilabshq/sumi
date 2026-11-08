@@ -34,7 +34,7 @@ interface SwitchSteps {
 const ROWS_LEAVE_MS = 100;
 
 export function useDoorSwitch({ door, resultsDoor, typed }: DoorSwitchAsk): DoorSwitch {
-	const changeDoor = useCommand(commandMenu.opening.changeMenuDoor);
+	const changeDoor = useCommand(commandMenu.opening.changeDoor);
 	const pending = usePendingDoor(door, resultsDoor);
 	const afterRowsLeave = useDelayedCall(ROWS_LEAVE_MS);
 	return {

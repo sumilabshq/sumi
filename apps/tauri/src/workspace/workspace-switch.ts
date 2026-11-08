@@ -7,7 +7,7 @@ export function reopensOnWorkspaceSwitch(
 	reopen: () => Promise<void>,
 ): () => void {
 	let shownId = openedId;
-	return workspacesApp.routes.watch(workspaces.workspaces.workspaces, undefined, () => {
+	return workspacesApp.routes.watch(workspaces.workspaces.all, undefined, () => {
 		const currentId = currentWorkspaceIdIn(workspacesApp) ?? shownId;
 
 		if (currentId === shownId) {
@@ -21,6 +21,6 @@ export function reopensOnWorkspaceSwitch(
 }
 
 function currentWorkspaceIdIn(workspacesApp: Runtime): string | null {
-	const read = workspacesApp.routes.readNow(workspaces.workspaces.workspaces);
-	return read === null ? null : workspaces.workspaces.workspaces.outputSchema.parse(read.output).current.id;
+	const read = workspacesApp.routes.readNow(workspaces.workspaces.all);
+	return read === null ? null : workspaces.workspaces.all.outputSchema.parse(read.output).current.id;
 }

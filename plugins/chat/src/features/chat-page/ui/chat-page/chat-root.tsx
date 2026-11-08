@@ -6,7 +6,7 @@ import { useOptionalQuery } from "@widgetarium/data-framework";
 import { ChatOfTab } from "./chat-of-tab.js";
 
 export function ChatRoot({ tabId }: TabPageProps): ReactElement {
-	const tab = useOptionalQuery(places.tabFacts.appTab, {
+	const tab = useOptionalQuery(places.tabFacts.app, {
 		id: tabId,
 	});
 	return (

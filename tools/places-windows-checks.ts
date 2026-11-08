@@ -22,27 +22,27 @@ const side = runtime()
 	.imports(places({ over: core }))
 	.start();
 const labelsOf = async (): Promise<readonly string[]> => {
-	const answered = await side.send(places.windows.openWindows);
+	const answered = await side.send(places.windows.all);
 	return answered.ok ? answered.output.windows.map((open) => open.label) : [answered.reason];
 };
 
-await main.send(places.windows.openWindow, { window: "main" });
-await side.send(places.windows.openWindow, { window: "studio-2" });
+await main.send(places.windows.open, { window: "main" });
+await side.send(places.windows.open, { window: "studio-2" });
 check("every window that opens is in the one registry the core keeps", await labelsOf(), ["main", "studio-2"]);
 
-await side.send(places.windows.openWindow, { window: "studio-2" });
+await side.send(places.windows.open, { window: "studio-2" });
 check("a window opened twice is held once", await labelsOf(), ["main", "studio-2"]);
 
 const heard = { count: 0 };
-main.routes.watch(places.windows.openWindows, undefined, () => {
+main.routes.watch(places.windows.all, undefined, () => {
 	heard.count += 1;
 });
-await side.send(places.windows.closeWindow, { window: "studio-2" });
+await side.send(places.windows.close, { window: "studio-2" });
 check("a closed window leaves the registry", await labelsOf(), ["main"]);
 check("and the other window hears it without asking", await waitFor(() => heard.count > 0), true);
 
-await main.send(places.windows.openWindow, { window: "studio-3" });
-await main.send(places.windows.keepLiveWindows, { windows: ["main"] });
+await main.send(places.windows.open, { window: "studio-3" });
+await main.send(places.windows.keepLive, { windows: ["main"] });
 check("a window the app no longer has leaves when the core checks what is open", await labelsOf(), ["main"]);
 
 console.log(tally.failed ? `places windows: ${tally.failed} check(s) failed` : "places windows: all checks passed");

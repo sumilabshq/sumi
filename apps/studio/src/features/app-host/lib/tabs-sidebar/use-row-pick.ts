@@ -8,8 +8,8 @@ export interface RowPick {
 }
 
 export function useRowPick({ tab }: SidebarTab): RowPick {
-	const showTab = useCommand(appHost.tabs.showTab);
-	const closeTab = useCommand(appHost.tabActions.closeTab);
+	const showTab = useCommand(appHost.tabs.show);
+	const closeTab = useCommand(appHost.tabActions.close);
 	return {
 		show: () => void showTab.run({ id: tab.id }),
 		close: () => void closeTab.run({ id: tab.id }),

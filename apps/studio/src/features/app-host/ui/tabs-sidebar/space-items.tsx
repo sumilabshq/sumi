@@ -12,7 +12,7 @@ export function SpaceItems({
 	onGroupMade,
 }: PointerMenuProps & { readonly pointed: Extract<Pointed, { kind: "space" }> }): ReactElement {
 	const openNewTabMenu = useTogglesNewTabMenu(pointed.list);
-	const newGroup = useCommand(appHost.groups.createGroup);
+	const newGroup = useCommand(appHost.groups.create);
 	const makeGroup = async (): Promise<void> => {
 		const made = await newGroup.run({ list: pointed.list });
 

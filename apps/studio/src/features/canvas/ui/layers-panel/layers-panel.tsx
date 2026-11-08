@@ -17,8 +17,8 @@ const TREE =
 	"cv:group/tree cv:relative cv:min-h-0 cv:flex-initial cv:overflow-x-hidden cv:overflow-y-auto cv:[scrollbar-width:none] cv:data-[dragging]:cursor-grabbing cv:motion-safe:animate-canvas-fade-in";
 
 export function LayersPanel(): ReactElement | null {
-	const panel = useQuery(canvas.layers.layersPanel).data;
-	const move = useCommand(canvas.layers.moveLayer);
+	const panel = useQuery(canvas.layers.panel).data;
+	const move = useCommand(canvas.layers.move);
 	const scroller = useRef<HTMLDivElement | null>(null);
 	const scroll = useTreeScroll(scroller, { indent: PANEL_ROW_INDENT_PX, picked: panel.picked, isShown: panel.isShown });
 	const drag = useTreeDrag(scroller, {

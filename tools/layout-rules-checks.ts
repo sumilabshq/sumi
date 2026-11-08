@@ -10,8 +10,8 @@ import {
 	refuseTurn,
 	toggledLook,
 } from "../packages/state/layout/features/frame-sides/lib/side-looks.ts";
-import { toggleFrameSide } from "../packages/state/layout/features/frame-sides/requests.ts";
-import { frameWidths } from "../packages/state/layout/features/frame-widths/requests.ts";
+import { toggle } from "../packages/state/layout/features/frame-sides/requests.ts";
+import { current } from "../packages/state/layout/features/frame-widths/requests.ts";
 import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
 import {
 	goneTabPanesOf,
@@ -19,18 +19,12 @@ import {
 	tabTargetOf,
 	treeWithoutGoneTabs,
 } from "../packages/state/layout/shared/lib/pane-trees.ts";
+import { aim, close, place, placementPreview, resizeSplit } from "../packages/state/layout/features/panes/requests.ts";
 import {
-	aimPane,
-	closePane,
-	placePane,
-	placementPreview,
-	resizePaneSplit,
-} from "../packages/state/layout/features/panes/requests.ts";
-import {
-	closePanesOfTabs,
-	closeShownTabPane,
-	openShownTabPane,
-	showTabInTargetPane,
+	closeShowing,
+	closeShown,
+	openShown,
+	showInTarget,
 } from "../packages/state/layout/features/pane-tabs/requests.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
@@ -103,7 +97,7 @@ export function infosOf(run: () => void): string[] {
 }
 
 function placeTab(parts: LayoutParts, tabId: string, targetId: string): void {
-	placePane.handle({ view: { kind: "app", tabId }, targetId, side: "right" }, parts);
+	place.handle({ view: { kind: "app", tabId }, targetId, side: "right" }, parts);
 }
 
 function checksSideLooks(check: Check): void {
@@ -124,7 +118,7 @@ function checksSideLooks(check: Check): void {
 		[refuseTurn("docked", "peeking"), refuseTurn("hidden", "peeking")],
 	);
 	const parts = partsOf();
-	const said = infosOf(() => toggleFrameSide.handle({ side: "left" }, parts));
+	const said = infosOf(() => toggle.handle({ side: "left" }, parts));
 	check(
 		"a toggle saves the turn and logs it once as was → now",
 		parts.frameSides.sides().left === "hidden" &&
@@ -142,7 +136,7 @@ async function checksWidths(check: Check): Promise<void> {
 	);
 	const parts = partsOf();
 	parts.frameWidths.saveWidths({ left: 10, chat: 10 }, "a width below the least");
-	const answer = await frameWidths.handle(undefined, parts);
+	const answer = await current.handle(undefined, parts);
 	check(
 		"the widths answer never goes below the least widths and carries the bounds",
 		isDeepStrictEqual(widthsWithin({ left: 10, chat: 10 }), { left: 200, chat: 320 }) &&
@@ -172,40 +166,40 @@ function checksPaneRules(check: Check): void {
 function checksRefusals(check: Check): void {
 	const parts = partsOf();
 	const refusals = [
-		refusalOf(() => showTabInTargetPane.handle({ tabId: "tab-1" }, parts)),
-		refusalOf(() => placePane.handle({ view: { kind: "chat" }, targetId: "pane-9", side: "left" }, parts)),
-		refusalOf(() => closePane.handle({ id: "pane-9" }, parts)),
-		refusalOf(() => aimPane.handle({ id: "pane-9" }, parts)),
-		refusalOf(() => resizePaneSplit.handle({ splitId: "split-9", at: 0, share: 0.5 }, parts)),
-		refusalOf(() => resizePaneSplit.handle({ splitId: "pane-root", at: 1, share: 0.5 }, parts)),
+		refusalOf(() => showInTarget.handle({ tabId: "tab-1" }, parts)),
+		refusalOf(() => place.handle({ view: { kind: "chat" }, targetId: "pane-9", side: "left" }, parts)),
+		refusalOf(() => close.handle({ id: "pane-9" }, parts)),
+		refusalOf(() => aim.handle({ id: "pane-9" }, parts)),
+		refusalOf(() => resizeSplit.handle({ splitId: "split-9", at: 0, share: 0.5 }, parts)),
+		refusalOf(() => resizeSplit.handle({ splitId: "pane-root", at: 1, share: 0.5 }, parts)),
 	];
 	check(
 		"a show with no tab target, a pane or split that is not there and an edge past the last are refused",
 		refusals.every((reason) => reason !== null) && isDeepStrictEqual(parts.paneTree.tree(), FIRST_PANES),
 		refusals,
 	);
-	aimPane.handle({ id: "pane-app" }, parts);
+	aim.handle({ id: "pane-app" }, parts);
 	check(
 		"a show into a target pane that shows no tab is refused",
-		refusalOf(() => showTabInTargetPane.handle({ tabId: "tab-1" }, parts)) !== null,
+		refusalOf(() => showInTarget.handle({ tabId: "tab-1" }, parts)) !== null,
 		parts.paneTree.tree(),
 	);
 	placeTab(parts, "tab-3", "pane-app");
 	placeTab(parts, "tab-4", "pane-app");
 	check(
 		"a show of a tab that already stands in another pane is refused",
-		refusalOf(() => showTabInTargetPane.handle({ tabId: "tab-3" }, parts)) === "tab tab-3 already stands in pane-1",
+		refusalOf(() => showInTarget.handle({ tabId: "tab-3" }, parts)) === "tab tab-3 already stands in pane-1",
 		parts.paneTree.tree(),
 	);
 }
 
 function checksTabPanes(check: Check): void {
 	const parts = partsOf();
-	closeShownTabPane.handle(undefined, parts);
+	closeShown.handle(undefined, parts);
 	const closed = shapeOf(parts);
-	openShownTabPane.handle(undefined, parts);
+	openShown.handle(undefined, parts);
 	const opened = parts.paneTree.tree();
-	openShownTabPane.handle(undefined, parts);
+	openShown.handle(undefined, parts);
 	check(
 		"the shown tab pane closes, then takes the whole board once however often it is asked",
 		JSON.stringify(closed) === '["chat"]' &&
@@ -215,7 +209,7 @@ function checksTabPanes(check: Check): void {
 	);
 	placeTab(parts, "tab-3", "pane-chat");
 	placeTab(parts, "tab-4", "pane-chat");
-	closePanesOfTabs.handle({ tabIds: ["tab-3", "tab-7"] }, parts);
+	closeShowing.handle({ tabIds: ["tab-3", "tab-7"] }, parts);
 	check(
 		"closing the panes of tabs closes only the panes showing them",
 		JSON.stringify(shapeOf(parts)) === '["chat","tab-4","shown"]',
@@ -228,7 +222,7 @@ async function checksPreview(check: Check): Promise<void> {
 	const placement = { view: { kind: "app", tabId: "tab-3" }, targetId: "pane-app", side: "right" } as const;
 	const preview = await placementPreview.handle(placement, parts);
 	const untouched = isDeepStrictEqual(parts.paneTree.tree(), FIRST_PANES);
-	placePane.handle(placement, parts);
+	place.handle(placement, parts);
 	const placed = parts.paneTree.tree();
 	check(
 		"a placement preview answers the tree the drop saves, names the placed pane and saves nothing",
@@ -255,7 +249,7 @@ function checksSendSaves(check: Check): void {
 		.modules(layoutModule({ injects: { ...parts } }))
 		.start();
 	placeTab(parts, "tab-8", "pane-app");
-	void layoutApp.send(layout.paneTabs.dropGoneTabs, { heldTabIds: [] });
+	void layoutApp.send(layout.paneTabs.dropGone, { heldTabIds: [] });
 	check(
 		"a layout command sent through the app has saved before send returns",
 		!JSON.stringify(shapeOf(parts)).includes("tab-8"),

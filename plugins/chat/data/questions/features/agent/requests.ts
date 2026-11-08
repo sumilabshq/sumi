@@ -19,9 +19,9 @@ import {
 	WaitingSchema,
 } from "../../shared/schema/question.schema.js";
 import type { Question } from "../../shared/schema/question.schema.js";
-import { chatQuestions } from "../dock/requests.js";
+import { ofChat } from "../dock/requests.js";
 
-export const postQuestions = command()
+export const post = command()
 	.public()
 	.input(PostQuestionsAskSchema)
 	.output(PostedSchema)
@@ -32,7 +32,7 @@ export const postQuestions = command()
 			(held) => questionsPosted(held, ask, Date.now()),
 			`post ${ask.questions.length} ${ask.need}`,
 		);
-		invalidate(chatQuestions);
+		invalidate(ofChat);
 
 		if (!changed.ok) {
 			return refuse(changed.refusal);
@@ -43,7 +43,7 @@ export const postQuestions = command()
 		};
 	});
 
-export const questions = query()
+export const all = query()
 	.public()
 	.input(QuestionsAskSchema)
 	.output(QuestionSchema.array())
@@ -59,7 +59,7 @@ export const isWaitingOnPerson = query()
 		isWaiting: questions.questionsOf(chat).some(({ need, state }) => need === "needed" && state === "open"),
 	}));
 
-export const deliverQuestions = command()
+export const deliver = command()
 	.public()
 	.input(DeliverQuestionsAskSchema)
 	.output(DeliveredSchema)
@@ -76,7 +76,7 @@ export const deliverQuestions = command()
 			},
 			ask.ids === null ? "deliver settled optional" : `deliver ${ask.ids.join(", ")}`,
 		);
-		invalidate(chatQuestions);
+		invalidate(ofChat);
 
 		if (!changed.ok) {
 			return refuse(changed.refusal);
@@ -105,6 +105,6 @@ export const withdrawNeeded = command()
 			},
 			"turn ended → withdraw needed",
 		);
-		invalidate(chatQuestions);
+		invalidate(ofChat);
 		return changed.ok ? { changed: counted.open } : refuse(changed.refusal);
 	});

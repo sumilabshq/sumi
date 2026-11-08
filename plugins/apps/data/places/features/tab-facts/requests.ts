@@ -28,7 +28,7 @@ import {
 	recordTurnPlan,
 } from "./lib/fact-plans.js";
 
-export const keepChatTabs = command()
+export const keepChat = command()
 	.public()
 	.input(KeepChatTabsAskSchema)
 	.idempotencyKey(Repeatable)
@@ -36,7 +36,7 @@ export const keepChatTabs = command()
 		answered(await tabs.movePlacedTabs(moving(null, placedApps.placedApps(), keepChatTabsPlan(chats))));
 	});
 
-export const recordTabTurn = command()
+export const recordTurn = command()
 	.public()
 	.input(TabTurnSchema)
 	.output(TabTurnMarksSchema)
@@ -51,7 +51,7 @@ export const recordTabTurn = command()
 		return marks;
 	});
 
-export const markTabSeen = command()
+export const markSeen = command()
 	.public()
 	.input(SeenTabSchema)
 	.idempotencyKey(Repeatable)
@@ -67,9 +67,9 @@ export const forgetRunningTurns = command()
 	});
 
 const APP_CALLABLE: ReadonlySet<string> = new Set([
-	"places.tab-opening.open-tab",
+	"places.tab-opening.open",
 	"places.tab-facts.record-app-address",
-	"places.tab-facts.app-tab",
+	"places.tab-facts.app",
 	"places.tab-facts.open-link",
 ]);
 const NOT_FOR_APPS = "{request} is not open to apps; an app may call {allowed}";
@@ -162,7 +162,7 @@ export const rereadAskedLinks = subscriber(placedTabsChanged).handle((_input, { 
 	invalidate(askedLinks);
 });
 
-export const appTab = query()
+export const app = query()
 	.public()
 	.input(OwnAppTabAskSchema)
 	.output(OwnAppTabSchema)
@@ -173,8 +173,8 @@ export const appTab = query()
 		return tab === undefined ? refuse(NO_TAB.replace("{id}", id)) : ownAppTabOf(placedApps.placedApps(), tab);
 	});
 
-export const rereadAppTab = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
-	invalidate(appTab);
+export const rereadApp = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
+	invalidate(app);
 });
 
 export const recordAppAddress = command()

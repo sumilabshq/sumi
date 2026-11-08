@@ -66,7 +66,7 @@ async function splitWindowOf(pinned: readonly string[]): Promise<Runtime> {
 	});
 
 	for (const id of pinned) {
-		await window.send(places.tabPlacing.pinTab, {
+		await window.send(places.tabPlacing.pin, {
 			window: MAIN_WINDOW,
 			id,
 			isPinned: true,
@@ -132,7 +132,7 @@ async function previewAndModelOf(drag: Drag): Promise<readonly [unknown, unknown
 		drop: drag.drop,
 		isLanding: true,
 	});
-	await window.send(places.tabPlacing.placeTab, {
+	await window.send(places.tabPlacing.place, {
 		at: AT,
 		id: drag.id,
 		place: drag.drop,

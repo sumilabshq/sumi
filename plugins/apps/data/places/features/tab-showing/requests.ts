@@ -20,7 +20,7 @@ import {
 	tearOffPlan,
 } from "./lib/showing-plans.js";
 
-export const restoreTabs = command()
+export const restore = command()
 	.public()
 	.input(RestoreTabsAskSchema)
 	.output(TabsSettledSchema)
@@ -29,7 +29,7 @@ export const restoreTabs = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), restorePlan(ask)))),
 	);
 
-export const showTab = command()
+export const show = command()
 	.public()
 	.input(ShowTabAskSchema)
 	.output(TabsSettledSchema)
@@ -38,7 +38,7 @@ export const showTab = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), showTabPlan(asked)))),
 	);
 
-export const fitTabsToPanes = command()
+export const fitToPanes = command()
 	.public()
 	.input(SettleAskSchema)
 	.output(TabsSettledSchema)
@@ -56,7 +56,7 @@ export const rememberPages = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), rememberPagesPlan()))),
 	);
 
-export const openTabInOwnWindow = command()
+export const openInOwnWindow = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -65,7 +65,7 @@ export const openTabInOwnWindow = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), ownWindowPlan(id)))),
 	);
 
-export const tearOffTab = command()
+export const tearOff = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -74,7 +74,7 @@ export const tearOffTab = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), tearOffPlan(id)))),
 	);
 
-export const reloadTab = command()
+export const reload = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)

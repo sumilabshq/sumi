@@ -29,7 +29,7 @@ export function startStudioAppearance(view: Window): StudioAppearance {
 		.imports(appearanceContract({ over: transport }))
 		.start();
 	const wear = (): void => {
-		void appearanceApp.send(appearanceContract.theme.theme).then((theme) => {
+		void appearanceApp.send(appearanceContract.theme.current).then((theme) => {
 			if (!theme.ok) {
 				console.error(`[widgetarium] the studio could not read its theme: ${theme.reason}`);
 				return;

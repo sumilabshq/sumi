@@ -1,13 +1,13 @@
 import { PerCall } from "@widgetarium/data-framework";
 import { query, command, subscriber } from "#module";
 import { jobsChanged } from "../../gateways/agent-jobs/agent-jobs.events.js";
-import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { momentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import { JobIdSchema, JobStatusSchema } from "../../shared/schema/job.schema.js";
 import { PAGE_FIELDS, pagesNowOf } from "../../shared/lib/pages/pages-now.js";
 import { isTouching } from "../../shared/lib/view/canvas-moment.js";
 
-export const jobStatus = query()
+export const status = query()
 	.public()
 	.output(JobStatusSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
@@ -28,7 +28,7 @@ export const jobStatus = query()
 		};
 	});
 
-export const stopJob = command()
+export const stop = command()
 	.public()
 	.input(JobIdSchema)
 	.idempotencyKey(PerCall)
@@ -38,16 +38,16 @@ export const stopJob = command()
 		console.info(`[widgetarium] job ${id} of ${app} running → stopped (stop pressed)`);
 	});
 
-export const rereadJobStatusForMoment = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
+export const rereadStatusForMoment = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (isTouching(fields, PAGE_FIELDS)) {
-		invalidate(jobStatus);
+		invalidate(status);
 	}
 });
 
-export const rereadJobStatusForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
-	invalidate(jobStatus);
+export const rereadStatusForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(status);
 });
 
-export const rereadJobStatus = subscriber(jobsChanged).handle((_input, { invalidate }) => {
-	invalidate(jobStatus);
+export const rereadStatus = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+	invalidate(status);
 });

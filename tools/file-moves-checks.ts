@@ -67,9 +67,7 @@ function tabAppOf(tabId: string): Runtime {
 const tabs = [tabAppOf("tab-notes"), tabAppOf("tab-gone")];
 
 async function addressesOf(): Promise<unknown> {
-	const answers = await Promise.all(
-		["tab-notes", "tab-gone"].map((id) => tabs[0]?.send(places.tabFacts.appTab, { id })),
-	);
+	const answers = await Promise.all(["tab-notes", "tab-gone"].map((id) => tabs[0]?.send(places.tabFacts.app, { id })));
 	return answers.map((answer) => (answer?.ok ? answer.output.address : answer?.reason));
 }
 

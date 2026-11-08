@@ -1,6 +1,6 @@
 import { PerCall, Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { assistantSessionChanged } from "../../gateways/chat-parts/chat-parts.events.js";
+import { sessionChanged } from "../../gateways/chat-parts/chat-parts.events.js";
 import { sentAttachmentsChanged } from "../../shared/events/sent-attachments.events.js";
 import { ChatSchema, QueueChangeInChatSchema } from "../../shared/schema/chat.schema.js";
 import { TextAskedSchema } from "../../shared/schema/attachment.schema.js";
@@ -49,7 +49,7 @@ export const AssistantCallersGuard = guard().handle(({ request, context }) => {
 	}
 });
 
-export const chat = query()
+export const one = query()
 	.public()
 	.input(ChatKeySchema)
 	.output(ChatSchema)
@@ -96,10 +96,10 @@ export const sendText = command()
 	.idempotencyKey(PerCall)
 	.handle(inChat(({ said }, { assistantSession }) => assistantSession.send(said)));
 
-export const rereadChat = subscriber(assistantSessionChanged).handle(({ chat: chatId }, { invalidate }) => {
-	invalidate(chat, { chat: chatId });
+export const reread = subscriber(sessionChanged).handle(({ chat: chatId }, { invalidate }) => {
+	invalidate(one, { chat: chatId });
 });
 
-export const rereadChatForAttachments = subscriber(sentAttachmentsChanged).handle((_input, { invalidate }) => {
-	invalidate(chat);
+export const rereadForAttachments = subscriber(sentAttachmentsChanged).handle((_input, { invalidate }) => {
+	invalidate(one);
 });

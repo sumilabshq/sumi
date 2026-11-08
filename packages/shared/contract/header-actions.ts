@@ -52,7 +52,7 @@ function appActionOf(action: HeaderAction): AppAction {
 }
 
 async function recordActions({ sumi, tabId }: HeaderActionsFrame, actions: AppAction[]): Promise<void> {
-	const recorded = await sumi.send(apps.pages.recordAppPage, { id: tabId, actions });
+	const recorded = await sumi.send(apps.pages.record, { id: tabId, actions });
 
 	if (!recorded.ok) {
 		console.error(`[sumi] showing the actions of tab ${tabId} was refused: ${recorded.reason}`);
@@ -71,7 +71,7 @@ async function takeWaitingPresses(
 	seenPressIds: Set<string>,
 	onPress: (action: string) => void,
 ): Promise<void> {
-	const page = await frame.sumi.send(apps.pages.appPage, { id: frame.tabId });
+	const page = await frame.sumi.send(apps.pages.ofTab, { id: frame.tabId });
 
 	if (!page.ok) {
 		console.error(`[sumi] reading the presses of tab ${frame.tabId} was refused: ${page.reason}`);

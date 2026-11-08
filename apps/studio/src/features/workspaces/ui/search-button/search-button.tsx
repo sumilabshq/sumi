@@ -14,8 +14,8 @@ const SEARCH = "Search";
 const SEARCH_DOOR = "anywhere";
 
 export function SearchButton({ className, iconPx }: SearchButtonProps): ReactElement {
-	const openMenu = useCommand(commandMenu.opening.toggleCommandMenu);
-	const keys = useQuery(commandMenu.opening.menuDoors).data.doors.find(({ id }) => id === SEARCH_DOOR)?.keys ?? "";
+	const openMenu = useCommand(commandMenu.opening.toggle);
+	const keys = useQuery(commandMenu.opening.doors).data.doors.find(({ id }) => id === SEARCH_DOOR)?.keys ?? "";
 	return (
 		<IconButton
 			variant="ghost"

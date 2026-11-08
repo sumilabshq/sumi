@@ -119,28 +119,28 @@ export type WorkspacesView = z.infer<typeof WorkspacesSchema>;
 
 export const workspaces = moduleContract("workspaces", Device, {
 	chats: {
-		chatRecords: named("chats.chat-records", query()
+		records: named("chats.records", query()
 			.public()
 			.output(ChatRecordsSchema)
 			.settlesNow()),
-		workspaceCrumb: named("chats.workspace-crumb", query()
+		crumb: named("chats.crumb", query()
 			.public()
 			.output(WorkspaceCrumbSchema)
 			.settlesNow()),
-		createChat: named("chats.create-chat", command()
+		create: named("chats.create", command()
 			.public()
 			.input(NewChatSchema)
 			.output(ChatIdSchema)
 			.idempotencyKey(PerCall)),
-		forgetChatToOpen: named("chats.forget-chat-to-open", command()
+		forgetToOpen: named("chats.forget-to-open", command()
 			.public()
 			.input(ChatIdSchema)
 			.idempotencyKey(Repeatable)),
-		chatToOpen: named("chats.chat-to-open", query()
+		toOpen: named("chats.to-open", query()
 			.public()
 			.output(ChatToOpenSchema)
 			.settlesNow()),
-		recordChatTurn: named("chats.record-chat-turn", command()
+		recordTurn: named("chats.record-turn", command()
 			.public()
 			.input(ChatTurnSchema)
 			.idempotencyKey(Repeatable)),
@@ -148,11 +148,11 @@ export const workspaces = moduleContract("workspaces", Device, {
 			.public()),
 	},
 	workspaces: {
-		workspaces: named("workspaces.workspaces", query()
+		all: named("workspaces.all", query()
 			.public()
 			.output(WorkspacesSchema)
 			.settlesNow()),
-		openWorkspace: named("workspaces.open-workspace", command()
+		open: named("workspaces.open", command()
 			.public()
 			.input(WorkspaceIdSchema)
 			.idempotencyKey(Repeatable)),
@@ -163,19 +163,19 @@ export const workspaces = moduleContract("workspaces", Device, {
 			.public()
 			.input(ChatElsewhereSchema)
 			.idempotencyKey(Repeatable)),
-		openWorkspaceByPosition: named("workspaces.open-workspace-by-position", command()
+		openByPosition: named("workspaces.open-by-position", command()
 			.public()
 			.input(WorkspacePositionSchema)
 			.idempotencyKey(Repeatable)),
-		createWorkspace: named("workspaces.create-workspace", command()
+		create: named("workspaces.create", command()
 			.public()
 			.output(WorkspaceIdSchema)
 			.idempotencyKey(PerCall)),
-		renameWorkspace: named("workspaces.rename-workspace", command()
+		rename: named("workspaces.rename", command()
 			.public()
 			.input(WorkspaceNameSchema)
 			.idempotencyKey(Repeatable)),
-		setWorkspaceIcon: named("workspaces.set-workspace-icon", command()
+		setIcon: named("workspaces.set-icon", command()
 			.public()
 			.input(WorkspaceIconChoiceSchema)
 			.idempotencyKey(Repeatable)),

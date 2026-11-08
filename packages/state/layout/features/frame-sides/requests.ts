@@ -1,21 +1,21 @@
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { frameSidesChanged } from "../../gateways/frame-sides/frame-sides.events.js";
+import { sidesChanged } from "../../gateways/frame-sides/frame-sides.events.js";
 import { FrameSideInputSchema, FrameSidesSchema } from "../../shared/schema/frame-sides.schema.js";
 import { concealedLook, peekedLook, refuseTurn, toggledLook } from "./lib/side-looks.js";
 
-export const frameSides = query()
+export const current = query()
 	.public()
 	.output(FrameSidesSchema)
 	.settlesNow()
 	.handle((_input, { frameSides }) => frameSides.sides());
 
-export const toggleFrameSide = command()
+export const toggle = command()
 	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
-		invalidate(frameSides);
+		invalidate(current);
 		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = toggledLook(was);
@@ -36,12 +36,12 @@ export const toggleFrameSide = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const peekFrameSide = command()
+export const peek = command()
 	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
-		invalidate(frameSides);
+		invalidate(current);
 		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = peekedLook(was);
@@ -68,12 +68,12 @@ export const peekFrameSide = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const concealFrameSide = command()
+export const conceal = command()
 	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
-		invalidate(frameSides);
+		invalidate(current);
 		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = concealedLook(was);
@@ -100,6 +100,6 @@ export const concealFrameSide = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const rereadSides = subscriber(frameSidesChanged).handle((_input, { invalidate }) => {
-	invalidate(frameSides);
+export const reread = subscriber(sidesChanged).handle((_input, { invalidate }) => {
+	invalidate(current);
 });

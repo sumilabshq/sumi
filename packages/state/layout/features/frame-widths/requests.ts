@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { frameWidthsChanged } from "../../gateways/frame-widths/frame-widths.events.js";
+import { widthsChanged } from "../../gateways/frame-widths/frame-widths.events.js";
 import { FRAME_BOUNDS, FRAME_LIMITS, edgePxWithin, widthsWithin } from "../../shared/lib/frame-bounds.js";
 import { FrameEdgeSchema, FrameWidthsAnswerSchema, WidthPxSchema } from "../../shared/schema/frame-widths.schema.js";
 
-export const frameWidths = query()
+export const current = query()
 	.public()
 	.output(FrameWidthsAnswerSchema)
 	.settlesNow()
@@ -14,7 +14,7 @@ export const frameWidths = query()
 		bounds: FRAME_LIMITS,
 	}));
 
-export const resizeFrameEdge = command()
+export const resizeEdge = command()
 	.public()
 	.input(
 		z.object({
@@ -25,7 +25,7 @@ export const resizeFrameEdge = command()
 	)
 	.idempotencyKey(Repeatable)
 	.handle(({ edge, px, mostPx }, { frameWidths: frameWidthsGateway, invalidate }) => {
-		invalidate(frameWidths);
+		invalidate(current);
 		const widths = widthsWithin(frameWidthsGateway.widths());
 		const next = edgePxWithin(edge, px, mostPx);
 
@@ -44,7 +44,7 @@ export const resizeFrameEdge = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const resetFrameEdge = command()
+export const resetEdge = command()
 	.public()
 	.input(
 		z.object({
@@ -54,7 +54,7 @@ export const resetFrameEdge = command()
 	)
 	.idempotencyKey(Repeatable)
 	.handle(({ edge, mostPx }, { frameWidths: frameWidthsGateway, invalidate }) => {
-		invalidate(frameWidths);
+		invalidate(current);
 		const widths = widthsWithin(frameWidthsGateway.widths());
 		const next = edgePxWithin(edge, FRAME_BOUNDS[edge].usualPx, mostPx);
 
@@ -73,6 +73,6 @@ export const resetFrameEdge = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const rereadFrameWidths = subscriber(frameWidthsChanged).handle((_input, { invalidate }) => {
-	invalidate(frameWidths);
+export const reread = subscriber(widthsChanged).handle((_input, { invalidate }) => {
+	invalidate(current);
 });

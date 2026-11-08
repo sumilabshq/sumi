@@ -16,7 +16,7 @@ export interface LookGridProps {
 }
 
 export function LookGrid({ workspace, tab, typed }: LookGridProps): ReactElement {
-	const setIcon = useCommand(workspaces.workspaces.setWorkspaceIcon);
+	const setIcon = useCommand(workspaces.workspaces.setIcon);
 	const choices = lookChoicesOf(tab, typed);
 	if (choices.length === 0) {
 		return <LookNone />;

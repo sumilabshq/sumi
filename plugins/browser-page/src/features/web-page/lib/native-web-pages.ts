@@ -18,7 +18,7 @@ class BrowserModuleWebPages implements NativeWebPages {
 	constructor(private readonly studioApp: Runtime) {}
 
 	async page(tab: string): Promise<WebPage | null> {
-		return pageOf(await this.studioApp.send(browser.tabs.browserTabs, { heldTabId: tab }), tab);
+		return pageOf(await this.studioApp.send(browser.tabs.all, { heldTabId: tab }), tab);
 	}
 
 	pageArea(tab: string): PageArea | null {
@@ -92,7 +92,7 @@ class BrowserModuleWebPages implements NativeWebPages {
 	}
 
 	pagesChanged(changed: () => void): () => void {
-		return this.studioApp.routes.watch(browser.tabs.browserTabs, { heldTabId: null }, changed);
+		return this.studioApp.routes.watch(browser.tabs.all, { heldTabId: null }, changed);
 	}
 
 	private detachHole(tab: string, held: PageHole | undefined): Promise<void> {

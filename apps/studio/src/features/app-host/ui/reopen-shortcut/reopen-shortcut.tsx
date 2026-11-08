@@ -5,7 +5,7 @@ import { appHost } from "@widgetarium/app-host/contract";
 import { REOPEN_KEY } from "../../lib/tab-keys.js";
 
 export function ReopenShortcut({ frame }: { readonly frame: RefObject<HTMLElement | null> }): null {
-	const reopenClosedTab = useCommand(appHost.tabActions.reopenClosedTab);
+	const reopenClosedTab = useCommand(appHost.tabActions.reopenClosed);
 	useShortcut(frame, {
 		key: REOPEN_KEY,
 		isShifted: true,

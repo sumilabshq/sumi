@@ -22,7 +22,7 @@ const WEB_SCHEMES: ReadonlySet<string> = new Set(["https:", "http:"]);
 const NO_SUCH_APP = "Sumi has no app named {app}";
 const OPENED = "[widgetarium] link {href} opened{where}";
 
-export const openLink = command()
+export const open = command()
 	.public()
 	.input(LinkToOpenSchema)
 	.idempotencyKey(Repeatable)
@@ -88,6 +88,6 @@ async function openAppTab(reach: TabsReach, { app, address, opensNew }: AppTabAs
 }
 
 async function isKnownApp(reach: TabsReach, app: string): Promise<boolean> {
-	const { apps } = await reach.send(appsContract.apps.apps);
+	const { apps } = await reach.send(appsContract.apps.all);
 	return apps.some(({ id }) => id === app);
 }

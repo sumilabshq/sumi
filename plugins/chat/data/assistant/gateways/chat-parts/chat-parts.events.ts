@@ -3,13 +3,11 @@ import { ChatKeySchema } from "../../shared/schema/chat-key.schema.js";
 import { ChatFileDragEventSchema } from "../../shared/schema/file-drag.schema.js";
 import { ChatPartsGateway } from "./chat-parts.gateway.js";
 
-export const assistantSessionChanged = event()
+export const sessionChanged = event()
 	.input(ChatKeySchema)
 	.from(gatewayEvent(ChatPartsGateway, (gateway, fire) => gateway.sessionChanged((chat) => fire({ chat }))));
 
-export const assistantSetupChanged = event().from(
-	gatewayEvent(ChatPartsGateway, (gateway, fire) => gateway.setupChanged(fire)),
-);
+export const setupChanged = event().from(gatewayEvent(ChatPartsGateway, (gateway, fire) => gateway.setupChanged(fire)));
 
 export const claudeOptionsChanged = event().from(
 	gatewayEvent(ChatPartsGateway, (gateway, fire) => gateway.claudeOptionsChanged(fire)),

@@ -770,7 +770,7 @@ export type MoveWindows = (now: Windows) => WindowsMoved | null;
 
 export const places = moduleContract("places", Server, {
 	splits: {
-		shownSplit: named("splits.shown-split", query()
+		shown: named("splits.shown", query()
 			.public()
 			.input(WindowLabelSchema)
 			.output(ShownSplitSchema)),
@@ -779,34 +779,34 @@ export const places = moduleContract("places", Server, {
 			.input(PlaceInViewAskSchema)
 			.output(PlacedInViewSchema)
 			.idempotencyKey(Repeatable)),
-		removeFromSplit: named("splits.remove-from-split", command()
+		remove: named("splits.remove", command()
 			.public()
 			.input(SplitMemberAskSchema)
 			.output(LeftSplitSchema)
 			.idempotencyKey(Repeatable)),
-		reorderSplitMember: named("splits.reorder-split-member", command()
+		reorderMember: named("splits.reorder-member", command()
 			.public()
 			.input(ReorderSplitMemberAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		resizeSplit: named("splits.resize-split", command()
+		resize: named("splits.resize", command()
 			.public()
 			.input(ResizeSplitAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	tabClosing: {
-		closeTab: named("tab-closing.close-tab", command()
+		close: named("tab-closing.close", command()
 			.public()
 			.input(TabAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		closeOtherTabs: named("tab-closing.close-other-tabs", command()
+		closeOthers: named("tab-closing.close-others", command()
 			.public()
 			.input(TabAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		closeShownTab: named("tab-closing.close-shown-tab", command()
+		closeShown: named("tab-closing.close-shown", command()
 			.public()
 			.input(SettleAskSchema)
 			.output(TabsSettledSchema)
@@ -816,23 +816,23 @@ export const places = moduleContract("places", Server, {
 			.input(TabAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		closeEssentialTab: named("tab-closing.close-essential-tab", command()
+		closeEssential: named("tab-closing.close-essential", command()
 			.public()
 			.input(CloseEssentialAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	tabFacts: {
-		keepChatTabs: named("tab-facts.keep-chat-tabs", command()
+		keepChat: named("tab-facts.keep-chat", command()
 			.public()
 			.input(KeepChatTabsAskSchema)
 			.idempotencyKey(Repeatable)),
-		recordTabTurn: named("tab-facts.record-tab-turn", command()
+		recordTurn: named("tab-facts.record-turn", command()
 			.public()
 			.input(TabTurnSchema)
 			.output(TabTurnMarksSchema)
 			.idempotencyKey(Repeatable)),
-		markTabSeen: named("tab-facts.mark-tab-seen", command()
+		markSeen: named("tab-facts.mark-seen", command()
 			.public()
 			.input(SeenTabSchema)
 			.idempotencyKey(Repeatable)),
@@ -853,7 +853,7 @@ export const places = moduleContract("places", Server, {
 			.input(TakeAskedLinkSchema)
 			.output(AskedLinkSchema)
 			.idempotencyKey(Repeatable)),
-		appTab: named("tab-facts.app-tab", query()
+		app: named("tab-facts.app", query()
 			.public()
 			.input(OwnAppTabAskSchema)
 			.output(OwnAppTabSchema)),
@@ -863,49 +863,49 @@ export const places = moduleContract("places", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	tabHistory: {
-		goBackInTab: named("tab-history.go-back-in-tab", command()
+		goBack: named("tab-history.go-back", command()
 			.public()
 			.input(TabStepSchema)
 			.idempotencyKey(Repeatable)),
-		goForwardInTab: named("tab-history.go-forward-in-tab", command()
+		goForward: named("tab-history.go-forward", command()
 			.public()
 			.input(TabStepSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	tabOpening: {
-		openTab: named("tab-opening.open-tab", command()
+		open: named("tab-opening.open", command()
 			.public()
 			.input(OpenTabAskSchema)
 			.output(OpenedTabSettledSchema)
 			.idempotencyKey(Repeatable)),
-		openTabBelow: named("tab-opening.open-tab-below", command()
+		openBelow: named("tab-opening.open-below", command()
 			.public()
 			.input(TabAskSchema)
 			.output(OpenedTabSettledSchema)
 			.idempotencyKey(Repeatable)),
-		duplicateTab: named("tab-opening.duplicate-tab", command()
+		duplicate: named("tab-opening.duplicate", command()
 			.public()
 			.input(DuplicateTabAskSchema)
 			.output(OpenedTabSettledSchema)
 			.idempotencyKey(Repeatable)),
-		reopenClosedTab: named("tab-opening.reopen-closed-tab", command()
+		reopenClosed: named("tab-opening.reopen-closed", command()
 			.public()
 			.input(ReopenClosedAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		showEssentialTab: named("tab-opening.show-essential-tab", command()
+		showEssential: named("tab-opening.show-essential", command()
 			.public()
 			.input(ShowEssentialAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		releaseEssentialTab: named("tab-opening.release-essential-tab", command()
+		releaseEssential: named("tab-opening.release-essential", command()
 			.public()
 			.input(ReleaseEssentialAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	tabPlacing: {
-		placeTab: named("tab-placing.place-tab", command()
+		place: named("tab-placing.place", command()
 			.public()
 			.input(PlaceTabAskSchema)
 			.output(TabsSettledSchema)
@@ -915,15 +915,15 @@ export const places = moduleContract("places", Server, {
 			.input(MakeEssentialAskSchema)
 			.output(EssentialFaceSchema)
 			.idempotencyKey(Repeatable)),
-		renameTab: named("tab-placing.rename-tab", command()
+		rename: named("tab-placing.rename", command()
 			.public()
 			.input(RenameTabAskSchema)
 			.idempotencyKey(Repeatable)),
-		pinTab: named("tab-placing.pin-tab", command()
+		pin: named("tab-placing.pin", command()
 			.public()
 			.input(PinTabAskSchema)
 			.idempotencyKey(Repeatable)),
-		foldTab: named("tab-placing.fold-tab", command()
+		fold: named("tab-placing.fold", command()
 			.public()
 			.input(FoldTabAskSchema)
 			.idempotencyKey(Repeatable)),
@@ -954,17 +954,17 @@ export const places = moduleContract("places", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	tabShowing: {
-		restoreTabs: named("tab-showing.restore-tabs", command()
+		restore: named("tab-showing.restore", command()
 			.public()
 			.input(RestoreTabsAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		showTab: named("tab-showing.show-tab", command()
+		show: named("tab-showing.show", command()
 			.public()
 			.input(ShowTabAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		fitTabsToPanes: named("tab-showing.fit-tabs-to-panes", command()
+		fitToPanes: named("tab-showing.fit-to-panes", command()
 			.public()
 			.input(SettleAskSchema)
 			.output(TabsSettledSchema)
@@ -974,17 +974,17 @@ export const places = moduleContract("places", Server, {
 			.input(SettleAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		openTabInOwnWindow: named("tab-showing.open-tab-in-own-window", command()
+		openInOwnWindow: named("tab-showing.open-in-own-window", command()
 			.public()
 			.input(TabAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		tearOffTab: named("tab-showing.tear-off-tab", command()
+		tearOff: named("tab-showing.tear-off", command()
 			.public()
 			.input(TabAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		reloadTab: named("tab-showing.reload-tab", command()
+		reload: named("tab-showing.reload", command()
 			.public()
 			.input(TabAskSchema)
 			.output(TabsSettledSchema)
@@ -995,11 +995,11 @@ export const places = moduleContract("places", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	tabs: {
-		placedTabs: named("tabs.placed-tabs", query()
+		placed: named("tabs.placed", query()
 			.public()
 			.input(WindowLabelSchema)
 			.output(WindowTabsSchema)),
-		tabRows: named("tabs.tab-rows", query()
+		rows: named("tabs.rows", query()
 			.public()
 			.input(SettleAskSchema)
 			.output(AppTabsSchema)),
@@ -1007,7 +1007,7 @@ export const places = moduleContract("places", Server, {
 			.public()
 			.input(SidebarAskSchema)
 			.output(PlacedSidebarSchema)),
-		heldTabs: named("tabs.held-tabs", query()
+		held: named("tabs.held", query()
 			.public()
 			.input(SettleAskSchema)
 			.output(HeldTabsSchema)),
@@ -1015,26 +1015,26 @@ export const places = moduleContract("places", Server, {
 			.public()
 			.input(WindowLabelSchema)
 			.output(StudioViewSchema)),
-		closedTabs: named("tabs.closed-tabs", query()
+		closed: named("tabs.closed", query()
 			.public()
 			.output(ClosedTabsSchema)),
-		chatTabs: named("tabs.chat-tabs", query()
+		chat: named("tabs.chat", query()
 			.public()
 			.output(ChatTabsSchema)),
 	},
 	windows: {
-		openWindows: named("windows.open-windows", query()
+		all: named("windows.all", query()
 			.public()
 			.output(WindowsSchema)),
-		openWindow: named("windows.open-window", command()
+		open: named("windows.open", command()
 			.public()
 			.input(WindowLabelSchema)
 			.idempotencyKey(Repeatable)),
-		closeWindow: named("windows.close-window", command()
+		close: named("windows.close", command()
 			.public()
 			.input(WindowLabelSchema)
 			.idempotencyKey(Repeatable)),
-		keepLiveWindows: named("windows.keep-live-windows", command()
+		keepLive: named("windows.keep-live", command()
 			.public()
 			.input(LiveWindowsSchema)
 			.idempotencyKey(Repeatable)),

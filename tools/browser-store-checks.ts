@@ -69,7 +69,7 @@ const stopped = await stoppingApp.send(browser.asks.stopInk);
 check("stopping ink is written through the handler", [stopped.ok, inkTold], [true, 1]);
 check("and the activity says when", stopping.parts.inkActivity.inkActivity().stoppedAt !== null, true);
 
-const answered = await stoppingApp.send(browser.asks.answerAsk, {
+const answered = await stoppingApp.send(browser.asks.answer, {
 	id: "gone",
 	answer: "site",
 });

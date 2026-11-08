@@ -4,7 +4,7 @@ import { answered, moving } from "../../shared/lib/settling/settling.js";
 import { TabStepSchema } from "../../shared/schema/tab-facts.schema.js";
 import { steppedPlan } from "./lib/history-plans.js";
 
-export const goBackInTab = command()
+export const goBack = command()
 	.public()
 	.input(TabStepSchema)
 	.idempotencyKey(Repeatable)
@@ -12,7 +12,7 @@ export const goBackInTab = command()
 		answered(await tabs.movePlacedTabs(moving(null, placedApps.placedApps(), steppedPlan(id, "back"))));
 	});
 
-export const goForwardInTab = command()
+export const goForward = command()
 	.public()
 	.input(TabStepSchema)
 	.idempotencyKey(Repeatable)

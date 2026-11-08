@@ -146,11 +146,11 @@ const mascotApp = runtime()
 await mascotApp.send(mascot.activity.recordAgentEvents, {
 	events: ["sent", "toolStarted", "toolStarted", "toolFinished"],
 });
-const midRun = await mascotApp.send(mascot.activity.agentActivity);
+const midRun = await mascotApp.send(mascot.activity.agent);
 await mascotApp.send(mascot.activity.recordAgentEvents, {
 	events: ["runFinished"],
 });
-const afterRun = await mascotApp.send(mascot.activity.agentActivity);
+const afterRun = await mascotApp.send(mascot.activity.agent);
 check(
 	"the module counts tools through a run and ends it on runFinished",
 	[

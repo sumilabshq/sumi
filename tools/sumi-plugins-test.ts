@@ -80,7 +80,7 @@ async function appIdsAnsweredBy(resolved: ResolvedPlugins): Promise<unknown> {
 			scope: { workspaceId: "sumi-plugins" },
 		});
 	const answered = await core.expose({ adapter: SUMI_PLUGINS_TEST, authenticate: new AppCallerAuthenticate() }).answer({
-		name: "apps.apps.apps",
+		name: "apps.apps.all",
 		input: undefined,
 		idempotencyKey: null,
 		signal: new AbortController().signal,

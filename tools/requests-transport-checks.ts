@@ -39,7 +39,7 @@ const localServer = runtime()
 const stopServingLocal = overLocal.serve(localServer);
 const localCharger = clientOver(overLocal);
 const localWatcher = clientOver(overLocal);
-const charged = await localCharger.client.send(fixtureBilling.charge.charge, { amount: 7 });
+const charged = await localCharger.client.send(fixtureBilling.charge.take, { amount: 7 });
 check("a command crosses a local transport to the server that listens on it", charged.ok, true);
 check(
 	"and the other client of the same server hears the change it did not cause",
@@ -64,7 +64,7 @@ const overHttp = (): RemoteTransport => orpcTransport("http://billing.test", { f
 const httpCharger = clientOver(overHttp());
 const httpWatcher = clientOver(overHttp());
 await new Promise((settled) => setTimeout(settled, 50));
-await httpCharger.client.send(fixtureBilling.charge.charge, { amount: 3 });
+await httpCharger.client.send(fixtureBilling.charge.take, { amount: 3 });
 check(
 	"over oRPC the other client hears the change through the changes stream",
 	await waitFor(() => httpWatcher.balanceChanges.count > 0),

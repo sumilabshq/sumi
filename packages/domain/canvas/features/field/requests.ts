@@ -1,7 +1,7 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { jobsChanged } from "../../gateways/agent-jobs/agent-jobs.events.js";
-import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { momentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import type { CanvasField } from "../../shared/schema/canvas-moment.schema.js";
 import { DrawingSchema } from "../../shared/schema/drawing.schema.js";
@@ -22,7 +22,7 @@ export const drawing = query()
 	.settlesNow()
 	.handle((_input, { widgetDrawing }) => widgetDrawing.drawing());
 
-export const fieldRegions = query()
+export const regions = query()
 	.public()
 	.output(FieldRegionsSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs, widgetDrawing }) => {
@@ -31,7 +31,7 @@ export const fieldRegions = query()
 		return { regions: regionsOf(now, widgetDrawing.drawing()) };
 	});
 
-export const fieldState = query()
+export const state = query()
 	.public()
 	.output(FieldStateSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
@@ -92,22 +92,22 @@ export const resolveSpot = command()
 		}
 	});
 
-export const rereadField = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
+export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (isTouching(fields, PAGE_FIELDS)) {
-		invalidate(fieldRegions);
+		invalidate(regions);
 	}
 
 	if (isTouching(fields, FIELD_STATE_FIELDS)) {
-		invalidate(fieldState);
+		invalidate(state);
 	}
 });
 
-export const rereadFieldForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
-	invalidate(fieldRegions);
-	invalidate(fieldState);
+export const rereadForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(regions);
+	invalidate(state);
 });
 
-export const rereadFieldForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
-	invalidate(fieldRegions);
-	invalidate(fieldState);
+export const rereadForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+	invalidate(regions);
+	invalidate(state);
 });

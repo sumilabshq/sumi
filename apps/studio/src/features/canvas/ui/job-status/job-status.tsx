@@ -5,8 +5,8 @@ import { canvas } from "@widgetarium/canvas/contract";
 import { JobLine } from "./job-line.js";
 
 export function JobStatus(): ReactElement | null {
-	const { shown } = useQuery(canvas.jobs.jobStatus).data;
-	const stop = useCommand(canvas.jobs.stopJob);
+	const { shown } = useQuery(canvas.jobs.status).data;
+	const stop = useCommand(canvas.jobs.stop);
 
 	if (!shown) return null;
 

@@ -12,7 +12,7 @@ export const StudioCallerGuard = guard().handle(({ context }) => {
 	}
 });
 
-export const theme = query()
+export const current = query()
 	.public()
 	.output(ThemeSchema)
 	.handle((_input, { theme }) => {
@@ -23,7 +23,7 @@ export const theme = query()
 		};
 	});
 
-export const chooseTheme = command()
+export const choose = command()
 	.public()
 	.input(ChooseThemeInputSchema)
 	.idempotencyKey(Repeatable)
@@ -38,10 +38,10 @@ export const chooseTheme = command()
 
 		const reason = `theme choice ${was} → ${choice} (chosen in the studio)`;
 		themeGateway.saveChoice(choice, reason);
-		invalidate(theme);
+		invalidate(current);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const rereadTheme = subscriber(themeChanged).handle((_input, { invalidate }) => {
-	invalidate(theme);
+export const reread = subscriber(themeChanged).handle((_input, { invalidate }) => {
+	invalidate(current);
 });

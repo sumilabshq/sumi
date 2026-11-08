@@ -58,7 +58,7 @@ export function CanvasPage({
 }
 
 function KeptOpening({ onKept }: { readonly onKept: ((kept: CanvasOpening) => void) | undefined }): null {
-	const opening = useQuery(canvas.view.canvasOpening).data;
+	const opening = useQuery(canvas.view.opening).data;
 	const told = useRef(opening);
 	useEffect(() => {
 		if (told.current === opening) {
@@ -86,7 +86,7 @@ function plateControlsOf(shell: CanvasShell | undefined): ReactElement | undefin
 function useOpensCanvas(canvasApp: Runtime, opened: CanvasOpened): boolean {
 	const [isOpen, setOpen] = useState(false);
 	useEffect(() => {
-		void canvasApp.send(canvas.view.openCanvas, opened).then((answer) => {
+		void canvasApp.send(canvas.view.open, opened).then((answer) => {
 			if (!answer.ok) {
 				console.error(`[widgetarium] the canvas of ${opened.app} did not open: ${answer.reason}`);
 			}

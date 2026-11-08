@@ -18,9 +18,9 @@ export function TabItems({
 	onRename,
 	onGroupMade,
 }: PointerMenuProps & { readonly pointed: Extract<Pointed, { kind: "tab" }> }): ReactElement {
-	const pinTab = useCommand(appHost.tabActions.pinTab);
-	const newGroup = useCommand(appHost.groups.createGroup);
-	const closeTab = useCommand(appHost.tabActions.closeTab);
+	const pinTab = useCommand(appHost.tabActions.pin);
+	const newGroup = useCommand(appHost.groups.create);
+	const closeTab = useCommand(appHost.tabActions.close);
 	const isPinned = pointed.list === PINNED_LIST;
 	const groups = groupsOfList(sidebar, pointed.list).filter((group) => group.id !== pointed.groupId);
 	const groupWithTab = async (): Promise<void> => {

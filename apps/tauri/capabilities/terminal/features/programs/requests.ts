@@ -3,7 +3,7 @@ import { command } from "#module";
 import { ProgramOutputSchema, RunProgramInputSchema } from "../../shared/schema/terminal.schema.js";
 
 // TODO: per-app grants (which programs, which folders); every app may run any program today, as it may type any line
-export const runProgram = command()
+export const run = command()
 	.public()
 	.input(RunProgramInputSchema)
 	.output(ProgramOutputSchema)

@@ -10,8 +10,8 @@ export interface ReloadPageActionProps {
 
 export function ReloadPageAction({ tabId }: ReloadPageActionProps): ReactElement {
 	const { Action } = useTabHeader();
-	const page = useOptionalQuery(webPage.pages.webPage, { tab: tabId }).data;
-	const reload = useCommand(webPage.pages.reloadWebPage);
+	const page = useOptionalQuery(webPage.pages.one, { tab: tabId }).data;
+	const reload = useCommand(webPage.pages.reload);
 	return (
 		<Action
 			label="Reload"

@@ -28,24 +28,24 @@ const studio = runtime()
 	.modules(browser, layout, workspacesModule, appHostModule, PluginAppsModule, ...PLUGIN_WINDOW_MODULES)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
-await studio.send(appHost.tabs.restoreTabs);
+await studio.send(appHost.tabs.restore);
 
 await check("opens anywhere and the door changes", async () => {
-	ok(await studio.send(commandMenu.opening.toggleCommandMenu, { door: "anywhere", text: "" }));
-	const opened = ok(await studio.send(commandMenu.opening.commandMenu));
+	ok(await studio.send(commandMenu.opening.toggle, { door: "anywhere", text: "" }));
+	const opened = ok(await studio.send(commandMenu.opening.current));
 	assert.equal(opened.isOpen, true);
 	assert.equal(opened.door, "anywhere");
-	ok(await studio.send(commandMenu.opening.changeMenuDoor, { door: "new-tab" }));
-	assert.equal(ok(await studio.send(commandMenu.opening.commandMenu)).door, "new-tab");
-	ok(await studio.send(commandMenu.opening.changeMenuDoor, { door: "ask" }));
-	assert.equal(ok(await studio.send(commandMenu.opening.commandMenu)).door, "ask");
+	ok(await studio.send(commandMenu.opening.changeDoor, { door: "new-tab" }));
+	assert.equal(ok(await studio.send(commandMenu.opening.current)).door, "new-tab");
+	ok(await studio.send(commandMenu.opening.changeDoor, { door: "ask" }));
+	assert.equal(ok(await studio.send(commandMenu.opening.current)).door, "ask");
 });
 
 await check("the same opener twice closes the menu, another door switches it", async () => {
-	ok(await studio.send(commandMenu.opening.toggleCommandMenu, { door: "anywhere", text: "" }));
-	assert.equal(ok(await studio.send(commandMenu.opening.commandMenu)).isOpen, true);
-	ok(await studio.send(commandMenu.opening.toggleCommandMenu, { door: "anywhere", text: "" }));
-	assert.equal(ok(await studio.send(commandMenu.opening.commandMenu)).isOpen, false);
+	ok(await studio.send(commandMenu.opening.toggle, { door: "anywhere", text: "" }));
+	assert.equal(ok(await studio.send(commandMenu.opening.current)).isOpen, true);
+	ok(await studio.send(commandMenu.opening.toggle, { door: "anywhere", text: "" }));
+	assert.equal(ok(await studio.send(commandMenu.opening.current)).isOpen, false);
 });
 
 await check("a typo still finds the row, and nothing found offers a New block", async () => {
@@ -166,16 +166,16 @@ await check("Ask Sumi makes a chat named by the text", async () => {
 	const done = ok(await studio.send(commandMenu.doing.runIntent, { intent: intentOf(found.askInk) }));
 	assert.equal(done.isMenuKept, false);
 	assert.equal(await chatCount(), chatsBefore + 1);
-	const titles = ok(await studio.send(chatTabs.chatList.chatList)).recents.map((row) => row.title);
+	const titles = ok(await studio.send(chatTabs.chatList.all)).recents.map((row) => row.title);
 	assert.ok(titles.includes("Release notes"), `got ${titles.join(", ")}`);
-	assert.equal(ok(await studio.send(commandMenu.opening.commandMenu)).isOpen, false);
+	assert.equal(ok(await studio.send(commandMenu.opening.current)).isOpen, false);
 });
 
 await check("Create only makes the chat and says nothing was sent", async () => {
 	const found = await results({ text: "Draft only", door: "ask" });
 	const done = ok(await studio.send(commandMenu.doing.runIntent, { intent: intentOf(found.fallbackIntent) }));
 	assert.equal(done.said, "New chat: drafted “Draft only”");
-	assert.equal(ok(await studio.send(commandMenu.opening.commandMenu)).isOpen, false);
+	assert.equal(ok(await studio.send(commandMenu.opening.current)).isOpen, false);
 });
 
 await check("a chat found by its name can be renamed from the menu", async () => {
@@ -188,14 +188,14 @@ await check("a chat found by its name can be renamed from the menu", async () =>
 		await studio.send(commandMenu.doing.renameRow, { kind: "chat", id: row.renames?.id ?? "", name: "Ship notes" }),
 	);
 	assert.equal(renamed.isMenuKept, true);
-	const titles = ok(await studio.send(chatTabs.chatList.chatList)).recents.map((one) => one.title);
+	const titles = ok(await studio.send(chatTabs.chatList.all)).recents.map((one) => one.title);
 	assert.ok(titles.includes("Ship notes"), `got ${titles.join(", ")}`);
 });
 
 await check("a workspace renamed from the menu is found by its name", async () => {
-	const made = ok(await studio.send(workspaces.workspaces.workspaces)).current;
+	const made = ok(await studio.send(workspaces.workspaces.all)).current;
 	ok(await studio.send(commandMenu.doing.renameRow, { kind: "workspace", id: made.id, name: "Personal" }));
-	assert.equal(ok(await studio.send(workspaces.workspaces.workspaces)).current.name, "Personal");
+	assert.equal(ok(await studio.send(workspaces.workspaces.all)).current.name, "Personal");
 	const back = await results({ text: "pers", door: "anywhere" });
 	assert.equal(back.sections[0]?.rows[0]?.kind, "workspace");
 });
@@ -213,13 +213,13 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 		)
 		.imports(placesOver(new MemoryTabsGateway(withWindowView(emptyPlacedTabs(), "browser"))))
 		.start({ platform: "browser", scope: { workspaceId: "studio" } });
-	const tabsBefore = ok(await withPages.send(appHost.tabs.appTabs)).tabs.length;
+	const tabsBefore = ok(await withPages.send(appHost.tabs.all)).tabs.length;
 	ok(
 		await withPages.send(commandMenu.doing.runIntent, {
 			intent: { do: "open-address", address: "example.com", where: "new-tab" },
 		}),
 	);
-	assert.equal(ok(await withPages.send(appHost.tabs.appTabs)).tabs.length, tabsBefore + 1);
+	assert.equal(ok(await withPages.send(appHost.tabs.all)).tabs.length, tabsBefore + 1);
 	const newPage = pages.calls.find((call) => call.startsWith("open ")) ?? "";
 	assert.ok(
 		pages.opened.some((opened) => opened.includes("https://example.com")),
@@ -230,7 +230,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 			intent: { do: "open-address", address: "github.com", where: "this-tab" },
 		}),
 	);
-	assert.equal(ok(await withPages.send(appHost.tabs.appTabs)).tabs.length, tabsBefore + 1);
+	assert.equal(ok(await withPages.send(appHost.tabs.all)).tabs.length, tabsBefore + 1);
 	assert.ok(
 		pages.opened.some((opened) => opened.includes("https://github.com")),
 		`opened ${pages.opened.join(", ")}`,
@@ -241,25 +241,25 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 			intent: { do: "open-address", address: "second.example", where: "new-tab" },
 		}),
 	);
-	const tabRows = ok(await withPages.send(appHost.tabs.appTabs)).tabs;
+	const tabRows = ok(await withPages.send(appHost.tabs.all)).tabs;
 	const unshown = tabRows.find((tab) => !tab.isShown);
 	assert.ok(unshown !== undefined, "a second tab stands beside the shown one");
-	ok(await withPages.send(appHost.tabActions.renameTab, { id: unshown.id, label: "Pressed tile" }));
+	ok(await withPages.send(appHost.tabActions.rename, { id: unshown.id, label: "Pressed tile" }));
 	const unshownPage =
-		ok(await withPages.send(appHost.tabs.heldTabs)).tabs.find((tab) => tab.id === unshown.id)?.pageId ?? null;
+		ok(await withPages.send(appHost.tabs.held)).tabs.find((tab) => tab.id === unshown.id)?.pageId ?? null;
 	assert.ok(unshownPage !== null, "the second tab holds a page");
 	ok(
-		await withPages.send(commandMenu.opening.toggleCommandMenu, {
+		await withPages.send(commandMenu.opening.toggle, {
 			door: "this-tab",
 			text: null,
 			pageId: unshownPage,
 		}),
 	);
-	const overTile = ok(await withPages.send(commandMenu.opening.commandMenu));
+	const overTile = ok(await withPages.send(commandMenu.opening.current));
 	assert.equal(overTile.pageId, unshownPage, "the menu opened from a tile's header acts on that tile's page");
 	assert.equal(overTile.text, "Pressed tile", "the menu names the pressed tile's tab, not the shown one");
 	const overResults = ok(
-		await withPages.send(commandMenu.results.commandMenuResults, {
+		await withPages.send(commandMenu.results.all, {
 			text: "x.example",
 			door: "this-tab",
 			pageId: unshownPage,
@@ -277,28 +277,26 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 		"the menu names the pressed tile's tab, not the shown one",
 	);
 	assert.equal(filledWithShown([shownRow, pressedRow], "", null).text, "example.com/shown");
-	ok(await withPages.send(commandMenu.opening.closeCommandMenu));
-	const shownId = ok(await withPages.send(appHost.tabs.appTabs)).tabs.find((tab) => tab.isShown)?.id ?? "";
+	ok(await withPages.send(commandMenu.opening.close));
+	const shownId = ok(await withPages.send(appHost.tabs.all)).tabs.find((tab) => tab.isShown)?.id ?? "";
 	ok(await withPages.send(commandMenu.doing.runIntent, { intent: { do: "close-tab", id: shownId, title: "example" } }));
-	const empty = ok(await withPages.send(commandMenu.results.commandMenuResults, { text: "", door: "new-tab" }));
+	const empty = ok(await withPages.send(commandMenu.results.all, { text: "", door: "new-tab" }));
 	const closedRow = empty.sections.find((section) => section.label === "Recently closed")?.rows[0];
 	assert.equal(closedRow?.kind, "closed-tab");
 	ok(await withPages.send(commandMenu.doing.runIntent, { intent: closedRow.intent }));
 	assert.ok(
-		ok(await withPages.send(appHost.tabs.appTabs)).tabs.some((tab) => tab.id === shownId),
+		ok(await withPages.send(appHost.tabs.all)).tabs.some((tab) => tab.id === shownId),
 		"the closed tab came back",
 	);
 });
 
 await check("the header door fills the text with the shown tab's deep link", async () => {
 	ok(await studio.send(commandMenu.doing.runIntent, { intent: { do: "open-app", app: "canvas", title: "Canvas" } }));
-	ok(await studio.send(commandMenu.opening.toggleCommandMenu, { door: "this-tab", text: null }));
-	const menu = ok(await studio.send(commandMenu.opening.commandMenu));
+	ok(await studio.send(commandMenu.opening.toggle, { door: "this-tab", text: null }));
+	const menu = ok(await studio.send(commandMenu.opening.current));
 	assert.equal(menu.door, "this-tab");
 	assert.equal(menu.text, "sumi://canvas/");
-	const typedLink = ok(
-		await studio.send(commandMenu.results.commandMenuResults, { text: "sumi://tasks/T-1", door: "this-tab" }),
-	);
+	const typedLink = ok(await studio.send(commandMenu.results.all, { text: "sumi://tasks/T-1", door: "this-tab" }));
 	assert.ok(
 		JSON.stringify(typedLink.sections).includes('"do":"open-link"'),
 		"a typed sumi:// link offers to open that link",
@@ -347,24 +345,22 @@ await check("a chat in another workspace is found and opened there", async () =>
 		)
 		.imports(placesOver())
 		.start({ platform: "browser", scope: { workspaceId: "untitled" } });
-	const found = ok(
-		await elsewhere.send(commandMenu.results.commandMenuResults, { text: "default tab", door: "anywhere" }),
-	);
+	const found = ok(await elsewhere.send(commandMenu.results.all, { text: "default tab", door: "anywhere" }));
 	const row = found.sections.flatMap((section) => section.rows).find((one) => one.intent.do === "open-chat-elsewhere");
 	assert.equal(row?.title, "Default tab number one");
 	assert.equal(row.meta, "In Default");
 	ok(await elsewhere.send(commandMenu.doing.runIntent, { intent: row.intent }));
-	assert.equal(ok(await elsewhere.send(workspaces.workspaces.workspaces)).current.id, "default");
+	assert.equal(ok(await elsewhere.send(workspaces.workspaces.all)).current.id, "default");
 });
 
 console.info("command menu: all checks passed");
 
 async function results(ask: Omit<ResultsAsk, "pageId">): Promise<Results> {
-	return ok(await studio.send(commandMenu.results.commandMenuResults, { ...ask, pageId: null }));
+	return ok(await studio.send(commandMenu.results.all, { ...ask, pageId: null }));
 }
 
 async function chatCount(): Promise<number> {
-	const list = ok(await studio.send(chatTabs.chatList.chatList));
+	const list = ok(await studio.send(chatTabs.chatList.all));
 	return list.pinned.length + list.recents.length;
 }
 

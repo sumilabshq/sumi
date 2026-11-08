@@ -19,7 +19,7 @@ type KeptInstances = ReadonlyMap<string, KeptInstance>;
 const APPS_WITH_EMPTY_PAGE: ReadonlySet<AppKind> = new Set(["browser"]);
 
 export function KeptApps({ shown, drawnOf }: KeptAppsProps): ReactElement {
-	const { kept, shownKey } = useKeptInstances(shown, useQuery(appHost.tabs.heldTabs).data);
+	const { kept, shownKey } = useKeptInstances(shown, useQuery(appHost.tabs.held).data);
 	return (
 		<Fragment>
 			{[...kept].map(([key, instance]) => (

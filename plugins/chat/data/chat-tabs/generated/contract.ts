@@ -34,22 +34,22 @@ export const ChatOpenedSchema = z.object({
 
 export const chatTabs = moduleContract("chat-tabs", Device, {
 	chatList: {
-		chatList: named("chat-list.chat-list", query()
+		all: named("chat-list.all", query()
 			.public()
 			.output(ChatListSchema)),
 	},
 	chatOpening: {
-		openNewChat: named("chat-opening.open-new-chat", command()
+		openNew: named("chat-opening.open-new", command()
 			.public()
 			.input(NewChatTitleSchema)
 			.output(ChatOpenedSchema)
 			.idempotencyKey(PerCall)),
-		nameChatPane: named("chat-opening.name-chat-pane", command()
+		namePane: named("chat-opening.name-pane", command()
 			.public()
 			.input(ChatPaneSchema)
 			.output(ChatOpenedSchema)
 			.idempotencyKey((input) => input.paneId)),
-		openChatAskedOnStart: named("chat-opening.open-chat-asked-on-start", command()
+		openAskedOnStart: named("chat-opening.open-asked-on-start", command()
 			.public()
 			.idempotencyKey(Repeatable)),
 	},

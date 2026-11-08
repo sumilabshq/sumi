@@ -1,7 +1,7 @@
 import { CallLoggerMiddleware, PerCall, Repeatable, guard, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import type { User } from "@widgetarium/data-framework";
-import { terminalOutputChanged } from "../../gateways/terminal-sessions/terminal-sessions.events.js";
+import { outputChanged } from "../../gateways/terminal-sessions/terminal-sessions.events.js";
 import {
 	ResizeTerminalInputSchema,
 	SendTerminalInputSchema,
@@ -23,13 +23,13 @@ export const TerminalCallLoggerMiddleware = CallLoggerMiddleware("terminal", (in
 	CHARS_SENT.replace("{chars}", String(charsOf(input))),
 );
 
-export const terminalOutput = query()
+export const output = query()
 	.public()
 	.input(TerminalSessionSchema)
 	.output(TerminalOutputSchema)
 	.handle(({ session }, { sessions, user }) => sessions.outputOf(sessionOf(user, session)));
 
-export const resizeTerminal = command()
+export const resize = command()
 	.public()
 	.input(ResizeTerminalInputSchema)
 	.idempotencyKey(Repeatable)
@@ -38,14 +38,14 @@ export const resizeTerminal = command()
 
 		if (sessions.outputOf(owned).status === "not-started") {
 			await sessions.start(owned, { cols, rows });
-			invalidate(terminalOutput);
+			invalidate(output);
 			return;
 		}
 
 		await sessions.resize(owned, { cols, rows });
 	});
 
-export const typeTerminal = command()
+export const type = command()
 	.public()
 	.input(TypeTerminalInputSchema)
 	.idempotencyKey(PerCall)
@@ -53,17 +53,17 @@ export const typeTerminal = command()
 		await sessions.type(sessionOf(user, session), keys);
 	});
 
-export const sendTerminal = command()
+export const send = command()
 	.public()
 	.input(SendTerminalInputSchema)
 	.idempotencyKey(PerCall)
 	.handle(async ({ session, line }, { sessions, user, invalidate }) => {
 		await sessions.send(sessionOf(user, session), line);
-		invalidate(terminalOutput);
+		invalidate(output);
 	});
 
-export const rereadTerminalOutput = subscriber(terminalOutputChanged).handle((_input, { invalidate }) => {
-	invalidate(terminalOutput);
+export const rereadOutput = subscriber(outputChanged).handle((_input, { invalidate }) => {
+	invalidate(output);
 });
 
 function sessionOf(user: User | null, session: string): string {

@@ -24,7 +24,7 @@ const SWATCH_HUE: Readonly<Record<GroupHue, string>> = {
 };
 
 export function GroupHues({ group }: { readonly group: GroupFace }): ReactElement {
-	const colourGroup = useCommand(appHost.groups.setGroupHue);
+	const colourGroup = useCommand(appHost.groups.setHue);
 	const pick = (hue: GroupHue | null) => () =>
 		void colourGroup.run({
 			id: group.id,

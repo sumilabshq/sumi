@@ -5,7 +5,7 @@ import { places } from "@widgetarium/places/contract";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { GroupFaceSchema, GroupHueSchema } from "../../shared/schema/tab-group.schema.js";
 
-export const createGroup = command()
+export const create = command()
 	.public()
 	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]).and(GroupFaceSchema))
 	.output(z.object({ id: z.string() }))
@@ -23,7 +23,7 @@ export const createGroup = command()
 		return created;
 	});
 
-export const renameGroup = command()
+export const rename = command()
 	.public()
 	.input(z.object({ id: z.string(), name: z.string() }))
 	.idempotencyKey(Repeatable)
@@ -32,7 +32,7 @@ export const renameGroup = command()
 		emit(tabsSettled);
 	});
 
-export const setGroupHue = command()
+export const setHue = command()
 	.public()
 	.input(z.object({ id: z.string(), hue: GroupHueSchema.nullable() }))
 	.idempotencyKey(Repeatable)
@@ -41,7 +41,7 @@ export const setGroupHue = command()
 		emit(tabsSettled);
 	});
 
-export const foldGroup = command()
+export const fold = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
@@ -50,7 +50,7 @@ export const foldGroup = command()
 		emit(tabsSettled);
 	});
 
-export const placeGroup = command()
+export const place = command()
 	.public()
 	.input(
 		z.object({
@@ -72,7 +72,7 @@ export const foldTab = command()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.foldTab, { window: studioWindow.windowLabel(), id });
+		await send(places.tabPlacing.fold, { window: studioWindow.windowLabel(), id });
 		emit(tabsSettled);
 	});
 

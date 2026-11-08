@@ -9,7 +9,7 @@ import { MenuPanel } from "./menu-panel.js";
 const MENU = "Command menu";
 
 export function OpenMenu({ menu }: { readonly menu: KeptMenu }): ReactElement {
-	const close = useCommand(commandMenu.opening.closeCommandMenu);
+	const close = useCommand(commandMenu.opening.close);
 	const panel = useClosesOnPressOutside(() => void close.run());
 	return (
 		<div className="wg-cm-layer" data-command-menu="">

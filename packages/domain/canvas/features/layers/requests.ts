@@ -1,7 +1,7 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { jobsChanged } from "../../gateways/agent-jobs/agent-jobs.events.js";
-import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { momentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import type { CanvasField } from "../../shared/schema/canvas-moment.schema.js";
 import { LayersPanelSchema } from "../../shared/schema/layer-row.schema.js";
@@ -33,7 +33,7 @@ const PANEL_FIELDS: readonly CanvasField[] = [
 	"closedLayers",
 ];
 
-export const layersPanel = query()
+export const panel = query()
 	.public()
 	.output(LayersPanelSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs, widgetDrawing }) => {
@@ -48,7 +48,7 @@ export const layersPanel = query()
 		return layersPanelOf(shown, moment, widgetDrawing.drawing().registry);
 	});
 
-export const keepSeenLayers = command()
+export const keepSeen = command()
 	.public()
 	.input(SeenLayersSchema)
 	.idempotencyKey(Repeatable)
@@ -65,7 +65,7 @@ export const keepSeenLayers = command()
 		}
 	});
 
-export const moveLayer = command()
+export const move = command()
 	.public()
 	.input(LayerMoveAskSchema)
 	.idempotencyKey(PerCall)
@@ -118,7 +118,7 @@ export const moveLayer = command()
 		},
 	);
 
-export const pickLayer = command()
+export const pick = command()
 	.public()
 	.input(LayerIdSchema)
 	.idempotencyKey(Repeatable)
@@ -158,7 +158,7 @@ export const pickLayer = command()
 		}
 	});
 
-export const toggleLayerFold = command()
+export const toggleFold = command()
 	.public()
 	.input(LayerIdSchema)
 	.idempotencyKey(Repeatable)
@@ -257,9 +257,9 @@ export const resetSidebarWidth = command()
 		console.debug(`[widgetarium] ${reason}`);
 	});
 
-export const rereadLayers = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
+export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (isTouching(fields, PANEL_FIELDS)) {
-		invalidate(layersPanel);
+		invalidate(panel);
 	}
 
 	if (fields.includes("isLayersOpen")) {
@@ -267,10 +267,10 @@ export const rereadLayers = subscriber(canvasMomentChanged).handle(({ fields }, 
 	}
 });
 
-export const rereadLayersForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
-	invalidate(layersPanel);
+export const rereadForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(panel);
 });
 
-export const rereadLayersForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
-	invalidate(layersPanel);
+export const rereadForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+	invalidate(panel);
 });

@@ -4,12 +4,8 @@ import { JsonMemoryPaneTreeGateway } from "../packages/state/layout/gateways/pan
 import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import { aimTargetIdsOf } from "../apps/studio/src/features/panes/lib/aim-targets.ts";
 import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
-import { placePane, closePane, placementPreview } from "../packages/state/layout/features/panes/requests.ts";
-import {
-	openShownTabPane,
-	showChatInPane,
-	showTabInChatGroup,
-} from "../packages/state/layout/features/pane-tabs/requests.ts";
+import { place, close, placementPreview } from "../packages/state/layout/features/panes/requests.ts";
+import { openShown, showChat, showInChatGroup } from "../packages/state/layout/features/pane-tabs/requests.ts";
 import { KeptPaneTreeSchema } from "../packages/state/layout/gateways/pane-tree/pane-tree.gateway.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
 import type { PaneNode, PanePlacement } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
@@ -44,7 +40,7 @@ function boardShape(parts: LayoutParts): string {
 
 async function placed(parts: LayoutParts, placement: PanePlacement): Promise<string | null> {
 	try {
-		await placePane.handle(placement, parts);
+		await place.handle(placement, parts);
 		return null;
 	} catch (refusal: unknown) {
 		return refusal instanceof Error ? refusal.message : String(refusal);
@@ -52,7 +48,7 @@ async function placed(parts: LayoutParts, placement: PanePlacement): Promise<str
 }
 
 function show(parts: LayoutParts, chatId: string): void {
-	showChatInPane.handle({ chatId, paneId: null }, parts);
+	showChat.handle({ chatId, paneId: null }, parts);
 }
 
 function paneOfTab(parts: LayoutParts, tabId: string): string {
@@ -76,21 +72,21 @@ check(
 	boardShape(parts),
 );
 
-showTabInChatGroup.handle({ chatId: "chat-a", tabId: "spec", isOnlyWhenBare: false }, parts);
+showInChatGroup.handle({ chatId: "chat-a", tabId: "spec", isOnlyWhenBare: false }, parts);
 check(
 	"a chat tab shown with nothing of its chat on screen opens beside the chat, inside its group",
 	boardShape(parts) === "group:chat-a[chat:chat-a spec]",
 	boardShape(parts),
 );
 
-showTabInChatGroup.handle({ chatId: "chat-a", tabId: "plan", isOnlyWhenBare: false }, parts);
+showInChatGroup.handle({ chatId: "chat-a", tabId: "plan", isOnlyWhenBare: false }, parts);
 check(
 	"another chat tab replaces the chat tile shown last, no new tile",
 	boardShape(parts) === "group:chat-a[chat:chat-a plan]",
 	boardShape(parts),
 );
 
-showTabInChatGroup.handle({ chatId: "chat-a", tabId: "spec", isOnlyWhenBare: true }, parts);
+showInChatGroup.handle({ chatId: "chat-a", tabId: "spec", isOnlyWhenBare: true }, parts);
 check(
 	"following a chat leaves a group that holds tabs alone",
 	boardShape(parts) === "group:chat-a[chat:chat-a plan]",
@@ -187,7 +183,7 @@ check(
 );
 
 const chatPane = leavesOf(parts.paneTree.tree().root).find((leaf) => leaf.view.kind === "chat")?.id ?? "";
-closePane.handle({ id: chatPane }, parts);
+close.handle({ id: chatPane }, parts);
 check("closing the chat tile takes its whole group off the board", boardShape(parts) === "empty", boardShape(parts));
 
 show(parts, "chat-a");
@@ -197,15 +193,15 @@ check(
 	boardShape(parts),
 );
 
-closePane.handle({ id: paneOfTab(parts, "plan") }, parts);
-closePane.handle({ id: paneOfTab(parts, "spec") }, parts);
+close.handle({ id: paneOfTab(parts, "plan") }, parts);
+close.handle({ id: paneOfTab(parts, "spec") }, parts);
 check(
 	"a group whose tabs all closed keeps its chat alone",
 	boardShape(parts) === "group:chat-a[chat:chat-a]",
 	boardShape(parts),
 );
 
-openShownTabPane.handle(undefined, parts);
+openShown.handle(undefined, parts);
 check(
 	"the shown tab takes the whole board and the chat's tile goes to the shelf",
 	boardShape(parts) === "shown" && parts.paneTree.tree().shelved?.["chat-a"] !== undefined,
@@ -259,7 +255,7 @@ const twoWindows = new JsonMemoryPaneTreeGateway(memoryOf<unknown>(), FIRST_PANE
 	},
 ]);
 const beside = { ...partsOf(), paneTree: twoWindows };
-showChatInPane.handle({ chatId: "chat-far", paneId: null }, beside);
+showChat.handle({ chatId: "chat-far", paneId: null }, beside);
 check(
 	"a window never takes the active chat while another window holds it",
 	shapeOf(twoWindows.tree().root) === shapeOf(FIRST_PANES.root),

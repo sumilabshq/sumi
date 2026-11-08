@@ -16,8 +16,8 @@ const EXITED_WITH = "Exited with {code}";
 export function TerminalView({ tabId }: AppViewProps): ReactElement {
 	const screen = useRef<HTMLDivElement>(null);
 	const terminal = useScreenIn(screen);
-	const read = useOptionalQuery(terminalContract.lines.terminalOutput, { session: tabId });
-	const isDark = useOptionalQuery(appearance.theme.theme).data?.scheme === "dark";
+	const read = useOptionalQuery(terminalContract.lines.output, { session: tabId });
+	const isDark = useOptionalQuery(appearance.theme.current).data?.scheme === "dark";
 	const shellRefusal = useWiresShell(terminal, useRuntime("TerminalView"), tabId);
 	const failure = read.failure ?? shellRefusal;
 	useDrawsOutput(terminal, read.data);

@@ -20,7 +20,7 @@ interface Answering {
 const ALREADY_ANSWERED = "that question was already answered";
 const ALLOWED_WHEN_ASKED = "allowed for this site when Sumi asked";
 
-export const accessAsks = query()
+export const access = query()
 	.public()
 	.output(AccessAsksSchema)
 	.settlesNow()
@@ -32,12 +32,12 @@ export const inkReading = query()
 	.settlesNow()
 	.handle((_input, { inkActivity }) => inkActivity.inkActivity().reading);
 
-export const answerAsk = command()
+export const answer = command()
 	.public()
 	.input(AnswerAskSchema)
 	.idempotencyKey((input) => input.id)
 	.handle(({ id, answer }, { accessAsks: accessAsksGateway, browserGrants, onceAllowances, clock, invalidate }) => {
-		invalidate(accessAsks);
+		invalidate(access);
 		const asked = accessAsksGateway.accessAsks().find((ask) => ask.id === id);
 
 		if (asked === undefined) {
@@ -82,8 +82,8 @@ export const stopInk = command()
 		);
 	});
 
-export const rereadAccessAsks = subscriber(accessAsksChanged).handle((_input, { invalidate }) => {
-	invalidate(accessAsks);
+export const rereadAccess = subscriber(accessAsksChanged).handle((_input, { invalidate }) => {
+	invalidate(access);
 });
 
 export const rereadInkReading = subscriber(inkActivityChanged).handle((_input, { invalidate }) => {

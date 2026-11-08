@@ -20,7 +20,7 @@ interface AddressOpening {
 }
 
 export function useWebPage(tabId: string, address: string, onNavigated: (url: string) => void): WebPageControls {
-	const read = useOptionalQuery(webPage.pages.webPage, { tab: tabId });
+	const read = useOptionalQuery(webPage.pages.one, { tab: tabId });
 	const heldPage = read.isLoading ? undefined : read.data;
 	const [refusal, showRefusal] = useRefusal();
 	useOpensAddress({ tabId, address, heldPage, showRefusal });
@@ -48,7 +48,7 @@ function useOpensAddress({ tabId, address, heldPage, showRefusal }: AddressOpeni
 			return;
 		}
 
-		void shell.send(webPage.pages.openWebPage, { tab: tabId, url: address }).then(showRefusal);
+		void shell.send(webPage.pages.open, { tab: tabId, url: address }).then(showRefusal);
 	}, [shell, tabId, address, isRead, showRefusal]);
 }
 

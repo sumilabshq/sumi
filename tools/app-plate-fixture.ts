@@ -82,15 +82,15 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 	void restoreTabs(studioApp);
 	Object.assign(window, {
 		__PLACE_TAB_IN_PANE__: (tabId: string) =>
-			studioApp.send(layout.panes.placePane, {
+			studioApp.send(layout.panes.place, {
 				view: { kind: "app", tabId },
 				targetId: "pane-app",
 				side: "right",
 			}),
 		__PLACE_PANE__: (view: PaneView, targetId: string | null, side: PaneSide) =>
-			studioApp.send(layout.panes.placePane, { view, targetId, side }),
-		__CREATE_CHAT__: () => studioApp.send(workspaces.chats.createChat, { title: null }),
-		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(appHost.tabActions.renameTab, { id, label: title }),
+			studioApp.send(layout.panes.place, { view, targetId, side }),
+		__CREATE_CHAT__: () => studioApp.send(workspaces.chats.create, { title: null }),
+		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(appHost.tabActions.rename, { id, label: title }),
 	});
 	return {
 		assistant,

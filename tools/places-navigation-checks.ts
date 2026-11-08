@@ -43,7 +43,7 @@ const tasks = placesAs("tasks");
 const studio = placesAs(null);
 
 async function tabOf(): Promise<unknown> {
-	const answer = await studio.send(places.tabFacts.appTab, { id: "t1" });
+	const answer = await studio.send(places.tabFacts.app, { id: "t1" });
 	return answer.ok ? [answer.output.address, answer.output.canGoBack, answer.output.canGoForward] : answer.reason;
 }
 
@@ -51,17 +51,17 @@ async function historyChecks(): Promise<void> {
 	await tasks.send(places.tabFacts.recordAppAddress, { id: "t1", address: "T-1", how: "push" });
 	await tasks.send(places.tabFacts.recordAppAddress, { id: "t1", address: "T-1?view=list", how: "replace" });
 	check("a push makes a step back; a replace makes none", await tabOf(), ["T-1?view=list", true, false]);
-	await studio.send(places.tabHistory.goBackInTab, { id: "t1" });
+	await studio.send(places.tabHistory.goBack, { id: "t1" });
 	check("back returns to the board and offers forward", await tabOf(), ["", false, true]);
-	const nowhere = await studio.send(places.tabHistory.goBackInTab, { id: "t1" });
+	const nowhere = await studio.send(places.tabHistory.goBack, { id: "t1" });
 	check(
 		"back with nothing behind is refused",
 		nowhere.ok ? "went" : nowhere.reason,
 		'the tab "t1" has nothing to go back to',
 	);
-	await studio.send(places.tabHistory.goForwardInTab, { id: "t1" });
+	await studio.send(places.tabHistory.goForward, { id: "t1" });
 	check("forward returns to the task", await tabOf(), ["T-1?view=list", true, false]);
-	const byApp = await tasks.send(places.tabHistory.goBackInTab, { id: "t1" });
+	const byApp = await tasks.send(places.tabHistory.goBack, { id: "t1" });
 	check("an app cannot step the shell's history itself", byApp.ok, false);
 }
 

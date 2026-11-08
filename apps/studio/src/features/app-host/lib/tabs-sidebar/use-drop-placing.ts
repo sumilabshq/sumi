@@ -35,9 +35,9 @@ function usePlacesDrops(): (source: DragSource, drop: TabDrop) => Promise<boolea
 
 function useDropPlacers() {
 	return {
-		placeTab: useCommand(appHost.tabs.placeTab),
-		placeEssential: useCommand(appHost.essentials.placeEssential),
-		placeGroup: useCommand(appHost.groups.placeGroup),
+		placeTab: useCommand(appHost.tabs.place),
+		placeEssential: useCommand(appHost.essentials.place),
+		placeGroup: useCommand(appHost.groups.place),
 	};
 }
 

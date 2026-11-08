@@ -471,10 +471,10 @@ export const canvas = moduleContract("canvas", Device, {
 			.public()
 			.output(DrawingSchema)
 			.settlesNow()),
-		fieldRegions: named("field.field-regions", query()
+		regions: named("field.regions", query()
 			.public()
 			.output(FieldRegionsSchema)),
-		fieldState: named("field.field-state", query()
+		state: named("field.state", query()
 			.public()
 			.output(FieldStateSchema)),
 		pickSpot: named("field.pick-spot", command()
@@ -487,31 +487,31 @@ export const canvas = moduleContract("canvas", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	jobs: {
-		jobStatus: named("jobs.job-status", query()
+		status: named("jobs.status", query()
 			.public()
 			.output(JobStatusSchema)),
-		stopJob: named("jobs.stop-job", command()
+		stop: named("jobs.stop", command()
 			.public()
 			.input(JobIdSchema)
 			.idempotencyKey(PerCall)),
 	},
 	layers: {
-		layersPanel: named("layers.layers-panel", query()
+		panel: named("layers.panel", query()
 			.public()
 			.output(LayersPanelSchema)),
-		keepSeenLayers: named("layers.keep-seen-layers", command()
+		keepSeen: named("layers.keep-seen", command()
 			.public()
 			.input(SeenLayersSchema)
 			.idempotencyKey(Repeatable)),
-		moveLayer: named("layers.move-layer", command()
+		move: named("layers.move", command()
 			.public()
 			.input(LayerMoveAskSchema)
 			.idempotencyKey(PerCall)),
-		pickLayer: named("layers.pick-layer", command()
+		pick: named("layers.pick", command()
 			.public()
 			.input(LayerIdSchema)
 			.idempotencyKey(Repeatable)),
-		toggleLayerFold: named("layers.toggle-layer-fold", command()
+		toggleFold: named("layers.toggle-fold", command()
 			.public()
 			.input(LayerIdSchema)
 			.idempotencyKey(Repeatable)),
@@ -534,19 +534,19 @@ export const canvas = moduleContract("canvas", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	look: {
-		lookPanel: named("look.look-panel", query()
+		panel: named("look.panel", query()
 			.public()
 			.output(LookPanelSchema)),
-		pickLook: named("look.pick-look", command()
+		pick: named("look.pick", command()
 			.public()
 			.input(LookPickSchema)
 			.idempotencyKey(PerCall)),
 	},
 	pages: {
-		pageChoices: named("pages.page-choices", query()
+		choices: named("pages.choices", query()
 			.public()
 			.output(PageChoicesSchema)),
-		pages: named("pages.pages", query()
+		all: named("pages.all", query()
 			.public()
 			.input(PagesAskSchema)
 			.output(PagesPageSchema)),
@@ -557,7 +557,7 @@ export const canvas = moduleContract("canvas", Device, {
 			.public()
 			.input(ReturnNoteAskSchema)
 			.output(ReturnNoteSchema)),
-		showPage: named("pages.show-page", command()
+		show: named("pages.show", command()
 			.public()
 			.input(PageAskSchema)
 			.idempotencyKey(Repeatable)),
@@ -574,17 +574,17 @@ export const canvas = moduleContract("canvas", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	photos: {
-		addPhotos: named("photos.add-photos", command()
+		add: named("photos.add", command()
 			.public()
 			.input(PhotosSchema)
 			.idempotencyKey(PerCall)),
 	},
 	view: {
-		openCanvas: named("view.open-canvas", command()
+		open: named("view.open", command()
 			.public()
 			.input(CanvasOpenedSchema)
 			.idempotencyKey(Repeatable)),
-		canvasOpening: named("view.canvas-opening", query()
+		opening: named("view.opening", query()
 			.public()
 			.output(CanvasOpeningSchema)
 			.settlesNow()),

@@ -9,7 +9,7 @@ export interface RepoPlaceGateProps {
 }
 
 export function RepoPlaceGate({ folder, children }: RepoPlaceGateProps): ReactElement | null {
-	const place = useOptionalQuery(git.repos.gitPlace, { folder }).data;
+	const place = useOptionalQuery(git.repos.place, { folder }).data;
 
 	if (place?.kind !== "repo") {
 		return null;

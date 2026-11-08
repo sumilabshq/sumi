@@ -2,8 +2,8 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { commandMenu as definition } from "../module.js";
 import { renameRow, runIntent } from "../features/doing/requests.js";
-import { changeMenuDoor, closeCommandMenu, commandMenu as openingCommandMenu, menuDoors, menuOnMenuChanged, toggleCommandMenu } from "../features/opening/requests.js";
-import { commandMenuResults, resultsOnChatsChanged, resultsOnMenuChanged, resultsOnPagesChanged } from "../features/results/requests.js";
+import { changeDoor, close, current, doors, menuOnMenuChanged, toggle } from "../features/opening/requests.js";
+import { all, resultsOnChatsChanged, resultsOnMenuChanged, resultsOnPagesChanged } from "../features/results/requests.js";
 import { commandMenuChanged } from "../gateways/command-menu/command-menu.events.js";
 
 export type { CommandMenuConfig, Draft, DraftedMenu, DraftsOf, FilledDoor, FilledPage, FilledRowSource, Found, PageAsk, RowsOf } from "../module.js";
@@ -16,10 +16,10 @@ export const commandMenu = handledModule(definition, [
 	named("command-menu.command-menu-changed", commandMenuChanged),
 	named("doing.rename-row", renameRow),
 	named("doing.run-intent", runIntent),
-	named("opening.change-menu-door", changeMenuDoor),
-	named("opening.close-command-menu", closeCommandMenu),
-	named("opening.command-menu", openingCommandMenu),
-	named("opening.menu-doors", menuDoors),
-	named("opening.toggle-command-menu", toggleCommandMenu),
-	named("results.command-menu-results", commandMenuResults),
+	named("opening.change-door", changeDoor),
+	named("opening.close", close),
+	named("opening.current", current),
+	named("opening.doors", doors),
+	named("opening.toggle", toggle),
+	named("results.all", all),
 ]);

@@ -120,12 +120,12 @@ export const WaitingSchema = z.object({
 
 export const questions = moduleContract("questions", Server, {
 	agent: {
-		postQuestions: named("agent.post-questions", command()
+		post: named("agent.post", command()
 			.public()
 			.input(PostQuestionsAskSchema)
 			.output(PostedSchema)
 			.idempotencyKey(Repeatable)),
-		questions: named("agent.questions", query()
+		all: named("agent.all", query()
 			.public()
 			.input(QuestionsAskSchema)
 			.output(QuestionSchema.array())
@@ -135,7 +135,7 @@ export const questions = moduleContract("questions", Server, {
 			.input(ChatQuestionsAskSchema)
 			.output(WaitingSchema)
 			.settlesNow()),
-		deliverQuestions: named("agent.deliver-questions", command()
+		deliver: named("agent.deliver", command()
 			.public()
 			.input(DeliverQuestionsAskSchema)
 			.output(DeliveredSchema)
@@ -147,21 +147,21 @@ export const questions = moduleContract("questions", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	dock: {
-		chatQuestions: named("dock.chat-questions", query()
+		ofChat: named("dock.of-chat", query()
 			.public()
 			.input(ChatQuestionsAskSchema)
 			.output(ChatQuestionsSchema)
 			.settlesNow()),
-		answerQuestion: named("dock.answer-question", command()
+		answer: named("dock.answer", command()
 			.public()
 			.input(AnswerQuestionAskSchema)
 			.idempotencyKey(Repeatable)),
-		skipQuestions: named("dock.skip-questions", command()
+		skip: named("dock.skip", command()
 			.public()
 			.input(QuestionsAskSchema)
 			.output(ChangedCountSchema)
 			.idempotencyKey(Repeatable)),
-		reopenQuestion: named("dock.reopen-question", command()
+		reopen: named("dock.reopen", command()
 			.public()
 			.input(QuestionAskSchema)
 			.idempotencyKey(Repeatable)),

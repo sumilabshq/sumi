@@ -24,10 +24,10 @@ const SIDES: readonly FrameSide[] = ["left"];
 const NO_PANEL: RefObject<HTMLElement | null> = { current: null };
 
 export function FrameSideReveal({ frame, content, panel, readCursor }: FrameSideRevealProps): ReactElement {
-	const sides = useQuery(layout.frameSides.frameSides).data;
-	const peek = useCommand(layout.frameSides.peekFrameSide);
-	const conceal = useCommand(layout.frameSides.concealFrameSide);
-	const toggle = useCommand(layout.frameSides.toggleFrameSide);
+	const sides = useQuery(layout.frameSides.current).data;
+	const peek = useCommand(layout.frameSides.peek);
+	const conceal = useCommand(layout.frameSides.conceal);
+	const toggle = useCommand(layout.frameSides.toggle);
 	useSideKeys(frame, (side) => void toggle.run({ side }));
 	useEdgeReveal({
 		frame,

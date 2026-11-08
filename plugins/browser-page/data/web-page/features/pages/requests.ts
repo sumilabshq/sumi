@@ -2,7 +2,7 @@ import { CallLoggerMiddleware, Repeatable, deny, guard, refuse } from "@widgetar
 import { command, query, subscriber } from "#module";
 import type { Invalidate } from "@widgetarium/data-framework";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
-import { webPagesChanged } from "../../gateways/web-pages/web-pages.events.js";
+import { pagesChanged } from "../../gateways/web-pages/web-pages.events.js";
 import { WebPagesGateway } from "../../gateways/web-pages/web-pages.gateway.js";
 import {
 	OpenWebPageInputSchema,
@@ -67,7 +67,7 @@ export const WebPageCallLoggerMiddleware = CallLoggerMiddleware("web-page", (inp
 	TAB_CALLED.replace("{tab}", WebPageTabSchema.safeParse(input).data?.tab ?? "none"),
 );
 
-export const webPage = query()
+export const one = query()
 	.public()
 	.input(WebPageTabSchema)
 	.output(WebPageSchema.nullable())
@@ -82,11 +82,11 @@ export const webPage = query()
 				};
 	});
 
-export const rereadWebPage = subscriber(webPagesChanged).handle((_input, { invalidate }) => {
-	invalidate(webPage);
+export const reread = subscriber(pagesChanged).handle((_input, { invalidate }) => {
+	invalidate(one);
 });
 
-export const openWebPage = command()
+export const open = command()
 	.public()
 	.input(OpenWebPageInputSchema)
 	.idempotencyKey(Repeatable)
@@ -107,7 +107,7 @@ export const openWebPage = command()
 		logPageChange(invalidate, tab, `${urlOf(was)} → ${url} (open)`);
 	});
 
-export const placeWebPage = command()
+export const place = command()
 	.public()
 	.input(PlaceWebPageInputSchema)
 	.idempotencyKey(Repeatable)
@@ -119,28 +119,28 @@ export const placeWebPage = command()
 		logPageChange(invalidate, tab, `placed ${areaOf(was)} → ${areaOf(area)}`);
 	});
 
-export const goBackWebPage = command()
+export const goBack = command()
 	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
 	.handle(({ tab }, reach) => takePageStep(reach, tab, GO_BACK));
 
-export const goForwardWebPage = command()
+export const goForward = command()
 	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
 	.handle(({ tab }, reach) => takePageStep(reach, tab, GO_FORWARD));
 
-export const reloadWebPage = command()
+export const reload = command()
 	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
 	.handle(({ tab }, reach) => takePageStep(reach, tab, RELOAD));
 
-export const closeWebPage = command()
+export const close = command()
 	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
@@ -165,7 +165,7 @@ async function pageOrRefuse(webPages: WebPagesGateway, tab: string): Promise<Web
 }
 
 function logPageChange(invalidate: Invalidate, tab: string, change: string): void {
-	invalidate(webPage, { tab });
+	invalidate(one, { tab });
 	console.info(`[widgetarium] web page ${tab} ${change}`);
 }
 

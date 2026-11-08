@@ -4,7 +4,7 @@ import type { StudioMoment, StudioState, StudioView } from "@widgetarium/core/en
 import type { Runtime } from "@widgetarium/data-framework";
 import { createListeners } from "./listeners.js";
 
-// TRADE-OFF: the core StudioState port still carries the shown view, so it reads and writes app-host's appHost.shownView.shownView; views should read the query themselves
+// TRADE-OFF: the core StudioState port still carries the shown view, so it reads and writes app-host's appHost.shownView.current; views should read the query themselves
 export function createStudioState(studioApp: Runtime): StudioState {
 	const listeners = createListeners();
 	let moment = STUDIO_OPENED_ON;
@@ -14,7 +14,7 @@ export function createStudioState(studioApp: Runtime): StudioState {
 		listeners.notify();
 	};
 	const rereadView = async (): Promise<void> => {
-		const answer = await studioApp.send(appHost.shownView.shownView);
+		const answer = await studioApp.send(appHost.shownView.current);
 
 		if (!answer.ok) {
 			console.error(`[widgetarium] the studio could not read the shown view: ${answer.reason}`);
@@ -25,7 +25,7 @@ export function createStudioState(studioApp: Runtime): StudioState {
 			become({ ...moment, view: answer.output }, "shown view read");
 		}
 	};
-	studioApp.routes.watch(appHost.shownView.shownView, undefined, () => void rereadView());
+	studioApp.routes.watch(appHost.shownView.current, undefined, () => void rereadView());
 	void rereadView();
 	return {
 		now: () => moment,
@@ -49,7 +49,7 @@ export function createStudioState(studioApp: Runtime): StudioState {
 }
 
 async function showView(studioApp: Runtime, view: StudioView): Promise<void> {
-	const answer = await studioApp.send(appHost.shownView.showView, { view });
+	const answer = await studioApp.send(appHost.shownView.show, { view });
 
 	if (!answer.ok) {
 		console.error(`[widgetarium] the studio could not show ${view}: ${answer.reason}`);

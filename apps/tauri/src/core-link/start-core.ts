@@ -110,10 +110,7 @@ function coreServedOver({ workspace, listener, store, plugins }: CoreServing): R
 		file: tasksBoardFileOver(own),
 	};
 	const core = runtime()
-		.modules(
-			...HOST_CAPABILITY_MODULES,
-			...plugins.backgroundModules.map(({ moduleOf }) => moduleOf(offers)),
-		)
+		.modules(...HOST_CAPABILITY_MODULES, ...plugins.backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
 		.start({
 			platform: "server",
 			env: {
@@ -136,7 +133,7 @@ function coreServedOver({ workspace, listener, store, plugins }: CoreServing): R
 
 function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): void {
 	for (const [workspace, places] of served) {
-		void places.send(placesContract.windows.closeWindow, { window }).then((answered) => {
+		void places.send(placesContract.windows.close, { window }).then((answered) => {
 			if (!answered.ok) {
 				console.warn(
 					NOT_CLOSED.replace("{workspace}", workspace).replace("{window}", window).replace("{reason}", answered.reason),
@@ -148,7 +145,7 @@ function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): 
 
 async function keepLiveWindows(places: Runtime, workspace: string): Promise<void> {
 	const live = LiveWindowsSchema.parse(await invoke(CORE_LIVE_WINDOWS));
-	const answered = await places.send(placesContract.windows.keepLiveWindows, { windows: live });
+	const answered = await places.send(placesContract.windows.keepLive, { windows: live });
 
 	if (!answered.ok) {
 		console.warn(NOT_KEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));
@@ -175,7 +172,7 @@ async function reconcileTasks(core: Runtime, workspace: string): Promise<void> {
 		return;
 	}
 
-	const answered = await core.send(tasks.supervision.reconcileTasks, { liveChats: [] });
+	const answered = await core.send(tasks.supervision.reconcile, { liveChats: [] });
 
 	if (!answered.ok) {
 		console.warn(NOT_RECONCILED.replace("{workspace}", workspace).replace("{reason}", answered.reason));
@@ -186,7 +183,7 @@ async function reconcileTasks(core: Runtime, workspace: string): Promise<void> {
 }
 
 async function sweepStaleTasks(core: Runtime, workspace: string, when: string): Promise<void> {
-	const answered = await core.send(tasks.supervision.sweepStaleTasks);
+	const answered = await core.send(tasks.supervision.sweepStale);
 
 	if (!answered.ok) {
 		console.warn(NOT_SWEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));

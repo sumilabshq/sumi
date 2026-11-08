@@ -54,7 +54,7 @@ function reasonOf(answer: Answer<unknown>): string {
 
 async function codeTask(tasks: Runtime, title: string, chat = A): Promise<string> {
 	const created = outputOf(
-		await tasks.send(tasksContract.agentWork.createTask, {
+		await tasks.send(tasksContract.agentWork.create, {
 			chat,
 			title,
 			kind: "code",
@@ -68,13 +68,13 @@ async function codeTask(tasks: Runtime, title: string, chat = A): Promise<string
 async function startedCodeTask(tasks: Runtime, title: string, chat = A): Promise<string> {
 	const id = await codeTask(tasks, title, chat);
 	outputOf(
-		await tasks.send(tasksContract.agentWork.attachToTask, {
+		await tasks.send(tasksContract.agentWork.attach, {
 			chat,
 			task: id,
 			item: { type: "workplace", folder: "/repo", branch: "feat/x" },
 		}),
 	);
-	outputOf(await tasks.send(tasksContract.agentWork.startTask, { chat, task: id }));
+	outputOf(await tasks.send(tasksContract.agentWork.start, { chat, task: id }));
 	return id;
 }
 
@@ -91,14 +91,14 @@ async function readyForTest(tasks: Runtime, id: string): Promise<void> {
 		}),
 	);
 	outputOf(
-		await tasks.send(tasksContract.agentWork.attachToTask, {
+		await tasks.send(tasksContract.agentWork.attach, {
 			chat: A,
 			task: id,
 			item: { type: "test_plan", stand: "dev build on :5174", cases: [{ text: "open a chat" }] },
 		}),
 	);
 	outputOf(
-		await tasks.send(tasksContract.agentWork.attachToTask, {
+		await tasks.send(tasksContract.agentWork.attach, {
 			chat: A,
 			task: id,
 			item: { type: "test_run", results: { K1: "passed" } },
@@ -109,7 +109,7 @@ async function readyForTest(tasks: Runtime, id: string): Promise<void> {
 async function creating(): Promise<void> {
 	const { tasks } = bench();
 	const first = outputOf(
-		await tasks.send(tasksContract.agentWork.createTask, {
+		await tasks.send(tasksContract.agentWork.create, {
 			chat: A,
 			title: "Draw the task line",
 			kind: "code",
@@ -124,19 +124,17 @@ async function creating(): Promise<void> {
 	);
 	check("its criteria and steps get ids", [first.task.acceptance[0]?.id, first.task.plan[0]?.id], ["C1", "S1"]);
 	const again = outputOf(
-		await tasks.send(tasksContract.agentWork.createTask, { chat: B, title: "draw the task-line!", kind: "code" }),
+		await tasks.send(tasksContract.agentWork.create, { chat: B, title: "draw the task-line!", kind: "code" }),
 	);
 	check(
 		"an open task with the same title is answered, not duplicated",
 		[again.task.card.id, again.isExisting],
 		["T-1", true],
 	);
-	const page = outputOf(await tasks.send(tasksContract.board.tasks, {}));
+	const page = outputOf(await tasks.send(tasksContract.board.all, {}));
 	check("only one task stands", page.total, 1);
 	const parallel = await Promise.all(
-		[1, 2, 3].map((n) =>
-			tasks.send(tasksContract.agentWork.createTask, { chat: A, title: `Parallel ${n}`, kind: "ops" }),
-		),
+		[1, 2, 3].map((n) => tasks.send(tasksContract.agentWork.create, { chat: A, title: `Parallel ${n}`, kind: "ops" })),
 	);
 	check("three creates at once get three numbers", parallel.map((answer) => outputOf(answer).task.card.id).sort(), [
 		"T-2",
@@ -148,16 +146,16 @@ async function creating(): Promise<void> {
 async function starting(): Promise<void> {
 	const { tasks } = bench();
 	const id = await codeTask(tasks, "Board v4");
-	const refused = reasonOf(await tasks.send(tasksContract.agentWork.startTask, { chat: A, task: id }));
+	const refused = reasonOf(await tasks.send(tasksContract.agentWork.start, { chat: A, task: id }));
 	check("a code task with no workplace does not start", refused.includes("attach the folder and branch"), true);
 	outputOf(
-		await tasks.send(tasksContract.agentWork.attachToTask, {
+		await tasks.send(tasksContract.agentWork.attach, {
 			chat: A,
 			task: id,
 			item: { type: "workplace", folder: "/repo", branch: "feat/tasks" },
 		}),
 	);
-	const started = outputOf(await tasks.send(tasksContract.agentWork.startTask, { chat: A, task: id }));
+	const started = outputOf(await tasks.send(tasksContract.agentWork.start, { chat: A, task: id }));
 	check(
 		"it starts once it has one, owned by the chat",
 		[started.card.status, started.card.owner, started.card.branch],
@@ -167,28 +165,26 @@ async function starting(): Promise<void> {
 	check("another chat may start its own", other, "T-2");
 	const second = await codeTask(tasks, "Third");
 	outputOf(
-		await tasks.send(tasksContract.agentWork.attachToTask, {
+		await tasks.send(tasksContract.agentWork.attach, {
 			chat: A,
 			task: second,
 			item: { type: "workplace", folder: "/repo", branch: null },
 		}),
 	);
-	const busy = reasonOf(await tasks.send(tasksContract.agentWork.startTask, { chat: A, task: second }));
+	const busy = reasonOf(await tasks.send(tasksContract.agentWork.start, { chat: A, task: second }));
 	check("one chat works on one task at a time", busy.includes("already works on T-1"), true);
 	const foreign = reasonOf(
 		await tasks.send(tasksContract.agentWork.markStep, { chat: B, task: id, step: "S1", state: "done" }),
 	);
 	check("another chat cannot change a task it does not own", foreign.includes("worked by another chat"), true);
-	const noNote = reasonOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "paused" }));
+	const noNote = reasonOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "paused" }));
 	check("pausing needs a note", noNote.includes("needs a note"), true);
 }
 
 async function finishing(): Promise<void> {
 	const { tasks } = bench();
 	const id = await startedCodeTask(tasks, "Tab drag");
-	const early = reasonOf(
-		await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "ready_to_test" }),
-	);
+	const early = reasonOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "ready_to_test" }));
 	check(
 		"ready to test lists every open step and criterion",
 		["S1", "S2", "C1", "test plan"].every((word) => early.includes(word)),
@@ -199,25 +195,23 @@ async function finishing(): Promise<void> {
 	);
 	check("a criterion is not met without evidence", bare.includes("needs evidence"), true);
 	await readyForTest(tasks, id);
-	const ready = outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "ready_to_test" }),
-	);
+	const ready = outputOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "ready_to_test" }));
 	check(
 		"with steps, criteria and a passing run it is ready to test",
 		[ready.card.status, ready.card.isYourTurn, ready.card.actions],
 		["ready_to_test", true, ["accept", "send_back"]],
 	);
-	const selfDone = reasonOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "done" }));
+	const selfDone = reasonOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "done" }));
 	check(
 		"an agent marks a code task done only with the person's words",
 		[selfDone.includes("the person's call"), selfDone.includes("quote their words")],
 		[true, true],
 	);
 	const sent = outputOf(
-		await tasks.send(tasksContract.person.sendBackTask, { task: id, note: "the line overlaps the composer", chat: A }),
+		await tasks.send(tasksContract.person.sendBack, { task: id, note: "the line overlaps the composer", chat: A }),
 	);
 	check("send back answers the owner chat and what to say", [sent.chat, sent.message.includes("overlaps")], [A, true]);
-	const reopened = outputOf(await tasks.send(tasksContract.board.task, { task: id }));
+	const reopened = outputOf(await tasks.send(tasksContract.board.one, { task: id }));
 	check(
 		"send back reopens it with the person's words as a criterion",
 		[reopened.card.status, reopened.acceptance.at(-1)?.text],
@@ -232,11 +226,11 @@ async function finishing(): Promise<void> {
 			evidence: "screenshot /tmp/x.png",
 		}),
 	);
-	outputOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "ready_to_test" }));
-	const accepted = outputOf(await tasks.send(tasksContract.person.acceptTask, { task: id }));
+	outputOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "ready_to_test" }));
+	const accepted = outputOf(await tasks.send(tasksContract.person.accept, { task: id }));
 	check("the person accepts it", [accepted.status, accepted.closedAt !== null], ["done", true]);
 	const research = outputOf(
-		await tasks.send(tasksContract.agentWork.createTask, {
+		await tasks.send(tasksContract.agentWork.create, {
 			chat: A,
 			title: "How Linear does it",
 			kind: "research",
@@ -244,7 +238,7 @@ async function finishing(): Promise<void> {
 			plan: ["read"],
 		}),
 	);
-	outputOf(await tasks.send(tasksContract.agentWork.startTask, { chat: A, task: research.task.card.id }));
+	outputOf(await tasks.send(tasksContract.agentWork.start, { chat: A, task: research.task.card.id }));
 	outputOf(
 		await tasks.send(tasksContract.agentWork.markStep, {
 			chat: A,
@@ -263,7 +257,7 @@ async function finishing(): Promise<void> {
 		}),
 	);
 	const done = outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: research.task.card.id, to: "done" }),
+		await tasks.send(tasksContract.agentWork.move, { chat: A, task: research.task.card.id, to: "done" }),
 	);
 	check("an agent closes a research task itself", done.card.status, "done");
 }
@@ -298,7 +292,7 @@ async function stopGuard(): Promise<void> {
 		"the same turn settled twice nudges once",
 		[
 			repeated.followUp?.message === first.followUp?.message,
-			outputOf(await tasks.send(tasksContract.board.task, { task: id })).card.status,
+			outputOf(await tasks.send(tasksContract.board.one, { task: id })).card.status,
 		],
 		[true, "in_progress"],
 	);
@@ -320,7 +314,7 @@ async function stopGuard(): Promise<void> {
 			startedBy: "host",
 		}),
 	);
-	const stalled = outputOf(await tasks.send(tasksContract.board.task, { task: id }));
+	const stalled = outputOf(await tasks.send(tasksContract.board.one, { task: id }));
 	check(
 		"after two nudges the task is blocked as stalled, and the turn may end",
 		[third.followUp, stalled.card.status, stalled.card.blocker?.kind, stalled.card.actions[0]],
@@ -367,7 +361,7 @@ async function stopGuard(): Promise<void> {
 	);
 	check(
 		"marking a step resets the nudges",
-		[fresh.followUp !== null, outputOf(await tasks.send(tasksContract.board.task, { task: nudged })).card.status],
+		[fresh.followUp !== null, outputOf(await tasks.send(tasksContract.board.one, { task: nudged })).card.status],
 		[true, "in_progress"],
 	);
 	const compact = outputOf(
@@ -381,7 +375,7 @@ async function stopGuard(): Promise<void> {
 	);
 	check(
 		"a compact turn with a task in progress is nudged without counting",
-		[compact.followUp?.task, outputOf(await tasks.send(tasksContract.board.task, { task: nudged })).card.status],
+		[compact.followUp?.task, outputOf(await tasks.send(tasksContract.board.one, { task: nudged })).card.status],
 		[nudged, "in_progress"],
 	);
 }
@@ -398,13 +392,13 @@ async function watchdog(): Promise<void> {
 			startedBy: "host",
 		}),
 	);
-	const paused = outputOf(await tasks.send(tasksContract.board.task, { task: stopped }));
+	const paused = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
 		"the person's stop pauses the task",
 		[paused.card.status, paused.card.note, paused.card.actions],
 		["paused", "stopped by you", ["continue"]],
 	);
-	const continued = outputOf(await tasks.send(tasksContract.person.continueTask, { task: stopped, chat: A }));
+	const continued = outputOf(await tasks.send(tasksContract.person.resume, { task: stopped, chat: A }));
 	check(
 		"continue resumes it in its own chat",
 		[continued.chat, continued.message.startsWith("Continue T-1")],
@@ -420,30 +414,30 @@ async function watchdog(): Promise<void> {
 			failure: { kind: "silent", detail: "Claude Code produced nothing for 3 minutes" },
 		}),
 	);
-	const silent = outputOf(await tasks.send(tasksContract.board.task, { task: stopped }));
+	const silent = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
 		"silence blocks it with the reason",
 		[silent.card.status, silent.card.blocker?.kind, silent.card.note],
 		["blocked", "session_silent", "Claude Code produced nothing for 3 minutes"],
 	);
-	outputOf(await tasks.send(tasksContract.person.continueTask, { task: stopped, chat: A }));
-	outputOf(await tasks.send(tasksContract.supervision.reconcileTasks, { liveChats: [] }));
-	const interrupted = outputOf(await tasks.send(tasksContract.board.task, { task: stopped }));
+	outputOf(await tasks.send(tasksContract.person.resume, { task: stopped, chat: A }));
+	outputOf(await tasks.send(tasksContract.supervision.reconcile, { liveChats: [] }));
+	const interrupted = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
 		"an app start blocks a task left in progress",
 		[interrupted.card.status, interrupted.card.blocker?.kind],
 		["blocked", "interrupted"],
 	);
-	outputOf(await tasks.send(tasksContract.person.continueTask, { task: stopped, chat: A }));
-	outputOf(await tasks.send(tasksContract.supervision.releaseChatTasks, { chat: A, why: "cleared" }));
-	const released = outputOf(await tasks.send(tasksContract.board.task, { task: stopped }));
+	outputOf(await tasks.send(tasksContract.person.resume, { task: stopped, chat: A }));
+	outputOf(await tasks.send(tasksContract.supervision.releaseChat, { chat: A, why: "cleared" }));
+	const released = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
 		"clearing its chat blocks it and frees the owner",
 		[released.card.status, released.card.owner],
 		["blocked", null],
 	);
-	const takeOver = outputOf(await tasks.send(tasksContract.person.continueTask, { task: stopped, chat: null }));
-	const todo = outputOf(await tasks.send(tasksContract.board.task, { task: stopped }));
+	const takeOver = outputOf(await tasks.send(tasksContract.person.resume, { task: stopped, chat: null }));
+	const todo = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
 		"continuing a task with no chat puts it back in To do for any chat",
 		[takeOver.chat, todo.card.status, takeOver.message.includes("task_start")],
@@ -455,32 +449,30 @@ async function blockers(): Promise<void> {
 	const { tasks } = bench();
 	const first = await startedCodeTask(tasks, "Dictation pill");
 	const second = await codeTask(tasks, "Voice commands", B);
-	outputOf(await tasks.send(tasksContract.agentWork.editTask, { chat: B, task: second, blockedBy: [first] }));
+	outputOf(await tasks.send(tasksContract.agentWork.edit, { chat: B, task: second, blockedBy: [first] }));
 	outputOf(
-		await tasks.send(tasksContract.agentWork.attachToTask, {
+		await tasks.send(tasksContract.agentWork.attach, {
 			chat: B,
 			task: second,
 			item: { type: "workplace", folder: "/repo", branch: null },
 		}),
 	);
-	const waits = reasonOf(await tasks.send(tasksContract.agentWork.startTask, { chat: B, task: second }));
+	const waits = reasonOf(await tasks.send(tasksContract.agentWork.start, { chat: B, task: second }));
 	check("a task waiting for another cannot start", waits.includes(`${first} must close first`), true);
-	const self = reasonOf(
-		await tasks.send(tasksContract.agentWork.editTask, { chat: B, task: second, blockedBy: [second] }),
-	);
+	const self = reasonOf(await tasks.send(tasksContract.agentWork.edit, { chat: B, task: second, blockedBy: [second] }));
 	check("a task cannot wait for itself", self.includes("cannot wait for itself"), true);
-	const card = outputOf(await tasks.send(tasksContract.board.task, { task: second })).card;
+	const card = outputOf(await tasks.send(tasksContract.board.one, { task: second })).card;
 	check("its card names what it waits for", card.waitsFor, [first]);
-	outputOf(await tasks.send(tasksContract.agentWork.editTask, { chat: A, task: first, addSteps: [] }));
+	outputOf(await tasks.send(tasksContract.agentWork.edit, { chat: A, task: first, addSteps: [] }));
 	outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, {
+		await tasks.send(tasksContract.agentWork.move, {
 			chat: A,
 			task: first,
 			to: "cancelled",
 			note: "the person dropped dictation",
 		}),
 	);
-	const freed = outputOf(await tasks.send(tasksContract.agentWork.startTask, { chat: B, task: second }));
+	const freed = outputOf(await tasks.send(tasksContract.agentWork.start, { chat: B, task: second }));
 	check("once it closes the waiting task starts", freed.card.status, "in_progress");
 }
 
@@ -488,7 +480,7 @@ async function staleness(): Promise<void> {
 	const { tasks, clock } = bench();
 	const id = await startedCodeTask(tasks, "Old pause");
 	outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, {
+		await tasks.send(tasksContract.agentWork.move, {
 			chat: A,
 			task: id,
 			to: "paused",
@@ -496,24 +488,24 @@ async function staleness(): Promise<void> {
 		}),
 	);
 	clock.moveTo(START + 15 * DAY);
-	const stale = outputOf(await tasks.send(tasksContract.board.task, { task: id })).card;
+	const stale = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"a pause quiet for two weeks is stale and can be kept",
 		[stale.isStale, stale.actions],
 		[true, ["continue", "keep"]],
 	);
-	outputOf(await tasks.send(tasksContract.person.keepTask, { task: id }));
+	outputOf(await tasks.send(tasksContract.person.keep, { task: id }));
 	clock.moveTo(START + 29 * DAY);
-	check("keeping it moves the clock", outputOf(await tasks.send(tasksContract.supervision.sweepStaleTasks)).changed, 0);
+	check("keeping it moves the clock", outputOf(await tasks.send(tasksContract.supervision.sweepStale)).changed, 0);
 	clock.moveTo(START + 44 * DAY);
 	check(
 		"four quiet weeks after that, the sweep cancels it",
-		outputOf(await tasks.send(tasksContract.supervision.sweepStaleTasks)).changed,
+		outputOf(await tasks.send(tasksContract.supervision.sweepStale)).changed,
 		1,
 	);
 	check(
 		"with the reason in its note",
-		outputOf(await tasks.send(tasksContract.board.task, { task: id })).card.note,
+		outputOf(await tasks.send(tasksContract.board.one, { task: id })).card.note,
 		"stale: no activity for 29 days",
 	);
 }
@@ -522,35 +514,35 @@ async function unansweredTestCloses(): Promise<void> {
 	const { tasks, clock } = bench();
 	const id = await startedCodeTask(tasks, "Never tested");
 	await readyForTest(tasks, id);
-	outputOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "ready_to_test" }));
+	outputOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "ready_to_test" }));
 	clock.moveTo(START + 2 * DAY);
-	const fresh = outputOf(await tasks.send(tasksContract.board.task, { task: id })).card;
+	const fresh = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"ready to test quiet for 2 days is fresh",
 		[fresh.isStale, fresh.quietDays, fresh.actions],
 		[false, null, ["accept", "send_back"]],
 	);
 	clock.moveTo(START + 3 * DAY);
-	const stale = outputOf(await tasks.send(tasksContract.board.task, { task: id })).card;
+	const stale = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"at 3 days it is stale, waiting 3 days, and can be kept",
 		[stale.isStale, stale.quietDays, stale.actions],
 		[true, 3, ["accept", "send_back", "keep"]],
 	);
-	outputOf(await tasks.send(tasksContract.person.keepTask, { task: id }));
+	outputOf(await tasks.send(tasksContract.person.keep, { task: id }));
 	clock.moveTo(START + 16 * DAY);
 	check(
 		"Keep moves its clock: 13 days after it nothing closes",
-		outputOf(await tasks.send(tasksContract.supervision.sweepStaleTasks)).changed,
+		outputOf(await tasks.send(tasksContract.supervision.sweepStale)).changed,
 		0,
 	);
 	clock.moveTo(START + 17 * DAY);
 	check(
 		"14 quiet days after Keep, the sweep closes it",
-		outputOf(await tasks.send(tasksContract.supervision.sweepStaleTasks)).changed,
+		outputOf(await tasks.send(tasksContract.supervision.sweepStale)).changed,
 		1,
 	);
-	const closed = outputOf(await tasks.send(tasksContract.board.task, { task: id }));
+	const closed = outputOf(await tasks.send(tasksContract.board.one, { task: id }));
 	check(
 		"as done, not cancelled, by the host, with the reason the person reads",
 		[closed.card.status, closed.log.at(-1)?.by.kind, closed.card.note],
@@ -558,7 +550,7 @@ async function unansweredTestCloses(): Promise<void> {
 	);
 	const paused = await startedCodeTask(tasks, "Old pause beside it");
 	outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, {
+		await tasks.send(tasksContract.agentWork.move, {
 			chat: A,
 			task: paused,
 			to: "paused",
@@ -566,10 +558,10 @@ async function unansweredTestCloses(): Promise<void> {
 		}),
 	);
 	clock.moveTo(START + 46 * DAY);
-	outputOf(await tasks.send(tasksContract.supervision.sweepStaleTasks));
+	outputOf(await tasks.send(tasksContract.supervision.sweepStale));
 	check(
 		"a paused task still cancels",
-		outputOf(await tasks.send(tasksContract.board.task, { task: paused })).card.status,
+		outputOf(await tasks.send(tasksContract.board.one, { task: paused })).card.status,
 		"cancelled",
 	);
 }
@@ -579,27 +571,27 @@ async function reading(): Promise<void> {
 	const old = await startedCodeTask(tasks, "Old work");
 	clock.moveTo(START + 10 * DAY);
 	const fresh = await codeTask(tasks, "Fresh work", B);
-	const week = outputOf(await tasks.send(tasksContract.board.tasks, {}));
+	const week = outputOf(await tasks.send(tasksContract.board.all, {}));
 	check(
 		"the list reads the last week by default",
 		week.items.map((card) => card.id),
 		[fresh],
 	);
-	const own = outputOf(await tasks.send(tasksContract.board.tasks, { asking: A }));
+	const own = outputOf(await tasks.send(tasksContract.board.all, { asking: A }));
 	check("but a chat always gets its own open tasks", own.items.map((card) => card.id).sort(), [old, fresh].sort());
-	const found = outputOf(await tasks.send(tasksContract.board.searchTasks, { query: "old work" }));
+	const found = outputOf(await tasks.send(tasksContract.board.search, { query: "old work" }));
 	check(
 		"search finds an open task whatever its age",
 		found.map((card) => card.id),
 		[old],
 	);
-	const line = outputOf(await tasks.send(tasksContract.board.chatTaskLine, { chat: A }));
+	const line = outputOf(await tasks.send(tasksContract.board.chatLine, { chat: A }));
 	check(
 		"the chat line shows the chat's task and its next step without the step id",
 		[line.card?.id, line.card?.nextStep],
 		[old, "draw the line"],
 	);
-	const trailer = outputOf(await tasks.send(tasksContract.board.taskTrailer, { chat: A }));
+	const trailer = outputOf(await tasks.send(tasksContract.board.trailer, { chat: A }));
 	check("the turn trailer names the task", trailer.trailer?.includes(`This chat's task: ${old}`), true);
 	check(
 		"the trailer keeps the step id for the agent",
@@ -607,14 +599,14 @@ async function reading(): Promise<void> {
 		true,
 	);
 	await readyForTest(tasks, old);
-	outputOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: old, to: "ready_to_test" }));
-	outputOf(await tasks.send(tasksContract.person.acceptTask, { task: old }));
+	outputOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: old, to: "ready_to_test" }));
+	outputOf(await tasks.send(tasksContract.person.accept, { task: old }));
 	clock.moveTo(START + 12 * DAY);
-	const board = outputOf(await tasks.send(tasksContract.board.board, {}));
+	const board = outputOf(await tasks.send(tasksContract.board.current, {}));
 	const done = board.columns.find((column) => column.status === "done");
 	check("Done holds the last day only", [done?.cards.length, done?.total, done?.hidden], [0, 1, 1]);
 	check("a column carries its label and whether it is closed", [done?.label, done?.isClosed], ["Done", true]);
-	const all = outputOf(await tasks.send(tasksContract.board.board, { closedWithin: "all" }));
+	const all = outputOf(await tasks.send(tasksContract.board.current, { closedWithin: "all" }));
 	check("All shows it", all.columns.find((column) => column.status === "done")?.cards.length, 1);
 }
 
@@ -631,15 +623,15 @@ async function caps(): Promise<void> {
 	const { tasks, memory } = bench();
 	const id = await startedCodeTask(tasks, "Many parts");
 	outputOf(
-		await tasks.send(tasksContract.agentWork.editTask, { chat: A, task: id, addCriteria: linesOf(49, "criterion") }),
+		await tasks.send(tasksContract.agentWork.edit, { chat: A, task: id, addCriteria: linesOf(49, "criterion") }),
 	);
 	const overCriteria = reasonOf(
-		await tasks.send(tasksContract.agentWork.editTask, { chat: A, task: id, addCriteria: ["one more"] }),
+		await tasks.send(tasksContract.agentWork.edit, { chat: A, task: id, addCriteria: ["one more"] }),
 	);
 	check("a 51st criterion is refused", overCriteria.includes("at most 50"), true);
-	outputOf(await tasks.send(tasksContract.agentWork.editTask, { chat: A, task: id, addSteps: linesOf(98, "step") }));
+	outputOf(await tasks.send(tasksContract.agentWork.edit, { chat: A, task: id, addSteps: linesOf(98, "step") }));
 	const overSteps = reasonOf(
-		await tasks.send(tasksContract.agentWork.editTask, { chat: A, task: id, addSteps: ["one more"] }),
+		await tasks.send(tasksContract.agentWork.edit, { chat: A, task: id, addSteps: ["one more"] }),
 	);
 	check("a 101st step is refused", overSteps.includes("at most 100"), true);
 	const overMarked = reasonOf(
@@ -652,20 +644,20 @@ async function caps(): Promise<void> {
 	);
 	check("marking a new step past the cap is refused", overMarked.includes("at most 100"), true);
 	const overBlockers = reasonOf(
-		await tasks.send(tasksContract.agentWork.editTask, { chat: A, task: id, blockedBy: linesOf(21, "T-") }),
+		await tasks.send(tasksContract.agentWork.edit, { chat: A, task: id, blockedBy: linesOf(21, "T-") }),
 	);
 	check("a 21st blocker is refused", overBlockers === "", false);
 	const shared = await codeTask(tasks, "Shared by many", B);
 
 	for (let n = 0; n < 55; n += 1) {
 		outputOf(
-			await tasks.send(tasksContract.agentWork.editTask, { chat: `chat-${n}`, task: shared, description: `by ${n}` }),
+			await tasks.send(tasksContract.agentWork.edit, { chat: `chat-${n}`, task: shared, description: `by ${n}` }),
 		);
 	}
 
 	check(
 		"a task edited from 55 chats keeps the last 50",
-		outputOf(await tasks.send(tasksContract.board.task, { task: shared })).chats.length,
+		outputOf(await tasks.send(tasksContract.board.one, { task: shared })).chats.length,
 		50,
 	);
 	check("the board still parses", BoardSchema.safeParse((await memory.board()).board).success, true);
@@ -675,7 +667,7 @@ async function sendBackAtTheCap(): Promise<void> {
 	const { tasks, memory } = bench();
 	const id = await startedCodeTask(tasks, "Full of criteria");
 	outputOf(
-		await tasks.send(tasksContract.agentWork.editTask, { chat: A, task: id, addCriteria: linesOf(49, "criterion") }),
+		await tasks.send(tasksContract.agentWork.edit, { chat: A, task: id, addCriteria: linesOf(49, "criterion") }),
 	);
 	await readyForTest(tasks, id);
 
@@ -691,9 +683,9 @@ async function sendBackAtTheCap(): Promise<void> {
 		);
 	}
 
-	outputOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "ready_to_test" }));
+	outputOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "ready_to_test" }));
 	const refused = reasonOf(
-		await tasks.send(tasksContract.person.sendBackTask, { task: id, note: "one more thing", chat: A }),
+		await tasks.send(tasksContract.person.sendBack, { task: id, note: "one more thing", chat: A }),
 	);
 	check(
 		"sending back a task with 50 criteria is refused in the person's words",
@@ -702,7 +694,7 @@ async function sendBackAtTheCap(): Promise<void> {
 	);
 	check(
 		"and it stays ready to test",
-		outputOf(await tasks.send(tasksContract.board.task, { task: id })).card.status,
+		outputOf(await tasks.send(tasksContract.board.one, { task: id })).card.status,
 		"ready_to_test",
 	);
 	check("the board still parses after the refusal", BoardSchema.safeParse((await memory.board()).board).success, true);
@@ -723,9 +715,9 @@ async function nudgeResets(): Promise<void> {
 		);
 	await settle("1");
 	outputOf(await tasks.send(tasksContract.agentWork.markStep, { chat: A, task: id, step: "S1", state: "active" }));
-	outputOf(await tasks.send(tasksContract.agentWork.editTask, { chat: A, task: id, addSteps: ["another"] }));
+	outputOf(await tasks.send(tasksContract.agentWork.edit, { chat: A, task: id, addSteps: ["another"] }));
 	outputOf(
-		await tasks.send(tasksContract.agentWork.attachToTask, {
+		await tasks.send(tasksContract.agentWork.attach, {
 			chat: A,
 			task: id,
 			item: { type: "document", kind: "notes", title: "notes" },
@@ -735,7 +727,7 @@ async function nudgeResets(): Promise<void> {
 	const third = await settle("3");
 	check(
 		"re-marking a step active, adding a step and attaching reset nothing",
-		[third.followUp, outputOf(await tasks.send(tasksContract.board.task, { task: id })).card.status],
+		[third.followUp, outputOf(await tasks.send(tasksContract.board.one, { task: id })).card.status],
 		[null, "blocked"],
 	);
 	const other = bench();
@@ -791,7 +783,7 @@ async function nudgeResets(): Promise<void> {
 		);
 	}
 
-	const sideTask = outputOf(await side.tasks.send(tasksContract.board.task, { task: "T-1" })).card;
+	const sideTask = outputOf(await side.tasks.send(tasksContract.board.one, { task: "T-1" })).card;
 	check(
 		"the person's own turns are nudged but never counted toward a stall",
 		[asked, sideTask.status],
@@ -834,7 +826,7 @@ async function nudgeResets(): Promise<void> {
 
 	check(
 		"done → pending → done and a new skipped step reset nothing",
-		outputOf(await fake.tasks.send(tasksContract.board.task, { task: faked })).card.status,
+		outputOf(await fake.tasks.send(tasksContract.board.one, { task: faked })).card.status,
 		"blocked",
 	);
 	const reopened = bench();
@@ -882,7 +874,7 @@ async function nudgeResets(): Promise<void> {
 
 	check(
 		"met → open → met resets nothing",
-		outputOf(await reopened.tasks.send(tasksContract.board.task, { task: met })).card.status,
+		outputOf(await reopened.tasks.send(tasksContract.board.one, { task: met })).card.status,
 		"blocked",
 	);
 }
@@ -917,7 +909,7 @@ async function startedMidTurn(): Promise<void> {
 		}),
 	);
 	continued.clock.moveTo(START + HOUR);
-	outputOf(await continued.tasks.send(tasksContract.person.continueTask, { task: handed, chat: A }));
+	outputOf(await continued.tasks.send(tasksContract.person.resume, { task: handed, chat: A }));
 	const mid = outputOf(
 		await continued.tasks.send(tasksContract.supervision.settleTurn, {
 			chat: A,
@@ -957,19 +949,19 @@ async function draftedTurnPauses(): Promise<void> {
 	const busy = outputOf(await tasks.send(tasksContract.supervision.settleTurn, { ...ask, turn: "1", isBusy: true }));
 	check(
 		"a turn ending while the chat answers again is left to that turn",
-		[busy.followUp, outputOf(await tasks.send(tasksContract.board.task, { task: id })).card.status],
+		[busy.followUp, outputOf(await tasks.send(tasksContract.board.one, { task: id })).card.status],
 		[null, "in_progress"],
 	);
 	const drafted = outputOf(
 		await tasks.send(tasksContract.supervision.settleTurn, { ...ask, turn: "2", isDrafted: true }),
 	);
-	const paused = outputOf(await tasks.send(tasksContract.board.task, { task: id })).card;
+	const paused = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"a turn ending while the person writes pauses its task with the reason",
 		[drafted.followUp, paused.status, paused.note?.includes("you were writing in its chat")],
 		[null, "paused", true],
 	);
-	const resumed = outputOf(await tasks.send(tasksContract.agentWork.startTask, { chat: A, task: id }));
+	const resumed = outputOf(await tasks.send(tasksContract.agentWork.start, { chat: A, task: id }));
 	check("the agent may take its paused task up again", resumed.card.status, "in_progress");
 }
 
@@ -1003,18 +995,18 @@ async function agentCarriesOutThePersonsWord(): Promise<void> {
 	const { tasks } = bench();
 	const id = await startedCodeTask(tasks, "Handed in");
 	await readyForTest(tasks, id);
-	outputOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "ready_to_test" }));
-	const unsaid = reasonOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "todo" }));
+	outputOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "ready_to_test" }));
+	const unsaid = reasonOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "todo" }));
 	check(
 		"an agent sends a handed-in task back to To do only with the person's words",
 		[
 			unsaid.includes("the person's call"),
-			outputOf(await tasks.send(tasksContract.board.task, { task: id })).card.status,
+			outputOf(await tasks.send(tasksContract.board.one, { task: id })).card.status,
 		],
 		[true, "ready_to_test"],
 	);
 	const dropped = outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, {
+		await tasks.send(tasksContract.agentWork.move, {
 			chat: A,
 			task: id,
 			to: "todo",
@@ -1034,11 +1026,11 @@ async function agentCarriesOutThePersonsWord(): Promise<void> {
 		to: "done",
 	});
 	const bare = reasonOf(
-		await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: accepted.card.id, to: "in_progress" }),
+		await tasks.send(tasksContract.agentWork.move, { chat: A, task: accepted.card.id, to: "in_progress" }),
 	);
 	check("an agent reopens a done task only with the person's words", bare.includes("the person's call"), true);
 	const reopened = outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, {
+		await tasks.send(tasksContract.agentWork.move, {
 			chat: A,
 			task: accepted.card.id,
 			to: "in_progress",
@@ -1051,7 +1043,7 @@ async function agentCarriesOutThePersonsWord(): Promise<void> {
 		["in_progress", { by: { kind: "agent", chat: A }, reason: "reopen it, the line is back", to: "in_progress" }],
 	);
 	outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, {
+		await tasks.send(tasksContract.agentWork.move, {
 			chat: A,
 			task: reopened.card.id,
 			to: "cancelled",
@@ -1059,7 +1051,7 @@ async function agentCarriesOutThePersonsWord(): Promise<void> {
 		}),
 	);
 	const restored = outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, {
+		await tasks.send(tasksContract.agentWork.move, {
 			chat: A,
 			task: reopened.card.id,
 			to: "todo",
@@ -1072,9 +1064,9 @@ async function agentCarriesOutThePersonsWord(): Promise<void> {
 async function approvedByWord(tasks: Runtime): Promise<TaskView> {
 	const id = await startedCodeTask(tasks, "Approved in chat");
 	await readyForTest(tasks, id);
-	outputOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "ready_to_test" }));
+	outputOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "ready_to_test" }));
 	return outputOf(
-		await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: id, to: "done", note: "approved, ship it" }),
+		await tasks.send(tasksContract.agentWork.move, { chat: A, task: id, to: "done", note: "approved, ship it" }),
 	);
 }
 
@@ -1103,8 +1095,8 @@ async function onlyNudgedTasksFollowUp(): Promise<void> {
 		}),
 	);
 	const [stalled, nudged] = [
-		outputOf(await tasks.send(tasksContract.board.task, { task: "T-1" })).card,
-		outputOf(await tasks.send(tasksContract.board.task, { task: "T-2" })).card,
+		outputOf(await tasks.send(tasksContract.board.one, { task: "T-1" })).card,
+		outputOf(await tasks.send(tasksContract.board.one, { task: "T-2" })).card,
 	];
 	check(
 		"of two tasks in progress the stalled one blocks and the other is nudged in the same step",
@@ -1122,7 +1114,7 @@ async function onlyNudgedTasksFollowUp(): Promise<void> {
 	);
 	check(
 		"and its count went up: the next turn stalls it",
-		[again.followUp, outputOf(await tasks.send(tasksContract.board.task, { task: "T-2" })).card.status],
+		[again.followUp, outputOf(await tasks.send(tasksContract.board.one, { task: "T-2" })).card.status],
 		[null, "blocked"],
 	);
 }
@@ -1139,38 +1131,36 @@ async function continuing(): Promise<void> {
 			startedBy: "host",
 		}),
 	);
-	const toOther = outputOf(await tasks.send(tasksContract.person.continueTask, { task: id, chat: B }));
-	const taken = outputOf(await tasks.send(tasksContract.board.task, { task: id })).card;
+	const toOther = outputOf(await tasks.send(tasksContract.person.resume, { task: id, chat: B }));
+	const taken = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"continue in a named chat makes it the owner",
 		[toOther.chat, taken.status, taken.owner],
 		[B, "in_progress", B],
 	);
-	const paused = outputOf(
-		await tasks.send(tasksContract.person.undeliveredTask, { task: id, reason: "the chat is busy" }),
-	);
+	const paused = outputOf(await tasks.send(tasksContract.person.undelivered, { task: id, reason: "the chat is busy" }));
 	check(
 		"an undelivered message pauses the task with the reason",
 		[paused.status, paused.note?.includes("the chat is busy")],
 		["paused", true],
 	);
-	const gone = outputOf(await tasks.send(tasksContract.person.continueTask, { task: id, chat: null }));
-	const todo = outputOf(await tasks.send(tasksContract.board.task, { task: id })).card;
+	const gone = outputOf(await tasks.send(tasksContract.person.resume, { task: id, chat: null }));
+	const todo = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"continue with no live chat puts it in To do with no owner",
 		[gone.chat, todo.status, todo.owner],
 		[null, "todo", null],
 	);
-	const untouched = outputOf(await tasks.send(tasksContract.person.undeliveredTask, { task: id, reason: "no window" }));
+	const untouched = outputOf(await tasks.send(tasksContract.person.undelivered, { task: id, reason: "no window" }));
 	check("an undelivered message leaves a To do task as it is", untouched.status, "todo");
 	const sent = bench();
 	const back = await startedCodeTask(sent.tasks, "Send me back");
 	await readyForTest(sent.tasks, back);
-	outputOf(await sent.tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: back, to: "ready_to_test" }));
+	outputOf(await sent.tasks.send(tasksContract.agentWork.move, { chat: A, task: back, to: "ready_to_test" }));
 	const answer = outputOf(
-		await sent.tasks.send(tasksContract.person.sendBackTask, { task: back, note: "still overlaps", chat: null }),
+		await sent.tasks.send(tasksContract.person.sendBack, { task: back, note: "still overlaps", chat: null }),
 	);
-	const reopened = outputOf(await sent.tasks.send(tasksContract.board.task, { task: back }));
+	const reopened = outputOf(await sent.tasks.send(tasksContract.board.one, { task: back }));
 	check(
 		"send back with no live chat puts it in To do for any chat",
 		[answer.chat, reopened.card.status, reopened.card.owner, answer.message.includes("task_start")],
@@ -1193,25 +1183,21 @@ async function usageLimitWaits(): Promise<void> {
 			failure: { kind: "usage_limit", detail: "You've hit your usage limit", resumesAt },
 		}),
 	);
-	const waiting = outputOf(await tasks.send(tasksContract.board.task, { task: id })).card;
+	const waiting = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"a usage limit blocks it until the reset",
 		[waiting.blocker?.kind, waiting.continueAt, waiting.actions.includes("continue")],
 		["usage_limit", resumesAt, true],
 	);
-	const early = reasonOf(await tasks.send(tasksContract.person.continueTask, { task: id, chat: A }));
+	const early = reasonOf(await tasks.send(tasksContract.person.resume, { task: id, chat: A }));
 	check("continue before the reset is refused", early.includes("usage limit to reset in 120 min"), true);
 	clock.moveTo(resumesAt + 1);
 	check(
 		"after the reset it continues at once",
-		outputOf(await tasks.send(tasksContract.board.task, { task: id })).card.continueAt,
+		outputOf(await tasks.send(tasksContract.board.one, { task: id })).card.continueAt,
 		null,
 	);
-	check(
-		"and continue works",
-		outputOf(await tasks.send(tasksContract.person.continueTask, { task: id, chat: A })).chat,
-		A,
-	);
+	check("and continue works", outputOf(await tasks.send(tasksContract.person.resume, { task: id, chat: A })).chat, A);
 	const failed = outputOf(
 		await tasks.send(tasksContract.supervision.settleTurn, {
 			chat: A,
@@ -1222,7 +1208,7 @@ async function usageLimitWaits(): Promise<void> {
 			failure: { kind: "other", detail: "x".repeat(900), resumesAt: null },
 		}),
 	);
-	const blocked = outputOf(await tasks.send(tasksContract.board.task, { task: id })).card;
+	const blocked = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"another failure blocks as session_failed with the detail capped",
 		[failed.followUp, blocked.blocker?.kind, blocked.blocker?.detail.length],
@@ -1235,7 +1221,7 @@ async function closedOrder(): Promise<void> {
 
 	for (const title of ["Closed first", "Closed second"]) {
 		const research = outputOf(
-			await tasks.send(tasksContract.agentWork.createTask, {
+			await tasks.send(tasksContract.agentWork.create, {
 				chat: A,
 				title,
 				kind: "research",
@@ -1243,7 +1229,7 @@ async function closedOrder(): Promise<void> {
 				plan: ["read"],
 			}),
 		).task.card.id;
-		outputOf(await tasks.send(tasksContract.agentWork.startTask, { chat: A, task: research }));
+		outputOf(await tasks.send(tasksContract.agentWork.start, { chat: A, task: research }));
 		outputOf(
 			await tasks.send(tasksContract.agentWork.markStep, { chat: A, task: research, step: "S1", state: "done" }),
 		);
@@ -1256,17 +1242,17 @@ async function closedOrder(): Promise<void> {
 				evidence: "docs/answer.md",
 			}),
 		);
-		outputOf(await tasks.send(tasksContract.agentWork.moveTask, { chat: A, task: research, to: "done" }));
+		outputOf(await tasks.send(tasksContract.agentWork.move, { chat: A, task: research, to: "done" }));
 		clock.moveTo(START + HOUR);
 	}
 
 	const titlesOf = async (order: "newest" | "oldest") =>
-		outputOf(await tasks.send(tasksContract.board.board, { closedOrder: order }))
+		outputOf(await tasks.send(tasksContract.board.current, { closedOrder: order }))
 			.columns.find((column) => column.status === "done")
 			?.cards.map((card) => card.title);
 	check("Done shows the newest first by default", await titlesOf("newest"), ["Closed second", "Closed first"]);
 	check("Oldest first shows the oldest", await titlesOf("oldest"), ["Closed first", "Closed second"]);
-	const view = outputOf(await tasks.send(tasksContract.board.task, { task: "T-1" }));
+	const view = outputOf(await tasks.send(tasksContract.board.one, { task: "T-1" }));
 	check(
 		"a card carries its status label and whether it is closed",
 		[view.card.statusLabel, view.card.isClosed],

@@ -1,6 +1,6 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { assistantSetupChanged } from "../../gateways/chat-parts/chat-parts.events.js";
+import { setupChanged } from "../../gateways/chat-parts/chat-parts.events.js";
 import { chosenOf } from "../../shared/lib/chosen-provider.js";
 import { SlashNamesSchema } from "../../shared/schema/slash-command.schema.js";
 import type { SlashName } from "../../shared/schema/slash-command.schema.js";
@@ -10,7 +10,7 @@ import { inChat } from "../../gateways/chat-parts/in-chat.js";
 const SLASH_ALWAYS: readonly SlashName[] = ["clear"];
 const SLASH_WITH_COMPACT: readonly SlashName[] = ["clear", "compact"];
 
-export const slashCommands = query()
+export const all = query()
 	.public()
 	.input(ChatKeySchema)
 	.output(SlashNamesSchema)
@@ -35,6 +35,6 @@ export const compactChat = command()
 		}),
 	);
 
-export const rereadSlashCommands = subscriber(assistantSetupChanged).handle((_input, { invalidate }) => {
-	invalidate(slashCommands);
+export const reread = subscriber(setupChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 });

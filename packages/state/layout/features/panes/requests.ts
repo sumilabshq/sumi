@@ -18,7 +18,7 @@ import { homeOfPlacement, refuseHomeTarget } from "../../shared/lib/chat-groups.
 import type { PanePlacement, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 import { paneTransitionOf, viewWords } from "../../shared/lib/pane-words.js";
 
-export const paneTree = query()
+export const current = query()
 	.public()
 	.output(PaneBoardSchema)
 	.settlesNow()
@@ -47,13 +47,13 @@ export const placementPreview = query()
 		return placementPreviewOf(tree, placement.view, placement);
 	});
 
-export const placePane = command()
+export const place = command()
 	.public()
 	.input(PanePlacementSchema)
 	.idempotencyKey(Repeatable)
 	.handle((placement, { paneTree: paneTreeGateway, invalidate }) => {
 		const { view, targetId, side } = placement;
-		invalidate(paneTree);
+		invalidate(current);
 		invalidate(placementPreview);
 		const tree = paneTreeGateway.tree();
 		const refusal = refusePlacement(tree, placement);
@@ -81,12 +81,12 @@ export const placePane = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const closePane = command()
+export const close = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ id }, { paneTree: paneTreeGateway, invalidate }) => {
-		invalidate(paneTree);
+		invalidate(current);
 		invalidate(placementPreview);
 		const tree = paneTreeGateway.tree();
 		const refusal = refuseUnknownPane(tree, id);
@@ -101,7 +101,7 @@ export const closePane = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const resizePaneSplit = command()
+export const resizeSplit = command()
 	.public()
 	.input(
 		z.object({
@@ -112,7 +112,7 @@ export const resizePaneSplit = command()
 	)
 	.idempotencyKey(Repeatable)
 	.handle((asked, { paneTree: paneTreeGateway, invalidate }) => {
-		invalidate(paneTree);
+		invalidate(current);
 		invalidate(placementPreview);
 		const tree = paneTreeGateway.tree();
 		const refusal = refuseUnknownEdge(tree, asked);
@@ -127,12 +127,12 @@ export const resizePaneSplit = command()
 		paneTreeGateway.saveTree(next, `split ${asked.splitId} edge ${asked.at} ${was} → ${now} (drag)`);
 	});
 
-export const aimPane = command()
+export const aim = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ id }, { paneTree: paneTreeGateway, invalidate }) => {
-		invalidate(paneTree);
+		invalidate(current);
 		const tree = paneTreeGateway.tree();
 		const refusal = refuseUnknownPane(tree, id);
 
@@ -152,8 +152,8 @@ export const aimPane = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const rereadPanes = subscriber(panesChanged).handle((_input, { invalidate }) => {
-	invalidate(paneTree);
+export const reread = subscriber(panesChanged).handle((_input, { invalidate }) => {
+	invalidate(current);
 	invalidate(placementPreview);
 });
 

@@ -9,10 +9,10 @@ export interface OpenedTab {
 }
 
 export async function openTabSettled(reach: TabsReach, asked: TabToOpen): Promise<OpenedTab> {
-	const opened = await settleAsked(reach, (at) => reach.send(places.tabOpening.openTab, { at, ...asked }));
+	const opened = await settleAsked(reach, (at) => reach.send(places.tabOpening.open, { at, ...asked }));
 	return { id: opened.id };
 }
 
 export async function showTabSettled(reach: TabsReach, asked: TabToShow): Promise<void> {
-	await settleAsked(reach, (at) => reach.send(places.tabShowing.showTab, { at, ...asked }));
+	await settleAsked(reach, (at) => reach.send(places.tabShowing.show, { at, ...asked }));
 }

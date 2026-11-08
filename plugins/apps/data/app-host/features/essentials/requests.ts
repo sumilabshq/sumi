@@ -24,18 +24,18 @@ const WORKSPACE_END = {
 	before: null,
 };
 
-export const showEssential = command()
+export const show = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
 		const essential = findEssential(await keptOf(injects.essentials), id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
 		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
-			send(places.tabOpening.showEssentialTab, { at, essential: refOf(essential) }),
+			send(places.tabOpening.showEssential, { at, essential: refOf(essential) }),
 		);
 	});
 
-export const removeEssential = command()
+export const remove = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
@@ -45,17 +45,17 @@ export const removeEssential = command()
 		await releaseEssential({ injects, send, told: () => emit(tabsSettled) }, { kept, essential, place: WORKSPACE_END });
 	});
 
-export const closeEssential = command()
+export const close = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
 		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
-			send(places.tabClosing.closeEssentialTab, { at, essentialId: id }),
+			send(places.tabClosing.closeEssential, { at, essentialId: id }),
 		);
 	});
 
-export const placeEssential = command()
+export const place = command()
 	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
@@ -91,7 +91,7 @@ async function releaseEssential(
 	{ kept, essential, place }: EssentialRelease,
 ): Promise<void> {
 	await settleAsked(reach, (at) =>
-		reach.send(places.tabOpening.releaseEssentialTab, { at, essential: refOf(essential), place }),
+		reach.send(places.tabOpening.releaseEssential, { at, essential: refOf(essential), place }),
 	);
 	saveEssentials(kept, moveToRemoveEssential(kept, essential), reach.injects.essentials);
 }

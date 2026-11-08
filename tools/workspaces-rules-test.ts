@@ -88,24 +88,24 @@ function outputOf(answer: { readonly ok: boolean; readonly reason?: string; read
 async function workspaceChecks(): Promise<void> {
 	const parts = seededParts();
 	const workspaces = started(parts);
-	const emptyName = await workspaces.send(workspacesContract.workspaces.renameWorkspace, { id: "home", name: "  " });
+	const emptyName = await workspaces.send(workspacesContract.workspaces.rename, { id: "home", name: "  " });
 	check("a blank workspace name is refused", outputOf(emptyName), "A workspace needs a name.");
-	await workspaces.send(workspacesContract.workspaces.renameWorkspace, { id: "home", name: "  Base  " });
+	await workspaces.send(workspacesContract.workspaces.rename, { id: "home", name: "  Base  " });
 	check("a rename keeps the trimmed name", parts.workspaces.workspaces()[0]?.name, "Base");
-	const unknown = await workspaces.send(workspacesContract.workspaces.setWorkspaceIcon, { id: "nope", icon: null });
+	const unknown = await workspaces.send(workspacesContract.workspaces.setIcon, { id: "nope", icon: null });
 	check("an icon for an unknown workspace is refused", outputOf(unknown), "There is no workspace nope.");
 
-	await workspaces.send(workspacesContract.workspaces.openWorkspaceByPosition, { position: 9 });
+	await workspaces.send(workspacesContract.workspaces.openByPosition, { position: 9 });
 	check("⌘10 opens nothing", parts.currentWorkspace.currentWorkspace().currentId, "home");
-	await workspaces.send(workspacesContract.workspaces.openWorkspaceByPosition, { position: 1 });
+	await workspaces.send(workspacesContract.workspaces.openByPosition, { position: 1 });
 	check("⌘2 opens the second workspace", parts.currentWorkspace.currentWorkspace(), {
 		currentId: "lab",
 		openingId: null,
 	});
 
-	await workspaces.send(workspacesContract.workspaces.createWorkspace);
-	const view = workspacesContract.workspaces.workspaces.outputSchema.parse(
-		outputOf(await workspaces.send(workspacesContract.workspaces.workspaces)),
+	await workspaces.send(workspacesContract.workspaces.create);
+	const view = workspacesContract.workspaces.all.outputSchema.parse(
+		outputOf(await workspaces.send(workspacesContract.workspaces.all)),
 	);
 	check(
 		"a new workspace takes the first free untitled number and becomes current",
@@ -131,7 +131,7 @@ async function lostFolderChecks(): Promise<void> {
 		...seededParts(),
 		workspaces: lost,
 	};
-	await started(parts).send(workspacesContract.workspaces.openWorkspace, { id: "lab" });
+	await started(parts).send(workspacesContract.workspaces.open, { id: "lab" });
 	check(
 		"opening a workspace whose folder is gone asks for it, then makes it current",
 		[lost.attaches, parts.currentWorkspace.currentWorkspace().currentId],
@@ -143,10 +143,10 @@ async function chatChecks(): Promise<void> {
 	const parts = seededParts();
 	const tabs = new MemoryTabsGateway(placedTabsOf(NO_SESSION_TABS, SEEDED_CHATS));
 	const chats = started(parts, tabs);
-	const toOpen = async (): Promise<unknown> => outputOf(await chats.send(workspacesContract.chats.chatToOpen));
+	const toOpen = async (): Promise<unknown> => outputOf(await chats.send(workspacesContract.chats.toOpen));
 	check("a chat asked to open on start that the chats lost opens nothing", await toOpen(), { isRead: true, id: null });
-	const records = workspacesContract.chats.chatRecords.outputSchema.parse(
-		outputOf(await chats.send(workspacesContract.chats.chatRecords)),
+	const records = workspacesContract.chats.records.outputSchema.parse(
+		outputOf(await chats.send(workspacesContract.chats.records)),
 	);
 	check(
 		"the records hold every chat with its title and no pin or mark: places keeps where a chat stands and how",
@@ -161,7 +161,7 @@ async function chatChecks(): Promise<void> {
 		],
 	);
 
-	await chats.send(workspacesContract.chats.recordChatTurn, {
+	await chats.send(workspacesContract.chats.recordTurn, {
 		chatId: "old",
 		isBusy: true,
 		isSeen: false,
@@ -178,7 +178,7 @@ async function chatChecks(): Promise<void> {
 		],
 		[80, true, "running", true],
 	);
-	await chats.send(workspacesContract.chats.recordChatTurn, {
+	await chats.send(workspacesContract.chats.recordTurn, {
 		chatId: "old",
 		isBusy: false,
 		isSeen: false,
@@ -186,19 +186,19 @@ async function chatChecks(): Promise<void> {
 	});
 	check("a chat finishing while not shown is unread", (await marksIn(tabs))["old"], "unread");
 	const openBefore = parts.chats.chats().openOnStartId;
-	await chats.send(places.tabFacts.markTabSeen, { id: "old" });
+	await chats.send(places.tabFacts.markSeen, { id: "old" });
 	check(
 		"marking it seen clears unread and moves no chat anywhere",
 		[await marksIn(tabs), parts.chats.chats().openOnStartId],
 		[{}, openBefore],
 	);
-	await chats.send(workspacesContract.chats.recordChatTurn, {
+	await chats.send(workspacesContract.chats.recordTurn, {
 		chatId: "old",
 		isBusy: true,
 		isSeen: true,
 		firstAsked: null,
 	});
-	await chats.send(workspacesContract.chats.recordChatTurn, {
+	await chats.send(workspacesContract.chats.recordTurn, {
 		chatId: "old",
 		isBusy: false,
 		isSeen: true,
@@ -206,7 +206,7 @@ async function chatChecks(): Promise<void> {
 	});
 	check("a chat finishing while on screen is not unread", await marksIn(tabs), {});
 
-	const made = await chats.send(workspacesContract.chats.createChat, { title: "  Plan it  " });
+	const made = await chats.send(workspacesContract.chats.create, { title: "  Plan it  " });
 	const created = parts.chats.chats();
 	check(
 		"a new chat answers its own id, takes the title asked, and opens nothing by itself",
@@ -227,9 +227,9 @@ async function chatChecks(): Promise<void> {
 
 	parts.chats.saveChats({ ...parts.chats.chats(), openOnStartId: "old" }, "asked from another workspace");
 	check("a chat asked from another workspace is the one to open on start", await toOpen(), { isRead: true, id: "old" });
-	await chats.send(workspacesContract.chats.forgetChatToOpen, { id: "new" });
+	await chats.send(workspacesContract.chats.forgetToOpen, { id: "new" });
 	check("forgetting another chat leaves the asked one in place", await toOpen(), { isRead: true, id: "old" });
-	await chats.send(workspacesContract.chats.forgetChatToOpen, { id: "old" });
+	await chats.send(workspacesContract.chats.forgetToOpen, { id: "old" });
 	check("once opened it is forgotten", await toOpen(), { isRead: true, id: null });
 }
 

@@ -10,7 +10,7 @@ const DARK_CLASSES = ["dark", "theme-dark"] as const;
 
 export function wearSumiTheme({ sumi, transport }: ThemeWearing, view: Window = window): () => void {
 	const wear = (): void => {
-		void sumi.send(appearance.theme.theme).then((theme) => {
+		void sumi.send(appearance.theme.current).then((theme) => {
 			if (!theme.ok) {
 				console.error(`[sumi] reading Sumi's theme was refused: ${theme.reason}`);
 				return;

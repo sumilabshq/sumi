@@ -3,7 +3,7 @@ import { appHost } from "@widgetarium/app-host/contract";
 import type { TabRef } from "../tab-drag/tab-ref.js";
 
 export function useTearsOffRows(): (row: TabRef) => void {
-	const tearOffTab = useCommand(appHost.tabActions.tearOffTab);
+	const tearOffTab = useCommand(appHost.tabActions.tearOff);
 	const tearOff = async ({ id, isHolder }: TabRef): Promise<void> => {
 		const answer = await tearOffTab.run({ id });
 

@@ -20,7 +20,7 @@ const FIND_BASE = "Branch, commit or tag";
 
 export function SidePanel(): ReactElement {
 	const page = useGitPage();
-	const isShown = useOptionalQuery(git.gitLook.gitLook).data?.isFileListShown ?? true;
+	const isShown = useOptionalQuery(git.gitLook.current).data?.isFileListShown ?? true;
 	return (
 		<aside className="wg-git-side" inert={!isShown}>
 			<Picker

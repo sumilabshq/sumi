@@ -69,17 +69,17 @@ async function isShown(tabId: string): Promise<boolean> {
 }
 
 async function pageWasShown(tabId: string): Promise<boolean> {
-	const held = await fakes.studioApp.send(appHost.tabs.heldTabs);
+	const held = await fakes.studioApp.send(appHost.tabs.held);
 	const pageId = held.ok ? held.output.tabs.find((tab) => tab.id === tabId)?.pageId : undefined;
 	return pageId === undefined || pageId === null || fakes.pages.calls.includes(`show ${pageId}`);
 }
 
 async function shownTabId(): Promise<string | null> {
-	const held = await fakes.studioApp.send(appHost.tabs.heldTabs);
+	const held = await fakes.studioApp.send(appHost.tabs.held);
 	return held.ok ? held.output.shownTabId : "unread";
 }
 
-await fakes.studioApp.send(appHost.tabActions.openTab, { app: "browser" });
+await fakes.studioApp.send(appHost.tabActions.open, { app: "browser" });
 const shownBefore = await shownTabId();
 
 const hidden = await tabOpen(context, { app: "browser", target: "https://jira.example.com" });

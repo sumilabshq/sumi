@@ -10,7 +10,7 @@ export interface VideoFileProps {
 }
 
 export function VideoFile({ path }: VideoFileProps): ReactElement | null {
-	const read = useOptionalQuery(fileSystem.files.readFileBytes, { path });
+	const read = useOptionalQuery(fileSystem.files.readBytes, { path });
 
 	if (read.failure !== null) {
 		return <FileNote said={read.failure} />;

@@ -14,9 +14,9 @@ const NOT_SKIPPED = "the question was not skipped";
 const NOT_REOPENED = "the answer was not undone";
 
 export function useQuestionDoing(chat: string, report: Report): QuestionDoing {
-	const answer = useCommand(questions.dock.answerQuestion);
-	const skip = useCommand(questions.dock.skipQuestions);
-	const reopen = useCommand(questions.dock.reopenQuestion);
+	const answer = useCommand(questions.dock.answer);
+	const skip = useCommand(questions.dock.skip);
+	const reopen = useCommand(questions.dock.reopen);
 	return {
 		answer: (id, picked, own) =>
 			void report(answerSettled(answer.run({ chat, id, picked: [...picked], own })), NOT_ANSWERED),

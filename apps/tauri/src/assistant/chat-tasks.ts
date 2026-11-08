@@ -70,7 +70,7 @@ function turnFailureOf({ failureKind, failure, resumesAt }: SettledTurn): Settle
 }
 
 async function askTrailer(app: Runtime, chatId: string): Promise<TurnTrailer> {
-	const answered = await app.send(tasks.board.taskTrailer, { chat: chatId });
+	const answered = await app.send(tasks.board.trailer, { chat: chatId });
 
 	if (!answered.ok) {
 		console.warn(TRAILER_UNREAD.replace("{chat}", chatId).replace("{reason}", answered.reason));
@@ -98,7 +98,7 @@ async function settle(app: Runtime, ask: SettleTurnAsk): Promise<Nudge | null> {
 }
 
 async function unsent(app: Runtime, nudge: Nudge, reason: string): Promise<void> {
-	const answered = await app.send(tasks.person.undeliveredTask, { task: nudge.task, reason });
+	const answered = await app.send(tasks.person.undelivered, { task: nudge.task, reason });
 
 	if (!answered.ok) {
 		// TODO: retry, or the task stays in progress until the next cold start
@@ -110,7 +110,7 @@ async function unsent(app: Runtime, nudge: Nudge, reason: string): Promise<void>
 }
 
 async function release(app: Runtime, chatId: string, why: ChatReleased): Promise<void> {
-	const answered = await app.send(tasks.supervision.releaseChatTasks, { chat: chatId, why });
+	const answered = await app.send(tasks.supervision.releaseChat, { chat: chatId, why });
 
 	if (!answered.ok) {
 		console.warn(NOT_RELEASED.replace("{chat}", chatId).replace("{why}", why).replace("{reason}", answered.reason));

@@ -32,7 +32,7 @@ const sumi = runtime()
 
 async function terminalSaid(): Promise<string> {
 	for (let leftMs = OUTPUT_WAIT_MS; leftMs > 0; leftMs -= OUTPUT_STEP_MS) {
-		const output = await sumi.send(terminal.lines.terminalOutput, { session: OWN_TAB });
+		const output = await sumi.send(terminal.lines.output, { session: OWN_TAB });
 
 		if (output.ok && output.output.output.includes(SHELL_SAID)) {
 			return output.output.output;
@@ -41,14 +41,14 @@ async function terminalSaid(): Promise<string> {
 		await new Promise((settled) => setTimeout(settled, OUTPUT_STEP_MS));
 	}
 
-	const last = await sumi.send(terminal.lines.terminalOutput, { session: OWN_TAB });
+	const last = await sumi.send(terminal.lines.output, { session: OWN_TAB });
 	return last.ok ? last.output.output : last.reason;
 }
 
 async function filesTold(): Promise<object> {
-	const written = await sumi.send(fileSystem.files.writeFile, { path: NOTE_PATH, content: NOTE });
-	const read = await sumi.send(fileSystem.files.readFile, { path: NOTE_PATH });
-	const climbed = await sumi.send(fileSystem.files.readFile, { path: "../other-app/secret.txt" });
+	const written = await sumi.send(fileSystem.files.write, { path: NOTE_PATH, content: NOTE });
+	const read = await sumi.send(fileSystem.files.read, { path: NOTE_PATH });
+	const climbed = await sumi.send(fileSystem.files.read, { path: "../other-app/secret.txt" });
 	return {
 		origin: self.origin,
 		written: written.ok,
@@ -58,9 +58,9 @@ async function filesTold(): Promise<object> {
 }
 
 async function placesTold(): Promise<object> {
-	const closedTabs = await sumi.send(places.tabs.closedTabs);
-	const otherTab = await sumi.send(places.tabFacts.appTab, { id: "t9" });
-	const ownTab = await sumi.send(places.tabFacts.appTab, { id: OWN_TAB });
+	const closedTabs = await sumi.send(places.tabs.closed);
+	const otherTab = await sumi.send(places.tabFacts.app, { id: "t9" });
+	const ownTab = await sumi.send(places.tabFacts.app, { id: OWN_TAB });
 	return {
 		closedTabs: closedTabs.ok ? "answered" : closedTabs.code,
 		otherTab: otherTab.ok ? "answered" : otherTab.code,
@@ -69,7 +69,7 @@ async function placesTold(): Promise<object> {
 }
 
 async function terminalTold(): Promise<object> {
-	const typed = await sumi.send(terminal.lines.sendTerminal, { session: OWN_TAB, line: TYPED });
+	const typed = await sumi.send(terminal.lines.send, { session: OWN_TAB, line: TYPED });
 	return {
 		typed: typed.ok,
 		terminal: await terminalSaid(),
@@ -77,9 +77,9 @@ async function terminalTold(): Promise<object> {
 }
 
 async function webPageTold(): Promise<object> {
-	await sumi.send(webPageContract.pages.openWebPage, { tab: OWN_TAB, url: "https://example.com/start" });
-	const webPage = await sumi.send(webPageContract.pages.webPage, { tab: OWN_TAB });
-	const otherWebPage = await sumi.send(webPageContract.pages.webPage, { tab: "t9" });
+	await sumi.send(webPageContract.pages.open, { tab: OWN_TAB, url: "https://example.com/start" });
+	const webPage = await sumi.send(webPageContract.pages.one, { tab: OWN_TAB });
+	const otherWebPage = await sumi.send(webPageContract.pages.one, { tab: "t9" });
 	return {
 		webPage: webPage.ok ? webPage.output?.title : webPage.reason,
 		otherWebPage: otherWebPage.ok ? "read" : otherWebPage.code,
@@ -88,7 +88,7 @@ async function webPageTold(): Promise<object> {
 
 async function chatTold(): Promise<object> {
 	await sumi.send(assistant.composer.sendMessage, { chat: null, said: CHAT_SAID });
-	const chat = await sumi.send(assistant.chat.chat, { chat: null });
+	const chat = await sumi.send(assistant.chat.one, { chat: null });
 	const pickedFolder = await sumi.send(assistant.agent.pickWorkingFolder, { chat: null });
 	return {
 		chat: chat.ok ? chat.output.session.turns.at(-1)?.text : chat.code,
@@ -98,7 +98,7 @@ async function chatTold(): Promise<object> {
 
 async function foreignChatTold(): Promise<object> {
 	await sumi.send(places.tabFacts.recordAppAddress, { id: OWN_TAB, address: `/${CHAT_TAB}` });
-	const foreignChat = await sumi.send(assistant.chat.chat, { chat: null });
+	const foreignChat = await sumi.send(assistant.chat.one, { chat: null });
 	return {
 		foreignChat: foreignChat.ok ? "read" : foreignChat.code,
 	};

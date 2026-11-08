@@ -52,9 +52,9 @@ function openRowsOf(sidebar: PlacedSidebar | string): unknown {
 async function wholeChatChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
-	await places.send(placesContract.tabOpening.openTab, { at: AT, app: "canvas", list: "chat-a" });
-	await places.send(placesContract.tabFacts.recordTabTurn, { id: "chat-a", title: null, isBusy: true, isSeen: false });
+	await places.send(placesContract.tabFacts.keepChat, { chats: [{ id: "chat-a", title: "Release plan" }] });
+	await places.send(placesContract.tabOpening.open, { at: AT, app: "canvas", list: "chat-a" });
+	await places.send(placesContract.tabFacts.recordTurn, { id: "chat-a", title: null, isBusy: true, isSeen: false });
 	check(
 		"places alone answers a chat row: its title, its running mark and its artifacts, with no chat record anywhere",
 		openRowsOf(await sidebarOf(places)),
@@ -67,7 +67,7 @@ async function wholeChatChecks(): Promise<void> {
 }
 
 async function chatIdOf(places: Runtime): Promise<string | null> {
-	const answer = await places.send(placesContract.tabFacts.appTab, { id: "chat-a" });
+	const answer = await places.send(placesContract.tabFacts.app, { id: "chat-a" });
 	return answer.ok ? answer.output.chatId : answer.reason;
 }
 
@@ -82,9 +82,9 @@ async function chatIdChecks(places: Runtime): Promise<void> {
 }
 
 async function turnEndingChecks(places: Runtime): Promise<void> {
-	await places.send(placesContract.tabFacts.recordTabTurn, { id: "chat-a", title: null, isBusy: false, isSeen: false });
+	await places.send(placesContract.tabFacts.recordTurn, { id: "chat-a", title: null, isBusy: false, isSeen: false });
 	const unread = openRowsOf(await sidebarOf(places));
-	await places.send(placesContract.tabFacts.markTabSeen, { id: "chat-a" });
+	await places.send(placesContract.tabFacts.markSeen, { id: "chat-a" });
 	check(
 		"a turn ending unseen marks the tab unread, and seeing it clears the mark",
 		[unread, openRowsOf(await sidebarOf(places))],
@@ -93,8 +93,8 @@ async function turnEndingChecks(places: Runtime): Promise<void> {
 }
 
 async function archiveChecks(places: Runtime, tabs: MemoryTabsGateway): Promise<void> {
-	const closed = await places.send(placesContract.tabClosing.closeTab, { at: AT, id: "chat-a" });
-	const closedRows = await places.send(placesContract.tabs.closedTabs);
+	const closed = await places.send(placesContract.tabClosing.close, { at: AT, id: "chat-a" });
+	const closedRows = await places.send(placesContract.tabs.closed);
 	check(
 		"closing a chat tab archives it with its artifacts: it leaves the list and stands among the closed tabs",
 		[
@@ -106,10 +106,10 @@ async function archiveChecks(places: Runtime, tabs: MemoryTabsGateway): Promise<
 		[true, [], [["chat-a", "Release plan"]], 1],
 	);
 
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
+	await places.send(placesContract.tabFacts.keepChat, { chats: [{ id: "chat-a", title: "Release plan" }] });
 	check("a closed chat is not brought back by its record", openRowsOf(await sidebarOf(places)), []);
 
-	await places.send(placesContract.tabOpening.reopenClosedTab, { at: AT, tabId: "chat-a" });
+	await places.send(placesContract.tabOpening.reopenClosed, { at: AT, tabId: "chat-a" });
 	check("reopening brings the chat back with its artifacts", openRowsOf(await sidebarOf(places)), [
 		["Release plan", "none", 1],
 	]);
@@ -118,13 +118,13 @@ async function archiveChecks(places: Runtime, tabs: MemoryTabsGateway): Promise<
 async function sameForEveryTabChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
-	await places.send(placesContract.tabFacts.keepChatTabs, {
+	await places.send(placesContract.tabFacts.keepChat, {
 		chats: [
 			{ id: "chat-a", title: "One" },
 			{ id: "chat-b", title: "Two" },
 		],
 	});
-	const inChat = await places.send(placesContract.tabPlacing.placeTab, {
+	const inChat = await places.send(placesContract.tabPlacing.place, {
 		at: AT,
 		id: "chat-b",
 		place: { list: "chat-a", groupId: null, before: null },
@@ -144,12 +144,12 @@ async function sameForEveryTabChecks(): Promise<void> {
 async function foldChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "One" }] });
-	const opened = await places.send(placesContract.tabOpening.openTab, { at: AT, app: "canvas", list: null });
+	await places.send(placesContract.tabFacts.keepChat, { chats: [{ id: "chat-a", title: "One" }] });
+	const opened = await places.send(placesContract.tabOpening.open, { at: AT, app: "canvas", list: null });
 	const tabId = opened.ok ? opened.output.id : "";
-	await places.send(placesContract.tabPlacing.foldTab, { window: WINDOW, id: "chat-a" });
+	await places.send(placesContract.tabPlacing.fold, { window: WINDOW, id: "chat-a" });
 	const folded = await sidebarOf(places);
-	const plain = await places.send(placesContract.tabPlacing.foldTab, { window: WINDOW, id: tabId });
+	const plain = await places.send(placesContract.tabPlacing.fold, { window: WINDOW, id: tabId });
 	const foldedOf = (sidebar: PlacedSidebar | string): unknown =>
 		typeof sidebar === "string"
 			? sidebar
@@ -167,9 +167,9 @@ async function reuseChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
 	const ask = { at: AT, app: "tasks" as const, address: "T-7", reusesHeld: true };
-	const first = await places.send(placesContract.tabOpening.openTab, ask);
-	const again = await places.send(placesContract.tabOpening.openTab, ask);
-	const other = await places.send(placesContract.tabOpening.openTab, { ...ask, address: "T-8" });
+	const first = await places.send(placesContract.tabOpening.open, ask);
+	const again = await places.send(placesContract.tabOpening.open, ask);
+	const other = await places.send(placesContract.tabOpening.open, { ...ask, address: "T-8" });
 	const idOf = (opened: typeof first): string => (opened.ok ? opened.output.id : opened.reason);
 	check(
 		"an open that reuses a held tab shows the tab at that address instead of opening a second one",
@@ -184,8 +184,8 @@ async function reuseChecks(): Promise<void> {
 
 async function oneWindowOwnerChecks(): Promise<void> {
 	const places = placesApp(new MemoryTabsGateway());
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-b", title: "Draft" }] });
-	const terminal = await places.send(placesContract.tabOpening.openTab, { at: AT, app: "terminal", list: null });
+	await places.send(placesContract.tabFacts.keepChat, { chats: [{ id: "chat-b", title: "Draft" }] });
+	const terminal = await places.send(placesContract.tabOpening.open, { at: AT, app: "terminal", list: null });
 	const terminalId = terminal.ok ? terminal.output.id : terminal.reason;
 	const able = { ...AT, screen: { ...BARE_SCREEN, canOpenOwnWindow: true } };
 	const held = { ...able, screen: { ...able.screen, elsewhere: [{ window: "studio-2", tabIds: ["chat-b"] }] } };
@@ -194,8 +194,8 @@ async function oneWindowOwnerChecks(): Promise<void> {
 	check(
 		"places tears off a chat and a page-less app tab by one command, each into a window of its own",
 		[
-			effectsOf(await places.send(placesContract.tabShowing.tearOffTab, { at: able, id: "chat-b" })),
-			effectsOf(await places.send(placesContract.tabShowing.tearOffTab, { at: able, id: terminalId })),
+			effectsOf(await places.send(placesContract.tabShowing.tearOff, { at: able, id: "chat-b" })),
+			effectsOf(await places.send(placesContract.tabShowing.tearOff, { at: able, id: terminalId })),
 		],
 		[
 			[
@@ -208,8 +208,8 @@ async function oneWindowOwnerChecks(): Promise<void> {
 	check(
 		"a chat another window holds comes forward on open and on tear-off, decided by places alone",
 		[
-			effectsOf(await places.send(placesContract.tabShowing.showTab, { at: held, id: "chat-b" })),
-			effectsOf(await places.send(placesContract.tabShowing.tearOffTab, { at: held, id: "chat-b" })),
+			effectsOf(await places.send(placesContract.tabShowing.show, { at: held, id: "chat-b" })),
+			effectsOf(await places.send(placesContract.tabShowing.tearOff, { at: held, id: "chat-b" })),
 		],
 		[[{ kind: "focus-window", window: "studio-2" }], [{ kind: "focus-window", window: "studio-2" }]],
 	);
@@ -221,7 +221,7 @@ function childTabsOf(children: readonly TabChild[]): readonly AppTabState[] {
 
 async function selectionChecks(): Promise<void> {
 	const places = placesApp(new MemoryTabsGateway());
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-b", title: "Draft" }] });
+	await places.send(placesContract.tabFacts.keepChat, { chats: [{ id: "chat-b", title: "Draft" }] });
 	const onScreen: TabsAsk = {
 		...AT,
 		screen: {
@@ -230,8 +230,8 @@ async function selectionChecks(): Promise<void> {
 			chatGroups: [{ chatId: "chat-b", paneIds: ["pane-chat"] }],
 		},
 	};
-	const canvas = await places.send(placesContract.tabOpening.openTab, { at: onScreen, app: "canvas", list: null });
-	const tasks = await places.send(placesContract.tabOpening.openTab, { at: onScreen, app: "tasks", list: null });
+	const canvas = await places.send(placesContract.tabOpening.open, { at: onScreen, app: "canvas", list: null });
+	const tasks = await places.send(placesContract.tabOpening.open, { at: onScreen, app: "tasks", list: null });
 	const canvasId = canvas.ok ? canvas.output.id : canvas.reason;
 	const tasksId = tasks.ok ? tasks.output.id : tasks.reason;
 	const readHighlightedIds = async (at: TabsAsk): Promise<readonly string[]> => {
@@ -244,7 +244,7 @@ async function selectionChecks(): Promise<void> {
 			: [answer.reason];
 	};
 	const showTabThenReadHighlightedIds = async (id: string, at: TabsAsk = onScreen): Promise<readonly string[]> => {
-		await places.send(placesContract.tabShowing.showTab, { at, id });
+		await places.send(placesContract.tabShowing.show, { at, id });
 		return readHighlightedIds(at);
 	};
 	check(
@@ -256,7 +256,7 @@ async function selectionChecks(): Promise<void> {
 		],
 		[[tasksId], [canvasId], ["chat-b"]],
 	);
-	const inChat = await places.send(placesContract.tabOpening.openTab, { at: onScreen, app: "canvas", list: "chat-b" });
+	const inChat = await places.send(placesContract.tabOpening.open, { at: onScreen, app: "canvas", list: "chat-b" });
 	const inChatId = inChat.ok ? inChat.output.id : inChat.reason;
 	const withInChatPane: TabsAsk = {
 		...onScreen,
@@ -271,9 +271,9 @@ async function selectionChecks(): Promise<void> {
 		await showTabThenReadHighlightedIds(inChatId, withInChatPane),
 		["chat-b", inChatId],
 	);
-	await places.send(placesContract.tabShowing.showTab, { at: withInChatPane, id: "chat-b", isFollowingFocus: true });
+	await places.send(placesContract.tabShowing.show, { at: withInChatPane, id: "chat-b", isFollowingFocus: true });
 	const afterFocus = await readHighlightedIds(withInChatPane);
-	await places.send(placesContract.tabShowing.showTab, { at: withInChatPane, id: "chat-b" });
+	await places.send(placesContract.tabShowing.show, { at: withInChatPane, id: "chat-b" });
 	check(
 		"focus moving into a chat keeps the selection on its tab, a press on the chat selects the chat",
 		[afterFocus, await readHighlightedIds(withInChatPane)],

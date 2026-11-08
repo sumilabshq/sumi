@@ -9,8 +9,8 @@ export function useTakesPrefill(
 	fill: (text: string) => void,
 ): void {
 	const chat = useChatKey();
-	const prefill = useQuery(assistant.prefill.composerPrefill, { chat }).data;
-	const takePrefill = useCommand(assistant.prefill.takePrefill);
+	const prefill = useQuery(assistant.prefill.composer, { chat }).data;
+	const takePrefill = useCommand(assistant.prefill.take);
 	const taken = useRef<number | null>(null);
 
 	useEffect(() => {

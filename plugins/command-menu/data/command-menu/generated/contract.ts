@@ -257,28 +257,28 @@ export const commandMenu = moduleContract("command-menu", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	opening: {
-		commandMenu: named("opening.command-menu", query()
+		current: named("opening.current", query()
 			.public()
 			.output(KeptMenuSchema)
 			.settlesNow()),
-		menuDoors: named("opening.menu-doors", query()
+		doors: named("opening.doors", query()
 			.public()
 			.output(MenuDoorsSchema)
 			.settlesNow()),
-		toggleCommandMenu: named("opening.toggle-command-menu", command()
+		toggle: named("opening.toggle", command()
 			.public()
 			.input(OpenMenuSchema)
 			.idempotencyKey(PerCall)),
-		changeMenuDoor: named("opening.change-menu-door", command()
+		changeDoor: named("opening.change-door", command()
 			.public()
 			.input(z.object({ door: DoorSchema }))
 			.idempotencyKey(Repeatable)),
-		closeCommandMenu: named("opening.close-command-menu", command()
+		close: named("opening.close", command()
 			.public()
 			.idempotencyKey(Repeatable)),
 	},
 	results: {
-		commandMenuResults: named("results.command-menu-results", query()
+		all: named("results.all", query()
 			.public()
 			.input(ResultsAskSchema)
 			.output(ResultsSchema)),

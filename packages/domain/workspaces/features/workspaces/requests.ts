@@ -36,7 +36,7 @@ interface OpeningParts {
 	readonly currentWorkspace: CurrentWorkspaceGateway;
 }
 
-export const workspaces = query()
+export const all = query()
 	.public()
 	.output(WorkspacesSchema)
 	.settlesNow()
@@ -44,12 +44,12 @@ export const workspaces = query()
 		workspacesViewOf(workspaces.workspaces(), currentWorkspace.currentWorkspace()),
 	);
 
-export const openWorkspace = command()
+export const open = command()
 	.public()
 	.input(WorkspaceIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ id }, opening) => {
-		opening.invalidate(workspaces);
+		opening.invalidate(all);
 		return switchToWorkspace(id, opening);
 	});
 
@@ -77,7 +77,7 @@ export const openChatElsewhere = command()
 	.input(ChatElsewhereSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ workspaceId, chatId }, { workspaceChats, ...opening }) => {
-		opening.invalidate(workspaces);
+		opening.invalidate(all);
 		const workspace = workspaceIn(opening.workspaces.workspaces(), workspaceId);
 
 		if (workspace.id === opening.currentWorkspace.currentWorkspace().currentId) {
@@ -96,12 +96,12 @@ export const openChatElsewhere = command()
 		await switchToWorkspace(workspace.id, opening);
 	});
 
-export const openWorkspaceByPosition = command()
+export const openByPosition = command()
 	.public()
 	.input(WorkspacePositionSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ position }, opening) => {
-		opening.invalidate(workspaces);
+		opening.invalidate(all);
 		const workspace = opening.workspaces.workspaces()[position];
 
 		if (workspace === undefined || position >= KEYED_WORKSPACES) {
@@ -112,12 +112,12 @@ export const openWorkspaceByPosition = command()
 		await switchToWorkspace(workspace.id, opening);
 	});
 
-export const createWorkspace = command()
+export const create = command()
 	.public()
 	.output(WorkspaceIdSchema)
 	.idempotencyKey(PerCall)
 	.handle(async (_input, opening) => {
-		opening.invalidate(workspaces);
+		opening.invalidate(all);
 		const name = untitledNameAfter(opening.workspaces.workspaces().map((workspace) => workspace.name));
 		const created = await opening.workspaces.createWorkspace(name);
 		console.info(`[widgetarium] workspaces: created ${created.name} (${created.id})`);
@@ -125,12 +125,12 @@ export const createWorkspace = command()
 		return { id: created.id };
 	});
 
-export const renameWorkspace = command()
+export const rename = command()
 	.public()
 	.input(WorkspaceNameSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, name }, { workspaces: workspacesGateway, invalidate }) => {
-		invalidate(workspaces);
+		invalidate(all);
 		const trimmed = name.trim();
 
 		if (trimmed === "") {
@@ -149,24 +149,24 @@ export const renameWorkspace = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const setWorkspaceIcon = command()
+export const setIcon = command()
 	.public()
 	.input(WorkspaceIconChoiceSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, icon }, { workspaces: workspacesGateway, invalidate }) => {
-		invalidate(workspaces);
+		invalidate(all);
 		const was = workspaceIn(workspacesGateway.workspaces(), id);
 		const reason = `workspace ${id} icon ${JSON.stringify(was.icon)} → ${JSON.stringify(icon)}`;
 		await workspacesGateway.saveWorkspaceIcon(id, icon, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const rereadWorkspaces = subscriber(workspacesChanged).handle((_input, { invalidate }) => {
-	invalidate(workspaces);
+export const reread = subscriber(workspacesChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 });
 
-export const rereadWorkspacesForCurrent = subscriber(currentWorkspaceChanged).handle((_input, { invalidate }) => {
-	invalidate(workspaces);
+export const rereadForCurrent = subscriber(currentWorkspaceChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 });
 
 async function switchToWorkspace(

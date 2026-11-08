@@ -14,7 +14,7 @@ const ASK_COMPOSER_CHAT = {
 };
 
 export function AskComposerBar(): ReactElement {
-	const setup = useOptionalQuery(assistant.agent.agentSetup, ASK_COMPOSER_CHAT).data;
+	const setup = useOptionalQuery(assistant.agent.current, ASK_COMPOSER_CHAT).data;
 	const options = useOptionalQuery(assistant.agent.claudeOptions, ASK_COMPOSER_CHAT).data;
 	const folders = useOptionalQuery(assistant.agent.workingFolders, ASK_COMPOSER_CHAT).data;
 	const claude = shownClaudeOptions(setup, options);

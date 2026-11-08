@@ -30,7 +30,7 @@ export function AssistantPanel(props: AssistantPanelProps): ReactElement {
 }
 
 function ReadAssistantPanel({ lead, title, cards = NO_CHAT_CARDS_SLOT, chatId }: AssistantPanelProps): ReactElement {
-	const { data: chat } = useQuery(assistant.chat.chat, { chat: chatId ?? null });
+	const { data: chat } = useQuery(assistant.chat.one, { chat: chatId ?? null });
 	return (
 		<div className="wg-root wg-studio-ai-host">
 			{chat.isAvailable ? (

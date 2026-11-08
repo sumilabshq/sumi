@@ -5,6 +5,6 @@ import { canvas } from "@widgetarium/canvas/contract";
 export type TurnToPage = (from: Element | null, page: string) => void;
 
 export function useTurnToPage(): TurnToPage {
-	const showPage = useCommand(canvas.pages.showPage);
+	const showPage = useCommand(canvas.pages.show);
 	return (from, page) => fadedTurn(from, () => void showPage.run({ page }));
 }

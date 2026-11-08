@@ -15,5 +15,5 @@ export function FileTextCopyAction({ tabId }: FileTextCopyActionProps): ReactEle
 }
 
 function KnownFileTextCopy({ path }: { readonly path: string }): ReactElement {
-	return <CopyAction copied={useOptionalQuery(fileSystem.files.readFile, { path }).data} />;
+	return <CopyAction copied={useOptionalQuery(fileSystem.files.read, { path }).data} />;
 }

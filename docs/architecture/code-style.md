@@ -10,7 +10,7 @@ How code is written inside the architecture. The rules hold in any project built
 | ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------- |
 | a query            | noun phrase, camelCase, no `get`                                 | `frameSides`                                                    |
 | a command          | verb phrase, camelCase                                           | `toggleFrameSide`                                               |
-| a full name        | kebab segments joined by dots: module, feature folder, constant  | `layout.frame-sides.toggle-frame-side`                          |
+| a full name        | kebab segments joined by dots: module, feature folder, constant  | `layout.frame-sides.toggle`                                     |
 | an event           | a fact in the past tense, camelCase                              | `panesChanged`                                                  |
 | a subscriber       | what it does, never its trigger: `reread<Data>` or a verb phrase | `rereadPanes`, `ensurePanePages`                                |
 | a module           | its area, camelCase; its name is the kebab of it                 | `layout`, `chatTabs` → `chat-tabs`                              |
@@ -23,6 +23,8 @@ How code is written inside the architecture. The rules hold in any project built
 | a file             | kebab-case                                                       | `requests.ts`, `tauri.gateway.ts`, `side-looks.ts`              |
 
 `building-block-names` enforces the camelCase rows and the PascalCase and suffix ones; `no-choice-strings` and the generator refuse a string name. A segment is `a-z` words joined by `-`: no digits, capitals, `/` or `_`. Two subscribers of one feature doing the same on different events add what changed: `rereadFieldForDesign`.
+
+**A name never repeats what its module and feature already say.** `fileSystem.files.read`, not `fileSystem.files.readFile`; `readBytes`, not `readFileBytes`. Words naming a different thing stay (`readFolder`, `openInSystemApp`). A name that would repeat its feature whole takes a short noun: `current` for one state (`layout.frameSides.current`), `all` for a collection (`apps.apps.all`), `one` for a record by id (`tasks.board.one`). An event keeps its subject, since it is imported beside others by its bare name: `panesChanged`, never `changed`. `data-framework rename` does each rename ([requests.md](requests.md#a-module)).
 
 ## The fluent chain
 

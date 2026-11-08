@@ -30,7 +30,7 @@ const RENAME = "Rename";
 const ITEM_ICON_PX = 18;
 
 export function ChatMenu({ at, row, onClose, onRename }: ChatMenuProps): ReactElement {
-	const pinChat = useCommand(appHost.tabActions.pinTab);
+	const pinChat = useCommand(appHost.tabActions.pin);
 	const lastAt = useRef(at);
 	const lastRow = useRef(row);
 	if (at !== null && row !== null) {

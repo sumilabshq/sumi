@@ -13,7 +13,7 @@ const LEAST_ASKING_MS = 400;
 const DONE_SHOWN_MS = 1200;
 
 export function useRereadPhase(): RereadPhaseHandle {
-	const command = useCommand(git.repos.rereadGit);
+	const command = useCommand(git.repos.reread);
 	const isRereading = useIsRereading();
 	const [phase, setPhase] = useState<RereadPhase>("idle");
 	useEffect(() => {

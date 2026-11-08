@@ -11,7 +11,7 @@ import { PlateTint } from "../features/plate/ui/plate-header/plate-tint.js";
 
 export function BrowserPlateHeader(): ReactElement | null {
 	const heldTabId = useHeldTab();
-	const head = useQuery(browser.pageLook.pageHead, { heldTabId }).data;
+	const head = useQuery(browser.pageLook.head, { heldTabId }).data;
 	const goBack = useCommand(browser.tabs.goBack);
 	const goForward = useCommand(browser.tabs.goForward);
 

@@ -127,24 +127,24 @@ export const RememberedPageTitlesSchema = z.object({
 
 export const apps = moduleContract("apps", Anywhere, {
 	apps: {
-		apps: named("apps.apps", query()
+		all: named("apps.all", query()
 			.public()
 			.output(AppsSchema)),
 	},
 	pages: {
-		appPage: named("pages.app-page", query()
+		ofTab: named("pages.of-tab", query()
 			.public()
 			.input(AppPageAskSchema)
 			.output(AppPageSchema)),
-		pageTitles: named("pages.page-titles", query()
+		titles: named("pages.titles", query()
 			.public()
 			.input(PageTitlesAskSchema)
 			.output(PageTitlesSchema)),
-		recordAppPage: named("pages.record-app-page", command()
+		record: named("pages.record", command()
 			.public()
 			.input(RecordedAppPageSchema)
 			.idempotencyKey(Repeatable)),
-		pressAppAction: named("pages.press-app-action", command()
+		pressAction: named("pages.press-action", command()
 			.public()
 			.input(PressAppActionSchema)
 			.idempotencyKey(PerCall)),
@@ -153,7 +153,7 @@ export const apps = moduleContract("apps", Anywhere, {
 			.input(TakeActionPressSchema)
 			.output(TakenPressSchema)
 			.idempotencyKey(Repeatable)),
-		rememberPageTitles: named("pages.remember-page-titles", command()
+		rememberTitles: named("pages.remember-titles", command()
 			.public()
 			.input(RememberedPageTitlesSchema)
 			.idempotencyKey(Repeatable)),

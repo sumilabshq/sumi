@@ -8,20 +8,20 @@ import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
 
 async function boardChatsOf(studioApp: Runtime): Promise<readonly string[]> {
-	const board = await studioApp.send(layout.panes.paneTree);
+	const board = await studioApp.send(layout.panes.current);
 	return board.ok ? board.output.chatGroups.map((group) => group.chatId) : [];
 }
 
 async function chatCountOf(studioApp: Runtime): Promise<number> {
-	const list = await studioApp.send(chatTabs.chatList.chatList);
+	const list = await studioApp.send(chatTabs.chatList.all);
 	return list.ok ? list.output.pinned.length + list.output.recents.length : -1;
 }
 
 async function namingChecks(): Promise<void> {
 	const { studioApp } = studioFakesOf({ tree: FIRST_PANES });
-	const first = await studioApp.send(chatTabs.chatOpening.nameChatPane, { paneId: "pane-chat" });
-	const again = await studioApp.send(chatTabs.chatOpening.nameChatPane, { paneId: "pane-chat" });
-	const asked = await studioApp.send(workspaces.chats.chatToOpen);
+	const first = await studioApp.send(chatTabs.chatOpening.namePane, { paneId: "pane-chat" });
+	const again = await studioApp.send(chatTabs.chatOpening.namePane, { paneId: "pane-chat" });
+	const asked = await studioApp.send(workspaces.chats.toOpen);
 	check(
 		"an empty chat pane takes the chat asked on start, once, and the ask is spent",
 		[
@@ -38,7 +38,7 @@ async function namingChecks(): Promise<void> {
 async function unknownChatChecks(): Promise<void> {
 	const { studioApp } = studioFakesOf();
 	const before = await boardChatsOf(studioApp);
-	const opened = await studioApp.send(appHostContract.tabs.showTab, { id: "chat-gone" });
+	const opened = await studioApp.send(appHostContract.tabs.show, { id: "chat-gone" });
 	check(
 		"opening a chat that does not exist is refused before the layout changes",
 		[opened.ok, await boardChatsOf(studioApp)],
@@ -48,7 +48,7 @@ async function unknownChatChecks(): Promise<void> {
 
 async function tearOffChecks(): Promise<void> {
 	const { studioApp, pages } = studioFakesOf();
-	const torn = await studioApp.send(appHostContract.tabActions.tearOffTab, { id: HOST_CHAT });
+	const torn = await studioApp.send(appHostContract.tabActions.tearOff, { id: HOST_CHAT });
 	check(
 		"a chat tears off through the tab command: places closes it on this board, then it opens in its own window",
 		[torn.ok, await boardChatsOf(studioApp), pages.calls.at(-1)],
@@ -58,11 +58,11 @@ async function tearOffChecks(): Promise<void> {
 
 async function chatTabChecks(): Promise<void> {
 	const { studioApp, places, appHost } = studioFakesOf();
-	const opened = await studioApp.send(chatTabs.chatOpening.openNewChat, { title: "Plan" });
+	const opened = await studioApp.send(chatTabs.chatOpening.openNew, { title: "Plan" });
 	const newId = opened.ok ? opened.output.id : "";
-	await studioApp.send(appHostContract.tabActions.pinTab, { id: newId, isPinned: true });
-	await studioApp.send(appHostContract.tabActions.renameTab, { id: HOST_CHAT, label: "Renamed" });
-	const list = await studioApp.send(chatTabs.chatList.chatList);
+	await studioApp.send(appHostContract.tabActions.pin, { id: newId, isPinned: true });
+	await studioApp.send(appHostContract.tabActions.rename, { id: HOST_CHAT, label: "Renamed" });
+	const list = await studioApp.send(chatTabs.chatList.all);
 	const placed = await places.placedTabs();
 	check(
 		"a new chat is a tab, a pin moves it into Pinned in places, and a tab label names the chat",

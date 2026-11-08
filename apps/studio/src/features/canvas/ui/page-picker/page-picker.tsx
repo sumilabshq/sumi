@@ -18,7 +18,7 @@ const TRIGGER_GHOST = `${TRIGGER_BASE} cv:gap-[var(--sumi-sp-1)] ${GHOST_TEXT_BU
 export function PagePicker(): ReactElement {
 	const anchor = useRef<HTMLSpanElement | null>(null);
 	const [isOpen, setOpen] = useState(false);
-	const { shown, groups } = useQuery(canvas.pages.pageChoices).data;
+	const { shown, groups } = useQuery(canvas.pages.choices).data;
 	const turnToPage = useTurnToPage();
 	const look = useTopBarLook();
 	const pick = (page: string): void => {

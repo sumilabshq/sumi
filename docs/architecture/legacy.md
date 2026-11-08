@@ -22,7 +22,7 @@ Code written before any of these rules lives in a `legacy/` folder inside the ap
 | `features/<f>/contract.ts` + `handlers.ts`                                   | `features/<f>/requests.ts`                                                               |
 | `handler(XCommand, CanvasClientModule).inject(…).handle(…)`                  | `export const x = command().….handle(…)`, `command` from `#module`                       |
 | `clientModule("canvas")` / `serverModule("billing")`, `<Domain><Side>Module` | `export const canvas = module("canvas")`; the app picks the side                         |
-| request name `"canvas/add-photos"`                                           | no string: `canvas.photos.add-photos`, from the constant, its feature and the module     |
+| request name `"canvas/add-photos"`                                           | no string: `canvas.photos.add`, from the constant, its feature and the module            |
 | `provide((parts) => …)`, the host builds `webCanvasParts(…)`                 | `provide((facts) => …)`, the module picks its gateways                                   |
 | `generated/index.ts`, `generated/gateways.ts`, a hand-written handler list   | `"./contract"` is `generated/contract.ts`; `"./implementation"` is `generated/module.ts` |
 | `"./gateways"` entry                                                         | none                                                                                     |

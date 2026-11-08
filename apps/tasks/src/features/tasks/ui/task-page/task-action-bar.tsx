@@ -15,7 +15,7 @@ export function hasActionBar(card: TaskCard): boolean {
 }
 
 export function TaskActionBar({ card }: TaskActionBarProps): ReactElement {
-	const accept = useCommand(tasks.person.acceptTask).with({ task: card.id });
+	const accept = useCommand(tasks.person.accept).with({ task: card.id });
 	const [isSendingBack, setSendingBack] = useState(false);
 	return (
 		<div className="wg-tasks-action-bar" data-tasks-action-bar="">

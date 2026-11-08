@@ -17,7 +17,7 @@ const READING = "cv:outline-2 cv:outline-offset-[-2px] cv:outline-brand";
 const PAGES = "cv:absolute cv:inset-0";
 
 export function PageArea({ searchFor, children }: PageAreaProps): ReactElement {
-	const browserTabs = useQuery(browser.tabs.browserTabs, { heldTabId: useHeldTab() }).data;
+	const browserTabs = useQuery(browser.tabs.all, { heldTabId: useHeldTab() }).data;
 	const pages = useHoldsPages(browserTabs.isAvailable);
 	const shown = browserTabs.tabs.find((tab) => tab.isShown);
 	const isReading = browserTabs.inkReading !== null && browserTabs.inkReading.tabId === shown?.id;

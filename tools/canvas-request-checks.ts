@@ -95,7 +95,7 @@ async function checkReturnNote(check: Check): Promise<void> {
 
 async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 	const canvas = await openedCanvasOver(canvasPartsOver(), { ...FARM_OPENED, page: "" });
-	const choices = await canvas.send(canvasContract.pages.pageChoices);
+	const choices = await canvas.send(canvasContract.pages.choices);
 	check(
 		"a canvas over a project with no design folder reads the project's design",
 		choices.ok ? choices.output.groups : choices.reason,
@@ -106,7 +106,7 @@ async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 async function checkAbsentDesignIsStartedByAJob(check: Check): Promise<void> {
 	const absent = new FixedDesignFolderGateway(async () => null);
 	const groupsOf = async (canvas: Runtime): Promise<unknown> => {
-		const choices = await canvas.send(canvasContract.pages.pageChoices);
+		const choices = await canvas.send(canvasContract.pages.choices);
 		return choices.ok ? choices.output.groups : choices.reason;
 	};
 	check(
@@ -126,7 +126,7 @@ async function checkPickAfterPageTurn(check: Check): Promise<void> {
 	const canvasMoment = new MemoryCanvasMomentGateway();
 	const canvas = await openedCanvasOver(canvasPartsOver({ designFolder: held.folder, canvasMoment }));
 	const picking = canvas.send(canvasContract.pages.pickVariant, { screen: "Home B" });
-	await canvas.send(canvasContract.pages.showPage, { page: "Other" });
+	await canvas.send(canvasContract.pages.show, { page: "Other" });
 	held.release();
 	await picking;
 	check(
@@ -162,7 +162,7 @@ async function checkPhotosLandInTheOpenedApp(check: Check): Promise<void> {
 	const photos = new RecordedDesignFilesGateway();
 	const canvas = await openedCanvasOver(canvasPartsOver({ designFiles: photos }));
 	const answer = await canvas.send(
-		canvasContract.photos.addPhotos,
+		canvasContract.photos.add,
 		{ photos: [new File(["x"], "a.png")] },
 		{ idempotencyKey: "a" },
 	);
@@ -190,11 +190,11 @@ async function checkSidebarResize(check: Check): Promise<void> {
 async function checkMomentChangeReReads(check: Check): Promise<void> {
 	const canvas = await openedCanvasOver(canvasPartsOver());
 	const reRead = { opening: 0, mode: 0 };
-	const stopOpening = canvas.routes.watch(canvasContract.view.canvasOpening, undefined, () => (reRead.opening += 1));
+	const stopOpening = canvas.routes.watch(canvasContract.view.opening, undefined, () => (reRead.opening += 1));
 	const stopMode = canvas.routes.watch(canvasContract.view.mode, undefined, () => (reRead.mode += 1));
 	await canvas.send(canvasContract.pages.focusWidget, { widget: "@you/tasks" });
 	await settled();
-	const opening = await canvas.send(canvasContract.view.canvasOpening);
+	const opening = await canvas.send(canvasContract.view.opening);
 	stopOpening();
 	stopMode();
 	check(

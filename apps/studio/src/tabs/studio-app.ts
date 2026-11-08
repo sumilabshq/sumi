@@ -85,7 +85,7 @@ export function startCoreInProcess(
 }
 
 export async function restoreTabs(studioApp: Runtime): Promise<void> {
-	const answer = await studioApp.send(appHost.tabs.restoreTabs);
+	const answer = await studioApp.send(appHost.tabs.restore);
 
 	if (!answer.ok) {
 		console.error(`[widgetarium] the studio could not restore its tabs: ${answer.reason}`);

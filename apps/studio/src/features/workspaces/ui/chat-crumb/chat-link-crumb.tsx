@@ -15,7 +15,7 @@ export interface ChatLinkCrumbProps {
 const GO_TO = "Go to";
 
 export function ChatLinkCrumb({ chatId, words }: ChatLinkCrumbProps): ReactElement {
-	const toggleMenu = useCommand(commandMenu.opening.toggleCommandMenu);
+	const toggleMenu = useCommand(commandMenu.opening.toggle);
 	const openMenuWithLink =
 		chatId === null
 			? undefined

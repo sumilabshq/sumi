@@ -411,7 +411,7 @@ check(
 	["600", "600"],
 );
 check("sending clears the draft", claude.parts.draftAttachments.draftAttachments().length, 0);
-const shownChat = await claude.chat.send(assistant.chat.chat, { chat: null });
+const shownChat = await claude.chat.send(assistant.chat.one, { chat: null });
 check(
 	"the sent message shows its words without the trailer, and its attachments as chips with the image's thumbnail",
 	shownChat.ok
@@ -521,7 +521,7 @@ check(
 
 const rendering = benchWith(CLAUDE);
 rendering.setup.renderMarkdown = () => () => undefined;
-const renderingSetup = await rendering.chat.send(assistant.agent.agentSetup, { chat: null });
+const renderingSetup = await rendering.chat.send(assistant.agent.current, { chat: null });
 check(
 	"the agent's setup crosses a MessagePort: it carries no function, even from a host that renders markdown",
 	renderingSetup.ok ? isCloned(renderingSetup.output) : renderingSetup.reason,
@@ -595,7 +595,7 @@ check(
 
 const slashed = benchWith(CLAUDE);
 const slashNames = async (): Promise<unknown> => {
-	const names = await slashed.chat.send(assistant.slashCommands.slashCommands, { chat: null });
+	const names = await slashed.chat.send(assistant.slashCommands.all, { chat: null });
 	return names.ok ? names.output : names.reason;
 };
 check("a provider that cannot compact offers only /clear", await slashNames(), ["clear"]);
@@ -666,7 +666,7 @@ check("/compact asks the session to compact, once", slashed.session.compacted, 1
 check(
 	"web has no session, so no commands",
 	await pageDrag
-		.send(assistant.slashCommands.slashCommands, { chat: null })
+		.send(assistant.slashCommands.all, { chat: null })
 		.then((names) => (names.ok ? names.output : names.reason)),
 	[],
 );
@@ -933,11 +933,11 @@ check(
 const prefilled = benchWith(CLAUDE);
 const prefillNow = async (): Promise<unknown> =>
 	prefilled.chat
-		.send(assistant.prefill.composerPrefill, { chat: null })
+		.send(assistant.prefill.composer, { chat: null })
 		.then((answer) => (answer.ok ? answer.output : "refused"));
 await prefilled.chat.send(assistant.prefill.prefillDraft, { chat: null, text: "fix the header" });
 const waiting = await prefillNow();
-await prefilled.chat.send(assistant.prefill.takePrefill, { chat: null, id: 1 });
+await prefilled.chat.send(assistant.prefill.take, { chat: null, id: 1 });
 const afterTake = await prefillNow();
 await prefilled.chat.send(assistant.prefill.prefillDraft, { chat: null, text: "and the footer" });
 check(

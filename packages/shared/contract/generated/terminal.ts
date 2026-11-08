@@ -52,25 +52,25 @@ export type ProgramOutput = z.infer<typeof ProgramOutputSchema>;
 
 export const terminal = moduleContract("terminal", Server, {
 	lines: {
-		terminalOutput: named("lines.terminal-output", query()
+		output: named("lines.output", query()
 			.public()
 			.input(TerminalSessionSchema)
 			.output(TerminalOutputSchema)),
-		resizeTerminal: named("lines.resize-terminal", command()
+		resize: named("lines.resize", command()
 			.public()
 			.input(ResizeTerminalInputSchema)
 			.idempotencyKey(Repeatable)),
-		typeTerminal: named("lines.type-terminal", command()
+		type: named("lines.type", command()
 			.public()
 			.input(TypeTerminalInputSchema)
 			.idempotencyKey(PerCall)),
-		sendTerminal: named("lines.send-terminal", command()
+		send: named("lines.send", command()
 			.public()
 			.input(SendTerminalInputSchema)
 			.idempotencyKey(PerCall)),
 	},
 	programs: {
-		runProgram: named("programs.run-program", command()
+		run: named("programs.run", command()
 			.public()
 			.input(RunProgramInputSchema)
 			.output(ProgramOutputSchema)

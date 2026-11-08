@@ -20,7 +20,7 @@ export function joinPlaces(workspace: string): WindowPlaces {
 	const window = getCurrentWebviewWindow().label;
 	const membership = { isLeaving: false };
 	void join(places, window);
-	places.routes.watch(placesContract.windows.openWindows, undefined, () => {
+	places.routes.watch(placesContract.windows.all, undefined, () => {
 		if (!membership.isLeaving) {
 			void rejoinIfMissing(places, window);
 		}
@@ -35,7 +35,7 @@ export function joinPlaces(workspace: string): WindowPlaces {
 }
 
 async function join(places: Runtime, window: string): Promise<void> {
-	const answered = await places.send(placesContract.windows.openWindow, { window });
+	const answered = await places.send(placesContract.windows.open, { window });
 
 	if (!answered.ok) {
 		console.warn(NOT_JOINED.replace("{window}", window).replace("{reason}", answered.reason));
@@ -43,7 +43,7 @@ async function join(places: Runtime, window: string): Promise<void> {
 }
 
 async function rejoinIfMissing(places: Runtime, window: string): Promise<void> {
-	const open = await places.send(placesContract.windows.openWindows);
+	const open = await places.send(placesContract.windows.all);
 
 	if (open.ok && !open.output.windows.some((listed) => listed.label === window)) {
 		await join(places, window);
@@ -51,7 +51,7 @@ async function rejoinIfMissing(places: Runtime, window: string): Promise<void> {
 }
 
 async function leave(places: Runtime, window: string): Promise<void> {
-	const answered = await places.send(placesContract.windows.closeWindow, { window });
+	const answered = await places.send(placesContract.windows.close, { window });
 
 	if (!answered.ok) {
 		console.warn(NOT_LEFT.replace("{window}", window).replace("{reason}", answered.reason));

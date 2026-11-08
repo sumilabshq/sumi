@@ -29,7 +29,7 @@ interface PageReaders {
 
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
 
-export const appPage = query()
+export const ofTab = query()
 	.public()
 	.input(AppPageAskSchema)
 	.output(AppPageSchema)
@@ -42,7 +42,7 @@ export const appPage = query()
 		};
 	});
 
-export const pageTitles = query()
+export const titles = query()
 	.public()
 	.input(PageTitlesAskSchema)
 	.output(PageTitlesSchema)
@@ -67,7 +67,7 @@ function titledTabOf(tab: PageTab, readers: PageReaders): TitledTab {
 	};
 }
 
-export const recordAppPage = command()
+export const record = command()
 	.public()
 	.input(RecordedAppPageSchema)
 	.idempotencyKey(Repeatable)
@@ -82,11 +82,11 @@ export const recordAppPage = command()
 		const { page, reason } = pageRecordedOf(pages.page(recorded.id), recorded);
 		pages.savePage(recorded.id, page, reason);
 		console.info(`[apps] ${reason}`);
-		invalidate(appPage, { id: recorded.id });
-		invalidate(pageTitles);
+		invalidate(ofTab, { id: recorded.id });
+		invalidate(titles);
 	});
 
-export const pressAppAction = command()
+export const pressAction = command()
 	.public()
 	.input(PressAppActionSchema)
 	.idempotencyKey(PerCall)
@@ -108,7 +108,7 @@ export const pressAppAction = command()
 		pages.savePressesMinted(minted);
 		pages.savePage(tab, withPressQueued(was, press), reason);
 		console.info(`[apps] ${reason}`);
-		invalidate(appPage, { id: tab });
+		invalidate(ofTab, { id: tab });
 	});
 
 export const takeActionPress = command()
@@ -127,12 +127,12 @@ export const takeActionPress = command()
 		const reason = `tab ${id} presses -${press} ${taken.press.action} (taken by the app)`;
 		pages.savePage(id, taken.page, reason);
 		console.info(`[apps] ${reason}`);
-		invalidate(appPage, { id });
+		invalidate(ofTab, { id });
 		return taken.press;
 	});
 
 async function ownTabOf(send: Send, user: User | null, id: string): Promise<{ app: string; address: string | null }> {
-	const tab = await send(places.tabFacts.appTab, { id });
+	const tab = await send(places.tabFacts.app, { id });
 
 	if (user !== null && tab.app !== user.id) {
 		return refuse(NOT_ITS_TAB.replace("{id}", id).replace("{app}", user.id));
@@ -141,7 +141,7 @@ async function ownTabOf(send: Send, user: User | null, id: string): Promise<{ ap
 	return tab;
 }
 
-export const rememberPageTitles = command()
+export const rememberTitles = command()
 	.public()
 	.input(RememberedPageTitlesSchema)
 	.idempotencyKey(Repeatable)
@@ -156,9 +156,9 @@ export const rememberPageTitles = command()
 			return;
 		}
 
-		invalidate(pageTitles);
+		invalidate(titles);
 		for (const id of kept) {
-			invalidate(appPage, { id });
+			invalidate(ofTab, { id });
 		}
 	});
 
@@ -174,7 +174,7 @@ function keepRemembered(pages: PagesGateway, remembered: RememberedPageTitle): r
 	return [remembered.tabId];
 }
 
-export const rereadKeptPages = subscriber(keptPagesChanged).handle((_input, { invalidate }) => {
-	invalidate(appPage);
-	invalidate(pageTitles);
+export const rereadKept = subscriber(keptPagesChanged).handle((_input, { invalidate }) => {
+	invalidate(ofTab);
+	invalidate(titles);
 });

@@ -14,7 +14,7 @@ import { photoFilesOf } from "./lib/photo-files.js";
 
 const PHOTOS_FAILED = "The photos were not added to the canvas: {why}";
 
-export const addPhotos = command()
+export const add = command()
 	.public()
 	.input(PhotosSchema)
 	.idempotencyKey(PerCall)

@@ -12,7 +12,7 @@ const LOOK_START_PX = 6;
 const CHEVRON_PX = 14;
 
 export function WorkspaceHeader(): ReactElement {
-	const { current } = useQuery(workspaces.workspaces.workspaces).data;
+	const { current } = useQuery(workspaces.workspaces.all).data;
 	const [isMenuOpen, setMenuOpen] = useState(false);
 	const [isLookOpen, setLookOpen] = useState(false);
 	const openLook = (): void => {

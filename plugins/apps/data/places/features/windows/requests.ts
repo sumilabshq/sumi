@@ -6,40 +6,40 @@ import { LiveWindowsSchema, WindowLabelSchema, WindowsSchema } from "../../share
 import { moveToCloseWindow, moveToOpenWindow, keepWindows } from "./lib/windows.js";
 import type { MoveWindows } from "../../shared/schema/windows.schema.js";
 
-export const openWindows = query()
+export const all = query()
 	.public()
 	.output(WindowsSchema)
 	.handle((_input, { windows }) => windows.windows());
 
-export const openWindow = command()
+export const open = command()
 	.public()
 	.input(WindowLabelSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ window }, { windows, invalidate }) => {
-		invalidate(openWindows);
+		invalidate(all);
 		await moveAndLog(windows, moveToOpenWindow(window, Date.now()), `open ${window}`);
 	});
 
-export const closeWindow = command()
+export const close = command()
 	.public()
 	.input(WindowLabelSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ window }, { windows, invalidate }) => {
-		invalidate(openWindows);
+		invalidate(all);
 		await moveAndLog(windows, moveToCloseWindow(window), `close ${window}`);
 	});
 
-export const keepLiveWindows = command()
+export const keepLive = command()
 	.public()
 	.input(LiveWindowsSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ windows: live }, { windows, invalidate }) => {
-		invalidate(openWindows);
+		invalidate(all);
 		await moveAndLog(windows, keepWindows(live), `keep ${live.join(", ")}`);
 	});
 
-export const rereadWindows = subscriber(windowsChanged).handle((_input, { invalidate }) => {
-	invalidate(openWindows);
+export const reread = subscriber(windowsChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 });
 
 async function moveAndLog(windows: WindowsGateway, move: MoveWindows, asked: string): Promise<void> {

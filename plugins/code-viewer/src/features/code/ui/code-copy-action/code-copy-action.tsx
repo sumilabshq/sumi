@@ -15,7 +15,7 @@ export function CodeCopyAction({ tabId }: CodeCopyActionProps): ReactElement {
 }
 
 function KnownCodeCopy({ path }: { readonly path: string }): ReactElement {
-	const read = useOptionalQuery(fileSystem.files.readFile, { path });
+	const read = useOptionalQuery(fileSystem.files.read, { path });
 	const showsSecrets = useFileSwitches().isOn("values");
 	return <CopyAction copied={read.data === null ? null : shownCodeOf(path, read.data, showsSecrets).body} />;
 }

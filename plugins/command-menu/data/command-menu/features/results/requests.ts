@@ -32,7 +32,7 @@ interface SourcedRows {
 	readonly rows: readonly Found[];
 }
 
-export const commandMenuResults = query()
+export const all = query()
 	.public()
 	.input(ResultsAskSchema)
 	.output(ResultsSchema)
@@ -40,9 +40,9 @@ export const commandMenuResults = query()
 		const page = [...menuFills.pages(), ...BUILT_IN_PAGES].find(({ id }) => id === door);
 		const [sourced, appTabs, workspaces, browser] = await Promise.all([
 			Promise.all([...builtInSourcesOf(), ...menuFills.sources()].map((source) => sourcedRowsOf(source, send))),
-			send(appHost.tabs.appTabs),
-			send(workspacesContract.workspaces.workspaces),
-			send(browserContract.tabs.browserTabs, ALL_PAGES),
+			send(appHost.tabs.all),
+			send(workspacesContract.workspaces.all),
+			send(browserContract.tabs.all, ALL_PAGES),
 		]);
 		const heldId = await heldTabOfPage(pageId, send);
 		const typed = typedOf(text);
@@ -74,45 +74,44 @@ export const commandMenuResults = query()
 	});
 
 export const resultsOnMenuChanged = subscriber(commandMenuChanged).handle((_input, { invalidate }) => {
-	invalidate(commandMenuResults);
+	invalidate(all);
 });
 
 export const resultsOnChatsChanged = subscriber(workspacesContract.chats.chatsChanged).handle(
 	(_input, { invalidate }) => {
-		invalidate(commandMenuResults);
+		invalidate(all);
 	},
 );
 
 export const resultsOnPagesChanged = subscriber(browserContract.browserPages.pagesChanged).handle(
 	(_input, { invalidate }) => {
-		invalidate(commandMenuResults);
+		invalidate(all);
 	},
 );
 
-const tabRowsOf: RowsOf = async (send) => tabsFoundOf(await send(appHost.tabs.tabsSidebar));
+const tabRowsOf: RowsOf = async (send) => tabsFoundOf(await send(appHost.tabs.sidebar));
 
 const chatRowsOf: RowsOf = async (send) => {
 	const [sidebar, chats, apps] = await Promise.all([
-		send(appHost.tabs.tabsSidebar),
-		send(chatTabs.chatList.chatList),
-		send(appsContract.apps.apps),
+		send(appHost.tabs.sidebar),
+		send(chatTabs.chatList.all),
+		send(appsContract.apps.all),
 	]);
 	return chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.apps);
 };
 
-const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(appsContract.apps.apps)).apps);
+const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(appsContract.apps.all)).apps);
 
-const siteRowsOf: RowsOf = async (send) =>
-	sitesFoundOf((await send(browserContract.tabs.browserTabs, ALL_PAGES)).recentSites);
+const siteRowsOf: RowsOf = async (send) => sitesFoundOf((await send(browserContract.tabs.all, ALL_PAGES)).recentSites);
 
-const workspaceRowsOf: RowsOf = async (send) => workspacesFoundOf(await send(workspacesContract.workspaces.workspaces));
+const workspaceRowsOf: RowsOf = async (send) => workspacesFoundOf(await send(workspacesContract.workspaces.all));
 
-const closedTabRowsOf: RowsOf = async (send) => closedFoundOf((await send(appHost.closedTabs.closedTabs)).tabs);
+const closedTabRowsOf: RowsOf = async (send) => closedFoundOf((await send(appHost.closedTabs.all)).tabs);
 
 const chatElsewhereRowsOf: RowsOf = async (send) => {
 	const [elsewhere, apps] = await Promise.all([
 		send(workspacesContract.workspaces.chatsElsewhere),
-		send(appsContract.apps.apps),
+		send(appsContract.apps.all),
 	]);
 	return chatsElsewhereFoundOf(elsewhere.rows, apps.apps);
 };

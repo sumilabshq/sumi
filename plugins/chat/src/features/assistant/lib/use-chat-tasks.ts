@@ -8,7 +8,7 @@ const NO_OWNER = "";
 
 export function useChatTasks(chatId: string | undefined): readonly TaskCard[] {
 	return (
-		useOptionalQuery(tasks.board.tasks, {
+		useOptionalQuery(tasks.board.all, {
 			owner: chatId ?? NO_OWNER,
 			status: WORKED_ON,
 		}).data?.items ?? NO_CARDS

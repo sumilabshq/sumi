@@ -23,21 +23,21 @@ export const settleTurn = command()
 		return followUpOf(changed.board, ask);
 	});
 
-export const releaseChatTasks = command()
+export const releaseChat = command()
 	.public()
 	.input(ReleaseChatAskSchema)
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tasks, clock }) => countAfter(tasks, (board) => releasedStep(board, ask, clock.now())));
 
-export const reconcileTasks = command()
+export const reconcile = command()
 	.public()
 	.input(ReconcileAskSchema)
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tasks, clock }) => countAfter(tasks, (board) => reconciledStep(board, ask, clock.now())));
 
-export const sweepStaleTasks = command()
+export const sweepStale = command()
 	.public()
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable)

@@ -18,7 +18,7 @@ function chatPortsOf(asked: string[]): AssistantPort {
 	};
 }
 
-function saidOf(answer: Awaited<ReturnType<typeof chats.send<typeof assistant.chat.chat>>>): readonly string[] {
+function saidOf(answer: Awaited<ReturnType<typeof chats.send<typeof assistant.chat.one>>>): readonly string[] {
 	return answer.ok ? answer.output.session.turns.map(({ text }) => text) : [answer.reason];
 }
 
@@ -36,9 +36,9 @@ await chats.send(assistant.composer.sendMessage, { chat: "first", said: "plan th
 check(
 	"one assistant module keeps each chat's conversation apart",
 	[
-		saidOf(await chats.send(assistant.chat.chat, { chat: "first" })).length > 0,
-		saidOf(await chats.send(assistant.chat.chat, { chat: "second" })),
-		saidOf(await chats.send(assistant.chat.chat, { chat: null })),
+		saidOf(await chats.send(assistant.chat.one, { chat: "first" })).length > 0,
+		saidOf(await chats.send(assistant.chat.one, { chat: "second" })),
+		saidOf(await chats.send(assistant.chat.one, { chat: null })),
 	],
 	[true, [], []],
 );
@@ -49,8 +49,8 @@ check("its gateways pick each chat's port from the lent host by the chat's id", 
 
 await chats.send(assistant.prefill.prefillDraft, { chat: "second", text: "draft the notes" });
 const prefilled = [
-	await chats.send(assistant.prefill.composerPrefill, { chat: "first" }),
-	await chats.send(assistant.prefill.composerPrefill, { chat: "second" }),
+	await chats.send(assistant.prefill.composer, { chat: "first" }),
+	await chats.send(assistant.prefill.composer, { chat: "second" }),
 ].map((answer) => (answer.ok ? (answer.output?.text ?? null) : answer.reason));
 check("a chat's composer state lives behind its own gateways", prefilled, [null, "draft the notes"]);
 

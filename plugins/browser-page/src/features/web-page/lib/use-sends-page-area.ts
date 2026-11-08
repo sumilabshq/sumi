@@ -9,7 +9,7 @@ export function useSendsPageArea(tabId: string): (area: PageArea | null) => void
 	const shell = useRuntime("useSendsPageArea");
 	return useCallback(
 		(area: PageArea | null): void => {
-			void shell.send(webPage.pages.placeWebPage, { tab: tabId, area }).then((answer) => {
+			void shell.send(webPage.pages.place, { tab: tabId, area }).then((answer) => {
 				if (!answer.ok) {
 					console.error(PLACE_REFUSED.replace("{tab}", tabId).replace("{reason}", answer.reason));
 				}

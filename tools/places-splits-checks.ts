@@ -97,7 +97,7 @@ async function effectKindsOf(answer: Promise<unknown>): Promise<unknown> {
 }
 
 async function splitOf(window: Runtime): Promise<unknown> {
-	const shown = await sent(window.send(places.splits.shownSplit, { window: MAIN_WINDOW }));
+	const shown = await sent(window.send(places.splits.shown, { window: MAIN_WINDOW }));
 	return typeof shown === "string" || shown.split === null
 		? shown
 		: { members: shown.split.memberIds, focused: shown.split.focusedId, layout: shown.split.layout };
@@ -168,14 +168,14 @@ async function swappingChecks(): Promise<void> {
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
 	check(
 		"showing a tab outside the split takes the whole split off the board, then draws that tab alone",
-		await effectKindsOf(sent(window.send(places.tabShowing.showTab, { at: AT, id: "tab-3" }))),
+		await effectKindsOf(sent(window.send(places.tabShowing.show, { at: AT, id: "tab-3" }))),
 		["leave-split", "open-shown-tab-pane"],
 	);
 	check("and nothing is shown as a split then", await splitOf(window), { shownId: "tab-3", split: null });
 	check(
 		"showing a member brings the whole split back, focused on that member",
 		[
-			await effectKindsOf(sent(window.send(places.tabShowing.showTab, { at: AT, id: "tab-1" }))),
+			await effectKindsOf(sent(window.send(places.tabShowing.show, { at: AT, id: "tab-1" }))),
 			((await splitOf(window)) as { focused?: string }).focused,
 		],
 		[["show-split"], "tab-1"],
@@ -185,14 +185,14 @@ async function swappingChecks(): Promise<void> {
 	check(
 		"showing another member of the shown split only moves the focus: no redraw",
 		[
-			await effectKindsOf(sent(window.send(places.tabShowing.showTab, { at: AT, id: "tab-2" }))),
+			await effectKindsOf(sent(window.send(places.tabShowing.show, { at: AT, id: "tab-2" }))),
 			((await splitOf(window)) as { focused?: string }).focused,
 		],
 		[["focus-split"], "tab-2"],
 	);
 	check(
 		"showing the member already focused changes nothing",
-		await effectKindsOf(sent(window.send(places.tabShowing.showTab, { at: AT, id: "tab-2" }))),
+		await effectKindsOf(sent(window.send(places.tabShowing.show, { at: AT, id: "tab-2" }))),
 		[],
 	);
 }
@@ -202,15 +202,12 @@ async function dissolvingChecks(): Promise<void> {
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
 	check(
 		"closing a member of a split of two dissolves it and shows the other alone",
-		[
-			await effectKindsOf(sent(window.send(places.tabClosing.closeTab, { at: AT, id: "tab-2" }))),
-			await splitOf(window),
-		],
+		[await effectKindsOf(sent(window.send(places.tabClosing.close, { at: AT, id: "tab-2" }))), await splitOf(window)],
 		[["leave-split", "open-shown-tab-pane"], { shownId: "tab-1", split: null }],
 	);
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
-	await window.send(places.splits.removeFromSplit, { at: AT, tabId: "tab-4" });
+	await window.send(places.splits.remove, { at: AT, tabId: "tab-4" });
 	check("a member taken out of a split of three leaves two drawn", await splitOf(window), {
 		members: ["tab-1", "tab-3"],
 		focused: "tab-1",
@@ -229,7 +226,7 @@ async function draggingOutChecks(): Promise<void> {
 	const { window } = started();
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
-	await window.send(places.tabPlacing.placeTab, {
+	await window.send(places.tabPlacing.place, {
 		at: AT,
 		id: "tab-4",
 		place: { list: "workspace", groupId: null, before: "tab-2" },
@@ -247,7 +244,7 @@ async function draggingOutChecks(): Promise<void> {
 			"tab-5",
 		],
 	);
-	await window.send(places.tabPlacing.placeTab, {
+	await window.send(places.tabPlacing.place, {
 		at: AT,
 		id: "tab-5",
 		place: { list: "workspace", groupId: null, before: "tab-3" },
@@ -266,7 +263,7 @@ async function draggingOutChecks(): Promise<void> {
 async function carryingChecks(): Promise<void> {
 	const { window } = started();
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
-	await window.send(places.tabPlacing.placeTab, {
+	await window.send(places.tabPlacing.place, {
 		at: AT,
 		id: "tab-2",
 		place: { list: "workspace", groupId: null, before: "tab-1" },
@@ -277,7 +274,7 @@ async function carryingChecks(): Promise<void> {
 	});
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
-	await window.send(places.tabPlacing.placeTab, {
+	await window.send(places.tabPlacing.place, {
 		at: AT,
 		id: "tab-4",
 		place: { list: "workspace", groupId: null, before: "tab-4" },
@@ -291,7 +288,7 @@ async function carryingChecks(): Promise<void> {
 		],
 		"tab-5",
 	]);
-	await window.send(places.splits.reorderSplitMember, { at: AT, tabId: "tab-3", before: "tab-1" });
+	await window.send(places.splits.reorderMember, { at: AT, tabId: "tab-3", before: "tab-1" });
 	check("a member reordered inside its split moves only in the split", await openShapesOf(window), [
 		"tab-2",
 		"tab-4",
@@ -306,7 +303,7 @@ async function carryingChecks(): Promise<void> {
 async function dissolvedPlaceChecks(): Promise<void> {
 	const { window } = started();
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-1", side: "right" });
-	await window.send(places.tabPlacing.placeTab, {
+	await window.send(places.tabPlacing.place, {
 		at: AT,
 		id: "tab-1",
 		place: { list: "workspace", groupId: null, before: "tab-5" },
@@ -321,9 +318,9 @@ async function dissolvedPlaceChecks(): Promise<void> {
 async function pinnedMemberChecks(): Promise<void> {
 	const { window } = started();
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
-	await window.send(places.tabPlacing.pinTab, { window: MAIN_WINDOW, id: "tab-1", isPinned: true });
-	await window.send(places.tabPlacing.pinTab, { window: MAIN_WINDOW, id: "tab-3", isPinned: true });
-	await window.send(places.tabPlacing.placeTab, {
+	await window.send(places.tabPlacing.pin, { window: MAIN_WINDOW, id: "tab-1", isPinned: true });
+	await window.send(places.tabPlacing.pin, { window: MAIN_WINDOW, id: "tab-3", isPinned: true });
+	await window.send(places.tabPlacing.place, {
 		at: AT,
 		id: "tab-1",
 		place: { list: "pinned", groupId: null, before: null },
@@ -338,7 +335,7 @@ async function pinnedMemberChecks(): Promise<void> {
 async function sidebarChecks(): Promise<void> {
 	const { window } = started();
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
-	await window.send(places.tabPlacing.pinTab, { window: MAIN_WINDOW, id: "tab-1", isPinned: true });
+	await window.send(places.tabPlacing.pin, { window: MAIN_WINDOW, id: "tab-1", isPinned: true });
 	const sidebar = await sent(window.send(places.tabs.sidebar, { at: AT, essentials: [] }));
 	const sections = typeof sidebar === "string" ? [] : sidebar.sections;
 	const pinned = sections.find((section) => section.list === "pinned")?.entries ?? [];
@@ -357,7 +354,7 @@ async function sidebarChecks(): Promise<void> {
 }
 
 async function allPinnedChecks(window: Runtime): Promise<void> {
-	await window.send(places.tabPlacing.pinTab, { window: MAIN_WINDOW, id: "tab-2", isPinned: true });
+	await window.send(places.tabPlacing.pin, { window: MAIN_WINDOW, id: "tab-2", isPinned: true });
 	const allPinned = await sent(window.send(places.tabs.sidebar, { at: AT, essentials: [] }));
 	check(
 		"a split whose every member is pinned stands once in Pinned",

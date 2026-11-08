@@ -13,14 +13,14 @@ const QUEUED_NOT_MARKED =
 interface AnswerSteps {
 	readonly app: Runtime;
 	readonly sendText: ReturnType<typeof useCommand<typeof assistant.chat.sendText>>;
-	readonly deliver: ReturnType<typeof useCommand<typeof questions.agent.deliverQuestions>>;
+	readonly deliver: ReturnType<typeof useCommand<typeof questions.agent.deliver>>;
 }
 
 export function useQueuesAnswers(chatId: string, optionalQuestions: readonly Question[], report: Report): void {
 	const steps: AnswerSteps = {
 		app: useRuntime("useQueuesAnswers"),
 		sendText: useCommand(assistant.chat.sendText),
-		deliver: useCommand(questions.agent.deliverQuestions),
+		deliver: useCommand(questions.agent.deliver),
 	};
 	const latest = useRef({ steps, report });
 	latest.current = { steps, report };

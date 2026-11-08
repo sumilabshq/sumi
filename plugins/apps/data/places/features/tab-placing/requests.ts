@@ -26,7 +26,7 @@ import {
 } from "./lib/group-plans.js";
 import { foldTabPlan, makeEssentialPlan, pinPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
 
-export const placeTab = command()
+export const place = command()
 	.public()
 	.input(PlaceTabAskSchema)
 	.output(TabsSettledSchema)
@@ -46,7 +46,7 @@ export const makeEssential = command()
 				.extra,
 	);
 
-export const renameTab = command()
+export const rename = command()
 	.public()
 	.input(RenameTabAskSchema)
 	.idempotencyKey(Repeatable)
@@ -54,7 +54,7 @@ export const renameTab = command()
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), renamePlan(id, label))));
 	});
 
-export const pinTab = command()
+export const pin = command()
 	.public()
 	.input(PinTabAskSchema)
 	.idempotencyKey(Repeatable)
@@ -62,7 +62,7 @@ export const pinTab = command()
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), pinPlan(id, isPinned))));
 	});
 
-export const foldTab = command()
+export const fold = command()
 	.public()
 	.input(FoldTabAskSchema)
 	.idempotencyKey(Repeatable)

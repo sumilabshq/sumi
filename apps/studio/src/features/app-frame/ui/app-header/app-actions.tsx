@@ -9,8 +9,8 @@ export interface AppActionsProps {
 }
 
 export function AppActions({ tabId }: AppActionsProps): ReactElement {
-	const actions = useOptionalQuery(apps.pages.appPage, { id: tabId }).data?.actions ?? [];
-	const press = useCommand(apps.pages.pressAppAction);
+	const actions = useOptionalQuery(apps.pages.ofTab, { id: tabId }).data?.actions ?? [];
+	const press = useCommand(apps.pages.pressAction);
 	return (
 		<Fragment>
 			{actions.map(({ id, label, icon, isOff = false, isBusy }) => (

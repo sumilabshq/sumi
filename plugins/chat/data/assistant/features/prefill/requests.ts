@@ -11,7 +11,7 @@ import { inChat } from "../../gateways/chat-parts/in-chat.js";
 const PREFILLED = "another app asked for a draft";
 const TAKEN = "the composer took it";
 
-export const composerPrefill = query()
+export const composer = query()
 	.public()
 	.input(ChatKeySchema)
 	.output(ComposerPrefillSchema.nullable())
@@ -24,7 +24,7 @@ export const prefillDraft = command()
 	.idempotencyKey(PerCall)
 	.handle(
 		inChat(({ text }, { composerPrefill: composerPrefillGateway, invalidate }) => {
-			invalidate(composerPrefill);
+			invalidate(composer);
 			const was = composerPrefillGateway.composerPrefill();
 			composerPrefillGateway.saveComposerPrefill({
 				id: composerPrefillGateway.lastPrefillId() + 1,
@@ -36,7 +36,7 @@ export const prefillDraft = command()
 		}),
 	);
 
-export const takePrefill = command()
+export const take = command()
 	.public()
 	.input(PrefillTakenSchema)
 	.idempotencyKey(Repeatable)
@@ -51,7 +51,7 @@ export const takePrefill = command()
 				return;
 			}
 
-			invalidate(composerPrefill);
+			invalidate(composer);
 			composerPrefillGateway.saveComposerPrefill(null);
 			console.debug(`[widgetarium] composer prefill ${JSON.stringify(was.text)} → null (${TAKEN})`);
 		}),

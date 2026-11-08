@@ -5,10 +5,10 @@ import { isChatHeld } from "./chat-holders.js";
 
 export async function chatIdForPane(send: Send, board: PaneBoard, askedId: string | null): Promise<string> {
 	if (askedId !== null && !isChatHeld(board, askedId)) {
-		await send(workspaces.chats.forgetChatToOpen, { id: askedId });
+		await send(workspaces.chats.forgetToOpen, { id: askedId });
 		return askedId;
 	}
 
-	const created = await send(workspaces.chats.createChat, { title: null });
+	const created = await send(workspaces.chats.create, { title: null });
 	return created.id;
 }

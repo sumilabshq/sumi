@@ -11,7 +11,7 @@ export function WrapAction({ tabId }: AppViewProps): ReactElement {
 	return (
 		<RepoOnly tabId={tabId}>
 			<WrapLinesAction
-				isWrapped={useOptionalQuery(git.gitLook.gitLook).data?.isWrapped ?? true}
+				isWrapped={useOptionalQuery(git.gitLook.current).data?.isWrapped ?? true}
 				onToggle={() => void toggle.run()}
 			/>
 		</RepoOnly>

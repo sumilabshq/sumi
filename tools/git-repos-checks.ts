@@ -69,24 +69,24 @@ const app = runtime()
 	.imports(terminal({ over: toCore }), fileSystem({ over: toCore }))
 	.start({ platform: "browser", scope: { workspaceId: "git-checks" } });
 
-const place = await app.send(gitContract.repos.gitPlace, { folder: path.join(repo, ".") });
+const place = await app.send(gitContract.repos.place, { folder: path.join(repo, ".") });
 check(
 	"a folder inside a repository answers its root, name and branch",
 	place.ok && place.output.kind === "repo" ? [place.output.root, place.output.name, place.output.branch] : place,
 	[repo, "app", "main"],
 );
 
-const plain = await app.send(gitContract.repos.gitPlace, { folder: parent });
+const plain = await app.send(gitContract.repos.place, { folder: parent });
 check(
 	"a folder with no repository lists the repositories inside it",
 	plain.ok && plain.output.kind === "folder" ? plain.output.repos.map(({ name }) => name) : plain,
 	["app", "app-feat", "other"],
 );
 
-const missing = await app.send(gitContract.repos.gitPlace, { folder: path.join(parent, "gone") });
+const missing = await app.send(gitContract.repos.place, { folder: path.join(parent, "gone") });
 check("a folder that does not exist answers missing", missing.ok ? missing.output.kind : missing, "missing");
 
-const nearby = await app.send(gitContract.repos.nearbyRepos, { root: repo });
+const nearby = await app.send(gitContract.repos.nearby, { root: repo });
 check("the repositories beside a root are its parent's", nearby.ok ? nearby.output.parent : nearby, parent);
 
 const branches = await app.send(gitContract.repos.branches, { root: repo });

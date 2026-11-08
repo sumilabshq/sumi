@@ -37,7 +37,7 @@ const NO_PAGE = "This tab has no page yet";
 const NO_MORE_ITEMS: readonly PlateMoreItem[] = [];
 
 export function PaneAppPlate({ tabId, browser, design, project }: PaneAppPlateProps): ReactElement {
-	const paneTab = useQuery(appHost.tabs.heldTabs).data.tabs.find((tab) => tab.id === tabId) ?? null;
+	const paneTab = useQuery(appHost.tabs.held).data.tabs.find((tab) => tab.id === tabId) ?? null;
 	const appTitleOf = useAppTitleOf();
 	const appTitle = paneTab === null ? NO_TAB : appTitleOf(paneTab.app);
 	return (

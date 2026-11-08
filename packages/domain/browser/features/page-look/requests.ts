@@ -4,7 +4,7 @@ import { BrowserViewSchema } from "../../shared/schema/browser-tab.schema.js";
 import { PageHeadSchema } from "../../shared/schema/page-look.schema.js";
 import { pageHeadOf } from "./lib/page-head.js";
 
-export const pageHead = query()
+export const head = query()
 	.public()
 	.input(BrowserViewSchema)
 	.output(PageHeadSchema.nullable())
@@ -20,10 +20,10 @@ export const pageHead = query()
 		return pageHeadOf(shown, browserPages.look(shown.id));
 	});
 
-export const rereadPageHeadForPages = subscriber(pagesChanged).handle((_input, { invalidate }) => {
-	invalidate(pageHead);
+export const rereadHeadForPages = subscriber(pagesChanged).handle((_input, { invalidate }) => {
+	invalidate(head);
 });
 
-export const rereadPageHead = subscriber(pageLooksChanged).handle((_input, { invalidate }) => {
-	invalidate(pageHead);
+export const rereadHead = subscriber(pageLooksChanged).handle((_input, { invalidate }) => {
+	invalidate(head);
 });

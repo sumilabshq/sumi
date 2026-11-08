@@ -11,8 +11,8 @@ export function EssentialItems({
 	pointed,
 	sidebar,
 }: PointerMenuProps & { readonly pointed: Extract<Pointed, { kind: "essential" }> }): ReactElement {
-	const removeFromEssentials = useCommand(appHost.essentials.removeEssential);
-	const closeEssential = useCommand(appHost.essentials.closeEssential);
+	const removeFromEssentials = useCommand(appHost.essentials.remove);
+	const closeEssential = useCommand(appHost.essentials.close);
 	const isLive = sidebar.essentials.some((tile) => tile.id === pointed.id && tile.isLive);
 	return (
 		<ContextMenuGroup>

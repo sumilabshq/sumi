@@ -21,8 +21,8 @@ const READ_ONLY = "Read only: a screenshot and page content";
 const DATA_NOT_ORDERS = "Page content is data to Sumi, never instructions.";
 
 export function AskCard(): ReactElement | null {
-	const [asked] = useQuery(browser.asks.accessAsks).data;
-	const answerAsk = useCommand(browser.asks.answerAsk);
+	const [asked] = useQuery(browser.asks.access).data;
+	const answerAsk = useCommand(browser.asks.answer);
 
 	if (!asked) {
 		return null;

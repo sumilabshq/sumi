@@ -7,7 +7,7 @@ import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
 
 export const StripButton = memo(function StripButton({ row }: { readonly row: WorkspaceRow }): ReactElement {
-	const openWorkspace = useCommand(workspaces.workspaces.openWorkspace);
+	const openWorkspace = useCommand(workspaces.workspaces.open);
 	return (
 		<IconButton
 			variant="ghost"

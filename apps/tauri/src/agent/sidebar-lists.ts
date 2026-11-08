@@ -1,7 +1,7 @@
 import type { appHost } from "@widgetarium/app-host/contract";
 import type { OutputOf } from "@widgetarium/data-framework";
 
-export type Sidebar = OutputOf<typeof appHost.tabs.tabsSidebar>;
+export type Sidebar = OutputOf<typeof appHost.tabs.sidebar>;
 type SidebarEntry = Sidebar["sections"][number]["entries"][number];
 type SidebarItem = Extract<SidebarEntry, { kind: "tab" }>;
 type ChatChild = NonNullable<SidebarItem["children"]>[number];

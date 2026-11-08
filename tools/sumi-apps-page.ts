@@ -55,7 +55,7 @@ const PROJECT: WidgetariumProject = {
 
 const overHttp = orpcTransport(location.origin);
 const NOT_ABORTED = new AbortController().signal;
-// TRADE-OFF: no abort, like the Tauri IPC transport; an aborted call leaves app-host.tabs.held-tabs stale
+// TRADE-OFF: no abort, like the Tauri IPC transport; an aborted call leaves app-host.tabs.held stale
 const core: RemoteTransport = {
 	call: (call) =>
 		overHttp.call({
@@ -113,19 +113,19 @@ function servedPageUrlOf({ id, ui }: RegisteredApp): string {
 
 const appearance = startStudioAppearance(window);
 const driver: SumiAppsDriver = {
-	showTab: (id) => outputOf(studioApp.send(appHost.tabs.showTab, { id })),
-	tab: (id) => outputOf(studioApp.send(places.tabFacts.appTab, { id })),
-	tabs: () => outputOf(studioApp.send(appHost.tabs.appTabs)),
+	showTab: (id) => outputOf(studioApp.send(appHost.tabs.show, { id })),
+	tab: (id) => outputOf(studioApp.send(places.tabFacts.app, { id })),
+	tabs: () => outputOf(studioApp.send(appHost.tabs.all)),
 	menuResults: (text) =>
 		outputOf(
-			studioApp.send(commandMenu.results.commandMenuResults, {
+			studioApp.send(commandMenu.results.all, {
 				text,
 				door: "anywhere",
 				pageId: null,
 			}),
 		),
-	chooseTheme: (choice) => outputOf(appearance.appearanceApp.send(appearanceContract.theme.chooseTheme, { choice })),
-	openChat: () => outputOf(studioApp.send(appHost.tabs.showTab, { id: SUMI_CHAT_TAB })),
+	chooseTheme: (choice) => outputOf(appearance.appearanceApp.send(appearanceContract.theme.choose, { choice })),
+	openChat: () => outputOf(studioApp.send(appHost.tabs.show, { id: SUMI_CHAT_TAB })),
 };
 void restoreTabs(studioApp).then(() => {
 	window.__sumiApps = driver;

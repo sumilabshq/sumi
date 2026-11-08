@@ -43,7 +43,7 @@ interface AgentTask extends AgentCard {
 
 export async function taskSearch({ app }: ToolContext, input: unknown): Promise<readonly AgentCard[]> {
 	const asked = inputOf(SearchAskSchema, "task_search", fieldsOf("task_search", input));
-	const hits = await outputOf(app.send(tasks.board.searchTasks, asked));
+	const hits = await outputOf(app.send(tasks.board.search, asked));
 	return hits.map(agentCardOf);
 }
 
@@ -52,7 +52,7 @@ export async function taskList({ app, chatId }: ToolContext, input: unknown) {
 		...fieldsOf("task_list", input),
 		asking: chatId,
 	});
-	const page = await outputOf(app.send(tasks.board.tasks, asked));
+	const page = await outputOf(app.send(tasks.board.all, asked));
 	return {
 		items: page.items.map(agentCardOf),
 		next: page.next,
@@ -62,12 +62,12 @@ export async function taskList({ app, chatId }: ToolContext, input: unknown) {
 
 export async function taskGet({ app }: ToolContext, input: unknown): Promise<AgentTask> {
 	const asked = inputOf(TaskAskSchema, "task_get", fieldsOf("task_get", input));
-	return agentTaskOf(await outputOf(app.send(tasks.board.task, asked)));
+	return agentTaskOf(await outputOf(app.send(tasks.board.one, asked)));
 }
 
 export async function taskCreate(context: ToolContext, input: unknown) {
 	const asked = askedByChat(CreateTaskAskSchema, "task_create", { context, input });
-	const created = await outputOf(context.app.send(tasks.agentWork.createTask, asked));
+	const created = await outputOf(context.app.send(tasks.agentWork.create, asked));
 	return {
 		task: agentTaskOf(created.task),
 		isExisting: created.isExisting,
@@ -76,12 +76,12 @@ export async function taskCreate(context: ToolContext, input: unknown) {
 
 export async function taskUpdate(context: ToolContext, input: unknown): Promise<AgentTask> {
 	const asked = askedByChat(EditTaskAskSchema, "task_update", { context, input });
-	return agentTaskOf(await outputOf(context.app.send(tasks.agentWork.editTask, asked)));
+	return agentTaskOf(await outputOf(context.app.send(tasks.agentWork.edit, asked)));
 }
 
 export async function taskStart(context: ToolContext, input: unknown): Promise<AgentTask> {
 	const asked = askedByChat(StartTaskAskSchema, "task_start", { context, input });
-	return agentTaskOf(await outputOf(context.app.send(tasks.agentWork.startTask, asked)));
+	return agentTaskOf(await outputOf(context.app.send(tasks.agentWork.start, asked)));
 }
 
 export async function taskStep(context: ToolContext, input: unknown): Promise<AgentTask> {
@@ -96,12 +96,12 @@ export async function taskCheck(context: ToolContext, input: unknown): Promise<A
 
 export async function taskAttach(context: ToolContext, input: unknown): Promise<AgentTask> {
 	const asked = askedByChat(AttachToTaskAskSchema, "task_attach", { context, input });
-	return agentTaskOf(await outputOf(context.app.send(tasks.agentWork.attachToTask, asked)));
+	return agentTaskOf(await outputOf(context.app.send(tasks.agentWork.attach, asked)));
 }
 
 export async function taskMove(context: ToolContext, input: unknown): Promise<AgentTask> {
 	const asked = askedByChat(MoveTaskAskSchema, "task_move", { context, input });
-	return agentTaskOf(await outputOf(context.app.send(tasks.agentWork.moveTask, asked)));
+	return agentTaskOf(await outputOf(context.app.send(tasks.agentWork.move, asked)));
 }
 
 function askedByChat<Schema extends z.ZodType>(

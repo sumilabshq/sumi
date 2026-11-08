@@ -5,7 +5,7 @@ import { workspaces } from "@widgetarium/workspaces/contract";
 const DIGIT_KEY = /^Digit([1-9])$/;
 
 export function WorkspaceKeys(): null {
-	const { run } = useCommand(workspaces.workspaces.openWorkspaceByPosition);
+	const { run } = useCommand(workspaces.workspaces.openByPosition);
 	useEffect(() => {
 		const pressed = (event: KeyboardEvent): void => {
 			const digit = DIGIT_KEY.exec(event.code)?.[1];

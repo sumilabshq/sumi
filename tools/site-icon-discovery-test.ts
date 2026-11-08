@@ -48,7 +48,7 @@ async function discoveredOf(served: ServedSiteFiles, origin = SITE, times = 1): 
 	let icon: string | null = null;
 
 	for (let asked = 0; asked < times; asked += 1) {
-		const answer = await started.send(browser.siteIcons.siteIcon, { origin });
+		const answer = await started.send(browser.siteIcons.icon, { origin });
 		icon = answer.ok ? answer.output.icon : `refused: ${answer.reason}`;
 	}
 

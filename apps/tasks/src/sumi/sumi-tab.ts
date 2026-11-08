@@ -27,7 +27,7 @@ export function useTabOf({ sumi, transport, tabId }: SumiFrame): SumiTab {
 
 	useEffect(() => {
 		const reread = (): void => {
-			void sumi.send(places.tabFacts.appTab, { id: tabId }).then((tab) => {
+			void sumi.send(places.tabFacts.app, { id: tabId }).then((tab) => {
 				if (!tab.ok) {
 					console.error(`[tasks] reading the tab ${tabId} was refused: ${tab.reason}`);
 					return;

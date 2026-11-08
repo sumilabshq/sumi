@@ -6,8 +6,8 @@ import { doorOfLetter } from "../../lib/menu-key-labels.js";
 const LETTER_CODE = /^Key([A-Z])$/;
 
 export function CommandMenuKeys(): null {
-	const { run } = useCommand(commandMenu.opening.toggleCommandMenu);
-	const { doors } = useQuery(commandMenu.opening.menuDoors).data;
+	const { run } = useCommand(commandMenu.opening.toggle);
+	const { doors } = useQuery(commandMenu.opening.doors).data;
 	useEffect(() => {
 		const pressed = (event: KeyboardEvent): void => {
 			const door = doorOfLetter(LETTER_CODE.exec(event.code)?.[1]?.toLowerCase() ?? "", doors);

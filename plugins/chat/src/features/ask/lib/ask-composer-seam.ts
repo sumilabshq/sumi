@@ -75,7 +75,7 @@ async function adoptIn(askApp: Runtime, draft: AdoptedDraft): Promise<void> {
 }
 
 async function newChatIdIn(windowApp: Runtime): Promise<string | null> {
-	const opened = await windowApp.send(chatTabs.chatOpening.openNewChat, { title: null });
+	const opened = await windowApp.send(chatTabs.chatOpening.openNew, { title: null });
 
 	if (!opened.ok) {
 		console.error(`[widgetarium] Ask Sumi found no chat on this board and could not open one: ${opened.reason}`);

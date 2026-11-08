@@ -16,7 +16,7 @@ const LISTED_MOST = 200;
 const MORE = "{count} more are not listed";
 
 export function TasksList({ view }: TasksListProps): ReactElement {
-	const page = useQuery(tasks.board.tasks, {
+	const page = useQuery(tasks.board.all, {
 		status: view.listStatus === null ? [] : [view.listStatus],
 		updatedWithin: "month",
 		owner: view.ask.owner,

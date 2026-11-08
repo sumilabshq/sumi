@@ -24,7 +24,7 @@ plugin's fills. `appHost({ apps })` did exactly that and was rewritten.
 
 **CRITICAL — the machine is reached only through the Sumi contract.** The file system and terminal
 sessions are the host's capabilities, and every plugin and app reaches them through `@sumi/contract`
-(`fileSystem.files.readFile`, `terminal.lines.terminalOutput`, …), never through Tauri. They are not a reason a plugin "cannot" do
+(`fileSystem.files.read`, `terminal.lines.output`, …), never through Tauri. They are not a reason a plugin "cannot" do
 something: a plugin that needs the machine sends a contract request. `sumi-host` and its slots
 (`sumiHost.backgroundModules` and the rest) are part of that contract, the base every plugin builds on; a module
 runs in the background because a plugin fills `sumiHost.backgroundModules`, and the app reads that slot and starts

@@ -52,7 +52,7 @@ export const noteVisits = subscriber(pagesChanged).handle((_input, { recentSites
 	);
 });
 
-export const browserTabs = query()
+export const all = query()
 	.public()
 	.input(BrowserViewSchema)
 	.output(BrowserTabsSchema)
@@ -93,7 +93,7 @@ export const openAddress = command()
 	.input(OpenAddressSchema)
 	.idempotencyKey(PerCall)
 	.handle(({ tabId, address, heldTabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		const url = urlOf(webAddressOf(address));
 		const refusal = refuseUrlShape(url);
 
@@ -114,12 +114,12 @@ export const openAddress = command()
 		browserPages.open(tabId, url.href);
 	});
 
-export const openTabInOwnWindow = command()
+export const openInOwnWindow = command()
 	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		const refusal = refuseOwnWindow(browserPages, tabId);
 		return refusal === null ? browserPages.openInOwnWindow(tabId) : refuse(refusal);
 	});
@@ -136,7 +136,7 @@ export const focusStudioWindow = command()
 	.idempotencyKey(Repeatable)
 	.handle(({ window }, { browserPages }) => browserPages.focusStudioWindow(window));
 
-export const openTabWindow = command()
+export const openWindow = command()
 	.public()
 	.input(TabWindowSchema)
 	.idempotencyKey(Repeatable)
@@ -173,12 +173,12 @@ export const showTearOffGhost = command()
 	.idempotencyKey(Repeatable)
 	.handle(({ shown }, { browserPages }) => browserPages.showTearOffGhost(shown));
 
-export const showTab = command()
+export const show = command()
 	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		browserPages.show(tabId);
 		browserPages.thaw(tabId);
 
@@ -192,7 +192,7 @@ export const openPage = command()
 	.input(OpenPageSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId, profileId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		return browserPages.create(tabId, profileId ?? null);
 	});
 
@@ -201,7 +201,7 @@ export const closePage = command()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId }, { browserPages, accessAsks, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		for (const ask of accessAsks.accessAsks().filter((asked) => asked.tabId === tabId)) {
 			accessAsks.saveAnswer(ask.id, "unanswered");
 			console.info(`[widgetarium] browser ask ${ask.id} waiting → unanswered (tab ${tabId} closed)`);
@@ -215,7 +215,7 @@ export const goBack = command()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		return browserPages.back(tabId);
 	});
 
@@ -224,7 +224,7 @@ export const goForward = command()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		return browserPages.forward(tabId);
 	});
 
@@ -233,7 +233,7 @@ export const reloadPage = command()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		return browserPages.reload(tabId);
 	});
 
@@ -242,7 +242,7 @@ export const leaveFailure = command()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ tabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		const tab = browserPages.tabs().find(({ id }) => id === tabId);
 
 		if (tab?.failure?.kind !== "scheme" && tab?.canGoBack === true) {
@@ -258,7 +258,7 @@ export const attachPages = command()
 	.input(PagesHostSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ host, heldTabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		if (!isPagesHost(host)) {
 			return refuse(NOT_A_HOST);
 		}
@@ -276,7 +276,7 @@ export const detachPages = command()
 	.input(PagesHostSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ host, heldTabId }, { browserPages, invalidate }) => {
-		invalidate(browserTabs);
+		invalidate(all);
 		if (!isPagesHost(host)) {
 			return refuse(NOT_A_HOST);
 		}
@@ -289,25 +289,25 @@ export const detachPages = command()
 		browserPages.detachFromPane(heldTabId, host);
 	});
 
-export const rereadBrowserTabs = subscriber(pagesChanged).handle((_input, { invalidate }) => {
-	invalidate(browserTabs);
+export const rereadAll = subscriber(pagesChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 	invalidate(askInkPrompt);
 });
 
-export const rereadBrowserTabsForGrants = subscriber(grantsChanged).handle((_input, { invalidate }) => {
-	invalidate(browserTabs);
+export const rereadAllForGrants = subscriber(grantsChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 });
 
-export const rereadBrowserTabsForOnceAllowances = subscriber(onceAllowancesChanged).handle((_input, { invalidate }) => {
-	invalidate(browserTabs);
+export const rereadAllForOnceAllowances = subscriber(onceAllowancesChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 });
 
-export const rereadBrowserTabsForInk = subscriber(inkActivityChanged).handle((_input, { invalidate }) => {
-	invalidate(browserTabs);
+export const rereadAllForInk = subscriber(inkActivityChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 });
 
-export const rereadBrowserTabsForRecentSites = subscriber(recentSitesChanged).handle((_input, { invalidate }) => {
-	invalidate(browserTabs);
+export const rereadAllForRecentSites = subscriber(recentSitesChanged).handle((_input, { invalidate }) => {
+	invalidate(all);
 });
 
 function refuseOwnWindow(browserPages: BrowserPagesGateway, tabId: string): string | null {

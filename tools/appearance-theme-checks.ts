@@ -61,26 +61,30 @@ const heard: string[] = [];
 local.changes((invalidated) => heard.push(...invalidated.map(({ query }) => query)));
 
 async function themeOf(): Promise<unknown> {
-	const answer = await frame.send(appearanceContract.theme.theme);
+	const answer = await frame.send(appearanceContract.theme.current);
 	return answer.ok ? [answer.output.scheme, answer.output.choice] : answer.reason;
 }
 
 console.info = () => undefined;
 check("the theme follows the system while nothing is chosen", await themeOf(), ["light", "system"]);
-await studio.send(appearanceContract.theme.chooseTheme, { choice: "dark" });
+await studio.send(appearanceContract.theme.choose, { choice: "dark" });
 check("a choice made in the studio is what an app reads", await themeOf(), ["dark", "dark"]);
 system.flip();
 check("a chosen theme stays when the system changes", await themeOf(), ["dark", "dark"]);
-await studio.send(appearanceContract.theme.chooseTheme, { choice: "system" });
+await studio.send(appearanceContract.theme.choose, { choice: "system" });
 check("back to the system, the system's scheme is read", await themeOf(), ["dark", "system"]);
-const byApp = await frame.send(appearanceContract.theme.chooseTheme, { choice: "light" });
+const byApp = await frame.send(appearanceContract.theme.choose, { choice: "light" });
 check("an app cannot choose Sumi's theme", byApp.ok ? "chosen" : byApp.code, "forbidden");
-check("a change reaches listeners as a re-read of theme", heard.includes("appearance.theme.theme"), true);
+check("a change reaches listeners as a re-read of theme", heard.includes("appearance.theme.current"), true);
 await new Promise((settled) => setTimeout(settled, 100));
 heard.length = 0;
 system.flip();
 await new Promise((settled) => setTimeout(settled, 100));
-check("a system scheme change reaches listeners as a re-read of theme", heard.includes("appearance.theme.theme"), true);
+check(
+	"a system scheme change reaches listeners as a re-read of theme",
+	heard.includes("appearance.theme.current"),
+	true,
+);
 
 console.log(tally.failed ? `appearance theme: ${tally.failed} check(s) failed` : "appearance theme: all checks passed");
 process.exit(tally.failed ? 1 : 0);

@@ -20,7 +20,7 @@ const OPEN_FOLDER = "Open folder";
 
 export function RepoMenu({ filter, close }: MenuProps): ReactElement | null {
 	const page = useGitPage();
-	const nearby = useOptionalQuery(git.repos.nearbyRepos, { root: page.root });
+	const nearby = useOptionalQuery(git.repos.nearby, { root: page.root });
 	const openPicked = useOpensPickedFolder((folder) =>
 		page.go({
 			folder,

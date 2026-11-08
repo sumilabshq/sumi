@@ -14,7 +14,7 @@ export interface SwitchActionProps {
 }
 
 export function SwitchAction({ name, whenOff, whenOn }: SwitchActionProps): ReactElement {
-	const flip = useCommand(filePage.switches.flipFileSwitch);
+	const flip = useCommand(filePage.switches.flip);
 	return (
 		<ToggleAction
 			isOn={useFileSwitches().isOn(name)}

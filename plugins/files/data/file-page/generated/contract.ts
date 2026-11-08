@@ -19,15 +19,15 @@ export const FlipFileSwitchInputSchema = z.object({
 
 export const filePage = moduleContract("file-page", Device, {
 	switches: {
-		fileSwitches: named("switches.file-switches", query()
+		all: named("switches.all", query()
 			.public()
 			.output(SwitchesSchema)
 			.settlesNow()),
-		flipFileSwitch: named("switches.flip-file-switch", command()
+		flip: named("switches.flip", command()
 			.public()
 			.input(FlipFileSwitchInputSchema)
 			.idempotencyKey(Repeatable)),
-		reloadFile: named("switches.reload-file", command()
+		reload: named("switches.reload", command()
 			.public()
 			.idempotencyKey(Repeatable)),
 	},

@@ -7,6 +7,6 @@ import type { pageLooksChanged, pagesChanged } from "../gateways/browser-pages/b
 import type { inkActivityChanged } from "../gateways/ink-activity/ink-activity.events.js";
 import type { onceAllowancesChanged } from "../gateways/once-allowances/once-allowances.events.js";
 import type { recentSitesChanged } from "../gateways/recent-sites/recent-sites.events.js";
-import type { siteIconChanged } from "../gateways/site-icons/site-icons.events.js";
+import type { iconChanged } from "../gateways/site-icons/site-icons.events.js";
 
-export const { command, query, subscriber } = buildersOf<typeof browser, typeof accessAsksChanged | typeof grantsChanged | typeof inkActivityChanged | typeof onceAllowancesChanged | typeof pageLooksChanged | typeof pagesChanged | typeof recentSitesChanged | typeof siteIconChanged>();
+export const { command, query, subscriber } = buildersOf<typeof browser, typeof accessAsksChanged | typeof grantsChanged | typeof iconChanged | typeof inkActivityChanged | typeof onceAllowancesChanged | typeof pageLooksChanged | typeof pagesChanged | typeof recentSitesChanged>();

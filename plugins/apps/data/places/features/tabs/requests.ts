@@ -14,7 +14,7 @@ import { ChatTabsSchema, StudioViewSchema, WindowTabsSchema } from "../../shared
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { chatTabsOf, heldTabsAt, placedSidebarOf, rowsAt } from "./lib/tab-reads.js";
 
-export const placedTabs = query()
+export const placed = query()
 	.public()
 	.input(WindowLabelSchema)
 	.output(WindowTabsSchema)
@@ -22,7 +22,7 @@ export const placedTabs = query()
 		windowTabsOf(momentOfWindow(await tabs.placedTabs(), window, placedApps.placedApps())),
 	);
 
-export const tabRows = query()
+export const rows = query()
 	.public()
 	.input(SettleAskSchema)
 	.output(AppTabsSchema)
@@ -34,7 +34,7 @@ export const sidebar = query()
 	.output(PlacedSidebarSchema)
 	.handle(async (ask, { tabs, placedApps }) => placedSidebarOf(await tabs.placedTabs(), placedApps.placedApps(), ask));
 
-export const heldTabs = query()
+export const held = query()
 	.public()
 	.input(SettleAskSchema)
 	.output(HeldTabsSchema)
@@ -49,24 +49,24 @@ export const shownView = query()
 			momentOfWindow(await tabs.placedTabs(), window, placedApps.placedApps()).view,
 	);
 
-export const closedTabs = query()
+export const closed = query()
 	.public()
 	.output(ClosedTabsSchema)
 	.handle(async (_input, { tabs, placedApps }) => ({
 		tabs: closedRowsOf(placedApps.placedApps(), (await tabs.placedTabs()).closed),
 	}));
 
-export const chatTabs = query()
+export const chat = query()
 	.public()
 	.output(ChatTabsSchema)
 	.handle(async (_input, { tabs, placedApps }) => chatTabsOf(await tabs.placedTabs(), placedApps.placedApps()));
 
-export const rereadPlacedTabs = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
-	invalidate(placedTabs);
-	invalidate(tabRows);
+export const rereadPlaced = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
+	invalidate(placed);
+	invalidate(rows);
 	invalidate(sidebar);
-	invalidate(heldTabs);
+	invalidate(held);
 	invalidate(shownView);
-	invalidate(closedTabs);
-	invalidate(chatTabs);
+	invalidate(closed);
+	invalidate(chat);
 });

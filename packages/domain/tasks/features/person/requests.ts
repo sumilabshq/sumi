@@ -19,7 +19,7 @@ import {
 	undeliveredStep,
 } from "./lib/person-edits.js";
 
-export const acceptTask = command()
+export const accept = command()
 	.public()
 	.input(TaskAskSchema)
 	.output(TaskCardSchema)
@@ -30,7 +30,7 @@ export const acceptTask = command()
 		return changed.ok ? cardOf(changed.board, changed.task, now) : refuse(changed.refusal);
 	});
 
-export const keepTask = command()
+export const keep = command()
 	.public()
 	.input(TaskAskSchema)
 	.output(TaskCardSchema)
@@ -41,7 +41,7 @@ export const keepTask = command()
 		return changed.ok ? cardOf(changed.board, changed.task, now) : refuse(changed.refusal);
 	});
 
-export const sendBackTask = command()
+export const sendBack = command()
 	.public()
 	.input(SendBackAskSchema)
 	.output(ContinuedSchema)
@@ -59,7 +59,7 @@ export const sendBackTask = command()
 		};
 	});
 
-export const continueTask = command()
+export const resume = command()
 	.public()
 	.input(ContinueAskSchema)
 	.output(ContinuedSchema)
@@ -77,7 +77,7 @@ export const continueTask = command()
 		};
 	});
 
-export const undeliveredTask = command()
+export const undelivered = command()
 	.public()
 	.input(UndeliveredAskSchema)
 	.output(TaskCardSchema)

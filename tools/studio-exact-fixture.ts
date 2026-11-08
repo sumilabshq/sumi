@@ -190,12 +190,12 @@ export function exactStudio({
 		)
 		.imports(placesOver(places))
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });
-	void studioApp.send(layout.paneTabs.showChatInPane, { chatId: releaseChatId, paneId: null });
+	void studioApp.send(layout.paneTabs.showChat, { chatId: releaseChatId, paneId: null });
 	return {
 		studioApp,
 		places,
 		essentials: keptEssentials,
-		switchChat: (id) => void studioApp.send(appHost.tabs.showTab, { id }),
+		switchChat: (id) => void studioApp.send(appHost.tabs.show, { id }),
 		holdElsewhere: (pageId) => boardPages.holdElsewhere(pageId),
 	};
 }

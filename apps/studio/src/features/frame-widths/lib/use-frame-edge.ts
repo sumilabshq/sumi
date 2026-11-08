@@ -22,8 +22,8 @@ interface DragTrack {
 }
 
 export function useFrameEdge({ edge, px, plateLeastPx }: FrameEdgeAsk): EdgeResizeHandlers {
-	const resize = useCommand(layout.frameWidths.resizeFrameEdge);
-	const reset = useCommand(layout.frameWidths.resetFrameEdge);
+	const resize = useCommand(layout.frameWidths.resizeEdge);
+	const reset = useCommand(layout.frameWidths.resetEdge);
 	const [drag] = useState(() => new FrameEdgeDrag(plateLeastPx));
 	const handlers = useEdgeResize({
 		widthOf: () => drag.widthOr(px),

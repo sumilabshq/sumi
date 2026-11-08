@@ -20,7 +20,7 @@ export function FileListAction({ tabId }: AppViewProps): ReactElement {
 	return (
 		<RepoOnly tabId={tabId}>
 			<ToggleAction
-				isOn={useOptionalQuery(git.gitLook.gitLook).data?.isFileListShown ?? true}
+				isOn={useOptionalQuery(git.gitLook.current).data?.isFileListShown ?? true}
 				whenOn={SHOWN}
 				whenOff={HIDDEN}
 				onToggle={() => void toggle.run()}

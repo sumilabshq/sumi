@@ -18,7 +18,7 @@ export function tasksBoardFileOver(core: RemoteTransport): BoardFile {
 }
 
 async function writeBoardText(files: Runtime, text: string): Promise<void> {
-	const written = await files.send(fileSystem.files.writeFile, {
+	const written = await files.send(fileSystem.files.write, {
 		path: BOARD_FILE_PATH,
 		content: text,
 	});
@@ -29,7 +29,7 @@ async function writeBoardText(files: Runtime, text: string): Promise<void> {
 }
 
 async function readBoardText(files: Runtime): Promise<string | null> {
-	const info = await files.send(fileSystem.files.fileInfo, { path: BOARD_FILE_PATH });
+	const info = await files.send(fileSystem.files.info, { path: BOARD_FILE_PATH });
 
 	if (!info.ok) {
 		throw new Error(info.reason);
@@ -39,7 +39,7 @@ async function readBoardText(files: Runtime): Promise<string | null> {
 		return null;
 	}
 
-	const read = await files.send(fileSystem.files.readFile, { path: BOARD_FILE_PATH });
+	const read = await files.send(fileSystem.files.read, { path: BOARD_FILE_PATH });
 
 	if (!read.ok) {
 		throw new Error(read.reason);

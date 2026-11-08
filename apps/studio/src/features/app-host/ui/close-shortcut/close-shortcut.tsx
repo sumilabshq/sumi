@@ -5,7 +5,7 @@ import { appHost } from "@widgetarium/app-host/contract";
 import { CLOSE_KEY } from "../../lib/tab-keys.js";
 
 export function CloseShortcut({ frame }: { readonly frame: RefObject<HTMLElement | null> }): null {
-	const closeShownTab = useCommand(appHost.tabActions.closeShownTab);
+	const closeShownTab = useCommand(appHost.tabActions.closeShown);
 	useShortcut(frame, {
 		key: CLOSE_KEY,
 		isShifted: false,

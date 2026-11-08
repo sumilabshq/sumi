@@ -9,7 +9,7 @@ export interface ContinueTask {
 }
 
 export function useContinueTask(card: TaskCard): ContinueTask {
-	const continueTask = useCommand(tasks.person.continueTask);
+	const continueTask = useCommand(tasks.person.resume);
 	const handOn = useHandsOnTask(card);
 	return {
 		isRunning: continueTask.isRunning,

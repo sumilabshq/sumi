@@ -1,7 +1,7 @@
 import { PerCall, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { lookPathOf } from "@widgetarium/core/app-look.js";
-import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { momentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import { LookPanelSchema, LookPickSchema } from "../../shared/schema/look-row.schema.js";
 import { lookTextPicked } from "./lib/look-picked.js";
@@ -13,7 +13,7 @@ import { fontsUrlOf } from "./lib/look-tokens.js";
 const UNREADABLE = "The look cannot be read: {why}";
 const NO_LOOK = "{app} has no look to change yet: the assistant offers it first.";
 
-export const lookPanel = query()
+export const panel = query()
 	.public()
 	.output(LookPanelSchema)
 	.handle(async (_input, { canvasMoment, designFolder }) => {
@@ -39,7 +39,7 @@ export const lookPanel = query()
 		};
 	});
 
-export const pickLook = command()
+export const pick = command()
 	.public()
 	.input(LookPickSchema)
 	.idempotencyKey(PerCall)
@@ -57,14 +57,14 @@ export const pickLook = command()
 		console.info(`[widgetarium] look of ${app}: ${settingName} → ${option} (picked)`);
 	});
 
-export const rereadLook = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
+export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (fields.includes("app")) {
-		invalidate(lookPanel);
+		invalidate(panel);
 	}
 });
 
-export const rereadLookForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
-	invalidate(lookPanel);
+export const rereadForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(panel);
 });
 
 function pickedOrRefused(picked: LookTextPicked): string {

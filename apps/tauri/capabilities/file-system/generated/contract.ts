@@ -68,11 +68,11 @@ export const PickedFolderSchema = z.object({
 
 export const fileSystem = moduleContract("file-system", Server, {
 	files: {
-		readFile: named("files.read-file", query()
+		read: named("files.read", query()
 			.public()
 			.input(PathInputSchema)
 			.output(FileContentSchema)),
-		readFileBytes: named("files.read-file-bytes", query()
+		readBytes: named("files.read-bytes", query()
 			.public()
 			.input(PathInputSchema)
 			.output(FileBytesSchema)),
@@ -84,11 +84,11 @@ export const fileSystem = moduleContract("file-system", Server, {
 			.public()
 			.input(PathInputSchema)
 			.output(FolderSchema)),
-		fileInfo: named("files.file-info", query()
+		info: named("files.info", query()
 			.public()
 			.input(PathInputSchema)
 			.output(FileInfoSchema)),
-		locatedFile: named("files.located-file", query()
+		located: named("files.located", query()
 			.public()
 			.input(LocateFileInputSchema)
 			.output(LocatedFileSchema)),
@@ -96,11 +96,11 @@ export const fileSystem = moduleContract("file-system", Server, {
 			.public()
 			.output(PickedFolderSchema)
 			.idempotencyKey(PerCall)),
-		writeFile: named("files.write-file", command()
+		write: named("files.write", command()
 			.public()
 			.input(WriteFileInputSchema)
 			.idempotencyKey(Repeatable)),
-		appendFile: named("files.append-file", command()
+		append: named("files.append", command()
 			.public()
 			.input(WriteFileInputSchema)
 			.idempotencyKey(PerCall)),

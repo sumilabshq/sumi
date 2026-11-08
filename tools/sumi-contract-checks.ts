@@ -86,8 +86,8 @@ transport.changes(() => {
 const sumi = runtime()
 	.imports(fileSystem({ over: transport }))
 	.start();
-await sumi.send(fileSystem.files.writeFile, { path: "a.txt", content: "over a port" });
-const read = await sumi.send(fileSystem.files.readFile, { path: "a.txt" });
+await sumi.send(fileSystem.files.write, { path: "a.txt", content: "over a port" });
+const read = await sumi.send(fileSystem.files.read, { path: "a.txt" });
 check(
 	"a call over a MessagePort is answered, stamped by the listener",
 	read.ok ? read.output : read.reason,
@@ -105,7 +105,7 @@ const relay = createFrameRelay([
 	},
 ]);
 const notRelayed = await relay.answer({
-	name: "tasks.board.board",
+	name: "tasks.board.current",
 	input: undefined,
 	idempotencyKey: null,
 	signal: new AbortController().signal,
@@ -169,18 +169,18 @@ createFrameRelay([
 	heardByT1.push(...invalidated.map(({ inputKey }) => inputKey ?? "all"));
 });
 const pages = appOver(webPages, (transport) => webPage({ over: transport }), "notes");
-await pages.send(webPage.pages.openWebPage, { tab: "t1", url: "https://example.com/page#private-token" });
-await appOver(webPages, (transport) => webPage({ over: transport }), "tasks").send(webPage.pages.openWebPage, {
+await pages.send(webPage.pages.open, { tab: "t1", url: "https://example.com/page#private-token" });
+await appOver(webPages, (transport) => webPage({ over: transport }), "tasks").send(webPage.pages.open, {
 	tab: "t2",
 	url: "https://example.org/",
 });
-const page = await pages.send(webPage.pages.webPage, { tab: "t1" });
+const page = await pages.send(webPage.pages.one, { tab: "t1" });
 check(
 	"web-page from the contract opens and reads a page over memory (a fake browser), its fragment left out",
 	page.ok ? [page.output?.title, page.output?.url] : page.reason,
 	["example.com", "https://example.com/page"],
 );
-const otherPage = await pages.send(webPage.pages.webPage, { tab: "t2" });
+const otherPage = await pages.send(webPage.pages.one, { tab: "t2" });
 check("web-page refuses a tab that does not hold the calling app", otherPage.ok ? "read" : otherPage.code, "forbidden");
 check(
 	"a frame's web-page route hears its own tab's changes, never another tab's",
@@ -204,7 +204,7 @@ const chat = runtime()
 	});
 const chatOfApp = appOver(chat, (transport) => assistant({ over: transport }), "chat");
 await chatOfApp.send(assistant.composer.sendMessage, { chat: null, said: "hi" });
-const chatRead = await chatOfApp.send(assistant.chat.chat, { chat: null });
+const chatRead = await chatOfApp.send(assistant.chat.one, { chat: null });
 check(
 	"an app sends a message and reads the answer through the assistant contract",
 	chatRead.ok ? chatRead.output.session.turns.map(({ text }) => text) : chatRead.reason,

@@ -4,7 +4,7 @@ import type { OutputOf } from "@widgetarium/data-framework";
 import type { canvas } from "@widgetarium/canvas/contract";
 import { PAGE_ROW } from "../../lib/panel-row-look.js";
 
-type ListedPage = OutputOf<typeof canvas.pages.pages>["items"][number];
+type ListedPage = OutputOf<typeof canvas.pages.all>["items"][number];
 
 export interface PageRowProps {
 	readonly row: ListedPage;

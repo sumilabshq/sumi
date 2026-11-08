@@ -7,7 +7,7 @@ import { useFlashesDone } from "../../lib/use-flashes-done.js";
 
 export function ReloadAction(): ReactElement {
 	const { Action } = useTabHeader();
-	const reload = useCommand(filePage.switches.reloadFile);
+	const reload = useCommand(filePage.switches.reload);
 	const flash = useFlashesDone();
 	return (
 		<Action

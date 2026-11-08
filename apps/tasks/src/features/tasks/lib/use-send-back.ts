@@ -9,7 +9,7 @@ export interface SendBack {
 }
 
 export function useSendBack(card: TaskCard): SendBack {
-	const sendBack = useCommand(tasks.person.sendBackTask);
+	const sendBack = useCommand(tasks.person.sendBack);
 	const handOn = useHandsOnTask(card);
 	return {
 		isRunning: sendBack.isRunning,

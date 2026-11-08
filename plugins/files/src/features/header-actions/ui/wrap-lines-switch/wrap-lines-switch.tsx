@@ -8,7 +8,7 @@ import { useFileSwitches } from "../../lib/use-file-switches.js";
 const WRAP_SWITCH = "wrap";
 
 export function WrapLinesSwitch(): ReactElement {
-	const flip = useCommand(filePage.switches.flipFileSwitch);
+	const flip = useCommand(filePage.switches.flip);
 	return (
 		<WrapLinesAction
 			isWrapped={useFileSwitches().isOn(WRAP_SWITCH)}

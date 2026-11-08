@@ -1101,7 +1101,7 @@ try {
 
 check(
 	"a request of a generated contract keeps its .public(), so it reports a public reach",
-	[terminal.lines.terminalOutput.visibility.reach, terminal.lines.resizeTerminal.visibility.reach],
+	[terminal.lines.output.visibility.reach, terminal.lines.resize.visibility.reach],
 	["public", "public"],
 );
 

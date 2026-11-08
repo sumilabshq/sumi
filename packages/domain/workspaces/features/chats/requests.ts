@@ -20,7 +20,7 @@ import type { KeptChat, KeptChats } from "../../shared/schema/chat.schema.js";
 
 const TITLE_MOST_CHARS = 80;
 
-export const chatRecords = query()
+export const records = query()
 	.public()
 	.output(ChatRecordsSchema)
 	.settlesNow()
@@ -33,7 +33,7 @@ export const chatRecords = query()
 		})),
 	}));
 
-export const workspaceCrumb = query()
+export const crumb = query()
 	.public()
 	.output(WorkspaceCrumbSchema)
 	.settlesNow()
@@ -41,13 +41,13 @@ export const workspaceCrumb = query()
 		workspace: currentWorkspaceOf(workspaces.workspaces(), currentWorkspace.currentWorkspace().currentId).name,
 	}));
 
-export const createChat = command()
+export const create = command()
 	.public()
 	.input(NewChatSchema)
 	.output(ChatIdSchema)
 	.idempotencyKey(PerCall)
 	.handle(async ({ title }, { chats, invalidate, send }) => {
-		invalidate(chatRecords);
+		invalidate(records);
 		const kept = chats.chats();
 		const chat = newChatOf(title);
 		const reason = `chats ${kept.chats.length} → ${kept.chats.length + 1} (new chat ${chat.id})`;
@@ -63,7 +63,7 @@ export const createChat = command()
 		return { id: chat.id };
 	});
 
-export const forgetChatToOpen = command()
+export const forgetToOpen = command()
 	.public()
 	.input(ChatIdSchema)
 	.idempotencyKey(Repeatable)
@@ -88,7 +88,7 @@ export const forgetChatToOpen = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const chatToOpen = query()
+export const toOpen = query()
 	.public()
 	.output(ChatToOpenSchema)
 	.settlesNow()
@@ -107,12 +107,12 @@ export const chatToOpen = query()
 		};
 	});
 
-export const recordChatTurn = command()
+export const recordTurn = command()
 	.public()
 	.input(ChatTurnSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async (turn, { chats, invalidate, send }) => {
-		invalidate(chatRecords);
+		invalidate(records);
 		const kept = chats.chats();
 		const was = kept.chats.find((chat) => chat.id === turn.chatId);
 
@@ -122,7 +122,7 @@ export const recordChatTurn = command()
 		}
 
 		const title = was.title ?? titleOfAsk(turn.firstAsked);
-		const marks = await send(places.tabFacts.recordTabTurn, {
+		const marks = await send(places.tabFacts.recordTurn, {
 			id: was.id,
 			title,
 			isBusy: turn.isBusy,
@@ -133,22 +133,22 @@ export const recordChatTurn = command()
 		saveTurned(chats, now, chatAfterTurn(now, { title: now.title ?? title, isStarting }));
 	});
 
-export const rereadChats = subscriber(chatsChanged).handle((_input, { invalidate }) => {
-	invalidate(chatRecords);
-	invalidate(chatToOpen);
+export const reread = subscriber(chatsChanged).handle((_input, { invalidate }) => {
+	invalidate(records);
+	invalidate(toOpen);
 });
 
 export const rereadCrumbForWorkspaces = subscriber(workspacesChanged).handle((_input, { invalidate }) => {
-	invalidate(workspaceCrumb);
+	invalidate(crumb);
 });
 
 export const rereadCrumbForCurrent = subscriber(currentWorkspaceChanged).handle((_input, { invalidate }) => {
-	invalidate(workspaceCrumb);
+	invalidate(crumb);
 });
 
 async function keepTabOf(send: Send, chat: KeptChat): Promise<void> {
 	try {
-		await send(places.tabFacts.keepChatTabs, { chats: [{ id: chat.id, title: chat.title }] });
+		await send(places.tabFacts.keepChat, { chats: [{ id: chat.id, title: chat.title }] });
 	} catch (failure: unknown) {
 		console.error(`[widgetarium] chat ${chat.id} kept with no tab yet; the next restore gives it one`, failure);
 	}

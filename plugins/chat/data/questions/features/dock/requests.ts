@@ -19,14 +19,14 @@ import {
 } from "../../shared/schema/question.schema.js";
 import type { ChatQuestions, Question } from "../../shared/schema/question.schema.js";
 
-export const chatQuestions = query()
+export const ofChat = query()
 	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(ChatQuestionsSchema)
 	.settlesNow()
 	.handle(({ chat }, { questions }) => dockOf(questions.questionsOf(chat)));
 
-export const answerQuestion = command()
+export const answer = command()
 	.public()
 	.input(AnswerQuestionAskSchema)
 	.idempotencyKey(Repeatable)
@@ -36,11 +36,11 @@ export const answerQuestion = command()
 			(held) => questionAnswered(held, ask, Date.now()),
 			`answer ${ask.id}`,
 		);
-		invalidate(chatQuestions);
+		invalidate(ofChat);
 		return changed.ok ? undefined : refuse(changed.refusal);
 	});
 
-export const skipQuestions = command()
+export const skip = command()
 	.public()
 	.input(QuestionsAskSchema)
 	.output(ChangedCountSchema)
@@ -51,17 +51,17 @@ export const skipQuestions = command()
 			(held) => questionsSkipped(held, ask, Date.now()),
 			`skip ${ask.ids.join(", ")}`,
 		);
-		invalidate(chatQuestions);
+		invalidate(ofChat);
 		return changed.ok ? { changed: ask.ids.length } : refuse(changed.refusal);
 	});
 
-export const reopenQuestion = command()
+export const reopen = command()
 	.public()
 	.input(QuestionAskSchema)
 	.idempotencyKey(Repeatable)
 	.handle((ask, { questions, invalidate }) => {
 		const changed = questions.changeQuestions(ask.chat, (held) => questionReopened(held, ask), `undo ${ask.id}`);
-		invalidate(chatQuestions);
+		invalidate(ofChat);
 		return changed.ok ? undefined : refuse(changed.refusal);
 	});
 
@@ -78,8 +78,8 @@ export const readyAnswers = query()
 		};
 	});
 
-export const rereadQuestions = subscriber(questionsChanged).handle((_input, { invalidate }) => {
-	invalidate(chatQuestions);
+export const reread = subscriber(questionsChanged).handle((_input, { invalidate }) => {
+	invalidate(ofChat);
 });
 
 function dockOf(held: readonly Question[]): ChatQuestions {

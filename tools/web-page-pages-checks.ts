@@ -43,8 +43,8 @@ function appOver(caller: string | null): Runtime {
 }
 
 const notes = appOver("notes");
-const opened = await notes.send(webPage.pages.openWebPage, { tab: "t1", url: "https://example.com/a" });
-const read = await notes.send(webPage.pages.webPage, { tab: "t1" });
+const opened = await notes.send(webPage.pages.open, { tab: "t1", url: "https://example.com/a" });
+const read = await notes.send(webPage.pages.one, { tab: "t1" });
 check("open-web-page is answered ok", opened.ok, true);
 check("web-page reads the opened page, titled by its host (memory fake)", read.ok ? read.output : read.reason, {
 	url: "https://example.com/a",
@@ -54,38 +54,38 @@ check("web-page reads the opened page, titled by its host (memory fake)", read.o
 	canGoForward: false,
 });
 
-const scheme = await notes.send(webPage.pages.openWebPage, { tab: "t1", url: "file:///etc/passwd" });
+const scheme = await notes.send(webPage.pages.open, { tab: "t1", url: "file:///etc/passwd" });
 check(
 	"a url that is not http or https is refused",
 	scheme.ok ? "opened" : [scheme.code, scheme.reason.includes("not a web scheme")],
 	["refused", true],
 );
 
-const foreign = await notes.send(webPage.pages.webPage, { tab: "t2" });
+const foreign = await notes.send(webPage.pages.one, { tab: "t2" });
 check("a tab holding another app is forbidden", foreign.ok ? "answered" : foreign.code, "forbidden");
-const foreignOpen = await notes.send(webPage.pages.openWebPage, { tab: "t9", url: "https://example.com" });
+const foreignOpen = await notes.send(webPage.pages.open, { tab: "t9", url: "https://example.com" });
 check("a tab no app holds is forbidden", foreignOpen.ok ? "opened" : foreignOpen.code, "forbidden");
 
-const anonymous = await appOver(null).send(webPage.pages.webPage, { tab: "t1" });
+const anonymous = await appOver(null).send(webPage.pages.one, { tab: "t1" });
 check("a call with no app caller is unauthenticated", anonymous.ok ? "answered" : anonymous.code, "unauthenticated");
 
-await notes.send(webPage.pages.openWebPage, { tab: "t1", url: "https://example.org/b" });
-const back = await notes.send(webPage.pages.goBackWebPage, { tab: "t1" });
-const afterBack = await notes.send(webPage.pages.webPage, { tab: "t1" });
+await notes.send(webPage.pages.open, { tab: "t1", url: "https://example.org/b" });
+const back = await notes.send(webPage.pages.goBack, { tab: "t1" });
+const afterBack = await notes.send(webPage.pages.one, { tab: "t1" });
 check(
 	"go-back-web-page moves to the page before",
 	[back.ok, afterBack.ok ? afterBack.output?.url : afterBack.reason],
 	[true, "https://example.com/a"],
 );
-const forward = await notes.send(webPage.pages.goForwardWebPage, { tab: "t1" });
-const noForward = await notes.send(webPage.pages.goForwardWebPage, { tab: "t1" });
+const forward = await notes.send(webPage.pages.goForward, { tab: "t1" });
+const noForward = await notes.send(webPage.pages.goForward, { tab: "t1" });
 check(
 	"go-forward-web-page moves on, and refuses when there is nothing ahead",
 	[forward.ok, noForward.ok ? "moved" : noForward.code],
 	[true, "refused"],
 );
 
-const placed = await notes.send(webPage.pages.placeWebPage, {
+const placed = await notes.send(webPage.pages.place, {
 	tab: "t1",
 	area: {
 		x: 10,
@@ -110,7 +110,7 @@ check(
 
 const outOfBounds = await Promise.all(
 	[-1, 16_385, Number.POSITIVE_INFINITY].map((x) =>
-		notes.send(webPage.pages.placeWebPage, {
+		notes.send(webPage.pages.place, {
 			tab: "t1",
 			area: {
 				x,
@@ -133,15 +133,15 @@ const heard = {
 const local = localTransport();
 const stopLocal = local.serve(served, { authenticate: new AppCallerAuthenticate() });
 local.changes((invalidated) => {
-	heard.changes += invalidated.filter(({ query }) => query === webPage.pages.webPage.name).length;
+	heard.changes += invalidated.filter(({ query }) => query === webPage.pages.one.name).length;
 });
 await webPages.reloadPage("t1");
 check("a page changing outside any call re-reads web-page for listeners", await waitFor(() => heard.changes > 0), true);
 stopLocal();
 
-const closed = await notes.send(webPage.pages.closeWebPage, { tab: "t1" });
-const gone = await notes.send(webPage.pages.webPage, { tab: "t1" });
-const placeGone = await notes.send(webPage.pages.placeWebPage, { tab: "t1", area: null });
+const closed = await notes.send(webPage.pages.close, { tab: "t1" });
+const gone = await notes.send(webPage.pages.one, { tab: "t1" });
+const placeGone = await notes.send(webPage.pages.place, { tab: "t1", area: null });
 check(
 	"close-web-page leaves no page, and placing it is refused",
 	[closed.ok, gone.ok ? gone.output : gone.reason, placeGone.ok ? "placed" : placeGone.code],

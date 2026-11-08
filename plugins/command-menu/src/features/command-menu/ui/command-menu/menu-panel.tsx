@@ -33,8 +33,8 @@ const NO_RESULTS: Results = {
 
 export function MenuPanel({ door, startText, pageId }: MenuPanelProps): ReactElement {
 	const [text, setText] = useState(startText);
-	const menuDoors = useQuery(commandMenu.opening.menuDoors).data.doors;
-	const results = useOptionalQuery(commandMenu.results.commandMenuResults, { text, door, pageId }).data ?? NO_RESULTS;
+	const menuDoors = useQuery(commandMenu.opening.doors).data.doors;
+	const results = useOptionalQuery(commandMenu.results.all, { text, door, pageId }).data ?? NO_RESULTS;
 	const moves = useMenuMoves(results);
 	const doors = useDoorSwitch({ door, resultsDoor: results.door, typed: moves.typed });
 	const shownCount = results.door === doors.shownDoor ? results.foundCount : null;

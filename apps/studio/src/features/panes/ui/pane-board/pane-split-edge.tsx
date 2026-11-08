@@ -18,8 +18,8 @@ const RESIZE_LABEL = "Resize panes";
 const CHAT_EDGE = "chat";
 
 export function PaneSplitEdge({ edge, bounds, onDrag, onChatPx }: PaneSplitEdgeProps): ReactElement {
-	const resize = useCommand(layout.panes.resizePaneSplit);
-	const resizeSplit = useCommand(appHost.splits.resizeSplit);
+	const resize = useCommand(layout.panes.resizeSplit);
+	const resizeSplit = useCommand(appHost.splits.resize);
 	const { branchId } = edge;
 	const least = bounds.plateLeastPx / edge.spanPx;
 	const shareWithin = (asked: number): number => Math.min(Math.max(asked, least), edge.pairShare - least);

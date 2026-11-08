@@ -5,7 +5,7 @@ import { canvas } from "@widgetarium/canvas/contract";
 import { RegionDrawn } from "./region-drawn.js";
 
 export function FieldRegions(): ReactElement {
-	const { regions } = useQuery(canvas.field.fieldRegions).data;
+	const { regions } = useQuery(canvas.field.regions).data;
 	return (
 		<>
 			{regions.map((region) => (

@@ -18,7 +18,7 @@ export async function askNeeded(context: ToolContext, input: unknown) {
 	const ids = await posted(context, { tool: "ask_needed", need: "needed", input });
 	await settledOf(context, ids);
 	const delivered = await outputOf(
-		context.app.send(questions.agent.deliverQuestions, {
+		context.app.send(questions.agent.deliver, {
 			chat: context.chatId,
 			ids: [...ids],
 		}),
@@ -54,7 +54,7 @@ async function posted(
 ): Promise<readonly string[]> {
 	const asked = inputOf(QuestionsInputSchema, tool, fieldsOf(tool, input));
 	const answer = await outputOf(
-		app.send(questions.agent.postQuestions, {
+		app.send(questions.agent.post, {
 			chat: chatId,
 			need,
 			questions: asked.questions,
@@ -66,7 +66,7 @@ async function posted(
 // TRADE-OFF: the call polls the core every half second; a watch over questions.questions.questionsChanged would answer at once
 async function settledOf({ app, chatId }: ToolContext, ids: readonly string[]): Promise<void> {
 	for (;;) {
-		const held = await outputOf(app.send(questions.agent.questions, { chat: chatId, ids: [...ids] }));
+		const held = await outputOf(app.send(questions.agent.all, { chat: chatId, ids: [...ids] }));
 
 		if (held.some(({ state }) => state === "withdrawn")) {
 			throw new Error(NOT_ANSWERED);

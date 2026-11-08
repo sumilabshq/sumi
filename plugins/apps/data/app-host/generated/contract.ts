@@ -328,51 +328,51 @@ export const ViewToShowSchema = z.object({ view: StudioViewSchema });
 
 export const appHost = moduleContract("app-host", Device, {
 	closedTabs: {
-		closedTabs: named("closed-tabs.closed-tabs", query()
+		all: named("closed-tabs.all", query()
 			.public()
 			.output(ClosedTabsSchema)),
-		reopenClosedTabById: named("closed-tabs.reopen-closed-tab-by-id", command()
+		reopenById: named("closed-tabs.reopen-by-id", command()
 			.public()
 			.input(ClosedTabIdSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	essentials: {
-		showEssential: named("essentials.show-essential", command()
+		show: named("essentials.show", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		removeEssential: named("essentials.remove-essential", command()
+		remove: named("essentials.remove", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		closeEssential: named("essentials.close-essential", command()
+		close: named("essentials.close", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		placeEssential: named("essentials.place-essential", command()
+		place: named("essentials.place", command()
 			.public()
 			.input(z.object({ id: z.string(), to: TabDropSchema }))
 			.idempotencyKey(Repeatable)),
 	},
 	groups: {
-		createGroup: named("groups.create-group", command()
+		create: named("groups.create", command()
 			.public()
 			.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]).and(GroupFaceSchema))
 			.output(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		renameGroup: named("groups.rename-group", command()
+		rename: named("groups.rename", command()
 			.public()
 			.input(z.object({ id: z.string(), name: z.string() }))
 			.idempotencyKey(Repeatable)),
-		setGroupHue: named("groups.set-group-hue", command()
+		setHue: named("groups.set-hue", command()
 			.public()
 			.input(z.object({ id: z.string(), hue: GroupHueSchema.nullable() }))
 			.idempotencyKey(Repeatable)),
-		foldGroup: named("groups.fold-group", command()
+		fold: named("groups.fold", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		placeGroup: named("groups.place-group", command()
+		place: named("groups.place", command()
 			.public()
 			.input(
 				z.object({
@@ -394,22 +394,22 @@ export const appHost = moduleContract("app-host", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	links: {
-		openLink: named("links.open-link", command()
+		open: named("links.open", command()
 			.public()
 			.input(LinkToOpenSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	shownView: {
-		shownView: named("shown-view.shown-view", query()
+		current: named("shown-view.current", query()
 			.public()
 			.output(StudioViewSchema)),
-		showView: named("shown-view.show-view", command()
+		show: named("shown-view.show", command()
 			.public()
 			.input(ViewToShowSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	splits: {
-		shownSplit: named("splits.shown-split", query()
+		shown: named("splits.shown", query()
 			.public()
 			.output(ShownSplitSchema)),
 		placeInView: named("splits.place-in-view", command()
@@ -421,7 +421,7 @@ export const appHost = moduleContract("app-host", Device, {
 			.public()
 			.input(z.object({ paneId: z.string().min(1), tabId: z.string().min(1).nullable() }))
 			.idempotencyKey(Repeatable)),
-		resizeSplit: named("splits.resize-split", command()
+		resize: named("splits.resize", command()
 			.public()
 			.input(
 				z.object({
@@ -433,16 +433,16 @@ export const appHost = moduleContract("app-host", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	tabActions: {
-		openTab: named("tab-actions.open-tab", command()
+		open: named("tab-actions.open", command()
 			.public()
 			.input(TabToOpenSchema)
 			.output(OpenedTabSchema)
 			.idempotencyKey(Repeatable)),
-		openTabBelow: named("tab-actions.open-tab-below", command()
+		openBelow: named("tab-actions.open-below", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		duplicateTab: named("tab-actions.duplicate-tab", command()
+		duplicate: named("tab-actions.duplicate", command()
 			.public()
 			.input(
 				z.object({
@@ -454,29 +454,29 @@ export const appHost = moduleContract("app-host", Device, {
 			)
 			.output(OpenedTabSchema)
 			.idempotencyKey(Repeatable)),
-		reloadTab: named("tab-actions.reload-tab", command()
+		reload: named("tab-actions.reload", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		renameTab: named("tab-actions.rename-tab", command()
+		rename: named("tab-actions.rename", command()
 			.public()
 			.input(z.object({ id: z.string(), label: z.string() }))
 			.idempotencyKey(Repeatable)),
-		closeOtherTabs: named("tab-actions.close-other-tabs", command()
+		closeOthers: named("tab-actions.close-others", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		reopenClosedTab: named("tab-actions.reopen-closed-tab", command()
+		reopenClosed: named("tab-actions.reopen-closed", command()
 			.public()
 			.idempotencyKey(Repeatable)),
-		closeTab: named("tab-actions.close-tab", command()
+		close: named("tab-actions.close", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		closeShownTab: named("tab-actions.close-shown-tab", command()
+		closeShown: named("tab-actions.close-shown", command()
 			.public()
 			.idempotencyKey(Repeatable)),
-		tearOffTab: named("tab-actions.tear-off-tab", command()
+		tearOff: named("tab-actions.tear-off", command()
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
@@ -484,35 +484,35 @@ export const appHost = moduleContract("app-host", Device, {
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
-		pinTab: named("tab-actions.pin-tab", command()
+		pin: named("tab-actions.pin", command()
 			.public()
 			.input(TabPinSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	tabs: {
-		appTabs: named("tabs.app-tabs", query()
+		all: named("tabs.all", query()
 			.public()
 			.output(AppTabsSchema)),
-		tabsSidebar: named("tabs.tabs-sidebar", query()
+		sidebar: named("tabs.sidebar", query()
 			.public()
 			.output(TabsSidebarSchema)),
-		heldTabs: named("tabs.held-tabs", query()
+		held: named("tabs.held", query()
 			.public()
 			.output(HeldTabsSchema)),
 		canOpenOwnWindow: named("tabs.can-open-own-window", query()
 			.public()
 			.output(z.boolean())),
-		restoreTabs: named("tabs.restore-tabs", command()
+		restore: named("tabs.restore", command()
 			.public()
 			.idempotencyKey(Repeatable)),
-		showTab: named("tabs.show-tab", command()
+		show: named("tabs.show", command()
 			.public()
 			.input(TabToShowSchema)
 			.idempotencyKey(Repeatable)),
-		syncChatTabs: named("tabs.sync-chat-tabs", command()
+		syncChat: named("tabs.sync-chat", command()
 			.public()
 			.idempotencyKey(Repeatable)),
-		placeTab: named("tabs.place-tab", command()
+		place: named("tabs.place", command()
 			.public()
 			.input(z.object({ id: z.string(), to: TabDropSchema }))
 			.idempotencyKey(Repeatable)),

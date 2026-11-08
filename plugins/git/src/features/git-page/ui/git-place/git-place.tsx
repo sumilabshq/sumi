@@ -18,7 +18,7 @@ const MISSING = "Folder not found";
 const MISSING_SAID = "{folder} does not exist.";
 
 export function GitPlace({ address, go }: GitPlaceProps): ReactElement | null {
-	const place = useOptionalQuery(git.repos.gitPlace, { folder: address.folder });
+	const place = useOptionalQuery(git.repos.place, { folder: address.folder });
 
 	if (place.failure !== null) {
 		return <GitNote said={place.failure} />;

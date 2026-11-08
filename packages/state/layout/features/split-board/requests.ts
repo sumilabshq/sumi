@@ -6,12 +6,12 @@ import { treeFocusingSplit, treeLeavingSplit, treeShowingSplit } from "../../sha
 import { paneTransitionOf } from "../../shared/lib/pane-words.js";
 import { SplitDrawingSchema } from "../../shared/schema/pane-tree.schema.js";
 
-export const showSplit = command()
+export const show = command()
 	.public()
 	.input(SplitDrawingSchema)
 	.idempotencyKey(Repeatable)
 	.handle((drawing, { paneTree, invalidate }) => {
-		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.current);
 		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const next = treeShowingSplit(tree, drawing);
@@ -20,11 +20,11 @@ export const showSplit = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const leaveSplit = command()
+export const leave = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { paneTree, invalidate }) => {
-		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.current);
 		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const next = treeLeavingSplit(tree);
@@ -33,7 +33,7 @@ export const leaveSplit = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const focusSplit = command()
+export const focus = command()
 	.public()
 	.input(z.object({ focusedId: z.string().min(1) }))
 	.idempotencyKey(Repeatable)
@@ -45,7 +45,7 @@ export const focusSplit = command()
 			return;
 		}
 
-		invalidate(layout.panes.paneTree);
+		invalidate(layout.panes.current);
 		const reason = `split focus → ${focusedId}: app target ${tree.targetId ?? "none"} → ${next.targetId ?? "none"}, chat target ${tree.chatTargetId ?? "none"} → ${next.chatTargetId ?? "none"}`;
 		paneTree.saveTree(next, reason);
 		console.info(`[widgetarium] ${reason}`);

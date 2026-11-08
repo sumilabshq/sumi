@@ -17,7 +17,7 @@ const PHOTO_HOLDER = `cv:inline-flex cv:items-center cv:gap-1.5 ${PAGE_NAME_AND_
 export function AddPhoto(): ReactElement {
 	const picker = useRef<HTMLInputElement | null>(null);
 	const anchor = useRef<HTMLSpanElement | null>(null);
-	const add = useCommand(canvas.photos.addPhotos);
+	const add = useCommand(canvas.photos.add);
 	const { ownsPaste } = useCanvasSurroundings();
 	usePastedFiles(IMAGES, (photos) => {
 		if (ownsPaste()) {

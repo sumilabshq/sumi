@@ -15,7 +15,7 @@ export function QuestionsDock({
 	readonly chatId: string;
 	readonly report: Report;
 }): ReactElement | null {
-	const { data } = useQuery(questions.dock.chatQuestions, { chat: chatId });
+	const { data } = useQuery(questions.dock.ofChat, { chat: chatId });
 	const doing = useQuestionDoing(chatId, report);
 	useQueuesAnswers(chatId, data.optional, report);
 

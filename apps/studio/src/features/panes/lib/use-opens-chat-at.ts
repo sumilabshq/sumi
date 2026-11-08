@@ -11,7 +11,7 @@ export interface ChatOpening {
 }
 
 export function useOpensChatAt({ chatPx, edges, plateLeastPx, isChatSettled }: ChatOpening): void {
-	const resize = useCommand(layout.panes.resizePaneSplit);
+	const resize = useCommand(layout.panes.resizeSplit);
 	const isOpened = useRef(false);
 	const chatEdge = edges.find((edge) => edge.isChatEdge && edge.spanPx > 0);
 	useLayoutEffect(() => {

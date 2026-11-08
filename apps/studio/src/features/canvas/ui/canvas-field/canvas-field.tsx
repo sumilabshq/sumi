@@ -5,6 +5,6 @@ import { canvas } from "@widgetarium/canvas/contract";
 import { FieldStage } from "./field-stage.js";
 
 export function CanvasField(): ReactElement {
-	const { page } = useQuery(canvas.field.fieldState).data;
+	const { page } = useQuery(canvas.field.state).data;
 	return <FieldStage key={page} />;
 }

@@ -4,7 +4,7 @@ import { chooseOptions, holdProvider } from "../../shared/lib/chat-drafts.js";
 import { OPTIONS_NOT_HERE } from "../../gateways/claude-options/none.gateway.js";
 import { WORKING_FOLDER_NOT_HERE } from "../../gateways/working-folders/none.gateway.js";
 import {
-	assistantSetupChanged,
+	setupChanged,
 	claudeOptionsChanged,
 	workingFolderChanged,
 } from "../../gateways/chat-parts/chat-parts.events.js";
@@ -25,7 +25,7 @@ import { inChat } from "../../gateways/chat-parts/in-chat.js";
 
 const NO_CLAUDE_CODE = "Claude Code is not among the providers, so its model cannot be chosen.";
 
-export const agentSetup = query()
+export const current = query()
 	.public()
 	.input(ChatKeySchema)
 	.output(AgentSetupSchema)
@@ -37,19 +37,19 @@ export const chooseProvider = command()
 	.idempotencyKey(PerCall)
 	.handle(
 		inChat(async ({ id }, { assistantSetup, chatDrafts, invalidate }) => {
-			invalidate(agentSetup);
+			invalidate(current);
 			await assistantSetup.chooseProvider(id);
 			holdProvider(chatDrafts, id);
 		}),
 	);
 
-export const setHelperAgents = command()
+export const setHelpers = command()
 	.public()
 	.input(HelperAgentsAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(
 		inChat(async ({ on }, { assistantSetup, invalidate }) => {
-			invalidate(agentSetup);
+			invalidate(current);
 			await assistantSetup.setHelperAgents(on);
 		}),
 	);
@@ -101,7 +101,7 @@ export const chooseClaudeModel = command()
 			}
 
 			if (setup.chosen !== CLAUDE_CODE_PROVIDER_ID) {
-				invalidate(agentSetup);
+				invalidate(current);
 				await assistantSetup.chooseProvider(CLAUDE_CODE_PROVIDER_ID);
 				holdProvider(chatDrafts, CLAUDE_CODE_PROVIDER_ID);
 				console.info(
@@ -178,8 +178,8 @@ export const pickWorkingFolder = command()
 		}),
 	);
 
-export const rereadAgentSetup = subscriber(assistantSetupChanged).handle((_input, { invalidate }) => {
-	invalidate(agentSetup);
+export const rereadSetup = subscriber(setupChanged).handle((_input, { invalidate }) => {
+	invalidate(current);
 });
 
 export const rereadWorkingFolders = subscriber(workingFolderChanged).handle((_input, { invalidate }) => {

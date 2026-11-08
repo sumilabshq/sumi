@@ -51,7 +51,7 @@ export function WorkspaceAppPlate({
 	browser,
 	backToView,
 }: WorkspaceAppPlateProps): ReactElement {
-	const appName = useQuery(workspaces.workspaces.workspaces).data.current.name;
+	const appName = useQuery(workspaces.workspaces.all).data.current.name;
 	const appTitleOf = useAppTitleOf();
 	const shownApp = view === "app" ? null : view;
 	const moreItems = useMemo(() => moreItemsOf(view, appName, backToView), [view, appName, backToView]);

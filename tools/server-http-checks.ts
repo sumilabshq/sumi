@@ -54,7 +54,7 @@ async function checkRequests(url: string): Promise<void> {
 		ok: true,
 		output: { currency: "EUR", total: 0, charges: 0 },
 	});
-	const refused = await client.send(fixtureBilling.charge.charge, { amount: 5000 });
+	const refused = await client.send(fixtureBilling.charge.take, { amount: 5000 });
 	check("a guard's refusal travels back with its code", refused.ok ? "ran" : [refused.code, refused.ran], [
 		"forbidden",
 		false,
@@ -63,8 +63,8 @@ async function checkRequests(url: string): Promise<void> {
 }
 
 async function checkRepeatedKey(client: Runtime): Promise<void> {
-	const first = await client.send(fixtureBilling.charge.charge, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
-	const repeat = await client.send(fixtureBilling.charge.charge, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
+	const first = await client.send(fixtureBilling.charge.take, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
+	const repeat = await client.send(fixtureBilling.charge.take, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
 	check("a repeat of one idempotency key gets the first answer, which ran", [first.ok, repeat], [true, first]);
 	const after = await client.send(fixtureBilling.charge.balance);
 	check("and the handler ran once", after.ok ? after.output.charges : after.reason, 1);

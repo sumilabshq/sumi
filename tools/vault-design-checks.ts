@@ -129,6 +129,6 @@ function checkShownWidgets(check: Check): void {
 }
 
 function PhotoView(): ReactElement {
-	drawn.push(useCommand(canvas.photos.addPhotos));
+	drawn.push(useCommand(canvas.photos.add));
 	return h("p", null, "photos");
 }

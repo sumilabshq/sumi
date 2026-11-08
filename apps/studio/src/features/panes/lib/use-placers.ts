@@ -5,7 +5,7 @@ import { layout } from "@widgetarium/layout/contract";
 import type { Placers } from "./view-drops.js";
 
 export function usePlacers(): Placers {
-	const placePane = useCommand(layout.panes.placePane);
+	const placePane = useCommand(layout.panes.place);
 	const placeInView = useCommand(appHost.splits.placeInView);
 	return useMemo(() => ({ placePane, placeInView }), [placePane, placeInView]);
 }

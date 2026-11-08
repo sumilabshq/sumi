@@ -11,7 +11,7 @@ export interface AddToEssentialsItemProps {
 }
 
 export function AddToEssentialsItem({ pointed, at }: AddToEssentialsItemProps): ReactElement {
-	const placeTab = useCommand(appHost.tabs.placeTab);
+	const placeTab = useCommand(appHost.tabs.place);
 	return (
 		<PointerItem
 			icon="grid-plus"

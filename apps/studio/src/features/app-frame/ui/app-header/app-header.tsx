@@ -16,11 +16,11 @@ export interface AppHeaderProps {
 const HOME_ADDRESS = "";
 
 export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
-	const tab = useOptionalQuery(places.tabFacts.appTab, { id: tabId }).data;
-	const { apps } = useQuery(appsContract.apps.apps).data;
-	const pageTitle = useOptionalQuery(appsContract.pages.appPage, { id: tabId }).data?.title ?? null;
-	const goBack = useCommand(places.tabHistory.goBackInTab);
-	const goForward = useCommand(places.tabHistory.goForwardInTab);
+	const tab = useOptionalQuery(places.tabFacts.app, { id: tabId }).data;
+	const { apps } = useQuery(appsContract.apps.all).data;
+	const pageTitle = useOptionalQuery(appsContract.pages.ofTab, { id: tabId }).data?.title ?? null;
+	const goBack = useCommand(places.tabHistory.goBack);
+	const goForward = useCommand(places.tabHistory.goForward);
 
 	if (tab === null) {
 		return null;

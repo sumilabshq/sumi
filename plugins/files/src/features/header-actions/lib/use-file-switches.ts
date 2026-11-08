@@ -8,7 +8,7 @@ export interface FileSwitches {
 }
 
 export function useFileSwitches(): FileSwitches {
-	const { on, loads } = useQuery(filePage.switches.fileSwitches).data;
+	const { on, loads } = useQuery(filePage.switches.all).data;
 	return {
 		isOn: (name) => on.includes(name),
 		loads,

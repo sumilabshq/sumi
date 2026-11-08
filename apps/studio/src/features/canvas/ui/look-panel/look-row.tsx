@@ -4,7 +4,7 @@ import { NativeSelect, NativeSelectOption, Segmented } from "@widgetarium/kit";
 import type { OutputOf } from "@widgetarium/data-framework";
 import type { canvas } from "@widgetarium/canvas/contract";
 
-type LookRowShown = Extract<OutputOf<typeof canvas.look.lookPanel>, { kind: "look" }>["rows"][number];
+type LookRowShown = Extract<OutputOf<typeof canvas.look.panel>, { kind: "look" }>["rows"][number];
 
 export interface LookRowProps {
 	readonly row: LookRowShown;

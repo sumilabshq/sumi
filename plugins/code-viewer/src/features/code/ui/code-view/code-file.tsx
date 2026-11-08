@@ -10,7 +10,7 @@ export interface CodeFileProps {
 }
 
 export function CodeFile({ path }: CodeFileProps): ReactElement | null {
-	const read = useOptionalQuery(fileSystem.files.readFile, { path });
+	const read = useOptionalQuery(fileSystem.files.read, { path });
 	const switches = useFileSwitches();
 	const showsSecrets = switches.isOn("values");
 	const shown = useMemo(

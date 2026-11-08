@@ -13,7 +13,7 @@ export interface MarkdownFileProps {
 const MARKDOWN = "md";
 
 export function MarkdownFile({ path }: MarkdownFileProps): ReactElement {
-	const read = useOptionalQuery(fileSystem.files.readFile, { path });
+	const read = useOptionalQuery(fileSystem.files.read, { path });
 	const showsSource = useFileSwitches().isOn("source");
 	const holder = useRendersMarkdownFile(showsSource ? null : read.data);
 

@@ -12,7 +12,7 @@ export interface WaitingToggleProps {
 const WAITING = "Waiting for you";
 
 export function WaitingToggle({ view }: WaitingToggleProps): ReactElement | null {
-	const { waitingForYou } = useQuery(tasks.board.board, view.ask).data;
+	const { waitingForYou } = useQuery(tasks.board.current, view.ask).data;
 
 	if (waitingForYou === 0 && !view.ask.isYourTurnOnly) {
 		return null;

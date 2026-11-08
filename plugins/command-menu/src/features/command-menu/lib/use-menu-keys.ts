@@ -10,7 +10,7 @@ type MenuKeysAsk = Omit<KeyedMenu, "close">;
 type MenuKey = KeyboardEvent<HTMLElement>;
 
 export function useMenuKeys(ask: MenuKeysAsk): (event: MenuKey) => void {
-	const close = useCommand(commandMenu.opening.closeCommandMenu);
+	const close = useCommand(commandMenu.opening.close);
 	const menu: KeyedMenu = {
 		...ask,
 		close: () => void close.run(),

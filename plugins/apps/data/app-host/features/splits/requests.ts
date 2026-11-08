@@ -8,12 +8,10 @@ import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { ShownSplitSchema, SplitPlacingSchema } from "../../shared/schema/split.schema.js";
 
-export const shownSplit = query()
+export const shown = query()
 	.public()
 	.output(ShownSplitSchema)
-	.handle(async (_input, { send, studioWindow }) =>
-		send(places.splits.shownSplit, { window: studioWindow.windowLabel() }),
-	);
+	.handle(async (_input, { send, studioWindow }) => send(places.splits.shown, { window: studioWindow.windowLabel() }));
 
 export const placeInView = command()
 	.public()
@@ -36,15 +34,15 @@ export const closeViewPane = command()
 			tabId === null
 				? null
 				: await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
-						send(places.splits.removeFromSplit, { at, tabId }),
+						send(places.splits.remove, { at, tabId }),
 					);
 
 		if (left?.isMember !== true) {
-			await send(layout.panes.closePane, { id: paneId });
+			await send(layout.panes.close, { id: paneId });
 		}
 	});
 
-export const resizeSplit = command()
+export const resize = command()
 	.public()
 	.input(
 		z.object({
@@ -56,14 +54,14 @@ export const resizeSplit = command()
 	.idempotencyKey(Repeatable)
 	.handle(async ({ branchId, at: edge, share }, { send, emit, ...injects }) => {
 		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
-			send(places.splits.resizeSplit, { at, branchId, edge, share }),
+			send(places.splits.resize, { at, branchId, edge, share }),
 		);
 	});
 
-export const rereadShownSplit = subscriber(tabsSettled).handle((_input, { invalidate }) => {
-	invalidate(shownSplit);
+export const rereadShown = subscriber(tabsSettled).handle((_input, { invalidate }) => {
+	invalidate(shown);
 });
 
-export const rereadShownSplitForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
-	invalidate(shownSplit);
+export const rereadShownForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
+	invalidate(shown);
 });

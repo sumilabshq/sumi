@@ -18,7 +18,7 @@ const FIRST_FOLDED: ReadonlySet<TaskStatus> = new Set(["backlog", "paused", "can
 const FIRST_PICKED: TaskStatus = "in_progress";
 
 export function TasksBoard({ view }: TasksBoardProps): ReactElement {
-	const { columns } = useQuery(tasks.board.board, view.ask).data;
+	const { columns } = useQuery(tasks.board.current, view.ask).data;
 	useRereadsAtContinue(columns.flatMap((column) => column.cards));
 	const [folded, setFolded] = useState(FIRST_FOLDED);
 	const [picked, setPicked] = useState(FIRST_PICKED);

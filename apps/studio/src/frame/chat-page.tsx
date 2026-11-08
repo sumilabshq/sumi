@@ -9,7 +9,7 @@ export interface ChatPageProps {
 }
 
 export function ChatPage({ chatId }: ChatPageProps): ReactElement | null {
-	const tab = useOptionalQuery(places.tabFacts.appTab, {
+	const tab = useOptionalQuery(places.tabFacts.app, {
 		id: chatId,
 	}).data;
 

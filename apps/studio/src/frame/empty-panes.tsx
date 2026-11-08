@@ -8,7 +8,7 @@ const OPEN_CHAT = "Open chat";
 const OPEN_TAB = "Open tab";
 
 export function EmptyPanes(): ReactElement {
-	const placePane = useCommand(layout.panes.placePane);
+	const placePane = useCommand(layout.panes.place);
 	return (
 		<div className="wg-pane-empty-actions" data-pane-empty="">
 			<Button

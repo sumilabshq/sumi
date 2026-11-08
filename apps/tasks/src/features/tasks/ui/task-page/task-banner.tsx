@@ -15,8 +15,8 @@ export interface TaskBannerProps {
 }
 
 export function TaskBanner({ card, showsStatus = true }: TaskBannerProps): ReactElement | null {
-	const accept = useCommand(tasks.person.acceptTask).with({ task: card.id });
-	const keep = useCommand(tasks.person.keepTask).with({ task: card.id });
+	const accept = useCommand(tasks.person.accept).with({ task: card.id });
+	const keep = useCommand(tasks.person.keep).with({ task: card.id });
 	const [isSendingBack, setSendingBack] = useState(false);
 
 	if (!hasBannerContent(card)) {

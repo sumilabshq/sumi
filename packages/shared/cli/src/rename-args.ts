@@ -11,7 +11,7 @@ const RENAME_OPTIONS = {
 } as const;
 
 const RENAME_USAGE =
-	"rename takes <full-name> <new-name>: data-framework rename file-system.files.read-file read, or a module or plugin name";
+	"rename takes <full-name> <new-name>: data-framework rename file-system.files.read-folder folder, or a module or plugin name";
 const ONE_KIND = "rename takes --module or --plugin, not both";
 
 const RenameArgsSchema = z.object({

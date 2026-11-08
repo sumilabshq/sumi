@@ -17,8 +17,8 @@ const client = runtime()
 	.imports(fixtureBilling({ over: orpcTransport(SERVER_URL, { fetch: served.fetch }) }))
 	.start();
 
-const first = await client.send(fixtureBilling.charge.charge, { amount: 10 });
-const second = await client.send(fixtureBilling.charge.charge, { amount: 15 });
+const first = await client.send(fixtureBilling.charge.take, { amount: 10 });
+const second = await client.send(fixtureBilling.charge.take, { amount: 15 });
 check("a charge adds its amount to the total and counts one charge, and names the query it invalidated", second, {
 	ok: true,
 	output: {
@@ -43,5 +43,5 @@ check("the balance query reads what the ledger holds", await client.send(fixture
 	ok: true,
 	output: ledger.balance(),
 });
-const refused = await client.send(fixtureBilling.charge.charge, { amount: 1001 });
+const refused = await client.send(fixtureBilling.charge.take, { amount: 1001 });
 check("a charge over the limit is refused and saves nothing", [refused.ok, ledger.balance().total], [false, 25]);

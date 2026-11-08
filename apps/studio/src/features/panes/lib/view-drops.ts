@@ -21,13 +21,13 @@ export interface Dropping {
 	readonly board: OnBoard;
 }
 
-type HandleOf<R extends typeof layout.panes.placePane | typeof appHost.splits.placeInView> = CommandHandle<
+type HandleOf<R extends typeof layout.panes.place | typeof appHost.splits.placeInView> = CommandHandle<
 	SentOf<R>,
 	OutputOf<R>
 >;
 
 export interface Placers {
-	readonly placePane: HandleOf<typeof layout.panes.placePane>;
+	readonly placePane: HandleOf<typeof layout.panes.place>;
 	readonly placeInView: HandleOf<typeof appHost.splits.placeInView>;
 }
 

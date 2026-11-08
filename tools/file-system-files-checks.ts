@@ -47,20 +47,20 @@ check(
 	true,
 );
 
-const written = await notes.send(fileSystem.files.writeFile, { path: "todo.txt", content: "one" });
-await notes.send(fileSystem.files.appendFile, { path: "todo.txt", content: " two" });
-const read = await notes.send(fileSystem.files.readFile, { path: "todo.txt" });
+const written = await notes.send(fileSystem.files.write, { path: "todo.txt", content: "one" });
+await notes.send(fileSystem.files.append, { path: "todo.txt", content: " two" });
+const read = await notes.send(fileSystem.files.read, { path: "todo.txt" });
 check("write then append then read answers both", [written.ok, read.ok ? read.output : read.reason], [true, "one two"]);
 check("the write landed in that app's folder", await files.readFile("/data/app-data/ws-1/notes/todo.txt"), "one two");
 
-const othersRead = await other.send(fileSystem.files.readFile, { path: "todo.txt" });
+const othersRead = await other.send(fileSystem.files.read, { path: "todo.txt" });
 check(
 	"another app's relative path is its own folder, so it misses",
 	othersRead.ok ? "read" : othersRead.code,
 	"refused",
 );
 
-const missing = await notes.send(fileSystem.files.fileInfo, { path: "nothing.txt" });
+const missing = await notes.send(fileSystem.files.info, { path: "nothing.txt" });
 check(
 	"file info of a missing path answers without throwing",
 	missing.ok ? missing.output.exists : missing.reason,
@@ -75,10 +75,10 @@ check("make, copy and rename leave one moved file", listed.ok ? listed.output.en
 	{ name: "moved.txt", kind: "file" },
 ]);
 await notes.send(fileSystem.files.remove, { path: "box" });
-const gone = await notes.send(fileSystem.files.fileInfo, { path: "box" });
+const gone = await notes.send(fileSystem.files.info, { path: "box" });
 check("remove takes a folder away", gone.ok ? gone.output.exists : gone.reason, false);
 
-const anonymous = await nobody.send(fileSystem.files.readFile, { path: "todo.txt" });
+const anonymous = await nobody.send(fileSystem.files.read, { path: "todo.txt" });
 check("a caller with no app is refused before any handler", anonymous.ok ? "read" : anonymous.code, "unauthenticated");
 
 console.log(

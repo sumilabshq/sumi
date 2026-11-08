@@ -36,7 +36,7 @@ const ABOVE_FIELD_PX = 4;
 
 export function useSlashMenu({ draft, fill, box }: SlashMenuAsk): SlashMenu {
 	const chat = useChatKey();
-	const names = useOptionalQuery(assistant.slashCommands.slashCommands, { chat }).data ?? [];
+	const names = useOptionalQuery(assistant.slashCommands.all, { chat }).data ?? [];
 	const clear = useCommand(assistant.composer.clearChat);
 	const compact = useCommand(assistant.slashCommands.compactChat);
 	const [held, setHeld] = useState<SlashHeld>({

@@ -22,7 +22,7 @@ export interface RepoPageProps {
 
 export function RepoPage({ place, address, go }: RepoPageProps): ReactElement {
 	useRereadsWhileShown();
-	const look = useOptionalQuery(git.gitLook.gitLook).data;
+	const look = useOptionalQuery(git.gitLook.current).data;
 	const isFileListShown = look?.isFileListShown ?? true;
 	const fileListPx = look?.fileListPx ?? DEFAULT_FILE_LIST_PX;
 	const [viewed, setViewed] = useState<ReadonlySet<string>>(new Set());

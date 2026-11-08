@@ -17,8 +17,8 @@ const sumi = messagePortTransport(portFromParent());
 const files = runtime().imports(fileSystem({ over: sumi }), webPage({ over: sumi }), assistant({ over: sumi })).start();
 
 export async function keep(content: string): Promise<string | null> {
-	await files.send(fileSystem.files.writeFile, { path: "tasks.json", content });
-	const read = await files.send(fileSystem.files.readFile, { path: "tasks.json" });
+	await files.send(fileSystem.files.write, { path: "tasks.json", content });
+	const read = await files.send(fileSystem.files.read, { path: "tasks.json" });
 	return read.ok ? read.output : null;
 }
 
@@ -28,7 +28,7 @@ export const gate: string | null = contractRefusal(CONTRACT_RANGE, "0.3.0");
 const WRONG_APP = `import { fileSystem } from "@sumi/contract";
 import { runtime } from "@widgetarium/data-framework";
 
-export const sent = runtime().start().send(fileSystem.files.writeFile, { path: 1 });
+export const sent = runtime().start().send(fileSystem.files.write, { path: 1 });
 `;
 
 const PROJECT_TSCONFIG = {
@@ -136,7 +136,7 @@ try {
 	check("every target its exports name is in the tarball", missingExportTargetsIn(shipped).join(", "), "");
 	check("the shipped files import only zod and @widgetarium/data-framework", shippedImportsOf(shipped).join(", "), "");
 	check(
-		"an app outside the repo type-checks fileSystem.files.writeFile and imports fileSystem, webPage and assistant",
+		"an app outside the repo type-checks fileSystem.files.write and imports fileSystem, webPage and assistant",
 		typeErrorsIn(project, APP),
 		"",
 	);

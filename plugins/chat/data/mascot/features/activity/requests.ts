@@ -4,7 +4,7 @@ import { agentActivityChanged } from "../../gateways/agent-activity/agent-activi
 import { AgentActivitySchema, AgentEventsSchema } from "../../shared/schema/agent-activity.schema.js";
 import { activityAfter } from "./lib/activity-after.js";
 
-export const agentActivity = query()
+export const agent = query()
 	.public()
 	.output(AgentActivitySchema)
 	.settlesNow()
@@ -15,7 +15,7 @@ export const recordAgentEvents = command()
 	.input(AgentEventsSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ events }, { agentActivity: agentActivityGateway, invalidate }) => {
-		invalidate(agentActivity);
+		invalidate(agent);
 		const was = agentActivityGateway.agentActivity();
 		const now = activityAfter(was, events, Date.now());
 		const reason = `agent ${events.join(", ")}: ${JSON.stringify(was)} → ${JSON.stringify(now)}`;
@@ -23,6 +23,6 @@ export const recordAgentEvents = command()
 		console.debug(`[widgetarium] ${reason}`);
 	});
 
-export const rereadAgentActivity = subscriber(agentActivityChanged).handle((_input, { invalidate }) => {
-	invalidate(agentActivity);
+export const rereadAgent = subscriber(agentActivityChanged).handle((_input, { invalidate }) => {
+	invalidate(agent);
 });

@@ -20,7 +20,7 @@ const TABS: ReadonlyArray<readonly [LookTab, string, string]> = [
 export function WorkspaceLook({ workspace }: { readonly workspace: WorkspaceRow }): ReactElement {
 	const [tab, setTab] = useState<LookTab>(tabOf(workspace.icon));
 	const [typed, setTyped] = useState("");
-	const setIcon = useCommand(workspaces.workspaces.setWorkspaceIcon);
+	const setIcon = useCommand(workspaces.workspaces.setIcon);
 	const searchSaid = TABS.find(([kind]) => kind === tab)?.[2] ?? "";
 	return (
 		<div role="group" aria-label={LOOK_LABEL} data-ws-look="">

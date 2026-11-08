@@ -41,31 +41,31 @@ export type WebPage = z.infer<typeof WebPageSchema>;
 
 export const webPage = moduleContract("web-page", Server, {
 	pages: {
-		webPage: named("pages.web-page", query()
+		one: named("pages.one", query()
 			.public()
 			.input(WebPageTabSchema)
 			.output(WebPageSchema.nullable())),
-		openWebPage: named("pages.open-web-page", command()
+		open: named("pages.open", command()
 			.public()
 			.input(OpenWebPageInputSchema)
 			.idempotencyKey(Repeatable)),
-		placeWebPage: named("pages.place-web-page", command()
+		place: named("pages.place", command()
 			.public()
 			.input(PlaceWebPageInputSchema)
 			.idempotencyKey(Repeatable)),
-		goBackWebPage: named("pages.go-back-web-page", command()
+		goBack: named("pages.go-back", command()
 			.public()
 			.input(WebPageTabSchema)
 			.idempotencyKey(Repeatable)),
-		goForwardWebPage: named("pages.go-forward-web-page", command()
+		goForward: named("pages.go-forward", command()
 			.public()
 			.input(WebPageTabSchema)
 			.idempotencyKey(Repeatable)),
-		reloadWebPage: named("pages.reload-web-page", command()
+		reload: named("pages.reload", command()
 			.public()
 			.input(WebPageTabSchema)
 			.idempotencyKey(Repeatable)),
-		closeWebPage: named("pages.close-web-page", command()
+		close: named("pages.close", command()
 			.public()
 			.input(WebPageTabSchema)
 			.idempotencyKey(Repeatable)),

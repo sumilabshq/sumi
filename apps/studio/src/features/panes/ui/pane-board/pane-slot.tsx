@@ -19,8 +19,8 @@ export interface PaneSlotProps {
 export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn, onFocused }: PaneSlotProps): ReactElement {
 	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners } = look;
 	const close = usePaneClosing(leaf);
-	const aimPane = useCommand(layout.panes.aimPane);
-	const markTabSeen = useCommand(places.tabFacts.markTabSeen);
+	const aimPane = useCommand(layout.panes.aim);
+	const markTabSeen = useCommand(places.tabFacts.markSeen);
 	const aim = (): void => {
 		void aimPane.run({ id: leaf.id });
 		onFocused(leaf.id);

@@ -13,13 +13,13 @@ import { doorKeysOf, refuseDoor } from "./lib/doors.js";
 import { heldTabOfPage } from "../../shared/lib/held-tab.js";
 import { filledWithShown } from "./lib/shown-text.js";
 
-export const commandMenu = query()
+export const current = query()
 	.public()
 	.output(KeptMenuSchema)
 	.settlesNow()
 	.handle((_input, { commandMenu }) => commandMenu.menu());
 
-export const menuDoors = query()
+export const doors = query()
 	.public()
 	.output(MenuDoorsSchema)
 	.settlesNow()
@@ -30,7 +30,7 @@ export const menuDoors = query()
 		})),
 	}));
 
-export const toggleCommandMenu = command()
+export const toggle = command()
 	.public()
 	.input(OpenMenuSchema)
 	.idempotencyKey(PerCall)
@@ -45,11 +45,11 @@ export const toggleCommandMenu = command()
 				return refuse(refusal);
 			}
 
-			invalidate(commandMenu);
+			invalidate(current);
 			const was = commandMenuGateway.menu();
 			const filled =
 				text === null
-					? filledWithShown((await send(appHost.tabs.appTabs)).tabs, shownName, await heldTabOfPage(pageId, send))
+					? filledWithShown((await send(appHost.tabs.all)).tabs, shownName, await heldTabOfPage(pageId, send))
 					: { door, text };
 
 			if (
@@ -86,7 +86,7 @@ export const toggleCommandMenu = command()
 		},
 	);
 
-export const changeMenuDoor = command()
+export const changeDoor = command()
 	.public()
 	.input(z.object({ door: DoorSchema }))
 	.idempotencyKey(Repeatable)
@@ -97,7 +97,7 @@ export const changeMenuDoor = command()
 			return refuse(refusal);
 		}
 
-		invalidate(commandMenu);
+		invalidate(current);
 		const was = commandMenuGateway.menu();
 
 		if (!was.isOpen || was.door === door) {
@@ -116,11 +116,11 @@ export const changeMenuDoor = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const closeCommandMenu = command()
+export const close = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { commandMenu: commandMenuGateway, invalidate }) => {
-		invalidate(commandMenu);
+		invalidate(current);
 		const was = commandMenuGateway.menu();
 
 		if (!was.isOpen) {
@@ -140,5 +140,5 @@ export const closeCommandMenu = command()
 	});
 
 export const menuOnMenuChanged = subscriber(commandMenuChanged).handle((_input, { invalidate }) => {
-	invalidate(commandMenu);
+	invalidate(current);
 });

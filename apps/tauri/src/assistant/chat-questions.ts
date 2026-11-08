@@ -27,7 +27,7 @@ export function chatQuestionsOver(app: Runtime): ChatQuestions {
 }
 
 async function answersTrailer(app: Runtime, chatId: string): Promise<string | null> {
-	const answered = await app.send(questions.agent.deliverQuestions, { chat: chatId, ids: null });
+	const answered = await app.send(questions.agent.deliver, { chat: chatId, ids: null });
 
 	if (!answered.ok) {
 		console.warn(NOT_DELIVERED.replace("{chat}", chatId).replace("{reason}", answered.reason));

@@ -11,7 +11,7 @@ import {
 	closeTabPlan,
 } from "./lib/closing-plans.js";
 
-export const closeTab = command()
+export const close = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -20,7 +20,7 @@ export const closeTab = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), closeTabPlan(id)))),
 	);
 
-export const closeOtherTabs = command()
+export const closeOthers = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
@@ -29,7 +29,7 @@ export const closeOtherTabs = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), closeOthersPlan(id)))),
 	);
 
-export const closeShownTab = command()
+export const closeShown = command()
 	.public()
 	.input(SettleAskSchema)
 	.output(TabsSettledSchema)
@@ -47,7 +47,7 @@ export const closeGroup = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), closeGroupPlan(id)))),
 	);
 
-export const closeEssentialTab = command()
+export const closeEssential = command()
 	.public()
 	.input(CloseEssentialAskSchema)
 	.output(TabsSettledSchema)

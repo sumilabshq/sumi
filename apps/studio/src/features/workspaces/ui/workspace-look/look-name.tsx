@@ -9,7 +9,7 @@ const NAME_LABEL = "Workspace name";
 
 export function LookName({ workspace }: { readonly workspace: WorkspaceRow }): ReactElement {
 	const [typed, setTyped] = useState(workspace.name);
-	const rename = useCommand(workspaces.workspaces.renameWorkspace);
+	const rename = useCommand(workspaces.workspaces.rename);
 	const typedName = (name: string): void => {
 		setTyped(name);
 		if (name.trim() !== "") {

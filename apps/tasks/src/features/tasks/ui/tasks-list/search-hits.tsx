@@ -12,7 +12,7 @@ export interface SearchHitsProps {
 const NOTHING_FOUND = "No task matches “{search}”.";
 
 export function SearchHits({ search }: SearchHitsProps): ReactElement {
-	const hits = useQuery(tasks.board.searchTasks, {
+	const hits = useQuery(tasks.board.search, {
 		query: search,
 		includeClosed: true,
 	}).data;

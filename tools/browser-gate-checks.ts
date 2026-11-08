@@ -26,19 +26,19 @@ redirected.pages.tab = {
 };
 check(
 	"a redirect to a blocked host is refused",
-	said(await started(redirected).send(browser.ink.inkOpenAddress, { url: "https://example.org/go" })),
+	said(await started(redirected).send(browser.ink.openAddress, { url: "https://example.org/go" })),
 	"redirected-to-closed-site",
 );
 check("and the tab is taken back", redirected.pages.moves, ["back"]);
 
 const stranded = fakeBrowser();
 stranded.pages.redirectTo = "https://www.paypal.com/signin";
-await started(stranded).send(browser.ink.inkOpenAddress, { url: "https://example.org/go" });
+await started(stranded).send(browser.ink.openAddress, { url: "https://example.org/go" });
 check("with no history the tab is left blank", stranded.pages.tab.url, "about:blank");
 
 const arriving = fakeBrowser();
 arriving.pages.redirectTo = "https://example.net/landed";
-const arrived = await started(arriving).send(browser.ink.inkOpenAddress, { url: "https://example.org/go" });
+const arrived = await started(arriving).send(browser.ink.openAddress, { url: "https://example.org/go" });
 check("the committed address is what open answers", arrived.ok && arrived.output.url, "https://example.net/landed");
 
 const sameHost = fakeBrowser();
@@ -46,7 +46,7 @@ sameHost.pages.tab = {
 	...sameHost.pages.tab,
 	url: "http://example.com/a",
 };
-const sameHostOpen = started(sameHost).send(browser.ink.inkOpenAddress, { url: "http://example.com/b" });
+const sameHostOpen = started(sameHost).send(browser.ink.openAddress, { url: "http://example.com/b" });
 check("the same host is checked too", await waitFor(() => sameHost.parts.accessAsks.accessAsks().length === 1), true);
 sameHost.parts.accessAsks.saveAnswer(sameHost.parts.accessAsks.accessAsks()[0]?.id ?? "", "no");
 check("and its no refuses", said(await sameHostOpen), "person-said-no");
@@ -55,7 +55,7 @@ const offScreen = fakeBrowser();
 offScreen.pages.isShownOnScreen = false;
 check(
 	"open needs the tab on screen",
-	said(await started(offScreen).send(browser.ink.inkOpenAddress, { url: "https://example.org/" })),
+	said(await started(offScreen).send(browser.ink.openAddress, { url: "https://example.org/" })),
 	"tab-not-visible",
 );
 

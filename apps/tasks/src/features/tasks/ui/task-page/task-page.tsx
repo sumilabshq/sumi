@@ -10,7 +10,7 @@ export interface TaskPageProps {
 }
 
 export function TaskPage({ task }: TaskPageProps): ReactElement | null {
-	const read = useOptionalQuery(tasks.board.task, { task });
+	const read = useOptionalQuery(tasks.board.one, { task });
 
 	if (read.failure !== null) {
 		return <TaskGone task={task} />;

@@ -60,8 +60,8 @@ function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 }
 
 async function firstChatIdIn({ started }: TauriWorkspaces): Promise<string | undefined> {
-	await waitFor(() => started.routes.readNow(workspacesContract.chats.chatRecords) !== null);
-	const answer = await started.send(workspacesContract.chats.chatRecords);
+	await waitFor(() => started.routes.readNow(workspacesContract.chats.records) !== null);
+	const answer = await started.send(workspacesContract.chats.records);
 	return answer.ok ? [...answer.output.chats].sort((one, other) => other.lastAt - one.lastAt)[0]?.id : undefined;
 }
 
@@ -97,7 +97,7 @@ async function perChatChecks(): Promise<void> {
 		},
 	);
 	const firstId = (await firstChatIdIn(workspaces)) ?? "";
-	await quietly(() => workspaces.started.send(layout.paneTabs.showChatInPane, { chatId: firstId, paneId: null }));
+	await quietly(() => workspaces.started.send(layout.paneTabs.showChat, { chatId: firstId, paneId: null }));
 	await waitFor(() => focusedChat.now()?.id === firstId);
 	await quietly(async () => {
 		await (await sessions.shownSession()).send("Plan the release");
@@ -106,9 +106,9 @@ async function perChatChecks(): Promise<void> {
 	check("a first ask names the chat", focusedChat.now()?.title, "Plan the release");
 	check("and marks it running", markOf(workspaces, firstId), "running");
 
-	const made = await quietly(() => workspaces.started.send(workspacesContract.chats.createChat, { title: null }));
+	const made = await quietly(() => workspaces.started.send(workspacesContract.chats.create, { title: null }));
 	const secondId = made.answer.ok ? made.answer.output.id : "";
-	await quietly(() => workspaces.started.send(layout.paneTabs.showChatInPane, { chatId: secondId, paneId: null }));
+	await quietly(() => workspaces.started.send(layout.paneTabs.showChat, { chatId: secondId, paneId: null }));
 	check("a new chat shown in the chat pane is the focused one", focusedChat.now()?.id, secondId);
 	await waitFor(() => sessions.now().turns.length === 0);
 	check("a new chat shows its own empty conversation", sessions.now().turns.length, 0);
@@ -120,8 +120,8 @@ async function perChatChecks(): Promise<void> {
 	check("the shown chat is untouched by it", sessions.now().turns.length, 0);
 
 	await quietly(async () => {
-		await workspaces.started.send(layout.paneTabs.showChatInPane, { chatId: firstId, paneId: null });
-		await workspaces.started.send(places.tabFacts.markTabSeen, { id: firstId });
+		await workspaces.started.send(layout.paneTabs.showChat, { chatId: firstId, paneId: null });
+		await workspaces.started.send(places.tabFacts.markSeen, { id: firstId });
 	});
 	await waitFor(() => sessions.now().turns.length === 2);
 	check(
@@ -162,8 +162,8 @@ async function legacyChatChecks(): Promise<void> {
 }
 
 function rowsIn({ started }: TauriWorkspaces): readonly { readonly id: string; readonly name: string }[] {
-	const read = started.routes.readNow(workspacesContract.workspaces.workspaces);
-	return read === null ? [] : workspacesContract.workspaces.workspaces.outputSchema.parse(read.output).rows;
+	const read = started.routes.readNow(workspacesContract.workspaces.all);
+	return read === null ? [] : workspacesContract.workspaces.all.outputSchema.parse(read.output).rows;
 }
 
 function iconsIn(fake: FakeStore): unknown {
@@ -182,7 +182,7 @@ async function workspaceLookChecks(): Promise<void> {
 		["Default", "Research"],
 	);
 	await quietly(() =>
-		workspaces.started.send(workspacesContract.workspaces.setWorkspaceIcon, {
+		workspaces.started.send(workspacesContract.workspaces.setIcon, {
 			id: RESEARCH.id,
 			icon: { kind: "emoji", emoji: "🧪" },
 		}),
@@ -202,9 +202,7 @@ async function workspaceLookChecks(): Promise<void> {
 		fake.calls.filter((call) => call.command.endsWith("rename_workspace")).map((call) => call.args["name"]),
 		["Home base"],
 	);
-	await quietly(() =>
-		workspaces.started.send(workspacesContract.workspaces.setWorkspaceIcon, { id: RESEARCH.id, icon: null }),
-	);
+	await quietly(() => workspaces.started.send(workspacesContract.workspaces.setIcon, { id: RESEARCH.id, icon: null }));
 	check("Remove icon drops it", iconsIn(fake), {});
 }
 
@@ -252,10 +250,10 @@ async function entryOfAnotherShapeChecks(): Promise<void> {
 		await waitFor(
 			() => rowsIn(workspaces).length === 1 && workspaces.parts.chats.chats().chats.some((chat) => chat.id === "good"),
 		);
-		await workspaces.started.send(workspacesContract.chats.createChat, { title: null });
-		const read = workspaces.started.routes.readNow(workspacesContract.workspaces.workspaces);
-		const rows = read === null ? [] : workspacesContract.workspaces.workspaces.outputSchema.parse(read.output).rows;
-		await workspaces.started.send(workspacesContract.workspaces.setWorkspaceIcon, { id: DEFAULT.id, icon: null });
+		await workspaces.started.send(workspacesContract.chats.create, { title: null });
+		const read = workspaces.started.routes.readNow(workspacesContract.workspaces.all);
+		const rows = read === null ? [] : workspacesContract.workspaces.all.outputSchema.parse(read.output).rows;
+		await workspaces.started.send(workspacesContract.workspaces.setIcon, { id: DEFAULT.id, icon: null });
 		await logs.sessions.flush();
 		return { workspaces, logs, rows };
 	});

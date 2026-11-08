@@ -16,6 +16,6 @@ export function useHandsCanvas(canvasApp: Runtime, onCanvas: ((canvas: CanvasHan
 }
 
 async function pageShown(canvasApp: Runtime, page: string, onRefused: RefusalHandler): Promise<void> {
-	const answer = await canvasApp.send(canvas.pages.showPage, { page });
-	if (!answer.ok) onRefused({ name: canvas.pages.showPage.name, reason: answer.reason, ran: answer.ran });
+	const answer = await canvasApp.send(canvas.pages.show, { page });
+	if (!answer.ok) onRefused({ name: canvas.pages.show.name, reason: answer.reason, ran: answer.ran });
 }

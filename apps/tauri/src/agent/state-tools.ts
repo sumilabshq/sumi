@@ -32,9 +32,9 @@ const APP_WORDS: Readonly<Record<z.infer<typeof AgentAppSchema>, { readonly name
 export async function appState({ app, chatId }: ToolContext, input: unknown): Promise<AppState> {
 	const asked = inputOf(AppStateInputSchema, "app_state", input);
 	const [sidebar, chats, tabs] = await Promise.all([
-		outputOf(app.send(appHost.tabs.tabsSidebar)),
-		outputOf(app.send(chatTabs.chatList.chatList)),
-		outputOf(app.send(appHost.tabs.appTabs)),
+		outputOf(app.send(appHost.tabs.sidebar)),
+		outputOf(app.send(chatTabs.chatList.all)),
+		outputOf(app.send(appHost.tabs.all)),
 	]);
 	return appStateOf({ sidebar, chats, tabs }, chatId, asked);
 }

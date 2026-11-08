@@ -73,7 +73,7 @@ const NOTHING_UNCOMMITTED: DiffRange = {
 };
 const GIT_FAILED = "git {call} failed in {folder}: {reason}";
 
-export const gitPlace = query()
+export const place = query()
 	.public()
 	.input(FolderInputSchema)
 	.output(GitPlaceSchema)
@@ -105,7 +105,7 @@ export const gitPlace = query()
 		};
 	});
 
-export const nearbyRepos = query()
+export const nearby = query()
 	.public()
 	.input(RootInputSchema)
 	.output(NearbyReposSchema)
@@ -152,7 +152,9 @@ export const commits = query()
 			commits:
 				base === LAST_COMMIT
 					? []
-					: commitsOf(await outputOrRefuse(send, root, ["log", COMMIT_FORMAT, OPTIONS_END, `${base}..${checkedOut.head}`])),
+					: commitsOf(
+							await outputOrRefuse(send, root, ["log", COMMIT_FORMAT, OPTIONS_END, `${base}..${checkedOut.head}`]),
+						),
 			uncommitted,
 		};
 	});
@@ -197,12 +199,12 @@ export const untrackedFile = query()
 		return diff ?? refuse(NOT_SHOWN.replace("{path}", path));
 	});
 
-export const rereadGit = command()
+export const reread = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { invalidate }) => {
-		invalidate(gitPlace);
-		invalidate(nearbyRepos);
+		invalidate(place);
+		invalidate(nearby);
 		invalidate(branches);
 		invalidate(commits);
 		invalidate(comparison);
@@ -211,7 +213,7 @@ export const rereadGit = command()
 	});
 
 function gitOutput(send: Send, folder: string, args: readonly string[]): Promise<ProgramOutput> {
-	return send(terminal.programs.runProgram, {
+	return send(terminal.programs.run, {
 		folder,
 		program: GIT_PROGRAM,
 		args: [...GIT_QUIET_ARGS, ...args],
@@ -297,7 +299,7 @@ async function untrackedFilesIn(send: Send, worktree: string): Promise<FileDiff[
 		paths.length === 0
 			? ""
 			: (
-					await send(terminal.programs.runProgram, {
+					await send(terminal.programs.run, {
 						folder: worktree,
 						program: LINE_COUNTER,
 						args: ["-l", "--", ...paths],
@@ -312,7 +314,7 @@ async function repoRowsIn(send: Send, folder: string): Promise<RepoRow[]> {
 	const checked = await Promise.all(
 		folders.map(async (path) => ({
 			path,
-			isRepo: (await send(fileSystem.files.fileInfo, { path: folderIn(path, GIT_FOLDER) })).exists,
+			isRepo: (await send(fileSystem.files.info, { path: folderIn(path, GIT_FOLDER) })).exists,
 		})),
 	);
 	return Promise.all(

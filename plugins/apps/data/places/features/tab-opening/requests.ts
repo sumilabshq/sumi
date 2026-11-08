@@ -21,7 +21,7 @@ import {
 	showEssentialPlan,
 } from "./lib/opening-plans.js";
 
-export const openTab = command()
+export const open = command()
 	.public()
 	.input(OpenTabAskSchema)
 	.output(OpenedTabSettledSchema)
@@ -30,7 +30,7 @@ export const openTab = command()
 		openedOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), openPlan(ask)))),
 	);
 
-export const openTabBelow = command()
+export const openBelow = command()
 	.public()
 	.input(TabAskSchema)
 	.output(OpenedTabSettledSchema)
@@ -39,7 +39,7 @@ export const openTabBelow = command()
 		openedOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), openBelowPlan(id)))),
 	);
 
-export const duplicateTab = command()
+export const duplicate = command()
 	.public()
 	.input(DuplicateTabAskSchema)
 	.output(OpenedTabSettledSchema)
@@ -48,7 +48,7 @@ export const duplicateTab = command()
 		openedOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), duplicatePlan(ask)))),
 	);
 
-export const reopenClosedTab = command()
+export const reopenClosed = command()
 	.public()
 	.input(ReopenClosedAskSchema)
 	.output(TabsSettledSchema)
@@ -57,7 +57,7 @@ export const reopenClosedTab = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), reopenPlan(tabId)))),
 	);
 
-export const showEssentialTab = command()
+export const showEssential = command()
 	.public()
 	.input(ShowEssentialAskSchema)
 	.output(TabsSettledSchema)
@@ -66,7 +66,7 @@ export const showEssentialTab = command()
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), showEssentialPlan(essential)))),
 	);
 
-export const releaseEssentialTab = command()
+export const releaseEssential = command()
 	.public()
 	.input(ReleaseEssentialAskSchema)
 	.output(TabsSettledSchema)

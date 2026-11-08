@@ -15,7 +15,7 @@ const LIST = "cv:flex cv:flex-col cv:gap-0.5 cv:overflow-auto cv:[scrollbar-widt
 export function PagesList(): ReactElement {
 	const [limit, setLimit] = useState(PAGE_UNASKED);
 	const [, startTransition] = useTransition();
-	const pages = useQuery(canvas.pages.pages, { cursor: null, limit }).data;
+	const pages = useQuery(canvas.pages.all, { cursor: null, limit }).data;
 	const turnToPage = useTurnToPage();
 	return (
 		<section className="cv:pointer-events-auto cv:flex cv:max-h-[40%] cv:flex-none cv:flex-col" data-canvas-pages="">

@@ -23,10 +23,10 @@ export const ChooseThemeInputSchema = z.object({
 
 export const appearance = moduleContract("appearance", Anywhere, {
 	theme: {
-		theme: named("theme.theme", query()
+		current: named("theme.current", query()
 			.public()
 			.output(ThemeSchema)),
-		chooseTheme: named("theme.choose-theme", command()
+		choose: named("theme.choose", command()
 			.public()
 			.input(ChooseThemeInputSchema)
 			.idempotencyKey(Repeatable)),

@@ -197,7 +197,7 @@ function startedPartsFieldsOf({ plugins, assistant, studioApp, core }: StartedPa
 }
 
 async function tabFaviconOf(studioApp: Runtime, id: string): Promise<string | null> {
-	const tabs = await studioApp.send(appHost.tabs.appTabs);
+	const tabs = await studioApp.send(appHost.tabs.all);
 
 	if (!tabs.ok) {
 		console.warn(`[agent] the icon of a tab link to ${id} stays a glyph: ${tabs.reason}`);

@@ -10,7 +10,7 @@ const LOCKED = "Layout locked: only widgets move";
 const UNLOCKED = "Layout unlocked: groups move too";
 
 export function LayersHeader(): ReactElement {
-	const { isLocked } = useQuery(canvas.layers.layersPanel).data;
+	const { isLocked } = useQuery(canvas.layers.panel).data;
 	const toggleLock = useCommand(canvas.layers.toggleLayoutLock);
 	return (
 		<PanelHeader title={TITLE}>

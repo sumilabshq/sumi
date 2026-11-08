@@ -1,12 +1,12 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
-import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { momentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { CameraAnswerSchema, CameraKeptSchema } from "../../shared/schema/camera.schema.js";
 import { CanvasOpenedSchema, CanvasOpeningSchema, ModeAnswerSchema } from "../../shared/schema/canvas-view.schema.js";
 import { OPENING_FIELDS, isTouching, momentWriteOf, openingOf } from "../../shared/lib/view/canvas-moment.js";
 import { canvasOpenStepOf } from "./lib/canvas-opening.js";
 
-export const openCanvas = command()
+export const open = command()
 	.public()
 	.input(CanvasOpenedSchema)
 	.idempotencyKey(Repeatable)
@@ -25,7 +25,7 @@ export const openCanvas = command()
 		}
 	});
 
-export const canvasOpening = query()
+export const opening = query()
 	.public()
 	.output(CanvasOpeningSchema)
 	.settlesNow()
@@ -74,7 +74,7 @@ export const setMode = command()
 		}
 	});
 
-export const rereadView = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
+export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (fields.includes("camera")) {
 		invalidate(camera);
 	}
@@ -84,6 +84,6 @@ export const rereadView = subscriber(canvasMomentChanged).handle(({ fields }, { 
 	}
 
 	if (isTouching(fields, OPENING_FIELDS)) {
-		invalidate(canvasOpening);
+		invalidate(opening);
 	}
 });

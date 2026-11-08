@@ -20,7 +20,7 @@ const ALL_AGENTS = "all";
 const ALL_AGENTS_SAID = "All agents";
 
 export function AgentsMenu({ view }: AgentsMenuProps): ReactElement {
-	const { columns } = useQuery(tasks.board.board, {
+	const { columns } = useQuery(tasks.board.current, {
 		...view.ask,
 		owner: null,
 	}).data;

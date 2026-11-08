@@ -15,7 +15,7 @@ const FILTER = "Filter files";
 export function FileList(): ReactElement | null {
 	const page = useGitPage();
 	const files = useOptionalQuery(git.repos.comparison, comparisonInputOf(page)).data?.files ?? null;
-	const isTree = useOptionalQuery(git.gitLook.gitLook).data?.isFileTree ?? false;
+	const isTree = useOptionalQuery(git.gitLook.current).data?.isFileTree ?? false;
 	const [filter, setFilter] = useState("");
 	const [picked, setPicked] = useState<string | null>(null);
 

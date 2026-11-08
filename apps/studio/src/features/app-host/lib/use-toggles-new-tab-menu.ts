@@ -4,6 +4,6 @@ import { commandMenu } from "@sumi/command-menu/contract";
 export const SHOWN_TAB_SECTION = null;
 
 export function useTogglesNewTabMenu(newTabList: string | typeof SHOWN_TAB_SECTION): () => void {
-	const openMenu = useCommand(commandMenu.opening.toggleCommandMenu);
+	const openMenu = useCommand(commandMenu.opening.toggle);
 	return () => void openMenu.run({ door: "new-tab", text: "", newTabList });
 }

@@ -2,7 +2,7 @@ import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { offsetOfCursor, pageAt } from "@widgetarium/core/gateway/page.js";
 import { jobsChanged } from "../../gateways/agent-jobs/agent-jobs.events.js";
-import { canvasMomentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
+import { momentChanged } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { designChanged } from "../../gateways/design-folder/design-folder.events.js";
 import { COMPONENTS_PAGE } from "../../shared/schema/canvas-page.schema.js";
 import {
@@ -26,7 +26,7 @@ import { variantsOf } from "./lib/variants-of.js";
 const SPEC_REFUSED = "The spec of {app} cannot be read: {why}";
 const NO_NOTE_TO_RETURN_TO = "{app} has no page with a note to go back to.";
 
-export const pageChoices = query()
+export const choices = query()
 	.public()
 	.output(PageChoicesSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
@@ -35,7 +35,7 @@ export const pageChoices = query()
 		return pageChoicesOf(pages);
 	});
 
-export const pages = query()
+export const all = query()
 	.public()
 	.input(PagesAskSchema)
 	.output(PagesPageSchema)
@@ -92,7 +92,7 @@ export const returnNote = query()
 		};
 	});
 
-export const showPage = command()
+export const show = command()
 	.public()
 	.input(PageAskSchema)
 	.idempotencyKey(Repeatable)
@@ -182,27 +182,27 @@ export const pickVariant = command()
 		}
 	});
 
-export const rereadPages = subscriber(canvasMomentChanged).handle(({ fields }, { invalidate }) => {
+export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (!isTouching(fields, PAGE_FIELDS)) {
 		return;
 	}
 
-	invalidate(pageChoices);
-	invalidate(pages);
+	invalidate(choices);
+	invalidate(all);
 	invalidate(variants);
 	invalidate(returnNote);
 });
 
-export const rereadPagesForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
-	invalidate(pageChoices);
-	invalidate(pages);
+export const rereadForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(choices);
+	invalidate(all);
 	invalidate(variants);
 	invalidate(returnNote);
 });
 
-export const rereadPagesForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
-	invalidate(pageChoices);
-	invalidate(pages);
+export const rereadForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+	invalidate(choices);
+	invalidate(all);
 	invalidate(variants);
 	invalidate(returnNote);
 });

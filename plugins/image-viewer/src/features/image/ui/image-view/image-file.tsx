@@ -10,7 +10,7 @@ export interface ImageFileProps {
 }
 
 export function ImageFile({ path }: ImageFileProps): ReactElement | null {
-	const read = useOptionalQuery(fileSystem.files.readFileBytes, { path });
+	const read = useOptionalQuery(fileSystem.files.readBytes, { path });
 	const isActualSize = useFileSwitches().isOn("size");
 
 	if (read.failure !== null) {

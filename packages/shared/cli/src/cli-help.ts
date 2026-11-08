@@ -41,7 +41,7 @@ export const CLI_HELP = `widgetarium <command>
       "client"; --check writes nothing and exits 1 naming each package whose files are stale
 
   rename <full-name> <new-name> [--dry] [--module | --plugin] [--skip-types]
-      renames a request, event or subscriber (file-system.files.read-file read), a module or a
+      renames a request, event or subscriber (file-system.files.read-folder folder), a module or a
       plugin, and every use bound to it: imports, aliases, namespace uses, wire-name strings; refuses
       and writes nothing when the new name is taken where it is used; then runs generate and the
       type check; --dry prints every change and writes nothing`;

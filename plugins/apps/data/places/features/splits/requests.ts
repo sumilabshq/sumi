@@ -17,7 +17,7 @@ import {
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { placeInViewPlan, removeFromSplitPlan, reorderSplitMemberPlan, resizeSplitPlan } from "./lib/split-plans.js";
 
-export const shownSplit = query()
+export const shown = query()
 	.public()
 	.input(WindowLabelSchema)
 	.output(ShownSplitSchema)
@@ -44,7 +44,7 @@ export const placeInView = command()
 		};
 	});
 
-export const removeFromSplit = command()
+export const remove = command()
 	.public()
 	.input(SplitMemberAskSchema)
 	.output(LeftSplitSchema)
@@ -59,7 +59,7 @@ export const removeFromSplit = command()
 		};
 	});
 
-export const reorderSplitMember = command()
+export const reorderMember = command()
 	.public()
 	.input(ReorderSplitMemberAskSchema)
 	.output(TabsSettledSchema)
@@ -70,7 +70,7 @@ export const reorderSplitMember = command()
 		),
 	);
 
-export const resizeSplit = command()
+export const resize = command()
 	.public()
 	.input(ResizeSplitAskSchema)
 	.output(TabsSettledSchema)
@@ -83,6 +83,6 @@ export const resizeSplit = command()
 		),
 	);
 
-export const rereadShownSplit = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
-	invalidate(shownSplit);
+export const rereadShown = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
+	invalidate(shown);
 });

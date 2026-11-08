@@ -12,7 +12,7 @@ export interface KnownSiteIconProps {
 }
 
 export function KnownSiteIcon({ origin, size, fallback }: KnownSiteIconProps): ReactElement {
-	const icon = useOptionalQuery(browser.siteIcons.siteIcon, { origin }).data?.icon ?? null;
+	const icon = useOptionalQuery(browser.siteIcons.icon, { origin }).data?.icon ?? null;
 
 	if (icon === null) {
 		return fallback;

@@ -52,7 +52,7 @@ const started = runtime()
 	.start({ platform: "browser", scope: { workspaceId: "probe" } });
 
 for (const origin of ORIGINS) {
-	const answer = await started.send(browser.siteIcons.siteIcon, { origin });
+	const answer = await started.send(browser.siteIcons.icon, { origin });
 	const kept = siteIcons.siteIcons().find((icon) => icon.origin === origin);
 	const icon = answer.ok ? answer.output.icon : null;
 	console.log(

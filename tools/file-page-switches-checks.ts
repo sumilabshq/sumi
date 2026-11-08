@@ -16,7 +16,7 @@ function startedTab(): Runtime {
 }
 
 async function switchesOf(started: Runtime): Promise<unknown> {
-	const answered = await started.send(filePage.switches.fileSwitches);
+	const answered = await started.send(filePage.switches.all);
 	return answered.ok ? answered.output : answered.reason;
 }
 
@@ -25,14 +25,14 @@ const otherTab = startedTab();
 
 check("a new file tab starts with every switch off and no reload", await switchesOf(tab), { on: [], loads: 0 });
 
-await tab.send(filePage.switches.flipFileSwitch, { name: "wrap" });
-await tab.send(filePage.switches.flipFileSwitch, { name: "values" });
+await tab.send(filePage.switches.flip, { name: "wrap" });
+await tab.send(filePage.switches.flip, { name: "values" });
 check("flipping turns a switch on, each named once", await switchesOf(tab), { on: ["wrap", "values"], loads: 0 });
 
-await tab.send(filePage.switches.flipFileSwitch, { name: "wrap" });
+await tab.send(filePage.switches.flip, { name: "wrap" });
 check("flipping again turns it off and leaves the others", await switchesOf(tab), { on: ["values"], loads: 0 });
 
-await tab.send(filePage.switches.reloadFile);
+await tab.send(filePage.switches.reload);
 check("reload counts up, so the page draws anew", await switchesOf(tab), { on: ["values"], loads: 1 });
 
 check("another tab keeps its own switches: the module lives per tab app", await switchesOf(otherTab), {
@@ -40,7 +40,7 @@ check("another tab keeps its own switches: the module lives per tab app", await 
 	loads: 0,
 });
 
-const refused = await tab.send(filePage.switches.flipFileSwitch, { name: "everything" as "wrap" });
+const refused = await tab.send(filePage.switches.flip, { name: "everything" as "wrap" });
 check("a switch the page does not have is refused before anything changes", refused.ok, false);
 
 console.log(

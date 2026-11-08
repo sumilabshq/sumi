@@ -95,7 +95,7 @@ function useRecordsTitle({ sumi, tabId }: SumiFrame, address: string | null): vo
 }
 
 function recordPage(sumi: Runtime, page: RecordedPage): void {
-	void sumi.send(apps.pages.recordAppPage, page).then((recorded) => {
+	void sumi.send(apps.pages.record, page).then((recorded) => {
 		if (!recorded.ok) {
 			console.error(`[tasks] recording the tab page was refused: ${recorded.reason}`);
 		}

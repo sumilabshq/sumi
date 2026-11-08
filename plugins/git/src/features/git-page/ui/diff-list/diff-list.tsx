@@ -13,7 +13,7 @@ export function DiffList(): ReactElement {
 	const page = useGitPage();
 	const read = useOptionalQuery(git.repos.comparison, comparisonInputOf(page));
 	const comparison = read.data;
-	const isWrapped = useOptionalQuery(git.gitLook.gitLook).data?.isWrapped ?? true;
+	const isWrapped = useOptionalQuery(git.gitLook.current).data?.isWrapped ?? true;
 	const [scroller, setScroller] = useState<HTMLElement | null>(null);
 	const [list, setList] = useState<HTMLElement | null>(null);
 	const near = useNearPaths(scroller, list);

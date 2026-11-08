@@ -13,7 +13,7 @@ const HTML = "html";
 
 // TODO: relative images, styles and scripts of the page do not load; srcdoc has no base folder
 export function HtmlFile({ path }: HtmlFileProps): ReactElement | null {
-	const read = useOptionalQuery(fileSystem.files.readFile, { path });
+	const read = useOptionalQuery(fileSystem.files.read, { path });
 	const switches = useFileSwitches();
 
 	if (read.failure !== null) {

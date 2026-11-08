@@ -25,7 +25,7 @@ export const keepOnceOnTabs = subscriber(pagesChanged).handle((_input, { onceAll
 	console.debug(`[widgetarium] browser once allowances ${was.length} → ${kept.length} (a tab left the allowed host)`);
 });
 
-export const siteAccess = query()
+export const access = query()
 	.public()
 	.input(BrowserViewSchema)
 	.output(SiteAccessSchema)
@@ -45,12 +45,12 @@ export const siteAccess = query()
 		};
 	});
 
-export const setSiteLevel = command()
+export const setLevel = command()
 	.public()
 	.input(SiteLevelSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ siteKey, level }, { browserGrants, clock, invalidate }) => {
-		invalidate(siteAccess);
+		invalidate(access);
 		const refusal = refuseSiteKey(siteKey);
 
 		if (refusal !== null) {
@@ -74,16 +74,16 @@ export const setSiteLevel = command()
 		console.info(`[widgetarium] site ${siteKey} ${written.change.was ?? "none"} → ${level} (${SET_IN_SITE_ACCESS})`);
 	});
 
-export const rereadSiteAccess = subscriber(grantsChanged).handle((_input, { invalidate }) => {
-	invalidate(siteAccess);
+export const rereadAccess = subscriber(grantsChanged).handle((_input, { invalidate }) => {
+	invalidate(access);
 });
 
-export const rereadSiteAccessForOnceAllowances = subscriber(onceAllowancesChanged).handle((_input, { invalidate }) => {
-	invalidate(siteAccess);
+export const rereadAccessForOnceAllowances = subscriber(onceAllowancesChanged).handle((_input, { invalidate }) => {
+	invalidate(access);
 });
 
-export const rereadSiteAccessForPages = subscriber(pagesChanged).handle((_input, { invalidate }) => {
-	invalidate(siteAccess);
+export const rereadAccessForPages = subscriber(pagesChanged).handle((_input, { invalidate }) => {
+	invalidate(access);
 });
 
 function rowsOf(grants: readonly SiteGrant[]): readonly SiteRow[] {

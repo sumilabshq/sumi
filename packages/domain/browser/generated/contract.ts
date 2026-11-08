@@ -304,7 +304,7 @@ export const GhostShownSchema = z.object({
 
 export const browser = moduleContract("browser", Device, {
 	asks: {
-		accessAsks: named("asks.access-asks", query()
+		access: named("asks.access", query()
 			.public()
 			.output(AccessAsksSchema)
 			.settlesNow()),
@@ -312,7 +312,7 @@ export const browser = moduleContract("browser", Device, {
 			.public()
 			.output(InkReadingSchema.nullable())
 			.settlesNow()),
-		answerAsk: named("asks.answer-ask", command()
+		answer: named("asks.answer", command()
 			.public()
 			.input(AnswerAskSchema)
 			.idempotencyKey((input) => input.id)),
@@ -331,7 +331,7 @@ export const browser = moduleContract("browser", Device, {
 			.input(CapturePageSchema)
 			.output(PageShotSchema)
 			.idempotencyKey(PerCall)),
-		inkOpenAddress: named("ink.ink-open-address", command()
+		openAddress: named("ink.open-address", command()
 			.public()
 			.input(InkAddressSchema)
 			.output(OpenedPageSchema)
@@ -342,31 +342,31 @@ export const browser = moduleContract("browser", Device, {
 			.idempotencyKey(PerCall)),
 	},
 	pageLook: {
-		pageHead: named("page-look.page-head", query()
+		head: named("page-look.head", query()
 			.public()
 			.input(BrowserViewSchema)
 			.output(PageHeadSchema.nullable())
 			.settlesNow()),
 	},
 	siteIcons: {
-		siteIcon: named("site-icons.site-icon", query()
+		icon: named("site-icons.icon", query()
 			.public()
 			.input(SiteOriginSchema)
 			.output(SiteIconOfOriginSchema)),
 	},
 	sites: {
-		siteAccess: named("sites.site-access", query()
+		access: named("sites.access", query()
 			.public()
 			.input(BrowserViewSchema)
 			.output(SiteAccessSchema)
 			.settlesNow()),
-		setSiteLevel: named("sites.set-site-level", command()
+		setLevel: named("sites.set-level", command()
 			.public()
 			.input(SiteLevelSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	tabs: {
-		browserTabs: named("tabs.browser-tabs", query()
+		all: named("tabs.all", query()
 			.public()
 			.input(BrowserViewSchema)
 			.output(BrowserTabsSchema)
@@ -380,7 +380,7 @@ export const browser = moduleContract("browser", Device, {
 			.public()
 			.input(OpenAddressSchema)
 			.idempotencyKey(PerCall)),
-		openTabInOwnWindow: named("tabs.open-tab-in-own-window", command()
+		openInOwnWindow: named("tabs.open-in-own-window", command()
 			.public()
 			.input(TabIdSchema)
 			.idempotencyKey(Repeatable)),
@@ -392,7 +392,7 @@ export const browser = moduleContract("browser", Device, {
 			.public()
 			.input(z.object({ window: z.string().min(1) }))
 			.idempotencyKey(Repeatable)),
-		openTabWindow: named("tabs.open-tab-window", command()
+		openWindow: named("tabs.open-window", command()
 			.public()
 			.input(TabWindowSchema)
 			.idempotencyKey(Repeatable)),
@@ -412,7 +412,7 @@ export const browser = moduleContract("browser", Device, {
 			.public()
 			.input(GhostShownSchema)
 			.idempotencyKey(Repeatable)),
-		showTab: named("tabs.show-tab", command()
+		show: named("tabs.show", command()
 			.public()
 			.input(TabIdSchema)
 			.idempotencyKey(Repeatable)),

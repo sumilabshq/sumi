@@ -6,12 +6,12 @@ import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { StudioViewSchema } from "../../shared/schema/studio-view.schema.js";
 import { ViewToShowSchema } from "../../shared/schema/view-to-show.schema.js";
 
-export const shownView = query()
+export const current = query()
 	.public()
 	.output(StudioViewSchema)
 	.handle((_input, { send, studioWindow }) => send(places.tabs.shownView, { window: studioWindow.windowLabel() }));
 
-export const showView = command()
+export const show = command()
 	.public()
 	.input(ViewToShowSchema)
 	.idempotencyKey(Repeatable)
@@ -20,10 +20,10 @@ export const showView = command()
 		emit(tabsSettled);
 	});
 
-export const rereadShownView = subscriber(tabsSettled).handle((_input, { invalidate }) => {
-	invalidate(shownView);
+export const reread = subscriber(tabsSettled).handle((_input, { invalidate }) => {
+	invalidate(current);
 });
 
-export const rereadShownViewForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
-	invalidate(shownView);
+export const rereadForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
+	invalidate(current);
 });

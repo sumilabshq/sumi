@@ -20,7 +20,7 @@ import type { TaskView } from "../../shared/schema/task-view.schema.js";
 import { createdStep, editedStep, movedStep, startedStep } from "./lib/agent-edits.js";
 import { attachedStep, checkedStep, markedStep } from "./lib/progress-edits.js";
 
-export const createTask = command()
+export const create = command()
 	.public()
 	.input(CreateTaskAskSchema)
 	.output(CreatedSchema)
@@ -42,7 +42,7 @@ export const createTask = command()
 		};
 	});
 
-export const editTask = command()
+export const edit = command()
 	.public()
 	.input(EditTaskAskSchema)
 	.output(TaskViewSchema)
@@ -51,7 +51,7 @@ export const editTask = command()
 		viewAfter(tasks, clock.now(), { ref: ask.task, next: (board, now) => editedStep(board, ask, now) }),
 	);
 
-export const startTask = command()
+export const start = command()
 	.public()
 	.input(StartTaskAskSchema)
 	.output(TaskViewSchema)
@@ -78,7 +78,7 @@ export const checkCriterion = command()
 		viewAfter(tasks, clock.now(), { ref: ask.task, next: (board, now) => checkedStep(board, ask, now) }),
 	);
 
-export const attachToTask = command()
+export const attach = command()
 	.public()
 	.input(AttachToTaskAskSchema)
 	.output(TaskViewSchema)
@@ -87,7 +87,7 @@ export const attachToTask = command()
 		viewAfter(tasks, clock.now(), { ref: ask.task, next: (board, now) => attachedStep(board, ask, now) }),
 	);
 
-export const moveTask = command()
+export const move = command()
 	.public()
 	.input(MoveTaskAskSchema)
 	.output(TaskViewSchema)

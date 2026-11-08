@@ -56,7 +56,7 @@ const otherCoreTransport = startCore(OTHER_WORKSPACE);
 const core = runtime()
 	.imports(tasks({ over: coreTransport }))
 	.start();
-const created = await core.send(tasks.agentWork.createTask, {
+const created = await core.send(tasks.agentWork.create, {
 	chat: "chat-1",
 	title: TITLE,
 	kind: "research",
@@ -84,10 +84,10 @@ const page = runtime()
 	.imports(tasks({ over: frameTransport }), fileSystem({ over: frameTransport }))
 	.start();
 
-const board = await page.send(tasks.board.board, {});
+const board = await page.send(tasks.board.current, {});
 check("the page reads that task through the frame", board.ok && JSON.stringify(board.output).includes(TITLE), true);
 
-const tasksFileRead = await page.send(fileSystem.files.readFile, { path: "tasks.json" });
+const tasksFileRead = await page.send(fileSystem.files.read, { path: "tasks.json" });
 check(
 	"the board is kept in the tasks app's own tasks.json",
 	tasksFileRead.ok && tasksFileRead.output.includes(TITLE),
@@ -102,7 +102,7 @@ check(
 const otherCore = runtime()
 	.imports(tasks({ over: otherCoreTransport }))
 	.start();
-const otherBoard = await otherCore.send(tasks.board.board, {});
+const otherBoard = await otherCore.send(tasks.board.current, {});
 check(
 	"another workspace's board does not hold that task",
 	otherBoard.ok && !JSON.stringify(otherBoard.output).includes(TITLE),

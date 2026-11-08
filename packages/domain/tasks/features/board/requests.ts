@@ -20,19 +20,19 @@ import {
 	TurnTrailerSchema,
 } from "../../shared/schema/task-view.schema.js";
 
-export const board = query()
+export const current = query()
 	.public()
 	.input(BoardAskSchema)
 	.output(BoardAnswerSchema)
 	.handle(async (ask, { tasks, clock }) => boardAnswerOf((await tasks.board()).board, ask, clock.now()));
 
-export const tasks = query()
+export const all = query()
 	.public()
 	.input(TasksAskSchema)
 	.output(TaskPageSchema)
 	.handle(async (ask, { tasks, clock }) => pageOf((await tasks.board()).board, ask, clock.now()));
 
-export const task = query()
+export const one = query()
 	.public()
 	.input(TaskAskSchema)
 	.output(TaskViewSchema)
@@ -47,13 +47,13 @@ export const task = query()
 		return viewOf(board, task, clock.now());
 	});
 
-export const searchTasks = query()
+export const search = query()
 	.public()
 	.input(SearchAskSchema)
 	.output(SearchHitsSchema)
 	.handle(async (ask, { tasks, clock }) => [...searchOf((await tasks.board()).board, ask, clock.now())]);
 
-export const chatTaskLine = query()
+export const chatLine = query()
 	.public()
 	.input(ChatAskSchema)
 	.output(ChatTaskLineSchema)
@@ -66,17 +66,17 @@ export const chatTaskLine = query()
 		};
 	});
 
-export const taskTrailer = query()
+export const trailer = query()
 	.public()
 	.input(ChatAskSchema)
 	.output(TurnTrailerSchema)
 	.handle(async ({ chat }, { tasks }) => turnTrailerOf((await tasks.board()).board, chat));
 
-export const rereadTasks = subscriber(tasksChanged).handle((_input, { invalidate }) => {
-	invalidate(board);
-	invalidate(tasks);
-	invalidate(task);
-	invalidate(searchTasks);
-	invalidate(chatTaskLine);
-	invalidate(taskTrailer);
+export const reread = subscriber(tasksChanged).handle((_input, { invalidate }) => {
+	invalidate(current);
+	invalidate(all);
+	invalidate(one);
+	invalidate(search);
+	invalidate(chatLine);
+	invalidate(trailer);
 });

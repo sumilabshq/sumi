@@ -34,7 +34,7 @@ export interface ReadyChatProps {
 const TITLE = "Widgetarium AI";
 
 export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyChatProps): ReactElement {
-	const { data: chat } = useQuery(assistant.chat.chat, { chat: chatId ?? null });
+	const { data: chat } = useQuery(assistant.chat.one, { chat: chatId ?? null });
 	const { session } = chat;
 	const [change, setChange] = useState<AttachedChange | null>(null);
 	const { failure, report } = useFailureLine();

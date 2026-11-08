@@ -16,9 +16,9 @@ interface Asked {
 }
 
 export function useFocusesSplitMember(tree: PaneBoard): (paneId: string) => void {
-	const showTab = useCommand(appHost.tabs.showTab);
+	const showTab = useCommand(appHost.tabs.show);
 	const looked: Seen = {
-		split: useQuery(appHost.splits.shownSplit).data.split,
+		split: useQuery(appHost.splits.shown).data.split,
 		tree,
 		showTab: showTab.run,
 	};

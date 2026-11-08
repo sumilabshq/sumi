@@ -2,7 +2,7 @@
 import { buildersOf } from "@widgetarium/data-framework";
 import type { canvas } from "../module.js";
 import type { jobsChanged } from "../gateways/agent-jobs/agent-jobs.events.js";
-import type { canvasMomentChanged } from "../gateways/canvas-moment/canvas-moment.events.js";
+import type { momentChanged } from "../gateways/canvas-moment/canvas-moment.events.js";
 import type { designChanged } from "../gateways/design-folder/design-folder.events.js";
 
-export const { command, query, subscriber } = buildersOf<typeof canvas, typeof canvasMomentChanged | typeof designChanged | typeof jobsChanged>();
+export const { command, query, subscriber } = buildersOf<typeof canvas, typeof designChanged | typeof jobsChanged | typeof momentChanged>();

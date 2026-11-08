@@ -43,7 +43,7 @@ export function canvasAppOver(parts: CanvasParts): Runtime {
 
 export async function openedCanvasOver(parts: CanvasParts, opened: CanvasOpened = FARM_OPENED): Promise<Runtime> {
 	const canvas = canvasAppOver(parts);
-	const answer = await canvas.send(canvasContract.view.openCanvas, opened);
+	const answer = await canvas.send(canvasContract.view.open, opened);
 
 	if (!answer.ok) {
 		throw new Error(`the test canvas did not open: ${answer.reason}`);
