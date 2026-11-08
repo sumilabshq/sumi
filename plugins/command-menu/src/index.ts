@@ -1,3 +1,2 @@
-export { MenuDoorFillSchema, MenuPageFillSchema, MenuRowSourceFillSchema } from "./slots.js";
-export type { Draft, DraftedMenu, Found, PageAsk } from "./slots.js";
+export type { Draft, DraftedMenu, Found, PageAsk } from "@sumi/command-menu/implementation";
 export * from "./generated/plugin.js";

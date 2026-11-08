@@ -2,7 +2,8 @@ import { apps } from "@sumi/apps-plugin";
 import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { chat } from "@sumi/chat-plugin";
-import { WindowModuleSchema, sumiHost } from "@sumi/sumi-host-plugin";
+import { shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
+import type { DeviceModule } from "@widgetarium/data-framework";
 import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { appHost } from "../plugins/apps/data/app-host/generated/module.ts";
@@ -38,15 +39,15 @@ const PROBE_ROW: Found = {
 
 const probe = plugin("probe")
 	.require(commandMenu)
-	.fill(
-		commandMenu.menuDoors.add({
+	.apply((app) => {
+		app.use(commandMenu).door({
 			id: "probe",
 			letter: "p",
 			label: "Probe",
 			placeholder: "Probe things",
 			startsWith: "empty",
-		}),
-		commandMenu.menuPages.add({
+		});
+		app.use(commandMenu).page({
 			id: "probe",
 			draftsOf: ({ pools }) => ({
 				foundCount: null,
@@ -59,28 +60,39 @@ const probe = plugin("probe")
 					},
 				],
 			}),
-		}),
-		commandMenu.menuRowSources.add({
+		});
+		app.use(commandMenu).rowSource({
 			id: "probe-rows",
 			isFindable: true,
 			rowsOf: () => Promise.resolve([PROBE_ROW]),
-		}),
-	);
+		});
+	});
 
+const windowModules = new Map<string, DeviceModule>();
 const ENABLED = [sumiHost.id, apps.id, commandMenu.id, chat.id, probe.id];
 const started = pluginRuntime()
 	.builtInPlugins(sumiHost, apps, commandMenu, chat, probe)
 	.state(new MemoryPluginStateStore(ENABLED))
+	.provide(windows, ({ pluginId }) => ({
+		module: (module) => {
+			windowModules.set(pluginId, module);
+		},
+		moduleOf: () => undefined,
+		serverModule: () => undefined,
+	}))
+	.provide(shell, () => ({
+		tabPage: () => undefined,
+		layer: () => undefined,
+		provider: () => undefined,
+		frameModule: () => undefined,
+	}))
 	.start();
-const windowModuleFill = started
-	.fillsOf(sumiHost.windowModules)
-	.find(({ pluginId }) => pluginId === commandMenu.id);
+const menuModule = windowModules.get(commandMenu.id);
 
-if (windowModuleFill === undefined) {
-	throw new Error("the command menu plugin filled no window module");
+if (menuModule === undefined) {
+	throw new Error("the command menu plugin registered no window module");
 }
 
-const menuModule = WindowModuleSchema.parse(windowModuleFill.item).module(started.readerOf(commandMenu.id));
 const studio = runtime()
 	.modules(browser, layout, workspaces, appHost, chatTabs, PluginAppsModule, menuModule)
 	.imports(placesOver())

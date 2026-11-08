@@ -26,12 +26,14 @@ export const chat = plugin("chat")
 		sumiHost.windowModules.add({ id: "chat-tabs", module: () => chatTabs }),
 		sumiHost.windowServerModules.add({ id: "assistant", module: ({ assistant }) => assistantModule(assistant) }),
 		sumiHost.windowProviders.add({ id: "ask-composer", provider: askComposerProviderOf }),
-		commandMenu.menuDoors.add({
+	)
+	.apply((app) => {
+		app.use(commandMenu).door({
 			id: "ask",
 			letter: "i",
 			label: "Ask",
 			placeholder: "Ask Sumi anything",
 			startsWith: "empty",
-		}),
-		commandMenu.menuPages.add({ id: "ask", draftsOf: askPageOf }),
-	);
+		});
+		app.use(commandMenu).page({ id: "ask", draftsOf: askPageOf });
+	});

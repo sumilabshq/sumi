@@ -1,5 +1,11 @@
 import { check, tally } from "./check-helpers.ts";
-import { MemoryPluginStateStore, plugin, runtime, service } from "../packages/shared/plugin-framework/src/index.ts";
+import {
+	MemoryPluginStateStore,
+	plugin,
+	pluginWithSlots,
+	runtime,
+	service,
+} from "../packages/shared/plugin-framework/src/index.ts";
 import type { CallerFacts, Plugin, PluginRuntime } from "../packages/shared/plugin-framework/src/index.ts";
 
 interface Backend {
@@ -143,6 +149,16 @@ check(
 	optionalLoop.refusals,
 	["plugin loop-end optionally uses loop-start, which uses it back"],
 );
+
+const generatedApplies = { count: 0 };
+const generated = pluginWithSlots(
+	plugin("generated").apply(() => {
+		generatedApplies.count += 1;
+	}),
+	{},
+);
+started([generated]);
+check("a plugin passed through its generated namespace still applies", generatedApplies.count, 1);
 
 if (tally.failed > 0) {
 	process.exit(1);

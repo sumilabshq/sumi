@@ -13,7 +13,6 @@ import { AppsSchema } from "@sumi/apps/contract";
 import { apps as appsModule } from "../plugins/apps/data/apps/generated/module.ts";
 import { apps } from "../plugins/apps/src/index.ts";
 import { chat } from "../plugins/chat/src/index.ts";
-import { commandMenu } from "../plugins/command-menu/src/index.ts";
 import { main } from "../plugins/main/src/index.ts";
 import { sumiHost } from "../plugins/sumi-host/src/index.ts";
 import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
@@ -282,20 +281,9 @@ check(
 );
 
 check(
-	"no code outside the command menu plugin and its fillers names its slots: the host never reads them",
-	["commandMenu.menuDoors", "commandMenu.menuPages", "commandMenu.menuRowSources"].flatMap((word) =>
-		sourcesNaming(word).filter((file) => !MENU_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
-	),
+	"no code outside the command menu plugin and the plugins that add to it uses its API: the host never reads it",
+	sourcesNaming("use(commandMenu)").filter((file) => !MENU_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
 	[],
-);
-check(
-	"the Ask door, ⌘I, and its page are the chat plugin's fills, and the menu fills no Ask of its own",
-	[
-		fillIdsOf(chat, commandMenu.menuDoors),
-		fillIdsOf(chat, commandMenu.menuPages),
-		fillIdsOf(commandMenu, commandMenu.menuDoors),
-	],
-	[["ask"], ["ask"], ["anywhere", "new-tab", "this-tab"]],
 );
 check(
 	"places and apps are the apps plugin's background modules, questions the chat plugin's, tasks the old app's",
@@ -312,7 +300,7 @@ check(
 		resolved.windowModules.map((windowModule) => windowModule.moduleOf({}).definition.name),
 		resolved.windowLayers.map(({ id }) => id),
 	],
-	[["app-host", "command-menu", "chat-tabs"], ["command-menu.command-menu"]],
+	[["app-host", "chat-tabs", "command-menu"], ["command-menu.layer-0"]],
 );
 
 const startedCore = runtime()

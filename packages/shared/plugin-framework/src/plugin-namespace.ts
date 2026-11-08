@@ -1,6 +1,6 @@
 import type { SlotShape } from "./declared-slot";
 import { nameIdentity, placeIdentity } from "./identity";
-import { Plugin } from "./plugin";
+import type { Plugin } from "./plugin";
 import { sentenceOf } from "./sentence";
 
 const SLOT = "a slot";
@@ -12,10 +12,10 @@ export function namedSlot<T extends SlotShape>(name: string, declared: T): T {
 	return declared;
 }
 
-export function pluginWithSlots<S extends Readonly<Record<string, SlotShape>>>(
-	definition: Plugin,
+export function pluginWithSlots<Api, S extends Readonly<Record<string, SlotShape>>>(
+	definition: Plugin<Api>,
 	slots: S,
-): Plugin & S {
+): Plugin<Api> & S {
 	const fieldKey = Object.keys(slots).find((key) => key in definition);
 
 	if (fieldKey !== undefined) {
@@ -26,5 +26,5 @@ export function pluginWithSlots<S extends Readonly<Record<string, SlotShape>>>(
 		placeIdentity(each.identity, definition.id, SLOT);
 	}
 
-	return Object.assign(new Plugin(definition.id, definition.parts), slots);
+	return Object.assign(definition.copy(), slots);
 }

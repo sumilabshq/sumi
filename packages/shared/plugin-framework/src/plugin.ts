@@ -38,6 +38,10 @@ export class Plugin<out Api = unknown> {
 		return new Plugin(checkedAlias(alias), this.parts, this.id, this.applying);
 	}
 
+	copy(): Plugin<Api> {
+		return new Plugin(this.id, this.parts, this.slotOwnerId, this.applying);
+	}
+
 	applyWith(app: AnyApp): Api | undefined {
 		return this.applying?.(app);
 	}
