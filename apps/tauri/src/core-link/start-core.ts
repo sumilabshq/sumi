@@ -110,10 +110,7 @@ function coreServedOver({ workspace, listener, store, plugins }: CoreServing): R
 		file: tasksBoardFileOver(own),
 	};
 	const core = runtime()
-		.modules(
-			...HOST_CAPABILITY_MODULES,
-			...plugins.backgroundModules.map(({ moduleOf }) => moduleOf(offers)),
-		)
+		.modules(...HOST_CAPABILITY_MODULES, ...plugins.backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
 		.start({
 			platform: "server",
 			env: {

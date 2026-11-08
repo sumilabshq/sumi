@@ -16,7 +16,8 @@ interface InitializeResult {
 	};
 }
 
-type McpResult = InitializeResult | ToolResult | { readonly tools: readonly McpTool[] } | Readonly<Record<string, never>>;
+type McpResult =
+	InitializeResult | ToolResult | { readonly tools: readonly McpTool[] } | Readonly<Record<string, never>>;
 
 type JsonRpcOutcome =
 	| { readonly result: McpResult }

@@ -16,10 +16,12 @@ export const apps = plugin("apps")
 	.apply((app) => {
 		const filled: FilledApp[] = [];
 		app.use(backend).moduleOf(({ store }) => placesModule({ store, apps: filled.map(placedAppOf) }), places);
-		app.use(backend).moduleOf(
-			({ store }) => appsModule({ apps: filled.map(faceOf), titlesOf: titlesOfApps(filled), store }),
-			appsContract,
-		);
+		app
+			.use(backend)
+			.moduleOf(
+				({ store }) => appsModule({ apps: filled.map(faceOf), titlesOf: titlesOfApps(filled), store }),
+				appsContract,
+			);
 		app.use(windows).moduleOf(appHostOf);
 		app.use(shell).tabPage(appsTabPageOf(filled));
 		return {

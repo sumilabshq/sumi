@@ -113,11 +113,7 @@ async function outputOf<T>(answer: Promise<{ ok: true; output: T } | { ok: false
 	return answered.output;
 }
 
-check(
-	"a plugin filling the menu's slots resolves with no refusal",
-	started.refusals,
-	[],
-);
+check("a plugin filling the menu's slots resolves with no refusal", started.refusals, []);
 
 const { doors } = await outputOf(studio.send(commandMenuContract.opening.menuDoors));
 check(
