@@ -1,5 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { GitLookQuery } from "@sumi/git";
+import { useOptionalQuery } from "@widgetarium/data-framework";
 import { headLabelOf, useGitPage } from "../../lib/git-page-context.js";
 import { baseLabelOf, fileNameOf } from "../../lib/git-names.js";
 import { BaseMenu } from "../base-menu/base-menu.js";
@@ -18,8 +20,12 @@ const FIND_BASE = "Branch, commit or tag";
 
 export function SidePanel(): ReactElement {
 	const page = useGitPage();
+	const isShown = useOptionalQuery(GitLookQuery).data?.isFileListShown ?? true;
 	return (
-		<aside className="wg-git-side">
+		<aside
+			className="wg-git-side"
+			inert={!isShown}
+		>
 			<Picker
 				glyph="folder"
 				lead={REPO_LEAD.replace("{parent}", fileNameOf(page.parent))}

@@ -21,6 +21,11 @@ export function placeholderHeightOf({ added, removed }: FileDiff): number {
 	return Math.min(added + removed + CONTEXT_LINES, MAX_PLACEHOLDER_LINES) * LINE_PX;
 }
 
+export function lineNumberDigitsOf(rows: readonly DiffRow[]): number {
+	const largest = rows.reduce((most, row) => (row.kind === "gap" ? most : Math.max(most, row.oldNo ?? 0, row.newNo ?? 0)), 0);
+	return String(largest).length;
+}
+
 export function diffRowsOf(hunks: readonly Hunk[]): DiffRow[] {
 	const rows: DiffRow[] = [];
 	let shownTo = 1;

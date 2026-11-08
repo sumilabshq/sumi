@@ -4,8 +4,8 @@ export const GIT_SHEET = `
 :where(.wg-git) :where(button, input) { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; }
 :where(.wg-git) :where(button) { cursor: pointer; }
 .wg-git-glyph { flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.wg-git-page { display: flex; flex: 1; min-width: 0; min-height: 0; padding-left: 6px; }
-.wg-git-side { width: 256px; flex: none; display: flex; flex-direction: column; margin-bottom: 6px; padding: 6px; border-radius: var(--sumi-r-md); background: var(--sumi-soft); min-height: 0; }
+.wg-git-page { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; padding-left: 6px; overflow: hidden; }
+.wg-git-side { position: absolute; z-index: 2; top: 0; bottom: 6px; left: 6px; width: var(--wg-git-list-w, 256px); transition: transform var(--sumi-dur-slow) var(--sumi-ease-out), visibility 0s; display: flex; flex-direction: column; padding: 6px; border-radius: var(--sumi-r-md); background: var(--sumi-soft); min-height: 0; }
 .wg-git-lists { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; margin: 0 -6px; padding: 0 6px; }
 .wg-git-row { height: var(--sumi-h-row); width: 100%; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: var(--sumi-r-md); white-space: nowrap; flex: none; transition: background var(--sumi-dur-hover) var(--sumi-ease); }
 .wg-git-row:hover { background: var(--sumi-hover); }
@@ -38,16 +38,24 @@ export const GIT_SHEET = `
 .wg-git-mi-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
 .wg-git-mi-hint { flex: none; max-width: 45%; display: inline-flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--sumi-fs-12); color: var(--sumi-text-3); }
 .wg-git-mlabel { padding: 8px 10px 4px; font-size: var(--sumi-fs-12); color: var(--sumi-text-3); }
-.wg-git-diffs { flex: 1; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; }
+.wg-git-diffs { --wg-git-diff-inset: var(--sumi-r-md); flex: 1; min-width: 0; min-height: 0; margin-left: calc(var(--wg-git-list-w, 256px) - var(--sumi-r-md)); padding-left: var(--wg-git-diff-inset); overflow-x: hidden; overflow-y: auto; }
+.wg-git-page.is-list-hidden .wg-git-side { transform: translateX(calc(-100% - 12px)); visibility: hidden; transition: transform var(--sumi-dur-slow) var(--sumi-ease-out), visibility 0s linear var(--sumi-dur-slow); }
+.wg-git-edge { position: absolute; z-index: 3; top: 0; bottom: 6px; left: calc(6px + var(--wg-git-list-w, 256px)); width: 8px; transform: translateX(-50%); cursor: col-resize; touch-action: none; outline: none; }
+.wg-git-edge::after { content: ""; position: absolute; top: var(--sumi-r-md); bottom: var(--sumi-r-md); left: 3px; width: 2px; border-radius: 1px; background: transparent; transition: background var(--sumi-dur-fast) var(--sumi-ease); }
+.wg-git-edge:is(:hover, :active, :focus-visible)::after { background: var(--sumi-line); }
+.wg-git-page.is-list-hidden .wg-git-edge { display: none; }
+.wg-git-page.is-list-hidden .wg-git-diffs { --wg-git-diff-inset: 0px; margin-left: -6px; }
 .wg-git-file + .wg-git-file { border-top: 1px solid var(--sumi-line); }
+.wg-git-fold { width: 24px; height: 24px; flex: none; display: inline-flex; align-items: center; justify-content: center; color: var(--sumi-text-2); }
+.wg-git-fhead:focus-visible { outline: 2px solid var(--sumi-focus-ring); outline-offset: -2px; }
 .wg-git-fpath { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.wg-git-fhead { position: sticky; top: 0; z-index: 1; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 16px; background: var(--sumi-plate); white-space: nowrap; cursor: pointer; user-select: none; transition: background var(--sumi-dur-hover) var(--sumi-ease); }
+.wg-git-fhead { position: sticky; top: 0; z-index: 1; height: 40px; display: flex; align-items: center; gap: 8px; margin-left: calc(-1 * var(--wg-git-diff-inset)); padding: 0 12px 0 calc(16px + var(--wg-git-diff-inset)); background: var(--sumi-plate); white-space: nowrap; cursor: pointer; user-select: none; transition: background var(--sumi-dur-hover) var(--sumi-ease); }
 .wg-git-fhead:hover { background: linear-gradient(var(--sumi-hover), var(--sumi-hover)), var(--sumi-plate); }
 .wg-git-dir { color: var(--sumi-text-3); }
 .wg-git-base { font-weight: var(--sumi-fw-medium); }
 .wg-git-gap { flex: 1; }
 .wg-git-hidden { height: 28px; display: flex; align-items: center; gap: 8px; padding-left: 72px; font-size: var(--sumi-fs-12); color: var(--sumi-text-3); background: var(--sumi-sunken); }
-.wg-git-ln { display: grid; grid-template-columns: 48px 48px 22px minmax(0, 1fr); font: var(--sumi-fw-regular) 12.5px/20px var(--sumi-font-mono); }
+.wg-git-ln { --wg-git-num-w: max(48px, calc(var(--wg-git-digits, 3) * 1ch + 20px)); display: grid; grid-template-columns: var(--wg-git-num-w) var(--wg-git-num-w) 22px minmax(0, 1fr); font: var(--sumi-fw-regular) 12.5px/20px var(--sumi-font-mono); }
 .wg-git-ln[data-line="added"] { background: color-mix(in srgb, var(--sumi-success) 9%, transparent); }
 .wg-git-ln[data-line="removed"] { background: color-mix(in srgb, var(--sumi-danger) 8%, transparent); }
 .wg-git-n { padding-right: 10px; text-align: right; color: var(--sumi-text-3); font-variant-numeric: tabular-nums; user-select: none; }
@@ -55,6 +63,9 @@ export const GIT_SHEET = `
 .wg-git-ln[data-line="added"] :is(.wg-git-n, .wg-git-s) { color: var(--sumi-success); }
 .wg-git-ln[data-line="removed"] :is(.wg-git-n, .wg-git-s) { color: var(--sumi-danger); }
 .wg-git-code { white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4; }
+.wg-git-diffs.is-nowrap .wg-git-rows { overflow-x: auto; display: grid; grid-template-columns: minmax(max-content, 1fr); }
+.wg-git-diffs.is-nowrap .wg-git-ln { grid-template-columns: var(--wg-git-num-w) var(--wg-git-num-w) 22px max-content; }
+.wg-git-diffs.is-nowrap .wg-git-code { white-space: pre; overflow-wrap: normal; padding-right: 16px; }
 .wg-git-note { margin: 0; padding: 16px; color: var(--sumi-text-3); }
 .wg-git-empty { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: 22vh 0 48px; }
 .wg-git-empty > div { width: 400px; display: flex; flex-direction: column; }

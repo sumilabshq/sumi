@@ -14,6 +14,7 @@
 		"@sumi/contract": "0.6.0",
 		"@sumi/git": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0"

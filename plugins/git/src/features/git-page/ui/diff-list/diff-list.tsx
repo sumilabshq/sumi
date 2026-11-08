@@ -1,6 +1,6 @@
 import { createElement as h, useCallback, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { ComparisonQuery } from "@sumi/git";
+import { ComparisonQuery, GitLookQuery } from "@sumi/git";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { comparisonInputOf, useGitPage } from "../../lib/git-page-context.js";
 import { useNearPaths } from "../../lib/use-near-paths.js";
@@ -13,13 +13,14 @@ export function DiffList(): ReactElement {
 	const page = useGitPage();
 	const read = useOptionalQuery(ComparisonQuery, comparisonInputOf(page));
 	const comparison = read.data;
+	const isWrapped = useOptionalQuery(GitLookQuery).data?.isWrapped ?? true;
 	const [scroller, setScroller] = useState<HTMLElement | null>(null);
 	const [list, setList] = useState<HTMLElement | null>(null);
 	const near = useNearPaths(scroller, list);
 	const heights = useRef(new Map<string, number>());
 	const keepHeight = useCallback((path: string, px: number) => void heights.current.set(path, px), []);
 	return (
-		<section ref={setScroller} className="wg-git-diffs">
+		<section ref={setScroller} className={isWrapped ? "wg-git-diffs" : "wg-git-diffs is-nowrap"}>
 			{read.failure === null ? null : <GitNote said={read.failure} />}
 			{comparison?.files.length === 0 ? <GitNote said={NO_CHANGES} /> : null}
 			<div ref={setList}>

@@ -17,25 +17,26 @@ export interface FileDiffHeadProps {
 
 const MARK_VIEWED = "Mark as viewed";
 const VIEWED = "Viewed, press to unmark";
-const FOLD = "Fold";
-const UNFOLD = "Unfold";
 
 export function FileDiffHead({ file, isOpen, isViewed, onFold, onToggleViewed }: FileDiffHeadProps): ReactElement {
-	const foldLabel = isOpen ? FOLD : UNFOLD;
 	const viewedLabel = isViewed ? VIEWED : MARK_VIEWED;
 	return (
 		<div
 			className="wg-git-fhead"
+			role="button"
+			tabIndex={0}
+			aria-expanded={isOpen}
 			onClick={onFold}
+			onKeyDown={(press) => {
+				if (press.target === press.currentTarget && (press.key === "Enter" || press.key === " ")) {
+					press.preventDefault();
+					onFold();
+				}
+			}}
 		>
-			<IconButton
-				variant="ghost"
-				size="xs"
-				label={foldLabel}
-				{...tooltipMarks({ said: foldLabel, keys: null })}
-			>
+			<span className="wg-git-fold">
 				<Glyph name={isOpen ? "chevronDown" : "chevronRight"} size={14} />
-			</IconButton>
+			</span>
 			<StatusLetter status={file.status} />
 			<span className="wg-git-fpath">
 				<span className="wg-git-dir">{fileFolderOf(file.path)}</span>
