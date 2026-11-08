@@ -209,6 +209,9 @@ scopes, same body as before, only the subject is short.
 
 ## House rules
 
+- **CRITICAL: NEVER A CHECK MARK INSIDE A BOX OR A CIRCLE.** A chosen, done, viewed or selected state is the bare
+  tick only: the kit icon `tick`. The kit's `check` is a tick in a rounded square and is forbidden, as are
+  `square-check`, `check-square`, `circle-check` and `check-circle`. Seeing one, the person stops the work.
 - All colours from tokens (`--sumi-*` in the studio, `--wg-kit-*` in the kit); no hardcoded colours. The kit's controls paint fill and corner
   on a `::before` — the element itself is `border-radius: 0` by design.
 - Comments only with the prefixes `TODO:` and `TRADE-OFF:`, fewest possible words. `CONTEXT:` is
