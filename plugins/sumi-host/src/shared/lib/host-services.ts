@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from "react";
 import type { AssistantHosts } from "@widgetarium/assistant/implementation";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type {
+	McpServer,
 	ModuleContract,
 	DeviceModule,
 	Platform,
@@ -97,8 +98,14 @@ export interface Shell {
 	frameModule(contract: ModuleContract<ServerRuns>, serving: (offers: WindowOffers) => FrameServing): void;
 }
 
+export interface Agents {
+	mcpServer(serve: (offers: WindowOffers) => McpServer): void;
+}
+
 export const backend = service<Backend>("backend");
 
 export const windows = service<Windows>("windows");
 
 export const shell = service<Shell>("shell");
+
+export const agents = service<Agents>("agents");

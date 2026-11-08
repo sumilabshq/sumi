@@ -10,7 +10,7 @@ import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.j
 import { openApp, startOpenedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
-import type { Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
+import type { McpServer, Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import type { PaneView } from "@widgetarium/layout/contract";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
@@ -62,6 +62,7 @@ export interface StartedStudio {
 	readonly appPageUrlOf: AppPageUrlOf;
 	readonly tabPages: readonly DrawnTabPage[];
 	readonly windowOffers: WindowOffers;
+	readonly agentMcpServers: readonly McpServer[];
 	readonly windowProviders: readonly ComponentType<WindowProviderProps>[];
 	readonly windowLayers: readonly WindowLayer[];
 	readonly slotFills: SlotFills;
@@ -146,6 +147,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		appPageUrlOf: start.appPageUrlOf ?? sumiAppPageUrlOf,
 		tabPages: plugins.tabPages,
 		windowOffers,
+		agentMcpServers: plugins.agentMcpServers.map(({ serve }) => serve(windowOffers)),
 		windowProviders: plugins.windowProviders.map(({ providerOf }) => providerOf(windowOffers)),
 		windowLayers: plugins.windowLayers,
 		slotFills: plugins.slotFills,

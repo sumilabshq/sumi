@@ -1,20 +1,22 @@
-import { mcp as mcpContract } from "@sumi/mcp/contract";
 import { mcp as mcpModule } from "@sumi/mcp/implementation";
-import { backend } from "@sumi/sumi-host-plugin";
-import type { McpServer, ServerSideModule } from "@widgetarium/data-framework";
+import { agents, windows } from "@sumi/sumi-host-plugin";
+import type { McpServer } from "@widgetarium/data-framework";
 import { plugin } from "@widgetarium/plugin-framework";
-import { serveMcpInto } from "./features/serve-mcp/lib/serve-mcp.js";
+import { mcpServeOf } from "./features/serve-mcp/lib/serve-mcp.js";
+import type { McpServerEntry } from "./features/serve-mcp/lib/serve-mcp.js";
 
 export const mcp = plugin("mcp")
-	.require(backend)
+	.require(windows, agents)
 	.apply((app) => {
-		const tools: ServerSideModule[] = [];
 		const servers: McpServer[] = [];
-		app.use(backend).module(mcpModule({ servers }), mcpContract);
-		app.use(backend).server({ name: "mcp", modules: tools, serve: serveMcpInto(servers, "mcp") });
+		app.use(windows).module(mcpModule({ servers }));
 		return {
-			tools: (modules: readonly ServerSideModule[]): void => {
-				tools.push(...modules);
+			server: (entry: McpServerEntry): void => {
+				for (const module of entry.modules) {
+					app.use(windows).module(module);
+				}
+
+				app.use(agents).mcpServer(mcpServeOf(entry, servers));
 			},
 		};
 	});

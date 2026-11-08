@@ -1,5 +1,6 @@
-export { backend, shell, windows } from "./shared/lib/host-services.js";
+export { agents, backend, shell, windows } from "./shared/lib/host-services.js";
 export type {
+	Agents,
 	Backend,
 	BackendOffers,
 	BackendServer,

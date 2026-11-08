@@ -1,7 +1,8 @@
 import { prefixedModule } from "@widgetarium/data-framework";
 import type { CallerFacts } from "@widgetarium/plugin-framework";
-import type { Backend, Shell, Windows } from "@sumi/sumi-host-plugin";
+import type { Agents, Backend, Shell, Windows } from "@sumi/sumi-host-plugin";
 import type {
+	AgentMcpServer,
 	BackgroundModule,
 	FrameModule,
 	HostServer,
@@ -21,6 +22,7 @@ export interface HostRegistrations {
 	readonly windowProviders: WindowProvider[];
 	readonly frameModules: FrameModule[];
 	readonly servers: HostServer[];
+	readonly agentMcpServers: AgentMcpServer[];
 }
 
 export function emptyHostRegistrations(): HostRegistrations {
@@ -33,6 +35,7 @@ export function emptyHostRegistrations(): HostRegistrations {
 		windowProviders: [],
 		frameModules: [],
 		servers: [],
+		agentMcpServers: [],
 	};
 }
 
@@ -96,6 +99,14 @@ export function shellFor(registrations: HostRegistrations): (caller: CallerFacts
 		},
 		frameModule: (contract, servingOf) => {
 			registrations.frameModules.push({ id: `${pluginId}.${contract.name}`, contract, prefix, servingOf });
+		},
+	});
+}
+
+export function agentsFor(registrations: HostRegistrations): (caller: CallerFacts) => Agents {
+	return () => ({
+		mcpServer: (serve) => {
+			registrations.agentMcpServers.push({ serve });
 		},
 	});
 }

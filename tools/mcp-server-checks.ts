@@ -1,6 +1,8 @@
 import { z } from "zod";
 import {
 	Anywhere,
+	Authenticate,
+	AuthenticatedGuard,
 	PublicGuard,
 	Repeatable,
 	command,
@@ -12,6 +14,7 @@ import {
 	refuse,
 	runtime,
 } from "../packages/shared/data-framework/src/index.ts";
+import type { User } from "../packages/shared/data-framework/src/index.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 
 class Counter {
@@ -243,6 +246,57 @@ check(
 	thrownBy(() => mcpServerOf(longRuntime, { name: "lengthy" })).startsWith(
 		`lengthy.board.${"x".repeat(70)} becomes the MCP tool lengthy_board_`,
 	),
+	true,
+);
+
+class ChatHeaderAuthenticate extends Authenticate {
+	userOf(headers: Headers): Promise<User | null> {
+		const chat = headers.get("sumi-chat");
+		return Promise.resolve(chat === null ? null : { id: chat, permissions: [] });
+	}
+}
+
+const whoAsks = named("asking.who", query())
+	.public()
+	.output(z.string())
+	.handle((_input, { user }) => user?.id ?? "nobody");
+const askingRuntime = runtime()
+	.modules(
+		module("asking")
+			.on(Anywhere)
+			.guard(AuthenticatedGuard)
+			.provide(() => ({}))
+			.handles([whoAsks]),
+		module("shelf")
+			.on(Anywhere)
+			.guard(PublicGuard)
+			.provide(() => ({}))
+			.handles([other]),
+	)
+	.start(ON_SERVER);
+const asking = mcpServerOf(askingRuntime, {
+	name: "asking",
+	modules: ["asking"],
+	authenticate: new ChatHeaderAuthenticate(),
+});
+check(
+	"modules: only the named modules' requests become tools",
+	asking.tools.map(({ name }) => name),
+	["asking_asking_who"],
+);
+check(
+	"headers: a call's headers reach the server's Authenticate, and the handler reads the user",
+	await asking.answer(
+		{ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "asking_asking_who" } },
+		{ headers: new Headers({ "sumi-chat": "chat-7" }) },
+	),
+	{ jsonrpc: "2.0", id: 1, result: { content: [{ type: "text", text: '"chat-7"' }] } },
+);
+check(
+	"headers: a call with none is refused by a guard that needs a user",
+	await asking
+		.answer({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "asking_asking_who" } })
+		.then((reply) => JSON.stringify(reply).includes('"isError":true')),
 	true,
 );
 
