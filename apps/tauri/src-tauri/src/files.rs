@@ -13,9 +13,12 @@ use std::process::Command;
 use std::time::UNIX_EPOCH;
 use tauri::ipc::{Invoke, InvokeBody, InvokeError};
 use tauri::plugin::{Builder, TauriPlugin};
-use tauri::Wry;
+use tauri::{AppHandle, Manager, Wry};
+use tauri_plugin_dialog::DialogExt;
 
 pub const PLUGIN_NAME: &str = "files";
+
+const PICK_FOLDER: &str = "pick_folder";
 
 pub const MAX_PATH_BYTES: usize = 4096;
 
@@ -341,11 +344,22 @@ fn answer_of(command: &str, args: &Value) -> Result<Value, String> {
     }
 }
 
+fn picked_folder(app: &AppHandle<Wry>) -> Result<Value, String> {
+    let picked = app.dialog().file().blocking_pick_folder();
+    answered(Ok(picked.and_then(|folder| folder.into_path().ok()).map(|folder| folder.display().to_string())))
+}
+
 fn handle(invoke: Invoke<Wry>) -> bool {
     let Invoke { message, resolver, .. } = invoke;
 
     if let Err(refused) = refuse_foreign_caller(message.webview().label()) {
         resolver.reject(refused);
+        return true;
+    }
+
+    if message.command() == PICK_FOLDER {
+        let app = message.webview().app_handle().clone();
+        std::thread::spawn(move || resolver.respond(picked_folder(&app).map_err(InvokeError::from)));
         return true;
     }
 

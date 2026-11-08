@@ -62,4 +62,8 @@ export class TauriFilesGateway extends FilesGateway {
 	override async locatedFile(path: string, identity: string): Promise<string | null> {
 		return LocatedSchema.parse(await invoke(`${FILES}locate_file`, { path, identity }));
 	}
+
+	override async pickedFolder(): Promise<string | null> {
+		return LocatedSchema.parse(await invoke(`${FILES}pick_folder`));
+	}
 }

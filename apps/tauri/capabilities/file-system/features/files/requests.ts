@@ -11,6 +11,7 @@ import {
 	LocatedFileSchema,
 	MoveInputSchema,
 	PathInputSchema,
+	PickedFolderSchema,
 	WriteFileInputSchema,
 } from "../../shared/schema/files.schema.js";
 
@@ -71,6 +72,18 @@ export const LocatedFileQuery = query("located-file")
 	.handle(async ({ path, identity }, { files, user }) => ({
 		path: await files.locatedFile(await placedIn(files, user, path), identity),
 	}));
+
+export const PickFolderCommand = command("pick-folder")
+	.public()
+	.output(PickedFolderSchema)
+	.idempotencyKey(PerCall)
+	.handle(async (_input, { files }) => {
+		const path = await files.pickedFolder();
+		console.info(`[file-system] folder dialog → ${path ?? "cancelled"}`);
+		return {
+			path,
+		};
+	});
 
 export const WriteFileCommand = command("write-file")
 	.public()

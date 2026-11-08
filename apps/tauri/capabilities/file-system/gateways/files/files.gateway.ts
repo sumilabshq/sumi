@@ -16,4 +16,5 @@ export abstract class FilesGateway {
 	abstract rename(from: string, to: string): Promise<void>;
 	abstract copy(from: string, to: string): Promise<void>;
 	abstract locatedFile(path: string, identity: string): Promise<string | null>;
+	abstract pickedFolder(): Promise<string | null>;
 }

@@ -62,6 +62,10 @@ export const LocatedFileSchema = z.object({
 	path: z.string().nullable(),
 });
 
+export const PickedFolderSchema = z.object({
+	path: z.string().nullable(),
+});
+
 export const ReadFileQuery = query("file-system/read-file")
 	.public()
 	.input(PathInputSchema)
@@ -86,6 +90,10 @@ export const LocatedFileQuery = query("file-system/located-file")
 	.public()
 	.input(LocateFileInputSchema)
 	.output(LocatedFileSchema);
+export const PickFolderCommand = command("file-system/pick-folder")
+	.public()
+	.output(PickedFolderSchema)
+	.idempotencyKey(PerCall);
 export const WriteFileCommand = command("file-system/write-file")
 	.public()
 	.input(WriteFileInputSchema)
@@ -111,4 +119,4 @@ export const CopyCommand = command("file-system/copy")
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall);
 
-export const FileSystemModule = moduleContract("file-system", Server, [ReadFileQuery, ReadFileBytesQuery, OpenInSystemAppCommand, ReadFolderQuery, FileInfoQuery, LocatedFileQuery, WriteFileCommand, AppendFileCommand, MakeFolderCommand, RemoveCommand, RenameCommand, CopyCommand]);
+export const FileSystemModule = moduleContract("file-system", Server, [ReadFileQuery, ReadFileBytesQuery, OpenInSystemAppCommand, ReadFolderQuery, FileInfoQuery, LocatedFileQuery, PickFolderCommand, WriteFileCommand, AppendFileCommand, MakeFolderCommand, RemoveCommand, RenameCommand, CopyCommand]);
