@@ -16,7 +16,7 @@ import { BareLead } from "../chat-lead/bare-lead.js";
 import { ChatLeadHead } from "../chat-lead/chat-lead.js";
 import { ChatPart } from "../chat-part/chat-part.js";
 import { FailureSaid } from "../failure-said/failure-said.js";
-import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
+import { ListPluginSlot, PluginSlot } from "@widgetarium/plugin-framework/react";
 import { ChatTurns } from "./chat-turns.js";
 import { QueueZone } from "../queue/queue-zone.js";
 import { useQueueActions } from "../../lib/use-queue-actions.js";
@@ -49,7 +49,7 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 	useSweepsAttachments(session.busy);
 	const { Pinned, Strip } = cards;
 	const isEmpty = session.turns.length === 0;
-	return (
+	const view = (
 		<div
 			className={`wg-studio-ai${isEmpty ? " is-empty" : ""}`}
 			ref={chatRoot}
@@ -96,5 +96,10 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 			</ChatDock>
 			<FileDropZone isOver={drop.isOver} />
 		</div>
+	);
+	return (
+		<PluginSlot name="chat.frame" props={{ chatId: chatId ?? null, children: view }}>
+			{view}
+		</PluginSlot>
 	);
 }

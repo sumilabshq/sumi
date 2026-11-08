@@ -1,6 +1,7 @@
 import { createElement as h, useRef, useState } from "react";
 import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { Icon } from "@widgetarium/kit";
+import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import type { QueuedShown } from "@widgetarium/assistant/contract";
 import { useSetsDraftAside } from "../../lib/use-sets-draft-aside.js";
 import { useComposerDraft } from "../../lib/use-composer-draft.js";
@@ -51,6 +52,7 @@ export function Composer({
 	onSaveEdit,
 	onCancelEdit,
 }: ComposerProps): ReactElement {
+	const composer = useRef<HTMLDivElement>(null);
 	const composerBox = useRef<HTMLTextAreaElement>(null);
 	const mirror = useRef<HTMLDivElement>(null);
 	const [isFocused, setFocused] = useState(false);
@@ -61,13 +63,13 @@ export function Composer({
 		onTyped,
 	});
 	useSetsDraftAside(editing, { draft, fill, composerBox });
-	useFitsDraft(composerBox, draft);
+	const fitBox = useFitsDraft(composerBox, draft);
 	useFocusesWhen(composerBox, attached?.label ?? null);
 	useTakesPrefill(composerBox, fill);
 	const slash = useSlashMenu({ draft, fill, box: composerBox });
 	const saidPieces = saidPiecesOf(slash.entries, draft);
 	return (
-		<div className="wg-studio-ai-composer">
+		<div className="wg-studio-ai-composer" ref={composer}>
 			<SlashMenu slash={slash} draft={draft} />
 			<div
 				className={`wg-studio-ai-field${isFocused ? " is-focused" : ""}`}
@@ -117,6 +119,7 @@ export function Composer({
 				<div className="wg-studio-ai-field-bar">
 					<ComposerTools />
 					<span className="wg-studio-ai-bar-space" />
+					<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 					<SendButton state={state} isEditing={editing !== null} onSend={sendDraft} onStop={onStop} />
 				</div>
 			</div>
