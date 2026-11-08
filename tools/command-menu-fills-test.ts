@@ -3,7 +3,7 @@ import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { WindowModuleSchema, sumiHost } from "@sumi/sumi-host-plugin";
-import { plugin, slotFillsOf, slotReaderOf, startOrderOf } from "@widgetarium/plugin-framework";
+import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { appHost } from "../plugins/apps/data/app-host/generated/module.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
@@ -68,17 +68,19 @@ const probe = plugin("probe")
 	);
 
 const ENABLED = [sumiHost.id, apps.id, commandMenu.id, chat.id, probe.id];
-const startOrder = startOrderOf([sumiHost, apps, commandMenu, chat, probe], ENABLED);
-const slotFills = slotFillsOf(startOrder.plugins, ENABLED);
-const windowModuleFill = slotFills.slots
-	.get(sumiHost.windowModules.name)
-	?.fills.find(({ pluginId }) => pluginId === commandMenu.id);
+const started = pluginRuntime()
+	.builtInPlugins(sumiHost, apps, commandMenu, chat, probe)
+	.state(new MemoryPluginStateStore(ENABLED))
+	.start();
+const windowModuleFill = started
+	.fillsOf(sumiHost.windowModules)
+	.find(({ pluginId }) => pluginId === commandMenu.id);
 
 if (windowModuleFill === undefined) {
 	throw new Error("the command menu plugin filled no window module");
 }
 
-const menuModule = WindowModuleSchema.parse(windowModuleFill.item).module(slotReaderOf(slotFills, commandMenu));
+const menuModule = WindowModuleSchema.parse(windowModuleFill.item).module(started.readerOf(commandMenu.id));
 const studio = runtime()
 	.modules(browser, layout, workspaces, appHost, chatTabs, PluginAppsModule, menuModule)
 	.imports(placesOver())
@@ -96,7 +98,7 @@ async function outputOf<T>(answer: Promise<{ ok: true; output: T } | { ok: false
 
 check(
 	"a plugin filling the menu's slots resolves with no refusal",
-	[...startOrder.refusals, ...slotFills.refusals],
+	started.refusals,
 	[],
 );
 

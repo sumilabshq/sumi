@@ -22,7 +22,7 @@ export function slotReaderOf(slotFills: SlotFills, reader: Plugin): SlotReader {
 				);
 			}
 
-			const fills = slotFills.slots.get(slot.name)?.fills ?? [];
+			const fills = slotFills.byIdentity.get(slot.identity)?.fills ?? [];
 			return fills.flatMap(({ id, item }) => {
 				const parsed = slot.itemSchema.safeParse(item);
 				return parsed.success ? [{ ...parsed.data, id }] : [];

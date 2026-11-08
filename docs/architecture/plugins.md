@@ -1,6 +1,6 @@
 # Plugins
 
-Two frameworks, two jobs. **`@widgetarium/data-framework`** carries every piece of data: modules, requests (queries, commands, events), transports ([requests.md](requests.md)). **`@widgetarium/plugin-framework`** says what is switched on and who extends whom: plugins, slots, fills and the workspace profile. Neither imports the other; Sumi joins them.
+Two frameworks, two jobs. **`@widgetarium/data-framework`** carries every piece of data: modules, requests (queries, commands, events), transports ([requests.md](requests.md)). **`@widgetarium/plugin-framework`** says what is switched on and who extends whom: plugins, slots, fills and the plugin runtime with its per-workspace state. Neither imports the other; Sumi joins them: the state reaches the runtime through `PluginStateStore`, a reader and writer the host implements over its store.
 
 ## The plugin framework
 
@@ -11,9 +11,9 @@ Two frameworks, two jobs. **`@widgetarium/data-framework`** carries every piece 
 | `commandMenu.menuDoors.add({ id, … })`, `slot.set(item)`                               | a fill, written subject first: a list slot takes `.add` (the item carries its `id`), a single slot `.set`                                                                                                                                                                                                        |
 | `apps.apps.addFrom(source, (items) => [...])`, `slot.setFrom(source, (items) => item)` | a fill built from the fills of a slot the plugin declares itself: the function gets that slot's items, each with its `id`, and answers the items to put in the target                                                                                                                                            |
 | `src/generated/plugin.ts`                                                              | written by `widgetarium generate`: names the plugin's slots (`namedSlot`), places them under the plugin's id (`pluginWithSlots(definition, { … })`) and exports one namespace named after the plugin's constant, the plugin with its slots as properties (`commandMenu.menuDoors`); `src/index.ts` re-exports it |
-| `sumi.profile.json`                                                                    | per workspace: `{ "plugins": [...] }`, the plugins switched on beside the always-on ones; no file is the built-in profile                                                                                                                                                                                        |
-| `startOrderOf`, `slotFillsOf`, `profileRefusalsOf`                                     | resolve a profile: start order, each slot's fills, every refusal                                                                                                                                                                                                                                                 |
-| `slotReaderOf(fills, plugin)`                                                          | reads the fills of the slots that plugin declares, and refuses any other slot                                                                                                                                                                                                                                    |
+| `runtime().builtInPlugins(...).alwaysOn(...).state(store).withNameResolves().start()`  | the plugin runtime, one per workspace: names, enables and starts the plugins, resolves each slot's fills and every refusal; answers `startedNames`, `refusals`, `fillsOf(slot)`, `readerOf(pluginId)` and `aliasOf(pluginId)`                                                                                    |
+| `sumi.plugins.json`, `PluginStateStore`                                                | per workspace, owned by the runtime and written through the host's store: `{ "version": 1, "plugins": { "<id>": { "enabled": boolean, "alias"?: string } } }` ([The plugin state](#the-plugin-state))                                                                                                            |
+| `readerOf(pluginId)`                                                                   | reads the fills of the slots that plugin declares, and refuses any other slot                                                                                                                                                                                                                                    |
 
 A plugin's constant may meet a data module's of the same name (`apps`, `commandMenu`). The plugin keeps the name; the data side is imported under an alias: `apps as appsContract` from `"./contract"`, `apps as appsModule` from `"./implementation"`. In its own `plugin.ts` a plugin imports a slot named like itself as `apps as appsSlot`.
 
@@ -21,7 +21,7 @@ A plugin's constant may meet a data module's of the same name (`apps`, `commandM
 
 **The rule.** A plugin declares its slots and its modules. The fills of its slots are read by its own code only, through the reader the host hands it. Anyone else reaches that data only through the plugin's module: its queries, commands and events. A plugin that needs it `.require`s the plugin and `.imports` the module.
 
-**The host knows no plugin.** `apps/tauri` and `apps/studio` resolve the profile, start the modules plugins put in the host's slots and draw the pages plugins put there. They never read, parse or interpret another plugin's slot. They offer what any plugin may use: a store, the tasks file, a slot reader scoped to the plugin, transports, a place to draw a tab. A host that reads `apps` fills, or a module of the shell configured with them, is the defect this rule forbids. It happened once: `appHost({ apps })` took the apps list from the host, and it was rewritten.
+**The host knows no plugin.** `apps/tauri` and `apps/studio` start the plugin runtime, start the modules plugins put in the host's slots and draw the pages plugins put there. They never read, parse or interpret another plugin's slot. They offer what any plugin may use: a store, the tasks file, a slot reader scoped to the plugin, transports, a place to draw a tab. A host that reads `apps` fills, or a module of the shell configured with them, is the defect this rule forbids. It happened once: `appHost({ apps })` took the apps list from the host, and it was rewritten.
 
 The host declares its own slots in `plugins/sumi-host` and reads only those:
 
@@ -54,15 +54,28 @@ export const files = plugin("files")
 
 - **Subject first.** `apps.apps.add({ ... })` is a fill; `apps.apps.addFrom(source, build)` is a fill built from `source`, and a single slot's `setFrom(source, build)` folds the items into its one item. The function may map, drop, or fold many items into one; `addFrom`'s answer is a list of items, typed by the target slot. Inside its own `plugin.ts` a plugin names its slots by their constants from `./slots.js` (`fileViewers`); everyone else through the namespace (`files.fileViewers`).
 - **Only from its own slots.** The source must be a slot the building plugin declares, as `fillsOf` reads only its own slots; any other source is refused.
-- **Resolved before anyone reads.** `slotFillsOf` resolves plain fills first, then each built fill once its source is complete, so a built slot may feed another build whatever order the fills are written in. Two builds waiting on each other, or a slot built from itself, are refused as a loop.
+- **Resolved before anyone reads.** The runtime resolves plain fills first, then each built fill once its source is complete, so a built slot may feed another build whatever order the fills are written in. Two builds waiting on each other, or a slot built from itself, are refused as a loop.
 - **Checked like any fill.** Each built item passes the same checks as a plain fill of the building plugin: the target's owner is required or optional, and the target's schema accepts the item. A function that throws or answers something that is not a list is refused with the reason.
 
 `tools/plugin-framework-checks.ts` holds each rule, and each was broken on purpose once.
 
+## The plugin state
+
+`sumi.plugins.json` belongs to the runtime; the host only reads and writes it through `PluginStateStore` (`keptPluginState()`, `firstEnabledIds()`, `savePluginState(state, reason)`), in the workspace's folder of the store.
+
+- **A plugin the state does not list starts enabled**, and its entry is written. A plugin dropped from `builtInPlugins` keeps its entry; one still marked enabled is reported as not installed.
+- **The first start changes nothing for the person.** With no state file the runtime seeds it from `firstEnabledIds()`: the host answers the workspace's old `sumi.profile.json`, or the built-in profile without one, so the enabled set is the one the profile gave.
+- **Always-on plugins cannot be disabled.** `.alwaysOn(...)` plugins start whatever the state says; an `enabled: false` on one is reported and ignored.
+- **A state that cannot be read or parsed fails the start with the reason**, never a silent reset: the core answers every call unreachable and the window shows the failure with a retry.
+
+## Two plugins with one id
+
+Plugin ids are the strings in `plugin("…")`. Two built-in plugins with one id are refused by default: the second does not start, and the refusal names both and says to rename one string. Started `.withNameResolves()`, the runtime runs the later one under an alias, `<id>-2`, `-3`… in `builtInPlugins` order (the only names with digits; a plugin id still takes none), saved as `alias` under that name in the state. The alias names the plugin's slots (`chat-2.chat-title`) and its fills, and the host passes it as the prefix of that plugin's modules ([requests.md](requests.md#a-prefix)). A plugin running under its own id has no alias, so its modules take no prefix and every wire name stays as it was.
+
 ## How Sumi runs them
 
 ```
-sumi.profile.json ──► resolvePlugins(profile)        apps/studio/src/plugins/sumi-plugins.ts
+sumi.plugins.json ──► startSumiPlugins(state)        apps/studio/src/plugins/sumi-plugins.ts, the plugin runtime
                         │
       core window ──────┼── host capabilities (files, terminal) + every sumiHost.backgroundModules module(offers)
                         │                                       served per workspace over IPC

@@ -2,18 +2,20 @@ import { z } from "zod";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 import {
 	DerivedFill,
+	MemoryPluginStateStore,
 	SumiProfileSchema,
 	fillKeyOf,
 	namedSlot,
 	plugin,
 	pluginWithSlots,
-	profileRefusalsOf,
+	runtime,
 	slot,
-	slotFillsOf,
-	slotReaderOf,
-	startOrderOf,
 } from "../packages/shared/plugin-framework/src/index.ts";
-import type { ListSlot, Plugin, SlotFills } from "../packages/shared/plugin-framework/src/index.ts";
+import type { ListSlot, Plugin, PluginState } from "../packages/shared/plugin-framework/src/index.ts";
+import { slotFillsOf } from "../packages/shared/plugin-framework/src/slot-fills.ts";
+import type { SlotFills } from "../packages/shared/plugin-framework/src/slot-fills.ts";
+import { slotReaderOf } from "../packages/shared/plugin-framework/src/slot-reader.ts";
+import { startOrderOf } from "../packages/shared/plugin-framework/src/start-order.ts";
 
 function shownKeysIn(slotFills: SlotFills, name: string): readonly (readonly [string, string])[] {
 	return (slotFills.slots.get(name)?.fills ?? []).map((each) => [each.id, each.pluginId] as const);
@@ -157,15 +159,6 @@ check(
 	[["wants-back", "wants-first"], []],
 );
 
-check(
-	"a profile listing an unknown or repeated plugin is refused",
-	profileRefusalsOf([layout, layout], { plugins: ["layout", "ghost", "layout"] }),
-	[
-		"two installed plugins are both named layout",
-		"sumi.profile.json lists plugin layout twice",
-		"sumi.profile.json lists plugin ghost, which is not installed",
-	],
-);
 check(
 	"a profile with a key it does not know, such as locked, is refused when parsed",
 	SumiProfileSchema.safeParse({ plugins: [], locked: [] }).success,
@@ -596,6 +589,148 @@ check(
 	"a reader reads a declared slot through its list() handle, the same slot by identity",
 	thrownBy(() => slotReaderOf(slotFillsOf([shownFrom], ["shown-from"]), shownFrom).fillsOf(shownPlate.list())),
 	"",
+);
+
+function twinPlugin(title: string) {
+	const plate = titledSlot();
+	const declared = plugin("twin").declare(plate).fill(plate.add({ id: "own", title }));
+	return pluginWithSlots(declared, { plate: namedSlot("plate", plate) });
+}
+
+function stateIn(store: MemoryPluginStateStore): PluginState | null {
+	return store.keptPluginState();
+}
+
+const twinA = twinPlugin("a");
+const twinB = twinPlugin("b");
+const refusedTwins = runtime().builtInPlugins(twinA, twinB).state(new MemoryPluginStateStore(["twin"])).start();
+check(
+	"two built-in plugins with one id: the second does not start, refused naming both and the fix",
+	[refusedTwins.startedNames, refusedTwins.refusals],
+	[
+		["twin"],
+		[
+			'plugins #1 and #2 of .builtInPlugins() are both named "twin", so the second does not start: rename the plugin("twin") string of one, or start the runtime .withNameResolves()',
+		],
+	],
+);
+const twinsStore = new MemoryPluginStateStore(["twin"]);
+const resolvedTwins = runtime().builtInPlugins(twinA, twinB).state(twinsStore).withNameResolves().start();
+check(
+	"withNameResolves() starts the second under <id>-2, its alias, and the first keeps its id",
+	[resolvedTwins.startedNames, resolvedTwins.aliasOf("twin"), resolvedTwins.aliasOf("twin-2"), resolvedTwins.refusals],
+	[["twin", "twin-2"], null, "twin-2", []],
+);
+check(
+	"each twin reads its own slot, filled under its own name",
+	[
+		resolvedTwins.readerOf("twin").fillsOf(twinA.plate),
+		resolvedTwins.readerOf("twin-2").fillsOf(twinB.plate),
+		resolvedTwins.fillsOf(twinB.plate).map(({ pluginId }) => pluginId),
+	],
+	[[{ title: "a", id: "own" }], [{ title: "b", id: "own" }], ["twin-2"]],
+);
+check(
+	"the alias is saved in the state, and a later start keeps it",
+	[
+		stateIn(twinsStore)?.plugins,
+		runtime().builtInPlugins(twinA, twinB).state(twinsStore).withNameResolves().start().startedNames,
+	],
+	[
+		{
+			twin: { enabled: true },
+			"twin-2": { enabled: true, alias: "twin-2" },
+		},
+		["twin", "twin-2"],
+	],
+);
+check(
+	"an alias is a plugin id with a numeric suffix; a plugin id itself still takes no digit",
+	[thrownBy(() => twinA.aliased("twin-2")), thrownBy(() => twinA.aliased("twin")), thrownBy(() => plugin("twin-2"))],
+	[
+		"",
+		'"twin" is not an alias: a plugin id and a numeric suffix, such as "chat-2"',
+		'"twin-2" is not a name: one kebab-case segment of a-z, such as "command-menu", no digits, capitals, "." or "/"',
+	],
+);
+
+const seededStore = new MemoryPluginStateStore(["chat"]);
+const seeded = runtime().builtInPlugins(layout, chat, agents).alwaysOn(layout).state(seededStore).start();
+check(
+	"a missing state is seeded from the first enabled ids and the always-on plugins: the enabled set does not change",
+	[seeded.startedNames, stateIn(seededStore)],
+	[
+		["layout", "chat"],
+		{
+			version: 1,
+			plugins: {
+				layout: { enabled: true },
+				chat: { enabled: true },
+				"background-agents": { enabled: false },
+			},
+		},
+	],
+);
+const keptStore = new MemoryPluginStateStore([], {
+	version: 1,
+	plugins: {
+		layout: { enabled: false },
+		ghost: { enabled: false },
+		chat: { enabled: true },
+	},
+});
+const kept = runtime().builtInPlugins(layout, chat, agents).alwaysOn(layout).state(keptStore).start();
+check(
+	"a plugin new to the build starts enabled, an always-on plugin cannot be disabled, a removed plugin keeps its entry",
+	[kept.startedNames, kept.refusals, stateIn(keptStore)?.plugins],
+	[
+		["layout", "chat", "background-agents"],
+		["plugin layout is always on: the plugin state's enabled: false is ignored"],
+		{
+			layout: { enabled: false },
+			ghost: { enabled: false },
+			chat: { enabled: true },
+			"background-agents": { enabled: true },
+		},
+	],
+);
+check(
+	"a state enabling a plugin that is not installed is refused, and its entry stays",
+	runtime()
+		.builtInPlugins(layout)
+		.state(new MemoryPluginStateStore([], { version: 1, plugins: { layout: { enabled: true }, ghost: { enabled: true } } }))
+		.start().refusals,
+	["the plugin state enables plugin ghost, which is not installed: its entry stays"],
+);
+check(
+	"a state that cannot be read fails the start with the reason, never a silent reset",
+	thrownBy(() =>
+		runtime()
+			.builtInPlugins(layout)
+			.state({
+				keptPluginState: () => {
+					throw new Error("the disk is gone");
+				},
+				firstEnabledIds: () => [],
+				savePluginState: () => undefined,
+			})
+			.start(),
+	),
+	"the plugin state sumi.plugins.json cannot be read, so no plugin starts: the disk is gone",
+);
+check(
+	"a state of another version fails the start with the reason",
+	thrownBy(() =>
+		runtime()
+			.builtInPlugins(layout)
+			.state({
+				keptPluginState: () => ({ version: 2, plugins: {} }),
+				firstEnabledIds: () => [],
+				savePluginState: () => undefined,
+			})
+			.start(),
+	).startsWith("the plugin state sumi.plugins.json is not a version 1 plugin state, so no plugin starts:"),
+	true,
 );
 
 if (tally.failed > 0) {

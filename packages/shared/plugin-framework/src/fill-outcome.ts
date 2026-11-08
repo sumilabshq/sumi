@@ -17,6 +17,7 @@ export interface FilledSlot {
 export interface SlotClaim {
 	readonly slot: SlotShape;
 	readonly ownerId: string;
+	readonly slotOwnerId: string;
 	readonly stampedName: string;
 }
 

@@ -95,7 +95,7 @@ packages/domain/*             business data modules: workspaces, browser, canvas
 packages/state/*              app-state data modules: layout, appearance
       ↓
 packages/shared/data-framework FSL @widgetarium/data-framework: requests, modules, mediator, transports, hooks
-packages/shared/plugin-framework FSL @widgetarium/plugin-framework: plugins, slots, fills, sumi.profile.json; the Tauri host resolves its plugins with it
+packages/shared/plugin-framework FSL @widgetarium/plugin-framework: plugins, slots, fills and the plugin runtime with its per-workspace state (sumi.plugins.json); the Tauri host starts one per workspace
 packages/shared/core     FSL  the widget engine (legacy)
 packages/shared/kit      MIT  everything drawn: TSX, one file per kit item
 packages/shared/behaviors     headless behaviors: drag, scroll, the Tauri store client

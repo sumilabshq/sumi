@@ -3,14 +3,18 @@ import { derivedOutcomesOf } from "./derived-fills";
 import type { FillResolution } from "./derived-fills";
 import { filledSlotOf, fillOutcomeOf, isParsedFill } from "./fill-outcome";
 import type { FilledSlot, FillOffer, FillOutcome, ParsedFill, ResolvedOwnership, SlotClaim } from "./fill-outcome";
+import { fullNameOf } from "./identity";
+import type { Identity } from "./identity";
 import type { Plugin } from "./plugin";
 import { sentenceOf } from "./sentence";
 
 export interface SlotFills {
 	readonly slots: ReadonlyMap<string, FilledSlot>;
+	readonly byIdentity: ReadonlyMap<Identity, FilledSlot>;
 	readonly refusals: readonly string[];
 }
 
+const SLOT = "a slot";
 const DECLARED_TWICE = "slot {slot} is declared by {owner} and again by {other}";
 const SAME_NAME_TWICE = "plugin {plugin} declares two slots named {name}";
 const OWNED_ELSEWHERE = "plugin {plugin} declares slot {slot}, which is named as a slot of plugin {owner}";
@@ -25,9 +29,11 @@ export function slotFillsOf(started: readonly Plugin[], rankedIds: readonly stri
 		rankedIds,
 	});
 	const fillsByStampedName = groupByStampedName(outcomes.filter(isParsedFill));
+	const slots = slotsOf(resolved.owned, fillsByStampedName, rankedIds);
 
 	return {
-		slots: slotsOf(resolved.owned, fillsByStampedName, rankedIds),
+		slots,
+		byIdentity: new Map([...slots.values()].map((filled) => [filled.slot.identity, filled])),
 		refusals: [...resolved.refusals, ...outcomes.flatMap((each) => ("refusal" in each ? [each.refusal] : []))],
 	};
 }
@@ -57,7 +63,8 @@ function claimsOf(started: readonly Plugin[]): readonly SlotClaim[] {
 		each.parts.declaredSlots.map((slot) => ({
 			slot,
 			ownerId: each.id,
-			stampedName: slot.name,
+			slotOwnerId: each.slotOwnerId,
+			stampedName: stampedNameOf(slot, each),
 		})),
 	);
 }
@@ -109,10 +116,14 @@ function resolveOwnership(claims: readonly SlotClaim[]): ResolvedOwnership {
 	};
 }
 
-function refuseOwner({ slot, ownerId }: SlotClaim): string | null {
+function stampedNameOf(slot: SlotShape, declaring: Plugin): string {
+	return declaring.isAliased ? fullNameOf({ name: slot.identity.name, owner: declaring.id }, SLOT) : slot.name;
+}
+
+function refuseOwner({ slot, ownerId, slotOwnerId }: SlotClaim): string | null {
 	const { owner } = slot.identity;
 
-	if (owner === ownerId) {
+	if (owner === slotOwnerId) {
 		return null;
 	}
 

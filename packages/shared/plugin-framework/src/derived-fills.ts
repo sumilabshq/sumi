@@ -78,7 +78,7 @@ function outcomesOfOffer(
 	parsed: readonly ParsedFill[],
 	resolution: FillResolution,
 ): readonly FillOutcome[] {
-	const answer = answerOf(offer, sourceItemsOf(offer, parsed, resolution.rankedIds));
+	const answer = answerOf(offer, sourceItemsOf(offer, parsed, resolution));
 
 	if ("reason" in answer) {
 		return [{ refusal: derivedRefusalOf(DERIVE_FAILED, offer, resolution.ownership, answer.reason) }];
@@ -94,9 +94,10 @@ function outcomesOfOffer(
 function sourceItemsOf(
 	offer: DerivedOffer,
 	parsed: readonly ParsedFill[],
-	rankedIds: readonly string[],
+	{ ownership, rankedIds }: FillResolution,
 ): readonly unknown[] {
-	const sourceFills = parsed.filter(({ stampedName }) => stampedName === offer.fill.source.name);
+	const sourceName = ownership.bySlot.get(offer.fill.source)?.stampedName;
+	const sourceFills = parsed.filter(({ stampedName }) => stampedName === sourceName);
 	return filledSlotOf(offer.fill.source, sourceFills, rankedIds).fills.map(withId);
 }
 
