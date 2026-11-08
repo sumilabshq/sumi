@@ -1,5 +1,5 @@
-import { AppsPlugin, AppsSlot } from "@sumi/apps-plugin";
-import { GitModule } from "@sumi/git/module";
+import { apps } from "@sumi/apps-plugin";
+import { git as gitModule } from "@sumi/git/module";
 import { plugin } from "@widgetarium/plugin-framework";
 import { gitTitleOf } from "./features/git-page/lib/git-address.js";
 import { GIT_ICON } from "./features/git-page/lib/git-icon.js";
@@ -8,16 +8,16 @@ import { RereadAction } from "./features/git-page/ui/reread-action/reread-action
 import { WrapAction } from "./features/git-page/ui/wrap-action/wrap-action.js";
 import { FileListAction } from "./features/git-page/ui/file-list-action/file-list-action.js";
 
-export const GitPlugin = plugin("git")
-	.require(AppsPlugin)
+export const git = plugin()
+	.require(apps)
 	.fill(
-		AppsSlot({
+		apps.apps.add({
 			id: "git",
 			title: "Git",
 			icon: GIT_ICON,
 			view: LazyGitView,
 			actions: [FileListAction, WrapAction, RereadAction],
-			tabModules: () => [GitModule],
+			tabModules: () => [gitModule],
 			titleOf: gitTitleOf,
 		}),
 	);
