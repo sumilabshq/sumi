@@ -16,6 +16,7 @@ import { QuestionsModule } from "@widgetarium/questions/module";
 import { askComposerProviderOf } from "./features/ask/ui/ask-composer-provider/ask-composer-provider.js";
 import { askPageOf } from "./features/ask/lib/ask-page.js";
 import { CHAT_TAB_PAGE } from "./features/chat-page/lib/chat-tab-page.js";
+import { isOutsideHolders } from "./features/chat-page/lib/chat-standing.js";
 
 export const ChatPlugin = plugin("chat")
 	.require(SumiHostPlugin, AppsPlugin, CommandMenuPlugin)
@@ -25,7 +26,7 @@ export const ChatPlugin = plugin("chat")
 			title: "New chat",
 			art: "chat",
 			isListed: false,
-			tabs: { holdsTabs: true, splits: true, runsInPage: false, keepsRecord: true },
+			tabs: { canStandIn: isOutsideHolders, holdsTabs: true, splits: true, runsInPage: false, keepsRecord: true },
 		}),
 		BackgroundModulesSlot({ id: "questions", module: () => QuestionsModule, contract: QuestionsContract }),
 		TabPageSlot({ id: "chat", tabPage: () => CHAT_TAB_PAGE }),

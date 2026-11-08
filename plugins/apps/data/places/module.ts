@@ -4,7 +4,7 @@ import type { PlacesConfig } from "./shared/host/places.host.js";
 import { AppCallersGuard } from "./features/tab-facts/requests.js";
 import { handled } from "./generated/handled.js";
 
-export type { AppAbilities, PlacedApp, PlacesConfig } from "./shared/host/places.host.js";
+export type { AppAbilities, CanStandIn, PlacedApp, PlacesConfig, TabStanding } from "./shared/host/places.host.js";
 
 export const PlacesModule = module("places")
 	.on(Server)

@@ -1,6 +1,13 @@
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 
+export interface TabStanding {
+	readonly holderApp: string | null;
+}
+
+export type CanStandIn = (standing: TabStanding) => boolean;
+
 export interface AppAbilities {
+	readonly canStandIn: CanStandIn;
 	readonly holdsTabs: boolean;
 	readonly navigates: boolean;
 	readonly splits: boolean;
