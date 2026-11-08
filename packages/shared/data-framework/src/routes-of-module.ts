@@ -1,3 +1,4 @@
+import { wireNameOf } from "./identity";
 import type { Route } from "./local-routes";
 import type { Provided, ReadyModule } from "./module";
 
@@ -12,6 +13,7 @@ export function moduleRoutesOf(module: ReadyModule, runtimeProvided: Provided): 
 	const provides = module.provide();
 	const provided = { ...provides, ...runtimeProvided };
 	const routes = module.handlers.map((handler) => ({
+		name: wireNameOf(module.prefix ?? null, handler.request.name),
 		handler,
 		provided,
 		steps: [...module.definition.steps, ...handler.steps],

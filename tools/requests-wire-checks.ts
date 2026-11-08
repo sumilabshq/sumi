@@ -202,6 +202,7 @@ check(
 );
 
 const keyless = await orpcTransport(SERVER, { fetch: served.fetch }).call({
+	name: fx.AddPageCommand.name,
 	request: fx.AddPageCommand,
 	sent: { title: "Keyless" },
 	idempotencyKey: null,

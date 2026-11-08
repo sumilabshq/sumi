@@ -107,24 +107,24 @@ class PortCalls implements RemoteTransport {
 		});
 	}
 
-	async call({ request, sent, idempotencyKey }: RemoteCall): Promise<Answer<unknown>> {
+	async call({ name, sent, idempotencyKey }: RemoteCall): Promise<Answer<unknown>> {
 		const open = await this.openPort.catch((failure: unknown) => refusalOf("unreachable", reasonOf(failure)));
 
 		if ("ok" in open) {
 			return open;
 		}
 
-		const call: PortCall = { id: this.nextCallId++, name: request.name, input: sent, idempotencyKey };
+		const call: PortCall = { id: this.nextCallId++, name, input: sent, idempotencyKey };
 		return new Promise((settle) => {
 			this.settlersById.set(call.id, (answered) =>
-				settle(answered ?? refusalOf("unreachable", NOT_AN_ANSWER.replace("{name}", request.name))),
+				settle(answered ?? refusalOf("unreachable", NOT_AN_ANSWER.replace("{name}", name))),
 			);
 			try {
 				open.postMessage(call);
 			} catch (failure) {
 				this.settlersById.delete(call.id);
 				settle(
-					refusalOf("invalid-input", NOT_SENT.replace("{name}", request.name).replace("{failure}", reasonOf(failure))),
+					refusalOf("invalid-input", NOT_SENT.replace("{name}", name).replace("{failure}", reasonOf(failure))),
 				);
 			}
 		});

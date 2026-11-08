@@ -25,7 +25,7 @@ export function ipcTransport(workspace: string): RemoteTransport {
 				return answer;
 			}
 
-			console.info(ASKED_AGAIN.replace("{name}", ask.request.name));
+			console.info(ASKED_AGAIN.replace("{name}", ask.name));
 			return askCore(workspace, ask);
 		},
 		changes: (hear) => hearCoreChanges(workspace, hear),
@@ -34,11 +34,11 @@ export function ipcTransport(workspace: string): RemoteTransport {
 
 async function askCore(
 	workspace: string,
-	{ request, sent, idempotencyKey, headers }: CoreAsk,
+	{ name, sent, idempotencyKey, headers }: CoreAsk,
 ): Promise<Answer<unknown>> {
 	const asked: CoreCall = {
 		workspace,
-		name: request.name,
+		name,
 		input: sent,
 		idempotencyKey,
 		headers: Object.fromEntries(headers ?? []),
@@ -46,10 +46,10 @@ async function askCore(
 	try {
 		return (
 			wireAnswerOf(await invoke(CORE_CALL, asked)) ??
-			refusalOf("unreachable", NOT_AN_ANSWER.replace("{name}", request.name))
+			refusalOf("unreachable", NOT_AN_ANSWER.replace("{name}", name))
 		);
 	} catch (failure) {
-		return refusalOf("unreachable", NOT_TAKEN.replace("{name}", request.name).replace("{failure}", String(failure)));
+		return refusalOf("unreachable", NOT_TAKEN.replace("{name}", name).replace("{failure}", String(failure)));
 	}
 }
 

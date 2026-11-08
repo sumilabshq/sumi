@@ -13,6 +13,9 @@ const NAME = /^[a-z]+(-[a-z]+)*(\.[a-z]+(-[a-z]+)*)*$/;
 const BAD_NAME =
 	'"{name}" is not a name: kebab-case segments of a-z joined by dots, such as "pages.by-id", no digits, capitals, "/" or "_"';
 const BAD_MODULE = '"{name}" is not a module name: one kebab-case segment of a-z, such as "chat-tabs"';
+const PREFIX = /^[a-z]+(-[a-z]+)*(-[1-9][0-9]*)?$/;
+const BAD_PREFIX =
+	'"{name}" is not a prefix: prefix is reserved for the name every route of a module starts with, one kebab-case segment such as "chat" or "chat-2"; a module config field cannot be named prefix';
 const UNNAMED =
 	"{kind} has no name yet: its name comes from the variable it is exported as, written in by the generator; run npm run generate";
 const NAMED_TWICE = '{kind} is already named "{was}", and is named "{now}" again: name each building block once';
@@ -63,6 +66,18 @@ export function checkedModuleName(name: string): string {
 	}
 
 	return name;
+}
+
+export function checkedPrefix(prefix: unknown): string {
+	if (typeof prefix !== "string" || !PREFIX.test(prefix)) {
+		throw new Error(BAD_PREFIX.replace("{name}", String(prefix)));
+	}
+
+	return prefix;
+}
+
+export function wireNameOf(prefix: string | null, name: string): string {
+	return prefix === null ? name : `${prefix}.${name}`;
 }
 
 function checkedName(name: string): string {

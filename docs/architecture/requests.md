@@ -120,6 +120,18 @@ canvas({ kind: "project", project });
 
 **Objects only one host has go in an optional field.** `layout` takes `{ tauri?: { store, windows } }`: the Tauri host calls `layout({ tauri: { store, windows } })`, every other starter lists `layout` uncalled, and `provide` picks its Tauri parts only when `config.tauri` is there.
 
+## A prefix
+
+Two modules of one name run in one runtime only under two prefixes. `prefix` is a reserved key of the module call and of the contract call: `questions({ prefix: "chat-2" })` or `tasks({ file, prefix })` in `.modules`, `questions({ over, prefix: "chat-2" })` in `.imports`. A prefix is one kebab segment, a numeric suffix allowed (`chat-2`).
+
+- **Routes register `<prefix>.<name>`** (`chat-2.questions.agent.ask`): an adapter serves that name, and done keys and in-flight dedup are kept under it. No prefix leaves every name as it was.
+- **Sends through a contract imported with a prefix go as `<prefix>.<name>`**; the caller still sends `questions.agent.ask`, through the namespace.
+- **An in-process send with the bare name** reaches the unprefixed module of that name, or the only prefixed one. TODO: when two prefixed modules share a request, prefer the sender's own prefix; until then such a send answers `no-server`.
+- **A module config field named `prefix` is refused**: by the types (`.config<{ prefix }>()` does not compile), and where the module is called, with a value that is not one kebab segment.
+- `prefixedModule(module, prefix)` prefixes a module a starter did not call itself, such as the one a plugin's fill builds; `null` leaves it as it is.
+
+Two modules of one name with no prefix, or one prefix, are refused at start, naming both by their place in `.modules()`: rename the `module("…")` string of one. Importing a module under another constant changes nothing, since the string is its name.
+
 ## A module
 
 A module says where it may run, what it imports and guards, and picks its gateways. It never lists its requests. `module.ts` holds only this (`plugins/chat/data/questions/module.ts`, `packages/state/layout/module.ts`):
@@ -298,7 +310,7 @@ const http = dataFrameworkMiddleware(api, { authenticate });
 - **One runtime per local transport:** a second `serve` while one is served throws; a stop clears only its own serving.
 - **One runtime per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `RuntimeProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
 - **An adapter mounts only `.public()` requests**: an unmarked or `.callableBy()` one is not mounted, so an outside caller gets `not-found` as for a request no module runs, while an in-process `send` from another module reaches both.
-- `runtime()` refuses at start, naming the request: two handlers for one request, a missing or wrong provided value, a step requiring what neither the module nor the runtime provides, a module key the runtime provides too, a declared send nothing can answer.
+- `runtime()` refuses at start, naming the request: two modules of one name and prefix ([A prefix](#a-prefix)), two handlers for one request, a missing or wrong provided value, a step requiring what neither the module nor the runtime provides, a module key the runtime provides too, a declared send nothing can answer.
 - **An adapter refuses to mount**, naming each request: a public request no guard covers (`PublicGuard` when anyone may call it), and, when the adapter has no `Authenticate`, a guard that needs a user. A runtime nobody exposes needs neither.
 - **A guard that needs a user is checked at adapter mount, never at runtime start:** in process it answers `unauthenticated`.
 - The wire is oRPC, and only `@widgetarium/data-framework` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).

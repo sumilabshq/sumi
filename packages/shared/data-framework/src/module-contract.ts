@@ -1,6 +1,6 @@
 import { Event } from "./event";
 import type { AnyEvent } from "./event";
-import { checkedModuleName } from "./identity";
+import { checkedModuleName, checkedPrefix } from "./identity";
 import { placeItem } from "./handled-items";
 import type { Runs } from "./module";
 import type { Placement, ServerRuns } from "./placement";
@@ -10,12 +10,14 @@ import type { RemoteTransport } from "./transport";
 
 export interface RemoteModule {
 	readonly name: string;
+	readonly prefix: string | null;
 	readonly transport: RemoteTransport;
 	readonly publicRequestNames: readonly string[];
 }
 
 export interface ModuleUse {
 	readonly over: RemoteTransport;
+	readonly prefix?: string | null;
 }
 
 export interface ContractShape<R extends Runs = Runs> {
@@ -91,6 +93,7 @@ export function moduleContract(name: string, placement: Placement<Runs>, tree: C
 
 		return {
 			name,
+			prefix: (use.prefix ?? null) === null ? null : checkedPrefix(use.prefix),
 			transport: use.over,
 			publicRequestNames: requests.map((request) => request.name),
 		};

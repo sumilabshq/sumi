@@ -5,7 +5,6 @@ import { streamSSE } from "hono/streaming";
 import { refusalOf } from "../answer";
 import type { AdapterOptions, Exposed } from "../exposure";
 import { NEVER_ABORTED } from "../handler";
-import type { AnyRequest } from "../request";
 import type { Runtime } from "../runtime";
 import { WIRE_CHANGES_PATH, WIRE_PREFIX, WireCallSchema, wirePathOf } from "../wire";
 
@@ -53,11 +52,11 @@ interface PlacedProcedure {
 
 function routerOf(exposed: Exposed): WireRouter {
 	const router: WireRouter = {};
-	for (const request of exposed.requests) {
+	for (const { name } of exposed.requests) {
 		placeProcedure(router, {
-			request: request.name,
-			path: wirePathOf(request),
-			procedure: wireProcedureOf(request, exposed),
+			request: name,
+			path: wirePathOf(name),
+			procedure: wireProcedureOf(name, exposed),
 		});
 	}
 	return router;
@@ -94,14 +93,14 @@ function isProcedure(held: WireRouter | WireProcedure): held is WireProcedure {
 	return "~orpc" in held;
 }
 
-function wireProcedureOf(request: AnyRequest, exposed: Exposed) {
+function wireProcedureOf(name: string, exposed: Exposed) {
 	return os.$context<WireContext>().handler(async ({ input, context, signal }) => {
 		const call = WireCallSchema.safeParse(input);
 		if (!call.success) return refusalOf("invalid-input", NOT_A_CALL);
 		const { input: sent, idempotencyKey } = call.data;
 		const { headers } = context;
 		return exposed.answer({
-			name: request.name,
+			name,
 			input: sent,
 			idempotencyKey,
 			signal: signal ?? NEVER_ABORTED,

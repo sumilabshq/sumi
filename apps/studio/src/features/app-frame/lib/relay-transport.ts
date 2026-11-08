@@ -1,14 +1,14 @@
 import type { RemoteTransport } from "@widgetarium/data-framework";
 import { APP_CALLER_HEADER } from "./app-caller.js";
 import { createFrameRelay } from "./frame-relay.js";
-import type { FrameRoute } from "./frame-relay.js";
+import type { FrameRoutes } from "./frame-relay.js";
 
-export function relayTransportOf(routes: readonly FrameRoute[], app: string): RemoteTransport {
-	const relay = createFrameRelay(routes);
+export function relayTransportOf({ routes, ownPrefix }: FrameRoutes, app: string): RemoteTransport {
+	const relay = createFrameRelay(routes, ownPrefix);
 	return {
-		call: ({ request, sent, idempotencyKey, signal }) =>
+		call: ({ name, sent, idempotencyKey, signal }) =>
 			relay.answer({
-				name: request.name,
+				name,
 				input: sent,
 				idempotencyKey,
 				signal,

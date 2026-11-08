@@ -17,6 +17,7 @@ export interface Sending {
 }
 
 export interface MediatedSending extends Sending {
+	readonly routeName?: string | undefined;
 	readonly inProcessCaller?: InProcessCaller | undefined;
 	readonly outsideCaller?: OutsideCaller | undefined;
 }
@@ -60,7 +61,10 @@ export class Mediator implements Settle {
 
 	async send(request: AnyRequest, sent: unknown, sending: MediatedSending = {}): Promise<Answer<unknown>> {
 		try {
-			const route = this.parts.local.routeOf(request);
+			const route =
+				sending.routeName === undefined
+					? this.parts.local.routeOf(request)
+					: this.parts.local.routeNamed(sending.routeName);
 			const refusedCaller = route === undefined ? null : refuseCaller(route, sending.inProcessCaller);
 			if (refusedCaller !== null) return this.refuse(request, refusedCaller);
 			const input = request.inputSchema.safeParse(sent);

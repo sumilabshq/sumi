@@ -15,6 +15,7 @@ import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateway
 import { fileSystem } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { NodeTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/node.gateway.ts";
 import { terminal as terminalModule } from "../apps/tauri/capabilities/terminal/generated/module.ts";
+import { MemoryProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/memory.gateway.ts";
 import { tasks } from "../packages/domain/tasks/generated/module.ts";
 import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
 import { places } from "../plugins/apps/data/places/generated/module.ts";
@@ -148,6 +149,7 @@ const sumiCore = runtime()
 		terminalModule({
 			injects: {
 				sessions: terminal,
+				programs: new MemoryProgramsGateway(),
 			},
 		}),
 		tasks({

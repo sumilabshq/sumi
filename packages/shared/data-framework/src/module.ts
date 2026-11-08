@@ -3,7 +3,7 @@ import type { AnyEvent } from "./event";
 import type { Guard, OpenGuard } from "./guard";
 import type { AnyHandledRequest } from "./handled-request";
 import type { AnyHandler, GuardedState, Handler, Inject } from "./handler";
-import { checkedModuleName } from "./identity";
+import { checkedModuleName, checkedPrefix } from "./identity";
 import { requireStep } from "./middleware";
 import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
 import type { ModuleContract } from "./module-contract";
@@ -58,6 +58,7 @@ export type ImportedModule = ModuleContract | AnyPlatformModule;
 export interface ReadyModule {
 	readonly definition: ModuleDefinition;
 	readonly handlers: readonly AnyHandler[];
+	readonly prefix?: string | null;
 	readonly provide: () => Provided;
 }
 
@@ -85,13 +86,18 @@ export class HandledModule<Q> {
 		readonly definition: ModuleDefinition,
 		readonly handlers: readonly AnyHandler[],
 		provide: (parts: Q) => Provided,
+		private readonly prefix: string | null = null,
 	) {
 		this.provider = { provide };
 	}
 
 	with(parts: Q): ReadyModule {
-		const { definition, handlers, provider } = this;
-		return { definition, handlers, provide: () => provider.provide(parts) };
+		const { definition, handlers, provider, prefix } = this;
+		return { definition, handlers, prefix, provide: () => provider.provide(parts) };
+	}
+
+	prefixed(prefix: string): HandledModule<Q> {
+		return new HandledModule(this.definition, this.handlers, (parts) => this.provider.provide(parts), checkedPrefix(prefix));
 	}
 }
 

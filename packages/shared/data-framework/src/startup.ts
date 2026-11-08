@@ -1,4 +1,5 @@
 import type { AnyHandler, Inject } from "./handler";
+import { wireNameOf } from "./identity";
 import type { Route } from "./local-routes";
 import { stepNameOf } from "./middleware";
 import type { ModuleDefinition, Provided, ReadyModule } from "./module";
@@ -37,6 +38,8 @@ const EVENT_OVER_NETWORK =
 const RAN_AND_IMPORTED =
 	'module "{module}" is both run in .modules() and imported from an address in .imports(): keep exactly one';
 const IMPORTED_TWICE = 'module "{module}" is imported {count} times in .imports(): import it once';
+const MODULE_NAMED_TWICE =
+	'modules #{first} and #{second} of .modules() are both named "{module}": rename the module("{name}") string of one; importing it under another constant does not rename it, the string is its name';
 
 export interface StartedRoutes {
 	readonly routes: ReadonlyMap<string, Route>;
@@ -44,7 +47,12 @@ export interface StartedRoutes {
 }
 
 export function routesOf(starting: Starting): StartedRoutes {
-	throwIfRefused(STARTER, [...platformFindings(starting), ...ranAndImportedFindings(starting), ...importedTwiceFindings(starting)]);
+	throwIfRefused(STARTER, [
+		...platformFindings(starting),
+		...namedTwiceFindings(starting),
+		...ranAndImportedFindings(starting),
+		...importedTwiceFindings(starting),
+	]);
 	const moduleRoutes = starting.modules.map((module) => moduleRoutesOf(module, starting.runtimeProvided));
 	const routes = moduleRoutes.flatMap((ofModule) => ofModule.routes);
 	throwIfRefused(STARTER, [
@@ -52,12 +60,12 @@ export function routesOf(starting: Starting): StartedRoutes {
 		...runtimeReservedKeyFindings(starting),
 		...moduleRoutes.flatMap((ofModule) => runtimeKeyFindings(ofModule, starting)),
 		...moduleRoutes.flatMap(({ module, routes: ofModule }) => ofModule.flatMap((route) => routeFindings(module, route))),
-		...duplicateFindings(routes.map((route) => route.handler)),
+		...duplicateFindings(routes),
 		...importFindings(starting),
 		...moduleRoutes.flatMap(({ module }) => listenFindings(module, starting)),
 	]);
 	return {
-		routes: new Map(routes.map((route) => [route.handler.request.name, route])),
+		routes: new Map(routes.map((route) => [route.name, route])),
 		modules: moduleRoutes,
 	};
 }
@@ -69,9 +77,32 @@ function platformFindings({ platform, modules }: Starting): string[] {
 		.map(({ definition }) => ON_DEVICE.replace("{module}", definition.name));
 }
 
+function addressOf({ definition, prefix }: ReadyModule): string {
+	return wireNameOf(prefix ?? null, definition.name);
+}
+
+function namedTwiceFindings({ modules }: Starting): string[] {
+	const addresses = modules.map(addressOf);
+	return addresses.flatMap((address, at) => {
+		const first = addresses.indexOf(address);
+		const module = modules[at];
+
+		if (first === at || module === undefined) {
+			return [];
+		}
+
+		return [
+			MODULE_NAMED_TWICE.replace("{first}", String(first + 1))
+				.replace("{second}", String(at + 1))
+				.replace("{module}", address)
+				.replace("{name}", module.definition.name),
+		];
+	});
+}
+
 function ranAndImportedFindings({ modules, remote }: Starting): string[] {
-	const ranModuleNames = new Set(modules.map(({ definition }) => definition.name));
-	return [...new Set(remote?.importedModuleNames)]
+	const ranModuleNames = new Set(modules.map(addressOf));
+	return [...new Set(remote?.importedAddresses)]
 		.filter((imported) => ranModuleNames.has(imported))
 		.map((imported) => RAN_AND_IMPORTED.replace("{module}", imported));
 }
@@ -79,7 +110,7 @@ function ranAndImportedFindings({ modules, remote }: Starting): string[] {
 function importedTwiceFindings({ remote }: Starting): string[] {
 	const counts = new Map<string, number>();
 
-	for (const imported of remote?.importedModuleNames ?? []) {
+	for (const imported of remote?.importedAddresses ?? []) {
 		counts.set(imported, (counts.get(imported) ?? 0) + 1);
 	}
 
@@ -188,9 +219,9 @@ function eventSourceFindings(
 	return !isRanHere && remote?.reachesModule(eventModule) === true ? [said(EVENT_OVER_NETWORK)] : [];
 }
 
-function duplicateFindings(handlers: readonly AnyHandler[]): string[] {
+function duplicateFindings(routes: readonly Route[]): string[] {
 	const counts = new Map<string, number>();
-	for (const { request } of handlers) counts.set(request.name, (counts.get(request.name) ?? 0) + 1);
+	for (const { name } of routes) counts.set(name, (counts.get(name) ?? 0) + 1);
 	return [...counts]
 		.filter(([, count]) => count > 1)
 		.map(([request, count]) => fill(TWO_HANDLERS, request).replace("{count}", String(count)));

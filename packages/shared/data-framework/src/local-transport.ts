@@ -29,12 +29,12 @@ export class LocalTransport implements RemoteTransport {
 		};
 	}
 
-	call({ request, sent, idempotencyKey, signal, headers }: RemoteCall): Promise<Answer<unknown>> {
+	call({ name, sent, idempotencyKey, signal, headers }: RemoteCall): Promise<Answer<unknown>> {
 		if (this.serving === null) {
-			return Promise.resolve(refusalOf("unreachable", NOT_SERVING.replace("{name}", request.name)));
+			return Promise.resolve(refusalOf("unreachable", NOT_SERVING.replace("{name}", name)));
 		}
 
-		return this.serving.answer({ name: request.name, input: sent, idempotencyKey, signal, headers });
+		return this.serving.answer({ name, input: sent, idempotencyKey, signal, headers });
 	}
 
 	changes(hear: HearChanges): () => void {

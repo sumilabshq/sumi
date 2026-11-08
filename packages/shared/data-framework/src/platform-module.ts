@@ -1,4 +1,5 @@
 import type { AnyHandler } from "./handler";
+import { checkedPrefix } from "./identity";
 import { isObject } from "./is-object";
 import type {
 	HandlingDefinition,
@@ -23,7 +24,11 @@ export interface ModuleFacts extends ServerParts {
 
 export type NoConfig = Readonly<Record<never, never>>;
 
-export type ModuleConfig = object & { readonly injects?: never };
+export type ModuleConfig = object & { readonly injects?: never; readonly prefix?: never };
+
+export interface PrefixUse {
+	readonly prefix?: string;
+}
 
 export interface ModuleWithInjects {
 	readyWith(injects: never): ReadyModule;
@@ -36,6 +41,7 @@ export interface RunnableModule<P extends Provided, R extends Runs = Runs> {
 	readonly handlers: readonly AnyHandler[];
 	readyWith(injects: P): ReadyModule;
 	startedOn(facts: ModuleFacts): ReadyModule;
+	prefixed(prefix: string): RunnableModule<P, R>;
 }
 
 export type ModuleSurface<P extends Provided, R extends Runs> = Pick<
@@ -48,8 +54,8 @@ export interface InjectsUse<P extends Provided> {
 }
 
 export interface ModuleCall<P extends Provided, R extends Runs, C> {
-	(use: InjectsUse<P>): ReadyModule;
-	(config: C): RunnableModule<P, R>;
+	(use: InjectsUse<P> & PrefixUse): ReadyModule;
+	(config: C & PrefixUse): RunnableModule<P, R>;
 }
 
 export interface ModuleHandles<P extends Provided, R extends Runs, C> {
@@ -80,6 +86,7 @@ export class PlatformModule<P extends Provided, R extends Runs = Runs> implement
 		readonly definition: HandlingDefinition<R>,
 		private readonly provider: Provider<P>,
 		private readonly config: unknown = NO_CONFIG,
+		private readonly prefix: string | null = null,
 	) {}
 
 	get handlers(): readonly AnyHandler[] {
@@ -87,21 +94,25 @@ export class PlatformModule<P extends Provided, R extends Runs = Runs> implement
 	}
 
 	configured(config: unknown): PlatformModule<P, R> {
-		return new PlatformModule(this.definition, this.provider, config);
+		return new PlatformModule(this.definition, this.provider, config, this.prefix);
+	}
+
+	prefixed(prefix: string): PlatformModule<P, R> {
+		return new PlatformModule(this.definition, this.provider, this.config, checkedPrefix(prefix));
 	}
 
 	handles(items: readonly ModuleItem[]): PlatformModule<P, R> {
-		return new PlatformModule(this.definition.withHandled(items), this.provider, this.config);
+		return new PlatformModule(this.definition.withHandled(items), this.provider, this.config, this.prefix);
 	}
 
 	readyWith(injects: P): ReadyModule {
-		const { definition, handlers } = this;
-		return { definition, handlers, provide: () => injects };
+		const { definition, handlers, prefix } = this;
+		return { definition, handlers, prefix, provide: () => injects };
 	}
 
 	startedOn(facts: ModuleFacts): ReadyModule {
-		const { definition, handlers, provider, config } = this;
-		return { definition, handlers, provide: () => provider.provide({ ...facts, config }) };
+		const { definition, handlers, provider, config, prefix } = this;
+		return { definition, handlers, prefix, provide: () => provider.provide({ ...facts, config }) };
 	}
 
 	callable<C>(): CallableModule<P, R, C> {
@@ -110,16 +121,19 @@ export class PlatformModule<P extends Provided, R extends Runs = Runs> implement
 			handlers: this.handlers,
 			readyWith: (injects: P): ReadyModule => this.readyWith(injects),
 			startedOn: (facts: ModuleFacts): ReadyModule => this.startedOn(facts),
+			prefixed: (prefix: string): RunnableModule<P, R> => this.prefixed(prefix),
 			handles: (items: readonly ModuleItem[]): CallableModule<P, R, C> => this.handles(items).callable<C>(),
 		});
 	}
 }
 
 function createModuleCall<P extends Provided, R extends Runs, C>(platform: PlatformModule<P, R>): ModuleCall<P, R, C> {
-	function called(use: InjectsUse<P>): ReadyModule;
-	function called(config: C): RunnableModule<P, R>;
-	function called(given: InjectsUse<P> | C): ReadyModule | RunnableModule<P, R> {
-		return isInjectsUse<P>(given) ? platform.readyWith(given.injects) : platform.configured(given);
+	function called(use: InjectsUse<P> & PrefixUse): ReadyModule;
+	function called(config: C & PrefixUse): RunnableModule<P, R>;
+	function called(given: (InjectsUse<P> | C) & PrefixUse): ReadyModule | RunnableModule<P, R> {
+		const { prefix, ...config } = given;
+		const placed = prefix === undefined ? platform : platform.prefixed(prefix);
+		return isInjectsUse<P>(config) ? placed.readyWith(config.injects) : placed.configured(config);
 	}
 
 	return called;

@@ -45,16 +45,16 @@ export function orpcTransport(server: string, host: WireHost = {}): RemoteTransp
 
 async function callOver(
 	link: RPCLink<CallContext>,
-	{ request, sent, idempotencyKey, signal, headers }: RemoteCall,
+	{ name, sent, idempotencyKey, signal, headers }: RemoteCall,
 ): Promise<Answer<unknown>> {
 	const call: WireCall = { input: sent, idempotencyKey };
 	try {
 		const context = { headers: Object.fromEntries(headers ?? []) };
-		const answered = await link.call(wirePathOf(request), call, { context, signal });
-		return wireAnswerOf(answered) ?? refusalOf("unreachable", NOT_AN_ANSWER.replace("{name}", request.name));
+		const answered = await link.call(wirePathOf(name), call, { context, signal });
+		return wireAnswerOf(answered) ?? refusalOf("unreachable", NOT_AN_ANSWER.replace("{name}", name));
 	} catch (thrown) {
 		if (thrown instanceof ORPCError && NotFoundResponseSchema.safeParse(thrown.data).success) {
-			return refusalOf("not-found", NOT_EXPOSED.replace("{name}", request.name));
+			return refusalOf("not-found", NOT_EXPOSED.replace("{name}", name));
 		}
 
 		return refusalOf("unreachable", reasonOf(thrown));

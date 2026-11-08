@@ -494,6 +494,7 @@ const countingFetch = (request: Request): Response | Promise<Response> => {
 const leaky = runtime()
 	.imports({
 		name: "billing",
+		prefix: null,
 		transport: orpcTransport("http://api", { fetch: countingFetch }),
 		publicRequestNames: ["billing.invoices", "billing.create-customer"],
 	})
@@ -540,6 +541,7 @@ const accountsServer = dataFrameworkMiddleware(
 const provisioned = await runtime()
 	.imports({
 		name: "accounts",
+		prefix: null,
 		transport: orpcTransport("http://accounts", { fetch: accountsServer.fetch }),
 		publicRequestNames: ["accounts.provision"],
 	})
@@ -727,6 +729,7 @@ check(
 const secretOverWire = await runtime()
 	.imports({
 		name: "vault",
+		prefix: null,
 		transport: orpcTransport("http://api", { fetch: vaultServer.fetch }),
 		publicRequestNames: ["vault.read", "vault.secret"],
 	})

@@ -20,8 +20,13 @@ export interface ExposeOptions {
 
 export type AdapterOptions = Pick<ExposeOptions, "authenticate">;
 
+export interface ExposedRequest {
+	readonly name: string;
+	readonly request: AnyRequest;
+}
+
 export interface Exposed extends Answering {
-	readonly requests: readonly AnyRequest[];
+	readonly requests: readonly ExposedRequest[];
 }
 
 export interface ExposedRuntime {
@@ -46,7 +51,10 @@ export function createExposure(runtime: ExposedRuntime, options: ExposeOptions):
 	);
 	const authenticate = options.authenticate ?? null;
 	return {
-		requests: reachable.map(({ handler }) => handler.request),
+		requests: reachable.map(({ name, handler }) => ({
+			name,
+			request: handler.request,
+		})),
 		answer: (call) => answerOutside(runtime, authenticate, call),
 		changes: (hear) => runtime.changed.hear(hear),
 	};
@@ -86,6 +94,7 @@ async function answerOutside(
 	const outsideCaller = new HeadersCaller(authenticate, headers ?? new Headers());
 	const keyed = idempotencyKey === null ? {} : { idempotencyKey };
 	const answered = await runtime.mediator.send(route.handler.request, input, {
+		routeName: name,
 		signal,
 		headers,
 		outsideCaller,

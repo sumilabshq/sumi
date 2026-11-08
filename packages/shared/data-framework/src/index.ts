@@ -1,7 +1,7 @@
 export { RuntimeBuilder, runtime } from "./runtime";
 export { mountOrStop } from "./mount-or-stop";
 export { Authenticate } from "./authenticate";
-export type { AdapterOptions, ExposeOptions, Exposed } from "./exposure";
+export type { AdapterOptions, ExposeOptions, Exposed, ExposedRequest } from "./exposure";
 export { queryKeyOf } from "./query-key";
 export { QueryWatches } from "./query-watches";
 export { RouteQueries } from "./route-queries";
@@ -58,6 +58,8 @@ export {
 	module,
 	serverModule,
 } from "./module";
+export { prefixedModule } from "./module-prefix";
+export { wireNameOf } from "./identity";
 export { isDescriptorKey, isModuleContract, moduleContract, moduleNamespace } from "./module-contract";
 export type {
 	ContractLeaf,

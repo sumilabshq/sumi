@@ -21,6 +21,7 @@ import { outputOfSent, stampSent } from "./send";
 import type { CallingModule } from "./calling-module";
 
 export interface Route {
+	readonly name: string;
 	readonly handler: AnyHandler;
 	readonly provided: Provided;
 	readonly steps: readonly Step[];
@@ -55,6 +56,20 @@ const CALLABLE_BY_MODULES = "{request} is callable only by module(s) {modules}, 
 const VIEW = "a view";
 const UNKNOWN_CALLER = "{request}: the caller could not be authenticated";
 
+function prefixedByNameOf(routes: ReadonlyMap<string, Route>): ReadonlyMap<string, readonly Route[]> {
+	const grouped = new Map<string, Route[]>();
+
+	for (const route of routes.values()) {
+		const { name } = route.handler.request;
+
+		if (route.name !== name) {
+			grouped.set(name, [...(grouped.get(name) ?? []), route]);
+		}
+	}
+
+	return grouped;
+}
+
 export function refuseCaller({ handler: { request } }: Route, caller: InProcessCaller | undefined): Refusal | null {
 	const { visibility } = request;
 
@@ -75,10 +90,20 @@ export function refuseCaller({ handler: { request } }: Route, caller: InProcessC
 }
 
 export class LocalRoutes {
-	constructor(private readonly parts: LocalParts) {}
+	private readonly prefixedByName: ReadonlyMap<string, readonly Route[]>;
+
+	constructor(private readonly parts: LocalParts) {
+		this.prefixedByName = prefixedByNameOf(parts.routes);
+	}
+
+	// TODO: prefer the sender's own prefix when two prefixed modules share a request
+	routeNamed(name: string): Route | undefined {
+		return this.parts.routes.get(name);
+	}
 
 	routeOf(request: AnyRequest): Route | undefined {
-		return this.parts.routes.get(request.name);
+		const prefixed = this.prefixedByName.get(request.name) ?? [];
+		return this.parts.routes.get(request.name) ?? (prefixed.length === 1 ? prefixed[0] : undefined);
 	}
 
 	async run(route: Route, asked: Asked, settle: Settle): Promise<Answer<unknown>> {
@@ -157,11 +182,11 @@ export class LocalRoutes {
 		const origin = callerOriginOf(walk.asked);
 
 		if (key !== null && isKeyReplayed(request, user, origin)) {
-			return this.once(callerKeyOf(request.name, origin, user, key), run);
+			return this.once(callerKeyOf(walk.route.name, origin, user, key), run);
 		}
 
 		if (key !== null || request.kind !== "query") return run();
-		return walk.settle.shared(callerKeyOf(request.name, origin, user, stableKey(input)), run);
+		return walk.settle.shared(callerKeyOf(walk.route.name, origin, user, stableKey(input)), run);
 	}
 
 	private async once(doneKey: string, run: () => Promise<Answer<unknown>>): Promise<Answer<unknown>> {
