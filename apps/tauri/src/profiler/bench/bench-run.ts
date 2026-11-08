@@ -7,6 +7,7 @@ export type BenchStep =
 	| { readonly kind: "wait"; readonly ms: number }
 	| { readonly kind: "probe"; readonly times: number }
 	| { readonly kind: "press"; readonly label: string }
+	| { readonly kind: "type"; readonly selector: string; readonly text: string }
 	| { readonly kind: "inspect"; readonly selectors: readonly string[] }
 	| { readonly kind: "probe-var"; readonly selector: string; readonly name: string; readonly fromPx: number; readonly stepPx: number; readonly times: number }
 	| { readonly kind: "probe-state"; readonly times: number }
@@ -106,6 +107,12 @@ async function runStep(step: BenchStep): Promise<readonly number[]> {
 
 	if (step.kind === "inspect") {
 		say({ inspected: step.selectors.map(lookOf) });
+		return [];
+	}
+
+	if (step.kind === "type") {
+		say({ typed: step.text, found: typedInto(step.selector, step.text) });
+		await pause(800);
 		return [];
 	}
 
@@ -306,6 +313,19 @@ function lookOf(selector: string): Readonly<Record<string, unknown>> {
 		margin: style.margin,
 		layers: found.closest(".wg-kit-portal-layer")?.className ?? null,
 	};
+}
+
+function typedInto(selector: string, text: string): boolean {
+	const field = document.querySelector<HTMLInputElement>(selector);
+	const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+
+	if (field === null || setValue === undefined) {
+		return false;
+	}
+
+	setValue.call(field, text);
+	field.dispatchEvent(new Event("input", { bubbles: true }));
+	return true;
 }
 
 function pressedLabel(label: string): boolean {
