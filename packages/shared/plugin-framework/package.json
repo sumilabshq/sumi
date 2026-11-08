@@ -11,10 +11,18 @@
 			"source": "./src/index.ts",
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
+		},
+		"./react": {
+			"source": "./src/react/index.ts",
+			"types": "./dist/react/index.d.ts",
+			"default": "./dist/react/index.js"
 		}
 	},
 	"dependencies": {
 		"zod": "^4.6.5"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8"
 	},
 	"widgetarium": {
 		"level": "common"

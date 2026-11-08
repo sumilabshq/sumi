@@ -7,12 +7,14 @@ import { keptStateOf, settledStateOf } from "./plugin-state";
 import type { PluginStateStore } from "./plugin-state";
 import { sentenceOf } from "./sentence";
 import type { Service } from "./service";
+import type { SlotFills } from "./slot-fills";
 import { startOrderOf } from "./start-order";
 
 export interface PluginRuntime {
 	readonly startedIds: readonly string[];
 	readonly refusals: readonly string[];
 	readonly notes: readonly string[];
+	readonly slotFills: SlotFills;
 	modulePrefixOf(pluginId: string): string | null;
 }
 
@@ -83,6 +85,7 @@ function startPlugins(plan: RuntimePlan, store: PluginStateStore): PluginRuntime
 		started: startOrder.plugins.filter(({ id }) => applied.appliedIds.has(id)),
 		refusals: [...nameRefusals, ...startOrder.refusals, ...applied.refusals],
 		notes: state.notes,
+		slotFills: applied.slotFills,
 	});
 }
 
@@ -90,17 +93,20 @@ interface StartedParts {
 	readonly started: readonly Plugin[];
 	readonly refusals: readonly string[];
 	readonly notes: readonly string[];
+	readonly slotFills: SlotFills;
 }
 
 class StartedPlugins implements PluginRuntime {
 	readonly startedIds: readonly string[];
 	readonly refusals: readonly string[];
 	readonly notes: readonly string[];
+	readonly slotFills: SlotFills;
 	private readonly started: readonly Plugin[];
 
-	constructor({ started, refusals, notes }: StartedParts) {
+	constructor({ started, refusals, notes, slotFills }: StartedParts) {
 		this.started = started;
 		this.refusals = refusals;
+		this.slotFills = slotFills;
 		this.notes = notes;
 		this.startedIds = started.map(({ id }) => id);
 	}
