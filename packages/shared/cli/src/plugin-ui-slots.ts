@@ -92,18 +92,22 @@ function foundSlotOf(element: AstNode, shape: SlotElementShape, said: Said): Fou
 		throw new CliRefusal(fillTemplate(NAME_NOT_LITERAL, said));
 	}
 
-	const value = name["value"];
+	const named = { ...said, name: ownSlotName(name["value"], said) };
+	return {
+		name: named.name,
+		shape,
+		propKeys: propKeysOf(attributeOf(element, "props"), named),
+	};
+}
+
+function ownSlotName(value: string, said: Said): string {
 	const [owner, slot, ...rest] = value.split(".");
 
 	if (owner !== said.plugin || slot === undefined || rest.length > 0 || !SEGMENT_NAME.test(slot)) {
 		throw new CliRefusal(fillTemplate(NAME_NOT_OWN, { ...said, name: value }));
 	}
 
-	return {
-		name: value,
-		shape,
-		propKeys: propKeysOf(attributeOf(element, "props"), { ...said, name: value }),
-	};
+	return value;
 }
 
 function propKeysOf(props: AstNode | null, said: Said & { readonly name: string }): readonly string[] {
@@ -111,22 +115,23 @@ function propKeysOf(props: AstNode | null, said: Said & { readonly name: string 
 		return [];
 	}
 
+	const properties = objectPropertiesOf(props) ?? refusedProps(said);
+	return properties.map((property) => keyNameOf(property) ?? refusedProps(said));
+}
+
+function refusedProps(said: Said & { readonly name: string }): never {
+	throw new CliRefusal(fillTemplate(PROPS_NOT_LITERAL, said));
+}
+
+function objectPropertiesOf(props: AstNode): readonly unknown[] | null {
 	const object = props.type === "JSXExpressionContainer" ? nodeAt(props, "expression") : null;
 	const properties = object?.type === "ObjectExpression" ? object["properties"] : null;
+	return Array.isArray(properties) ? properties : null;
+}
 
-	if (!Array.isArray(properties)) {
-		throw new CliRefusal(fillTemplate(PROPS_NOT_LITERAL, said));
-	}
-
-	return properties.map((property) => {
-		const key = isAstNode(property) && property.type === "ObjectProperty" ? nodeAt(property, "key") : null;
-
-		if (key?.type !== "Identifier" || typeof key["name"] !== "string") {
-			throw new CliRefusal(fillTemplate(PROPS_NOT_LITERAL, said));
-		}
-
-		return key["name"];
-	});
+function keyNameOf(property: unknown): string | null {
+	const key = isAstNode(property) && property.type === "ObjectProperty" ? nodeAt(property, "key") : null;
+	return key?.type === "Identifier" && typeof key["name"] === "string" ? key["name"] : null;
 }
 
 function attributeOf(element: AstNode, wanted: string): AstNode | null {

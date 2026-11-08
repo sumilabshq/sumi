@@ -174,24 +174,38 @@ function fillingOf(
 	});
 	const filled =
 		(kind: SlotFilled["kind"]) =>
-		(component: SlotComponent<never>): void => {
-			if (!state.isOpen) {
-				throw new Error(sentenceOf(SLOT_LATE, { slot: slot.name, kind }));
-			}
-
-			const replacing = run.slotFilled.find(
-				(each) => each.slot === slot.name && each.kind === "replace" && !run.failed.has(each.pluginId),
-			);
-
-			if (kind === "replace" && replacing !== undefined) {
-				throw new Error(
-					sentenceOf(REPLACED_TWICE, { plugin: caller.pluginId, slot: slot.name, other: replacing.pluginId }),
-				);
-			}
-
-			run.slotFilled.push({ slot: slot.name, pluginId: caller.pluginId, kind, component });
-		};
+		(component: SlotComponent<never>): void =>
+			recordFill({ slot: slot.name, kind, component, isOpen: state.isOpen }, { caller, run });
 	return slot.shape === "list" ? { add: filled("add") } : { replace: filled("replace") };
+}
+
+interface FillCall {
+	readonly slot: string;
+	readonly kind: SlotFilled["kind"];
+	readonly component: SlotComponent<never>;
+	readonly isOpen: boolean;
+}
+
+function recordFill({ slot, kind, component, isOpen }: FillCall, ask: FillAsk): void {
+	if (!isOpen) {
+		throw new Error(sentenceOf(SLOT_LATE, { slot, kind }));
+	}
+
+	if (kind === "replace") {
+		refuseSecondReplacement(slot, ask);
+	}
+
+	ask.run.slotFilled.push({ slot, pluginId: ask.caller.pluginId, kind, component });
+}
+
+function refuseSecondReplacement(slot: string, { caller, run }: FillAsk): void {
+	const replacing = run.slotFilled.find(
+		(each) => each.slot === slot && each.kind === "replace" && !run.failed.has(each.pluginId),
+	);
+
+	if (replacing !== undefined) {
+		throw new Error(sentenceOf(REPLACED_TWICE, { plugin: caller.pluginId, slot, other: replacing.pluginId }));
+	}
 }
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
