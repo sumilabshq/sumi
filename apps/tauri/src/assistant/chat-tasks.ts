@@ -98,7 +98,7 @@ async function settle(app: Runtime, ask: SettleTurnAsk): Promise<Nudge | null> {
 }
 
 async function unsent(app: Runtime, nudge: Nudge, reason: string): Promise<void> {
-	const answered = await app.send(tasks.person.undelivered, { task: nudge.task, reason });
+	const answered = await app.send(tasks.person.markUndelivered, { task: nudge.task, reason });
 
 	if (!answered.ok) {
 		// TODO: retry, or the task stays in progress until the next cold start

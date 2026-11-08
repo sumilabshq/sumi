@@ -398,7 +398,7 @@ async function watchdog(): Promise<void> {
 		[paused.card.status, paused.card.note, paused.card.actions],
 		["paused", "stopped by you", ["continue"]],
 	);
-	const continued = outputOf(await tasks.send(tasksContract.person.resume, { task: stopped, chat: A }));
+	const continued = outputOf(await tasks.send(tasksContract.person.continueTask, { task: stopped, chat: A }));
 	check(
 		"continue resumes it in its own chat",
 		[continued.chat, continued.message.startsWith("Continue T-1")],
@@ -420,7 +420,7 @@ async function watchdog(): Promise<void> {
 		[silent.card.status, silent.card.blocker?.kind, silent.card.note],
 		["blocked", "session_silent", "Claude Code produced nothing for 3 minutes"],
 	);
-	outputOf(await tasks.send(tasksContract.person.resume, { task: stopped, chat: A }));
+	outputOf(await tasks.send(tasksContract.person.continueTask, { task: stopped, chat: A }));
 	outputOf(await tasks.send(tasksContract.supervision.reconcile, { liveChats: [] }));
 	const interrupted = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
@@ -428,7 +428,7 @@ async function watchdog(): Promise<void> {
 		[interrupted.card.status, interrupted.card.blocker?.kind],
 		["blocked", "interrupted"],
 	);
-	outputOf(await tasks.send(tasksContract.person.resume, { task: stopped, chat: A }));
+	outputOf(await tasks.send(tasksContract.person.continueTask, { task: stopped, chat: A }));
 	outputOf(await tasks.send(tasksContract.supervision.releaseChat, { chat: A, why: "cleared" }));
 	const released = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
@@ -436,7 +436,7 @@ async function watchdog(): Promise<void> {
 		[released.card.status, released.card.owner],
 		["blocked", null],
 	);
-	const takeOver = outputOf(await tasks.send(tasksContract.person.resume, { task: stopped, chat: null }));
+	const takeOver = outputOf(await tasks.send(tasksContract.person.continueTask, { task: stopped, chat: null }));
 	const todo = outputOf(await tasks.send(tasksContract.board.one, { task: stopped }));
 	check(
 		"continuing a task with no chat puts it back in To do for any chat",
@@ -909,7 +909,7 @@ async function startedMidTurn(): Promise<void> {
 		}),
 	);
 	continued.clock.moveTo(START + HOUR);
-	outputOf(await continued.tasks.send(tasksContract.person.resume, { task: handed, chat: A }));
+	outputOf(await continued.tasks.send(tasksContract.person.continueTask, { task: handed, chat: A }));
 	const mid = outputOf(
 		await continued.tasks.send(tasksContract.supervision.settleTurn, {
 			chat: A,
@@ -1131,27 +1131,29 @@ async function continuing(): Promise<void> {
 			startedBy: "host",
 		}),
 	);
-	const toOther = outputOf(await tasks.send(tasksContract.person.resume, { task: id, chat: B }));
+	const toOther = outputOf(await tasks.send(tasksContract.person.continueTask, { task: id, chat: B }));
 	const taken = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"continue in a named chat makes it the owner",
 		[toOther.chat, taken.status, taken.owner],
 		[B, "in_progress", B],
 	);
-	const paused = outputOf(await tasks.send(tasksContract.person.undelivered, { task: id, reason: "the chat is busy" }));
+	const paused = outputOf(
+		await tasks.send(tasksContract.person.markUndelivered, { task: id, reason: "the chat is busy" }),
+	);
 	check(
 		"an undelivered message pauses the task with the reason",
 		[paused.status, paused.note?.includes("the chat is busy")],
 		["paused", true],
 	);
-	const gone = outputOf(await tasks.send(tasksContract.person.resume, { task: id, chat: null }));
+	const gone = outputOf(await tasks.send(tasksContract.person.continueTask, { task: id, chat: null }));
 	const todo = outputOf(await tasks.send(tasksContract.board.one, { task: id })).card;
 	check(
 		"continue with no live chat puts it in To do with no owner",
 		[gone.chat, todo.status, todo.owner],
 		[null, "todo", null],
 	);
-	const untouched = outputOf(await tasks.send(tasksContract.person.undelivered, { task: id, reason: "no window" }));
+	const untouched = outputOf(await tasks.send(tasksContract.person.markUndelivered, { task: id, reason: "no window" }));
 	check("an undelivered message leaves a To do task as it is", untouched.status, "todo");
 	const sent = bench();
 	const back = await startedCodeTask(sent.tasks, "Send me back");
@@ -1189,7 +1191,7 @@ async function usageLimitWaits(): Promise<void> {
 		[waiting.blocker?.kind, waiting.continueAt, waiting.actions.includes("continue")],
 		["usage_limit", resumesAt, true],
 	);
-	const early = reasonOf(await tasks.send(tasksContract.person.resume, { task: id, chat: A }));
+	const early = reasonOf(await tasks.send(tasksContract.person.continueTask, { task: id, chat: A }));
 	check("continue before the reset is refused", early.includes("usage limit to reset in 120 min"), true);
 	clock.moveTo(resumesAt + 1);
 	check(
@@ -1197,7 +1199,11 @@ async function usageLimitWaits(): Promise<void> {
 		outputOf(await tasks.send(tasksContract.board.one, { task: id })).card.continueAt,
 		null,
 	);
-	check("and continue works", outputOf(await tasks.send(tasksContract.person.resume, { task: id, chat: A })).chat, A);
+	check(
+		"and continue works",
+		outputOf(await tasks.send(tasksContract.person.continueTask, { task: id, chat: A })).chat,
+		A,
+	);
 	const failed = outputOf(
 		await tasks.send(tasksContract.supervision.settleTurn, {
 			chat: A,

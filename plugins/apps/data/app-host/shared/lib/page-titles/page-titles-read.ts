@@ -14,7 +14,7 @@ export async function pageTitlesOf(send: Send, tabs: readonly PageTab[]): Promis
 }
 
 export async function rememberPageTitles(send: Send, at: TabsAsk): Promise<void> {
-	const { tabs } = await send(places.tabs.held, { at });
+	const { tabs } = await send(places.tabs.heldTabs, { at });
 	const pageOf = new Map(at.screen.pages.map((page) => [page.pageId, page]));
 	const pages = tabs.flatMap(({ id, pageId }) => {
 		const page = pageId === null ? undefined : pageOf.get(pageId);

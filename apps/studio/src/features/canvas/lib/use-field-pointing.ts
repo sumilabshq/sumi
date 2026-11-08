@@ -8,7 +8,7 @@ import { canvas } from "@widgetarium/canvas/contract";
 import type { Selection, Spot } from "@widgetarium/canvas/contract";
 import { LOOK_ROOM, POINTING, groupSelectorOf } from "./field-marks.js";
 
-type FieldState = OutputOf<typeof canvas.field.state>;
+type FieldState = OutputOf<typeof canvas.field.picking>;
 
 export function useFieldPointing(
 	layerRef: RefObject<HTMLDivElement | null>,

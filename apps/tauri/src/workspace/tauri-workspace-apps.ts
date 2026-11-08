@@ -20,7 +20,7 @@ export function tauriWorkspaceApps({ workspaces, workspacesApp }: WorkspaceAppsA
 			await workspacesApp.send(workspacesContract.workspaces.open, { id });
 		},
 		createApp: async () => {
-			await workspacesApp.send(workspacesContract.workspaces.create);
+			await workspacesApp.send(workspacesContract.workspaces.createWorkspace);
 		},
 		renameApp: (id, name) => workspaces.rename(id, name),
 	};

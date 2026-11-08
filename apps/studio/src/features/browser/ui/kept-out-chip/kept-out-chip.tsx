@@ -9,7 +9,7 @@ import { KeptOutPress } from "./kept-out-press.js";
 
 export function KeptOutChip(): ReactElement | null {
 	const [isOpen, setIsOpen] = useState(false);
-	const { shown, isKeptOut } = useQuery(browser.sites.access, { heldTabId: useHeldTab() }).data;
+	const { shown, isKeptOut } = useQuery(browser.sites.level, { heldTabId: useHeldTab() }).data;
 
 	if (shown === null || !isKeptOut) {
 		return null;

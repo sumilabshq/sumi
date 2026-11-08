@@ -6,6 +6,6 @@ export async function heldTabOfPage(pageId: string | null, send: Send): Promise<
 		return null;
 	}
 
-	const held = await send(appHost.tabs.held);
+	const held = await send(appHost.tabs.heldTabs);
 	return held.tabs.find((tab) => tab.pageId === pageId)?.id ?? null;
 }

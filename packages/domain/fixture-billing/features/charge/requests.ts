@@ -18,7 +18,7 @@ export const balance = query()
 	.output(BalanceSchema)
 	.handle((_input, { ledger }) => ledger.balance());
 
-export const take = command()
+export const charge = command()
 	.public()
 	.input(ChargeInputSchema)
 	.output(BalanceSchema)

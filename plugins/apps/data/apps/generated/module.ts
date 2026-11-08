@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { apps as definition } from "../module.js";
 import { all } from "../features/apps/requests.js";
-import { ofTab, pressAction, record, rememberTitles, rereadKept, takeActionPress, titles } from "../features/pages/requests.js";
+import { pageOfTab, pressAction, record, rememberTitles, rereadKept, takeActionPress, titles } from "../features/pages/requests.js";
 import { keptPagesChanged } from "../gateways/pages/pages.events.js";
 
 export type { AppsConfig } from "../module.js";
@@ -11,7 +11,7 @@ export const apps = handledModule(definition, [
 	rereadKept,
 	named("apps.all", all),
 	named("pages.kept-pages-changed", keptPagesChanged),
-	named("pages.of-tab", ofTab),
+	named("pages.page-of-tab", pageOfTab),
 	named("pages.press-action", pressAction),
 	named("pages.record", record),
 	named("pages.remember-titles", rememberTitles),

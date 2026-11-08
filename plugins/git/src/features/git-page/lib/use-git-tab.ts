@@ -10,7 +10,7 @@ export interface GitTab {
 }
 
 export function useGitTab(tabId: string): GitTab {
-	const tab = useOptionalQuery(places.tabFacts.app, { id: tabId }).data;
+	const tab = useOptionalQuery(places.tabFacts.ownAppTab, { id: tabId }).data;
 	const { run } = useCommand(places.tabFacts.recordAppAddress);
 	const go = useCallback(
 		(next: GitAddress) => void run({ id: tabId, address: addressOf(next), how: "push" }),

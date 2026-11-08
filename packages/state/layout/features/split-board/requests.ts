@@ -11,7 +11,7 @@ export const show = command()
 	.input(SplitDrawingSchema)
 	.idempotencyKey(Repeatable)
 	.handle((drawing, { paneTree, invalidate }) => {
-		invalidate(layout.panes.current);
+		invalidate(layout.panes.paneTree);
 		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const next = treeShowingSplit(tree, drawing);
@@ -24,7 +24,7 @@ export const leave = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { paneTree, invalidate }) => {
-		invalidate(layout.panes.current);
+		invalidate(layout.panes.paneTree);
 		invalidate(layout.panes.placementPreview);
 		const tree = paneTree.tree();
 		const next = treeLeavingSplit(tree);
@@ -45,7 +45,7 @@ export const focus = command()
 			return;
 		}
 
-		invalidate(layout.panes.current);
+		invalidate(layout.panes.paneTree);
 		const reason = `split focus → ${focusedId}: app target ${tree.targetId ?? "none"} → ${next.targetId ?? "none"}, chat target ${tree.chatTargetId ?? "none"} → ${next.chatTargetId ?? "none"}`;
 		paneTree.saveTree(next, reason);
 		console.info(`[widgetarium] ${reason}`);

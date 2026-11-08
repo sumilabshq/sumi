@@ -49,7 +49,7 @@ export function createStudioState(studioApp: Runtime): StudioState {
 }
 
 async function showView(studioApp: Runtime, view: StudioView): Promise<void> {
-	const answer = await studioApp.send(appHost.shownView.show, { view });
+	const answer = await studioApp.send(appHost.shownView.showView, { view });
 
 	if (!answer.ok) {
 		console.error(`[widgetarium] the studio could not show ${view}: ${answer.reason}`);

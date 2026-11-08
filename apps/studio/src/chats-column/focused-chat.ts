@@ -9,7 +9,7 @@ export function focusedChatPortOf(studioApp: Runtime): FocusedChatPort {
 		now: () => focusedChatIn(studioApp),
 		isOnScreen: (chatId) => boardIn(studioApp)?.chatGroups.some((group) => group.chatId === chatId) ?? false,
 		watch: (changed) => {
-			const stopBoard = studioApp.routes.watch(layout.panes.current, undefined, changed);
+			const stopBoard = studioApp.routes.watch(layout.panes.paneTree, undefined, changed);
 			const stopChats = studioApp.routes.watch(chatTabs.chatList.all, undefined, changed);
 			return () => {
 				stopBoard();
@@ -33,6 +33,6 @@ function focusedChatIn(studioApp: Runtime): FocusedChat | null {
 }
 
 function boardIn(studioApp: Runtime): PaneBoard | null {
-	const read = studioApp.routes.readNow(layout.panes.current);
-	return read === null ? null : layout.panes.current.outputSchema.parse(read.output);
+	const read = studioApp.routes.readNow(layout.panes.paneTree);
+	return read === null ? null : layout.panes.paneTree.outputSchema.parse(read.output);
 }

@@ -12,7 +12,7 @@ const NOT_DELIVERED_UNCHANGED = "{task} was not delivered ({reason}) and is left
 
 export function useDeliverTask(task: string): DeliverTask {
 	const sendToChat = useSendToChat();
-	const undelivered = useCommand(tasks.person.undelivered);
+	const undelivered = useCommand(tasks.person.markUndelivered);
 	return async (continued) => {
 		const delivered = await sendToChat(continued);
 

@@ -16,7 +16,7 @@ export const EssentialTile = memo(function EssentialTile({
 }: {
 	readonly tile: EssentialTileState;
 }): ReactElement {
-	const showEssential = useCommand(appHost.essentials.show);
+	const showEssential = useCommand(appHost.essentials.showEssential);
 	const lifted = useLiftedMark(tile.id, null);
 	return (
 		<button

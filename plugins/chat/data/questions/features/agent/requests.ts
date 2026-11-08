@@ -19,7 +19,7 @@ import {
 	WaitingSchema,
 } from "../../shared/schema/question.schema.js";
 import type { Question } from "../../shared/schema/question.schema.js";
-import { ofChat } from "../dock/requests.js";
+import { questionsOfChat } from "../dock/requests.js";
 
 export const post = command()
 	.public()
@@ -32,7 +32,7 @@ export const post = command()
 			(held) => questionsPosted(held, ask, Date.now()),
 			`post ${ask.questions.length} ${ask.need}`,
 		);
-		invalidate(ofChat);
+		invalidate(questionsOfChat);
 
 		if (!changed.ok) {
 			return refuse(changed.refusal);
@@ -76,7 +76,7 @@ export const deliver = command()
 			},
 			ask.ids === null ? "deliver settled optional" : `deliver ${ask.ids.join(", ")}`,
 		);
-		invalidate(ofChat);
+		invalidate(questionsOfChat);
 
 		if (!changed.ok) {
 			return refuse(changed.refusal);
@@ -105,6 +105,6 @@ export const withdrawNeeded = command()
 			},
 			"turn ended → withdraw needed",
 		);
-		invalidate(ofChat);
+		invalidate(questionsOfChat);
 		return changed.ok ? { changed: counted.open } : refuse(changed.refusal);
 	});

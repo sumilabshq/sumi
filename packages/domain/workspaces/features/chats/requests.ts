@@ -20,7 +20,7 @@ import type { KeptChat, KeptChats } from "../../shared/schema/chat.schema.js";
 
 const TITLE_MOST_CHARS = 80;
 
-export const records = query()
+export const chatRecords = query()
 	.public()
 	.output(ChatRecordsSchema)
 	.settlesNow()
@@ -33,7 +33,7 @@ export const records = query()
 		})),
 	}));
 
-export const crumb = query()
+export const workspaceCrumb = query()
 	.public()
 	.output(WorkspaceCrumbSchema)
 	.settlesNow()
@@ -41,13 +41,13 @@ export const crumb = query()
 		workspace: currentWorkspaceOf(workspaces.workspaces(), currentWorkspace.currentWorkspace().currentId).name,
 	}));
 
-export const create = command()
+export const createChat = command()
 	.public()
 	.input(NewChatSchema)
 	.output(ChatIdSchema)
 	.idempotencyKey(PerCall)
 	.handle(async ({ title }, { chats, invalidate, send }) => {
-		invalidate(records);
+		invalidate(chatRecords);
 		const kept = chats.chats();
 		const chat = newChatOf(title);
 		const reason = `chats ${kept.chats.length} → ${kept.chats.length + 1} (new chat ${chat.id})`;
@@ -88,7 +88,7 @@ export const forgetToOpen = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const toOpen = query()
+export const chatToOpen = query()
 	.public()
 	.output(ChatToOpenSchema)
 	.settlesNow()
@@ -112,7 +112,7 @@ export const recordTurn = command()
 	.input(ChatTurnSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async (turn, { chats, invalidate, send }) => {
-		invalidate(records);
+		invalidate(chatRecords);
 		const kept = chats.chats();
 		const was = kept.chats.find((chat) => chat.id === turn.chatId);
 
@@ -133,22 +133,22 @@ export const recordTurn = command()
 		saveTurned(chats, now, chatAfterTurn(now, { title: now.title ?? title, isStarting }));
 	});
 
-export const reread = subscriber(chatsChanged).handle((_input, { invalidate }) => {
-	invalidate(records);
-	invalidate(toOpen);
+export const rereadChats = subscriber(chatsChanged).handle((_input, { invalidate }) => {
+	invalidate(chatRecords);
+	invalidate(chatToOpen);
 });
 
 export const rereadCrumbForWorkspaces = subscriber(workspacesChanged).handle((_input, { invalidate }) => {
-	invalidate(crumb);
+	invalidate(workspaceCrumb);
 });
 
 export const rereadCrumbForCurrent = subscriber(currentWorkspaceChanged).handle((_input, { invalidate }) => {
-	invalidate(crumb);
+	invalidate(workspaceCrumb);
 });
 
 async function keepTabOf(send: Send, chat: KeptChat): Promise<void> {
 	try {
-		await send(places.tabFacts.keepChat, { chats: [{ id: chat.id, title: chat.title }] });
+		await send(places.tabFacts.keepChatTabs, { chats: [{ id: chat.id, title: chat.title }] });
 	} catch (failure: unknown) {
 		console.error(`[widgetarium] chat ${chat.id} kept with no tab yet; the next restore gives it one`, failure);
 	}

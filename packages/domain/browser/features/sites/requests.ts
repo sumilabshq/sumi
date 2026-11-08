@@ -25,7 +25,7 @@ export const keepOnceOnTabs = subscriber(pagesChanged).handle((_input, { onceAll
 	console.debug(`[widgetarium] browser once allowances ${was.length} → ${kept.length} (a tab left the allowed host)`);
 });
 
-export const access = query()
+export const level = query()
 	.public()
 	.input(BrowserViewSchema)
 	.output(SiteAccessSchema)
@@ -49,8 +49,8 @@ export const setLevel = command()
 	.public()
 	.input(SiteLevelSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ siteKey, level }, { browserGrants, clock, invalidate }) => {
-		invalidate(access);
+	.handle(({ siteKey, level: chosenLevel }, { browserGrants, clock, invalidate }) => {
+		invalidate(level);
 		const refusal = refuseSiteKey(siteKey);
 
 		if (refusal !== null) {
@@ -59,31 +59,33 @@ export const setLevel = command()
 
 		const written = siteLevelToWrite(browserGrants.grants(), {
 			siteKey,
-			level,
+			level: chosenLevel,
 			by: "person",
 			reason: SET_IN_SITE_ACCESS,
 			at: clock.now(),
 		});
 
 		if (written === null) {
-			console.info(`[widgetarium] site ${siteKey} level ${level} skipped: already set`);
+			console.info(`[widgetarium] site ${siteKey} level ${chosenLevel} skipped: already set`);
 			return;
 		}
 
 		browserGrants.saveGrants(written.grants, written.change);
-		console.info(`[widgetarium] site ${siteKey} ${written.change.was ?? "none"} → ${level} (${SET_IN_SITE_ACCESS})`);
+		console.info(
+			`[widgetarium] site ${siteKey} ${written.change.was ?? "none"} → ${chosenLevel} (${SET_IN_SITE_ACCESS})`,
+		);
 	});
 
-export const rereadAccess = subscriber(grantsChanged).handle((_input, { invalidate }) => {
-	invalidate(access);
+export const rereadSiteAccess = subscriber(grantsChanged).handle((_input, { invalidate }) => {
+	invalidate(level);
 });
 
 export const rereadAccessForOnceAllowances = subscriber(onceAllowancesChanged).handle((_input, { invalidate }) => {
-	invalidate(access);
+	invalidate(level);
 });
 
 export const rereadAccessForPages = subscriber(pagesChanged).handle((_input, { invalidate }) => {
-	invalidate(access);
+	invalidate(level);
 });
 
 function rowsOf(grants: readonly SiteGrant[]): readonly SiteRow[] {

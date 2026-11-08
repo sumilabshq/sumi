@@ -51,7 +51,7 @@ interface EssentialDrop {
 	readonly at: number;
 }
 
-export const all = query()
+export const appTabs = query()
 	.public()
 	.output(AppTabsSchema)
 	.handle(async (_input, { send, ...injects }) => {
@@ -60,7 +60,7 @@ export const all = query()
 		return { ...rows, tabs: rows.tabs.map((tab) => titledTabOf(tab, titles)) };
 	});
 
-export const sidebar = query()
+export const tabsSidebar = query()
 	.public()
 	.output(TabsSidebarSchema)
 	.handle(async (_input, { send, ...injects }) => {
@@ -71,10 +71,12 @@ export const sidebar = query()
 	});
 
 // TODO: a transport that cannot abort (Tauri IPC) leaves held-tabs stale after a dropped call
-export const held = query()
+export const heldTabs = query()
 	.public()
 	.output(HeldTabsSchema)
-	.handle(async (_input, { send, ...injects }) => send(places.tabs.held, { at: await tabsAskOf({ injects, send }) }));
+	.handle(async (_input, { send, ...injects }) =>
+		send(places.tabs.heldTabs, { at: await tabsAskOf({ injects, send }) }),
+	);
 
 export const canOpenOwnWindow = query()
 	.public()
@@ -96,7 +98,7 @@ export const restore = command()
 		);
 	});
 
-export const show = command()
+export const showTab = command()
 	.public()
 	.input(TabToShowSchema)
 	.idempotencyKey(Repeatable)
@@ -112,7 +114,7 @@ export const syncChat = command()
 		emit(tabsSettled);
 	});
 
-export const place = command()
+export const placeTab = command()
 	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
@@ -146,16 +148,16 @@ export const rememberPages = subscriber(browser.browserPages.pagesChanged).handl
 	},
 );
 
-export const keepChat = subscriber(workspaces.chats.chatsChanged).handle(async (_input, { send, emit }) => {
+export const forwardChatsToTabs = subscriber(workspaces.chats.chatsChanged).handle(async (_input, { send, emit }) => {
 	await sendKeepChatTabs(send);
 	emit(tabsSettled);
 });
 
-export const reread = subscriber(tabsSettled).handle((_input, { invalidate }) => {
+export const rereadTabs = subscriber(tabsSettled).handle((_input, { invalidate }) => {
 	invalidateTabReads(invalidate);
 });
 
-export const rereadForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
+export const rereadTabsForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
 	invalidateTabReads(invalidate);
 });
 
@@ -165,34 +167,34 @@ export const rereadForPages = subscriber(browser.browserPages.pagesChanged).hand
 });
 
 export const rereadForAccessAsks = subscriber(browser.accessAsks.accessAsksChanged).handle((_input, { invalidate }) => {
-	invalidate(all);
-	invalidate(sidebar);
+	invalidate(appTabs);
+	invalidate(tabsSidebar);
 });
 
 export const rereadForInk = subscriber(browser.inkActivity.inkActivityChanged).handle((_input, { invalidate }) => {
-	invalidate(all);
-	invalidate(sidebar);
+	invalidate(appTabs);
+	invalidate(tabsSidebar);
 });
 
 export const rereadForChats = subscriber(workspaces.chats.chatsChanged).handle((_input, { invalidate }) => {
-	invalidate(all);
-	invalidate(sidebar);
+	invalidate(appTabs);
+	invalidate(tabsSidebar);
 });
 
 export const rereadSidebarForEssentials = subscriber(essentialsChanged).handle((_input, { invalidate }) => {
-	invalidate(sidebar);
+	invalidate(tabsSidebar);
 });
 
 function invalidateTabReads(invalidate: (query: { readonly request: AnyQuery }) => void): void {
-	invalidate(all);
-	invalidate(sidebar);
-	invalidate(held);
+	invalidate(appTabs);
+	invalidate(tabsSidebar);
+	invalidate(heldTabs);
 }
 
 async function dropGoneTabPanes(send: Send, window: string): Promise<void> {
-	const placed = await send(places.tabs.placed, { window });
+	const placed = await send(places.tabs.placedTabs, { window });
 	const heldTabIds = placed.tabs.map(({ id }) => id);
-	await sendLogged("drop the panes of gone tabs", () => send(layout.paneTabs.dropGone, { heldTabIds }));
+	await sendLogged("drop the panes of gone tabs", () => send(layout.paneTabs.dropGoneTabs, { heldTabIds }));
 }
 
 async function readyToRestore(send: Send, injects: Pick<TabParts, "essentials" | "studioWindow">): Promise<void> {

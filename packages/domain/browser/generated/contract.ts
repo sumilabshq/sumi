@@ -304,7 +304,7 @@ export const GhostShownSchema = z.object({
 
 export const browser = moduleContract("browser", Device, {
 	asks: {
-		access: named("asks.access", query()
+		pending: named("asks.pending", query()
 			.public()
 			.output(AccessAsksSchema)
 			.settlesNow()),
@@ -331,7 +331,7 @@ export const browser = moduleContract("browser", Device, {
 			.input(CapturePageSchema)
 			.output(PageShotSchema)
 			.idempotencyKey(PerCall)),
-		openAddress: named("ink.open-address", command()
+		inkOpenAddress: named("ink.ink-open-address", command()
 			.public()
 			.input(InkAddressSchema)
 			.output(OpenedPageSchema)
@@ -355,7 +355,7 @@ export const browser = moduleContract("browser", Device, {
 			.output(SiteIconOfOriginSchema)),
 	},
 	sites: {
-		access: named("sites.access", query()
+		level: named("sites.level", query()
 			.public()
 			.input(BrowserViewSchema)
 			.output(SiteAccessSchema)

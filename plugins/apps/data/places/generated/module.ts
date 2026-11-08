@@ -2,14 +2,14 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { places as definition } from "../module.js";
 import { placeInView, remove, reorderMember, rereadShown, resize, shown } from "../features/splits/requests.js";
-import { close as tabClosingClose, closeEssential, closeGroup, closeOthers, closeShown } from "../features/tab-closing/requests.js";
-import { app, askedLinks, forgetRunningTurns, keepChat, markSeen, openLink, recordAppAddress, recordTurn, rereadApp, rereadAskedLinks, takeAskedLink } from "../features/tab-facts/requests.js";
+import { closeEssential, closeGroup, closeOthers, closeShown, closeTab } from "../features/tab-closing/requests.js";
+import { askedLinks, forgetRunningTurns, keepChatTabs, markSeen, openLink, ownAppTab, recordAppAddress, recordTurn, rereadAskedLinks, rereadOwnAppTab, takeAskedLink } from "../features/tab-facts/requests.js";
 import { goBack, goForward } from "../features/tab-history/requests.js";
-import { duplicate, open as tabOpeningOpen, openBelow, releaseEssential, reopenClosed, showEssential } from "../features/tab-opening/requests.js";
+import { duplicate, openBelow, openTab, releaseEssential, reopenClosed, showEssential } from "../features/tab-opening/requests.js";
 import { createGroup, fold, foldGroup, makeEssential, pin, place, placeGroup, rename, renameGroup, setGroupHue, ungroup } from "../features/tab-placing/requests.js";
 import { fitToPanes, openInOwnWindow, reload, rememberPages, restore, show, showView, tearOff } from "../features/tab-showing/requests.js";
-import { chat, closed, held, placed, rereadPlaced, rows, shownView, sidebar } from "../features/tabs/requests.js";
-import { all, close as windowsClose, keepLive, open as windowsOpen, reread } from "../features/windows/requests.js";
+import { chatTabs, closedTabs, heldTabs, placedTabs, rereadPlaced, rows, shownView, sidebar } from "../features/tabs/requests.js";
+import { all, closeWindow, keepLiveWindows, openWindow, reread } from "../features/windows/requests.js";
 import { placedTabsChanged } from "../gateways/tabs/tabs.events.js";
 import { windowsChanged } from "../gateways/windows/windows.events.js";
 
@@ -17,8 +17,8 @@ export type { AppAbilities, CanStandIn, PlacedApp, PlacesConfig, TabStanding } f
 
 export const places = handledModule(definition, [
 	reread,
-	rereadApp,
 	rereadAskedLinks,
+	rereadOwnAppTab,
 	rereadPlaced,
 	rereadShown,
 	named("splits.place-in-view", placeInView),
@@ -26,25 +26,25 @@ export const places = handledModule(definition, [
 	named("splits.reorder-member", reorderMember),
 	named("splits.resize", resize),
 	named("splits.shown", shown),
-	named("tab-closing.close", tabClosingClose),
 	named("tab-closing.close-essential", closeEssential),
 	named("tab-closing.close-group", closeGroup),
 	named("tab-closing.close-others", closeOthers),
 	named("tab-closing.close-shown", closeShown),
-	named("tab-facts.app", app),
+	named("tab-closing.close-tab", closeTab),
 	named("tab-facts.asked-links", askedLinks),
 	named("tab-facts.forget-running-turns", forgetRunningTurns),
-	named("tab-facts.keep-chat", keepChat),
+	named("tab-facts.keep-chat-tabs", keepChatTabs),
 	named("tab-facts.mark-seen", markSeen),
 	named("tab-facts.open-link", openLink),
+	named("tab-facts.own-app-tab", ownAppTab),
 	named("tab-facts.record-app-address", recordAppAddress),
 	named("tab-facts.record-turn", recordTurn),
 	named("tab-facts.take-asked-link", takeAskedLink),
 	named("tab-history.go-back", goBack),
 	named("tab-history.go-forward", goForward),
 	named("tab-opening.duplicate", duplicate),
-	named("tab-opening.open", tabOpeningOpen),
 	named("tab-opening.open-below", openBelow),
+	named("tab-opening.open-tab", openTab),
 	named("tab-opening.release-essential", releaseEssential),
 	named("tab-opening.reopen-closed", reopenClosed),
 	named("tab-opening.show-essential", showEssential),
@@ -67,17 +67,17 @@ export const places = handledModule(definition, [
 	named("tab-showing.show", show),
 	named("tab-showing.show-view", showView),
 	named("tab-showing.tear-off", tearOff),
-	named("tabs.chat", chat),
-	named("tabs.closed", closed),
-	named("tabs.held", held),
-	named("tabs.placed", placed),
+	named("tabs.chat-tabs", chatTabs),
+	named("tabs.closed-tabs", closedTabs),
+	named("tabs.held-tabs", heldTabs),
+	named("tabs.placed-tabs", placedTabs),
 	named("tabs.placed-tabs-changed", placedTabsChanged),
 	named("tabs.rows", rows),
 	named("tabs.shown-view", shownView),
 	named("tabs.sidebar", sidebar),
 	named("windows.all", all),
-	named("windows.close", windowsClose),
-	named("windows.keep-live", keepLive),
-	named("windows.open", windowsOpen),
+	named("windows.close-window", closeWindow),
+	named("windows.keep-live-windows", keepLiveWindows),
+	named("windows.open-window", openWindow),
 	named("windows.windows-changed", windowsChanged),
 ]);

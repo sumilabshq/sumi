@@ -43,7 +43,7 @@ const tasks = placesAs("tasks");
 const studio = placesAs(null);
 
 async function tabOf(): Promise<unknown> {
-	const answer = await studio.send(places.tabFacts.app, { id: "t1" });
+	const answer = await studio.send(places.tabFacts.ownAppTab, { id: "t1" });
 	return answer.ok ? [answer.output.address, answer.output.canGoBack, answer.output.canGoForward] : answer.reason;
 }
 

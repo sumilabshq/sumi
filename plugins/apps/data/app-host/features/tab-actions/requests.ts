@@ -8,7 +8,7 @@ import { OpenedTabSchema, TabToOpenSchema } from "../../shared/schema/app-tab.sc
 import { TabPinSchema } from "../../shared/schema/tab-mark.schema.js";
 import { openTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 
-export const open = command()
+export const openTab = command()
 	.public()
 	.input(TabToOpenSchema)
 	.output(OpenedTabSchema)
@@ -56,7 +56,7 @@ export const reload = command()
 		);
 	});
 
-export const rename = command()
+export const renameTab = command()
 	.public()
 	.input(z.object({ id: z.string(), label: z.string() }))
 	.idempotencyKey(Repeatable)
@@ -84,13 +84,13 @@ export const reopenClosed = command()
 		);
 	});
 
-export const close = command()
+export const closeTab = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
 		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
-			send(places.tabClosing.close, { at, id }),
+			send(places.tabClosing.closeTab, { at, id }),
 		);
 	});
 

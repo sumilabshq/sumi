@@ -15,7 +15,7 @@ export interface ChatCrumbProps {
 }
 
 export function ChatCrumb({ renaming, chatId }: ChatCrumbProps): ReactElement {
-	const { workspace } = useQuery(workspaces.chats.crumb).data;
+	const { workspace } = useQuery(workspaces.chats.workspaceCrumb).data;
 	const row = useChatRow(chatId);
 	const renamingId = useRenamingIdIn(renaming, "crumb");
 

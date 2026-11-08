@@ -132,7 +132,7 @@ export const apps = moduleContract("apps", Anywhere, {
 			.output(AppsSchema)),
 	},
 	pages: {
-		ofTab: named("pages.of-tab", query()
+		pageOfTab: named("pages.page-of-tab", query()
 			.public()
 			.input(AppPageAskSchema)
 			.output(AppPageSchema)),

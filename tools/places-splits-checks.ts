@@ -202,7 +202,10 @@ async function dissolvingChecks(): Promise<void> {
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
 	check(
 		"closing a member of a split of two dissolves it and shows the other alone",
-		[await effectKindsOf(sent(window.send(places.tabClosing.close, { at: AT, id: "tab-2" }))), await splitOf(window)],
+		[
+			await effectKindsOf(sent(window.send(places.tabClosing.closeTab, { at: AT, id: "tab-2" }))),
+			await splitOf(window),
+		],
 		[["leave-split", "open-shown-tab-pane"], { shownId: "tab-1", split: null }],
 	);
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });

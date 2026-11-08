@@ -13,7 +13,7 @@ import type { FakeBrowser } from "./browser-fakes.ts";
 const INK_REQUESTS = [
 	browser.ink.readPageContent,
 	browser.ink.capturePage,
-	browser.ink.openAddress,
+	browser.ink.inkOpenAddress,
 	browser.ink.searchWeb,
 ];
 
@@ -177,22 +177,22 @@ const navigating = fakeBrowser();
 const navigator = started(navigating);
 check(
 	"ink may not open javascript:",
-	said(await navigator.send(browser.ink.openAddress, { url: "javascript:alert(1)" })),
+	said(await navigator.send(browser.ink.inkOpenAddress, { url: "javascript:alert(1)" })),
 	"scheme-not-allowed",
 );
 check(
 	"ink may not open file:",
-	said(await navigator.send(browser.ink.openAddress, { url: "file:///etc/passwd" })),
+	said(await navigator.send(browser.ink.inkOpenAddress, { url: "file:///etc/passwd" })),
 	"scheme-not-allowed",
 );
 check(
 	"ink may not open a bank",
-	said(await navigator.send(browser.ink.openAddress, { url: "https://www.paypal.com/" })),
+	said(await navigator.send(browser.ink.inkOpenAddress, { url: "https://www.paypal.com/" })),
 	"sensitive-bank-or-payments",
 );
 check(
 	"ink may open an ordinary page",
-	said(await navigator.send(browser.ink.openAddress, { url: "https://example.org/a" })),
+	said(await navigator.send(browser.ink.inkOpenAddress, { url: "https://example.org/a" })),
 	"ok",
 );
 check("the opened page is in the tab", navigating.pages.opened, ["https://example.org/a"]);
@@ -200,7 +200,7 @@ check("the opened page is in the tab", navigating.pages.opened, ["https://exampl
 const carrying = fakeBrowser();
 const carrier = started(carrying);
 await carrier.send(browser.ink.readPageContent, { tabId: null });
-const leaving = carrier.send(browser.ink.openAddress, { url: "https://elsewhere.net/?q=secret" });
+const leaving = carrier.send(browser.ink.inkOpenAddress, { url: "https://elsewhere.net/?q=secret" });
 await waitFor(() => carrying.parts.accessAsks.accessAsks().length === 1);
 check(
 	"after reading content, a new host asks with the full address",
@@ -211,7 +211,7 @@ carrying.parts.accessAsks.saveAnswer(carrying.parts.accessAsks.accessAsks()[0]?.
 check("and a no keeps the page where it was", said(await leaving), "person-said-no");
 check(
 	"the same host needs no ask",
-	said(await carrier.send(browser.ink.openAddress, { url: "https://example.com/other" })),
+	said(await carrier.send(browser.ink.inkOpenAddress, { url: "https://example.com/other" })),
 	"ok",
 );
 

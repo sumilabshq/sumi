@@ -4,7 +4,7 @@ import { sidesChanged } from "../../gateways/frame-sides/frame-sides.events.js";
 import { FrameSideInputSchema, FrameSidesSchema } from "../../shared/schema/frame-sides.schema.js";
 import { concealedLook, peekedLook, refuseTurn, toggledLook } from "./lib/side-looks.js";
 
-export const current = query()
+export const frameSides = query()
 	.public()
 	.output(FrameSidesSchema)
 	.settlesNow()
@@ -15,7 +15,7 @@ export const toggle = command()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(frameSides);
 		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = toggledLook(was);
@@ -41,7 +41,7 @@ export const peek = command()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(frameSides);
 		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = peekedLook(was);
@@ -73,7 +73,7 @@ export const conceal = command()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(frameSides);
 		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = concealedLook(was);
@@ -100,6 +100,6 @@ export const conceal = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const reread = subscriber(sidesChanged).handle((_input, { invalidate }) => {
-	invalidate(current);
+export const rereadSides = subscriber(sidesChanged).handle((_input, { invalidate }) => {
+	invalidate(frameSides);
 });

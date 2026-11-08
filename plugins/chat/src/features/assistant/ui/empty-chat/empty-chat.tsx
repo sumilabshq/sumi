@@ -7,7 +7,7 @@ import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export function EmptyChat({ starters }: { readonly starters: ReactNode }): ReactElement {
-	const { data: setup } = useQuery(assistant.agent.current, { chat: useChatKey() });
+	const { data: setup } = useQuery(assistant.agent.setup, { chat: useChatKey() });
 
 	if (setup.isReady) {
 		return <ReadyEmptyChat starters={starters} />;

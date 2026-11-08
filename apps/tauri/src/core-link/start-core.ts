@@ -133,7 +133,7 @@ function coreServedOver({ workspace, listener, store, plugins }: CoreServing): R
 
 function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): void {
 	for (const [workspace, places] of served) {
-		void places.send(placesContract.windows.close, { window }).then((answered) => {
+		void places.send(placesContract.windows.closeWindow, { window }).then((answered) => {
 			if (!answered.ok) {
 				console.warn(
 					NOT_CLOSED.replace("{workspace}", workspace).replace("{window}", window).replace("{reason}", answered.reason),
@@ -145,7 +145,7 @@ function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): 
 
 async function keepLiveWindows(places: Runtime, workspace: string): Promise<void> {
 	const live = LiveWindowsSchema.parse(await invoke(CORE_LIVE_WINDOWS));
-	const answered = await places.send(placesContract.windows.keepLive, { windows: live });
+	const answered = await places.send(placesContract.windows.keepLiveWindows, { windows: live });
 
 	if (!answered.ok) {
 		console.warn(NOT_KEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));

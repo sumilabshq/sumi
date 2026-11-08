@@ -14,7 +14,7 @@ import { ChatTabsSchema, StudioViewSchema, WindowTabsSchema } from "../../shared
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { chatTabsOf, heldTabsAt, placedSidebarOf, rowsAt } from "./lib/tab-reads.js";
 
-export const placed = query()
+export const placedTabs = query()
 	.public()
 	.input(WindowLabelSchema)
 	.output(WindowTabsSchema)
@@ -34,7 +34,7 @@ export const sidebar = query()
 	.output(PlacedSidebarSchema)
 	.handle(async (ask, { tabs, placedApps }) => placedSidebarOf(await tabs.placedTabs(), placedApps.placedApps(), ask));
 
-export const held = query()
+export const heldTabs = query()
 	.public()
 	.input(SettleAskSchema)
 	.output(HeldTabsSchema)
@@ -49,24 +49,24 @@ export const shownView = query()
 			momentOfWindow(await tabs.placedTabs(), window, placedApps.placedApps()).view,
 	);
 
-export const closed = query()
+export const closedTabs = query()
 	.public()
 	.output(ClosedTabsSchema)
 	.handle(async (_input, { tabs, placedApps }) => ({
 		tabs: closedRowsOf(placedApps.placedApps(), (await tabs.placedTabs()).closed),
 	}));
 
-export const chat = query()
+export const chatTabs = query()
 	.public()
 	.output(ChatTabsSchema)
 	.handle(async (_input, { tabs, placedApps }) => chatTabsOf(await tabs.placedTabs(), placedApps.placedApps()));
 
 export const rereadPlaced = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
-	invalidate(placed);
+	invalidate(placedTabs);
 	invalidate(rows);
 	invalidate(sidebar);
-	invalidate(held);
+	invalidate(heldTabs);
 	invalidate(shownView);
-	invalidate(closed);
-	invalidate(chat);
+	invalidate(closedTabs);
+	invalidate(chatTabs);
 });

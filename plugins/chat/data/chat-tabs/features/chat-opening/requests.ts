@@ -15,9 +15,9 @@ export const openNew = command()
 	.output(ChatOpenedSchema)
 	.idempotencyKey(PerCall)
 	.handle(async ({ title }, { send }) => {
-		const created = await send(workspaces.chats.create, { title });
+		const created = await send(workspaces.chats.createChat, { title });
 		await send(appHost.tabs.syncChat);
-		await send(appHost.tabs.show, { id: created.id });
+		await send(appHost.tabs.showTab, { id: created.id });
 		return created;
 	});
 
@@ -27,7 +27,7 @@ export const namePane = command()
 	.output(ChatOpenedSchema)
 	.idempotencyKey((input) => input.paneId)
 	.handle(async ({ paneId }, { send }) => {
-		const [board, asked] = await Promise.all([send(layout.panes.current), send(workspaces.chats.toOpen)]);
+		const [board, asked] = await Promise.all([send(layout.panes.paneTree), send(workspaces.chats.chatToOpen)]);
 
 		if (!board.isLoaded || !asked.isRead) {
 			return refuse(NOT_READ);
@@ -41,7 +41,7 @@ export const namePane = command()
 
 		const chatId = await chatIdForPane(send, board, asked.id);
 		await send(appHost.tabs.syncChat);
-		await send(appHost.tabs.show, { id: chatId, paneId });
+		await send(appHost.tabs.showTab, { id: chatId, paneId });
 		return { id: chatId };
 	});
 
@@ -49,7 +49,7 @@ export const openAskedOnStart = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle(async (_input, { send }) => {
-		const [board, asked] = await Promise.all([send(layout.panes.current), send(workspaces.chats.toOpen)]);
+		const [board, asked] = await Promise.all([send(layout.panes.paneTree), send(workspaces.chats.chatToOpen)]);
 
 		if (!board.isLoaded || !asked.isRead) {
 			return refuse(NOT_READ);
@@ -61,6 +61,6 @@ export const openAskedOnStart = command()
 
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
 		await send(appHost.tabs.syncChat);
-		await send(appHost.tabs.show, { id: asked.id });
+		await send(appHost.tabs.showTab, { id: asked.id });
 		await send(workspaces.chats.forgetToOpen, { id: asked.id });
 	});

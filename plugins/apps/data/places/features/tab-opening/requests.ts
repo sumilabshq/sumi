@@ -21,7 +21,7 @@ import {
 	showEssentialPlan,
 } from "./lib/opening-plans.js";
 
-export const open = command()
+export const openTab = command()
 	.public()
 	.input(OpenTabAskSchema)
 	.output(OpenedTabSettledSchema)

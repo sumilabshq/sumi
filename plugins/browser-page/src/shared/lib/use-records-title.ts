@@ -6,7 +6,7 @@ const RECORD_REFUSED = "[browser-page] tab {tab}: its title stays as it was ({re
 
 export function useRecordsTitle(tabId: string, title: string): void {
 	const shell = useRuntime("useRecordsTitle");
-	const storedTitle = useOptionalQuery(apps.pages.ofTab, { id: tabId }).data?.title;
+	const storedTitle = useOptionalQuery(apps.pages.pageOfTab, { id: tabId }).data?.title;
 	useEffect(() => {
 		if (storedTitle === undefined || storedTitle === title) {
 			return;

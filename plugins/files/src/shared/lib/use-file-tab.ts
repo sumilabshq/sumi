@@ -7,7 +7,7 @@ export interface FileTab {
 }
 
 export function useFileTab(tabId: string): FileTab {
-	const tab = useOptionalQuery(places.tabFacts.app, { id: tabId }).data;
+	const tab = useOptionalQuery(places.tabFacts.ownAppTab, { id: tabId }).data;
 	const address = tab?.address ?? "";
 	return {
 		path: address === "" ? null : address,

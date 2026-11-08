@@ -119,15 +119,15 @@ export type WorkspacesView = z.infer<typeof WorkspacesSchema>;
 
 export const workspaces = moduleContract("workspaces", Device, {
 	chats: {
-		records: named("chats.records", query()
+		chatRecords: named("chats.chat-records", query()
 			.public()
 			.output(ChatRecordsSchema)
 			.settlesNow()),
-		crumb: named("chats.crumb", query()
+		workspaceCrumb: named("chats.workspace-crumb", query()
 			.public()
 			.output(WorkspaceCrumbSchema)
 			.settlesNow()),
-		create: named("chats.create", command()
+		createChat: named("chats.create-chat", command()
 			.public()
 			.input(NewChatSchema)
 			.output(ChatIdSchema)
@@ -136,7 +136,7 @@ export const workspaces = moduleContract("workspaces", Device, {
 			.public()
 			.input(ChatIdSchema)
 			.idempotencyKey(Repeatable)),
-		toOpen: named("chats.to-open", query()
+		chatToOpen: named("chats.chat-to-open", query()
 			.public()
 			.output(ChatToOpenSchema)
 			.settlesNow()),
@@ -167,7 +167,7 @@ export const workspaces = moduleContract("workspaces", Device, {
 			.public()
 			.input(WorkspacePositionSchema)
 			.idempotencyKey(Repeatable)),
-		create: named("workspaces.create", command()
+		createWorkspace: named("workspaces.create-workspace", command()
 			.public()
 			.output(WorkspaceIdSchema)
 			.idempotencyKey(PerCall)),

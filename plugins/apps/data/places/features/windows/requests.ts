@@ -11,7 +11,7 @@ export const all = query()
 	.output(WindowsSchema)
 	.handle((_input, { windows }) => windows.windows());
 
-export const open = command()
+export const openWindow = command()
 	.public()
 	.input(WindowLabelSchema)
 	.idempotencyKey(Repeatable)
@@ -20,7 +20,7 @@ export const open = command()
 		await moveAndLog(windows, moveToOpenWindow(window, Date.now()), `open ${window}`);
 	});
 
-export const close = command()
+export const closeWindow = command()
 	.public()
 	.input(WindowLabelSchema)
 	.idempotencyKey(Repeatable)
@@ -29,7 +29,7 @@ export const close = command()
 		await moveAndLog(windows, moveToCloseWindow(window), `close ${window}`);
 	});
 
-export const keepLive = command()
+export const keepLiveWindows = command()
 	.public()
 	.input(LiveWindowsSchema)
 	.idempotencyKey(Repeatable)

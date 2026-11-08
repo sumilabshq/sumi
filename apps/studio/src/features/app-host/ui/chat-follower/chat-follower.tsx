@@ -4,8 +4,8 @@ import { appHost } from "@widgetarium/app-host/contract";
 import { layout } from "@widgetarium/layout/contract";
 
 export function ChatFollower(): null {
-	const chatId = useQuery(layout.panes.current).data.focusedChatId;
-	const showTab = useCommand(appHost.tabs.show);
+	const chatId = useQuery(layout.panes.paneTree).data.focusedChatId;
+	const showTab = useCommand(appHost.tabs.showTab);
 	const followedId = useRef<string | null>(null);
 	useLayoutEffect(() => {
 		if (followedId.current === chatId) {

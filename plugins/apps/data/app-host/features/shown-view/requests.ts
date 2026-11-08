@@ -11,7 +11,7 @@ export const current = query()
 	.output(StudioViewSchema)
 	.handle((_input, { send, studioWindow }) => send(places.tabs.shownView, { window: studioWindow.windowLabel() }));
 
-export const show = command()
+export const showView = command()
 	.public()
 	.input(ViewToShowSchema)
 	.idempotencyKey(Repeatable)
@@ -20,10 +20,10 @@ export const show = command()
 		emit(tabsSettled);
 	});
 
-export const reread = subscriber(tabsSettled).handle((_input, { invalidate }) => {
+export const rereadShownView = subscriber(tabsSettled).handle((_input, { invalidate }) => {
 	invalidate(current);
 });
 
-export const rereadForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
+export const rereadShownViewForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
 	invalidate(current);
 });

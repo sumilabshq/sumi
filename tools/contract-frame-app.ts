@@ -58,9 +58,9 @@ async function filesTold(): Promise<object> {
 }
 
 async function placesTold(): Promise<object> {
-	const closedTabs = await sumi.send(places.tabs.closed);
-	const otherTab = await sumi.send(places.tabFacts.app, { id: "t9" });
-	const ownTab = await sumi.send(places.tabFacts.app, { id: OWN_TAB });
+	const closedTabs = await sumi.send(places.tabs.closedTabs);
+	const otherTab = await sumi.send(places.tabFacts.ownAppTab, { id: "t9" });
+	const ownTab = await sumi.send(places.tabFacts.ownAppTab, { id: OWN_TAB });
 	return {
 		closedTabs: closedTabs.ok ? "answered" : closedTabs.code,
 		otherTab: otherTab.ok ? "answered" : otherTab.code,
@@ -69,7 +69,7 @@ async function placesTold(): Promise<object> {
 }
 
 async function terminalTold(): Promise<object> {
-	const typed = await sumi.send(terminal.lines.send, { session: OWN_TAB, line: TYPED });
+	const typed = await sumi.send(terminal.lines.sendLine, { session: OWN_TAB, line: TYPED });
 	return {
 		typed: typed.ok,
 		terminal: await terminalSaid(),

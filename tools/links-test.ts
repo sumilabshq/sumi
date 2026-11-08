@@ -54,11 +54,11 @@ const fakes = studioFakesOf();
 const studio = fakes.studioApp;
 
 async function openLink(href: string, opensNew = false) {
-	return studio.send(appHost.links.open, { href, opensNew });
+	return studio.send(appHost.links.openLink, { href, opensNew });
 }
 
 async function tabsNow() {
-	const answer = await studio.send(appHost.tabs.all);
+	const answer = await studio.send(appHost.tabs.appTabs);
 	return answer.ok ? answer.output.tabs : [];
 }
 
@@ -95,7 +95,7 @@ await openLink(linkOf({ kind: "tab", id: firstTask?.id ?? "" }));
 check("a tab link shows that tab", (await shownTab())?.id, firstTask?.id);
 
 async function paneViews() {
-	const tree = await studio.send(layout.panes.current);
+	const tree = await studio.send(layout.panes.paneTree);
 	return tree.ok ? tree.output.leaves.map((leaf) => leaf.view) : [];
 }
 

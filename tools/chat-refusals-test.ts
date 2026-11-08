@@ -12,7 +12,7 @@ const { NO_ASSISTANT } = await import("../packages/shared/core/src/engine/assist
 const { RuntimeProvider } = await import("../packages/shared/data-framework/src/index.ts");
 const { chatAppOver } = await import("./assistant-chat-app.ts");
 
-const LOCAL_REFUSAL = "places.tab-facts.app was called too often; try again shortly";
+const LOCAL_REFUSAL = "places.tab-facts.own-app-tab was called too often; try again shortly";
 const READY_SETUP = {
 	isReady: true,
 	providerLabel: "Claude Code",

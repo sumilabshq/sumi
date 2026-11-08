@@ -33,7 +33,7 @@ export type AgentActivity = z.infer<typeof AgentActivitySchema>;
 
 export const mascot = moduleContract("mascot", Device, {
 	activity: {
-		agent: named("activity.agent", query()
+		agentActivity: named("activity.agent-activity", query()
 			.public()
 			.output(AgentActivitySchema)
 			.settlesNow()),

@@ -76,12 +76,12 @@ const notes = appsAs("notes");
 const studio = appsAs(null);
 
 async function actionsOf(): Promise<unknown> {
-	const answer = await studio.send(apps.pages.ofTab, { id: "t1" });
+	const answer = await studio.send(apps.pages.pageOfTab, { id: "t1" });
 	return answer.ok ? answer.output.actions.map(({ id }) => id) : answer.reason;
 }
 
 async function pressesOf(): Promise<unknown> {
-	const answer = await tasks.send(apps.pages.ofTab, { id: "t1" });
+	const answer = await tasks.send(apps.pages.pageOfTab, { id: "t1" });
 	return answer.ok ? answer.output.presses.map(({ action }) => action) : answer.reason;
 }
 
@@ -99,7 +99,7 @@ async function recordChecks(): Promise<void> {
 		actions: [{ id: "x", label: "X", icon: "x" }],
 	});
 	check("an app cannot record actions in a tab it does not hold", foreign.ok, false);
-	const peek = await notes.send(apps.pages.ofTab, { id: "t1" });
+	const peek = await notes.send(apps.pages.pageOfTab, { id: "t1" });
 	check("an app cannot read another app's tab page", peek.ok, false);
 }
 
@@ -115,7 +115,7 @@ async function pressChecks(): Promise<void> {
 	check("a shell press waits in the tab for its app, a repeat replaces it", await pressesOf(), ["open-chat"]);
 	await notes.send(apps.pages.record, { id: "n1", actions: [] });
 	check("a press survives another tab's record", await pressesOf(), ["open-chat"]);
-	const read = await tasks.send(apps.pages.ofTab, { id: "t1" });
+	const read = await tasks.send(apps.pages.pageOfTab, { id: "t1" });
 	const press = read.ok ? (read.output.presses[0]?.id ?? "") : "";
 	const stolen = await notes.send(apps.pages.takeActionPress, { id: "t1", press });
 	check("another app cannot take the press", stolen.ok, false);
@@ -127,7 +127,7 @@ async function pressChecks(): Promise<void> {
 }
 
 async function pageOf(id: string): Promise<unknown> {
-	const answer = await studio.send(apps.pages.ofTab, { id });
+	const answer = await studio.send(apps.pages.pageOfTab, { id });
 	return answer.ok ? [answer.output.title, answer.output.favicon] : answer.reason;
 }
 

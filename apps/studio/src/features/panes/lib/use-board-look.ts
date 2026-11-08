@@ -110,7 +110,7 @@ export function useBoardLook(board: RefObject<HTMLDivElement | null>, { chatPx, 
 }
 
 function useFocusedLayout(board: RefObject<HTMLDivElement | null>, { box, spacing }: Measure): Focused {
-	const tree = useQuery(layout.panes.current).data;
+	const tree = useQuery(layout.panes.paneTree).data;
 	const offered = useRef<ReadonlyMap<string, PaneRect>>(new Map());
 	const { aim, carriedHome } = usePaneDrop({ board, rects: offered, leaves: tree.leaves, groups: tree.chatGroups });
 	const focus = focusedGroupOf(tree.chatGroups, carriedHome);

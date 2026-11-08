@@ -16,7 +16,7 @@ export interface LiveScreenProps {
 
 export function LiveScreen({ picture, widthPx }: LiveScreenProps): ReactElement {
 	const { registry } = useDrawing();
-	const keep = useCommand(canvas.layers.keepSeen);
+	const keep = useCommand(canvas.layers.keepSeenLayers);
 	const [node, setNode] = useState<HTMLDivElement | null>(null);
 	useMarkedLayers(node, (layers) => void keep.run({ key: picture.widget, layers }));
 	return (

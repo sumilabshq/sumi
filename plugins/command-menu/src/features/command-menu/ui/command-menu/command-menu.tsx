@@ -7,7 +7,7 @@ import { commandMenu } from "@sumi/command-menu/contract";
 import { OpenMenu } from "./open-menu.js";
 
 export function CommandMenu(): ReactElement | null {
-	const menu = useQuery(commandMenu.opening.current).data;
+	const menu = useQuery(commandMenu.opening.isOpen).data;
 
 	if (!menu.isOpen) {
 		return null;

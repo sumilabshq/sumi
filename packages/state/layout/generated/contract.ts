@@ -200,7 +200,7 @@ export type SplitDrawing = z.infer<typeof SplitDrawingSchema>;
 
 export const layout = moduleContract("layout", Device, {
 	frameSides: {
-		current: named("frame-sides.current", query()
+		frameSides: named("frame-sides.frame-sides", query()
 			.public()
 			.output(FrameSidesSchema)
 			.settlesNow()),
@@ -218,7 +218,7 @@ export const layout = moduleContract("layout", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	frameWidths: {
-		current: named("frame-widths.current", query()
+		frameWidths: named("frame-widths.frame-widths", query()
 			.public()
 			.output(FrameWidthsAnswerSchema)
 			.settlesNow()),
@@ -262,11 +262,11 @@ export const layout = moduleContract("layout", Device, {
 		closeShown: named("pane-tabs.close-shown", command()
 			.public()
 			.idempotencyKey(Repeatable)),
-		closeShowing: named("pane-tabs.close-showing", command()
+		closeShowingPanes: named("pane-tabs.close-showing-panes", command()
 			.public()
 			.input(z.object({ tabIds: z.array(z.string()).readonly() }))
 			.idempotencyKey(Repeatable)),
-		dropGone: named("pane-tabs.drop-gone", command()
+		dropGoneTabs: named("pane-tabs.drop-gone-tabs", command()
 			.public()
 			.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
 			.idempotencyKey(Repeatable)),
@@ -282,7 +282,7 @@ export const layout = moduleContract("layout", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	panes: {
-		current: named("panes.current", query()
+		paneTree: named("panes.pane-tree", query()
 			.public()
 			.output(PaneBoardSchema)
 			.settlesNow()),

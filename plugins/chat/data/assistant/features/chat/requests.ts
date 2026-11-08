@@ -96,7 +96,7 @@ export const sendText = command()
 	.idempotencyKey(PerCall)
 	.handle(inChat(({ said }, { assistantSession }) => assistantSession.send(said)));
 
-export const reread = subscriber(sessionChanged).handle(({ chat: chatId }, { invalidate }) => {
+export const rereadChat = subscriber(sessionChanged).handle(({ chat: chatId }, { invalidate }) => {
 	invalidate(one, { chat: chatId });
 });
 

@@ -28,8 +28,8 @@ export interface StudioFrameProps {
 const FRAME_CLASS = "wg-studio wg-shell";
 
 export function StudioFrame({ frame, chromeLeftPx, readCursor, left, panes, panel }: StudioFrameProps): ReactElement {
-	const widths = useQuery(layout.frameWidths.current).data;
-	const sides = useQuery(layout.frameSides.current).data;
+	const widths = useQuery(layout.frameWidths.frameWidths).data;
+	const sides = useQuery(layout.frameSides.frameSides).data;
 	const resizeEdge = useCommand(layout.frameWidths.resizeEdge);
 	const appZone = useRef<HTMLDivElement | null>(null);
 	const leftSide = useRef<HTMLDivElement | null>(null);

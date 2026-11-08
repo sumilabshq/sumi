@@ -11,7 +11,7 @@ import {
 	toggledLook,
 } from "../packages/state/layout/features/frame-sides/lib/side-looks.ts";
 import { toggle } from "../packages/state/layout/features/frame-sides/requests.ts";
-import { current } from "../packages/state/layout/features/frame-widths/requests.ts";
+import { frameWidths } from "../packages/state/layout/features/frame-widths/requests.ts";
 import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
 import {
 	goneTabPanesOf,
@@ -21,7 +21,7 @@ import {
 } from "../packages/state/layout/shared/lib/pane-trees.ts";
 import { aim, close, place, placementPreview, resizeSplit } from "../packages/state/layout/features/panes/requests.ts";
 import {
-	closeShowing,
+	closeShowingPanes,
 	closeShown,
 	openShown,
 	showInTarget,
@@ -136,7 +136,7 @@ async function checksWidths(check: Check): Promise<void> {
 	);
 	const parts = partsOf();
 	parts.frameWidths.saveWidths({ left: 10, chat: 10 }, "a width below the least");
-	const answer = await current.handle(undefined, parts);
+	const answer = await frameWidths.handle(undefined, parts);
 	check(
 		"the widths answer never goes below the least widths and carries the bounds",
 		isDeepStrictEqual(widthsWithin({ left: 10, chat: 10 }), { left: 200, chat: 320 }) &&
@@ -209,7 +209,7 @@ function checksTabPanes(check: Check): void {
 	);
 	placeTab(parts, "tab-3", "pane-chat");
 	placeTab(parts, "tab-4", "pane-chat");
-	closeShowing.handle({ tabIds: ["tab-3", "tab-7"] }, parts);
+	closeShowingPanes.handle({ tabIds: ["tab-3", "tab-7"] }, parts);
 	check(
 		"closing the panes of tabs closes only the panes showing them",
 		JSON.stringify(shapeOf(parts)) === '["chat","tab-4","shown"]',
@@ -249,7 +249,7 @@ function checksSendSaves(check: Check): void {
 		.modules(layoutModule({ injects: { ...parts } }))
 		.start();
 	placeTab(parts, "tab-8", "pane-app");
-	void layoutApp.send(layout.paneTabs.dropGone, { heldTabIds: [] });
+	void layoutApp.send(layout.paneTabs.dropGoneTabs, { heldTabIds: [] });
 	check(
 		"a layout command sent through the app has saved before send returns",
 		!JSON.stringify(shapeOf(parts)).includes("tab-8"),

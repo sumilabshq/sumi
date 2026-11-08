@@ -36,7 +36,7 @@ const FACES: Readonly<Record<FrameSide, SideFaces>> = {
 };
 
 export function FrameSideToggle({ side }: FrameSideToggleProps): ReactElement {
-	const look = useQuery(layout.frameSides.current).data[side];
+	const look = useQuery(layout.frameSides.frameSides).data[side];
 	const face = look === "docked" ? FACES[side].docked : FACES[side].undocked;
 	const toggle = useCommand(layout.frameSides.toggle);
 	const peek = useCommand(layout.frameSides.peek);

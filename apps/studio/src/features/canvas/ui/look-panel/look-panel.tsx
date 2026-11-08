@@ -7,8 +7,8 @@ import { LookRow } from "./look-row.js";
 import { LookUnreadable } from "./look-unreadable.js";
 
 export function LookPanel(): ReactElement | null {
-	const panel = useQuery(canvas.look.panel).data;
-	const pick = useCommand(canvas.look.pick);
+	const panel = useQuery(canvas.look.lookPanel).data;
+	const pick = useCommand(canvas.look.pickLook);
 	if (panel.kind === "none") return null;
 	if (panel.kind === "unreadable") return <LookUnreadable said={panel.said} />;
 	return (

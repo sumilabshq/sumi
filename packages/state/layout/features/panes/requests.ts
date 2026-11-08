@@ -18,7 +18,7 @@ import { homeOfPlacement, refuseHomeTarget } from "../../shared/lib/chat-groups.
 import type { PanePlacement, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 import { paneTransitionOf, viewWords } from "../../shared/lib/pane-words.js";
 
-export const current = query()
+export const paneTree = query()
 	.public()
 	.output(PaneBoardSchema)
 	.settlesNow()
@@ -53,7 +53,7 @@ export const place = command()
 	.idempotencyKey(Repeatable)
 	.handle((placement, { paneTree: paneTreeGateway, invalidate }) => {
 		const { view, targetId, side } = placement;
-		invalidate(current);
+		invalidate(paneTree);
 		invalidate(placementPreview);
 		const tree = paneTreeGateway.tree();
 		const refusal = refusePlacement(tree, placement);
@@ -86,7 +86,7 @@ export const close = command()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ id }, { paneTree: paneTreeGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(paneTree);
 		invalidate(placementPreview);
 		const tree = paneTreeGateway.tree();
 		const refusal = refuseUnknownPane(tree, id);
@@ -112,7 +112,7 @@ export const resizeSplit = command()
 	)
 	.idempotencyKey(Repeatable)
 	.handle((asked, { paneTree: paneTreeGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(paneTree);
 		invalidate(placementPreview);
 		const tree = paneTreeGateway.tree();
 		const refusal = refuseUnknownEdge(tree, asked);
@@ -132,7 +132,7 @@ export const aim = command()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ id }, { paneTree: paneTreeGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(paneTree);
 		const tree = paneTreeGateway.tree();
 		const refusal = refuseUnknownPane(tree, id);
 
@@ -152,8 +152,8 @@ export const aim = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const reread = subscriber(panesChanged).handle((_input, { invalidate }) => {
-	invalidate(current);
+export const rereadPanes = subscriber(panesChanged).handle((_input, { invalidate }) => {
+	invalidate(paneTree);
 	invalidate(placementPreview);
 });
 

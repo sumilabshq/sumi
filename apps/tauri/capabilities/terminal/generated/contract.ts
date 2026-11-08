@@ -60,11 +60,11 @@ export const terminal = moduleContract("terminal", Server, {
 			.public()
 			.input(ResizeTerminalInputSchema)
 			.idempotencyKey(Repeatable)),
-		type: named("lines.type", command()
+		typeText: named("lines.type-text", command()
 			.public()
 			.input(TypeTerminalInputSchema)
 			.idempotencyKey(PerCall)),
-		send: named("lines.send", command()
+		sendLine: named("lines.send-line", command()
 			.public()
 			.input(SendTerminalInputSchema)
 			.idempotencyKey(PerCall)),

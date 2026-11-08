@@ -474,7 +474,7 @@ export const canvas = moduleContract("canvas", Device, {
 		regions: named("field.regions", query()
 			.public()
 			.output(FieldRegionsSchema)),
-		state: named("field.state", query()
+		picking: named("field.picking", query()
 			.public()
 			.output(FieldStateSchema)),
 		pickSpot: named("field.pick-spot", command()
@@ -496,10 +496,10 @@ export const canvas = moduleContract("canvas", Device, {
 			.idempotencyKey(PerCall)),
 	},
 	layers: {
-		panel: named("layers.panel", query()
+		layersPanel: named("layers.layers-panel", query()
 			.public()
 			.output(LayersPanelSchema)),
-		keepSeen: named("layers.keep-seen", command()
+		keepSeenLayers: named("layers.keep-seen-layers", command()
 			.public()
 			.input(SeenLayersSchema)
 			.idempotencyKey(Repeatable)),
@@ -507,7 +507,7 @@ export const canvas = moduleContract("canvas", Device, {
 			.public()
 			.input(LayerMoveAskSchema)
 			.idempotencyKey(PerCall)),
-		pick: named("layers.pick", command()
+		pickLayer: named("layers.pick-layer", command()
 			.public()
 			.input(LayerIdSchema)
 			.idempotencyKey(Repeatable)),
@@ -534,10 +534,10 @@ export const canvas = moduleContract("canvas", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	look: {
-		panel: named("look.panel", query()
+		lookPanel: named("look.look-panel", query()
 			.public()
 			.output(LookPanelSchema)),
-		pick: named("look.pick", command()
+		pickLook: named("look.pick-look", command()
 			.public()
 			.input(LookPickSchema)
 			.idempotencyKey(PerCall)),
@@ -584,7 +584,7 @@ export const canvas = moduleContract("canvas", Device, {
 			.public()
 			.input(CanvasOpenedSchema)
 			.idempotencyKey(Repeatable)),
-		opening: named("view.opening", query()
+		canvasOpening: named("view.canvas-opening", query()
 			.public()
 			.output(CanvasOpeningSchema)
 			.settlesNow()),

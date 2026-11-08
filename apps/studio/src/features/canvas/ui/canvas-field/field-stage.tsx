@@ -21,7 +21,7 @@ const LAYER =
 export function FieldStage(): ReactElement {
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const fieldRef = useRef<HTMLDivElement | null>(null);
-	const state = useQuery(canvas.field.state).data;
+	const state = useQuery(canvas.field.picking).data;
 	const { camera } = useQuery(canvas.view.camera).data;
 	const keepCamera = useCommand(canvas.view.keepCamera);
 	const grips = { isHand: !state.isPointer, pressable: PRESSABLE, ownScroll: null };

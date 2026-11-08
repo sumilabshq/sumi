@@ -9,6 +9,6 @@ export async function chatIdForPane(send: Send, board: PaneBoard, askedId: strin
 		return askedId;
 	}
 
-	const created = await send(workspaces.chats.create, { title: null });
+	const created = await send(workspaces.chats.createChat, { title: null });
 	return created.id;
 }

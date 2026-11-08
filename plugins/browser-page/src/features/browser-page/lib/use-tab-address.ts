@@ -12,7 +12,7 @@ export interface TabAddress {
 }
 
 export function useTabAddress(tabId: string): TabAddress {
-	const read = useOptionalQuery(places.tabFacts.app, { id: tabId });
+	const read = useOptionalQuery(places.tabFacts.ownAppTab, { id: tabId });
 	const [address, setAddress] = useState<string | null>(null);
 	useFollowsStoredAddress(read.data === null ? null : (read.data.address ?? NEW_TAB_ADDRESS), setAddress);
 	return {

@@ -195,7 +195,7 @@ export function exactStudio({
 		studioApp,
 		places,
 		essentials: keptEssentials,
-		switchChat: (id) => void studioApp.send(appHost.tabs.show, { id }),
+		switchChat: (id) => void studioApp.send(appHost.tabs.showTab, { id }),
 		holdElsewhere: (pageId) => boardPages.holdElsewhere(pageId),
 	};
 }

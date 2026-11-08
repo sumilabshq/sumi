@@ -13,7 +13,7 @@ import { doorKeysOf, refuseDoor } from "./lib/doors.js";
 import { heldTabOfPage } from "../../shared/lib/held-tab.js";
 import { filledWithShown } from "./lib/shown-text.js";
 
-export const current = query()
+export const isOpen = query()
 	.public()
 	.output(KeptMenuSchema)
 	.settlesNow()
@@ -45,11 +45,11 @@ export const toggle = command()
 				return refuse(refusal);
 			}
 
-			invalidate(current);
+			invalidate(isOpen);
 			const was = commandMenuGateway.menu();
 			const filled =
 				text === null
-					? filledWithShown((await send(appHost.tabs.all)).tabs, shownName, await heldTabOfPage(pageId, send))
+					? filledWithShown((await send(appHost.tabs.appTabs)).tabs, shownName, await heldTabOfPage(pageId, send))
 					: { door, text };
 
 			if (
@@ -97,7 +97,7 @@ export const changeDoor = command()
 			return refuse(refusal);
 		}
 
-		invalidate(current);
+		invalidate(isOpen);
 		const was = commandMenuGateway.menu();
 
 		if (!was.isOpen || was.door === door) {
@@ -120,7 +120,7 @@ export const close = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle((_input, { commandMenu: commandMenuGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(isOpen);
 		const was = commandMenuGateway.menu();
 
 		if (!was.isOpen) {
@@ -140,5 +140,5 @@ export const close = command()
 	});
 
 export const menuOnMenuChanged = subscriber(commandMenuChanged).handle((_input, { invalidate }) => {
-	invalidate(current);
+	invalidate(isOpen);
 });

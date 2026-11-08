@@ -13,7 +13,7 @@ export interface MoveToGroupMenuProps {
 }
 
 export function MoveToGroupMenu({ tabId, list, groups }: MoveToGroupMenuProps): ReactElement {
-	const placeTab = useCommand(appHost.tabs.place);
+	const placeTab = useCommand(appHost.tabs.placeTab);
 	return (
 		<ContextMenuSub>
 			<ContextMenuSubTrigger

@@ -80,7 +80,7 @@ check(
 	[true, WIDER, 1],
 );
 
-const typed = await notes.send(terminalContract.lines.type, { session: SESSION, keys: "l\t\u0003" });
+const typed = await notes.send(terminalContract.lines.typeText, { session: SESSION, keys: "l\t\u0003" });
 const afterTyped = await notes.send(terminalContract.lines.output, { session: SESSION });
 check(
 	"typed keys reach the session raw, with no line ending added",
@@ -88,7 +88,7 @@ check(
 	[true, "l\t\u0003"],
 );
 
-const sent = await notes.send(terminalContract.lines.send, {
+const sent = await notes.send(terminalContract.lines.sendLine, {
 	session: SESSION,
 	line: "ls -la; echo 'quoted $HOME'",
 });
@@ -106,7 +106,7 @@ check(
 
 const secondBefore = await notes.send(terminalContract.lines.output, { session: SECOND_SESSION });
 await notes.send(terminalContract.lines.resize, { session: SECOND_SESSION, ...SCREEN });
-await notes.send(terminalContract.lines.send, { session: SECOND_SESSION, line: "pwd" });
+await notes.send(terminalContract.lines.sendLine, { session: SECOND_SESSION, line: "pwd" });
 const secondAfter = await notes.send(terminalContract.lines.output, { session: SECOND_SESSION });
 const firstAfterSecond = await notes.send(terminalContract.lines.output, { session: SESSION });
 check(

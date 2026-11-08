@@ -45,7 +45,7 @@ function restoredStudio() {
 }
 
 async function pageIdOf(studioApp: Runtime, tabId: string): Promise<string | null> {
-	const held = await studioApp.send(appHost.tabs.held);
+	const held = await studioApp.send(appHost.tabs.heldTabs);
 	return held.ok ? (held.output.tabs.find((tab) => tab.id === tabId)?.pageId ?? null) : null;
 }
 
@@ -113,7 +113,7 @@ async function pagelessTearOffChecks(): Promise<void> {
 
 async function ownWindowDropChecks(): Promise<void> {
 	const { pages, studioApp } = restoredStudio();
-	const placed = await studioApp.send(appHost.tabs.place, { id: "tab-15", to: { kind: "own-window" } });
+	const placed = await studioApp.send(appHost.tabs.placeTab, { id: "tab-15", to: { kind: "own-window" } });
 	const pageId = await pageIdOf(studioApp, "tab-15");
 	check(
 		"a restored tab dropped outside the studio opens its page, then its own window",
@@ -129,14 +129,14 @@ async function showAndPaneChecks(): Promise<void> {
 		await pageIdOf(studioApp, "tab-10"),
 		null,
 	);
-	await studioApp.send(appHost.tabs.show, { id: "tab-12" });
+	await studioApp.send(appHost.tabs.showTab, { id: "tab-12" });
 	const shownPage = await pageIdOf(studioApp, "tab-12");
 	check(
 		"showing a restored tab with no page opens and shows a page of its own",
 		[shownPage === BROWSER_FIRST_PAGE, pages.calls.slice(-2)],
 		[false, [`open ${shownPage}`, `show ${shownPage}`]],
 	);
-	const board = await studioApp.send(layout.panes.current);
+	const board = await studioApp.send(layout.panes.paneTree);
 	const shownPane = board.ok
 		? board.output.leaves.find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === null)
 		: undefined;
@@ -158,7 +158,7 @@ async function showAndPaneChecks(): Promise<void> {
 
 async function handlerRuleChecks(): Promise<void> {
 	const { studioApp } = restoredStudio();
-	const renamed = await studioApp.send(appHost.tabActions.rename, { id: "tab-99", label: "Gone" });
+	const renamed = await studioApp.send(appHost.tabActions.renameTab, { id: "tab-99", label: "Gone" });
 	const grouped = await studioApp.send(appHost.groups.create, { list: "chat-elsewhere" });
 	check(
 		"renaming a tab places does not hold and grouping into a list no chat owns are refused by places",
@@ -200,7 +200,7 @@ async function pagesAfterRestoreOf(keepsPages: boolean): Promise<readonly (strin
 
 async function viewChecks(): Promise<void> {
 	const { studioApp } = studioFakesOf();
-	await studioApp.send(appHost.shownView.show, { view: "app" });
+	await studioApp.send(appHost.shownView.showView, { view: "app" });
 	const shown = await studioApp.send(appHost.shownView.current);
 	check("which app is shown is app-host's data", shown.ok && shown.output, "app");
 }

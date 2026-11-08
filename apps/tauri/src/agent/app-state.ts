@@ -7,7 +7,7 @@ import type { ListedEntry, ListedGroup, Sidebar, SidebarTab, TabList } from "./s
 
 export type { Sidebar, SidebarTab } from "./sidebar-lists.js";
 export type ChatList = OutputOf<typeof chatTabs.chatList.all>;
-export type AppTabs = OutputOf<typeof appHost.tabs.all>;
+export type AppTabs = OutputOf<typeof appHost.tabs.appTabs>;
 
 export const WORKSPACE = "workspace";
 export const PINNED = "pinned";

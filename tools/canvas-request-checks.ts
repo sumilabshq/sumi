@@ -190,11 +190,11 @@ async function checkSidebarResize(check: Check): Promise<void> {
 async function checkMomentChangeReReads(check: Check): Promise<void> {
 	const canvas = await openedCanvasOver(canvasPartsOver());
 	const reRead = { opening: 0, mode: 0 };
-	const stopOpening = canvas.routes.watch(canvasContract.view.opening, undefined, () => (reRead.opening += 1));
+	const stopOpening = canvas.routes.watch(canvasContract.view.canvasOpening, undefined, () => (reRead.opening += 1));
 	const stopMode = canvas.routes.watch(canvasContract.view.mode, undefined, () => (reRead.mode += 1));
 	await canvas.send(canvasContract.pages.focusWidget, { widget: "@you/tasks" });
 	await settled();
-	const opening = await canvas.send(canvasContract.view.opening);
+	const opening = await canvas.send(canvasContract.view.canvasOpening);
 	stopOpening();
 	stopMode();
 	check(

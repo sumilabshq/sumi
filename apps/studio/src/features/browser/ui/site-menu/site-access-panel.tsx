@@ -22,7 +22,7 @@ const SAID_BY_SOURCE: Readonly<Record<AccessSource, string>> = {
 };
 
 export function SiteAccessPanel(): ReactElement {
-	const { shown, rows } = useQuery(browser.sites.access, { heldTabId: useHeldTab() }).data;
+	const { shown, rows } = useQuery(browser.sites.level, { heldTabId: useHeldTab() }).data;
 	const setSiteLevel = useCommand(browser.sites.setLevel);
 	const others = rows.filter((row) => row.siteKey !== shown?.siteKey);
 	const levelOf = (siteKey: string) => (level: AccessLevel) => void setSiteLevel.run({ siteKey, level });

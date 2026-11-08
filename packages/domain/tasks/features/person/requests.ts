@@ -59,7 +59,7 @@ export const sendBack = command()
 		};
 	});
 
-export const resume = command()
+export const continueTask = command()
 	.public()
 	.input(ContinueAskSchema)
 	.output(ContinuedSchema)
@@ -77,7 +77,7 @@ export const resume = command()
 		};
 	});
 
-export const undelivered = command()
+export const markUndelivered = command()
 	.public()
 	.input(UndeliveredAskSchema)
 	.output(TaskCardSchema)

@@ -58,8 +58,8 @@ export interface TabsReach {
 export async function tabsAskOf({ injects, send }: Pick<TabsReach, "injects" | "send">): Promise<TabsAsk> {
 	const [browserTabs, asks, board] = await Promise.all([
 		send(browser.tabs.all, ALL_PAGES),
-		send(browser.asks.access),
-		send(layout.panes.current),
+		send(browser.asks.pending),
+		send(layout.panes.paneTree),
 	]);
 	return {
 		window: injects.studioWindow.windowLabel(),
@@ -91,14 +91,14 @@ export function saveEssentials(was: KeptEssentials, moved: MovedEssentials | nul
 }
 
 export async function sendKeepChatTabs(send: Send): Promise<void> {
-	const records = await send(workspaces.chats.records);
+	const records = await send(workspaces.chats.chatRecords);
 
 	if (!records.isRead) {
 		console.info("[widgetarium] keep chat tabs skipped: the chats are not read yet");
 		return;
 	}
 
-	await send(places.tabFacts.keepChat, { chats: records.chats.map(({ id, title }) => ({ id, title })) });
+	await send(places.tabFacts.keepChatTabs, { chats: records.chats.map(({ id, title }) => ({ id, title })) });
 }
 
 export async function sendLogged(what: string, sending: () => Promise<unknown> | void): Promise<void> {
@@ -155,7 +155,7 @@ function sendWindowEffect(effect: WindowEffect, send: Send): Promise<unknown> {
 async function sendPaneEffect(effect: PaneEffect, { injects, send }: TabsReach): Promise<unknown> {
 	switch (effect.kind) {
 		case "close-panes":
-			return send(layout.paneTabs.closeShowing, { tabIds: effect.tabIds });
+			return send(layout.paneTabs.closeShowingPanes, { tabIds: effect.tabIds });
 		case "close-chat-panes":
 			return closeChatPanes(send, effect.chatIds);
 		case "open-shown-tab-pane":
@@ -190,7 +190,7 @@ function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
 }
 
 async function closeChatPanes(send: Send, chatIds: readonly string[]): Promise<void> {
-	const board = await send(layout.panes.current);
+	const board = await send(layout.panes.paneTree);
 	const standing = board.leaves.filter((leaf) => leaf.view.kind === "chat" && chatIds.includes(leaf.view.chatId ?? ""));
 
 	for (const leaf of standing) {

@@ -35,7 +35,7 @@ export function joinPlaces(workspace: string): WindowPlaces {
 }
 
 async function join(places: Runtime, window: string): Promise<void> {
-	const answered = await places.send(placesContract.windows.open, { window });
+	const answered = await places.send(placesContract.windows.openWindow, { window });
 
 	if (!answered.ok) {
 		console.warn(NOT_JOINED.replace("{window}", window).replace("{reason}", answered.reason));
@@ -51,7 +51,7 @@ async function rejoinIfMissing(places: Runtime, window: string): Promise<void> {
 }
 
 async function leave(places: Runtime, window: string): Promise<void> {
-	const answered = await places.send(placesContract.windows.close, { window });
+	const answered = await places.send(placesContract.windows.closeWindow, { window });
 
 	if (!answered.ok) {
 		console.warn(NOT_LEFT.replace("{window}", window).replace("{reason}", answered.reason));

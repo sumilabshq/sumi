@@ -35,6 +35,6 @@ export const compactChat = command()
 		}),
 	);
 
-export const reread = subscriber(setupChanged).handle((_input, { invalidate }) => {
+export const rereadSlashCommands = subscriber(setupChanged).handle((_input, { invalidate }) => {
 	invalidate(all);
 });

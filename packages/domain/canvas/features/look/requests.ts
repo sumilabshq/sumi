@@ -13,7 +13,7 @@ import { fontsUrlOf } from "./lib/look-tokens.js";
 const UNREADABLE = "The look cannot be read: {why}";
 const NO_LOOK = "{app} has no look to change yet: the assistant offers it first.";
 
-export const panel = query()
+export const lookPanel = query()
 	.public()
 	.output(LookPanelSchema)
 	.handle(async (_input, { canvasMoment, designFolder }) => {
@@ -39,7 +39,7 @@ export const panel = query()
 		};
 	});
 
-export const pick = command()
+export const pickLook = command()
 	.public()
 	.input(LookPickSchema)
 	.idempotencyKey(PerCall)
@@ -57,14 +57,14 @@ export const pick = command()
 		console.info(`[widgetarium] look of ${app}: ${settingName} → ${option} (picked)`);
 	});
 
-export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
+export const rereadLook = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (fields.includes("app")) {
-		invalidate(panel);
+		invalidate(lookPanel);
 	}
 });
 
-export const rereadForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
-	invalidate(panel);
+export const rereadLookForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+	invalidate(lookPanel);
 });
 
 function pickedOrRefused(picked: LookTextPicked): string {

@@ -8,11 +8,11 @@ import { pageTitlesOf } from "../../shared/lib/page-titles/page-titles-read.js";
 import { pageTabsOfClosed, titledClosedOf } from "../../shared/lib/page-titles/page-titles.js";
 import { ClosedTabIdSchema, ClosedTabsSchema } from "../../shared/schema/closed-tab.schema.js";
 
-export const all = query()
+export const closedTabs = query()
 	.public()
 	.output(ClosedTabsSchema)
 	.handle(async (_input, { send }) => {
-		const closed = await send(places.tabs.closed);
+		const closed = await send(places.tabs.closedTabs);
 		const titles = await pageTitlesOf(send, pageTabsOfClosed(closed.tabs));
 		return { tabs: closed.tabs.map((row) => titledClosedOf(row, titles)) };
 	});
@@ -27,10 +27,10 @@ export const reopenById = command()
 		);
 	});
 
-export const reread = subscriber(tabsSettled).handle((_input, { invalidate }) => {
-	invalidate(all);
+export const rereadClosedTabs = subscriber(tabsSettled).handle((_input, { invalidate }) => {
+	invalidate(closedTabs);
 });
 
-export const rereadForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
-	invalidate(all);
+export const rereadClosedTabsForCore = subscriber(studioCoreChanged).handle((_input, { invalidate }) => {
+	invalidate(closedTabs);
 });

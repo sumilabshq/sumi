@@ -7,5 +7,5 @@ const started = runtime()
 	.imports(fixtureBilling({ over: orpcTransport(SERVER) }))
 	.start();
 
-export const charged = started.send(fixtureBilling.charge.take, { amount: 1 });
+export const charged = started.send(fixtureBilling.charge.charge, { amount: 1 });
 export const balance = started.send(fixtureBilling.charge.balance);

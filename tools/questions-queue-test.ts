@@ -53,7 +53,9 @@ check(
 );
 check(
 	"and the answered ask stays on the card",
-	(await sent(questions.send(questionsContract.dock.ofChat, { chat: CHAT }))).optional.map(({ state }) => state),
+	(await sent(questions.send(questionsContract.dock.questionsOfChat, { chat: CHAT }))).optional.map(
+		({ state }) => state,
+	),
 	["answered", "open"],
 );
 
@@ -70,13 +72,13 @@ check(
 );
 check(
 	"reading the ready answers marks nothing: the card keeps them until they are queued",
-	(await sent(questions.send(questionsContract.dock.ofChat, { chat: CHAT }))).optional.length,
+	(await sent(questions.send(questionsContract.dock.questionsOfChat, { chat: CHAT }))).optional.length,
 	2,
 );
 await sent(questions.send(questionsContract.agent.deliver, { chat: CHAT, ids: handed.questions.map(({ id }) => id) }));
 check(
 	"once queued and marked, the card empties",
-	(await sent(questions.send(questionsContract.dock.ofChat, { chat: CHAT }))).optional.length,
+	(await sent(questions.send(questionsContract.dock.questionsOfChat, { chat: CHAT }))).optional.length,
 	0,
 );
 check(

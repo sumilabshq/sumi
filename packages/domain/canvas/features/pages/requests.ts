@@ -182,7 +182,7 @@ export const pickVariant = command()
 		}
 	});
 
-export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
+export const rereadPages = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (!isTouching(fields, PAGE_FIELDS)) {
 		return;
 	}
@@ -193,14 +193,14 @@ export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate
 	invalidate(returnNote);
 });
 
-export const rereadForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+export const rereadPagesForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
 	invalidate(choices);
 	invalidate(all);
 	invalidate(variants);
 	invalidate(returnNote);
 });
 
-export const rereadForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+export const rereadPagesForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
 	invalidate(choices);
 	invalidate(all);
 	invalidate(variants);

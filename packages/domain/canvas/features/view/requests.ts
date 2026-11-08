@@ -25,7 +25,7 @@ export const open = command()
 		}
 	});
 
-export const opening = query()
+export const canvasOpening = query()
 	.public()
 	.output(CanvasOpeningSchema)
 	.settlesNow()
@@ -74,7 +74,7 @@ export const setMode = command()
 		}
 	});
 
-export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
+export const rereadView = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (fields.includes("camera")) {
 		invalidate(camera);
 	}
@@ -84,6 +84,6 @@ export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate
 	}
 
 	if (isTouching(fields, OPENING_FIELDS)) {
-		invalidate(opening);
+		invalidate(canvasOpening);
 	}
 });

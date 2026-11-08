@@ -19,7 +19,7 @@ import {
 } from "../../shared/schema/question.schema.js";
 import type { ChatQuestions, Question } from "../../shared/schema/question.schema.js";
 
-export const ofChat = query()
+export const questionsOfChat = query()
 	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(ChatQuestionsSchema)
@@ -36,7 +36,7 @@ export const answer = command()
 			(held) => questionAnswered(held, ask, Date.now()),
 			`answer ${ask.id}`,
 		);
-		invalidate(ofChat);
+		invalidate(questionsOfChat);
 		return changed.ok ? undefined : refuse(changed.refusal);
 	});
 
@@ -51,7 +51,7 @@ export const skip = command()
 			(held) => questionsSkipped(held, ask, Date.now()),
 			`skip ${ask.ids.join(", ")}`,
 		);
-		invalidate(ofChat);
+		invalidate(questionsOfChat);
 		return changed.ok ? { changed: ask.ids.length } : refuse(changed.refusal);
 	});
 
@@ -61,7 +61,7 @@ export const reopen = command()
 	.idempotencyKey(Repeatable)
 	.handle((ask, { questions, invalidate }) => {
 		const changed = questions.changeQuestions(ask.chat, (held) => questionReopened(held, ask), `undo ${ask.id}`);
-		invalidate(ofChat);
+		invalidate(questionsOfChat);
 		return changed.ok ? undefined : refuse(changed.refusal);
 	});
 
@@ -79,7 +79,7 @@ export const readyAnswers = query()
 	});
 
 export const reread = subscriber(questionsChanged).handle((_input, { invalidate }) => {
-	invalidate(ofChat);
+	invalidate(questionsOfChat);
 });
 
 function dockOf(held: readonly Question[]): ChatQuestions {

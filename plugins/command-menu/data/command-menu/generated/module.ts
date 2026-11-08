@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { commandMenu as definition } from "../module.js";
 import { renameRow, runIntent } from "../features/doing/requests.js";
-import { changeDoor, close, current, doors, menuOnMenuChanged, toggle } from "../features/opening/requests.js";
+import { changeDoor, close, doors, isOpen, menuOnMenuChanged, toggle } from "../features/opening/requests.js";
 import { all, resultsOnChatsChanged, resultsOnMenuChanged, resultsOnPagesChanged } from "../features/results/requests.js";
 import { commandMenuChanged } from "../gateways/command-menu/command-menu.events.js";
 
@@ -18,8 +18,8 @@ export const commandMenu = handledModule(definition, [
 	named("doing.run-intent", runIntent),
 	named("opening.change-door", changeDoor),
 	named("opening.close", close),
-	named("opening.current", current),
 	named("opening.doors", doors),
+	named("opening.is-open", isOpen),
 	named("opening.toggle", toggle),
 	named("results.all", all),
 ]);

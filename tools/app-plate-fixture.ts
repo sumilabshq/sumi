@@ -89,8 +89,8 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 			}),
 		__PLACE_PANE__: (view: PaneView, targetId: string | null, side: PaneSide) =>
 			studioApp.send(layout.panes.place, { view, targetId, side }),
-		__CREATE_CHAT__: () => studioApp.send(workspaces.chats.create, { title: null }),
-		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(appHost.tabActions.rename, { id, label: title }),
+		__CREATE_CHAT__: () => studioApp.send(workspaces.chats.createChat, { title: null }),
+		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(appHost.tabActions.renameTab, { id, label: title }),
 	});
 	return {
 		assistant,

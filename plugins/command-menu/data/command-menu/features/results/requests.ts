@@ -40,7 +40,7 @@ export const all = query()
 		const page = [...menuFills.pages(), ...BUILT_IN_PAGES].find(({ id }) => id === door);
 		const [sourced, appTabs, workspaces, browser] = await Promise.all([
 			Promise.all([...builtInSourcesOf(), ...menuFills.sources()].map((source) => sourcedRowsOf(source, send))),
-			send(appHost.tabs.all),
+			send(appHost.tabs.appTabs),
 			send(workspacesContract.workspaces.all),
 			send(browserContract.tabs.all, ALL_PAGES),
 		]);
@@ -89,11 +89,11 @@ export const resultsOnPagesChanged = subscriber(browserContract.browserPages.pag
 	},
 );
 
-const tabRowsOf: RowsOf = async (send) => tabsFoundOf(await send(appHost.tabs.sidebar));
+const tabRowsOf: RowsOf = async (send) => tabsFoundOf(await send(appHost.tabs.tabsSidebar));
 
 const chatRowsOf: RowsOf = async (send) => {
 	const [sidebar, chats, apps] = await Promise.all([
-		send(appHost.tabs.sidebar),
+		send(appHost.tabs.tabsSidebar),
 		send(chatTabs.chatList.all),
 		send(appsContract.apps.all),
 	]);
@@ -106,7 +106,7 @@ const siteRowsOf: RowsOf = async (send) => sitesFoundOf((await send(browserContr
 
 const workspaceRowsOf: RowsOf = async (send) => workspacesFoundOf(await send(workspacesContract.workspaces.all));
 
-const closedTabRowsOf: RowsOf = async (send) => closedFoundOf((await send(appHost.closedTabs.all)).tabs);
+const closedTabRowsOf: RowsOf = async (send) => closedFoundOf((await send(appHost.closedTabs.closedTabs)).tabs);
 
 const chatElsewhereRowsOf: RowsOf = async (send) => {
 	const [elsewhere, apps] = await Promise.all([

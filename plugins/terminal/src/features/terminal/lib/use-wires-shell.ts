@@ -17,7 +17,7 @@ export function useWiresShell(terminal: RefObject<Terminal | null>, shell: Runti
 		const showRefusalOf = (answer: Answer<unknown>): void => setRefusal(answer.ok ? null : answer.reason);
 		void shell.send(terminalContract.lines.resize, { session, cols: drawn.cols, rows: drawn.rows }).then(showRefusalOf);
 		const typing = drawn.onData(
-			(keys) => void shell.send(terminalContract.lines.type, { session, keys }).then(showRefusalOf),
+			(keys) => void shell.send(terminalContract.lines.typeText, { session, keys }).then(showRefusalOf),
 		);
 		const resizing = drawn.onResize(
 			(size) => void shell.send(terminalContract.lines.resize, { session, ...size }).then(showRefusalOf),

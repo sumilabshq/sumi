@@ -26,7 +26,7 @@ const TabReadSchema = z.strictObject({
 export async function tabAccess({ app }: ToolContext, input: unknown) {
 	const { tabId } = inputOf(TabAccessSchema, "tab_access", input);
 	const pageId = await pageIdOf({ app }, tabId);
-	const { shown } = await outputOf(app.send(browser.sites.access, { heldTabId: pageId }));
+	const { shown } = await outputOf(app.send(browser.sites.level, { heldTabId: pageId }));
 	return accessOf(tabId, shown);
 }
 
@@ -66,7 +66,7 @@ function accessOf(tabId: string, shown: AccessDecision | null) {
 }
 
 async function pageIdOf({ app }: Pick<ToolContext, "app">, tabId: string): Promise<string> {
-	const held = await outputOf(app.send(appHost.tabs.held));
+	const held = await outputOf(app.send(appHost.tabs.heldTabs));
 	const tab = held.tabs.find(({ id }) => id === tabId);
 
 	if (tab === undefined) {

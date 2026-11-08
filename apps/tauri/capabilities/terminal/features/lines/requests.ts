@@ -45,7 +45,7 @@ export const resize = command()
 		await sessions.resize(owned, { cols, rows });
 	});
 
-export const type = command()
+export const typeText = command()
 	.public()
 	.input(TypeTerminalInputSchema)
 	.idempotencyKey(PerCall)
@@ -53,7 +53,7 @@ export const type = command()
 		await sessions.type(sessionOf(user, session), keys);
 	});
 
-export const send = command()
+export const sendLine = command()
 	.public()
 	.input(SendTerminalInputSchema)
 	.idempotencyKey(PerCall)

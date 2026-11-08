@@ -21,7 +21,7 @@ const OPENER =
 	"cv:absolute cv:top-1/2 cv:grid cv:size-3 cv:-translate-y-1/2 cv:cursor-pointer cv:place-items-center cv:border-0 cv:bg-transparent cv:p-0 cv:text-muted-foreground cv:opacity-0 cv:shadow-none cv:transition-opacity cv:group-hover/row:opacity-100 cv:hover:text-ink cv:focus-visible:opacity-100 cv:data-[state=closed]:opacity-100";
 
 export function LayerRow({ row, drag, onHover }: LayerRowProps): ReactElement {
-	const pick = useCommand(canvas.layers.pick);
+	const pick = useCommand(canvas.layers.pickLayer);
 	const fold = useCommand(canvas.layers.toggleFold);
 	const hasChildren = row.children.length > 0;
 	return (

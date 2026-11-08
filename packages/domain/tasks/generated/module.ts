@@ -3,7 +3,7 @@ import { handledModule, named } from "@widgetarium/data-framework";
 import { tasks as definition } from "../module.js";
 import { attach, checkCriterion, create, edit, markStep, move, start } from "../features/agent-work/requests.js";
 import { all, chatLine, current, one, reread, search, trailer } from "../features/board/requests.js";
-import { accept, keep, resume, sendBack, undelivered } from "../features/person/requests.js";
+import { accept, continueTask, keep, markUndelivered, sendBack } from "../features/person/requests.js";
 import { reconcile, releaseChat, settleTurn, sweepStale } from "../features/supervision/requests.js";
 import { tasksChanged } from "../gateways/tasks/tasks.events.js";
 
@@ -25,10 +25,10 @@ export const tasks = handledModule(definition, [
 	named("board.search", search),
 	named("board.trailer", trailer),
 	named("person.accept", accept),
+	named("person.continue-task", continueTask),
 	named("person.keep", keep),
-	named("person.resume", resume),
+	named("person.mark-undelivered", markUndelivered),
 	named("person.send-back", sendBack),
-	named("person.undelivered", undelivered),
 	named("supervision.reconcile", reconcile),
 	named("supervision.release-chat", releaseChat),
 	named("supervision.settle-turn", settleTurn),

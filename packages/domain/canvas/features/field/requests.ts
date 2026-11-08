@@ -31,7 +31,7 @@ export const regions = query()
 		return { regions: regionsOf(now, widgetDrawing.drawing()) };
 	});
 
-export const state = query()
+export const picking = query()
 	.public()
 	.output(FieldStateSchema)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
@@ -92,22 +92,22 @@ export const resolveSpot = command()
 		}
 	});
 
-export const reread = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
+export const rereadField = subscriber(momentChanged).handle(({ fields }, { invalidate }) => {
 	if (isTouching(fields, PAGE_FIELDS)) {
 		invalidate(regions);
 	}
 
 	if (isTouching(fields, FIELD_STATE_FIELDS)) {
-		invalidate(state);
+		invalidate(picking);
 	}
 });
 
-export const rereadForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
+export const rereadFieldForDesign = subscriber(designChanged).handle((_input, { invalidate }) => {
 	invalidate(regions);
-	invalidate(state);
+	invalidate(picking);
 });
 
-export const rereadForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
+export const rereadFieldForJobs = subscriber(jobsChanged).handle((_input, { invalidate }) => {
 	invalidate(regions);
-	invalidate(state);
+	invalidate(picking);
 });

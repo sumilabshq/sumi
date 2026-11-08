@@ -5,7 +5,7 @@ import { widthsChanged } from "../../gateways/frame-widths/frame-widths.events.j
 import { FRAME_BOUNDS, FRAME_LIMITS, edgePxWithin, widthsWithin } from "../../shared/lib/frame-bounds.js";
 import { FrameEdgeSchema, FrameWidthsAnswerSchema, WidthPxSchema } from "../../shared/schema/frame-widths.schema.js";
 
-export const current = query()
+export const frameWidths = query()
 	.public()
 	.output(FrameWidthsAnswerSchema)
 	.settlesNow()
@@ -25,7 +25,7 @@ export const resizeEdge = command()
 	)
 	.idempotencyKey(Repeatable)
 	.handle(({ edge, px, mostPx }, { frameWidths: frameWidthsGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(frameWidths);
 		const widths = widthsWithin(frameWidthsGateway.widths());
 		const next = edgePxWithin(edge, px, mostPx);
 
@@ -54,7 +54,7 @@ export const resetEdge = command()
 	)
 	.idempotencyKey(Repeatable)
 	.handle(({ edge, mostPx }, { frameWidths: frameWidthsGateway, invalidate }) => {
-		invalidate(current);
+		invalidate(frameWidths);
 		const widths = widthsWithin(frameWidthsGateway.widths());
 		const next = edgePxWithin(edge, FRAME_BOUNDS[edge].usualPx, mostPx);
 
@@ -73,6 +73,6 @@ export const resetEdge = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const reread = subscriber(widthsChanged).handle((_input, { invalidate }) => {
-	invalidate(current);
+export const rereadFrameWidths = subscriber(widthsChanged).handle((_input, { invalidate }) => {
+	invalidate(frameWidths);
 });

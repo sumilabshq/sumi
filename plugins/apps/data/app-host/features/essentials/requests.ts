@@ -24,7 +24,7 @@ const WORKSPACE_END = {
 	before: null,
 };
 
-export const show = command()
+export const showEssential = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
@@ -45,7 +45,7 @@ export const remove = command()
 		await releaseEssential({ injects, send, told: () => emit(tabsSettled) }, { kept, essential, place: WORKSPACE_END });
 	});
 
-export const close = command()
+export const closeEssential = command()
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
@@ -55,7 +55,7 @@ export const close = command()
 		);
 	});
 
-export const place = command()
+export const placeEssential = command()
 	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)

@@ -11,7 +11,7 @@ import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export function ClaudeStrip({ isEmpty }: { readonly isEmpty: boolean }): ReactElement {
 	const chat = useChatKey();
-	const { data: setup } = useQuery(assistant.agent.current, { chat });
+	const { data: setup } = useQuery(assistant.agent.setup, { chat });
 	const { data: options } = useQuery(assistant.agent.claudeOptions, { chat });
 	const folders = useOptionalQuery(assistant.agent.workingFolders, { chat }).data ?? null;
 	const claude = shownClaudeOptions(setup, options);

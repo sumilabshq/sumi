@@ -14,7 +14,7 @@ export interface MascotProps {
 }
 
 export function Mascot({ outfit = "bare", size }: MascotProps): ReactElement {
-	const activity = useOptionalQuery(mascot.activity.agent).data ?? NO_AGENT_ACTIVITY;
+	const activity = useOptionalQuery(mascot.activity.agentActivity).data ?? NO_AGENT_ACTIVITY;
 	const { state, touchHandlers } = useMascotState(activity);
 	return <MascotFigure outfit={outfit} size={size} state={state} touchHandlers={touchHandlers} />;
 }

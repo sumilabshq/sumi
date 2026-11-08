@@ -31,7 +31,7 @@ interface Said {
 }
 
 export function useTabMenuGroups(tab: AppTab, { onRename, onCopyLink }: TabMenuAsks): TabMenuGroups {
-	const { tabs, canReopen } = useQuery(appHost.tabs.all).data;
+	const { tabs, canReopen } = useQuery(appHost.tabs.appTabs).data;
 	const run = useTabRuns(tab);
 	const action = (key: TabActionKey, said: Said, ran: () => void): TabMenuAction => ({
 		key,
@@ -81,7 +81,7 @@ function useTabRuns(tab: AppTab): TabRuns {
 	const openBelow = useCommand(appHost.tabActions.openBelow);
 	const duplicate = useCommand(appHost.tabActions.duplicate);
 	const reload = useCommand(appHost.tabActions.reload);
-	const close = useCommand(appHost.tabActions.close);
+	const close = useCommand(appHost.tabActions.closeTab);
 	const closeOthers = useCommand(appHost.tabActions.closeOthers);
 	const reopen = useCommand(appHost.tabActions.reopenClosed);
 	const id = { id: tab.id };

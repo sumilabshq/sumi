@@ -16,7 +16,7 @@ export function GroupNameField({
 	readonly onDone: () => void;
 }): ReactElement {
 	const [typed, setTyped] = useState(group.name);
-	const renameGroup = useCommand(appHost.groups.rename);
+	const renameGroup = useCommand(appHost.groups.renameGroup);
 	const keep = (): void => {
 		if (typed.trim() !== "" && typed !== group.name) {
 			void renameGroup.run({

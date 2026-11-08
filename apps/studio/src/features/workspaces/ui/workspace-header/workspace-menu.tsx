@@ -18,7 +18,7 @@ export interface WorkspaceMenuProps {
 export function WorkspaceMenu({ onChosen, onNameAndIcon }: WorkspaceMenuProps): ReactElement {
 	const { current, rows } = useQuery(workspaces.workspaces.all).data;
 	const openWorkspace = useCommand(workspaces.workspaces.open);
-	const createWorkspace = useCommand(workspaces.workspaces.create);
+	const createWorkspace = useCommand(workspaces.workspaces.createWorkspace);
 	const chose = (run: () => void) => () => {
 		onChosen();
 		run();

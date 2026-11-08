@@ -23,7 +23,7 @@ export const create = command()
 		return created;
 	});
 
-export const rename = command()
+export const renameGroup = command()
 	.public()
 	.input(z.object({ id: z.string(), name: z.string() }))
 	.idempotencyKey(Repeatable)
@@ -50,7 +50,7 @@ export const fold = command()
 		emit(tabsSettled);
 	});
 
-export const place = command()
+export const placeGroup = command()
 	.public()
 	.input(
 		z.object({

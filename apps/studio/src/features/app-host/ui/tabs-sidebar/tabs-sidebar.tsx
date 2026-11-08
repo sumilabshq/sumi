@@ -27,7 +27,7 @@ const SCROLLER =
 	"cv:-mx-1 cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:gap-px cv:overflow-y-auto cv:px-1 cv:pb-2 cv:[scrollbar-width:none]";
 
 export function TabsSidebar(): ReactElement {
-	const sidebar = useQuery(appHost.tabs.sidebar).data;
+	const sidebar = useQuery(appHost.tabs.tabsSidebar).data;
 	const holder = useRef<HTMLElement | null>(null);
 	const drag = useSidebarDragParts();
 	const { preview, shown, lifted } = useArrangedSidebar(drag, sidebar);

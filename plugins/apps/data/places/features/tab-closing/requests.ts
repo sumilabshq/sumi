@@ -11,7 +11,7 @@ import {
 	closeTabPlan,
 } from "./lib/closing-plans.js";
 
-export const close = command()
+export const closeTab = command()
 	.public()
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)

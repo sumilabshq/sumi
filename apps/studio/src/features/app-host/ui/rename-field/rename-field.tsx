@@ -21,7 +21,7 @@ const RENAME_TAB = "Rename {title}";
 export function RenameField({ named, className, onDone }: RenameFieldProps): ReactElement {
 	const [typed, setTyped] = useState(named.label ?? named.title);
 	const field = useRef<HTMLInputElement | null>(null);
-	const renameTab = useCommand(appHost.tabActions.rename);
+	const renameTab = useCommand(appHost.tabActions.renameTab);
 	useSelectsOnMount(field);
 	const onKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
 		if (event.key !== "Enter" && event.key !== "Escape") {

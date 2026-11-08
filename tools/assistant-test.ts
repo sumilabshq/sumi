@@ -521,7 +521,7 @@ check(
 
 const rendering = benchWith(CLAUDE);
 rendering.setup.renderMarkdown = () => () => undefined;
-const renderingSetup = await rendering.chat.send(assistant.agent.current, { chat: null });
+const renderingSetup = await rendering.chat.send(assistant.agent.setup, { chat: null });
 check(
 	"the agent's setup crosses a MessagePort: it carries no function, even from a host that renders markdown",
 	renderingSetup.ok ? isCloned(renderingSetup.output) : renderingSetup.reason,

@@ -60,8 +60,8 @@ function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 }
 
 async function firstChatIdIn({ started }: TauriWorkspaces): Promise<string | undefined> {
-	await waitFor(() => started.routes.readNow(workspacesContract.chats.records) !== null);
-	const answer = await started.send(workspacesContract.chats.records);
+	await waitFor(() => started.routes.readNow(workspacesContract.chats.chatRecords) !== null);
+	const answer = await started.send(workspacesContract.chats.chatRecords);
 	return answer.ok ? [...answer.output.chats].sort((one, other) => other.lastAt - one.lastAt)[0]?.id : undefined;
 }
 
@@ -106,7 +106,7 @@ async function perChatChecks(): Promise<void> {
 	check("a first ask names the chat", focusedChat.now()?.title, "Plan the release");
 	check("and marks it running", markOf(workspaces, firstId), "running");
 
-	const made = await quietly(() => workspaces.started.send(workspacesContract.chats.create, { title: null }));
+	const made = await quietly(() => workspaces.started.send(workspacesContract.chats.createChat, { title: null }));
 	const secondId = made.answer.ok ? made.answer.output.id : "";
 	await quietly(() => workspaces.started.send(layout.paneTabs.showChat, { chatId: secondId, paneId: null }));
 	check("a new chat shown in the chat pane is the focused one", focusedChat.now()?.id, secondId);
@@ -250,7 +250,7 @@ async function entryOfAnotherShapeChecks(): Promise<void> {
 		await waitFor(
 			() => rowsIn(workspaces).length === 1 && workspaces.parts.chats.chats().chats.some((chat) => chat.id === "good"),
 		);
-		await workspaces.started.send(workspacesContract.chats.create, { title: null });
+		await workspaces.started.send(workspacesContract.chats.createChat, { title: null });
 		const read = workspaces.started.routes.readNow(workspacesContract.workspaces.all);
 		const rows = read === null ? [] : workspacesContract.workspaces.all.outputSchema.parse(read.output).rows;
 		await workspaces.started.send(workspacesContract.workspaces.setIcon, { id: DEFAULT.id, icon: null });

@@ -7,8 +7,8 @@ import { workspaces } from "@widgetarium/workspaces/contract";
 import { hasUnnamedChatPane } from "./unnamed-chat-pane.js";
 
 export function useOpensChatAskedOnStart(): void {
-	const asked = useQuery(workspaces.chats.toOpen).data;
-	const board = useQuery(layout.panes.current).data;
+	const asked = useQuery(workspaces.chats.chatToOpen).data;
+	const board = useQuery(layout.panes.paneTree).data;
 	const openChatAskedOnStart = useCommand(chatTabs.chatOpening.openAskedOnStart);
 	const isWaiting = !board.isLoaded || !asked.isRead || hasUnnamedChatPane(board);
 	useEffect(() => {

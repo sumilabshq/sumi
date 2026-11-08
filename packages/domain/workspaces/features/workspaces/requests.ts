@@ -112,7 +112,7 @@ export const openByPosition = command()
 		await switchToWorkspace(workspace.id, opening);
 	});
 
-export const create = command()
+export const createWorkspace = command()
 	.public()
 	.output(WorkspaceIdSchema)
 	.idempotencyKey(PerCall)
@@ -161,7 +161,7 @@ export const setIcon = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const reread = subscriber(workspacesChanged).handle((_input, { invalidate }) => {
+export const rereadWorkspaces = subscriber(workspacesChanged).handle((_input, { invalidate }) => {
 	invalidate(all);
 });
 

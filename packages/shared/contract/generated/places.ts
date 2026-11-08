@@ -796,7 +796,7 @@ export const places = moduleContract("places", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	tabClosing: {
-		close: named("tab-closing.close", command()
+		closeTab: named("tab-closing.close-tab", command()
 			.public()
 			.input(TabAskSchema)
 			.output(TabsSettledSchema)
@@ -823,7 +823,7 @@ export const places = moduleContract("places", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	tabFacts: {
-		keepChat: named("tab-facts.keep-chat", command()
+		keepChatTabs: named("tab-facts.keep-chat-tabs", command()
 			.public()
 			.input(KeepChatTabsAskSchema)
 			.idempotencyKey(Repeatable)),
@@ -853,7 +853,7 @@ export const places = moduleContract("places", Server, {
 			.input(TakeAskedLinkSchema)
 			.output(AskedLinkSchema)
 			.idempotencyKey(Repeatable)),
-		app: named("tab-facts.app", query()
+		ownAppTab: named("tab-facts.own-app-tab", query()
 			.public()
 			.input(OwnAppTabAskSchema)
 			.output(OwnAppTabSchema)),
@@ -873,7 +873,7 @@ export const places = moduleContract("places", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	tabOpening: {
-		open: named("tab-opening.open", command()
+		openTab: named("tab-opening.open-tab", command()
 			.public()
 			.input(OpenTabAskSchema)
 			.output(OpenedTabSettledSchema)
@@ -995,7 +995,7 @@ export const places = moduleContract("places", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	tabs: {
-		placed: named("tabs.placed", query()
+		placedTabs: named("tabs.placed-tabs", query()
 			.public()
 			.input(WindowLabelSchema)
 			.output(WindowTabsSchema)),
@@ -1007,7 +1007,7 @@ export const places = moduleContract("places", Server, {
 			.public()
 			.input(SidebarAskSchema)
 			.output(PlacedSidebarSchema)),
-		held: named("tabs.held", query()
+		heldTabs: named("tabs.held-tabs", query()
 			.public()
 			.input(SettleAskSchema)
 			.output(HeldTabsSchema)),
@@ -1015,10 +1015,10 @@ export const places = moduleContract("places", Server, {
 			.public()
 			.input(WindowLabelSchema)
 			.output(StudioViewSchema)),
-		closed: named("tabs.closed", query()
+		closedTabs: named("tabs.closed-tabs", query()
 			.public()
 			.output(ClosedTabsSchema)),
-		chat: named("tabs.chat", query()
+		chatTabs: named("tabs.chat-tabs", query()
 			.public()
 			.output(ChatTabsSchema)),
 	},
@@ -1026,15 +1026,15 @@ export const places = moduleContract("places", Server, {
 		all: named("windows.all", query()
 			.public()
 			.output(WindowsSchema)),
-		open: named("windows.open", command()
+		openWindow: named("windows.open-window", command()
 			.public()
 			.input(WindowLabelSchema)
 			.idempotencyKey(Repeatable)),
-		close: named("windows.close", command()
+		closeWindow: named("windows.close-window", command()
 			.public()
 			.input(WindowLabelSchema)
 			.idempotencyKey(Repeatable)),
-		keepLive: named("windows.keep-live", command()
+		keepLiveWindows: named("windows.keep-live-windows", command()
 			.public()
 			.input(LiveWindowsSchema)
 			.idempotencyKey(Repeatable)),

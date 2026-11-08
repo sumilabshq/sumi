@@ -58,7 +58,7 @@ export function CanvasPage({
 }
 
 function KeptOpening({ onKept }: { readonly onKept: ((kept: CanvasOpening) => void) | undefined }): null {
-	const opening = useQuery(canvas.view.opening).data;
+	const opening = useQuery(canvas.view.canvasOpening).data;
 	const told = useRef(opening);
 	useEffect(() => {
 		if (told.current === opening) {

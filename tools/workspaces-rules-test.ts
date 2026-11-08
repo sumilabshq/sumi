@@ -103,7 +103,7 @@ async function workspaceChecks(): Promise<void> {
 		openingId: null,
 	});
 
-	await workspaces.send(workspacesContract.workspaces.create);
+	await workspaces.send(workspacesContract.workspaces.createWorkspace);
 	const view = workspacesContract.workspaces.all.outputSchema.parse(
 		outputOf(await workspaces.send(workspacesContract.workspaces.all)),
 	);
@@ -143,10 +143,10 @@ async function chatChecks(): Promise<void> {
 	const parts = seededParts();
 	const tabs = new MemoryTabsGateway(placedTabsOf(NO_SESSION_TABS, SEEDED_CHATS));
 	const chats = started(parts, tabs);
-	const toOpen = async (): Promise<unknown> => outputOf(await chats.send(workspacesContract.chats.toOpen));
+	const toOpen = async (): Promise<unknown> => outputOf(await chats.send(workspacesContract.chats.chatToOpen));
 	check("a chat asked to open on start that the chats lost opens nothing", await toOpen(), { isRead: true, id: null });
-	const records = workspacesContract.chats.records.outputSchema.parse(
-		outputOf(await chats.send(workspacesContract.chats.records)),
+	const records = workspacesContract.chats.chatRecords.outputSchema.parse(
+		outputOf(await chats.send(workspacesContract.chats.chatRecords)),
 	);
 	check(
 		"the records hold every chat with its title and no pin or mark: places keeps where a chat stands and how",
@@ -206,7 +206,7 @@ async function chatChecks(): Promise<void> {
 	});
 	check("a chat finishing while on screen is not unread", await marksIn(tabs), {});
 
-	const made = await chats.send(workspacesContract.chats.create, { title: "  Plan it  " });
+	const made = await chats.send(workspacesContract.chats.createChat, { title: "  Plan it  " });
 	const created = parts.chats.chats();
 	check(
 		"a new chat answers its own id, takes the title asked, and opens nothing by itself",

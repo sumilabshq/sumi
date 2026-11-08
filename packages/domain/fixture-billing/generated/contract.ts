@@ -15,7 +15,7 @@ export const fixtureBilling = moduleContract("fixture-billing", Server, {
 		balance: named("charge.balance", query()
 			.public()
 			.output(BalanceSchema)),
-		take: named("charge.take", command()
+		charge: named("charge.charge", command()
 			.public()
 			.input(ChargeInputSchema)
 			.output(BalanceSchema)

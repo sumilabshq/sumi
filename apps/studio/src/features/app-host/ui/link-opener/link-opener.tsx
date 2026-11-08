@@ -11,7 +11,7 @@ export interface LinkOpenerProps {
 const CAPTURE = { capture: true } as const;
 
 export function LinkOpener({ frame }: LinkOpenerProps): null {
-	const { run: openLink } = useCommand(appHost.links.open);
+	const { run: openLink } = useCommand(appHost.links.openLink);
 
 	useEffect(() => {
 		const holder = frame.current;

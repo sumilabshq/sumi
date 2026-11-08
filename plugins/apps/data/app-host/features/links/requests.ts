@@ -22,7 +22,7 @@ const WEB_SCHEMES: ReadonlySet<string> = new Set(["https:", "http:"]);
 const NO_SUCH_APP = "Sumi has no app named {app}";
 const OPENED = "[widgetarium] link {href} opened{where}";
 
-export const open = command()
+export const openLink = command()
 	.public()
 	.input(LinkToOpenSchema)
 	.idempotencyKey(Repeatable)

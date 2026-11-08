@@ -147,7 +147,7 @@ export const questions = moduleContract("questions", Server, {
 			.idempotencyKey(Repeatable)),
 	},
 	dock: {
-		ofChat: named("dock.of-chat", query()
+		questionsOfChat: named("dock.questions-of-chat", query()
 			.public()
 			.input(ChatQuestionsAskSchema)
 			.output(ChatQuestionsSchema)

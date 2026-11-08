@@ -7,7 +7,7 @@ import { chatListOf } from "./lib/chat-list.js";
 export const all = query()
 	.public()
 	.output(ChatListSchema)
-	.handle(async (_input, { send }) => chatListOf(await send(places.tabs.chat)));
+	.handle(async (_input, { send }) => chatListOf(await send(places.tabs.chatTabs)));
 
 export const reread = subscriber(appHost.tabs.tabsSettled).handle((_input, { invalidate }) => {
 	invalidate(all);

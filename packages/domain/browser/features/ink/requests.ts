@@ -59,7 +59,7 @@ export const capturePage = command()
 		}
 	});
 
-export const openAddress = command()
+export const inkOpenAddress = command()
 	.public()
 	.input(InkAddressSchema)
 	.output(OpenedPageSchema)

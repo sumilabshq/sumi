@@ -406,7 +406,7 @@ export const FolderAskedSchema = ChatKeySchema.extend({ path: z.string().min(1) 
 
 export const assistant = moduleContract("assistant", Anywhere, {
 	agent: {
-		current: named("agent.current", query()
+		setup: named("agent.setup", query()
 			.public()
 			.input(ChatKeySchema)
 			.output(AgentSetupSchema)),

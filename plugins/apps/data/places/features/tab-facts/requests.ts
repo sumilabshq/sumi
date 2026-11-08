@@ -28,7 +28,7 @@ import {
 	recordTurnPlan,
 } from "./lib/fact-plans.js";
 
-export const keepChat = command()
+export const keepChatTabs = command()
 	.public()
 	.input(KeepChatTabsAskSchema)
 	.idempotencyKey(Repeatable)
@@ -67,9 +67,9 @@ export const forgetRunningTurns = command()
 	});
 
 const APP_CALLABLE: ReadonlySet<string> = new Set([
-	"places.tab-opening.open",
+	"places.tab-opening.open-tab",
 	"places.tab-facts.record-app-address",
-	"places.tab-facts.app",
+	"places.tab-facts.own-app-tab",
 	"places.tab-facts.open-link",
 ]);
 const NOT_FOR_APPS = "{request} is not open to apps; an app may call {allowed}";
@@ -162,7 +162,7 @@ export const rereadAskedLinks = subscriber(placedTabsChanged).handle((_input, { 
 	invalidate(askedLinks);
 });
 
-export const app = query()
+export const ownAppTab = query()
 	.public()
 	.input(OwnAppTabAskSchema)
 	.output(OwnAppTabSchema)
@@ -173,8 +173,8 @@ export const app = query()
 		return tab === undefined ? refuse(NO_TAB.replace("{id}", id)) : ownAppTabOf(placedApps.placedApps(), tab);
 	});
 
-export const rereadApp = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
-	invalidate(app);
+export const rereadOwnAppTab = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
+	invalidate(ownAppTab);
 });
 
 export const recordAppAddress = command()

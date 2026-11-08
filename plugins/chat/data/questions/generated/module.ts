@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { questions as definition } from "../module.js";
 import { all, deliver, isWaitingOnPerson, post, withdrawNeeded } from "../features/agent/requests.js";
-import { answer, ofChat, readyAnswers, reopen, reread, skip } from "../features/dock/requests.js";
+import { answer, questionsOfChat, readyAnswers, reopen, reread, skip } from "../features/dock/requests.js";
 import { questionsChanged } from "../gateways/questions/questions.events.js";
 
 export const questions = handledModule(definition, [
@@ -13,7 +13,7 @@ export const questions = handledModule(definition, [
 	named("agent.post", post),
 	named("agent.withdraw-needed", withdrawNeeded),
 	named("dock.answer", answer),
-	named("dock.of-chat", ofChat),
+	named("dock.questions-of-chat", questionsOfChat),
 	named("dock.ready-answers", readyAnswers),
 	named("dock.reopen", reopen),
 	named("dock.skip", skip),

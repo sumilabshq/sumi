@@ -257,7 +257,7 @@ export const commandMenu = moduleContract("command-menu", Device, {
 			.idempotencyKey(Repeatable)),
 	},
 	opening: {
-		current: named("opening.current", query()
+		isOpen: named("opening.is-open", query()
 			.public()
 			.output(KeptMenuSchema)
 			.settlesNow()),

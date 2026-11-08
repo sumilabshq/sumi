@@ -13,7 +13,7 @@ const NEW_WORKSPACE_TIP = tooltipMarks({ said: NEW_WORKSPACE, side: "top", align
 
 export function WorkspaceStrip(): ReactElement | null {
 	const { rows, hasStrip } = useQuery(workspaces.workspaces.all).data;
-	const createWorkspace = useCommand(workspaces.workspaces.create);
+	const createWorkspace = useCommand(workspaces.workspaces.createWorkspace);
 	const scroller = useRef<HTMLDivElement | null>(null);
 	useFadesAtEdges(scroller, rows.length);
 	if (!hasStrip) {

@@ -120,7 +120,7 @@ check(
 );
 
 await outputOf(studio.send(commandMenuContract.opening.toggle, { door: "probe", text: "" }));
-const opened = await outputOf(studio.send(commandMenuContract.opening.current));
+const opened = await outputOf(studio.send(commandMenuContract.opening.isOpen));
 check("the filled door opens the menu", [opened.isOpen, opened.door], [true, "probe"]);
 
 const refused = await studio.send(commandMenuContract.opening.toggle, { door: "nope", text: "" });

@@ -17,7 +17,7 @@ import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/la
 import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
 import { aim, close, place, resizeSplit } from "../packages/state/layout/features/panes/requests.ts";
-import { dropGone, showInTarget } from "../packages/state/layout/features/pane-tabs/requests.ts";
+import { dropGoneTabs, showInTarget } from "../packages/state/layout/features/pane-tabs/requests.ts";
 import { peek, toggle } from "../packages/state/layout/features/frame-sides/requests.ts";
 import { resizeEdge } from "../packages/state/layout/features/frame-widths/requests.ts";
 import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
@@ -319,7 +319,7 @@ function checksGoneTabs(): void {
 	console.info = () => undefined;
 	const beside = partsOf();
 	placeView(beside, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
-	dropGone.handle({ heldTabIds: [] }, beside);
+	dropGoneTabs.handle({ heldTabIds: [] }, beside);
 	check(
 		"a pane whose kept tab the host no longer holds is closed",
 		JSON.stringify(shapeOf(beside)) === '["chat","shown"]',
@@ -344,7 +344,7 @@ function checksGoneTabs(): void {
 		},
 		"a kept tab in the only app pane",
 	);
-	const said = infosOf(() => dropGone.handle({ heldTabIds: ["tab-1"] }, alone));
+	const said = infosOf(() => dropGoneTabs.handle({ heldTabIds: ["tab-1"] }, alone));
 	check(
 		"the only app pane keeps its place and shows no tab, logged as one transition",
 		JSON.stringify(shapeOf(alone)) === '["chat","shown"]' &&
@@ -356,7 +356,7 @@ function checksGoneTabs(): void {
 	const held = partsOf();
 	placeView(held, { kind: "app", tabId: "tab-5" }, { targetId: "pane-app", side: "right" });
 	const before = held.paneTree.tree();
-	dropGone.handle({ heldTabIds: ["tab-5"] }, held);
+	dropGoneTabs.handle({ heldTabIds: ["tab-5"] }, held);
 	check("a pane whose tab the host holds is left alone", held.paneTree.tree() === before, shapeOf(held));
 	console.info = quiet;
 }

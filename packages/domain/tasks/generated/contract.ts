@@ -600,12 +600,12 @@ export const tasks = moduleContract("tasks", Server, {
 			.input(SendBackAskSchema)
 			.output(ContinuedSchema)
 			.idempotencyKey(Repeatable)),
-		resume: named("person.resume", command()
+		continueTask: named("person.continue-task", command()
 			.public()
 			.input(ContinueAskSchema)
 			.output(ContinuedSchema)
 			.idempotencyKey(Repeatable)),
-		undelivered: named("person.undelivered", command()
+		markUndelivered: named("person.mark-undelivered", command()
 			.public()
 			.input(UndeliveredAskSchema)
 			.output(TaskCardSchema)
