@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { FitAddon } from "@xterm/addon-fit";
+import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal } from "@xterm/xterm";
 import { TERMINAL_SHEET } from "./terminal-sheet.js";
 import { cssValueOf } from "./terminal-theme.js";
@@ -9,6 +10,8 @@ const SHEET_ID = "wg-terminal-sheet";
 const FONT_SIZE = 13;
 const LINE_HEIGHT = 1.25;
 const SCROLLBACK = 10_000;
+const GPU_LOST = "[widgetarium] terminal screen gpu → dom: the WebGL context was lost";
+const GPU_REFUSED = "[widgetarium] terminal screen gpu → dom: WebGL refused ({reason})";
 
 export function useScreenIn(screen: RefObject<HTMLDivElement | null>): RefObject<Terminal | null> {
 	const terminal = useRef<Terminal | null>(null);
@@ -31,6 +34,7 @@ export function useScreenIn(screen: RefObject<HTMLDivElement | null>): RefObject
 		const fit = new FitAddon();
 		started.loadAddon(fit);
 		started.open(host);
+		drawOnGpu(started);
 		fit.fit();
 		started.focus();
 		const resized = new ResizeObserver(() => fit.fit());
@@ -43,6 +47,19 @@ export function useScreenIn(screen: RefObject<HTMLDivElement | null>): RefObject
 		};
 	}, [screen]);
 	return terminal;
+}
+
+function drawOnGpu(terminal: Terminal): void {
+	try {
+		const gpu = new WebglAddon();
+		gpu.onContextLoss(() => {
+			console.warn(GPU_LOST);
+			gpu.dispose();
+		});
+		terminal.loadAddon(gpu);
+	} catch (failure) {
+		console.warn(GPU_REFUSED.replace("{reason}", String(failure)));
+	}
 }
 
 function layTerminalSheet(document: Document): void {
