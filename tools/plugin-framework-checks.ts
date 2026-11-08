@@ -110,6 +110,14 @@ const twinC = plugin("twin")
 	.optional(extra, layout)
 	.apply((app) => app.use(marks).mark("c"));
 
+function marksRecordedInto(marked: Marked[]): (caller: CallerFacts) => Marks {
+	return ({ pluginId }) => ({
+		mark: (label) => {
+			marked.push({ label, pluginId });
+		},
+	});
+}
+
 function twinsStarted(plugins: readonly Plugin[], store: MemoryPluginStateStore, resolves = true): readonly Marked[] {
 	return markedBy(plugins, store, resolves).marked;
 }
@@ -123,11 +131,7 @@ function markedBy(
 	const builder = runtime()
 		.builtInPlugins(...plugins)
 		.state(store)
-		.provide(marks, ({ pluginId }: CallerFacts) => ({
-			mark: (label) => {
-				marked.push({ label, pluginId });
-			},
-		}));
+		.provide(marks, marksRecordedInto(marked));
 	const started = (resolves ? builder.withNameResolves() : builder).start();
 	return { marked, started };
 }
