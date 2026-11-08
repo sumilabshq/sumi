@@ -82,7 +82,7 @@ function unclaimedOutcomeOf({ filler, fill }: FillOffer, startedIds: ReadonlySet
 	return {
 		refusal: sentenceOf(NO_OWNER, {
 			plugin: filler.id,
-			name: fill.slot.name,
+			name: fill.slot.label,
 		}),
 	};
 }
@@ -108,7 +108,7 @@ function parsedOutcomeOf({ filler, fill }: FillOffer, claim: SlotClaim): FillOut
 
 	return {
 		pluginId: filler.id,
-		id: fill.id,
+		id: fill.listId ?? claim.stampedName,
 		item: parsed.data,
 		stampedName: claim.stampedName,
 	};

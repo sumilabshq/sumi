@@ -2,9 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import type { GenerateArgs } from "./cli-args.js";
 import type { CliOutput } from "./cli-output.js";
-import { generatedPackagesIn } from "@widgetarium/eslint-plugin/workspace";
+import { generatedPackagesIn, jsonAt, levelOf, workspacePackagesIn } from "@widgetarium/eslint-plugin/workspace";
 import { APP_REGISTRY_PACKAGE, appRegistryFilesOf } from "./apps-registry.js";
 import { generatedPackageOf } from "./module-entry.js";
+import { PLUGIN_LEVEL, generatedPluginOf } from "./plugin-entry.js";
 
 interface ModuleEntry {
 	readonly module: string;
@@ -18,7 +19,7 @@ const STRAY = "{module}/{entry} is a file generate no longer writes; run it to r
 const NO_MODULES = 'no module found: name a module folder, or mark one with widgetarium.level "domain" or "client"';
 
 export function runGenerate({ modules, check }: GenerateArgs, output: CliOutput, cwd: string): number {
-	const named = modules.length > 0 ? modules : generatedPackagesIn(cwd);
+	const named = modules.length > 0 ? modules : [...generatedPackagesIn(cwd), ...pluginPackagesIn(cwd)];
 	if (named.length === 0) {
 		output.out(NO_MODULES);
 		return 0;
@@ -32,11 +33,23 @@ export function runGenerate({ modules, check }: GenerateArgs, output: CliOutput,
 
 function entriesOf(cwd: string, module: string): ModuleEntry[] {
 	const folder = path.resolve(cwd, module);
-	const { files, strays } = generatedPackageOf(folder, module);
+	const { files, strays } = isPluginPackage(folder)
+		? generatedPluginOf(folder, module)
+		: generatedPackageOf(folder, module);
 	return [
 		...files.map(({ entry, text }) => ({ module, entry, file: path.join(folder, entry), text })),
 		...strays.map((entry) => ({ module, entry, file: path.join(folder, entry), text: null })),
 	];
+}
+
+function pluginPackagesIn(cwd: string): string[] {
+	return workspacePackagesIn(cwd)
+		.filter(({ level }) => level === PLUGIN_LEVEL)
+		.map(({ folder }) => folder);
+}
+
+function isPluginPackage(folder: string): boolean {
+	return levelOf(jsonAt(path.join(folder, "package.json"))) === PLUGIN_LEVEL;
 }
 
 function appRegistryEntriesOf(cwd: string): ModuleEntry[] {

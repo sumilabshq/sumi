@@ -3,6 +3,7 @@ import path from "node:path";
 import { APP_MANIFEST_FILE, AppManifestSchema, CONTRACT_VERSION, contractRefusal } from "@sumi/contract";
 import type { AppManifest } from "@sumi/contract";
 import { CliRefusal } from "./cli-output.js";
+import { camelOf } from "./item-names.js";
 import { GENERATED_HEADER } from "./module-entry.js";
 import { moduleFolderOf } from "./workspace-root.js";
 
@@ -119,7 +120,7 @@ function appModuleImportsOf(cwd: string, rows: readonly RegisteredRow[]): readon
 }
 
 function moduleImportOf(cwd: string, module: string): readonly AppModuleImport[] {
-	const name = `${pascalOf(module)}Module`;
+	const name = camelOf(module);
 	const declares = new RegExp(`export const ${name}\\b`);
 	const folder = moduleFolderOf(cwd, module);
 	const isDeclared = folder !== null && declares.test(fs.readFileSync(path.join(cwd, folder, "module.ts"), "utf8"));
@@ -140,11 +141,4 @@ function appModulesTextOf(imports: readonly AppModuleImport[]): string {
 		`export const APP_MODULES = [${imports.map(({ name }) => name).join(", ")}] as const;`,
 		"",
 	].join("\n");
-}
-
-function pascalOf(name: string): string {
-	return name
-		.split("-")
-		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-		.join("");
 }

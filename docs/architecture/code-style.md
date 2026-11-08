@@ -4,31 +4,31 @@ How code is written inside the architecture. The rules hold in any project built
 
 ## Names
 
-**A name ends with its kind**, and every building block declared once and used as a name is PascalCase, a step taking options included (`HasPermissionGuard(perm)`, `RateLimitMiddleware({ calls, per })`). camelCase is for ordinary values and for the functions that start a chain (`command`, `guard`, `middleware`, `minutes`).
+**A request, an event, a subscriber and a module are named by their camelCase constant, with no kind suffix and no string**: the builder already says the kind, and the constant is the name (`frameSides` → `frame-sides`). A guard, a middleware, a gateway and a schema keep PascalCase and end with their kind, a step taking options included (`HasPermissionGuard(perm)`, `RateLimitMiddleware({ calls, per })`). camelCase is also for ordinary values and for the functions that start a chain (`command`, `guard`, `middleware`, `minutes`).
 
-| Thing              | Rule                                                                     | Example                                                         |
-| ------------------ | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| a query            | noun phrase + `Query`, no `Get`                                          | `FrameSidesQuery`                                               |
-| a command          | verb phrase + `Command`                                                  | `ToggleFrameSideCommand`                                        |
-| a request's string | the constant without its suffix, kebab case; the module adds `<module>/` | `"toggle-frame-side"` → `layout/toggle-frame-side`              |
-| an event           | a fact in the past tense + `Event`                                       | `PanesChangedEvent`                                             |
-| a subscriber       | what it does, never its trigger: `Reread<Data>` or a verb phrase         | `RereadPanesSubscriber`, `EnsurePanePagesSubscriber`            |
-| a module           | its area + `Module`                                                      | `LayoutModule`                                                  |
-| a guard            | what it checks + `Guard`                                                 | `AuthenticatedGuard`, `OwnsInvoiceGuard`                        |
-| a middleware       | what it does + `Middleware`                                              | `TimingLoggerMiddleware`                                        |
-| a gateway          | its data + `Gateway`, an `abstract class` that is also its token         | `FrameSidesGateway`, `PaneTreeGateway`                          |
-| its implementation | `<Storage><Name>Gateway`: what it stores in                              | `TauriFrameSidesGateway`, `FlagMemoryFrameSidesGateway`         |
-| a gateway method   | the data it reads or writes, never a generic verb                        | `sides()`, `saveSides(sides, reason)`, `sidesChanged(listener)` |
-| a storage shape    | `Kept<Name>Schema`, beside its gateway                                   | `KeptPaneTreeSchema`                                            |
-| a file             | kebab-case                                                               | `requests.ts`, `tauri.gateway.ts`, `side-looks.ts`              |
+| Thing              | Rule                                                             | Example                                                         |
+| ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------- |
+| a query            | noun phrase, camelCase, no `get`                                 | `frameSides`                                                    |
+| a command          | verb phrase, camelCase                                           | `toggleFrameSide`                                               |
+| a full name        | kebab segments joined by dots: module, feature folder, constant  | `layout.frame-sides.toggle-frame-side`                          |
+| an event           | a fact in the past tense, camelCase                              | `panesChanged`                                                  |
+| a subscriber       | what it does, never its trigger: `reread<Data>` or a verb phrase | `rereadPanes`, `ensurePanePages`                                |
+| a module           | its area, camelCase; its name is the kebab of it                 | `layout`, `chatTabs` → `chat-tabs`                              |
+| a guard            | what it checks + `Guard`                                         | `AuthenticatedGuard`, `OwnsInvoiceGuard`                        |
+| a middleware       | what it does + `Middleware`                                      | `TimingLoggerMiddleware`                                        |
+| a gateway          | its data + `Gateway`, an `abstract class` that is also its token | `FrameSidesGateway`, `PaneTreeGateway`                          |
+| its implementation | `<Storage><Name>Gateway`: what it stores in                      | `TauriFrameSidesGateway`, `FlagMemoryFrameSidesGateway`         |
+| a gateway method   | the data it reads or writes, never a generic verb                | `sides()`, `saveSides(sides, reason)`, `sidesChanged(listener)` |
+| a storage shape    | `Kept<Name>Schema`, beside its gateway                           | `KeptPaneTreeSchema`                                            |
+| a file             | kebab-case                                                       | `requests.ts`, `tauri.gateway.ts`, `side-looks.ts`              |
 
-`building-block-names` enforces the PascalCase and suffix rows; `feature-layout` the request string. Two subscribers of one feature doing the same on different events add what changed: `RereadFieldForDesignSubscriber`.
+`building-block-names` enforces the camelCase rows and the PascalCase and suffix ones; `no-choice-strings` and the generator refuse a string name. A segment is `a-z` words joined by `-`: no digits, capitals, `/` or `_`. Two subscribers of one feature doing the same on different events add what changed: `rereadFieldForDesign`.
 
 ## The fluent chain
 
 The fluent chain is this project's one declaration pattern: requests, modules, guards, middleware, slots and plugins are all declared by it, as zod schemas already are.
 
-- **A kind is declared with a chain; a value of a kind is one object.** Declaring a request, module, guard, middleware, slot or plugin is a chain. Using one is a single object: a fill, options, a module's config (`TasksModule({ file })`), `BillingModule({ over })`, `LayoutModule({ injects })`, input, start settings.
+- **A kind is declared with a chain; a value of a kind is one object.** Declaring a request, module, guard, middleware, slot or plugin is a chain. Using one is a single object: a fill, options, a module's config (`tasks({ file })`), `billing({ over })`, `layout({ injects })`, input, start settings.
 - **A call that changes the chain's types takes one item; a call that lists independent items takes many.** `.guard`, `.use`, `.provide` take one; `.handles`, `.fill`, `.imports` take many.
 - **One concern per call**, read top to bottom in the order it runs.
 - **Every behaviour ends in `.handle()`**: a request, a guard, a middleware.
@@ -36,7 +36,7 @@ The fluent chain is this project's one declaration pattern: requests, modules, g
 - **A declaration never takes an options object.** A declaration that takes `{ inject, run, … }` is the shape this rule replaced.
 
 ```ts skip-check
-export const PayInvoiceCommand = command("pay-invoice")
+export const payInvoice = command()
 	.public()
 	.input(PayInvoiceInputSchema)
 	.idempotencyKey((input) => input.invoiceId)
@@ -98,7 +98,7 @@ export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
 
 - One picker per module in `gateways/<module>-parts/`: a record keyed by `Platform`, so a new platform is a type error until every module answers it.
 - A class built there takes its dependencies as constructor arguments.
-- `module.ts` holds only `module(...)…provide((facts) => ({ ...layoutPartsOn(facts) })).handles(...handled)`.
+- `module.ts` holds only `module()…provide((facts) => ({ ...layoutPartsOn(facts) })).handles(handled)`.
 
 ## A block
 

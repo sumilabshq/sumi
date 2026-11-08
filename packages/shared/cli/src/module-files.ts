@@ -48,7 +48,7 @@ export function memoryPartsOf(module: string): string {
 }
 
 export function moduleConstOf(module: string): string {
-	return `${pascalOf(module)}Module`;
+	return camelOf(module);
 }
 
 function entryOf(file: string): Readonly<Record<string, string>> {
@@ -128,11 +128,11 @@ function moduleTextOf({ name, placement }: ModuleSeed): string {
 		`import { ${camelOf(name)}PartsOn } from "./${jsSpecifierOf(pickerPathOf(name))}";`,
 		`import { handled } from "./${jsSpecifierOf(HANDLED_ENTRY)}";`,
 		"",
-		`export const ${moduleConstOf(name)} = module("${name}")`,
+		`export const ${moduleConstOf(name)} = module()`,
 		`\t.on(${placement})`,
 		...(isServer ? [`\t.guard(${SERVER_GUARD})`] : []),
 		`\t.provide((facts) => ${camelOf(name)}PartsOn(facts))`,
-		"\t.handles(...handled);",
+		"\t.handles(handled);",
 		"",
 	].join("\n");
 }

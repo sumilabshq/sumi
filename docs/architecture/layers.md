@@ -21,7 +21,7 @@ nor hidden in a gateway; `shared/lib/` holds what two features use.
 **Bad: the handler forwards, a "store" in lib owns the state and the rules** (`packages/state/layout`, 2026-10-24):
 
 ```ts
-export const ToggleFrameSideCommand = command("toggle-frame-side")
+export const toggleFrameSide = command()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ side }, { frameSidesStore }) => frameSidesStore.toggle(side));
@@ -74,7 +74,7 @@ export abstract class UserGateway {
 **Good: the handler holds the rule, `lib` computes, the gateway stores.**
 
 ```ts
-export const ToggleFrameSideCommand = command("toggle-frame-side")
+export const toggleFrameSide = command()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.handle(({ side }, { frameSides }) => {

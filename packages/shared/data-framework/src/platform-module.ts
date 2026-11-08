@@ -1,14 +1,7 @@
 import type { AnyHandler } from "./handler";
+import type { HandledItems } from "./handled-items";
 import { isObject } from "./is-object";
-import type {
-	HandlingDefinition,
-	ModuleItem,
-	NothingProvided,
-	Provided,
-	ReadyModule,
-	Runs,
-	ServerParts,
-} from "./module";
+import type { HandlingDefinition, NothingProvided, Provided, ReadyModule, Runs, ServerParts } from "./module";
 
 export type Platform = "tauri" | "browser" | "server";
 
@@ -53,7 +46,7 @@ export interface ModuleCall<P extends Provided, R extends Runs, C> {
 }
 
 export interface ModuleHandles<P extends Provided, R extends Runs, C> {
-	handles(...items: readonly ModuleItem[]): ModuleOf<P, R, C>;
+	handles(handled: HandledItems): ModuleOf<P, R, C>;
 }
 
 export type CallableModule<P extends Provided, R extends Runs, C> = RunnableModule<P, R> &
@@ -64,7 +57,9 @@ export type ModuleOf<P extends Provided, R extends Runs, C> = NoConfig extends C
 	? CallableModule<P, R, C>
 	: ModuleSurface<P, R> & ModuleCall<P, R, C> & ModuleHandles<P, R, C>;
 
-export type ProvidedOf<M> = M extends { readyWith(injects: infer P extends Provided): ReadyModule } ? P : NothingProvided;
+export type ProvidedOf<M> = M extends { readyWith(injects: infer P extends Provided): ReadyModule }
+	? P
+	: NothingProvided;
 
 interface Provider<P extends Provided> {
 	provide(facts: ConfigFacts<unknown>): P;
@@ -88,8 +83,8 @@ export class PlatformModule<P extends Provided, R extends Runs = Runs> implement
 		return new PlatformModule(this.definition, this.provider, config);
 	}
 
-	handles(...items: readonly ModuleItem[]): PlatformModule<P, R> {
-		return new PlatformModule(this.definition.withItems(items), this.provider, this.config);
+	handles(handled: HandledItems): PlatformModule<P, R> {
+		return new PlatformModule(this.definition.withHandled(handled), this.provider, this.config);
 	}
 
 	readyWith(injects: P): ReadyModule {
@@ -108,7 +103,7 @@ export class PlatformModule<P extends Provided, R extends Runs = Runs> implement
 			handlers: this.handlers,
 			readyWith: (injects: P): ReadyModule => this.readyWith(injects),
 			startedOn: (facts: ModuleFacts): ReadyModule => this.startedOn(facts),
-			handles: (...items: readonly ModuleItem[]): CallableModule<P, R, C> => this.handles(...items).callable<C>(),
+			handles: (handled: HandledItems): CallableModule<P, R, C> => this.handles(handled).callable<C>(),
 		});
 	}
 }

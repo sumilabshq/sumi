@@ -1,134 +1,125 @@
 import { z } from "zod";
 import { DerivedFill, Fill } from "./fill";
+import { fullNameOf, unnamedIdentity } from "./identity";
+import type { Identity } from "./identity";
 import { sentenceOf } from "./sentence";
 
 export type SlotCardinality = "single" | "list";
 
 export interface SlotShape<S extends z.ZodType = z.ZodType, C extends SlotCardinality = SlotCardinality> {
+	readonly identity: Identity;
 	readonly name: string;
+	readonly label: string;
 	readonly itemSchema: S;
 	readonly cardinality: C;
 }
 
-export type SlotFillInput<S extends z.ZodType, C extends SlotCardinality> = C extends "list"
-	? z.input<S> & { readonly id: string }
-	: z.input<S>;
+export type ListItemInput<S extends z.ZodType> = z.input<S> & { readonly id: string };
 
 export type FilledItem<S extends z.ZodType> = z.output<S> & { readonly id: string };
 
-export type Slot<S extends z.ZodType, C extends SlotCardinality> = SlotShape<S, C> & {
-	(input: SlotFillInput<S, C>): Fill;
-	<F extends z.ZodObject>(
-		source: SlotShape<F>,
-		derive: (items: readonly FilledItem<F>[]) => readonly SlotFillInput<S, C>[],
-	): DerivedFill;
-	list(): Slot<S, "list">;
-};
+export type ItemsDerive<F extends z.ZodObject, A> = (items: readonly FilledItem<F>[]) => A;
 
 export interface SlotDraft {
-	item<S extends z.ZodType>(schema: S): Slot<S, "single">;
+	item<S extends z.ZodType>(schema: S): SingleSlot<S>;
 }
 
-export const SlotNameSchema = z
-	.string()
-	.regex(/^[a-z][a-z0-9-]*$/, "a slot name is lowercase letters, digits and dashes, starting with a letter");
-
-const LIST_NEEDS_ID = "a fill of the list slot {slot} needs a non-empty string id: {slot}({ id, … })";
+const SLOT = "a slot";
+const UNNAMED_LABEL = "(not named yet)";
+const LIST_NEEDS_ID = "a fill of slot {slot}, a list, needs a non-empty string id: add({ id, … })";
 const DERIVED_NEEDS_SLOT_AND_FUNCTION =
-	"a fill of slot {slot} built from another slot takes that slot and a function: {slot}(SourceSlot, (items) => [ … ])";
+	"a fill of slot {slot} built from another slot takes that slot and a function: addFrom(sourceSlot, (items) => [ … ])";
 const SOURCE_NOT_OBJECTS =
 	"a fill of slot {slot} is built only from a slot whose items are objects, and slot {source} holds other items";
 
-export function slot(name: string): SlotDraft {
-	const slotName = SlotNameSchema.parse(name);
+abstract class DeclaredSlot<S extends z.ZodType, C extends SlotCardinality> implements SlotShape<S, C> {
+	abstract readonly cardinality: C;
+
+	constructor(
+		readonly identity: Identity,
+		readonly itemSchema: S,
+	) {}
+
+	get name(): string {
+		return fullNameOf(this.identity, SLOT);
+	}
+
+	get label(): string {
+		return this.identity.name === null ? UNNAMED_LABEL : this.name;
+	}
+}
+
+export class ListSlot<S extends z.ZodType> extends DeclaredSlot<S, "list"> {
+	readonly cardinality = "list";
+
+	add(item: ListItemInput<S>): Fill {
+		return createFill(this, item);
+	}
+
+	addFrom<F extends z.ZodObject>(
+		source: SlotShape<F>,
+		derive: ItemsDerive<F, readonly ListItemInput<S>[]>,
+	): DerivedFill {
+		return createDerivedFill(this, source, derive, (answered) => answered);
+	}
+}
+
+export class SingleSlot<S extends z.ZodType> extends DeclaredSlot<S, "single"> {
+	readonly cardinality = "single";
+
+	set(item: z.input<S>): Fill {
+		return createFill(this, item);
+	}
+
+	setFrom<F extends z.ZodObject>(source: SlotShape<F>, derive: ItemsDerive<F, z.input<S>>): DerivedFill {
+		return createDerivedFill(this, source, derive, (answered) => [answered]);
+	}
+
+	list(): ListSlot<S> {
+		return new ListSlot(this.identity, this.itemSchema);
+	}
+}
+
+export function slot(): SlotDraft {
 	return {
-		item: (schema) => createSlot(slotName, schema, "single"),
+		item: (schema) => new SingleSlot(unnamedIdentity(), schema),
 	};
 }
 
 export function createFill(target: SlotShape, input: unknown): Fill {
 	if (target.cardinality === "single") {
-		return new Fill(target, target.name, input);
+		return new Fill(target, null, input);
 	}
 
 	if (!hasStringId(input)) {
-		throw new Error(sentenceOf(LIST_NEEDS_ID, { slot: target.name }));
+		throw new Error(sentenceOf(LIST_NEEDS_ID, { slot: target.label }));
 	}
 
 	const { id, ...item } = input;
 	return new Fill(target, id, item);
 }
 
-function createSlot<S extends z.ZodType, C extends SlotCardinality>(
-	name: string,
-	itemSchema: S,
-	cardinality: C,
-): Slot<S, C>;
-function createSlot(
-	name: string,
-	itemSchema: z.ZodType,
-	cardinality: SlotCardinality,
-): Slot<z.ZodType, SlotCardinality> {
-	function fillOf(input: unknown): Fill;
-	function fillOf(source: SlotShape, derive: (items: never) => unknown): DerivedFill;
-	function fillOf(input: unknown, derive?: unknown): Fill | DerivedFill {
-		return createFillOrDerived(created, input, derive);
-	}
-
-	const created = Object.assign(fillOf, slotPartsOf(name, itemSchema, cardinality));
-	Object.defineProperty(created, "name", { value: name });
-	return Object.freeze(created);
-}
-
-function slotPartsOf(
-	name: string,
-	itemSchema: z.ZodType,
-	cardinality: SlotCardinality,
-): Pick<Slot<z.ZodType, SlotCardinality>, "itemSchema" | "cardinality" | "list"> {
-	return {
-		itemSchema,
-		cardinality,
-		list: () => createSlot(name, itemSchema, "list"),
-	};
-}
-
-function createFillOrDerived(target: SlotShape, input: unknown, derive: unknown): Fill | DerivedFill {
-	if (derive === undefined) {
-		return createFill(target, input);
-	}
-
-	return createDerivedFill(target, input, derive);
-}
-
-function createDerivedFill(target: SlotShape, source: unknown, derive: unknown): DerivedFill {
+function createDerivedFill(
+	target: SlotShape,
+	source: unknown,
+	derive: unknown,
+	asList: (answered: unknown) => unknown,
+): DerivedFill {
 	if (!isSlotShape(source) || !isDeriveFunction(derive)) {
-		throw new Error(sentenceOf(DERIVED_NEEDS_SLOT_AND_FUNCTION, { slot: target.name }));
+		throw new Error(sentenceOf(DERIVED_NEEDS_SLOT_AND_FUNCTION, { slot: target.label }));
 	}
 
-	const refusal = refuseNonObjectSource(target, source);
-
-	if (refusal !== null) {
-		throw new Error(refusal);
+	if (!(source.itemSchema instanceof z.ZodObject)) {
+		throw new Error(sentenceOf(SOURCE_NOT_OBJECTS, { slot: target.label, source: source.label }));
 	}
 
 	return new DerivedFill(target, source, {
-		derive: (items) => Reflect.apply(derive, undefined, [items]),
-	});
-}
-
-function refuseNonObjectSource(target: SlotShape, source: SlotShape): string | null {
-	if (source.itemSchema instanceof z.ZodObject) {
-		return null;
-	}
-
-	return sentenceOf(SOURCE_NOT_OBJECTS, {
-		slot: target.name,
-		source: source.name,
+		derive: (items) => asList(Reflect.apply(derive, undefined, [items])),
 	});
 }
 
 function isSlotShape(value: unknown): value is SlotShape {
-	return typeof value === "function" && "itemSchema" in value && "cardinality" in value;
+	return value instanceof DeclaredSlot;
 }
 
 function isDeriveFunction(value: unknown): value is (items: never) => unknown {

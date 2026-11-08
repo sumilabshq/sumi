@@ -15,6 +15,7 @@ import type { Added, Step, StepCall, StepContext } from "./middleware";
 import type { Provided } from "./module";
 import { callerKeyOf, isKeyReplayed, keyRead } from "./policies";
 import type { CallerOrigin } from "./policies";
+import { nameOfModule } from "./request";
 import type { AnyRequest } from "./request";
 import { outputOfSent, stampSent } from "./send";
 import type { CallingModule } from "./calling-module";
@@ -63,11 +64,13 @@ export function refuseCaller({ handler: { request } }: Route, caller: InProcessC
 			: refusalOf("not-found", REACHED_IN_PROCESS_ONLY.replace("{request}", request.name));
 	}
 
-	if (visibility.reach !== "modules" || isListedCaller(request, visibility.modules, caller)) {
+	const modules = visibility.reach === "modules" ? visibility.modules.map(nameOfModule) : [];
+
+	if (visibility.reach !== "modules" || isListedCaller(request, modules, caller)) {
 		return null;
 	}
 
-	const said = CALLABLE_BY_MODULES.replace("{request}", request.name).replace("{modules}", visibility.modules.join(", "));
+	const said = CALLABLE_BY_MODULES.replace("{request}", request.name).replace("{modules}", modules.join(", "));
 	return refusalOf("forbidden", said.replace("{caller}", caller.module ?? VIEW));
 }
 

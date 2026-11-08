@@ -6,8 +6,6 @@ import type { DomainFile } from "../domain-file.js";
 import { importListener } from "../imports.js";
 import { placementOf } from "./feature-placement.js";
 
-const REQUEST_SUFFIX = /(Query|Command)$/;
-
 export const featureLayout: Rule.RuleModule = {
 	meta: {
 		type: "problem",
@@ -17,10 +15,6 @@ export const featureLayout: Rule.RuleModule = {
 			misplaced: "{{said}}",
 			handlerInContract:
 				"a handler lives in handlers.ts beside its contract, never in contract.ts: move {{name}} there",
-			wrongName:
-				'request {{constant}} is named "{{name}}"; name it "{{wanted}}": <module>/<the constant without its suffix, in kebab case>',
-			wrongShortName:
-				'request {{constant}} is named "{{name}}"; name it "{{wanted}}": the constant without its suffix, in kebab case, since the module adds its own name',
 			otherFeature:
 				"a feature imports only its own folder; {{specifier}} is another feature: move what both use to shared/",
 			gatewayPart:
@@ -48,48 +42,29 @@ interface Reached {
 
 interface RootCall {
 	readonly name: string;
-	readonly call: ESTree.CallExpression;
 }
 
 function checkFeatureFile(context: Rule.RuleContext, file: DomainFile, program: ESTree.Program): void {
 	const name = file.inside.at(-1);
-	if (file.folder === FEATURES && (name === CONTRACT_FILE || name === REQUESTS_FILE))
-		checkContract(context, file, program);
+	if (file.folder === FEATURES && (name === CONTRACT_FILE || name === REQUESTS_FILE)) checkContract(context, program);
 }
 
-function checkContract(context: Rule.RuleContext, file: DomainFile, program: ESTree.Program): void {
+function checkContract(context: Rule.RuleContext, program: ESTree.Program): void {
 	for (const declared of program.body.map(declaredIn))
 		if (declared?.type === "VariableDeclaration")
-			for (const declarator of declared.declarations) checkDeclarator(context, file, declarator);
+			for (const declarator of declared.declarations) checkDeclarator(context, declarator);
 }
 
 function declaredIn(statement: ESTree.Node): ESTree.Node | null | undefined {
 	return statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
 }
 
-function checkDeclarator(context: Rule.RuleContext, file: DomainFile, declarator: ESTree.VariableDeclarator): void {
+function checkDeclarator(context: Rule.RuleContext, declarator: ESTree.VariableDeclarator): void {
 	const root = declarator.init == null ? null : rootCallOf(declarator.init);
-	if (root === null || declarator.id.type !== "Identifier") return;
-	const constant = declarator.id.name;
-	if (root.name === "handler")
-		return context.report({ node: declarator, messageId: "handlerInContract", data: { name: constant } });
-	const named = requestNameOf(root, constant);
-	const short = kebabOf(constant.replace(REQUEST_SUFFIX, ""));
-	const isRequestsFile = file.inside.at(-1) === REQUESTS_FILE;
-	const wanted = isRequestsFile ? short : `${path.basename(file.root)}/${short}`;
 
-	if (named === null || named === wanted) {
-		return;
+	if (root?.name === "handler" && declarator.id.type === "Identifier") {
+		context.report({ node: declarator, messageId: "handlerInContract", data: { name: declarator.id.name } });
 	}
-
-	const messageId = isRequestsFile ? "wrongShortName" : "wrongName";
-	context.report({ node: declarator, messageId, data: { constant, name: named, wanted } });
-}
-
-function requestNameOf(root: RootCall, constant: string): string | null {
-	if ((root.name !== "query" && root.name !== "command") || !REQUEST_SUFFIX.test(constant)) return null;
-	const [named] = root.call.arguments;
-	return named?.type === "Literal" && typeof named.value === "string" ? named.value : null;
 }
 
 function checkImport(context: Rule.RuleContext, file: DomainFile, node: ESTree.Node, specifier: string): void {
@@ -119,10 +94,6 @@ function checkGatewayPart(
 function rootCallOf(node: ESTree.Node): RootCall | null {
 	if (node.type === "MemberExpression") return rootCallOf(node.object);
 	if (node.type !== "CallExpression") return null;
-	if (node.callee.type === "Identifier") return { name: node.callee.name, call: node };
+	if (node.callee.type === "Identifier") return { name: node.callee.name };
 	return node.callee.type === "Super" ? null : rootCallOf(node.callee);
-}
-
-function kebabOf(name: string): string {
-	return name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }

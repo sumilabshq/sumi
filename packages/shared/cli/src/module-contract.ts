@@ -11,6 +11,7 @@ import { refuseKeyFunction } from "./contract-key.js";
 import { usesOf } from "./free-names.js";
 import type { NameUse } from "./free-names.js";
 import { FRAMEWORK } from "./scaffold-names.js";
+import { camelOf, checkedCamelName, groupOf, kebabOf, pathOf, refuseSamePaths } from "./item-names.js";
 import { filesUnder } from "./template-files.js";
 import { chainOf, exportedConstsOf, rootCallOf } from "@widgetarium/eslint-plugin/babel-chain";
 import type { ChainStep } from "@widgetarium/eslint-plugin/babel-chain";
@@ -23,6 +24,8 @@ export const SERVER_CONTRACT_FILE = "generated/server.ts";
 export interface HandledItem {
 	readonly name: string;
 	readonly file: string;
+	readonly group: readonly string[];
+	readonly path: string | null;
 }
 
 export interface ModuleContracts {
@@ -36,6 +39,7 @@ type ItemRoot = "query" | "command" | "event" | "subscriber";
 
 interface DeclaredItem {
 	readonly name: string;
+	readonly group: readonly string[];
 	readonly file: SourceFile;
 	readonly chain: readonly ChainStep[];
 	readonly rootStep: ChainStep;
@@ -44,9 +48,13 @@ interface DeclaredItem {
 	readonly isHandled: boolean;
 }
 
+interface ContractEntry extends ListedRequest {
+	readonly group: readonly string[];
+}
+
 interface CutAsk {
 	readonly folder: string;
-	readonly listed: readonly ListedRequest[];
+	readonly listed: readonly ContractEntry[];
 	readonly listedNames: ReadonlySet<string>;
 	readonly extraImports: readonly Imported[];
 	readonly schemasElsewhere?: SchemasElsewhere;
@@ -55,11 +63,6 @@ interface CutAsk {
 interface Cut {
 	readonly text: string;
 	readonly exportedSchemaNames: ReadonlySet<string>;
-}
-
-interface PublicContract {
-	readonly requestNames: ReadonlySet<string>;
-	readonly schemaNames: ReadonlySet<string>;
 }
 
 const PUBLIC_METHOD = "public";
@@ -96,59 +99,78 @@ const ITEM_ELSEWHERE =
 	"{file}: {name} is a {root} outside features/<feature>/requests.ts, gateways/**/*.events.ts and shared/events/*.events.ts, the only files generate reads; move it into one of them";
 const UNREADABLE = "{file} cannot be read: {reason}";
 const NO_POSITION = "{file}: the chain of {name} carries no source position, so its contract cannot be cut from it";
-const NO_MODULE_NAME = "{module}: module(...) takes its name as a string literal";
-const NAMED_TWICE = "{module}: {name} is declared in {first} and {second}; a module names each request once";
-const CYCLE = "the contracts of {names} name each other in a cycle";
+const NAMED_BY_STRING =
+	"{file}: {name} passes {root}() a name; a building block is named by its constant, so call {root}() with no argument";
+const MODULE_NAMED_BY_STRING =
+	"{module}: module() takes no name; the module is named by its constant, written in by generate";
+const NAMES_A_REQUEST =
+	"{file}: the contract of {name} names the request {used}; a contract step names no other request";
+const CONTRACT_FUNCTION = "moduleContract";
+const NAMESPACE_FUNCTION = "moduleNamespace";
+const NAMED_FUNCTION = "named";
 
 export function moduleContractsOf(folder: string, moduleName: string): ModuleContracts {
 	const moduleFile = sourceOf(folder, MODULE_FILE);
 	const init = exportedConstsOf(moduleFile.body).find(({ name }) => name === moduleName)?.init;
 	const tag = moduleTagOf(init, moduleName);
 	const placement = placementOf(init, moduleName);
-	const items = declaredItemsOf(folder, moduleName);
+	const items = declaredItemsOf(folder);
 	const contracted = items.filter(({ root }) => root !== "subscriber");
 	const listedNames = new Set(contracted.map(({ name }) => name));
-	const publicListed = contracted.filter(({ isPublic }) => isPublic).map((item) => contractOfItem(item, tag));
+	const publicListed = contracted.filter(({ isPublic }) => isPublic).map(contractOfItem);
 	const serverListed =
 		placement === DEVICE
 			? []
-			: contracted
-					.filter(({ isPublic, root }) => !isPublic && root !== "event")
-					.map((item) => contractOfItem(item, tag));
-	const publicRequests = publicListed.filter(({ root }) => root !== "event");
-	const descriptor = descriptorOf(moduleName, tag, placement, publicRequests);
+			: contracted.filter(({ isPublic, root }) => !isPublic && root !== "event").map(contractOfItem);
+	const descriptorHead = `moduleContract(${JSON.stringify(tag)}, ${placement}, `;
 	const contract = cutOf({
 		folder,
 		listed: publicListed,
 		listedNames,
-		extraImports: descriptor.imports,
+		extraImports: [namedImportOf(FRAMEWORK, CONTRACT_FUNCTION), namedImportOf(FRAMEWORK, placement)],
 	});
-	const publicContract = {
-		requestNames: new Set(publicListed.map(({ name }) => name)),
-		schemaNames: contract.exportedSchemaNames,
-	};
 	return {
-		contract: `${contract.text}${descriptor.text}`,
+		contract: `${contract.text}${namespaceTextOf(moduleName, descriptorHead, publicListed)}`,
 		server:
 			serverListed.length === 0
 				? null
-				: serverContractOf({ folder, listed: serverListed, listedNames, extraImports: [] }, publicContract),
+				: serverContractOf(
+						{ folder, listed: serverListed, listedNames, extraImports: [] },
+						contract.exportedSchemaNames,
+					) + namespaceTextOf(moduleName, `moduleNamespace(${JSON.stringify(tag)}, `, serverListed),
 		handledItems: items.filter(({ root, isHandled }) => root === "event" || isHandled).map(handledItemOf),
 		ownedEvents: items.filter(({ root }) => root === "event").map(handledItemOf),
 	};
 }
 
-function handledItemOf({ name, file }: DeclaredItem): HandledItem {
-	return { name, file: file.relative };
+export function moduleTagOfName(moduleName: string): string {
+	return kebabOf(checkedCamelName(moduleName, MODULE_FILE));
 }
 
-function declaredItemsOf(folder: string, moduleName: string): DeclaredItem[] {
+function handledItemOf(item: DeclaredItem): HandledItem {
+	const { name, file, group, root } = item;
+	return {
+		name,
+		file: file.relative,
+		group,
+		path: root === "subscriber" ? null : pathOf({ name, file: file.relative, group }),
+	};
+}
+
+function declaredItemsOf(folder: string): DeclaredItem[] {
 	const scripts = filesUnder(folder, isModuleScript);
-	refuseItemsElsewhere(folder, scripts.filter((relative) => !isItemFile(relative)));
+	refuseItemsElsewhere(
+		folder,
+		scripts.filter((relative) => !isItemFile(relative)),
+	);
 	const items = scripts.filter(isItemFile).flatMap((relative) => itemsIn(sourceOf(folder, relative)));
-	refuseNamedTwice(items, moduleName);
+	refuseSamePaths(items.filter(({ root }) => root !== "subscriber").map(pathedOf));
 	refuseUnhandledRequests(items);
 	return items;
+}
+
+function pathedOf({ name, file, group }: DeclaredItem) {
+	return { name, file: file.relative, group };
 }
 
 function isModuleScript(relative: string): boolean {
@@ -178,9 +200,11 @@ function itemsIn(file: SourceFile): DeclaredItem[] {
 			return [];
 		}
 
+		refuseNamedByString(file, name, rootStep);
 		return [
 			{
-				name,
+				name: checkedCamelName(name, file.relative),
+				group: isItemFile(file.relative) ? groupOf(file.relative) : [],
 				file,
 				chain,
 				rootStep,
@@ -200,17 +224,9 @@ function itemRootOf(method: string): ItemRoot {
 	return "subscriber";
 }
 
-function refuseNamedTwice(items: readonly DeclaredItem[], moduleName: string): void {
-	const seen = new Map<string, string>();
-
-	for (const { name, file } of items) {
-		const first = seen.get(name);
-
-		if (first !== undefined) {
-			throw new CliRefusal(fillTemplate(NAMED_TWICE, { module: moduleName, name, first, second: file.relative }));
-		}
-
-		seen.set(name, file.relative);
+function refuseNamedByString(file: SourceFile, name: string, { method, call }: ChainStep): void {
+	if (method !== "subscriber" && call.arguments.length > 0) {
+		throw new CliRefusal(fillTemplate(NAMED_BY_STRING, { file: file.relative, name, root: method }));
 	}
 }
 
@@ -223,15 +239,16 @@ function refuseUnhandledRequests(items: readonly DeclaredItem[]): void {
 	}
 }
 
-function contractOfItem({ name, file, chain, rootStep }: DeclaredItem, tag: string): ListedRequest {
+function contractOfItem({ name, group, file, chain, rootStep }: DeclaredItem): ContractEntry {
 	const kept = contractStepsOf(chain);
 	const contractSteps = kept.filter(({ method }) => !VISIBILITY_STEPS.has(method));
 	contractSteps.forEach((step) => refuseKeyFunction(step, { file: file.relative, name }));
-	const text = withoutCallableBy(file, name, rootStep, kept);
+	const path = pathOf({ name, file: file.relative, group });
 	return {
 		name,
+		group,
 		file,
-		chain: withFullName(text, rootStep, tag),
+		chain: `${NAMED_FUNCTION}(${JSON.stringify(path)}, ${withoutCallableBy(file, name, rootStep, kept)})`,
 		root: rootStep.method,
 		uses: contractSteps.flatMap(usesInStep),
 	};
@@ -248,6 +265,7 @@ function withoutCallableBy(file: SourceFile, name: string, root: ChainStep, kept
 }
 
 function cutOf({ folder, listed, listedNames, extraImports, schemasElsewhere }: CutAsk): Cut {
+	refuseNamedRequests(listed, listedNames);
 	const needs = listed.flatMap((request) =>
 		needsOfRequest({
 			folder,
@@ -265,38 +283,52 @@ function cutOf({ folder, listed, listedNames, extraImports, schemasElsewhere }: 
 		...needs.flatMap((need) => (need.kind === "import" ? [need.imported] : [])),
 		...copied.imports,
 		...extraImports,
+		namedImportOf(FRAMEWORK, NAMED_FUNCTION),
 	];
-	const text = [
-		importLinesOf(withoutRepeats(imports)),
-		"\n",
-		copied.text === "" ? "" : `${copied.text}\n`,
-		...orderByUse(listed).map(({ name, chain }) => `export const ${name} = ${chain};\n`),
-	].join("");
+	const text = [importLinesOf(withoutRepeats(imports)), "\n", copied.text === "" ? "" : `${copied.text}\n`].join("");
 	return {
 		text,
 		exportedSchemaNames: copied.exportedNames,
 	};
 }
 
-function serverContractOf(ask: CutAsk, publicContract: PublicContract): string {
-	const fromPublic = [...new Set(ask.listed.flatMap(({ uses }) => uses.map(({ name }) => name)))]
-		.filter((name) => publicContract.requestNames.has(name))
-		.sort()
-		.map((name) => namedImportOf(PUBLIC_CONTRACT_SPECIFIER, name));
+function serverContractOf(ask: CutAsk, publicSchemaNames: ReadonlySet<string>): string {
 	const schemasElsewhere = {
 		specifier: PUBLIC_CONTRACT_SPECIFIER,
-		names: publicContract.schemaNames,
+		names: publicSchemaNames,
 	};
-	return cutOf({ ...ask, extraImports: [...ask.extraImports, ...fromPublic], schemasElsewhere }).text;
+	const extraImports = [...ask.extraImports, namedImportOf(FRAMEWORK, NAMESPACE_FUNCTION)];
+	return cutOf({ ...ask, extraImports, schemasElsewhere }).text;
 }
 
-function descriptorOf(moduleName: string, tag: string, placement: string, listed: readonly ListedRequest[]) {
-	const requests = orderByUse(listed).map(({ name }) => name);
-	const text = `\nexport const ${moduleName} = moduleContract(${JSON.stringify(tag)}, ${placement}, [${requests.join(", ")}]);\n`;
-	return {
-		text,
-		imports: [namedImportOf(FRAMEWORK, "moduleContract"), namedImportOf(FRAMEWORK, placement)],
-	};
+function refuseNamedRequests(listed: readonly ContractEntry[], listedNames: ReadonlySet<string>): void {
+	for (const { name, file, uses } of listed) {
+		const used = uses.find((use) => listedNames.has(use.name));
+
+		if (used !== undefined) {
+			throw new CliRefusal(fillTemplate(NAMES_A_REQUEST, { file: file.relative, name, used: used.name }));
+		}
+	}
+}
+
+function namespaceTextOf(moduleName: string, head: string, listed: readonly ContractEntry[]): string {
+	return `export const ${moduleName} = ${head}${treeTextOf(listed, 0)});\n`;
+}
+
+function treeTextOf(listed: readonly ContractEntry[], depth: number): string {
+	const indent = "\t".repeat(depth + 1);
+	const keys = [...new Set(listed.map((entry) => entry.group[depth] ?? null))];
+	const lines = keys.flatMap((key) => {
+		if (key === null) {
+			return listed
+				.filter((entry) => entry.group.length === depth)
+				.map(({ name, chain }) => `${indent}${name}: ${chain.replaceAll("\n", `\n${indent}`)},\n`);
+		}
+
+		const inside = listed.filter((entry) => entry.group[depth] === key);
+		return [`${indent}${camelOf(key)}: ${treeTextOf(inside, depth + 1)},\n`];
+	});
+	return `{\n${lines.join("")}${"\t".repeat(depth)}}`;
 }
 
 function namedImportOf(specifier: string, name: string): Imported {
@@ -321,26 +353,13 @@ function placementOf(init: Expression | undefined, moduleName: string): string {
 }
 
 function moduleTagOf(init: Expression | undefined, moduleName: string): string {
-	const named = init === undefined ? undefined : rootCallOf(init)?.call.arguments[0];
+	const passed = init === undefined ? [] : (rootCallOf(init)?.call.arguments ?? []);
 
-	if (named?.type !== "StringLiteral") {
-		throw new CliRefusal(fillTemplate(NO_MODULE_NAME, { module: moduleName }));
+	if (passed.length > 0) {
+		throw new CliRefusal(fillTemplate(MODULE_NAMED_BY_STRING, { module: moduleName }));
 	}
 
-	return named.value;
-}
-
-function withFullName(chain: string, root: ChainStep, tag: string): string {
-	const [named] = root.call.arguments;
-	const { start } = root.call;
-
-	if (named?.type !== "StringLiteral" || named.value.includes("/") || named.start == null || start == null) {
-		return chain;
-	}
-
-	const from = named.start - start;
-	const to = (named.end ?? named.start) - start;
-	return `${chain.slice(0, from)}${JSON.stringify(`${tag}/${named.value}`)}${chain.slice(to)}`;
+	return moduleTagOfName(moduleName);
 }
 
 function contractStepsOf(chain: readonly ChainStep[]): readonly ChainStep[] {
@@ -363,24 +382,6 @@ function usesInStep({ call }: ChainStep): NameUse[] {
 	const callee = call.callee.type === "Identifier" ? usesOf(call.callee, NOTHING_BOUND) : [];
 	const typeArguments = call.typeArguments == null ? [] : usesOf(call.typeArguments, NOTHING_BOUND);
 	return [...callee, ...typeArguments, ...call.arguments.flatMap((argument) => usesOf(argument, NOTHING_BOUND))];
-}
-
-function orderByUse(listed: readonly ListedRequest[]): ListedRequest[] {
-	const done: ListedRequest[] = [];
-	let left = [...listed];
-
-	while (left.length > 0) {
-		const ready = left.filter((request) => request.uses.every((used) => !left.some(({ name }) => name === used.name)));
-
-		if (ready.length === 0) {
-			throw new CliRefusal(fillTemplate(CYCLE, { names: left.map(({ name }) => name).join(", ") }));
-		}
-
-		done.push(...ready);
-		left = left.filter((request) => !ready.includes(request));
-	}
-
-	return done;
 }
 
 function sourceOf(folder: string, relative: string): SourceFile {

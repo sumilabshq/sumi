@@ -38,13 +38,36 @@ export function dataFrameworkMiddleware(runtime: Runtime, { authenticate }: Adap
 
 type WireProcedure = ReturnType<typeof wireProcedureOf>;
 
-function routerOf(exposed: Exposed): Record<string, Record<string, WireProcedure>> {
-	const router: Record<string, Record<string, WireProcedure>> = {};
+interface WireRouter {
+	[segment: string]: WireRouter | WireProcedure;
+}
+
+function routerOf(exposed: Exposed): WireRouter {
+	const router: WireRouter = {};
 	for (const request of exposed.requests) {
-		const [module = "", name = ""] = wirePathOf(request);
-		router[module] = { ...router[module], [name]: wireProcedureOf(request, exposed) };
+		placeProcedure(router, wirePathOf(request), wireProcedureOf(request, exposed));
 	}
 	return router;
+}
+
+function placeProcedure(
+	router: WireRouter,
+	[segment = "", ...rest]: readonly string[],
+	procedure: WireProcedure,
+): void {
+	if (rest.length === 0) {
+		router[segment] = procedure;
+		return;
+	}
+
+	const held = router[segment];
+	const branch: WireRouter = held === undefined || isProcedure(held) ? {} : held;
+	router[segment] = branch;
+	placeProcedure(branch, rest, procedure);
+}
+
+function isProcedure(held: WireRouter | WireProcedure): held is WireProcedure {
+	return "~orpc" in held;
 }
 
 function wireProcedureOf(request: AnyRequest, exposed: Exposed) {

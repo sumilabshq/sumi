@@ -5,8 +5,8 @@ import { subscriber } from "./subscriber";
 
 export function buildersOf<M extends ModuleWithInjects, E extends AnyEvent = never>() {
 	return {
-		command: (name: string) => command<ProvidedOf<M>, E>(name),
-		query: (name: string) => query<ProvidedOf<M>>(name),
+		command: () => command<ProvidedOf<M>, E>(),
+		query: () => query<ProvidedOf<M>>(),
 		subscriber: <H extends AnyEvent>(heard: H) => subscriber<H, ProvidedOf<M>, E>(heard),
 	};
 }

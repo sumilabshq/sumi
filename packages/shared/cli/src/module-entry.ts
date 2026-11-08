@@ -3,7 +3,8 @@ import path from "node:path";
 import { CliRefusal } from "./cli-output.js";
 import { z } from "zod";
 import type { CallExpression } from "@babel/types";
-import { CONTRACT_ENTRY, SERVER_CONTRACT_FILE, moduleContractsOf } from "./module-contract.js";
+import { CONTRACT_ENTRY, SERVER_CONTRACT_FILE, moduleContractsOf, moduleTagOfName } from "./module-contract.js";
+import { localsOf } from "./item-names.js";
 import type { HandledItem } from "./module-contract.js";
 import { importsIn } from "./contract-imports.js";
 import { MODULE_SPECIFIER } from "./contract-needs.js";
@@ -65,7 +66,7 @@ export interface GeneratedPackage {
 const NO_BUILDERS_IMPORT =
 	'{package}: its requests take command and query from "#module", and its package.json "imports" names no "#module": add "#module" pointing at ./generated/command.ts';
 const NOT_HANDLING =
-	'{module}: module.ts must end with .handles(...handled), importing handled from "./generated/handled.js", and pass .handles() nothing else';
+	'{module}: module.ts must end with .handles(handled), importing handled from "./generated/handled.js", and pass .handles() nothing else';
 const HANDLES_METHOD = "handles";
 const HANDLED_NAME = "handled";
 const NO_EVENT = "never";
@@ -155,7 +156,7 @@ function requestsModuleFilesOf(folder: string, declared: DeclaredModule): Genera
 	const files = [
 		{ entry: CONTRACT_ENTRY, text: GENERATED_HEADER + contract },
 		{ entry: COMMAND_ENTRY, text: GENERATED_HEADER + commandTextOf(declared.name, ownedEvents) },
-		{ entry: HANDLED_ENTRY, text: GENERATED_HEADER + handledTextOf(handledItems) },
+		{ entry: HANDLED_ENTRY, text: GENERATED_HEADER + handledTextOf(declared.name, handledItems) },
 		{ entry: ROOT_ENTRY, text: GENERATED_HEADER + rootReExportOf(CONTRACT_ENTRY) },
 	];
 
@@ -200,18 +201,13 @@ function refuseNotHandling(folder: string, moduleName: string): void {
 		({ local, specifier }) => local === HANDLED_NAME && specifier === HANDLED_SPECIFIER,
 	);
 
-	if (handles === undefined || !isHandledSpread(handles.call.arguments) || !importsHandled) {
+	if (handles === undefined || !isHandledPassed(handles.call.arguments) || !importsHandled) {
 		throw new CliRefusal(fillTemplate(NOT_HANDLING, { module: moduleName }));
 	}
 }
 
-function isHandledSpread([spread, ...others]: CallExpression["arguments"]): boolean {
-	return (
-		others.length === 0 &&
-		spread?.type === "SpreadElement" &&
-		spread.argument.type === "Identifier" &&
-		spread.argument.name === HANDLED_NAME
-	);
+function isHandledPassed([passed, ...others]: CallExpression["arguments"]): boolean {
+	return others.length === 0 && passed?.type === "Identifier" && passed.name === HANDLED_NAME;
 }
 
 function refuseNoBuildersImport(folder: string): void {
@@ -222,29 +218,47 @@ function refuseNoBuildersImport(folder: string): void {
 	}
 }
 
+const BUILDER_NAMES: ReadonlySet<string> = new Set(["buildersOf", "command", "query", "subscriber"]);
+const HANDLED_NAMES: ReadonlySet<string> = new Set(["handledItems", "named", HANDLED_NAME]);
+
 function commandTextOf(moduleName: string, ownedEvents: readonly HandledItem[]): string {
-	const emitted = ownedEvents.length === 0 ? NO_EVENT : ownedEvents.map(({ name }) => `typeof ${name}`).sort().join(" | ");
+	const locals = localsOf(ownedEvents, new Set([...BUILDER_NAMES, moduleName]));
+	const emitted =
+		ownedEvents.length === 0
+			? NO_EVENT
+			: ownedEvents
+					.map((event) => `typeof ${locals.get(event) ?? event.name}`)
+					.sort()
+					.join(" | ");
 	return [
 		`import { buildersOf } from "${FRAMEWORK}";\n`,
 		`import type { ${moduleName} } from "../module.js";\n`,
-		...itemImportsOf(ownedEvents, "import type"),
+		...itemImportsOf(locals, "import type"),
 		"\n",
 		`export const { command, query, subscriber } = buildersOf<typeof ${moduleName}, ${emitted}>();\n`,
 	].join("");
 }
 
-function handledTextOf(items: readonly HandledItem[]): string {
-	const names = items.map(({ name }) => name).sort();
-	const typeImport = `import type { ModuleItem } from "${FRAMEWORK}";\n`;
-	const imports = itemImportsOf(items, "import").join("");
-	return `${typeImport}${imports}\nexport const ${HANDLED_NAME}: readonly ModuleItem[] = [${names.join(", ")}];\n`;
+function handledTextOf(moduleName: string, items: readonly HandledItem[]): string {
+	const locals = localsOf(items, HANDLED_NAMES);
+	const listed = [...items]
+		.sort((one, other) => (one.path ?? `~${one.name}`).localeCompare(other.path ?? `~${other.name}`))
+		.map((item) => {
+			const local = locals.get(item) ?? item.name;
+			return item.path === null ? `\t${local},\n` : `\tnamed(${JSON.stringify(item.path)}, ${local}),\n`;
+		});
+	const frameworkImport = `import { handledItems, named } from "${FRAMEWORK}";\n`;
+	const imports = itemImportsOf(locals, "import").join("");
+	const tag = JSON.stringify(moduleTagOfName(moduleName));
+	return `${frameworkImport}${imports}\nexport const ${HANDLED_NAME} = handledItems(${tag}, [\n${listed.join("")}]);\n`;
 }
 
-function itemImportsOf(items: readonly HandledItem[], keyword: "import" | "import type"): string[] {
+function itemImportsOf(locals: ReadonlyMap<HandledItem, string>, keyword: "import" | "import type"): string[] {
 	const byFile = new Map<string, string[]>();
 
-	for (const { name, file } of items) {
-		byFile.set(file, [...(byFile.get(file) ?? []), name]);
+	for (const [{ name, file }, local] of locals) {
+		const specifier = local === name ? name : `${name} as ${local}`;
+		byFile.set(file, [...(byFile.get(file) ?? []), specifier]);
 	}
 
 	return [...byFile]

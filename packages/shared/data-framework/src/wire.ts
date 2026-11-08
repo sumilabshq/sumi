@@ -12,7 +12,7 @@ export const WireCallSchema = z.object({ input: z.unknown().optional(), idempote
 export type WireCall = z.infer<typeof WireCallSchema>;
 
 export function wirePathOf(request: AnyRequest): string[] {
-	return request.name.split("/");
+	return request.name.split(".");
 }
 
 export function wireAnswerOf(answered: unknown): Answer<unknown> | null {

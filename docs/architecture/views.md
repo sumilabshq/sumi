@@ -7,8 +7,8 @@ Views live in client packages (`packages/client/<name>`, `"level": "client"`). A
 1. **A view makes no decision about data.** A query answers already shaped for what is drawn; a command receives the bare intent and decides.
 
    ```ts skip-check
-   LayersPanelQuery → { isShown, rows: [{ id, title, depth, isPicked, isOpen }] }
-   useCommand(PickLayerCommand).run({ id: row.id })
+   canvas.layers.layersPanel → { isShown, rows: [{ id, title, depth, isPicked, isOpen }] }
+   useCommand(canvas.layers.pickLayer).run({ id: row.id })
    ```
 
    Toggling the pick is the handler's rule, not the view's.
@@ -35,11 +35,11 @@ A block imports requests from the data module's `"."` and reads them through the
 
 ```tsx skip-check
 export function TaskList() {
-	const tasks = useQuery(TasksQuery, { status: "open" });
-	const stats = useOptionalQuery(TaskStatsQuery, {});
-	const complete = useCommand(CompleteTaskCommand);
-	if (tasks.data.items.length === 0) return <EmptyTasks />;
-	return tasks.data.items.map((task) => {
+	const open = useQuery(tasks.board.tasks, { status: "open" });
+	const stats = useOptionalQuery(tasks.board.taskStats, {});
+	const complete = useCommand(tasks.board.completeTask);
+	if (open.data.items.length === 0) return <EmptyTasks />;
+	return open.data.items.map((task) => {
 		const done = complete.with({ id: task.id });
 		return <TaskRow key={task.id} task={task} isBusy={done.isRunning} onDone={() => done.run()} />;
 	});

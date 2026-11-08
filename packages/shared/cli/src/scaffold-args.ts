@@ -2,15 +2,7 @@ import { parseArgs } from "node:util";
 import { z } from "zod";
 import { parsedArgs, parsedWith, refuseExtraPositionals } from "./arg-parsing.js";
 import { inputSchemaOf } from "./feature-files.js";
-import {
-	COMMAND_SUFFIX,
-	KEBAB_NAME,
-	PASCAL_NAME,
-	QUERY_SUFFIX,
-	camelOf,
-	pascalOf,
-	withSuffix,
-} from "./scaffold-names.js";
+import { CAMEL_NAME, SEGMENT_NAME, camelOf, pascalOf } from "./scaffold-names.js";
 
 const ADD_MODULE_OPTIONS = {
 	on: { type: "string" },
@@ -40,27 +32,31 @@ const RESERVED_FEATURE_KEYS: readonly string[] = [
 	"constructor",
 ];
 
-const MODULE_NAME_RULE =
-	"a module name is kebab case: lowercase words of letters and digits joined by '-' (notes, pane-tree)";
-const FEATURE_RULE = "add feature takes <module>/<feature>, each kebab case: widgetarium add feature notes/tasks";
-const REQUEST_RULE = "--query and --command take a PascalCase name: --query Tasks, --command AddTask";
+const MODULE_NAME_RULE = "a module name is kebab case: lowercase words of letters joined by '-' (notes, pane-tree)";
+const FEATURE_RULE =
+	"add feature takes <module>/<feature>, each kebab case of letters: widgetarium add feature notes/tasks";
+const REQUEST_RULE =
+	"--query and --command take a camelCase name of letters with no kind suffix: --query tasks, --command addTask";
+const KIND_SUFFIX = /(Query|Command)$/;
 const ON_RULE = "--on takes Server, Device or Anywhere: where the module may run";
 const IN_RULE = "--in takes domain (a business area) or state (the app's own state)";
 const RESERVED_RULE = `a feature is not named for a word its scaffold already binds: ${RESERVED_FEATURE_KEYS.join(", ")}`;
 const INPUT_CLASH_RULE = "the command's input schema would take the feature's schema name: rename the command";
 
+const RequestNameSchema = z.string().regex(CAMEL_NAME, REQUEST_RULE).refine(hasNoKindSuffix, { error: REQUEST_RULE });
+
 const AddModuleArgsSchema = z.object({
-	name: z.string().regex(KEBAB_NAME, MODULE_NAME_RULE),
+	name: z.string().regex(SEGMENT_NAME, MODULE_NAME_RULE),
 	on: z.enum(["Server", "Device", "Anywhere"], { error: ON_RULE }),
 	layer: z.enum(["domain", "state"], { error: IN_RULE }),
 });
 
 const AddFeatureArgsSchema = z
 	.object({
-		module: z.string().regex(KEBAB_NAME, FEATURE_RULE),
-		feature: z.string().regex(KEBAB_NAME, FEATURE_RULE),
-		query: z.string().regex(PASCAL_NAME, REQUEST_RULE).nullable(),
-		command: z.string().regex(PASCAL_NAME, REQUEST_RULE).nullable(),
+		module: z.string().regex(SEGMENT_NAME, FEATURE_RULE),
+		feature: z.string().regex(SEGMENT_NAME, FEATURE_RULE),
+		query: RequestNameSchema.nullable(),
+		command: RequestNameSchema.nullable(),
 	})
 	.refine(isUnboundFeature, { error: RESERVED_RULE })
 	.refine(isInputApart, { error: INPUT_CLASH_RULE });
@@ -91,13 +87,9 @@ export function parseAddFeatureArgs(argv: readonly string[]): AddFeatureArgs {
 	return parsedWith(AddFeatureArgsSchema, {
 		module,
 		feature,
-		query: isNamed ? requestOf(values.query, QUERY_SUFFIX) : `${pascalOf(feature)}${QUERY_SUFFIX}`,
-		command: requestOf(values.command, COMMAND_SUFFIX),
+		query: isNamed ? (values.query ?? null) : camelOf(feature),
+		command: values.command ?? null,
 	});
-}
-
-function requestOf(given: string | undefined, suffix: string): string | null {
-	return given === undefined ? null : withSuffix(given, suffix);
 }
 
 function isUnboundFeature({ feature }: { readonly feature: string }): boolean {
@@ -106,4 +98,8 @@ function isUnboundFeature({ feature }: { readonly feature: string }): boolean {
 
 function isInputApart({ feature, command }: { readonly feature: string; readonly command: string | null }): boolean {
 	return command === null || inputSchemaOf(command) !== `${pascalOf(feature)}Schema`;
+}
+
+function hasNoKindSuffix(name: string): boolean {
+	return !KIND_SUFFIX.test(name);
 }

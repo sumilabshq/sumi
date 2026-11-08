@@ -2,6 +2,7 @@ import { Event } from "./event";
 import type { AnyEvent } from "./event";
 import type { Guard, OpenGuard } from "./guard";
 import type { AnyHandledRequest } from "./handled-request";
+import type { HandledItems } from "./handled-items";
 import type { AnyHandler, GuardedState, Handler, Inject } from "./handler";
 import { requireStep } from "./middleware";
 import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
@@ -49,7 +50,7 @@ export type ModuleItem = AnyHandledRequest | AnyEvent | AnySubscriber;
 export interface HandlingDefinition<R extends Runs = Runs> extends ModuleDefinition {
 	readonly runs: R;
 	readonly handlers: readonly AnyHandler[];
-	withItems(items: readonly ModuleItem[]): HandlingDefinition<R>;
+	withHandled(handled: HandledItems): HandlingDefinition<R>;
 }
 
 export type ImportedModule = ModuleContract | AnyPlatformModule;
@@ -161,9 +162,9 @@ export class ClientModule<P extends Provided = NothingProvided, Q = void> implem
 }
 
 interface ModulePlan<R extends Runs> {
-	readonly name: string;
+	readonly name: string | null;
 	readonly runs: R;
-	readonly imports: readonly string[];
+	readonly imports: readonly ImportedModule[];
 	readonly steps: readonly Step[];
 	readonly listed: readonly AnyHandledRequest[];
 	readonly events: readonly AnyEvent[];
@@ -174,13 +175,15 @@ const NO_FACTS =
 	'module "{module}" picks its parts from the platform and scope, and its starter was told neither: pass platform and scope';
 const LISTED_TWICE = 'module "{module}" handles {request} twice: a request belongs to one module, once';
 const SUBSCRIBER_LISTED_TWICE = 'module "{module}" lists a subscriber of {event} twice: list each subscriber once';
+const UNNAMED_MODULE =
+	"a module() takes its name from .handles(handled), the list the generator writes; end it with .handles(handled) and run npm run generate";
+const HANDLED_TWICE =
+	'module "{module}" already handles its list, and .handles() is given the list of "{other}": call it once';
 
 export class ModuleDraft {
-	constructor(readonly name: string) {}
-
 	on<R extends Runs>(placement: Placement<R>): RequestsModule<R> {
 		return new RequestsModule({
-			name: this.name,
+			name: null,
 			runs: placement.runs,
 			imports: [],
 			steps: [],
@@ -192,36 +195,45 @@ export class ModuleDraft {
 }
 
 export class RequestsModule<R extends Runs, C extends object = NoConfig> implements HandlingDefinition<R> {
-	readonly name: string;
 	readonly runs: R;
 	readonly steps: readonly Step[];
-	readonly importedModuleNames: readonly string[];
 	readonly ownedEvents: readonly AnyEvent[];
 	readonly listedSubscribers: readonly AnySubscriber[];
 	readonly handlers: readonly AnyHandler[];
 
 	constructor(private readonly plan: ModulePlan<R>) {
-		this.name = plan.name;
+		const name = plan.name ?? "";
 		this.runs = plan.runs;
 		this.steps = plan.steps;
-		this.importedModuleNames = plan.imports;
-		this.listedSubscribers = plan.subscribers.map((listed) => subscriberInModule(listed, plan.name));
+		this.listedSubscribers = plan.subscribers.map((listed) => subscriberInModule(listed, name));
 		this.ownedEvents = ownedEventsOf(
-			plan.events.map((listed) => listed.inModule(plan.name)),
+			plan.events.map((listed) => listed.inModule(name)),
 			this.listedSubscribers,
-			plan.name,
+			name,
 		);
 		this.handlers = plan.listed.map((listed) => ({
 			...listed,
-			request: listed.request.inModule(plan.name),
+			request: listed.request.inModule(name),
 			module: this,
 		}));
+	}
+
+	get name(): string {
+		if (this.plan.name === null) {
+			throw new Error(UNNAMED_MODULE);
+		}
+
+		return this.plan.name;
+	}
+
+	get importedModuleNames(): readonly string[] {
+		return this.plan.imports.map(nameOfModule);
 	}
 
 	imports(...modules: readonly ImportedModule[]): RequestsModule<R, C> {
 		return new RequestsModule({
 			...this.plan,
-			imports: [...this.plan.imports, ...modules.map(nameOfModule)],
+			imports: [...this.plan.imports, ...modules],
 		});
 	}
 
@@ -252,21 +264,26 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 		return new PlatformModule<P, R>(this, { provide }).callable<C>();
 	}
 
-	withItems(items: readonly ModuleItem[]): RequestsModule<R, C> {
+	withHandled({ module, items }: HandledItems): RequestsModule<R, C> {
+		if (this.plan.name !== null) {
+			throw new Error(HANDLED_TWICE.replace("{module}", this.plan.name).replace("{other}", module));
+		}
+
 		return new RequestsModule({
 			...this.plan,
-			listed: this.withListed(items.filter(isHandledRequest)),
+			name: module,
+			listed: this.withListed(items.filter(isHandledRequest), module),
 			events: [...this.plan.events, ...items.filter(isEvent)],
-			subscribers: this.withSubscribers(items.filter(isSubscriber)),
+			subscribers: this.withSubscribers(items.filter(isSubscriber), module),
 		});
 	}
 
-	private withSubscribers(subscribers: readonly AnySubscriber[]): readonly AnySubscriber[] {
+	private withSubscribers(subscribers: readonly AnySubscriber[], module: string): readonly AnySubscriber[] {
 		const listed = [...this.plan.subscribers];
 
 		for (const subscriber of subscribers) {
 			if (listed.includes(subscriber)) {
-				const said = SUBSCRIBER_LISTED_TWICE.replace("{module}", this.plan.name);
+				const said = SUBSCRIBER_LISTED_TWICE.replace("{module}", module);
 				throw new Error(said.replace("{event}", subscriber.event.name));
 			}
 
@@ -276,12 +293,12 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 		return listed;
 	}
 
-	private withListed(requests: readonly AnyHandledRequest[]): readonly AnyHandledRequest[] {
+	private withListed(requests: readonly AnyHandledRequest[], module: string): readonly AnyHandledRequest[] {
 		const listed = [...this.plan.listed];
 
 		for (const request of requests) {
 			if (listed.some((held) => held.request.name === request.request.name)) {
-				const said = LISTED_TWICE.replace("{module}", this.plan.name);
+				const said = LISTED_TWICE.replace("{module}", module);
 				throw new Error(said.replace("{request}", request.request.name));
 			}
 
@@ -292,8 +309,8 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 	}
 }
 
-export function module(name: string): ModuleDraft {
-	return new ModuleDraft(name);
+export function module(): ModuleDraft {
+	return new ModuleDraft();
 }
 
 export type AnyModule = ClientModule<Provided, never> | ServerModule<Provided, Cover, Added>;

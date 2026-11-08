@@ -2,7 +2,6 @@ import { createFill } from "./declared-slot";
 import type { DerivedFill, Fill } from "./fill";
 import { filledSlotOf, fillOutcomeOf, isParsedFill } from "./fill-outcome";
 import type { FillOutcome, ParsedFill, ResolvedOwnership, ShownFill } from "./fill-outcome";
-import { stampSlotName } from "./plugin";
 import type { Plugin } from "./plugin";
 import { sentenceOf } from "./sentence";
 
@@ -97,8 +96,7 @@ function sourceItemsOf(
 	parsed: readonly ParsedFill[],
 	rankedIds: readonly string[],
 ): readonly unknown[] {
-	const sourceName = stampSlotName(offer.filler.id, offer.fill.source);
-	const sourceFills = parsed.filter(({ stampedName }) => stampedName === sourceName);
+	const sourceFills = parsed.filter(({ stampedName }) => stampedName === offer.fill.source.name);
 	return filledSlotOf(offer.fill.source, sourceFills, rankedIds).fills.map(withId);
 }
 
@@ -144,8 +142,8 @@ function derivedRefusalOf(
 ): string {
 	return sentenceOf(template, {
 		plugin: filler.id,
-		slot: ownership.bySlot.get(fill.slot)?.stampedName ?? fill.slot.name,
-		source: ownership.bySlot.get(fill.source)?.stampedName ?? fill.source.name,
+		slot: ownership.bySlot.get(fill.slot)?.stampedName ?? fill.slot.label,
+		source: ownership.bySlot.get(fill.source)?.stampedName ?? fill.source.label,
 		reason,
 	});
 }

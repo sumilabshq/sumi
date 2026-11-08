@@ -1,37 +1,42 @@
 import { z } from "zod";
 import type { EventSource } from "./event-source";
 import type { Platform } from "./platform-module";
-import { moduleOfName } from "./request";
+import { fullNameOf, unnamedIdentity } from "./identity";
+import type { Identity } from "./identity";
 
 export type PlatformSources = Readonly<Partial<Record<Platform, EventSource>>>;
 
 type Sources = EventSource | PlatformSources;
 
-export class Event<I extends z.ZodType, N extends string = string> {
+const EVENT = "an event";
+
+export class Event<I extends z.ZodType> {
 	readonly kind = "event";
-	readonly module: string | null;
-	readonly name: string;
 
 	constructor(
-		readonly declaredName: N,
+		readonly identity: Identity,
 		readonly inputSchema: I,
 		private readonly sources: Sources | null,
-		stampedName: string = declaredName,
-	) {
-		this.name = stampedName;
-		this.module = moduleOfName(stampedName);
+	) {}
+
+	get name(): string {
+		return fullNameOf(this.identity, EVENT);
 	}
 
-	input<S extends z.ZodType>(schema: S): Event<S, N> {
-		return new Event(this.declaredName, schema, this.sources, this.name);
+	get module(): string | null {
+		return this.identity.module;
 	}
 
-	from(sources: Sources): Event<I, N> {
-		return new Event(this.declaredName, this.inputSchema, sources, this.name);
+	input<S extends z.ZodType>(schema: S): Event<S> {
+		return new Event(this.identity, schema, this.sources);
+	}
+
+	from(sources: Sources): Event<I> {
+		return new Event(this.identity, this.inputSchema, sources);
 	}
 
 	// TODO: event visibility is read by the generator only
-	public(): Event<I, N> {
+	public(): Event<I> {
 		return this;
 	}
 
@@ -49,12 +54,12 @@ export class Event<I extends z.ZodType, N extends string = string> {
 		return platform === null ? null : (sources[platform] ?? null);
 	}
 
-	inModule(module: string): Event<I, N> {
+	inModule(module: string): Event<I> {
 		if (this.module !== null) {
 			return this;
 		}
 
-		return new Event(this.declaredName, this.inputSchema, this.sources, `${module}/${this.name}`);
+		return new Event({ ...this.identity, module }, this.inputSchema, this.sources);
 	}
 }
 
@@ -72,8 +77,8 @@ export type Emit<E extends AnyEvent> = <V extends E>(event: V, ...input: EventAr
 
 export type Emitter<E extends AnyEvent> = Readonly<Record<"emit", Emit<E>>>;
 
-export function event<const N extends string>(name: N): Event<z.ZodVoid, N> {
-	return new Event(name, z.void(), null);
+export function event(): Event<z.ZodVoid> {
+	return new Event(unnamedIdentity(), z.void(), null);
 }
 
 function isEventSource(sources: Sources): sources is EventSource {

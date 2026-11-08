@@ -20,20 +20,20 @@ it, and all of it had to be redone.
 its slots' fills are read only by its own code, and everyone else reaches the data through its module's
 queries, commands and events (`docs/architecture/plugins.md`). The host offers generic capabilities and
 reads only the slots it declares itself; it never reads, parses or configures a module with another
-plugin's fills. `AppHostModule({ apps })` did exactly that and was rewritten.
+plugin's fills. `appHost({ apps })` did exactly that and was rewritten.
 
 **CRITICAL — the machine is reached only through the Sumi contract.** The file system and terminal
 sessions are the host's capabilities, and every plugin and app reaches them through `@sumi/contract`
-(`ReadFileQuery`, `TerminalOutputQuery`, …), never through Tauri. They are not a reason a plugin "cannot" do
+(`fileSystem.files.readFile`, `terminal.lines.terminalOutput`, …), never through Tauri. They are not a reason a plugin "cannot" do
 something: a plugin that needs the machine sends a contract request. `sumi-host` and its slots
-(`BackgroundModulesSlot` and the rest) are part of that contract, the base every plugin builds on; a module
-runs in the background because a plugin fills `BackgroundModulesSlot`, and the app reads that slot and starts
+(`sumiHost.backgroundModules` and the rest) are part of that contract, the base every plugin builds on; a module
+runs in the background because a plugin fills `sumiHost.backgroundModules`, and the app reads that slot and starts
 it. Nothing in host code names a plugin's module.
 
 **CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
-`plugins/<name>/` and nothing else: `src/plugin.ts` (always; only the `plugin(...)` definition, no helper,
+`plugins/<name>/` and nothing else: `src/plugin.ts` (always; only the `plugin()` definition, no helper,
 slot, schema or type), `src/slots.ts` (when it declares slots: the slots, their item schemas and types),
-`src/index.ts` (only re-exports), every other file of `src/` placed as in a client package
+`src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by `widgetarium generate`), every other file of `src/` placed as in a client package
 (`features/<feature>/ui/<block>/*.tsx` with the `.css` a block uses beside it, `features/<feature>/lib/*.ts`,
 `shared/ui/` and `shared/lib/` for what two features use, nothing else loose in `src/`, no feature importing
 another's `lib/`), and `data/<module>/` (when it owns modules: each a data module package). A module outside
@@ -226,4 +226,5 @@ scopes, same body as before, only the subject is short.
   3. A hook that performs an effect every render is named for what it does: `useWritesOwnSize`.
   4. One idiom per name: `manifestOfDeclared`, never `manifestOfWritten`.
      Idioms that stay: `xOf(y)` for a derivation read off `y`, `isX`/`hasX`, `refuseX` answering a reason
-     or null, `withX(y)`, `useX`, `createX`, `defineX`, `*Query`/`*Command`, `*Schema`.
+     or null, `withX(y)`, `useX`, `createX`, `defineX`, `*Schema`. A request, event, subscriber or module is
+     its camelCase constant with no kind suffix (`frameSides`, `toggleFrameSide`, `layout`).

@@ -3,7 +3,7 @@ import type { SlotShape } from "./declared-slot";
 export class Fill {
 	constructor(
 		readonly slot: SlotShape,
-		readonly id: string,
+		readonly listId: string | null,
 		readonly item: unknown,
 	) {}
 }

@@ -17,12 +17,14 @@ import {
 	type ResolvedModule,
 } from "./radix-in-pictures.js";
 import { START_MODULE_ID, startModuleSourceOf } from "./start-module-source.js";
+import { regenerateOnSave, type WatchingServer } from "./regenerate-on-save.js";
 
 export interface WidgetariumVitePlugin {
 	readonly name: string;
 	readonly enforce: "pre";
 	config(): Promise<WidgetariumConfig>;
 	configResolved(resolved: ResolvedMode): void;
+	configureServer(server: WatchingServer): void;
 	resolveId(this: ResolveContext, id: string, importer?: string): Promise<string | ResolvedModule | null>;
 	load(id: string): Promise<string | null>;
 	transformIndexHtml: { readonly order: "pre"; readonly handler: () => Promise<AppHeadTag[]> };
@@ -63,6 +65,7 @@ export function widgetarium(root: string = process.cwd()): WidgetariumVitePlugin
 		configResolved: ({ mode }) => {
 			resolved.mode = mode;
 		},
+		configureServer: regenerateOnSave,
 		async resolveId(id, importer) {
 			return VIRTUAL_MODULES.get(id) ?? radixInPicturesPlugin.resolveId.call(this, id, importer);
 		},

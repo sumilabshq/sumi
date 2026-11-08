@@ -58,8 +58,17 @@ export {
 	module,
 	serverModule,
 } from "./module";
-export { isModuleContract, moduleContract } from "./module-contract";
-export type { ContractShape, ModuleContract, ModuleUse, ReachableContract } from "./module-contract";
+export { isModuleContract, moduleContract, moduleNamespace } from "./module-contract";
+export type {
+	ContractLeaf,
+	ContractShape,
+	ContractTree,
+	ModuleContract,
+	ModuleUse,
+	ReachableContract,
+} from "./module-contract";
+export { handledItems, named } from "./handled-items";
+export type { HandledItems, NamedItem } from "./handled-items";
 export { ChangeBroadcast } from "./transport";
 export type { Answering, HearChanges, RemoteTransport, ServedCall } from "./transport";
 export { LocalTransport, localTransport } from "./local-transport";

@@ -1,15 +1,7 @@
 import path from "node:path";
 import type { PlannedFile } from "./add-plan.js";
 import { MODULE_SPECIFIER } from "./contract-needs.js";
-import {
-	COMMAND_SUFFIX,
-	FRAMEWORK,
-	QUERY_SUFFIX,
-	camelOf,
-	jsSpecifierOf,
-	kebabOf,
-	pascalOf,
-} from "./scaffold-names.js";
+import { FRAMEWORK, camelOf, jsSpecifierOf, kebabOf, pascalOf } from "./scaffold-names.js";
 
 export interface FeatureSeed {
 	readonly feature: string;
@@ -62,12 +54,12 @@ export function featureFilesOf(seed: FeatureSeed): PlannedFile[] {
 	];
 }
 
-export function shortNameOf(request: string, suffix: string): string {
-	return kebabOf(request.slice(0, -suffix.length));
+export function inputSchemaOf(command: string): string {
+	return `${pascalOf(kebabOf(command))}${INPUT_SUFFIX}`;
 }
 
-export function inputSchemaOf(command: string): string {
-	return `${command.slice(0, -COMMAND_SUFFIX.length)}${INPUT_SUFFIX}`;
+function heldKeyOf(seed: FeatureSeed, { key, record }: FeatureNames): string {
+	return seed.query === key ? `kept${record}` : key;
 }
 
 function relativeJs(file: string): string {
@@ -136,43 +128,46 @@ function requestsTextOf(seed: FeatureSeed, names: FeatureNames): string {
 		...(seed.command === null ? [] : [`import { PerCall } from "${FRAMEWORK}";`]),
 		`import { ${builders.join(", ")} } from "${MODULE_SPECIFIER}";`,
 		`import { ${schemas.join(", ")} } from "${relativeJs(names.schemaFile)}";`,
-		...(seed.query === null ? [] : ["", ...queryLinesOf(seed.query, names)]),
+		...(seed.query === null ? [] : ["", ...queryLinesOf(seed, seed.query, names)]),
 		...(seed.command === null ? [] : ["", ...commandLinesOf(seed, seed.command, names)]),
 		"",
 	].join("\n");
 }
 
-function queryLinesOf(query: string, { key, schema }: FeatureNames): string[] {
+function queryLinesOf(seed: FeatureSeed, query: string, names: FeatureNames): string[] {
+	const held = heldKeyOf(seed, names);
 	return [
-		`export const ${query} = query("${shortNameOf(query, QUERY_SUFFIX)}")`,
+		`export const ${query} = query()`,
 		"\t.public()",
-		`\t.output(${schema})`,
-		`\t.handle((_input, { ${key} }) => ${key}.${key}());`,
+		`\t.output(${names.schema})`,
+		`\t.handle((_input, { ${bindingOf(names.key, held)} }) => ${held}.${names.key}());`,
 	];
 }
 
-function commandLinesOf(
-	{ query }: FeatureSeed,
-	command: string,
-	{ key, schema, save }: FeatureNames,
-): string[] {
-	const shortName = shortNameOf(command, COMMAND_SUFFIX);
-	const context = query === null ? key : `${key}, invalidate`;
+function bindingOf(key: string, held: string): string {
+	return key === held ? key : `${key}: ${held}`;
+}
+
+function commandLinesOf(seed: FeatureSeed, command: string, names: FeatureNames): string[] {
+	const { key, schema, save } = names;
+	const held = heldKeyOf(seed, names);
+	const shortName = kebabOf(command);
+	const context = seed.query === null ? bindingOf(key, held) : `${bindingOf(key, held)}, invalidate`;
 	return [
-		`export const ${command} = command("${shortName}")`,
+		`export const ${command} = command()`,
 		"\t.public()",
 		`\t.input(${inputSchemaOf(command)})`,
 		`\t.output(${schema})`,
 		"\t.idempotencyKey(PerCall)",
 		`\t.handle(({ name }, { ${context} }) => {`,
-		...(query === null ? [] : [`\t\tinvalidate(${query});`]),
-		`\t\tconst was = ${key}.${key}();`,
+		...(seed.query === null ? [] : [`\t\tinvalidate(${seed.query});`]),
+		`\t\tconst was = ${held}.${key}();`,
 		"\t\tconst now = {",
 		"\t\t\t...was,",
 		"\t\t\tnames: [...was.names, name],",
 		"\t\t};",
 		`\t\tconst reason = \`${key} \${was.names.length} → \${now.names.length} (${shortName} \${name})\`;`,
-		`\t\t${key}.${save}(now, reason);`,
+		`\t\t${held}.${save}(now, reason);`,
 		"\t\tconsole.info(`[widgetarium] ${reason}`);",
 		"\t\treturn now;",
 		"\t});",

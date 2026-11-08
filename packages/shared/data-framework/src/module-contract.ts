@@ -1,5 +1,10 @@
+import { Event } from "./event";
+import type { AnyEvent } from "./event";
+import { checkedModuleName } from "./identity";
+import { placeItem } from "./handled-items";
 import type { Runs } from "./module";
 import type { Placement, ServerRuns } from "./placement";
+import { Contract } from "./request";
 import type { AnyRequest } from "./request";
 import type { RemoteTransport } from "./transport";
 
@@ -19,7 +24,14 @@ export interface ContractShape<R extends Runs = Runs> {
 	readonly requests: readonly AnyRequest[];
 }
 
-export type ReachableContract<R extends ServerRuns = ServerRuns> = ContractShape<R> & ((use: ModuleUse) => RemoteModule);
+export type ReachableContract<R extends ServerRuns = ServerRuns> = ContractShape<R> &
+	((use: ModuleUse) => RemoteModule);
+
+export type ContractLeaf = AnyRequest | AnyEvent;
+
+export interface ContractTree {
+	readonly [key: string]: ContractLeaf | ContractTree;
+}
 
 export type ModuleContract<R extends Runs = Runs> = R extends ServerRuns ? ReachableContract<R> : ContractShape<R>;
 
@@ -28,22 +40,24 @@ const RUNS_ON_DEVICE =
 
 const CONTRACTS = new WeakSet<object>();
 
-export function moduleContract<R extends ServerRuns>(
+export function moduleNamespace<const T extends ContractTree>(module: string, tree: T): T {
+	leavesOf(tree).forEach((leaf) => placeItem(leaf, checkedModuleName(module)));
+	return tree;
+}
+
+export function moduleContract<R extends ServerRuns, const T extends ContractTree>(
 	name: string,
 	placement: Placement<R>,
-	requests: readonly AnyRequest[],
-): ReachableContract<R>;
-export function moduleContract(
+	tree: T,
+): ReachableContract<R> & T;
+export function moduleContract<const T extends ContractTree>(
 	name: string,
 	placement: Placement<"client">,
-	requests: readonly AnyRequest[],
-): ContractShape<"client">;
-export function moduleContract(
-	name: string,
-	placement: Placement<Runs>,
-	requests: readonly AnyRequest[],
-): ContractShape {
+	tree: T,
+): ContractShape<"client"> & T;
+export function moduleContract(name: string, placement: Placement<Runs>, tree: ContractTree): ContractShape {
 	const { runs } = placement;
+	const requests = leavesOf(moduleNamespace(name, tree)).filter(isRequest);
 	const remoteModuleOf = (use: ModuleUse): RemoteModule => {
 		if (!isServerRuns(runs)) {
 			throw new Error(RUNS_ON_DEVICE.replace("{module}", name));
@@ -55,7 +69,10 @@ export function moduleContract(
 			publicRequestNames: requests.map((request) => request.name),
 		};
 	};
-	const contract = Object.assign(Object.defineProperty(remoteModuleOf, "name", { value: name }), { runs, requests });
+	const contract = Object.assign(Object.defineProperty(remoteModuleOf, "name", { value: name }), tree, {
+		runs,
+		requests,
+	});
 	CONTRACTS.add(contract);
 	return contract;
 }
@@ -66,4 +83,16 @@ export function isModuleContract(value: unknown): value is ModuleContract<Server
 
 function isServerRuns(runs: Runs): runs is ServerRuns {
 	return runs === "server" || runs === "anywhere";
+}
+
+function leavesOf(tree: ContractTree): ContractLeaf[] {
+	return Object.values(tree).flatMap((held) => (isLeaf(held) ? [held] : leavesOf(held)));
+}
+
+function isLeaf(held: ContractLeaf | ContractTree): held is ContractLeaf {
+	return held instanceof Contract || held instanceof Event;
+}
+
+function isRequest(leaf: ContractLeaf): leaf is AnyRequest {
+	return leaf instanceof Contract;
 }

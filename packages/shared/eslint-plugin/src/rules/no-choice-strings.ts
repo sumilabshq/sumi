@@ -3,23 +3,18 @@ import type * as ESTree from "estree";
 import { builderTracker, chainCallsOf } from "../builders.js";
 import type { BuilderCall } from "../builders.js";
 
-const NAMED_BY_STRING: ReadonlySet<string> = new Set([
-	"query",
-	"command",
-	"event",
-	"serverModule",
-	"clientModule",
-	"module",
-]);
+const NAMED_BY_STRING: ReadonlySet<string> = new Set(["serverModule", "clientModule"]);
 
 export const noChoiceStrings: Rule.RuleModule = {
 	meta: {
 		type: "suggestion",
-		docs: { description: "a builder chain takes no string choices; a string is only a request or module name" },
+		docs: {
+			description: "a builder chain takes no string choices or names; a building block is named by its constant",
+		},
 		schema: [],
 		messages: {
 			choiceString:
-				"a string in a builder chain is free-form data only: name the choice with the framework's value (PerCall, minutes(5), a guard), never a string",
+				"a string in a builder chain is free-form data only: a building block is named by its constant, and a choice by the framework's value (PerCall, minutes(5), a guard), never a string",
 		},
 	},
 	create(context) {

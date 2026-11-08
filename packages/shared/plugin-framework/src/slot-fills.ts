@@ -3,7 +3,6 @@ import { derivedOutcomesOf } from "./derived-fills";
 import type { FillResolution } from "./derived-fills";
 import { filledSlotOf, fillOutcomeOf, isParsedFill } from "./fill-outcome";
 import type { FilledSlot, FillOffer, FillOutcome, ParsedFill, ResolvedOwnership, SlotClaim } from "./fill-outcome";
-import { stampSlotName } from "./plugin";
 import type { Plugin } from "./plugin";
 import { sentenceOf } from "./sentence";
 
@@ -55,7 +54,7 @@ function claimsOf(started: readonly Plugin[]): readonly SlotClaim[] {
 		each.parts.declaredSlots.map((slot) => ({
 			slot,
 			ownerId: each.id,
-			stampedName: stampSlotName(each.id, slot),
+			stampedName: slot.name,
 		})),
 	);
 }
@@ -83,7 +82,7 @@ function resolveOwnership(claims: readonly SlotClaim[]): ResolvedOwnership {
 			refusals.push(
 				sentenceOf(SAME_NAME_TWICE, {
 					plugin: each.ownerId,
-					name: each.slot.name,
+					name: each.stampedName,
 				}),
 			);
 			continue;

@@ -9,7 +9,7 @@ A file's place is decided by **what it is** and **who uses it**: a feature's own
 ```
 index.ts                         generated: export * from "./generated/contract.js"; the "." entry
 server.ts                        generated, only for a Server or Anywhere module with non-public requests: export * from "./generated/server.js"; the "./server" entry
-module.ts                        module("<name>").on(…).provide(…).handles(...handled); the "./module" entry
+module.ts                        export const <name> = module().on(…).provide(…).handles(handled); the "./module" entry
 package.json                     "exports" (".", "./module", "./server" when generated) and "imports": { "#module": ./generated/command.ts }
 features/<feature>/requests.ts   the feature's requests, each with its handler
 features/<feature>/lib/          pure functions the feature's handlers share
@@ -18,9 +18,9 @@ shared/schema/<record>.schema.ts zod shapes and their inferred types
 gateways/<gateway>/              <gateway>.gateway.ts (the abstract class), one <storage>.gateway.ts per implementation, <gateway>.events.ts for the events it is the source of
 shared/events/<topic>.events.ts  emitted events two features use
 gateways/<module>-parts/         the picker: which implementation each platform gets (layoutPartsOn)
-generated/contract.ts            generated, self-contained: every .public() request and event up to its first handling step, and the module's descriptor
-generated/server.ts              generated: the non-public requests, for other server modules
-generated/handled.ts             generated: every request with a handler, every event and subscriber; module.ts ends with .handles(...handled)
+generated/contract.ts            generated, self-contained: one object named like the module, its descriptor and its namespace of every .public() request and event up to its first handling step
+generated/server.ts              generated: the same namespace of the non-public requests, for other server modules
+generated/handled.ts             generated: the module's name, every request with a handler and every event named by its path, every subscriber; module.ts ends with .handles(handled)
 generated/command.ts             generated: command, query, subscriber, event typed by the module's provide; the "#module" import
 ```
 
@@ -33,9 +33,9 @@ A data module and a feature are laid by the CLI, never by hand; what it lays is 
 | Command                                                                            | Lays                                                                                                                                                                                                                                                                                                                                  |
 | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `widgetarium add module <name> --on Server\|Device\|Anywhere [--in domain\|state]` | `packages/<layer>/<name>/` with `package.json` (`"."` and `"./module"`, the latter only under `"server"` for a server module), `tsconfig.json`, `LICENSE`, `module.ts` (a server module guarded by `AuthenticatedGuard`) and the picker `gateways/<name>-parts/`; adds the folder to the workspaces and `test:types`, runs `generate` |
-| `widgetarium add feature <module>/<feature> [--query <Name>] [--command <Name>]`   | `features/<feature>/requests.ts`, `shared/schema/<feature>.schema.ts`, `gateways/<feature>/` (the abstract class and `memory.gateway.ts`) wired into the picker, the requests marked `.public()`, `tools/<module>-<feature>-checks.ts` starting the module `({ injects: fakes })`; runs `generate`                                    |
+| `widgetarium add feature <module>/<feature> [--query <name>] [--command <name>]`   | `features/<feature>/requests.ts`, `shared/schema/<feature>.schema.ts`, `gateways/<feature>/` (the abstract class and `memory.gateway.ts`) wired into the picker, the requests marked `.public()`, `tools/<module>-<feature>-checks.ts` starting the module `({ injects: fakes })`; runs `generate`                                    |
 
-Both refuse an existing folder, feature or package name and a bad name, writing nothing. Run the check the feature got with `node --single-threaded --import ./tools/loader/register.mts tools/<module>-<feature>-checks.ts`.
+Both refuse an existing folder, feature or package name and a bad name, writing nothing; a request name is camelCase letters with no kind suffix (`--query tasks --command addTask`). Run the check the feature got with `node --single-threaded --import ./tools/loader/register.mts tools/<module>-<feature>-checks.ts`.
 
 ## A client package
 
@@ -100,7 +100,7 @@ There is no `"./gateways"`: the module picks its gateways from the facts it is g
 
 ## Questions an agent asks, answered
 
-**Another module needs this request.** Name the module in `.imports(...)`, import the request from its `"."` (or `"./server"` for a non-public one), and call `send(Request, input)` in the handler ([requests.md](requests.md#sending-to-another-module)). Never import the other module's `module.ts`, handler or gateway.
+**Another module needs this request.** Name the module in `.imports(...)`, import the request from its `"."` (or `"./server"` for a non-public one), and call `send(billing.charges.charge, input)` in the handler, through the module's namespace ([requests.md](requests.md#sending-to-another-module)). Never import the other module's `module.ts`, handler or gateway.
 
 **Two handlers of one feature compute the same thing.** It is a pure function in that feature's `lib/`. Two features → `shared/lib/`. A feature never imports another feature's `lib/`.
 
@@ -108,7 +108,7 @@ There is no `"./gateways"`: the module picks its gateways from the facts it is g
 
 **A decision in a gateway?** It moves to the handler, or to a pure function in `lib/` the handler calls ([layers.md](layers.md)).
 
-**What does an app import?** The module from `"./module"` to start it, the views from the client package's `"."`: `runtime().modules(LayoutModule).start({ platform, scope })` and `<RuntimeProvider runtime={…}><StudioFrame /></RuntimeProvider>`.
+**What does an app import?** The module from `"./module"` to start it, the views from the client package's `"."`: `runtime().modules(layout).start({ platform, scope })` and `<RuntimeProvider runtime={…}><StudioFrame /></RuntimeProvider>`.
 
 **One platform's gateway in another's bundle?** Today the picker imports every implementation, so a browser bundle carries Tauri's gateway code (a `TRADE-OFF:` in `tauri.gateway.ts`, guarded at run time). **planned**: a build-time platform condition.
 

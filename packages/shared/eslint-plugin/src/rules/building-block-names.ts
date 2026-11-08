@@ -3,18 +3,17 @@ import type * as ESTree from "estree";
 import { builderTracker, chainCallsOf } from "../builders.js";
 import type { Builder, BuilderCall } from "../builders.js";
 
-const SUFFIX: Readonly<Record<Exclude<Builder, "handler">, string>> = {
-	query: "Query",
-	command: "Command",
-	event: "Event",
-	subscriber: "Subscriber",
+type SuffixedBuilder = "guard" | "middleware" | "serverModule" | "clientModule";
+
+const SUFFIX: Readonly<Record<SuffixedBuilder, string>> = {
 	guard: "Guard",
 	middleware: "Middleware",
 	serverModule: "ServerModule",
 	clientModule: "ClientModule",
-	module: "Module",
 };
 const PASCAL_CASE = /^[A-Z][A-Za-z0-9]*$/;
+const CAMEL_NAME = /^[a-z]+([A-Z][a-z]*)*$/;
+const KIND_SUFFIX = /(Query|Command|Event|Subscriber|Module|Plugin|Slot)$/;
 const REQUEST_NAME = /(Command|Query)$/;
 
 export const buildingBlockNames: Rule.RuleModule = {
@@ -25,6 +24,10 @@ export const buildingBlockNames: Rule.RuleModule = {
 		messages: {
 			unnamed: "a {{builder}}(...) building block is a named exported const: export const <Name> = {{builder}}(...)",
 			notPascal: "{{name}} is a building block: name it in PascalCase",
+			notCamel:
+				"{{name}} is built by {{builder}}(), which names it by this constant: name it in camelCase of letters, such as frameSides",
+			kindSuffix:
+				"{{name}} is built by {{builder}}(), which names it by this constant: drop the kind suffix, the builder already says it",
 			wrongSuffix: "{{name}} is built by {{builder}}(...): its name ends with {{suffix}}",
 			wrongHandler: "a handler of {{request}} is named {{wanted}}",
 			notRequest: "handler(...) takes a request named *Command or *Query, not {{request}}",
@@ -39,10 +42,25 @@ function checkName(context: Rule.RuleContext, { builder, call }: BuilderCall): v
 	const top = chainCallsOf(call).at(-1) ?? call;
 	const name = exportedConstNameOf(top);
 	if (name === null) return context.report({ node: call, messageId: "unnamed", data: { builder } });
+	if (!isSuffixed(builder) && builder !== "handler") return checkCamelName(context, { builder, call }, name);
 	if (!PASCAL_CASE.test(name)) return context.report({ node: call, messageId: "notPascal", data: { name } });
 	if (builder === "handler") return checkHandlerName(context, call, name);
 	const suffix = SUFFIX[builder];
 	if (!name.endsWith(suffix)) context.report({ node: call, messageId: "wrongSuffix", data: { name, builder, suffix } });
+}
+
+function isSuffixed(builder: Builder): builder is SuffixedBuilder {
+	return builder in SUFFIX;
+}
+
+function checkCamelName(context: Rule.RuleContext, { builder, call }: BuilderCall, name: string): void {
+	if (!CAMEL_NAME.test(name)) {
+		return context.report({ node: call, messageId: "notCamel", data: { name, builder } });
+	}
+
+	if (KIND_SUFFIX.test(name)) {
+		context.report({ node: call, messageId: "kindSuffix", data: { name, builder } });
+	}
 }
 
 function checkHandlerName(context: Rule.RuleContext, call: ESTree.CallExpression, name: string): void {

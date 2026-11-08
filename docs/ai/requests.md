@@ -28,7 +28,7 @@ class FixedPrices extends Prices {
 
 export const ShopServerModule = serverModule("shop").provide(() => ({ prices: new FixedPrices() }));
 
-export const PricesQuery = query("shop/prices").output(z.array(PriceSchema));
+export const PricesQuery = query().output(z.array(PriceSchema));
 
 export const PricesQueryHandler = handler(PricesQuery, ShopServerModule)
 	.guard(PublicGuard)
@@ -58,7 +58,7 @@ export const OrdersServerModule = serverModule("orders")
 	.guard(AuthenticatedGuard)
 	.provide(() => ({ orders: new NoOrders() }));
 
-export const MyOrdersQuery = query("orders/my-orders").output(z.array(z.string()));
+export const MyOrdersQuery = query().output(z.array(z.string()));
 
 export const MyOrdersQueryHandler = handler(MyOrdersQuery, OrdersServerModule)
 	.inject({ orders: Orders })
@@ -102,7 +102,7 @@ export const OwnsInvoiceGuard = guard<{ readonly invoiceId: string }>()
 		return { invoice };
 	});
 
-export const PayInvoiceCommand = command("billing/pay-invoice")
+export const PayInvoiceCommand = command()
 	.idempotencyKey(PerCall)
 	.input(z.object({ invoiceId: z.string() }))
 	.output(z.object({ paid: z.number() }));
@@ -145,7 +145,7 @@ export const OpsServerModule = serverModule("ops")
 	.use(TimingLoggerMiddleware)
 	.provide(() => ({ logger: new ConsoleLogger() }));
 
-export const HealthQuery = query("ops/health").output(z.literal("ok"));
+export const HealthQuery = query().output(z.literal("ok"));
 
 export const HealthQueryHandler = handler(HealthQuery, OpsServerModule).handle(() => "ok" as const);
 ```

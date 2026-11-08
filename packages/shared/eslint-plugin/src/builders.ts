@@ -11,7 +11,9 @@ export type Builder =
 	| "serverModule"
 	| "clientModule"
 	| "module"
-	| "handler";
+	| "handler"
+	| "plugin"
+	| "slot";
 
 export interface BuilderCall {
 	readonly builder: Builder;
@@ -29,8 +31,11 @@ const BUILDERS: ReadonlySet<string> = new Set([
 	"clientModule",
 	"module",
 	"handler",
+	"plugin",
+	"slot",
 ]);
-const BUILDER_SOURCE = /^@widgetarium\/data-framework$|\/data-framework\/src\/index(\.[jt]s)?$|^#module$/;
+const BUILDER_SOURCE =
+	/^@widgetarium\/(data|plugin)-framework$|\/(data|plugin)-framework\/src\/index(\.[jt]s)?$|^#module$/;
 
 export function builderTracker(onBuilder: (found: BuilderCall) => void): Rule.RuleListener {
 	const builders = new Map<string, Builder>();
