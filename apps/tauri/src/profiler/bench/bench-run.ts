@@ -8,6 +8,7 @@ export type BenchStep =
 	| { readonly kind: "probe"; readonly times: number }
 	| { readonly kind: "press"; readonly label: string }
 	| { readonly kind: "type"; readonly selector: string; readonly text: string }
+	| { readonly kind: "baselines"; readonly selectors: readonly string[] }
 	| { readonly kind: "inspect"; readonly selectors: readonly string[] }
 	| { readonly kind: "probe-var"; readonly selector: string; readonly name: string; readonly fromPx: number; readonly stepPx: number; readonly times: number }
 	| { readonly kind: "probe-state"; readonly times: number }
@@ -107,6 +108,11 @@ async function runStep(step: BenchStep): Promise<readonly number[]> {
 
 	if (step.kind === "inspect") {
 		say({ inspected: step.selectors.map(lookOf) });
+		return [];
+	}
+
+	if (step.kind === "baselines") {
+		say({ baselines: step.selectors.map(baselineOf) });
 		return [];
 	}
 
@@ -313,6 +319,21 @@ function lookOf(selector: string): Readonly<Record<string, unknown>> {
 		margin: style.margin,
 		layers: found.closest(".wg-kit-portal-layer")?.className ?? null,
 	};
+}
+
+function baselineOf(selector: string): Readonly<Record<string, unknown>> {
+	const found = document.querySelector<HTMLElement>(selector);
+
+	if (found === null) {
+		return { selector, missing: true };
+	}
+
+	const marker = document.createElement("span");
+	marker.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+	found.append(marker);
+	const baseline = marker.getBoundingClientRect().top;
+	marker.remove();
+	return { selector, baseline: Math.round(baseline * 10) / 10 };
 }
 
 function typedInto(selector: string, text: string): boolean {
