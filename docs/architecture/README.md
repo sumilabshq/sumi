@@ -24,24 +24,24 @@ The rules every developer and every agent follows when writing code in this repo
 
 **Requests: CQRS.** A query reads, a command writes (CQRS; as `useQuery` / `useMutation` in TanStack Query, `query` / `mutation` in tRPC, requests and handlers in MediatR). A request carries its contract (zod input and output) and its handler. Views call `useQuery` / `useCommand`; nothing else reaches logic.
 
-**Names come from constants.** A request, event, subscriber or module is named by the camelCase constant it is exported as, never by a string: `export const frameSides = query()`. Its full name is kebab segments joined by dots, module, feature, constant: `layout.frame-sides.toggle-frame-side`. JavaScript cannot read a variable's name, so `widgetarium generate` writes the names in (`generated/handled.ts`: `named("frame-sides.toggle-frame-side", toggleFrameSide)`). Outside its module a request is reached through the module's namespace: `layout.frameSides.toggleFrameSide`.
+**Names come from constants, identities from strings.** A request, event, subscriber or slot is named by the camelCase constant it is exported as, never by a string: `export const frameSides = query()`. A module and a plugin are identities that outlive a rename of their constant, so each takes its name as one kebab segment: `module("layout")`, `plugin("command-menu")`. A full name is kebab segments joined by dots, module, feature, constant: `layout.frame-sides.toggle-frame-side`. JavaScript cannot read a variable's name, so `widgetarium generate` writes the item names in (`generated/module.ts`: `named("frame-sides.toggle-frame-side", toggleFrameSide)`). Outside its module a request is reached through the module's namespace: `layout.frameSides.toggleFrameSide`.
 
 **Modules.** A module is one area's data: its commands and queries, their storage (gateways) and their rules (like NestJS or Medusa modules). A module declares where it runs and what it provides; it never lists its requests, the generator does:
 
 ```ts skip-check
-export const billing = module()
+export const billing = module("billing")
 	.on(Server)
 	.imports(users)
 	.guard(AuthenticatedGuard)
-	.provide((facts) => billingPartsOn(facts))
-	.handles(handled);
+	.provide((facts) => billingPartsOn(facts));
 ```
 
 - `.on(Server | Device | Anywhere)`: where the module may run.
 - `.imports(...)`: the other modules whose commands and queries this module's handlers send, and whose events its subscribers hear; their names are read when the runtime starts.
 - `.config<{ file: BoardFile }>()`: live objects its starter passes (a file it opened, a running agent); the module becomes callable, `tasks({ file })`, and `provide` receives them as `config`.
 - `.provide(fn)`: the gateways its handlers receive, picked from the facts.
-- `.handles(handled)`: always last; `handled` is `generated/handled.ts`: the module's name, the kebab of its constant, and every request, event and subscriber `widgetarium generate` found in the package, each named.
+- `module("billing")`: the module's name, one kebab segment; wire names start with it.
+- `module.ts` holds only these decisions. `widgetarium generate` writes `generated/module.ts`, the runnable module: `export const billing = handledModule(definition, [named("charges.charge", charge), …])`, the definition handed every request, event and subscriber found in the package, each named.
 - **Who may call is on the request.** No mark: only the same process, any module or view of that runtime. `.public()`: anyone, through guards, and it enters the contract. `.callableBy(otherModule, …)`: only those services. An event marked `.public()` enters the contract.
 
 **Re-reading: `invalidate`.** A command or a subscriber calls `invalidate(query, input?)` for each query its work made stale (like `revalidatePath` / `revalidateTag` in Next.js server actions, or `invalidateQueries` in TanStack's `onSuccess`). Invalidations apply only after a successful answer; a refused or failed call re-reads nothing, and a command that invalidates nothing re-reads nothing. Over the network the names ride in the answer (`invalidated: [...]`) and the client re-reads them.
@@ -99,7 +99,7 @@ flowchart TB
 	dg --> handler
 ```
 
-**What a package exports.** `"."` holds the public contract: one object named like the module, its descriptor (`layout({ over })`) and its namespace (`layout.frameSides.frameSides`) at once, enough to call it at a URL and nothing that runs; `"./server"` holds the non-public requests of a `Server` or `Anywhere` module, imported only by server modules; `"./module"` holds the module with its handlers and gateways, imported only by the app that runs it. A device bundle therefore carries the code of the modules it runs and the contracts of the ones it imports, never a server module's code.
+**What a package exports.** `"./contract"` holds the public contract: one object named like the module, its descriptor (`layout({ over })`) and its namespace (`layout.frameSides.frameSides`) at once, enough to call it at a URL and nothing that runs; `"./server"` holds the non-public requests of a `Server` or `Anywhere` module, imported only by server modules; `"./implementation"` holds the runnable module with its handlers and gateways (`generated/module.ts`), imported only by the app that runs it. A device bundle therefore carries the code of the modules it runs and the contracts of the ones it imports, never a server module's code.
 
 ### Starting a module or a feature
 
@@ -129,7 +129,7 @@ packages/shared/      code with no domain: framework (requests, mediator, hooks)
 
 ## Three rules
 
-1. **Imports go one way: `apps` → `client` → `domain`/`state` → `shared`.** A package never imports an app. A package reaches a data module only through its `"."` entry, the generated contract.
+1. **Imports go one way: `apps` → `client` → `domain`/`state` → `shared`.** A package never imports an app. A package reaches a data module only through its `"./contract"` entry, the generated contract.
 2. **A file's place is what it is.** A request and its handler → `features/<feature>/requests.ts`. What is drawn → a client package. Storage or an outside system → `gateways/`. A pure computation → `lib/`. Which gateway a platform gets → the module's `provide`.
 3. **Nothing reaches for anything.** A view sends requests through `useQuery` / `useCommand`. A handler receives what its module's `provide` returns as its second argument, typed; a guard or middleware, shared across modules, declares what it needs in `.requires`, met by its module's `provide` or its runtime's. A host hands the app facts (platform, workspace, env), never gateways. No hidden globals, no singletons.
 
@@ -141,25 +141,25 @@ packages/shared/      code with no domain: framework (requests, mediator, hooks)
 | a write and its handler       | `command().input(…).idempotencyKey(…)….handle()` | verb phrase, camelCase      | `toggleFrameSide`        |
 | a fact that happened          | `event().input(…)`                               | past tense, camelCase       | `panesChanged`           |
 | what an event sets off        | `subscriber(event).handle(fn)`                   | what it does, camelCase     | `rereadPanes`            |
-| a data module                 | `module().on(…).provide(fn).handles(handled)`    | its area, camelCase         | `layout`                 |
+| a data module                 | `module("layout").on(…).provide(fn)`             | its area, camelCase         | `layout`                 |
 | who may call                  | `guard<In>().requires({…}).handle(check)`        | what it checks + `Guard`    | `OwnsInvoiceGuard`       |
 | what wraps a call             | `middleware().requires({…}).handle(fn)`          | what it does + `Middleware` | `TimingLoggerMiddleware` |
 | storage or an outside system  | `abstract class`, its own token                  | its data + `Gateway`        | `FrameSidesGateway`      |
 | one storage's implementation  | `class … extends FrameSidesGateway`              | `<Storage><Name>Gateway`    | `TauriFrameSidesGateway` |
 | reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand`     | —                           | —                        |
 
-No building block takes a string name. A name is the kebab of its constant, each segment `a-z` words joined by `-` (no digits, capitals, `/` or `_`). A request's full name is module, feature and constant joined by dots (`layout.frame-sides.toggle-frame-side`): the feature is its folder under `features/`, an event's group its gateway folder or its `shared/events/<topic>`. `query`, `command` and `subscriber` come from `#module` (`generated/command.ts`), typed by the module's `provide`, the runtime's and the package's events. Every declaration is a fluent chain and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)).
+No building block but a module and a plugin takes a string name. A name is the kebab of its constant (a module's and a plugin's, the string they take), each segment `a-z` words joined by `-` (no digits, capitals, `/` or `_`). A request's full name is module, feature and constant joined by dots (`layout.frame-sides.toggle-frame-side`): the feature is its folder under `features/`, an event's group its gateway folder or its `shared/events/<topic>`. `query`, `command` and `subscriber` come from `#module` (`generated/command.ts`), typed by the module's `provide`, the runtime's and the package's events. Every declaration is a fluent chain and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)).
 
 ## Imports
 
-| From ↓ may import → | app | client package | data module                                                                                          | shared |
-| ------------------- | --- | -------------- | ---------------------------------------------------------------------------------------------------- | ------ |
-| app                 | own | its `"."`      | its `"."`; its `"./module"` to start it                                                              | yes    |
-| client package      | no  | its `"."`      | its `"."`                                                                                            | yes    |
-| data module         | no  | no             | its `"."` (and `"./server"` when both run on a server), declared in `package.json` and in `.imports` | yes    |
-| shared              | no  | no             | no                                                                                                   | yes    |
+| From ↓ may import → | app | client package | data module                                                                                                   | shared |
+| ------------------- | --- | -------------- | ------------------------------------------------------------------------------------------------------------- | ------ |
+| app                 | own | its `"."`      | its `"./contract"`; its `"./implementation"` to start it                                                      | yes    |
+| client package      | no  | its `"."`      | its `"./contract"`                                                                                            | yes    |
+| data module         | no  | no             | its `"./contract"` (and `"./server"` when both run on a server), declared in `package.json` and in `.imports` | yes    |
+| shared              | no  | no             | no                                                                                                            | yes    |
 
-A data module never imports React; a client package never imports `"./module"` or a gateway. The graph of packages has no cycle.
+A data module never imports React; a client package never imports `"./implementation"` or a gateway. The graph of packages has no cycle.
 
 ## Prior art
 

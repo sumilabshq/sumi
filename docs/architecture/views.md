@@ -29,7 +29,7 @@ const layoutApp = startLayoutApp({ platform, workspaceId });
 </RuntimeProvider>;
 ```
 
-A block imports requests from the data module's `"."` and reads them through the hooks; it never imports `"./module"`, a handler or a gateway. An adapter outside React that needs the same data uses the same started app (`layoutApp.send`, `layoutApp.routes`), never a second one.
+A block imports requests from the data module's `"./contract"` and reads them through the hooks; it never imports `"./implementation"`, a handler or a gateway. An adapter outside React that needs the same data uses the same started app (`layoutApp.send`, `layoutApp.routes`), never a second one.
 
 ## Reading and writing
 

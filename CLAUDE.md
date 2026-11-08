@@ -230,4 +230,5 @@ scopes, same body as before, only the subject is short.
   4. One idiom per name: `manifestOfDeclared`, never `manifestOfWritten`.
      Idioms that stay: `xOf(y)` for a derivation read off `y`, `isX`/`hasX`, `refuseX` answering a reason
      or null, `withX(y)`, `useX`, `createX`, `defineX`, `*Schema`. A request, event, subscriber or module is
-     its camelCase constant with no kind suffix (`frameSides`, `toggleFrameSide`, `layout`).
+     its camelCase constant with no kind suffix (`frameSides`, `toggleFrameSide`, `layout`); a module and a plugin
+     also take their name as one kebab string (`module("layout")`, `plugin("command-menu")`).

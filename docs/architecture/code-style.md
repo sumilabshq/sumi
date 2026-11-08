@@ -29,7 +29,7 @@ How code is written inside the architecture. The rules hold in any project built
 The fluent chain is this project's one declaration pattern: requests, modules, guards, middleware, slots and plugins are all declared by it, as zod schemas already are.
 
 - **A kind is declared with a chain; a value of a kind is one object.** Declaring a request, module, guard, middleware, slot or plugin is a chain. Using one is a single object: a fill, options, a module's config (`tasks({ file })`), `billing({ over })`, `layout({ injects })`, input, start settings.
-- **A call that changes the chain's types takes one item; a call that lists independent items takes many.** `.guard`, `.use`, `.provide` take one; `.handles`, `.fill`, `.imports` take many.
+- **A call that changes the chain's types takes one item; a call that lists independent items takes many.** `.guard`, `.use`, `.provide` take one; `.fill`, `.imports`, `.declare` take many.
 - **One concern per call**, read top to bottom in the order it runs.
 - **Every behaviour ends in `.handle()`**: a request, a guard, a middleware.
 - **`.guard` decides who may call, `.use` wraps the call**: two verbs, never one for both.
@@ -60,7 +60,7 @@ export const payInvoice = command()
 
 ## A request
 
-- `requests.ts` imports only `#module` (its builders), `@widgetarium/data-framework`, `zod`, its own `shared/schema`, its gateways, its feature's `lib/`, `shared/lib/` and other modules' `"."` entries.
+- `requests.ts` imports only `#module` (its builders), `@widgetarium/data-framework`, `zod`, its own `shared/schema`, its gateways, its feature's `lib/`, `shared/lib/` and other modules' `"./contract"` entries.
 - Its schemas live in `shared/schema/`, never beside the request: the generator refuses one declared there.
 - **No reach-through.** A handler calls what `provide` handed it: `frameSides.saveSides(…)`, never `layout.frameSides.saveSides(…)`. If it needs it, `provide` returns it under its own key.
 - A handler that refuses before writing calls `refuse(reason)` rather than throwing.
@@ -98,7 +98,7 @@ export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
 
 - One picker per module in `gateways/<module>-parts/`: a record keyed by `Platform`, so a new platform is a type error until every module answers it.
 - A class built there takes its dependencies as constructor arguments.
-- `module.ts` holds only `module()…provide((facts) => ({ ...layoutPartsOn(facts) })).handles(handled)`.
+- `module.ts` holds only `module("layout")…provide((facts) => ({ ...layoutPartsOn(facts) }))`; `generated/module.ts` hands it its requests.
 
 ## A block
 

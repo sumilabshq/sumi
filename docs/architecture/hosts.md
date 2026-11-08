@@ -20,13 +20,13 @@ export function startLayoutApp({ platform, workspaceId }: LayoutAppAsk): Runtime
 
 A host never builds a module's gateway and never passes a "parts" object. What a module needs from the platform it reaches through its gateways. A module that writes the Tauri store is configured with a `StoreClient` (`@widgetarium/behaviors/tauri-store`), never Tauri's `invoke`. A module that keeps one file is configured with that file instead: `tasks({ file })` takes a `BoardFile` whose reads and writes are FileSystem requests.
 
-**Live objects, through a module's config.** A live object only the host has (a file it opened, a running agent) is passed raw where the host lists the module: `canvas({ kind: "project", project })`, and `provide` builds the module's gateways on it ([requests.md](requests.md#a-modules-config)). The config's types are re-exported from the module's `"./module"` entry. A plugin module the core starts is a function of what the core offers, `({ store, file }) => places({ store })` in the `sumiHost.backgroundModules`, so the plugin decides its module's config and the core only offers.
+**Live objects, through a module's config.** A live object only the host has (a file it opened, a running agent) is passed raw where the host lists the module: `canvas({ kind: "project", project })`, and `provide` builds the module's gateways on it ([requests.md](requests.md#a-modules-config)). The config's types are re-exported from the module's `"./implementation"` entry. A plugin module the core starts is a function of what the core offers, `({ store, file }) => places({ store })` in the `sumiHost.backgroundModules`, so the plugin decides its module's config and the core only offers.
 
 A runtime's host gives `doneKeys` and `reportFailure`; `orpcTransport` takes `fetch` and `headers` for the wire (the token travels in `headers`; an importing runtime never authenticates). `authenticate` is given to the adapter that exposes the runtime (`dataFrameworkMiddleware`, `servePort`, `local.serve`, the core's IPC), and `rateLimits` comes from the runtime's `.provide` ([requests.md](requests.md#runtime-provides)).
 
 ## One platform's code out of another's bundle
 
-- A data module's `"."` is the generated contract: a client package importing it carries no handler and no gateway.
+- A data module's `"./contract"` is the generated contract: a client package importing it carries no handler and no gateway.
 - Only `apps/server` resolves the `server` export condition and imports `@widgetarium/data-framework/server` (Hono, the oRPC server).
 - Today a module's picker imports every platform's gateways, so a browser bundle carries the Tauri gateway code, guarded at run time (`TRADE-OFF:` in `state/layout/gateways/layout-parts/tauri.gateway.ts`). **planned**: a build-time platform condition, proven from the bundle's metafile.
 
