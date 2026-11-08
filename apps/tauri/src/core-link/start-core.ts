@@ -4,13 +4,12 @@ import { z } from "zod";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
-import type { SumiProfile } from "@widgetarium/plugin-framework";
 import { places as placesContract } from "@widgetarium/places/contract";
 import { tasks } from "@widgetarium/tasks/contract";
-import { AppCallerAuthenticate, BUILT_IN_PROFILE, resolvePlugins } from "@widgetarium/studio";
-import type { BackgroundModule } from "@widgetarium/studio";
+import { AppCallerAuthenticate, startSumiPlugins } from "@widgetarium/studio";
+import type { ResolvedPlugins } from "@widgetarium/studio";
 import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
-import { workspaceProfileOf } from "../plugins/workspace-profile.js";
+import { workspacePluginStateOf } from "../plugins/workspace-plugin-state.js";
 import { serveCore } from "./core-calls.js";
 import type { CoreListener } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
@@ -29,22 +28,25 @@ const SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
 const CORE_IPC = "the core IPC";
 const SERVING = "[studio-core] workspace {workspace}: none → serving, plugins {plugins}";
 const PLUGIN_REFUSED = "[studio-core] workspace {workspace}: plugins: {refusal}";
-const PROFILE_UNREAD = "[studio-core] workspace {workspace}: sumi.profile.json not read, the built-in plugins start";
 const NOT_STARTED = "[studio-core] workspace {workspace}: none → failed, every call answers unreachable";
 
 export function startCore(): void {
 	const served = new Map<string, Runtime>();
 	const store = new StoreClient((command, args) => invoke(command, args));
 	serveCore((workspace, listener) => {
-		void profileOrBuiltIn(store, workspace).then((profile) => {
-			const places = coreServedOrFailed({ workspace, listener, store, profile });
+		void pluginsOrFailed(store, workspace, listener).then((plugins) => {
+			if (plugins === null) {
+				return;
+			}
+
+			const places = coreServedOrFailed({ workspace, listener, store, plugins });
 
 			if (places === null) {
 				return;
 			}
 
 			served.set(workspace, places);
-			console.info(SERVING.replace("{workspace}", workspace).replace("{plugins}", profile.plugins.join(", ")));
+			console.info(SERVING.replace("{workspace}", workspace).replace("{plugins}", plugins.startedNames.join(", ")));
 			void keepLiveWindows(places, workspace);
 			void forgetRunningTurns(places, workspace);
 			void superviseTasks(places, workspace);
@@ -63,15 +65,26 @@ interface CoreServing {
 	readonly workspace: string;
 	readonly listener: CoreListener;
 	readonly store: StoreClient;
-	readonly profile: SumiProfile;
+	readonly plugins: ResolvedPlugins;
 }
 
-async function profileOrBuiltIn(store: StoreClient, workspace: string): Promise<SumiProfile> {
+async function pluginsOrFailed(
+	store: StoreClient,
+	workspace: string,
+	listener: CoreListener,
+): Promise<ResolvedPlugins | null> {
 	try {
-		return await workspaceProfileOf(store, workspace);
+		const plugins = startSumiPlugins(await workspacePluginStateOf(store, workspace));
+
+		for (const refusal of plugins.refusals) {
+			console.error(PLUGIN_REFUSED.replace("{workspace}", workspace).replace("{refusal}", refusal));
+		}
+
+		return plugins;
 	} catch (failure) {
-		console.error(PROFILE_UNREAD.replace("{workspace}", workspace), failure);
-		return BUILT_IN_PROFILE;
+		console.error(NOT_STARTED.replace("{workspace}", workspace), failure);
+		listener.fail(failure);
+		return null;
 	}
 }
 
@@ -85,7 +98,7 @@ function coreServedOrFailed(serving: CoreServing): Runtime | null {
 	}
 }
 
-function coreServedOver({ workspace, listener, store, profile }: CoreServing): Runtime {
+function coreServedOver({ workspace, listener, store, plugins }: CoreServing): Runtime {
 	const own = localTransport();
 	const offers = {
 		store,
@@ -94,7 +107,7 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): R
 	const core = runtime()
 		.modules(
 			...HOST_CAPABILITY_MODULES,
-			...backgroundModulesOf(workspace, profile).map(({ moduleOf }) => moduleOf(offers)),
+			...plugins.backgroundModules.map(({ moduleOf }) => moduleOf(offers)),
 		)
 		.start({
 			platform: "server",
@@ -114,16 +127,6 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): R
 		listener.serve(exposed);
 		return places;
 	});
-}
-
-function backgroundModulesOf(workspace: string, profile: SumiProfile): readonly BackgroundModule[] {
-	const resolved = resolvePlugins(profile);
-
-	for (const refusal of resolved.refusals) {
-		console.error(PLUGIN_REFUSED.replace("{workspace}", workspace).replace("{refusal}", refusal));
-	}
-
-	return resolved.backgroundModules;
 }
 
 function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): void {

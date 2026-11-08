@@ -1,5 +1,5 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
-import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
+import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
@@ -64,7 +64,7 @@ const core: RemoteTransport = {
 		}),
 	changes: (hear) => overHttp.changes(hear),
 };
-const PLUGINS = resolvePlugins(BUILT_IN_PROFILE);
+const PLUGINS = startSumiPlugins(builtInPluginState());
 const studioApp = runtime()
 	.modules(
 		layout,

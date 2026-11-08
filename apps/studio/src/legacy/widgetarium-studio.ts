@@ -15,7 +15,7 @@ import type { PaneView } from "@widgetarium/layout/contract";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { DrawnTabPage, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
-import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
+import { builtInPluginState, startSumiPlugins } from "../plugins/sumi-plugins.js";
 import type { ResolvedPlugins, WindowLayer } from "../plugins/sumi-plugins.js";
 import { TabFaceContext } from "@sumi/sumi-host-plugin";
 import { MenuTabFace } from "../features/app-host/ui/tab-face/menu-tab-face.js";
@@ -104,7 +104,7 @@ export function startStudio(project: WidgetariumProject, start: StudioStart = {}
 export function startOpenedStudio(opened: OpenedApp, start: StudioStart): StartedStudio {
 	const project = startOpenedProject(opened, start);
 	const lent = lentPortsOf(opened, start);
-	const plugins = start.plugins ?? resolvePlugins(BUILT_IN_PROFILE);
+	const plugins = start.plugins ?? startSumiPlugins(builtInPluginState());
 	const core = start.core ?? startCoreInProcess(lent.appId, plugins.backgroundModules);
 	const studioApp =
 		start.studioApp ??
@@ -150,10 +150,12 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 			core,
 			coreModules: frameCoreModulesOf(plugins.backgroundModules),
 			appearance: appearance.transport,
-			frameModules: plugins.frameModules.map(({ contract, servingOf }) => ({
+			frameModules: plugins.frameModules.map(({ contract, prefix, servingOf }) => ({
 				contract,
+				prefix,
 				serving: servingOf(windowOffers),
 			})),
+			ownPrefixOf: plugins.ownPrefixOf,
 		}),
 		project,
 		state,

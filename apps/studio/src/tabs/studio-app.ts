@@ -21,13 +21,21 @@ import { terminal as terminalModule } from "@widgetarium/terminal/implementation
 import { workspaces } from "@widgetarium/workspaces/implementation";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import type { BackgroundModule, WindowModule } from "../plugins/sumi-plugins.js";
+import type { FrameCoreModule } from "./frame-routes.js";
 
 const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [fileSystem, terminal];
 
-export function frameCoreModulesOf(
-	backgroundModules: readonly BackgroundModule[],
-): readonly ModuleContract<ServerRuns>[] {
-	return [...HOST_CAPABILITY_CONTRACTS, ...backgroundModules.map(({ contract }) => contract)];
+export function frameCoreModulesOf(backgroundModules: readonly BackgroundModule[]): readonly FrameCoreModule[] {
+	return [
+		...HOST_CAPABILITY_CONTRACTS.map((module) => ({
+			module,
+			prefix: null,
+		})),
+		...backgroundModules.map(({ contract, prefix }) => ({
+			module: contract,
+			prefix,
+		})),
+	];
 }
 
 export interface TauriStudioLent {
@@ -50,7 +58,7 @@ export function startStudioApp(ask: StudioAppAsk): Runtime {
 	const served = ask.core ?? startCoreInProcess(ask.workspaceId, ask.backgroundModules);
 	const studioApp = runtime()
 		.modules(...studioModulesOf(ask.lent), ...windowModulesOf(ask))
-		.imports(...ask.backgroundModules.map(({ contract }) => contract({ over: served })))
+		.imports(...ask.backgroundModules.map(({ contract, prefix }) => contract({ over: served, prefix })))
 		.start({ platform: ask.platform, scope: { workspaceId: ask.workspaceId } });
 	void restoreTabs(studioApp);
 	return studioApp;

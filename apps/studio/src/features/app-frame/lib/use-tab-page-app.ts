@@ -128,7 +128,14 @@ function appOver(parts: TabAppParts, { appId, workspaceId }: TabAppScope): Runti
 }
 
 function routedImportsOf({ routes, own }: TabAppParts, appId: string): readonly RemoteModule[] {
-	const transport = relayTransportOf(routes.routes, appId);
-	const ownImported = new Set(own.imports.map(({ name }) => name));
-	return routes.routes.map(({ module }) => module({ over: transport })).filter(({ name }) => !ownImported.has(name));
+	const transport = relayTransportOf(routes, appId);
+	const imported = new Set(own.imports.map(({ name }) => name));
+	return routes.routes.flatMap(({ module }) => {
+		if (imported.has(module.name)) {
+			return [];
+		}
+
+		imported.add(module.name);
+		return [module({ over: transport })];
+	});
 }

@@ -1,4 +1,4 @@
-import { refusalOf } from "@widgetarium/data-framework";
+import { refusalOf, wireNameOf } from "@widgetarium/data-framework";
 import type {
 	AnyRequest,
 	Answer,
@@ -14,6 +14,7 @@ export type HeardInvalidation = Parameters<HearChanges>[0][number];
 
 export interface FrameRoute {
 	readonly module: ModuleContract<ServerRuns>;
+	readonly prefix?: string | null;
 	readonly transport: RemoteTransport;
 	readonly hears: (invalidation: HeardInvalidation) => boolean;
 }
@@ -25,12 +26,15 @@ export interface FrameOpened {
 
 export interface FrameRoutes {
 	readonly routes: readonly FrameRoute[];
+	readonly ownPrefix: string | null;
 	release(): void;
 }
 
 export type FrameRoutesFor = (frame: FrameOpened) => Promise<FrameRoutes>;
 
 interface Relayed {
+	readonly name: string;
+	readonly prefix: string | null;
 	readonly request: AnyRequest;
 	readonly transport: RemoteTransport;
 }
@@ -41,10 +45,10 @@ export function hearsAll(): boolean {
 	return true;
 }
 
-export function createFrameRelay(routes: readonly FrameRoute[]): Answering {
+export function createFrameRelay(routes: readonly FrameRoute[], ownPrefix: string | null = null): Answering {
 	const relayed = relayedOf(routes);
 	return {
-		answer: (call) => answerThrough(relayed, call),
+		answer: (call) => answerThrough(pickedOf(relayed.get(call.name) ?? [], ownPrefix), call),
 		changes: (hear) => relayChanges(routes, hear),
 	};
 }
@@ -54,17 +58,22 @@ function relayChanges(routes: readonly FrameRoute[], hear: HearChanges): () => v
 	return () => stops.forEach((stop) => stop());
 }
 
+function pickedOf(candidates: readonly Relayed[], ownPrefix: string | null): Relayed | undefined {
+	const own = ownPrefix === null ? undefined : candidates.find(({ prefix }) => prefix === ownPrefix);
+	const unprefixed = candidates.find(({ prefix }) => prefix === null);
+	return own ?? unprefixed ?? (candidates.length === 1 ? candidates[0] : undefined);
+}
+
 function answerThrough(
-	relayed: ReadonlyMap<string, Relayed>,
+	held: Relayed | undefined,
 	{ name, input, idempotencyKey, signal, headers }: ServedCall,
 ): Promise<Answer<unknown>> {
-	const held = relayed.get(name);
-
 	if (held === undefined) {
 		return Promise.resolve(refusalOf("not-found", NOT_RELAYED.replace("{name}", name)));
 	}
 
 	return held.transport.call({
+		name: held.name,
 		request: held.request,
 		sent: input,
 		idempotencyKey,
@@ -99,16 +108,20 @@ function isHeardBy({ module, hears }: FrameRoute, invalidation: HeardInvalidatio
 	return module.requests.some(({ name }) => name === invalidation.query) && hears(invalidation);
 }
 
-function relayedOf(routes: readonly FrameRoute[]): ReadonlyMap<string, Relayed> {
-	return new Map(
-		routes.flatMap(({ module, transport }) =>
-			module.requests.map((request) => [
-				request.name,
-				{
-					request,
-					transport,
-				},
-			]),
-		),
-	);
+function relayedOf(routes: readonly FrameRoute[]): ReadonlyMap<string, readonly Relayed[]> {
+	const grouped = new Map<string, Relayed[]>();
+
+	for (const { module, transport, prefix = null } of routes) {
+		for (const request of module.requests) {
+			const relayed = {
+				name: wireNameOf(prefix, request.name),
+				prefix,
+				request,
+				transport,
+			};
+			grouped.set(request.name, [...(grouped.get(request.name) ?? []), relayed]);
+		}
+	}
+
+	return grouped;
 }

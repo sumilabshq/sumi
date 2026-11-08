@@ -1,6 +1,7 @@
-import { fillKeyOf, profileRefusalsOf, slotFillsOf, slotReaderOf, startOrderOf } from "@widgetarium/plugin-framework";
-import type { Plugin, ShownFill, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
+import { MemoryPluginStateStore, fillKeyOf, runtime } from "@widgetarium/plugin-framework";
+import type { PluginRuntime, PluginStateStore, ShownFill, SlotShape, SumiProfile } from "@widgetarium/plugin-framework";
 import type { ComponentType } from "react";
+import { prefixedModule } from "@widgetarium/data-framework";
 import type { DeviceModule, ModuleContract, ServerRuns, ServerSideModule } from "@widgetarium/data-framework";
 import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
@@ -39,6 +40,7 @@ export type HostOffers = Omit<CoreOffers, "fillsOf">;
 
 export interface BackgroundModule {
 	readonly contract: ModuleContract<ServerRuns>;
+	readonly prefix: string | null;
 	moduleOf(offers: HostOffers): ServerSideModule;
 }
 
@@ -55,6 +57,7 @@ export interface WindowProvider {
 export interface FrameModule {
 	readonly id: string;
 	readonly contract: ModuleContract<ServerRuns>;
+	readonly prefix: string | null;
 	servingOf(offers: WindowOffers): FrameServing;
 }
 
@@ -75,7 +78,9 @@ export interface ResolvedPlugins {
 	readonly tabPages: readonly DrawnTabPage[];
 	readonly frameModules: readonly FrameModule[];
 	readonly windowServerModules: readonly WindowServerModule[];
+	readonly startedNames: readonly string[];
 	readonly refusals: readonly string[];
+	ownPrefixOf(app: string): string | null;
 }
 
 const INSTALLED_PLUGINS = [
@@ -94,15 +99,7 @@ const INSTALLED_PLUGINS = [
 	htmlViewer,
 	git,
 ];
-const BACKGROUND_MODULES = sumiHost.backgroundModules.name;
-const TAB_PAGE = sumiHost.tabPage.name;
-const WINDOW_MODULES = sumiHost.windowModules.name;
-const WINDOW_LAYERS = sumiHost.windowLayers.name;
-const WINDOW_PROVIDERS = sumiHost.windowProviders.name;
-const FRAME_MODULES = sumiHost.frameModules.name;
-const WINDOW_SERVER_MODULES = sumiHost.windowServerModules.name;
-
-const ALWAYS_ON_PLUGINS: readonly string[] = [sumiHost.id, apps.id, commandMenu.id, chat.id, main.id];
+const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
@@ -118,94 +115,131 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 	],
 };
 
-export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
-	const enabledIds = [...ALWAYS_ON_PLUGINS, ...profile.plugins.filter((id) => !ALWAYS_ON_PLUGINS.includes(id))];
-	const startOrder = startOrderOf(INSTALLED_PLUGINS, enabledIds);
-	const slotFills = slotFillsOf(startOrder.plugins, enabledIds);
-	const readerOf = (fill: ShownFill): ReturnType<typeof slotReaderOf> =>
-		slotReaderOf(slotFills, pluginOf(startOrder.plugins, fill.pluginId));
+export function builtInPluginState(): PluginStateStore {
+	return new MemoryPluginStateStore(BUILT_IN_PROFILE.plugins);
+}
 
+export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
+	const started = runtime()
+		.builtInPlugins(...INSTALLED_PLUGINS)
+		.alwaysOn(...ALWAYS_ON_PLUGINS)
+		.state(store)
+		.withNameResolves()
+		.start();
+	const tabPages = tabPagesOf(started);
 	return {
-		backgroundModules: fillsOf(slotFills, BACKGROUND_MODULES).flatMap((fill) => {
-			const parsed = BackgroundModuleSchema.safeParse(fill.item);
-			return parsed.success
-				? [
-						{
-							contract: parsed.data.contract,
-							moduleOf: (offers: HostOffers) => parsed.data.module({ ...offers, ...readerOf(fill) }),
-						},
-					]
-				: [];
-		}),
-		windowModules: fillsOf(slotFills, WINDOW_MODULES).flatMap((fill) => {
-			const parsed = WindowModuleSchema.safeParse(fill.item);
-			return parsed.success
-				? [{ moduleOf: (offers: WindowModuleOffers) => parsed.data.module({ ...offers, ...readerOf(fill) }) }]
-				: [];
-		}),
-		windowLayers: fillsOf(slotFills, WINDOW_LAYERS).flatMap((fill) => {
+		backgroundModules: backgroundModulesOf(started),
+		windowModules: windowModulesOf(started),
+		windowLayers: shownFillsOf(started, sumiHost.windowLayers).flatMap(({ fill, offers }) => {
 			const parsed = WindowLayerSchema.safeParse(fill.item);
-			return parsed.success
-				? [
-						{
-							id: fillKeyOf(fill),
-							layer: parsed.data.layer(readerOf(fill)),
-						},
-					]
-				: [];
+			return parsed.success ? [{ id: fillKeyOf(fill), layer: parsed.data.layer(offers) }] : [];
 		}),
-		windowProviders: fillsOf(slotFills, WINDOW_PROVIDERS).flatMap((fill) => {
+		windowProviders: shownFillsOf(started, sumiHost.windowProviders).flatMap(({ fill, offers }) => {
 			const parsed = WindowProviderSchema.safeParse(fill.item);
 			return parsed.success
 				? [
 						{
 							id: fillKeyOf(fill),
-							providerOf: (offers: WindowOffers) => parsed.data.provider({ ...offers, ...readerOf(fill) }),
+							providerOf: (windowOffers: WindowOffers) => parsed.data.provider({ ...windowOffers, ...offers }),
 						},
 					]
 				: [];
 		}),
-		tabPages: fillsOf(slotFills, TAB_PAGE).flatMap((fill) => {
-			const parsed = TabPageSchema.safeParse(fill.item);
-			return parsed.success ? [parsed.data.tabPage(readerOf(fill))] : [];
-		}),
-		frameModules: fillsOf(slotFills, FRAME_MODULES).flatMap((fill) => {
-			const parsed = FrameModuleSchema.safeParse(fill.item);
-			return parsed.success
-				? [
-						{
-							id: fillKeyOf(fill),
-							contract: parsed.data.contract,
-							servingOf: (offers: WindowOffers) => parsed.data.serving({ ...offers, ...readerOf(fill) }),
-						},
-					]
-				: [];
-		}),
-		windowServerModules: fillsOf(slotFills, WINDOW_SERVER_MODULES).flatMap((fill) => {
-			const parsed = WindowServerModuleSchema.safeParse(fill.item);
-			return parsed.success
-				? [
-						{
-							id: fillKeyOf(fill),
-							moduleOf: (offers: WindowServerOffers) => parsed.data.module({ ...offers, ...readerOf(fill) }),
-						},
-					]
-				: [];
-		}),
-		refusals: [...profileRefusalsOf(INSTALLED_PLUGINS, profile), ...startOrder.refusals, ...slotFills.refusals],
+		tabPages: tabPages.map(({ drawn }) => drawn),
+		frameModules: frameModulesOf(started),
+		windowServerModules: windowServerModulesOf(started),
+		startedNames: started.startedNames,
+		refusals: started.refusals,
+		ownPrefixOf: (app) => {
+			const drawing = tabPages.find(({ drawn }) => drawn.draws(app));
+			return drawing === undefined ? null : started.aliasOf(drawing.pluginId);
+		},
 	};
 }
 
-function fillsOf(slotFills: SlotFills, slot: string): readonly ShownFill[] {
-	return slotFills.slots.get(slot)?.fills ?? [];
+interface ReadableFill {
+	readonly fill: ShownFill;
+	readonly offers: ReturnType<PluginRuntime["readerOf"]>;
+	readonly prefix: string | null;
 }
 
-function pluginOf(started: readonly Plugin[], pluginId: string): Plugin {
-	const found = started.find(({ id }) => id === pluginId);
+interface PluginTabPage {
+	readonly pluginId: string;
+	readonly drawn: DrawnTabPage;
+}
 
-	if (found === undefined) {
-		throw new Error(`plugin ${pluginId} filled a slot but did not start`);
-	}
+function shownFillsOf(started: PluginRuntime, slot: SlotShape): readonly ReadableFill[] {
+	return started.fillsOf(slot).map((fill) => ({
+		fill,
+		offers: started.readerOf(fill.pluginId),
+		prefix: started.aliasOf(fill.pluginId),
+	}));
+}
 
-	return found;
+function backgroundModulesOf(started: PluginRuntime): readonly BackgroundModule[] {
+	return shownFillsOf(started, sumiHost.backgroundModules).flatMap(({ fill, offers, prefix }) => {
+		const parsed = BackgroundModuleSchema.safeParse(fill.item);
+		return parsed.success
+			? [
+					{
+						contract: parsed.data.contract,
+						prefix,
+						moduleOf: (hostOffers: HostOffers) =>
+							prefixedModule(parsed.data.module({ ...hostOffers, ...offers }), prefix),
+					},
+				]
+			: [];
+	});
+}
+
+function windowModulesOf(started: PluginRuntime): readonly WindowModule[] {
+	return shownFillsOf(started, sumiHost.windowModules).flatMap(({ fill, offers, prefix }) => {
+		const parsed = WindowModuleSchema.safeParse(fill.item);
+		return parsed.success
+			? [
+					{
+						moduleOf: (windowOffers: WindowModuleOffers) =>
+							prefixedModule(parsed.data.module({ ...windowOffers, ...offers }), prefix),
+					},
+				]
+			: [];
+	});
+}
+
+function tabPagesOf(started: PluginRuntime): readonly PluginTabPage[] {
+	return shownFillsOf(started, sumiHost.tabPage).flatMap(({ fill, offers }) => {
+		const parsed = TabPageSchema.safeParse(fill.item);
+		return parsed.success ? [{ pluginId: fill.pluginId, drawn: parsed.data.tabPage(offers) }] : [];
+	});
+}
+
+function frameModulesOf(started: PluginRuntime): readonly FrameModule[] {
+	return shownFillsOf(started, sumiHost.frameModules).flatMap(({ fill, offers, prefix }) => {
+		const parsed = FrameModuleSchema.safeParse(fill.item);
+		return parsed.success
+			? [
+					{
+						id: fillKeyOf(fill),
+						contract: parsed.data.contract,
+						prefix,
+						servingOf: (windowOffers: WindowOffers) => parsed.data.serving({ ...windowOffers, ...offers }),
+					},
+				]
+			: [];
+	});
+}
+
+function windowServerModulesOf(started: PluginRuntime): readonly WindowServerModule[] {
+	return shownFillsOf(started, sumiHost.windowServerModules).flatMap(({ fill, offers, prefix }) => {
+		const parsed = WindowServerModuleSchema.safeParse(fill.item);
+		return parsed.success
+			? [
+					{
+						id: fillKeyOf(fill),
+						moduleOf: (serverOffers: WindowServerOffers) =>
+							prefixedModule(parsed.data.module({ ...serverOffers, ...offers }), prefix),
+					},
+				]
+			: [];
+	});
 }

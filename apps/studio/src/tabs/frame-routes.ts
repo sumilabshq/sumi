@@ -1,7 +1,7 @@
 import { appearance } from "@sumi/contract";
 import type { FrameServing } from "@sumi/sumi-host-plugin";
 import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
-import { mountOrStop, runtime } from "@widgetarium/data-framework";
+import { mountOrStop, prefixedModule, runtime } from "@widgetarium/data-framework";
 import type { LocalTransport, ModuleContract, RemoteTransport, ServerRuns } from "@widgetarium/data-framework";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import { hearsAll } from "../features/app-frame/lib/frame-relay.js";
@@ -11,15 +11,22 @@ import type { HeldTransport } from "../features/app-frame/lib/server-leases.js";
 
 export interface ServedFrameModule {
 	readonly contract: ModuleContract<ServerRuns>;
+	readonly prefix: string | null;
 	readonly serving: FrameServing;
+}
+
+export interface FrameCoreModule {
+	readonly module: ModuleContract<ServerRuns>;
+	readonly prefix: string | null;
 }
 
 export interface FrameRoutesAsk {
 	readonly workspaceId: string;
 	readonly core: RemoteTransport;
-	readonly coreModules: readonly ModuleContract<ServerRuns>[];
+	readonly coreModules: readonly FrameCoreModule[];
 	readonly appearance: RemoteTransport;
 	readonly frameModules: readonly ServedFrameModule[];
+	ownPrefixOf(app: string): string | null;
 }
 
 interface LeasedFrameModule {
@@ -39,7 +46,7 @@ export function frameRoutesOf(ask: FrameRoutesAsk): FrameRoutesFor {
 	const leased = ask.frameModules.map((served) => ({
 		served,
 		leases: new ServerLeases(served.contract.name, (_key, local) =>
-			startFrameModuleServer(local, served.serving, ask.workspaceId),
+			startFrameModuleServer(local, served, ask.workspaceId),
 		),
 	}));
 	return (opened) =>
@@ -54,7 +61,7 @@ export function frameRoutesOf(ask: FrameRoutesAsk): FrameRoutesFor {
 
 export function frameModuleRouteOf(
 	{ transport }: HeldTransport,
-	module: ModuleContract<ServerRuns>,
+	{ module, prefix }: FrameCoreModule,
 	tabId: string,
 ): FrameRoute {
 	const ownInput = stableKey({
@@ -62,6 +69,7 @@ export function frameModuleRouteOf(
 	});
 	return {
 		module,
+		prefix,
 		transport,
 		hears: ({ inputKey }) => inputKey === null || inputKey === "" || inputKey === ownInput,
 	};
@@ -75,18 +83,22 @@ function leaseRoutes({ ask, leased, opened }: FrameLease): FrameRoutes {
 	}));
 	return {
 		routes: [
-			...ask.coreModules.map((module) => ({
+			...ask.coreModules.map(({ module, prefix }) => ({
 				module,
+				prefix,
 				transport: ask.core,
 				hears: hearsAll,
 			})),
-			...held.map(({ served, lease }) => frameModuleRouteOf(lease, served.contract, tabId)),
+			...held.map(({ served, lease }) =>
+				frameModuleRouteOf(lease, { module: served.contract, prefix: served.prefix }, tabId),
+			),
 			{
 				module: appearance,
 				transport: ask.appearance,
 				hears: hearsAll,
 			},
 		],
+		ownPrefix: ask.ownPrefixOf(opened.app),
 		release: () => {
 			for (const { served, lease } of held) {
 				lease.release();
@@ -96,8 +108,8 @@ function leaseRoutes({ ask, leased, opened }: FrameLease): FrameRoutes {
 	};
 }
 
-function startFrameModuleServer(local: LocalTransport, serving: FrameServing, workspaceId: string): () => void {
-	const frameModule = runtime().modules(serving.module).start({
+function startFrameModuleServer(local: LocalTransport, served: ServedFrameModule, workspaceId: string): () => void {
+	const frameModule = runtime().modules(prefixedModule(served.serving.module, served.prefix)).start({
 		platform: "server",
 		env: {},
 		scope: {

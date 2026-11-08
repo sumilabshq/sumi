@@ -17,13 +17,14 @@ import { main } from "../plugins/main/src/index.ts";
 import { sumiHost } from "../plugins/sumi-host/src/index.ts";
 import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
 import { localTransport } from "@widgetarium/data-framework";
+import { MemoryPluginStateStore, PLUGIN_STATE_FILE } from "@widgetarium/plugin-framework";
 import type { Plugin, SlotShape } from "@widgetarium/plugin-framework";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
-import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
+import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import type { ResolvedPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { frameCoreModulesOf } from "../apps/studio/src/tabs/studio-app.ts";
 import { HOST_CAPABILITY_MODULES } from "../apps/tauri/src/plugins/host-capabilities.ts";
-import { workspaceProfileOf } from "../apps/tauri/src/plugins/workspace-profile.ts";
+import { workspacePluginStateOf } from "../apps/tauri/src/plugins/workspace-plugin-state.ts";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -136,7 +137,7 @@ async function tabModuleNamesOf(resolved: ResolvedPlugins, app: string): Promise
 	return modules.map(({ definition }) => definition.name);
 }
 
-const resolved = resolvePlugins(BUILT_IN_PROFILE);
+const resolved = startSumiPlugins(builtInPluginState());
 const coreModulesNow = coreModulesOf(resolved);
 const coreModulesBefore = [places, fileSystem, questions, terminal, ...APP_MODULES];
 const coreNamesNow = coreModulesNow.map(({ definition }) => definition.name);
@@ -192,13 +193,13 @@ check(
 );
 check(
 	"a frame reaches the host's capabilities and every module a plugin registers in the background, and no other",
-	frameCoreModulesOf(resolved.backgroundModules).map(({ name }) => name),
+	frameCoreModulesOf(resolved.backgroundModules).map(({ module }) => module.name),
 	["file-system", "terminal", ...resolved.backgroundModules.map(({ contract }) => contract.name)],
 );
 check(
 	"the registered background modules include places, tasks, questions and apps, so no host list names them",
 	["places", "tasks", "questions", "apps"].every((name) =>
-		frameCoreModulesOf(resolved.backgroundModules).some((module) => module.name === name),
+		frameCoreModulesOf(resolved.backgroundModules).some(({ module }) => module.name === name),
 	),
 	true,
 );
@@ -246,7 +247,7 @@ check(
 	[],
 );
 
-const emptyProfile = resolvePlugins({ plugins: [] });
+const emptyProfile = startSumiPlugins(new MemoryPluginStateStore([]));
 check(
 	"a profile without the browser-page plugin serves frames no web-page module",
 	emptyProfile.frameModules.length,
@@ -334,23 +335,98 @@ check(
 );
 startedCore.stop();
 
-const profileFiles = new FakeStore();
-profileFiles.put("workspace:research:sumi.profile.json", {
-	v: 1,
-	plugins: ["ghost"],
-});
-const profileStore = new StoreClient(profileFiles.invoke, undefined);
-const researchProfile = await workspaceProfileOf(profileStore, "research");
-const defaultProfile = await workspaceProfileOf(profileStore, "default");
 check(
-	"each workspace reads its own sumi.profile.json, and one without the file gets the built-in plugins",
-	[researchProfile, defaultProfile],
-	[{ plugins: ["ghost"] }, BUILT_IN_PROFILE],
+	"no built-in plugin runs under an alias, so no module, import or frame route takes a prefix and every wire name stays",
+	[
+		...resolved.backgroundModules.map(({ prefix }) => prefix),
+		...resolved.frameModules.map(({ prefix }) => prefix),
+		...["terminal", "chat", "browser-page"].map((app) => resolved.ownPrefixOf(app)),
+	].every((prefix) => prefix === null),
+	true,
+);
+
+const BUILT_IN_STARTED = resolved.startedNames;
+const workspaceFiles = new FakeStore();
+workspaceFiles.put("workspace:research:sumi.profile.json", {
+	v: 1,
+	plugins: ["ghost", "terminal"],
+});
+workspaceFiles.put("workspace:kept:sumi.plugins.json", {
+	v: 1,
+	version: 1,
+	plugins: {
+		chat: { enabled: false },
+		terminal: { enabled: false },
+		ghost: { enabled: false },
+	},
+});
+workspaceFiles.put("workspace:newer:sumi.plugins.json", {
+	v: 1,
+	version: 2,
+	plugins: {},
+});
+const workspaceStore = new StoreClient(workspaceFiles.invoke, undefined);
+const researchPlugins = startSumiPlugins(await workspacePluginStateOf(workspaceStore, "research"));
+const defaultPlugins = startSumiPlugins(await workspacePluginStateOf(workspaceStore, "default"));
+await new Promise((settled) => setTimeout(settled, 0));
+check(
+	"a workspace with no plugin state starts the plugins its sumi.profile.json enabled, or the built-in ones without one",
+	[researchPlugins.startedNames, researchPlugins.refusals, defaultPlugins.startedNames, defaultPlugins.refusals],
+	[
+		["sumi-host", "apps", "command-menu", "chat", "main", "terminal"],
+		["the plugin state enables plugin ghost, which is not installed: its entry stays"],
+		BUILT_IN_STARTED,
+		[],
+	],
 );
 check(
-	"a plugin listed by one workspace is resolved for that workspace only",
-	[resolvePlugins(researchProfile).refusals, resolvePlugins(defaultProfile).refusals],
-	[["sumi.profile.json lists plugin ghost, which is not installed"], []],
+	"the first start seeds each workspace's own plugin state, version 1, and the next start reads it",
+	[
+		workspaceFiles.files.get(`workspace:research:${PLUGIN_STATE_FILE}`)?.["plugins"],
+		workspaceFiles.files.get(`workspace:default:${PLUGIN_STATE_FILE}`)?.["version"],
+		startSumiPlugins(await workspacePluginStateOf(workspaceStore, "research")).startedNames,
+	],
+	[
+		{
+			"sumi-host": { enabled: true },
+			apps: { enabled: true },
+			"command-menu": { enabled: true },
+			chat: { enabled: true },
+			main: { enabled: true },
+			ghost: { enabled: true },
+			terminal: { enabled: true },
+			"browser-page": { enabled: false },
+			files: { enabled: false },
+			"markdown-viewer": { enabled: false },
+			"code-viewer": { enabled: false },
+			"image-viewer": { enabled: false },
+			"video-viewer": { enabled: false },
+			"html-viewer": { enabled: false },
+			git: { enabled: false },
+		},
+		1,
+		["sumi-host", "apps", "command-menu", "chat", "main", "terminal"],
+	],
+);
+const keptPlugins = startSumiPlugins(await workspacePluginStateOf(workspaceStore, "kept"));
+check(
+	"a kept state turns plugins off, but never an always-on one, and a plugin it does not list starts enabled",
+	[keptPlugins.startedNames.includes("chat"), keptPlugins.startedNames.includes("terminal"), keptPlugins.startedNames.includes("git"), keptPlugins.refusals],
+	[true, false, true, ["plugin chat is always on: the plugin state's enabled: false is ignored"]],
+);
+check(
+	"a plugin state of another version fails the workspace's start with the reason",
+	await workspacePluginStateOf(workspaceStore, "newer").then(
+		(store) => {
+			try {
+				startSumiPlugins(store);
+				return "started";
+			} catch (failure) {
+				return failure instanceof Error ? failure.message.split(":")[0] : "thrown";
+			}
+		},
+	),
+	"the plugin state sumi.plugins.json is not a version 1 plugin state, so no plugin starts",
 );
 
 if (tally.failed > 0) {

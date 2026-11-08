@@ -32,11 +32,15 @@ const core = orpcTransport(location.origin);
 const routesFor = frameRoutesOf({
 	workspaceId: "contract-frame",
 	core,
-	coreModules: [fileSystem, terminal, places],
+	coreModules: [fileSystem, terminal, places].map((module) => ({
+		module,
+		prefix: null,
+	})),
 	appearance: startStudioAppearance(window).transport,
 	frameModules: [
 		{
 			contract: webPage,
+			prefix: null,
 			serving: webPageServingOf({
 				platform: "browser",
 				windowApp: runtime()
@@ -45,6 +49,7 @@ const routesFor = frameRoutesOf({
 			}),
 		},
 	],
+	ownPrefixOf: () => null,
 });
 
 for (const { app: frameApp, tabId, page } of FRAMES) {

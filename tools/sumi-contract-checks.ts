@@ -159,7 +159,10 @@ createFrameRelay([
 			transport: webPagesLocal,
 			release: () => undefined,
 		},
-		webPage,
+		{
+			module: webPage,
+			prefix: null,
+		},
 		"t1",
 	),
 ]).changes((invalidated) => {

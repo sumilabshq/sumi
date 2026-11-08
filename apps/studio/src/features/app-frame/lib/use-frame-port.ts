@@ -123,5 +123,5 @@ function servedRelay(port: MessagePort, { opened, onAnswered }: PortHandovers, r
 	const headers = {
 		[APP_CALLER_HEADER]: opened.app,
 	};
-	return relayPort(createFrameRelay(routes.routes), port, { headers, onAnswered });
+	return relayPort(createFrameRelay(routes.routes, routes.ownPrefix), port, { headers, onAnswered });
 }

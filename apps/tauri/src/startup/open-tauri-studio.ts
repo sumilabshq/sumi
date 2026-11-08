@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { BUILT_IN_PROFILE, resolvePlugins, startStudio, startStudioApp } from "@widgetarium/studio";
+import { startStudio, startStudioApp, startSumiPlugins } from "@widgetarium/studio";
 import type { ResolvedPlugins, StartedStudio, StudioStart } from "@widgetarium/studio";
 import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
@@ -23,7 +23,7 @@ import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { tauriStudioHost } from "../tauri-studio-host.js";
-import { workspaceProfileOf } from "../plugins/workspace-profile.js";
+import { workspacePluginStateOf } from "../plugins/workspace-plugin-state.js";
 import { ipcTransport } from "../core-link/ipc-transport.js";
 import { joinPlaces } from "../core-link/window-places.js";
 import { tauriWorkspaceApps } from "../workspace/tauri-workspace-apps.js";
@@ -44,8 +44,7 @@ type StudioStartedFields = Pick<
 	"plugins" | "assistant" | "assistantHost" | "studioApp" | "core" | "platform"
 >;
 
-const PROFILE_UNREAD =
-	"[studio] workspace {workspace}: sumi.profile.json not read, the built-in plugins draw their apps";
+const PLUGIN_REFUSED = "[studio] workspace {workspace}: plugins: {refusal}";
 
 interface StartedParts {
 	readonly plugins: ResolvedPlugins;
@@ -120,11 +119,13 @@ function startTauriStudioApp(
 }
 
 async function pluginsOf({ store, workspace }: StudioOpening): Promise<ResolvedPlugins> {
-	const profile = await workspaceProfileOf(store, workspace.id).catch((failure: unknown) => {
-		console.error(PROFILE_UNREAD.replace("{workspace}", workspace.id), failure);
-		return BUILT_IN_PROFILE;
-	});
-	return resolvePlugins(profile);
+	const plugins = startSumiPlugins(await workspacePluginStateOf(store, workspace.id));
+
+	for (const refusal of plugins.refusals) {
+		console.warn(PLUGIN_REFUSED.replace("{workspace}", workspace.id).replace("{refusal}", refusal));
+	}
+
+	return plugins;
 }
 
 async function reopenWindow(leaveWindow: () => Promise<void>): Promise<void> {
