@@ -16,28 +16,28 @@ gets a new transport, never a new message vocabulary. A design or diff introduci
 once: `@sumi/contract` got `ask { service, input }` with a `storage` read/write service, five agents built on
 it, and all of it had to be redone.
 
-**CRITICAL — a plugin owns its data; the host knows no plugin.** A plugin declares its slots and its modules;
-its slots' fills are read only by its own code, and everyone else reaches the data through its module's
-queries, commands and events (`docs/architecture/plugins.md`). The host offers generic capabilities and
-reads only the slots it declares itself; it never reads, parses or configures a module with another
-plugin's fills. `appHost({ apps })` did exactly that and was rewritten.
+**CRITICAL — a plugin owns its data; the host knows no plugin.** A plugin owns its modules and what other
+plugins hand it through its API (`.apply((app) => api)`); only its own code reads that, and everyone else
+reaches the data through its module's queries, commands and events (`docs/architecture/plugins.md`). The
+host provides generic services (`backend`, `windows`, `shell`) and starts or draws only what plugins register
+through them; it never reads another plugin's API or configures a module with its data. `appHost({ apps })`
+did exactly that and was rewritten.
 
 **CRITICAL — the machine is reached only through the Sumi contract.** The file system and terminal
 sessions are the host's capabilities, and every plugin and app reaches them through `@sumi/contract`
 (`fileSystem.files.readFile`, `terminal.lines.terminalOutput`, …), never through Tauri. They are not a reason a plugin "cannot" do
-something: a plugin that needs the machine sends a contract request. `sumi-host` and its slots
-(`sumiHost.backgroundModules` and the rest) are part of that contract, the base every plugin builds on; a module
-runs in the background because a plugin fills `sumiHost.backgroundModules`, and the app reads that slot and starts
+something: a plugin that needs the machine sends a contract request. `sumi-host` and its services
+(`backend`, `windows`, `shell`) are part of that contract, the base every plugin builds on; a module
+runs in the background because a plugin registers it with `app.use(backend).module(...)`, and the host starts
 it. Nothing in host code names a plugin's module.
 
 **CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
 `plugins/<name>/` and nothing else: `src/plugin.ts` (always; only the `plugin()` definition, no helper,
-slot, schema or type), `src/slots.ts` (when it declares slots: the slots, their item schemas and types),
-`src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by `widgetarium generate`), every other file of `src/` placed as in a client package
+schema or type), `src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by `widgetarium generate`), every other file of `src/` placed as in a client package
 (`features/<feature>/ui/<block>/*.tsx` with the `.css` a block uses beside it, `features/<feature>/lib/*.ts`,
 `shared/ui/` and `shared/lib/` for what two features use, nothing else loose in `src/`, no feature importing
 another's `lib/`), and `data/<module>/` (when it owns modules: each a data module package). A module outside
-`data/`, a slot outside `slots.ts`, a plugin outside `plugin.ts` or a file out of its place fails
+`data/`, a plugin outside `plugin.ts` or a file out of its place fails
 `npm run test:plugin-layout`, and the `plugin-layout-reviewer` agent refuses the change; until the layout is
 right, no other quality of the change counts. `docs/architecture/plugins.md#layout`.
 
@@ -83,20 +83,20 @@ apps/tauri/capabilities/* FSL the modules only the host runs on the machine: ter
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
-plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's slots (background modules, tab pages, window modules, layers, providers, frame modules and window server modules), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
+plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's services (backend, windows, shell), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
-plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its modules (plugins/apps/data/apps, @sumi/apps; plugins/apps/data/places, @widgetarium/places: tabs, windows and history, configured with each app's declared tab rules; plugins/apps/data/app-host, @widgetarium/app-host: a window's tabs, essentials, groups and splits, run in each window through the window modules slot) and the app tab page
-plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot
-plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, a fill of the apps slot, and its module (plugins/browser-page/data/web-page, @widgetarium/web-page) served to every frame through the frame modules slot
-plugins/command-menu     FSL  @sumi/command-menu-plugin: the menu's doors, pages and row sources, its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
+plugins/apps             FSL  @sumi/apps-plugin: API app(entry), its modules (plugins/apps/data/apps, @sumi/apps; plugins/apps/data/places, @widgetarium/places: tabs, windows and history, configured with each app's declared tab rules; plugins/apps/data/app-host, @widgetarium/app-host: a window's tabs, essentials, groups and splits, run in each window through windows.moduleOf) and the app tab page
+plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, added through apps
+plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, added through apps, and its module (plugins/browser-page/data/web-page, @widgetarium/web-page) served to every frame through shell.frameModule
+plugins/command-menu     FSL  @sumi/command-menu-plugin: API door, page, rowSource; its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
 plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/chat/data/questions, plugins/chat/data/mascot, plugins/chat/data/chat-tabs: the chat list and which chat a new or empty pane opens), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
-plugins/mcp              FSL  @sumi/mcp-plugin: the mcp.mcpModules slot (background modules served to agents over MCP through serveMcp) and its module (plugins/mcp/data/mcp, @sumi/mcp), the one list of MCP servers
+plugins/mcp              FSL  @sumi/mcp-plugin: API tools(modules), served to agents over MCP by the mcp backend server, and its module (plugins/mcp/data/mcp, @sumi/mcp), the one list of MCP servers
       ↓
 packages/domain/*             business data modules: workspaces, browser, canvas, tasks, fixture-billing
 packages/state/*              app-state data modules: layout, appearance
       ↓
 packages/shared/data-framework FSL @widgetarium/data-framework: requests, modules, mediator, transports, hooks
-packages/shared/plugin-framework FSL @widgetarium/plugin-framework: plugins, slots, fills and the plugin runtime with its per-workspace state (sumi.plugins.json); the Tauri host starts one per workspace
+packages/shared/plugin-framework FSL @widgetarium/plugin-framework: plugins (require, optional, apply), services and the plugin runtime with its per-workspace state (sumi.plugins.json); the Tauri host starts one per workspace
 packages/shared/core     FSL  the widget engine (legacy)
 packages/shared/kit      MIT  everything drawn: TSX, one file per kit item
 packages/shared/behaviors     headless behaviors: drag, scroll, the Tauri store client
