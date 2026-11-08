@@ -40,6 +40,7 @@
 		"@sumi/main-plugin": "0.1.0",
 		"@sumi/markdown-viewer-plugin": "0.1.0",
 		"@sumi/mcp-plugin": "0.1.0",
+		"@sumi/composer-expand-plugin": "0.1.0",
 		"@sumi/questions-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@sumi/tasks-plugin": "0.1.0",

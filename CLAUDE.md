@@ -92,6 +92,7 @@ plugins/command-menu     FSL  @sumi/command-menu-plugin: API door, page, rowSour
 plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/questions/data/questions, plugins/chat/data/mascot, plugins/chat/data/chat-tabs: the chat list and which chat a new or empty pane opens), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
 plugins/mcp              FSL  @sumi/mcp-plugin: API server({ name, modules }), each plugin's own MCP server, run in each window and handed to agents through agents.mcpServer, and its module (plugins/mcp/data/mcp, @sumi/mcp) listing them
 plugins/questions        FSL  @sumi/questions-plugin: the questions module (plugins/questions/data/questions), the dock drawn in the chat through a slot, the ask tools (plugins/questions/data/ask) as the questions MCP server
+plugins/composer-expand  FSL  @sumi/composer-expand-plugin: the toggle that grows the chat composer over the chat, through the chat.frame and chat.composer-bar slots
 plugins/tasks            FSL  @sumi/tasks-plugin: the tasks module (plugins/tasks/data/tasks), the Tasks app, the chat's tasks UI through slots, the task tools (plugins/tasks/data/task-work) as the tasks MCP server
       ↓
 packages/domain/*             business data modules: workspaces, browser, canvas, fixture-billing

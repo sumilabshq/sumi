@@ -14,6 +14,7 @@ const SOURCES = [
 	"apps/studio/src/browser",
 	"plugins/chat/src",
 	"plugins/questions/src",
+	"plugins/composer-expand/src",
 ];
 const SCANNED = /\.(ts|tsx)$/;
 const CANDIDATE = /[^\s"'`]+/g;
@@ -33,6 +34,10 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/chat-plugin/queue.css": "plugins/chat/src/features/assistant/ui/queue/queue.css",
 	"@sumi/questions-plugin/questions.css": "plugins/questions/src/features/questions/ui/questions-dock/questions.css",
 	"@sumi/chat-plugin/chat-page.css": "plugins/chat/src/features/chat-page/ui/chat-page/chat-page.css",
+	"@sumi/composer-expand-plugin/expand-frame.css":
+		"plugins/composer-expand/src/features/composer-expand/ui/expand-frame/expand-frame.css",
+	"@sumi/composer-expand-plugin/expand-toggle.css":
+		"plugins/composer-expand/src/features/composer-expand/ui/expand-toggle/expand-toggle.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
 const ENTRY = `@layer theme, base, components, utilities;
@@ -49,6 +54,8 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/chat-plugin/queue.css";
 @import "@sumi/questions-plugin/questions.css";
 @import "@sumi/chat-plugin/chat-page.css";
+@import "@sumi/composer-expand-plugin/expand-frame.css";
+@import "@sumi/composer-expand-plugin/expand-toggle.css";
 `;
 
 export async function canvasSheet(repo: string): Promise<string> {

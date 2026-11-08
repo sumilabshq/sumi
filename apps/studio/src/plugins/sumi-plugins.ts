@@ -12,6 +12,7 @@ import type {
 import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
+import { composerExpand } from "@sumi/composer-expand-plugin";
 import { main } from "@sumi/main-plugin";
 import { mcp } from "@sumi/mcp-plugin";
 import { questions } from "@sumi/questions-plugin";
@@ -120,6 +121,7 @@ const INSTALLED_PLUGINS = [
 	videoViewer,
 	htmlViewer,
 	git,
+	composerExpand,
 ];
 const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, mcp, questions, tasks];
 
@@ -134,6 +136,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		videoViewer.id,
 		htmlViewer.id,
 		git.id,
+		composerExpand.id,
 	],
 };
 

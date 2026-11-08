@@ -417,6 +417,7 @@ check(
 			"video-viewer": { enabled: false },
 			"html-viewer": { enabled: false },
 			git: { enabled: false },
+			"composer-expand": { enabled: false },
 		},
 		1,
 		undefined,
