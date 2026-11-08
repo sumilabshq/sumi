@@ -155,9 +155,9 @@ const wantsFirst = plugin("wants-first").optional(wantsBack);
 const wantsBackClosed = plugin("wants-back").optional(wantsFirst);
 const optionalLoop = startOrderOf([wantsFirst, wantsBackClosed], ["wants-first", "wants-back"]);
 check(
-	"two plugins wanting each other optionally both start, with no refusal",
-	[[...idsOf(optionalLoop.plugins)].sort(), optionalLoop.refusals],
-	[["wants-back", "wants-first"], []],
+	"an optional cycle is refused: the plugin that closes it does not start",
+	[idsOf(optionalLoop.plugins), optionalLoop.refusals],
+	[["wants-first"], ["plugin wants-back optionally uses wants-first, which uses it back"]],
 );
 
 check(

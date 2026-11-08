@@ -16,6 +16,7 @@ import type { Answering, ServedCall } from "./transport";
 export interface ExposeOptions {
 	readonly adapter: string;
 	readonly authenticate?: Authenticate | undefined;
+	readonly module?: string | undefined;
 }
 
 export type AdapterOptions = Pick<ExposeOptions, "authenticate">;
@@ -44,7 +45,9 @@ const NEEDS_AUTHENTICATE =
 	"{request} is guarded by {guard}, which needs a user, and {adapter} has no Authenticate: pass one";
 
 export function createExposure(runtime: ExposedRuntime, options: ExposeOptions): Exposed {
-	const reachable = [...runtime.routes.values()].filter(isReachableOutside);
+	const reachable = [...runtime.routes.values()].filter(
+		(route) => isReachableOutside(route) && isOfModule(route.name, options.module),
+	);
 	throwIfRefused(
 		options.adapter,
 		reachable.flatMap((route) => guardFindings(route, options)),
@@ -55,7 +58,10 @@ export function createExposure(runtime: ExposedRuntime, options: ExposeOptions):
 			name,
 			request: handler.request,
 		})),
-		answer: (call) => answerOutside(runtime, authenticate, call),
+		answer: (call) =>
+			isOfModule(call.name, options.module)
+				? answerOutside(runtime, authenticate, call)
+				: Promise.resolve(refusalOf("not-found", NOT_HERE.replace("{name}", call.name))),
 		changes: (hear) => runtime.changed.hear(hear),
 	};
 }
@@ -102,6 +108,10 @@ async function answerOutside(
 	});
 	runtime.announce(answered.ok ? answered.invalidated : undefined);
 	return answered;
+}
+
+function isOfModule(name: string, module: string | undefined): boolean {
+	return module === undefined || name.startsWith(`${module}.`);
 }
 
 function isReachableOutside(route: Route): boolean {

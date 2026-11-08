@@ -79,6 +79,7 @@ const CONTRACT_STEPS: ReadonlySet<string> = new Set([
 	"idempotencyKey",
 	"cache",
 	"settlesNow",
+	"metadata",
 	...VISIBILITY_STEPS,
 ]);
 const ITEM_ROOTS: ReadonlySet<string> = new Set([...REQUEST_ROOTS, "subscriber"]);

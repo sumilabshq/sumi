@@ -4,6 +4,7 @@ import path from "node:path";
 import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { fileSystem } from "@widgetarium/file-system/implementation";
 import { places } from "@widgetarium/places/implementation";
+import { mcp as mcpModule } from "@sumi/mcp/implementation";
 import { questions } from "@widgetarium/questions/implementation";
 import { tasks } from "@widgetarium/tasks/implementation";
 import { terminal } from "@widgetarium/terminal/implementation";
@@ -12,7 +13,6 @@ import { AppsSchema } from "@sumi/apps/contract";
 import { apps as appsModule } from "../plugins/apps/data/apps/generated/module.ts";
 import { apps } from "../plugins/apps/src/index.ts";
 import { chat } from "../plugins/chat/src/index.ts";
-import { commandMenu } from "../plugins/command-menu/src/index.ts";
 import { main } from "../plugins/main/src/index.ts";
 import { sumiHost } from "../plugins/sumi-host/src/index.ts";
 import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
@@ -149,13 +149,19 @@ check(
 	[fileSystem.definition.name, terminal.definition.name],
 );
 check(
-	"the background modules slot holds the apps plugin's places and apps, the chat plugin's questions and the old app's tasks, none of the host's",
+	"the background modules slot holds the apps plugin's places and apps, the chat plugin's questions, the old app's tasks and the mcp plugin's servers, none of the host's",
 	resolved.backgroundModules.map(({ contract }) => contract.name),
-	[places.definition.name, appsModule.definition.name, questions.definition.name, tasks.definition.name],
+	[
+		places.definition.name,
+		appsModule.definition.name,
+		questions.definition.name,
+		tasks.definition.name,
+		mcpModule.definition.name,
+	],
 );
 check(
-	"the core starts every module it started before, each once, and the apps plugin's module",
-	coreNamesNow.length === coreModulesBefore.length + 1 &&
+	"the core starts every module it started before, each once, the apps plugin's module and the mcp plugin's",
+	coreNamesNow.length === coreModulesBefore.length + 2 &&
 		coreModulesBefore.every(({ definition }) => coreNamesNow.filter((name) => name === definition.name).length === 1),
 	true,
 );
@@ -254,9 +260,9 @@ check(
 	0,
 );
 check(
-	"a profile cannot turn off the host's always-on plugins: an empty one still starts the old app and the apps module",
+	"a profile cannot turn off the host's always-on plugins: an empty one still starts the old app, the apps module and the mcp module",
 	[emptyProfile.refusals, emptyProfile.backgroundModules.length],
-	[[], 4],
+	[[], 5],
 );
 check(
 	"a profile without the terminal plugin has no terminal app, in the module and on the tab page",
@@ -275,20 +281,9 @@ check(
 );
 
 check(
-	"no code outside the command menu plugin and its fillers names its slots: the host never reads them",
-	["commandMenu.menuDoors", "commandMenu.menuPages", "commandMenu.menuRowSources"].flatMap((word) =>
-		sourcesNaming(word).filter((file) => !MENU_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
-	),
+	"no code outside the command menu plugin and the plugins that add to it uses its API: the host never reads it",
+	sourcesNaming("use(commandMenu)").filter((file) => !MENU_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
 	[],
-);
-check(
-	"the Ask door, ⌘I, and its page are the chat plugin's fills, and the menu fills no Ask of its own",
-	[
-		fillIdsOf(chat, commandMenu.menuDoors),
-		fillIdsOf(chat, commandMenu.menuPages),
-		fillIdsOf(commandMenu, commandMenu.menuDoors),
-	],
-	[["ask"], ["ask"], ["anywhere", "new-tab", "this-tab"]],
 );
 check(
 	"places and apps are the apps plugin's background modules, questions the chat plugin's, tasks the old app's",
@@ -305,7 +300,7 @@ check(
 		resolved.windowModules.map((windowModule) => windowModule.moduleOf({}).definition.name),
 		resolved.windowLayers.map(({ id }) => id),
 	],
-	[["app-host", "command-menu", "chat-tabs"], ["command-menu.command-menu"]],
+	[["app-host", "chat-tabs", "command-menu"], ["command-menu.layer-0"]],
 );
 
 const startedCore = runtime()
@@ -402,7 +397,7 @@ check(
 		defaultPlugins?.refusals,
 	],
 	[
-		["sumi-host", "apps", "command-menu", "chat", "main", "terminal"],
+		["sumi-host", "apps", "command-menu", "chat", "main", "mcp", "terminal"],
 		[],
 		["plugin ghost is enabled in sumi.plugins.json but not built in: its entry stays"],
 		BUILT_IN_STARTED,
@@ -435,6 +430,7 @@ check(
 			"command-menu": { enabled: true },
 			chat: { enabled: true },
 			main: { enabled: true },
+			mcp: { enabled: true },
 			ghost: { enabled: true },
 			terminal: { enabled: true },
 			"browser-page": { enabled: false },
@@ -448,7 +444,7 @@ check(
 		},
 		1,
 		undefined,
-		["sumi-host", "apps", "command-menu", "chat", "main", "terminal"],
+		["sumi-host", "apps", "command-menu", "chat", "main", "mcp", "terminal"],
 	],
 );
 const keptStart = await quietly(async () => {
@@ -511,7 +507,7 @@ check(
 		brokenStarts.infos.filter((said) => said.includes("was written by another window first, rev 1 stays")).length,
 	],
 	[
-		["sumi-host", "apps", "command-menu", "chat", "main", "terminal"],
+		["sumi-host", "apps", "command-menu", "chat", "main", "mcp", "terminal"],
 		true,
 		[
 			"[studio] workspace broken: sumi.plugins.json unparseable → kept aside as sumi.plugins.json.corrupt-1 beside it; plugin choices reset to sumi.profile.json",

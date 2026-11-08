@@ -7,6 +7,8 @@ import { handlingOf } from "./handled-request";
 import type { EmitterOf, HandledRequest, InvalidatorOf, RequestHandlerBuilder } from "./handled-request";
 import { fullNameOf, labelOf, unnamedIdentity } from "./identity";
 import type { Identity } from "./identity";
+import { NO_METADATA, metadataWith } from "./metadata";
+import type { Metadata } from "./metadata";
 import { requireStep } from "./middleware";
 import type {
 	Added,
@@ -55,6 +57,7 @@ interface Definition<K extends RequestKind, I extends z.ZodType, O extends z.Zod
 	readonly settlesNow: boolean;
 	readonly invalidates: readonly AnyQuery[] | null;
 	readonly visibility: Visibility;
+	readonly metadata: Metadata;
 }
 
 const VISIBLE_TWICE =
@@ -130,6 +133,17 @@ export class Contract<
 
 	settlesNow(this: Contract<"query", I, O, Key, P, E>): Contract<"query", I, O, Key, P, E> {
 		return new Contract({ ...this.definition, settlesNow: true }, this.keyStage);
+	}
+
+	metadata(): Metadata;
+	metadata(fields: Metadata): Contract<K, I, O, Key, P, E>;
+	metadata(fields?: Metadata): Metadata | Contract<K, I, O, Key, P, E> {
+		if (fields === undefined) {
+			return this.definition.metadata;
+		}
+
+		const metadata = metadataWith(this.label, this.definition.metadata, fields);
+		return new Contract({ ...this.definition, metadata }, this.keyStage);
 	}
 
 	invalidates(
@@ -214,6 +228,7 @@ export interface CommandNeedsIdempotencyKey<
 	input<S extends z.ZodType>(schema: S): CommandNeedsIdempotencyKey<S, O, P, E>;
 	output<S extends z.ZodType>(schema: S): CommandNeedsIdempotencyKey<I, S, P, E>;
 	invalidates(queries: readonly ListedQuery[]): CommandNeedsIdempotencyKey<I, O, P, E>;
+	metadata(fields: Metadata): CommandNeedsIdempotencyKey<I, O, P, E>;
 	public(): CommandNeedsIdempotencyKey<I, O, P, E>;
 	callableBy(...modules: readonly NamedModule[]): CommandNeedsIdempotencyKey<I, O, P, E>;
 	idempotencyKey(key: IdempotencyKey<z.output<I>>): Contract<"command", I, O, "keyed", P, E>;
@@ -264,5 +279,6 @@ function definitionOf<K extends RequestKind>(kind: K): Definition<K, z.ZodVoid, 
 		settlesNow: false,
 		invalidates: null,
 		visibility: IN_PROCESS,
+		metadata: NO_METADATA,
 	};
 }

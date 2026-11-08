@@ -1,6 +1,9 @@
+import { appliedPluginsOf } from "./applied-plugins";
+import type { ServiceProvision } from "./applied-plugins";
 import type { SlotShape } from "./declared-slot";
 import type { ShownFill } from "./fill-outcome";
 import type { Plugin } from "./plugin";
+import type { ProvideFor } from "./plugin-app";
 import { namedPluginsOf } from "./plugin-names";
 import { keptStateOf, settledStateOf } from "./plugin-state";
 import type { PluginStateStore } from "./plugin-state";
@@ -9,6 +12,7 @@ import { slotFillsOf } from "./slot-fills";
 import type { SlotFills } from "./slot-fills";
 import { slotReaderOf } from "./slot-reader";
 import type { SlotReader } from "./slot-reader";
+import type { Service } from "./service";
 import { startOrderOf } from "./start-order";
 
 export interface PluginRuntime {
@@ -25,6 +29,7 @@ interface RuntimePlan {
 	readonly alwaysOn: readonly Plugin[];
 	readonly store: PluginStateStore | null;
 	readonly resolvesNames: boolean;
+	readonly provisions: readonly ServiceProvision[];
 }
 
 type Statefulness = "stateless" | "stated";
@@ -53,6 +58,13 @@ export class PluginRuntimeBuilder<S extends Statefulness> {
 		return new PluginRuntimeBuilder({ ...this.plan, resolvesNames: true });
 	}
 
+	provide<Api>(service: Service<Api>, provideFor: ProvideFor<Api>): PluginRuntimeBuilder<S> {
+		return new PluginRuntimeBuilder({
+			...this.plan,
+			provisions: [...this.plan.provisions, { service, provideFor }],
+		});
+	}
+
 	start(this: PluginRuntimeBuilder<"stated">): PluginRuntime {
 		const { store } = this.plan;
 
@@ -65,7 +77,7 @@ export class PluginRuntimeBuilder<S extends Statefulness> {
 }
 
 export function runtime(): PluginRuntimeBuilder<"stateless"> {
-	return new PluginRuntimeBuilder({ builtIn: [], alwaysOn: [], store: null, resolvesNames: false });
+	return new PluginRuntimeBuilder({ builtIn: [], alwaysOn: [], store: null, resolvesNames: false, provisions: [] });
 }
 
 function startPlugins(plan: RuntimePlan, store: PluginStateStore): PluginRuntime {
@@ -75,10 +87,11 @@ function startPlugins(plan: RuntimePlan, store: PluginStateStore): PluginRuntime
 	const state = settledStateOf({ named, alwaysOnIds, store, kept });
 	const startOrder = startOrderOf(named, state.rankedIds);
 	const slotFills = slotFillsOf(startOrder.plugins, state.rankedIds);
+	const applied = appliedPluginsOf(startOrder.plugins, plan.provisions);
 	return new StartedPlugins({
-		started: startOrder.plugins,
+		started: startOrder.plugins.filter(({ id }) => applied.appliedIds.has(id)),
 		slotFills,
-		refusals: [...nameRefusals, ...startOrder.refusals, ...slotFills.refusals],
+		refusals: [...nameRefusals, ...startOrder.refusals, ...slotFills.refusals, ...applied.refusals],
 		notes: state.notes,
 	});
 }

@@ -13,7 +13,7 @@ import type {
 	ServerRuns,
 	ServerSideModule,
 } from "@widgetarium/data-framework";
-import { slot } from "@widgetarium/plugin-framework";
+import { service, slot } from "@widgetarium/plugin-framework";
 import type { SlotReader } from "@widgetarium/plugin-framework";
 import type { BoardFile } from "@widgetarium/tasks/implementation";
 
@@ -23,6 +23,13 @@ export interface CoreOffers extends SlotReader {
 }
 
 export type BackgroundModuleOf = (offers: CoreOffers) => ServerSideModule;
+
+export interface ServedModule {
+	readonly runtime: Runtime;
+	readonly module: string;
+}
+
+export type ModuleExposure = (served: ServedModule) => void;
 
 export interface TabPageProps {
 	readonly app: string;
@@ -91,6 +98,8 @@ export type WindowServerModuleOf = (offers: SlotReader & WindowServerOffers) => 
 
 const NOT_A_MODULE_OF =
 	"a background module is a function of what the core offers, answering a module(...) configured from it";
+const NOT_AN_EXPOSURE =
+	"a background module's exposes lists adapters, each a function of { runtime, module } that serves the module";
 const NOT_A_CONTRACT = 'a background module names its contract, the module(...) descriptor of its package\'s "." entry';
 const NOT_A_TAB_PAGE_OF = "a tab page is a function of the plugin's slot reader, answering { page, draws }";
 const NOT_A_WINDOW_MODULE_OF =
@@ -111,6 +120,7 @@ const NOT_A_WINDOW_SERVER_MODULE_OF =
 export const BackgroundModuleSchema = z.object({
 	module: z.custom<BackgroundModuleOf>((value) => typeof value === "function", NOT_A_MODULE_OF),
 	contract: z.custom<ModuleContract<ServerRuns>>(isModuleContract, NOT_A_CONTRACT),
+	exposes: z.array(z.custom<ModuleExposure>((value) => typeof value === "function", NOT_AN_EXPOSURE)).default([]),
 });
 
 export const backgroundModules = slot().item(BackgroundModuleSchema).list();
@@ -151,3 +161,32 @@ export const WindowServerModuleSchema = z.object({
 });
 
 export const windowServerModules = slot().item(WindowServerModuleSchema).list();
+
+export interface BackendOffers {
+	readonly store: StoreClient;
+	readonly file: BoardFile;
+}
+
+export interface Backend {
+	module(module: ServerSideModule, contract: ModuleContract<ServerRuns>): void;
+	moduleOf(build: (offers: BackendOffers) => ServerSideModule, contract: ModuleContract<ServerRuns>): void;
+}
+
+export interface Windows {
+	module(module: DeviceModule): void;
+	moduleOf(build: (offers: WindowModuleOffers) => DeviceModule): void;
+	serverModule(build: (offers: WindowServerOffers) => ServerSideModule): void;
+}
+
+export interface Shell {
+	tabPage(page: DrawnTabPage): void;
+	layer(layer: ComponentType): void;
+	provider(provider: (offers: WindowOffers) => ComponentType<WindowProviderProps>): void;
+	frameModule(contract: ModuleContract<ServerRuns>, serving: (offers: WindowOffers) => FrameServing): void;
+}
+
+export const backend = service<Backend>("backend");
+
+export const windows = service<Windows>("windows");
+
+export const shell = service<Shell>("shell");

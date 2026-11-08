@@ -1,7 +1,9 @@
 import { z } from "zod";
 import type { EventSource } from "./event-source";
 import type { Platform } from "./platform-module";
-import { fullNameOf, unnamedIdentity } from "./identity";
+import { fullNameOf, labelOf, unnamedIdentity } from "./identity";
+import { NO_METADATA, metadataWith } from "./metadata";
+import type { Metadata } from "./metadata";
 import type { Identity } from "./identity";
 
 export type PlatformSources = Readonly<Partial<Record<Platform, EventSource>>>;
@@ -17,6 +19,7 @@ export class Event<I extends z.ZodType> {
 		readonly identity: Identity,
 		readonly inputSchema: I,
 		private readonly sources: Sources | null,
+		private readonly metadataFields: Metadata = NO_METADATA,
 	) {}
 
 	get name(): string {
@@ -28,11 +31,21 @@ export class Event<I extends z.ZodType> {
 	}
 
 	input<S extends z.ZodType>(schema: S): Event<S> {
-		return new Event(this.identity, schema, this.sources);
+		return new Event(this.identity, schema, this.sources, this.metadataFields);
 	}
 
 	from(sources: Sources): Event<I> {
-		return new Event(this.identity, this.inputSchema, sources);
+		return new Event(this.identity, this.inputSchema, sources, this.metadataFields);
+	}
+
+	metadata(): Metadata;
+	metadata(fields: Metadata): Event<I>;
+	metadata(fields?: Metadata): Metadata | Event<I> {
+		if (fields === undefined) {
+			return this.metadataFields;
+		}
+
+		return new Event(this.identity, this.inputSchema, this.sources, metadataWith(labelOf(this.identity, EVENT), this.metadataFields, fields));
 	}
 
 	// TODO: event visibility is read by the generator only
@@ -59,7 +72,7 @@ export class Event<I extends z.ZodType> {
 			return this;
 		}
 
-		return new Event({ ...this.identity, module }, this.inputSchema, this.sources);
+		return new Event({ ...this.identity, module }, this.inputSchema, this.sources, this.metadataFields);
 	}
 }
 

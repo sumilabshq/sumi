@@ -7,6 +7,7 @@ import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { main } from "@sumi/main-plugin";
+import { mcp } from "@sumi/mcp-plugin";
 import {
 	BackgroundModuleSchema,
 	FrameModuleSchema,
@@ -16,10 +17,15 @@ import {
 	WindowLayerSchema,
 	WindowModuleSchema,
 	WindowProviderSchema,
+	backend,
+	shell,
+	windows,
 } from "@sumi/sumi-host-plugin";
+import { backendFor, emptyHostRegistrations, shellFor, windowsFor } from "./host-services.js";
 import type {
 	CoreOffers,
 	DrawnTabPage,
+	ModuleExposure,
 	FrameServing,
 	WindowModuleOffers,
 	WindowOffers,
@@ -41,6 +47,7 @@ export type HostOffers = Omit<CoreOffers, "fillsOf">;
 export interface BackgroundModule {
 	readonly contract: ModuleContract<ServerRuns>;
 	readonly prefix: string | null;
+	readonly exposes: readonly ModuleExposure[];
 	moduleOf(offers: HostOffers): ServerSideModule;
 }
 
@@ -90,6 +97,7 @@ const INSTALLED_PLUGINS = [
 	commandMenu,
 	chat,
 	main,
+	mcp,
 	terminal,
 	browserPage,
 	files,
@@ -100,7 +108,7 @@ const INSTALLED_PLUGINS = [
 	htmlViewer,
 	git,
 ];
-const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main];
+const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, mcp];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
@@ -121,34 +129,45 @@ export function builtInPluginState(): PluginStateStore {
 }
 
 export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
+	const registered = emptyHostRegistrations();
 	const started = runtime()
 		.builtInPlugins(...INSTALLED_PLUGINS)
 		.alwaysOn(...ALWAYS_ON_PLUGINS)
 		.state(store)
 		.withNameResolves()
+		.provide(backend, backendFor(registered))
+		.provide(windows, windowsFor(registered))
+		.provide(shell, shellFor(registered))
 		.start();
-	const tabPages = tabPagesOf(started);
+	const tabPages = [...tabPagesOf(started), ...registered.tabPages];
 	return {
-		backgroundModules: backgroundModulesOf(started),
-		windowModules: windowModulesOf(started),
-		windowLayers: shownFillsOf(started, sumiHost.windowLayers).flatMap(({ fill, offers }) => {
-			const parsed = WindowLayerSchema.safeParse(fill.item);
-			return parsed.success ? [{ id: fillKeyOf(fill), layer: parsed.data.layer(offers) }] : [];
-		}),
-		windowProviders: shownFillsOf(started, sumiHost.windowProviders).flatMap(({ fill, offers }) => {
-			const parsed = WindowProviderSchema.safeParse(fill.item);
-			return parsed.success
-				? [
-						{
-							id: fillKeyOf(fill),
-							providerOf: (windowOffers: WindowOffers) => parsed.data.provider({ ...windowOffers, ...offers }),
-						},
-					]
-				: [];
-		}),
+		backgroundModules: [...backgroundModulesOf(started), ...registered.backgroundModules],
+		windowModules: [...windowModulesOf(started), ...registered.windowModules],
+		windowLayers: [
+			...shownFillsOf(started, sumiHost.windowLayers).flatMap(({ fill, offers }) => {
+				const parsed = WindowLayerSchema.safeParse(fill.item);
+				return parsed.success ? [{ id: fillKeyOf(fill), layer: parsed.data.layer(offers) }] : [];
+			}),
+			...registered.windowLayers,
+		],
+		windowProviders: [
+			...shownFillsOf(started, sumiHost.windowProviders).flatMap(({ fill, offers }) => {
+				const parsed = WindowProviderSchema.safeParse(fill.item);
+				return parsed.success
+					? [
+							{
+								id: fillKeyOf(fill),
+								providerOf: (windowOffers: WindowOffers) =>
+									parsed.data.provider({ ...windowOffers, ...offers }),
+							},
+						]
+					: [];
+			}),
+			...registered.windowProviders,
+		],
 		tabPages: tabPages.map(({ drawn }) => drawn),
-		frameModules: frameModulesOf(started),
-		windowServerModules: windowServerModulesOf(started),
+		frameModules: [...frameModulesOf(started), ...registered.frameModules],
+		windowServerModules: [...windowServerModulesOf(started), ...registered.windowServerModules],
 		startedIds: started.startedIds,
 		refusals: started.refusals,
 		notes: started.notes,
@@ -166,7 +185,7 @@ interface ReadableFill {
 	readonly prefix: string | null;
 }
 
-interface PluginTabPage {
+export interface PluginTabPage {
 	readonly pluginId: string;
 	readonly drawn: DrawnTabPage;
 }
@@ -187,6 +206,7 @@ function backgroundModulesOf(started: PluginRuntime): readonly BackgroundModule[
 					{
 						contract: parsed.data.contract,
 						prefix,
+						exposes: parsed.data.exposes,
 						moduleOf: (hostOffers: HostOffers) =>
 							prefixedModule(parsed.data.module({ ...hostOffers, ...offers }), prefix),
 					},

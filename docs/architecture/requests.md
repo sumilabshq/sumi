@@ -38,16 +38,17 @@ export const toggleFrameSide = command()
 
 ### The contract
 
-| Declaration                                    | On      | Means                                                       |
-| ---------------------------------------------- | ------- | ----------------------------------------------------------- |
-| `query()`, `command()`                         | both    | no name: the exported camelCase constant names it           |
-| no mark                                        | both    | callable only in the same process: any module or view there |
-| `.public()`                                    | both    | callable by anyone, through guards; enters the contract     |
-| `.callableBy(otherModule, …)`                  | both    | callable only by those services, resolved at start          |
-| `.input(S)`, `.output(S)`                      | both    | zod schemas from `shared/schema`; omitted means `void`      |
-| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error         |
-| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)     |
-| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module  |
+| Declaration                                    | On      | Means                                                                                                                                             |
+| ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `query()`, `command()`                         | both    | no name: the exported camelCase constant names it                                                                                                 |
+| no mark                                        | both    | callable only in the same process: any module or view there                                                                                       |
+| `.public()`                                    | both    | callable by anyone, through guards; enters the contract                                                                                           |
+| `.callableBy(otherModule, …)`                  | both    | callable only by those services, resolved at start                                                                                                |
+| `.input(S)`, `.output(S)`                      | both    | zod schemas from `shared/schema`; omitted means `void`                                                                                            |
+| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error                                                                                               |
+| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)                                                                                           |
+| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module                                                                                        |
+| `.metadata({ … })`                             | both    | free fields an adapter reads (`description` for MCP); a second call merges, `.metadata()` reads them; an event takes it too; kept in the contract |
 
 **Visibility is one check, and it fails closed.** The mediator runs `refuseCaller` (`local-routes.ts`) before it parses the input. A call counts as from outside unless its in-process sender marks it: a handler's or subscriber's `send` names its module, the runtime's own views send as a view. Every served call (HTTP, `MessagePort`, the studio's IPC relay) is outside. Outside, only `.public()` passes; anything else answers `not-found` with one message, whatever the request's visibility. In the process, `.callableBy(...)` lets only its own module and the listed modules through (a view is refused `forbidden`). `.callableBy` stays refused over a transport until modules have an identity there. `.public()` and `.callableBy()` on one request throw.
 
@@ -288,13 +289,14 @@ const api = runtime().modules(billing, users).start({ platform: "server", env: p
 const http = dataFrameworkMiddleware(api, { authenticate });
 ```
 
-| Adapter                                                         | Exposes the runtime to                                                            |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `<RuntimeProvider runtime={…}>`                                 | views in the same process (`useQuery`, `useCommand`); no guard, no user           |
-| `dataFrameworkMiddleware(runtime, { authenticate? })`           | HTTP: a Hono app answering `/rpc/*` and the changes stream at `/rpc-changes`      |
-| `servePort(runtime, port, { authenticate?, headers? })`         | a page over a `MessagePort` ([The frame transport](#the-frame-transport))         |
-| `local.serve(runtime, { authenticate? })` on `localTransport()` | other runtimes of the same process, importing over that transport                 |
-| `runtime.expose({ adapter, authenticate? })`                    | an adapter a host writes itself (the core's IPC): `{ answer, changes, requests }` |
+| Adapter                                                         | Exposes the runtime to                                                                                                                                                                                                                                           |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<RuntimeProvider runtime={…}>`                                 | views in the same process (`useQuery`, `useCommand`); no guard, no user                                                                                                                                                                                          |
+| `dataFrameworkMiddleware(runtime, { authenticate? })`           | HTTP: a Hono app answering `/rpc/*` and the changes stream at `/rpc-changes`                                                                                                                                                                                     |
+| `servePort(runtime, port, { authenticate?, headers? })`         | a page over a `MessagePort` ([The frame transport](#the-frame-transport))                                                                                                                                                                                        |
+| `local.serve(runtime, { authenticate? })` on `localTransport()` | other runtimes of the same process, importing over that transport                                                                                                                                                                                                |
+| `runtime.expose({ adapter, authenticate?, module? })`           | an adapter a host writes itself (the core's IPC): `{ answer, changes, requests }`; with `module`, only that module's requests are mounted and answered                                                                                                           |
+| `mcpServerOf(runtime, { module })`                              | MCP clients (agents): one module's `.public()` requests as tools (path dots → `_`, `metadata.description`, the input's JSON schema, a non-object input wrapped in `{ input }`); `answer(message)` replies to `initialize`, `ping`, `tools/list` and `tools/call` |
 
 - `.modules(...)` take the runnable module from `<package>/implementation`, any placement. `start({ platform: "server" })` refuses a `Device` module; any other platform runs all three.
 - `.imports(...)` take `Server` and `Anywhere` modules, by the descriptor in their `"./contract"` entry, called with a transport: `billing({ over: transport })`. Only those two are callable (a `Device` module is a type error, and refused where it is called). No server code reaches the bundle.

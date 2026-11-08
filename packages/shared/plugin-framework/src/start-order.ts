@@ -83,18 +83,23 @@ function startDependencies(target: Plugin, run: StartRun): string | null {
 		}
 	}
 
-	startEnabledOptional(target, run);
-	return null;
+	return startEnabledOptional(target, run);
 }
 
-function startEnabledOptional(target: Plugin, run: StartRun): void {
+function startEnabledOptional(target: Plugin, run: StartRun): string | null {
 	for (const wanted of target.parts.optionalPlugins) {
 		const enabledOptional = run.enabled.get(wanted.id);
 
-		if (enabledOptional === undefined || run.marks.get(wanted.id) === "visiting") {
+		if (enabledOptional === undefined) {
 			continue;
+		}
+
+		if (run.marks.get(wanted.id) === "visiting") {
+			return `plugin ${target.id} optionally uses ${wanted.id}, which uses it back`;
 		}
 
 		startPlugin(enabledOptional, run);
 	}
+
+	return null;
 }

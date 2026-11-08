@@ -8,6 +8,7 @@ export { RouteQueries } from "./route-queries";
 export type { SettledNow } from "./route-queries";
 export type { DeviceModule, Runtime, RuntimeHost, RuntimeStartOptions, ServerSideModule } from "./runtime";
 export { event } from "./event";
+export type { Metadata } from "./metadata";
 export type { AnyEvent, Emit, Emitter, Event, EventArgs, EventInputOf } from "./event";
 export { subscriber } from "./subscriber";
 export type { AnySubscriber, Subscriber, SubscriberBuilder } from "./subscriber";
@@ -86,6 +87,10 @@ export {
 } from "./message-port-transport";
 export type { RelayPortOptions, ServePortOptions } from "./message-port-transport";
 export { FrameCommandKeySchema } from "./frame-command-keys";
+export { mcpServerOf } from "./mcp-server";
+export type { McpReply, McpServer } from "./mcp-server";
+export { mcpToolsOf } from "./mcp-tools";
+export type { McpTool } from "./mcp-tools";
 export { orpcTransport } from "./wire-client";
 export { wireAnswerOf } from "./wire";
 export { InvalidationSchema } from "./invalidation";
