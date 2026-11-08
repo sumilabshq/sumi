@@ -35,7 +35,7 @@ const RESERVED_FEATURE_KEYS: readonly string[] = [
 
 const MODULE_NAME_RULE = "a module name is kebab case: lowercase words of letters joined by '-' (notes, pane-tree)";
 const FEATURE_RULE =
-	"add feature takes <module>/<feature>, each kebab case of letters: widgetarium add feature notes/tasks";
+	"add feature takes <module>/<feature>, each kebab case of letters: data-framework add feature notes/tasks";
 const REQUEST_RULE =
 	"--query and --command take a camelCase name of letters with no kind suffix: --query tasks, --command addTask";
 const ON_RULE = "--on takes Server, Device or Anywhere: where the module may run";

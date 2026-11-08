@@ -23,7 +23,7 @@ service. Each version becomes Apache 2.0 two years after its release:
                   packages/shared/plugin-framework/LICENSE
   packages/shared/sdk/   the types a widget is written against
                   packages/shared/sdk/LICENSE
-  packages/shared/cli/   the widgetarium command
+  packages/shared/cli/   the data-framework command
                   packages/shared/cli/LICENSE
   packages/shared/vite/  the Vite plugin a project builds with
                   packages/shared/vite/LICENSE

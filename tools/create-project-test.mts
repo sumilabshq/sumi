@@ -131,7 +131,7 @@ try {
 	const packed = await packEngine();
 	const runner = runnerWithTheCli(packed, scratch);
 	const app = path.join(scratch, APP);
-	const created = ran(scratch, path.join(runner, "node_modules/.bin/widgetarium"), [
+	const created = ran(scratch, path.join(runner, "node_modules/.bin/data-framework"), [
 		"create",
 		app,
 		"--engine",

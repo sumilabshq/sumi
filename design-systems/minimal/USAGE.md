@@ -4,7 +4,7 @@
 
 1. `USAGE.md`
 2. `DESIGN.md`
-3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `widgetarium system use minimal`; change parameters, never formulas.
+3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `data-framework system use minimal`; change parameters, never formulas.
 4. `settings.json` for the spec card, then the `patterns/` the product needs.
 5. `references/`
 

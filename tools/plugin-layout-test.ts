@@ -92,7 +92,7 @@ check(
 check(
 	"anything in src/generated/ but the generated plugin.ts is refused",
 	refusalsOf({ ...GOOD, "src/generated/extra.ts": "export const extra = 1;\n" }),
-	["plugins/notes/src/generated/extra.ts: src/generated/ holds only what widgetarium generate writes, plugin.ts"],
+	["plugins/notes/src/generated/extra.ts: src/generated/ holds only what data-framework generate writes, plugin.ts"],
 );
 check(
 	"a loose file at the top of src is refused",

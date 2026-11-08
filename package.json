@@ -12,8 +12,8 @@
 	"scripts": {
 		"pack:engine": "node tools/pack-engine.mts",
 		"test:engine-package": "node tools/engine-package-test.mts",
-		"widgetarium": "node --import ./tools/loader/register.mts packages/shared/cli/src/cli.ts",
-		"generate": "npm run -s widgetarium -- generate",
+		"data-framework": "node --import ./tools/loader/register.mts packages/shared/cli/src/cli.ts",
+		"generate": "npm run -s data-framework -- generate",
 		"test:create": "node tools/create-project-test.mts",
 		"test:project-render": "node --single-threaded --import ./tools/loader/register.mts tools/project-render-test.mts",
 		"test:create-files": "node --single-threaded --import ./tools/loader/register.mts tools/create-files-test.ts",

@@ -14,7 +14,7 @@ interface ModuleEntry {
 	readonly text: string | null;
 }
 
-const STALE = "{module}/{entry} is not what widgetarium generate writes; run it, never edit the file by hand";
+const STALE = "{module}/{entry} is not what data-framework generate writes; run it, never edit the file by hand";
 const STRAY = "{module}/{entry} is a file generate no longer writes; run it to remove the file";
 const NO_MODULES = 'no module found: name a module folder, or mark one with widgetarium.level "domain" or "client"';
 

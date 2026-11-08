@@ -8,7 +8,7 @@ Sumi is a shell. Every page a person opens (chat, tasks, canvas, terminal, a bro
 
 **A built-in app is a folder of this monorepo, never installed.** `apps/<id>/` holds its frontend and `sumi-app.json`, its manifest; its domain modules stay in the shell's `packages/domain/*`. Today: `apps/tasks` (copied from the former `sumi-*` repository, which is no longer read); the chat was `apps/chat` and is now the chat plugin's page. An app's workspace dependencies are the shell's own packages (`@sumi/contract` is `packages/shared/contract`), and `vite build` in its folder writes `apps/<id>/dist`.
 
-**One registry, generated.** `widgetarium generate` (`packages/shared/cli/src/apps-registry.ts`) reads every `apps/*/sumi-app.json` and writes `packages/shared/app-registry/generated/`: `registered-apps.ts` (id, name, ui, build folder), `registered-apps.json` (id and build folder, read by Rust) and `app-modules.ts` (the runnable modules the apps bring: a module name with a `packages/domain|state/<name>/module.ts` exporting the module under the camelCase of that name, imported from its `"./implementation"`, today `tasks`). Nothing hand-maintains a list of apps. A manifest that does not parse, names another id than its folder, or asks a contract range Sumi does not speak (`contractRefusal`) fails generation; `generate --check` fails on a stale registry.
+**One registry, generated.** `data-framework generate` (`packages/shared/cli/src/apps-registry.ts`) reads every `apps/*/sumi-app.json` and writes `packages/shared/app-registry/generated/`: `registered-apps.ts` (id, name, ui, build folder), `registered-apps.json` (id and build folder, read by Rust) and `app-modules.ts` (the runnable modules the apps bring: a module name with a `packages/domain|state/<name>/module.ts` exporting the module under the camelCase of that name, imported from its `"./implementation"`, today `tasks`). Nothing hand-maintains a list of apps. A manifest that does not parse, names another id than its folder, or asks a contract range Sumi does not speak (`contractRefusal`) fails generation; `generate --check` fails on a stale registry.
 
 **Registered at start.** The core registers `APP_MODULES` beside its own modules (`start-core.ts` in Tauri, `startCoreInProcess` in a browser), and the shell reads `REGISTERED_APPS` for faces, links and frames (`@widgetarium/app-registry`); no action of the person is involved.
 
@@ -22,7 +22,7 @@ Sumi is a shell. Every page a person opens (chat, tasks, canvas, terminal, a bro
 
 | File                     | Holds                                                                                                                |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`, `generated/` | written by `widgetarium generate` from `sumi-contract.json`: each listed module's generated contract                 |
+| `index.ts`, `generated/` | written by `data-framework generate` from `sumi-contract.json`: each listed module's generated contract              |
 | `manifest.ts`            | `AppManifestSchema`, `defineApp`, `APP_MANIFEST_FILE` (`sumi-app.json`)                                              |
 | `version.ts`             | `CONTRACT_VERSION`, `CONTRACT_RANGE`, `contractRefusal(appRange, sumiVersion)`                                       |
 | `link-catcher.ts`        | `catchLinks({ sumi, tabId })`: every app's one link handler (see Links under The contract)                           |
@@ -70,7 +70,7 @@ There is no message vocabulary between Sumi and an app: everything an app asks i
 
 **Versioning: one number, additive only.** Within a major the contract only grows: a new module, request or optional field; nothing is renamed, removed or narrowed. An app's manifest names the range it was built for, `contract: "^0.3.2"`; `contractRefusal` answers it against what Sumi speaks. Before 1.0 a minor is a breaking line. 0.3 replaced the 0.2 message protocol; 0.3.1 added `web-page` and `assistant`; 0.3.2 added Places' history and links, `appearance`, `catchLinks` and `wearSumiTheme`; 0.3.3 added `questions`, the agent's needed and optional questions a chat draws above its input. 0.3.4 added the assistant's message queue: `queued` on the session and the chat, `change-queue`, `send-text`, `replaces` on `send-message`, and `questions/ready-answers`. 0.3.5 added header actions: `actions` on `apps.pages.recordAppPage`, `actions` and `presses` on `places.tabFacts.appTab`, `apps.pages.takeActionPress` and `startHeaderActions`, and opened the provider, model and folder choices to the chat app.
 
-**The gate is generation.** `widgetarium generate` refuses an `apps/*` manifest whose `contract` range Sumi does not satisfy, so no registered app speaks another contract.
+**The gate is generation.** `data-framework generate` refuses an `apps/*` manifest whose `contract` range Sumi does not satisfy, so no registered app speaks another contract.
 
 **An app cannot pretend to be another app.** The shell decides who a frame is when it creates it: `servePortHandovers` answers only a handover wanted by that frame, and the relay stamps the app id the shell opened there; nothing the app sends names its caller.
 

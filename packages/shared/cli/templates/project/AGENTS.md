@@ -35,14 +35,14 @@ widget; both import the schema in `{paths.schemas}`.
 
 ## The look
 
-`widgetarium.json` names the design system (`design.system`). Read it in this order: [USAGE.md]({paths.docs}/design-system/USAGE.md), [DESIGN.md]({paths.docs}/design-system/DESIGN.md), then `{design.tokens}`. Change a parameter there, never a formula; `npx widgetarium system use <id>` swaps the system.
+`widgetarium.json` names the design system (`design.system`). Read it in this order: [USAGE.md]({paths.docs}/design-system/USAGE.md), [DESIGN.md]({paths.docs}/design-system/DESIGN.md), then `{design.tokens}`. Change a parameter there, never a formula; `npx data-framework system use <id>` swaps the system.
 
 A command written `node {tool} …` in the handbook belongs to the Obsidian plugin and does not run here.
 
 ## Catalogue code is a starting point
 
-1. Find it: `npx widgetarium catalogue search <words>`, then `catalogue show <id>` for its props and commands.
-2. `npx widgetarium add <id>`, with `--as <name>` when the name is taken; it lands in `{paths.widgets}` and is yours, never updated.
+1. Find it: `npx data-framework catalogue search <words>`, then `catalogue show <id>` for its props and commands.
+2. `npx data-framework add <id>`, with `--as <name>` when the name is taken; it lands in `{paths.widgets}` and is yours, never updated.
 3. Move its schema into `{paths.schemas}`, or map this project's records to it in a feature handler under `{paths.logic}`.
 4. `npm run format && npm run check`.
 
@@ -60,9 +60,9 @@ A command written `node {tool} …` in the handbook belongs to the Obsidian plug
 - `npm run studio`: the same app inside the engine's studio: its band with the app switcher and the AI button above every route.
 - `npm run typecheck`: TypeScript over `src` and `vite.config.ts`.
 - `npm run format`: Prettier writes every file in the project's style.
-- `npm run check`: the final validation, in order: `lint` (ESLint), `format:check` (Prettier), `typecheck`, then `widgetarium check`, every layer against `widgetarium.json`; exits 1 at the first failure.
-- `npx widgetarium catalogue list | search <words> | show <id>`: the widgets the registries offer.
-- `npx widgetarium add <id> [--as <name>]`: copies one into `{paths.widgets}`.
-- `npx widgetarium check`: the last step of `npm run check`.
+- `npm run check`: the final validation, in order: `lint` (ESLint), `format:check` (Prettier), `typecheck`, then `data-framework check`, every layer against `widgetarium.json`; exits 1 at the first failure.
+- `npx data-framework catalogue list | search <words> | show <id>`: the widgets the registries offer.
+- `npx data-framework add <id> [--as <name>]`: copies one into `{paths.widgets}`.
+- `npx data-framework check`: the last step of `npm run check`.
 
 After every change run `npm run format && npm run check`.

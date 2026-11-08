@@ -7,9 +7,9 @@ import { CliRefusal } from "./cli-output.js";
 
 const PACKAGE_NAME = /^[a-z0-9][a-z0-9._-]*$/;
 const NAME_RULE = "must be a lowercase npm package name (letters, digits, '.', '_', '-'); pass --name <app>";
-const NO_DIR = "create needs the folder to create the app in: widgetarium create <dir>";
+const NO_DIR = "create needs the folder to create the app in: data-framework create <dir>";
 const SLUG_RULE = "a design system is named by its folder in design-systems/: lowercase letters, digits and '-'";
-const SYSTEM_ACTIONS = "widgetarium system check <system> | use <system> [--dir <app>]";
+const SYSTEM_ACTIONS = "data-framework system check <system> | use <system> [--dir <app>]";
 
 const CREATE_OPTIONS = {
 	name: { type: "string" },
@@ -52,7 +52,7 @@ const ADD_OPTIONS = {
 
 const WIDGET_ID = /^@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/;
 const WIDGET_NAME = /^[a-z0-9][a-z0-9-]*$/;
-const ID_RULE = "a widget id is @scope/name, as widgetarium catalogue list prints it";
+const ID_RULE = "a widget id is @scope/name, as data-framework catalogue list prints it";
 
 const CatalogueShared = { registry: z.string().min(1).optional(), json: z.boolean() };
 
@@ -60,7 +60,7 @@ const CatalogueArgsSchema = z.discriminatedUnion("action", [
 	z.object({ action: z.literal("list"), ...CatalogueShared }),
 	z.object({
 		action: z.literal("search"),
-		words: z.array(z.string()).min(1, "search needs words: widgetarium catalogue search <words>"),
+		words: z.array(z.string()).min(1, "search needs words: data-framework catalogue search <words>"),
 		...CatalogueShared,
 	}),
 	z.object({ action: z.literal("show"), id: z.string().regex(WIDGET_ID, ID_RULE), ...CatalogueShared }),
@@ -78,7 +78,7 @@ const POSITIONALS_OF_ACTION: ReadonlyMap<string, number> = new Map([
 	["show", 1],
 ]);
 
-const CATALOGUE_ACTIONS = "widgetarium catalogue list | search <words> | show <id>";
+const CATALOGUE_ACTIONS = "data-framework catalogue list | search <words> | show <id>";
 
 export type CreateArgs = z.output<typeof CreateArgsSchema>;
 export type CheckArgs = z.output<typeof CheckArgsSchema>;

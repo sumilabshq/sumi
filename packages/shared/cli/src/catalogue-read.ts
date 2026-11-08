@@ -44,7 +44,9 @@ export async function readCatalogue(places: readonly string[]): Promise<Catalogu
 export function entryById(catalogue: Catalogue, id: string): CatalogueEntry {
 	const entry = catalogue.entries.find((held) => held.id === id);
 	if (entry !== undefined) return entry;
-	throw new CliRefusal(`no registry read offers ${id}; look for it with: widgetarium catalogue search ${nameOfId(id)}`);
+	throw new CliRefusal(
+		`no registry read offers ${id}; look for it with: data-framework catalogue search ${nameOfId(id)}`,
+	);
 }
 
 export function nameOfId(id: string): string {

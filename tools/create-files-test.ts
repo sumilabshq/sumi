@@ -49,7 +49,7 @@ const PRETTIER_IGNORED = ["dist", "emoji-table.ts", "generated", "icon-table.ts"
 const VALIDATION_SCRIPTS = {
 	format: "prettier --write .",
 	"format:check": "prettier --check .",
-	check: "npm run lint && npm run format:check && npm run typecheck && widgetarium check",
+	check: "npm run lint && npm run format:check && npm run typecheck && data-framework check",
 };
 
 const EXPECTED_FILES = [
@@ -216,7 +216,7 @@ try {
 	const scripts = RecordSchema.parse(fieldOf(manifest, "scripts"));
 	check(
 		"generate is a script, and dev, studio and build run it first",
-		["generate", "dev", "studio", "build"].map((name) => String(scripts[name]).startsWith("widgetarium generate")),
+		["generate", "dev", "studio", "build"].map((name) => String(scripts[name]).startsWith("data-framework generate")),
 		[true, true, true, true],
 	);
 	check(

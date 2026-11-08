@@ -48,13 +48,13 @@ draws. `install <id>` is still there for taking one before you place it, but you
 Writing a widget because the vault happened not to hold one is the mistake this command exists to
 stop.
 
-In a project made by `widgetarium create` there is no vault: the same catalogue is
-`widgetarium catalogue search <words>`, `catalogue show <id>` and `widgetarium add <id>`, which copy
+In a project made by `data-framework create` there is no vault: the same catalogue is
+`data-framework catalogue search <words>`, `catalogue show <id>` and `data-framework add <id>`, which copy
 the widget into the project as code of its own (catalogue.md).
 
 ## The project CLI
 
-`npx widgetarium <command>` in a project; none of the commands above run there.
+`npx data-framework <command>` in a project; none of the commands above run there.
 
 | Command                            | Does                                                                                    |
 | ---------------------------------- | --------------------------------------------------------------------------------------- |

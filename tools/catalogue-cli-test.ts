@@ -208,7 +208,11 @@ async function checkAddIntoAProject(project: string): Promise<void> {
 		[1, true],
 	);
 	const checked = await cli(["check", project]);
-	check("widgetarium check finds nothing after the adds", [checked.code, checked.said], [0, `${project}: no findings`]);
+	check(
+		"data-framework check finds nothing after the adds",
+		[checked.code, checked.said],
+		[0, `${project}: no findings`],
+	);
 }
 
 async function checkConfiguredAndServedRegistries(project: string, mini: string): Promise<void> {

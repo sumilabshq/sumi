@@ -16,10 +16,10 @@ const ANY_FOLDER = "/*";
 const TYPES_SCRIPT = "test:types";
 const TYPES_BUILD = "tsc -b ";
 const NO_WORKSPACE =
-	"no package.json with workspaces in {start} or above it; run widgetarium add inside the repository that holds packages/";
+	"no package.json with workspaces in {start} or above it; run data-framework add inside the repository that holds packages/";
 const MODULE_FILE = "module.ts";
 const NO_MODULE =
-	"no workspace package {module} holds a module.ts; create it first: widgetarium add module {module} --on Device";
+	"no workspace package {module} holds a module.ts; create it first: data-framework add module {module} --on Device";
 
 export const LAYER_FOLDERS: Readonly<Record<ModuleLayer, string>> = {
 	domain: "packages/domain",

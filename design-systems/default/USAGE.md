@@ -4,7 +4,7 @@
 
 1. `USAGE.md`
 2. `DESIGN.md`
-3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `widgetarium system use default`; change parameters, never formulas.
+3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `data-framework system use default`; change parameters, never formulas.
 4. `docs/ai/surfaces.md`, `docs/ai/clean-ui.md` and `docs/ai/design-system.md`, which this look is checked by.
 5. `references/` — none: the kit itself is the reference.
 

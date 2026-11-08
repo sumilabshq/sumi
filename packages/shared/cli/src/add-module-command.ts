@@ -14,7 +14,7 @@ import { LAYER_FOLDERS, packageFolderNamed, rootManifestWith, workspaceRootAbove
 const FRAMEWORK_MANIFEST = "packages/shared/data-framework/package.json";
 const LICENSE_FILE = "LICENSE";
 const TAKEN_FOLDER =
-	"{folder} already exists: pick another module name, or add a feature to it: widgetarium add feature {name}/<feature>";
+	"{folder} already exists: pick another module name, or add a feature to it: data-framework add feature {name}/<feature>";
 const TAKEN_PACKAGE = "{package} already names {folder}: pick another module name";
 const NO_FRAMEWORK = "no {file} with a version and a zod dependency: add module runs inside the widgetarium repository";
 
@@ -126,6 +126,6 @@ function reportOf(folder: string, { name, on }: AddModuleArgs, lines: readonly s
 		...lines,
 		"next:",
 		`  npm install, so @widgetarium/${name} resolves`,
-		`  widgetarium add feature ${name}/<feature> [--query <Name>] [--command <Name>]`,
+		`  data-framework add feature ${name}/<feature> [--query <Name>] [--command <Name>]`,
 	].join("\n");
 }

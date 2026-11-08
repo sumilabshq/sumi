@@ -28,6 +28,6 @@ export async function requiredProjectAbove(start: string): Promise<FoundProject>
 	const project = await projectAbove(start);
 	if (project !== null) return project;
 	throw new CliRefusal(
-		`no ${PROJECT_CONFIG_FILE} in ${start} or above it; run this inside an app made by widgetarium create`,
+		`no ${PROJECT_CONFIG_FILE} in ${start} or above it; run this inside an app made by data-framework create`,
 	);
 }

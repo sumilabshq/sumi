@@ -57,6 +57,6 @@ Each rule is proven by breaking it on purpose: `npm run test:eslint-plugin` runs
 
 ## Final validation
 
-Final validation = lint → `format:check` → tests, and the first red step stops the run. In this repository `npm test` opens with `lint:style` and `format:check`; in a created project `npm run check` runs `lint`, `format:check`, `typecheck`, then `widgetarium check`.
+Final validation = lint → `format:check` → tests, and the first red step stops the run. In this repository `npm test` opens with `lint:style` and `format:check`; in a created project `npm run check` runs `lint`, `format:check`, `typecheck`, then `data-framework check`.
 
 Agents format on every edit: the `PostToolUse` hook in `.claude/settings.json` runs `prettier --write` on each file a Write or Edit touches, so `format:check` only catches a file written another way.

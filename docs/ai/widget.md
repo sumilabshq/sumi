@@ -52,12 +52,12 @@ for, so a widget draws states and formats values, and never filters, maps fields
 schema into `src/shared/schemas` or map the project's records to it in a feature handler, and
 refactor it to the project like code of your own.
 
-In a project the catalogue is reached through the `widgetarium` CLI (catalogue.md has the whole of it):
+In a project the catalogue is reached through the `data-framework` CLI (catalogue.md has the whole of it):
 
 ```bash
-widgetarium catalogue search "tasks by day"
-widgetarium catalogue show @default/table
-widgetarium add @default/table
+data-framework catalogue search "tasks by day"
+data-framework catalogue show @default/table
+data-framework add @default/table
 ```
 
 `add` copies the folder into `src/widgets/<name>/`, the scope's lib into `src/shared/libs/<library>/`

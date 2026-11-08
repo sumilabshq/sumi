@@ -24,7 +24,7 @@ The rules every developer and every agent follows when writing code in this repo
 
 **Requests: CQRS.** A query reads, a command writes (CQRS; as `useQuery` / `useMutation` in TanStack Query, `query` / `mutation` in tRPC, requests and handlers in MediatR). A request carries its contract (zod input and output) and its handler. Views call `useQuery` / `useCommand`; nothing else reaches logic.
 
-**Names come from constants, identities from strings.** A request, event, subscriber or slot is named by the camelCase constant it is exported as, never by a string: `export const frameSides = query()`. A module and a plugin are identities that outlive a rename of their constant, so each takes its name as one kebab segment: `module("layout")`, `plugin("command-menu")`. A full name is kebab segments joined by dots, module, feature, constant: `layout.frame-sides.toggle-frame-side`. JavaScript cannot read a variable's name, so `widgetarium generate` writes the item names in (`generated/module.ts`: `named("frame-sides.toggle-frame-side", toggleFrameSide)`). Outside its module a request is reached through the module's namespace: `layout.frameSides.toggleFrameSide`.
+**Names come from constants, identities from strings.** A request, event, subscriber or slot is named by the camelCase constant it is exported as, never by a string: `export const frameSides = query()`. A module and a plugin are identities that outlive a rename of their constant, so each takes its name as one kebab segment: `module("layout")`, `plugin("command-menu")`. A full name is kebab segments joined by dots, module, feature, constant: `layout.frame-sides.toggle-frame-side`. JavaScript cannot read a variable's name, so `data-framework generate` writes the item names in (`generated/module.ts`: `named("frame-sides.toggle-frame-side", toggleFrameSide)`). Outside its module a request is reached through the module's namespace: `layout.frameSides.toggleFrameSide`.
 
 **Modules.** A module is one area's data: its commands and queries, their storage (gateways) and their rules (like NestJS or Medusa modules). A module declares where it runs and what it provides; it never lists its requests, the generator does:
 
@@ -41,7 +41,7 @@ export const billing = module("billing")
 - `.config<{ file: BoardFile }>()`: live objects its starter passes (a file it opened, a running agent); the module becomes callable, `tasks({ file })`, and `provide` receives them as `config`.
 - `.provide(fn)`: the gateways its handlers receive, picked from the facts.
 - `module("billing")`: the module's name, one kebab segment; wire names start with it.
-- `module.ts` holds only these decisions. `widgetarium generate` writes `generated/module.ts`, the runnable module: `export const billing = handledModule(definition, [named("charges.charge", charge), …])`, the definition handed every request, event and subscriber found in the package, each named.
+- `module.ts` holds only these decisions. `data-framework generate` writes `generated/module.ts`, the runnable module: `export const billing = handledModule(definition, [named("charges.charge", charge), …])`, the definition handed every request, event and subscriber found in the package, each named.
 - **Who may call is on the request.** No mark: only the same process, any module or view of that runtime. `.public()`: anyone, through guards, and it enters the contract. `.callableBy(otherModule, …)`: only those services. An event marked `.public()` enters the contract.
 
 **Re-reading: `invalidate`.** A command or a subscriber calls `invalidate(query, input?)` for each query its work made stale (like `revalidatePath` / `revalidateTag` in Next.js server actions, or `invalidateQueries` in TanStack's `onSuccess`). Invalidations apply only after a successful answer; a refused or failed call re-reads nothing, and a command that invalidates nothing re-reads nothing. Over the network the names ride in the answer (`invalidated: [...]`) and the client re-reads them.
@@ -103,11 +103,11 @@ flowchart TB
 
 ### Starting a module or a feature
 
-Always `widgetarium add module` and `widgetarium add feature` (in this repo `npm run widgetarium -- add …`), never by hand. The shapes they lay are the reference: replace the example data, keep the shape. What each lays is in [placement.md](placement.md#starting-a-module-or-a-feature).
+Always `data-framework add module` and `data-framework add feature` (in this repo `npm run data-framework -- add …`), never by hand. The shapes they lay are the reference: replace the example data, keep the shape. What each lays is in [placement.md](placement.md#starting-a-module-or-a-feature).
 
 ```sh
-widgetarium add module notes --on Device            # Server | Device | Anywhere; --in state for app state
-widgetarium add feature notes/tasks --command addTask
+data-framework add module notes --on Device            # Server | Device | Anywhere; --in state for app state
+data-framework add feature notes/tasks --command addTask
 ```
 
 `--query` and `--command` take camelCase names with no kind suffix; `--query tasks`, the feature's name, is the default, and both may be given.

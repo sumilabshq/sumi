@@ -30,7 +30,7 @@ const GENERATED_FOLDERS: readonly string[] = ["generated", path.join("src", "gen
 const CONTRACT_LIST_FILE = "sumi-contract.json";
 const SETTLE_MS = 150;
 const WATCHED_CHANGES: readonly WatchedChange[] = ["add", "change", "unlink"];
-const GENERATE_SCRIPT = "widgetarium";
+const GENERATE_SCRIPT = "data-framework";
 const REGENERATED = "[widgetarium] regenerated {folder} after {file} changed";
 const NOT_REGENERATED = "[widgetarium] generate refused {folder} after {file} changed:\n{said}";
 const NOT_JSON = "[widgetarium] {file} is not JSON, so regenerate on save skips it: {reason}";
@@ -191,7 +191,7 @@ function generateCommandIn(root: string, folder: string): GenerateCommand {
 
 	return {
 		command: "npx",
-		args: ["--no-install", "widgetarium", "generate", folder],
+		args: ["--no-install", "data-framework", "generate", folder],
 	};
 }
 

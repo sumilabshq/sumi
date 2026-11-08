@@ -4,7 +4,7 @@
 
 1. `USAGE.md`
 2. `DESIGN.md`
-3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `widgetarium system use sumi`; change parameters, never formulas.
+3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `data-framework system use sumi`; change parameters, never formulas.
 4. `sumi.css` — the studio's runtime names (`--sumi-*`); studio chrome paints with these only.
 5. `references/` — the approved brief and the canvas the system was written from.
 

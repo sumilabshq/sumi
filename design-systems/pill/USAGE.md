@@ -4,7 +4,7 @@
 
 1. `USAGE.md`
 2. `DESIGN.md`
-3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `widgetarium system use pill`; change parameters, never formulas.
+3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `data-framework system use pill`; change parameters, never formulas.
 4. `references/` 1–5, the screens the system was written from.
 
 ## Design Highlights

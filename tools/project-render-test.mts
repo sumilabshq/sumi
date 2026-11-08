@@ -355,7 +355,7 @@ const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "wg-project-render-"));
 try {
 	const runner = runnerWithTheCli(await packEngine(), scratch);
 	const app = path.join(scratch, APP);
-	const created = ran(scratch, path.join(runner, "node_modules/.bin/widgetarium"), [
+	const created = ran(scratch, path.join(runner, "node_modules/.bin/data-framework"), [
 		"create",
 		app,
 		"--engine",
@@ -363,7 +363,7 @@ try {
 		"--no-git",
 		"--no-install",
 	]);
-	if (!created.ok) throw new Error(`widgetarium create failed:\n${created.said}`);
+	if (!created.ok) throw new Error(`data-framework create failed:\n${created.said}`);
 	writeIn(app, SCHEMA_FILE, SCHEMA);
 	writeIn(app, HANDLER_FILE, HANDLER);
 	writeIn(app, WIDGET_FILE, WIDGET);

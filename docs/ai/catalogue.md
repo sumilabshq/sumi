@@ -7,9 +7,9 @@ ever lands over it.
 ## Finding a widget
 
 ```bash
-widgetarium catalogue search tasks by day
-widgetarium catalogue list
-widgetarium catalogue show @default/table
+data-framework catalogue search tasks by day
+data-framework catalogue list
+data-framework catalogue show @default/table
 ```
 
 `search` ranks by the words in a widget's id, title, keywords and description and leaves out what
@@ -27,8 +27,8 @@ in `widgetarium.json`, then the repository's `registry/` when the CLI runs insid
 ## Adding one
 
 ```bash
-widgetarium add @default/table
-widgetarium add @default/table --as order-table
+data-framework add @default/table
+data-framework add @default/table --as order-table
 ```
 
 It writes:

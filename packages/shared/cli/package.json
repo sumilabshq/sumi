@@ -1,14 +1,14 @@
 {
 	"name": "@widgetarium/cli",
 	"version": "0.1.0",
-	"description": "The widgetarium command: create, check, add and catalogue",
+	"description": "The data-framework command: create, check, add and catalogue",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"engines": {
 		"node": ">=20.12"
 	},
 	"bin": {
-		"widgetarium": "./dist/cli.js"
+		"data-framework": "./dist/cli.js"
 	},
 	"files": [
 		"dist",

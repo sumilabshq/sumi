@@ -25,7 +25,7 @@ const NOT_A_BLOCK = "ui/ holds only block folders, ui/<block>/";
 const NOT_UI_FILE = "a block folder holds only its .tsx and the .css it uses";
 const NOT_LIB_FILE = "lib/ holds only .ts files, no folder, no .tsx, no .css";
 const FOREIGN_LIB = "a feature's lib/ is its own; what two features use goes to shared/lib/";
-const NOT_GENERATED = "src/generated/ holds only what widgetarium generate writes, plugin.ts";
+const NOT_GENERATED = "src/generated/ holds only what data-framework generate writes, plugin.ts";
 
 export function layoutRefusalsOf(pluginsRoot: string): readonly string[] {
 	return readdirSync(pluginsRoot)

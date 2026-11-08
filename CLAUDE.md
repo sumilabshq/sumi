@@ -33,7 +33,7 @@ it. Nothing in host code names a plugin's module.
 **CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
 `plugins/<name>/` and nothing else: `src/plugin.ts` (always; only the `plugin()` definition, no helper,
 slot, schema or type), `src/slots.ts` (when it declares slots: the slots, their item schemas and types),
-`src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by `widgetarium generate`), every other file of `src/` placed as in a client package
+`src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by `data-framework generate`), every other file of `src/` placed as in a client package
 (`features/<feature>/ui/<block>/*.tsx` with the `.css` a block uses beside it, `features/<feature>/lib/*.ts`,
 `shared/ui/` and `shared/lib/` for what two features use, nothing else loose in `src/`, no feature importing
 another's `lib/`), and `data/<module>/` (when it owns modules: each a data module package). A module outside
@@ -99,7 +99,7 @@ packages/shared/plugin-framework FSL @widgetarium/plugin-framework: plugins, slo
 packages/shared/core     FSL  the widget engine (legacy)
 packages/shared/kit      MIT  everything drawn: TSX, one file per kit item
 packages/shared/behaviors     headless behaviors: drag, scroll, the Tauri store client
-packages/shared/cli      FSL  the `widgetarium` bin: generate, create, check, catalogue, add
+packages/shared/cli      FSL  the `data-framework` bin: generate, create, check, catalogue, add
 packages/shared/eslint-plugin the framework's lint rules
 packages/shared/vite     FSL  @widgetarium/vite: dev and build run the app, --mode studio the studio around it
 packages/shared/packs/*  MIT  widget query and command implementations (legacy)
@@ -155,7 +155,7 @@ approved brief is `design-systems/sumi/references/quiet-ui-brief.md`, and the bo
 When the person sends pictures and describes a design, write it as an OpenDesign package in
 `design-systems/<id>/` — `manifest.json`, `USAGE.md`, `DESIGN.md`, `tokens.css`, `preview/` and the
 pictures under `references/` — by the format in `design-catalogue/README.md`, and run
-`widgetarium system check <id>` (`npm run test:design-systems` checks every one). **The token contract is
+`data-framework system check <id>` (`npm run test:design-systems` checks every one). **The token contract is
 shadcn's names** (`packages/shared/kit/src/constants/token-contract.ts`): `tokens.css` declares a few numeric
 parameters and every colour as an `oklch()` formula of them, in `:root` and in `.dark, .theme-dark`, so
 `--hue` re-derives both themes; the kit reads those names and `--wg-kit-*` are aliases onto them. The

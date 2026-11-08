@@ -22,7 +22,7 @@ interface FeatureTarget {
 const TAKEN_FEATURE = "{folder}/features/{feature} already exists: pick another feature name";
 const TAKEN_FILE = "{file} already exists, and add feature never writes over a file: pick another feature name";
 const NO_PICKER =
-	"{file} is missing: add feature wires the gateway into the module's parts there, as widgetarium add module lays it";
+	"{file} is missing: add feature wires the gateway into the module's parts there, as data-framework add module lays it";
 const LOADER_RUN = "node --single-threaded --import ./tools/loader/register.mts";
 
 export async function runAddFeature(args: AddFeatureArgs, output: CliOutput, cwd: string): Promise<number> {

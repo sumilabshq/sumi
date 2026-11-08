@@ -4,7 +4,7 @@
 
 1. `USAGE.md`
 2. `DESIGN.md`, then `../minimal/DESIGN.md` for anything it leaves to its parent.
-3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `widgetarium system use minimal-landing`; change parameters, never formulas.
+3. `tokens.css` — copy it as the project's `src/styles/tokens.css` with `data-framework system use minimal-landing`; change parameters, never formulas.
 4. `references/`
 
 ## Design Highlights

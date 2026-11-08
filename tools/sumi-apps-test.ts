@@ -106,7 +106,7 @@ function registryChecks(): void {
 		folders,
 	);
 	check(
-		"the registry on disk is what widgetarium generate writes from apps/*",
+		"the registry on disk is what data-framework generate writes from apps/*",
 		appRegistryFilesOf(process.cwd()).filter(
 			({ entry, text }) => readFileSync(path.join(APP_REGISTRY_PACKAGE, entry), "utf8") !== text,
 		),

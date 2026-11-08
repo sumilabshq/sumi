@@ -111,7 +111,7 @@ Below 480px a card row stacks: the brand card on top, the contrast card under it
 
 ## Agent Prompt Guide
 
-Read `USAGE.md`, then this file, then `tokens.css`; copy `tokens.css` with `widgetarium system use pill` and change only `--hue`. For a chat, follow `references/4-messages.png` for turn shapes and `5-text.png` for answer text; for chrome, `1-loud.png` and `3-menus.png`. Design the product's structure first; these pictures show shapes, not screens.
+Read `USAGE.md`, then this file, then `tokens.css`; copy `tokens.css` with `data-framework system use pill` and change only `--hue`. For a chat, follow `references/4-messages.png` for turn shapes and `5-text.png` for answer text; for chrome, `1-loud.png` and `3-menus.png`. Design the product's structure first; these pictures show shapes, not screens.
 
 ## Colour algorithm
 

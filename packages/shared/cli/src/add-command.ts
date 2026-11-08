@@ -48,7 +48,7 @@ function reportOf(plan: AddPlan, libs: readonly LibWritten[], dependencies: read
 		...libs.map(({ file, outcome }) => `  lib ${file.at}: ${SAID_OF_LIB[outcome]}`),
 		...dependencies.map(dependencyLineOf),
 		`  origin ${plan.widgetFolder}/${ORIGIN_FILE}`,
-		...plan.entry.card.widgetDependencies.map((id) => `  it draws ${id}; add it too: widgetarium add ${id}`),
+		...plan.entry.card.widgetDependencies.map((id) => `  it draws ${id}; add it too: data-framework add ${id}`),
 		...NEXT_STEPS,
 	].join("\n");
 }
