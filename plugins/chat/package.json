@@ -1,7 +1,7 @@
 {
 	"name": "@sumi/chat-plugin",
 	"version": "0.1.0",
-	"description": "The chat: its page, the Ask composer, the assistant and questions modules, the Ask door of the command menu and its page",
+	"description": "The chat: its page, the Ask composer, the assistant module, the Ask door of the command menu and its page",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"exports": {
@@ -23,9 +23,7 @@
 		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/markdown": "0.1.0",
 		"@widgetarium/mascot": "0.1.0",
-		"@widgetarium/plugin-framework": "0.1.0",
-		"@widgetarium/questions": "0.1.0",
-		"@widgetarium/tasks": "0.1.0"
+		"@widgetarium/plugin-framework": "0.1.0"
 	},
 	"peerDependencies": {
 		"react": "^19.2.8",

@@ -16,10 +16,10 @@ import { fileSystem } from "../apps/tauri/capabilities/file-system/generated/mod
 import { NodeTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/node.gateway.ts";
 import { terminal as terminalModule } from "../apps/tauri/capabilities/terminal/generated/module.ts";
 import { MemoryProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/memory.gateway.ts";
-import { tasks } from "../packages/domain/tasks/generated/module.ts";
+import { tasks } from "../plugins/tasks/data/tasks/generated/module.ts";
 import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
 import { places } from "../plugins/apps/data/places/generated/module.ts";
-import { questions } from "../plugins/chat/data/questions/generated/module.ts";
+import { questions } from "../plugins/questions/data/questions/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
@@ -466,6 +466,10 @@ async function studioStarts(page: AskedPage): Promise<void> {
 		STEP_MS,
 	);
 	check("the studio page started", isStarted, true);
+
+	if (!isStarted) {
+		console.log("the studio page failed:", await page.ask(`document.getElementById("boom").textContent`));
+	}
 }
 
 async function tasksChecks(page: AskedPage): Promise<void> {

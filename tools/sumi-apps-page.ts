@@ -16,7 +16,8 @@ import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { places } from "../plugins/apps/data/places/generated/contract.ts";
-import { tasks } from "../packages/domain/tasks/generated/contract.ts";
+import { tasks } from "../plugins/tasks/data/tasks/generated/contract.ts";
+import { questions } from "../plugins/questions/data/questions/generated/contract.ts";
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.ts";
 import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -95,7 +96,7 @@ const studioApp = runtime()
 		PluginAppsModule,
 		...PLUGINS.windowModules.map((windowModule) => windowModule.moduleOf({})),
 	)
-	.imports(places({ over: core }), tasks({ over: core }))
+	.imports(places({ over: core }), tasks({ over: core }), questions({ over: core }))
 	.start({
 		platform: "browser",
 		scope: {

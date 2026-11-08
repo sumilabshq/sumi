@@ -4,8 +4,10 @@ import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app
 import { appsFilledBy } from "./apps-filled-fixture.ts";
 import { chat } from "../plugins/chat/src/index.ts";
 import { main } from "../plugins/main/src/index.ts";
+import { mcp } from "../plugins/mcp/src/index.ts";
+import { tasks } from "../plugins/tasks/src/index.ts";
 
-export const BUILT_IN_PLACED_APPS = appsFilledBy([main, chat]).map(placedAppOf);
+export const BUILT_IN_PLACED_APPS = appsFilledBy([main, chat, mcp, tasks]).map(placedAppOf);
 
 export const BUILT_IN_APPS = placedAppsOf(BUILT_IN_PLACED_APPS);
 

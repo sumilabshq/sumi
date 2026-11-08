@@ -1,13 +1,22 @@
 import { MemoryPluginStateStore, runtime } from "@widgetarium/plugin-framework";
 import type { PluginStateStore, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
 import type { ComponentType } from "react";
-import type { DeviceModule, ModuleContract, Runtime, ServerRuns, ServerSideModule } from "@widgetarium/data-framework";
+import type {
+	DeviceModule,
+	McpServer,
+	ModuleContract,
+	Runtime,
+	ServerRuns,
+	ServerSideModule,
+} from "@widgetarium/data-framework";
 import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { main } from "@sumi/main-plugin";
 import { mcp } from "@sumi/mcp-plugin";
-import { backend, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
+import { questions } from "@sumi/questions-plugin";
+import { tasks } from "@sumi/tasks-plugin";
+import { agents, backend, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
 import type {
 	BackendOffers,
 	DrawnTabPage,
@@ -17,7 +26,7 @@ import type {
 	WindowProviderProps,
 	WindowServerOffers,
 } from "@sumi/sumi-host-plugin";
-import { backendFor, emptyHostRegistrations, shellFor, windowsFor } from "./host-services.js";
+import { agentsFor, backendFor, emptyHostRegistrations, shellFor, windowsFor } from "./host-services.js";
 import { browserPage } from "@sumi/browser-page-plugin";
 import { codeViewer } from "@sumi/code-viewer-plugin";
 import { files } from "@sumi/files-plugin";
@@ -67,6 +76,10 @@ export interface WindowServerModule {
 	moduleOf(offers: WindowServerOffers): ServerSideModule;
 }
 
+export interface AgentMcpServer {
+	serve(offers: WindowOffers): McpServer;
+}
+
 export interface PluginTabPage {
 	readonly pluginId: string;
 	readonly drawn: DrawnTabPage;
@@ -81,6 +94,7 @@ export interface ResolvedPlugins {
 	readonly frameModules: readonly FrameModule[];
 	readonly windowServerModules: readonly WindowServerModule[];
 	readonly servers: readonly HostServer[];
+	readonly agentMcpServers: readonly AgentMcpServer[];
 	readonly startedIds: readonly string[];
 	readonly refusals: readonly string[];
 	readonly notes: readonly string[];
@@ -95,6 +109,8 @@ const INSTALLED_PLUGINS = [
 	chat,
 	main,
 	mcp,
+	questions,
+	tasks,
 	terminal,
 	browserPage,
 	files,
@@ -105,7 +121,7 @@ const INSTALLED_PLUGINS = [
 	htmlViewer,
 	git,
 ];
-const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, mcp];
+const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, mcp, questions, tasks];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
@@ -135,6 +151,7 @@ export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
 		.provide(backend, backendFor(registered))
 		.provide(windows, windowsFor(registered))
 		.provide(shell, shellFor(registered))
+		.provide(agents, agentsFor(registered))
 		.start();
 	return {
 		backgroundModules: registered.backgroundModules,
@@ -145,6 +162,7 @@ export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
 		frameModules: registered.frameModules,
 		windowServerModules: registered.windowServerModules,
 		servers: registered.servers,
+		agentMcpServers: registered.agentMcpServers,
 		startedIds: started.startedIds,
 		refusals: started.refusals,
 		notes: started.notes,

@@ -2,7 +2,7 @@ import { MemoryPluginStateStore, plugin, runtime } from "../packages/shared/plug
 import type { Plugin } from "../packages/shared/plugin-framework/src/index.ts";
 import type { FilledApp } from "../plugins/apps/src/index.ts";
 import { commandMenu } from "../plugins/command-menu/src/index.ts";
-import { backend, shell, windows } from "../plugins/sumi-host/src/index.ts";
+import { agents, backend, shell, windows } from "../plugins/sumi-host/src/index.ts";
 
 function ignored(): void {
 	return undefined;
@@ -15,6 +15,7 @@ function startWithIgnoredServices(plugins: readonly Plugin[]): void {
 		.provide(backend, () => ({ module: ignored, moduleOf: ignored, server: ignored }))
 		.provide(windows, () => ({ module: ignored, moduleOf: ignored, serverModule: ignored }))
 		.provide(shell, () => ({ tabPage: ignored, layer: ignored, provider: ignored, frameModule: ignored }))
+		.provide(agents, () => ({ mcpServer: ignored }))
 		.start();
 }
 

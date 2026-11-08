@@ -3271,10 +3271,6 @@
 	margin-inline: auto;
 }
 
-.wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-live {
-	bottom: calc(var(--wg-studio-ai-dock-height, 0px) - var(--wg-studio-ai-end-room));
-}
-
 .wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-to-end {
 	bottom: calc(var(--wg-studio-ai-dock-height, 0px) + 8px);
 }

@@ -83,16 +83,18 @@ apps/tauri/capabilities/* FSL the modules only the host runs on the machine: ter
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
-plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's services (backend, windows, shell), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
+plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's services (backend, windows, shell, agents), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
 plugins/apps             FSL  @sumi/apps-plugin: API app(entry), its modules (plugins/apps/data/apps, @sumi/apps; plugins/apps/data/places, @widgetarium/places: tabs, windows and history, configured with each app's declared tab rules; plugins/apps/data/app-host, @widgetarium/app-host: a window's tabs, essentials, groups and splits, run in each window through windows.moduleOf) and the app tab page
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, added through apps
 plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, added through apps, and its module (plugins/browser-page/data/web-page, @widgetarium/web-page) served to every frame through shell.frameModule
 plugins/command-menu     FSL  @sumi/command-menu-plugin: API door, page, rowSource; its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
-plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/chat/data/questions, plugins/chat/data/mascot, plugins/chat/data/chat-tabs: the chat list and which chat a new or empty pane opens), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
-plugins/mcp              FSL  @sumi/mcp-plugin: API tools(modules), served to agents over MCP by the mcp backend server, and its module (plugins/mcp/data/mcp, @sumi/mcp), the one list of MCP servers
+plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/questions/data/questions, plugins/chat/data/mascot, plugins/chat/data/chat-tabs: the chat list and which chat a new or empty pane opens), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
+plugins/mcp              FSL  @sumi/mcp-plugin: API server({ name, modules }), each plugin's own MCP server, run in each window and handed to agents through agents.mcpServer, and its module (plugins/mcp/data/mcp, @sumi/mcp) listing them
+plugins/questions        FSL  @sumi/questions-plugin: the questions module (plugins/questions/data/questions), the dock drawn in the chat through a slot, the ask tools (plugins/questions/data/ask) as the questions MCP server
+plugins/tasks            FSL  @sumi/tasks-plugin: the tasks module (plugins/tasks/data/tasks), the Tasks app, the chat's tasks UI through slots, the task tools (plugins/tasks/data/task-work) as the tasks MCP server
       ↓
-packages/domain/*             business data modules: workspaces, browser, canvas, tasks, fixture-billing
+packages/domain/*             business data modules: workspaces, browser, canvas, fixture-billing
 packages/state/*              app-state data modules: layout, appearance
       ↓
 packages/shared/data-framework FSL @widgetarium/data-framework: requests, modules, mediator, transports, hooks

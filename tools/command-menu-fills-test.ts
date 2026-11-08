@@ -2,7 +2,8 @@ import { apps } from "@sumi/apps-plugin";
 import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { chat } from "@sumi/chat-plugin";
-import { backend, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
+import { agents, backend, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
+import { mcp } from "@sumi/mcp-plugin";
 import type { DeviceModule } from "@widgetarium/data-framework";
 import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
@@ -69,9 +70,9 @@ const probe = plugin("probe")
 	});
 
 const windowModules = new Map<string, DeviceModule>();
-const ENABLED = [sumiHost.id, apps.id, commandMenu.id, chat.id, probe.id];
+const ENABLED = [sumiHost.id, mcp.id, apps.id, commandMenu.id, chat.id, probe.id];
 const started = pluginRuntime()
-	.builtInPlugins(sumiHost, apps, commandMenu, chat, probe)
+	.builtInPlugins(sumiHost, mcp, apps, commandMenu, chat, probe)
 	.state(new MemoryPluginStateStore(ENABLED))
 	.provide(backend, () => ({
 		module: () => undefined,
@@ -90,6 +91,9 @@ const started = pluginRuntime()
 		layer: () => undefined,
 		provider: () => undefined,
 		frameModule: () => undefined,
+	}))
+	.provide(agents, () => ({
+		mcpServer: () => undefined,
 	}))
 	.start();
 const menuModule = windowModules.get(commandMenu.id);

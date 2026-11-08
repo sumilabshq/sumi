@@ -13,6 +13,7 @@ const SOURCES = [
 	"apps/studio/src/canvas",
 	"apps/studio/src/browser",
 	"plugins/chat/src",
+	"plugins/questions/src",
 ];
 const SCANNED = /\.(ts|tsx)$/;
 const CANDIDATE = /[^\s"'`]+/g;
@@ -24,11 +25,13 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@widgetarium/studio/mascot.css": "apps/studio/src/features/mascot/mascot.css",
 	"@widgetarium/studio/workspaces.css": "apps/studio/src/features/workspaces/workspaces.css",
 	"@widgetarium/studio/shell.css": "apps/studio/src/features/frame/shell.css",
-	"@widgetarium/studio/command-menu.css": "plugins/command-menu/src/features/command-menu/ui/command-menu/command-menu.css",
+	"@widgetarium/studio/command-menu.css":
+		"plugins/command-menu/src/features/command-menu/ui/command-menu/command-menu.css",
 	"@sumi/chat-plugin/assistant.css": "plugins/chat/src/features/assistant/ui/assistant-panel/assistant.css",
-	"@sumi/chat-plugin/assistant-utilities.css": "plugins/chat/src/features/assistant/ui/assistant-panel/assistant-utilities.css",
+	"@sumi/chat-plugin/assistant-utilities.css":
+		"plugins/chat/src/features/assistant/ui/assistant-panel/assistant-utilities.css",
 	"@sumi/chat-plugin/queue.css": "plugins/chat/src/features/assistant/ui/queue/queue.css",
-	"@sumi/chat-plugin/questions.css": "plugins/chat/src/features/questions/ui/questions-dock/questions.css",
+	"@sumi/questions-plugin/questions.css": "plugins/questions/src/features/questions/ui/questions-dock/questions.css",
 	"@sumi/chat-plugin/chat-page.css": "plugins/chat/src/features/chat-page/ui/chat-page/chat-page.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
@@ -44,7 +47,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/chat-plugin/assistant.css";
 @import "@sumi/chat-plugin/assistant-utilities.css";
 @import "@sumi/chat-plugin/queue.css";
-@import "@sumi/chat-plugin/questions.css";
+@import "@sumi/questions-plugin/questions.css";
 @import "@sumi/chat-plugin/chat-page.css";
 `;
 
