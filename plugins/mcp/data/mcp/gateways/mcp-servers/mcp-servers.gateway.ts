@@ -1,5 +1,5 @@
-import type { ContractShape } from "@widgetarium/data-framework";
+import type { McpServer } from "@widgetarium/data-framework";
 
 export abstract class McpServersGateway {
-	abstract servedContracts(): readonly ContractShape[];
+	abstract servers(): readonly McpServer[];
 }

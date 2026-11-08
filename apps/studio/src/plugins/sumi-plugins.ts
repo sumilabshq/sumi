@@ -2,7 +2,7 @@ import { MemoryPluginStateStore, fillKeyOf, runtime } from "@widgetarium/plugin-
 import type { PluginRuntime, PluginStateStore, ShownFill, SlotShape, SumiProfile } from "@widgetarium/plugin-framework";
 import type { ComponentType } from "react";
 import { prefixedModule } from "@widgetarium/data-framework";
-import type { DeviceModule, ModuleContract, ServerRuns, ServerSideModule } from "@widgetarium/data-framework";
+import type { DeviceModule, ModuleContract, Runtime, ServerRuns, ServerSideModule } from "@widgetarium/data-framework";
 import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
@@ -25,7 +25,6 @@ import { backendFor, emptyHostRegistrations, shellFor, windowsFor } from "./host
 import type {
 	CoreOffers,
 	DrawnTabPage,
-	ModuleExposure,
 	FrameServing,
 	WindowModuleOffers,
 	WindowOffers,
@@ -47,8 +46,14 @@ export type HostOffers = Omit<CoreOffers, "fillsOf">;
 export interface BackgroundModule {
 	readonly contract: ModuleContract<ServerRuns>;
 	readonly prefix: string | null;
-	readonly exposes: readonly ModuleExposure[];
 	moduleOf(offers: HostOffers): ServerSideModule;
+}
+
+export interface HostServer {
+	readonly name: string;
+	readonly prefix: string | null;
+	readonly modules: readonly ServerSideModule[];
+	serve(runtime: Runtime): void;
 }
 
 export interface WindowLayer {
@@ -85,6 +90,7 @@ export interface ResolvedPlugins {
 	readonly tabPages: readonly DrawnTabPage[];
 	readonly frameModules: readonly FrameModule[];
 	readonly windowServerModules: readonly WindowServerModule[];
+	readonly servers: readonly HostServer[];
 	readonly startedIds: readonly string[];
 	readonly refusals: readonly string[];
 	readonly notes: readonly string[];
@@ -168,6 +174,7 @@ export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
 		tabPages: tabPages.map(({ drawn }) => drawn),
 		frameModules: [...frameModulesOf(started), ...registered.frameModules],
 		windowServerModules: [...windowServerModulesOf(started), ...registered.windowServerModules],
+		servers: registered.servers,
 		startedIds: started.startedIds,
 		refusals: started.refusals,
 		notes: started.notes,
@@ -206,7 +213,6 @@ function backgroundModulesOf(started: PluginRuntime): readonly BackgroundModule[
 					{
 						contract: parsed.data.contract,
 						prefix,
-						exposes: parsed.data.exposes,
 						moduleOf: (hostOffers: HostOffers) =>
 							prefixedModule(parsed.data.module({ ...hostOffers, ...offers }), prefix),
 					},

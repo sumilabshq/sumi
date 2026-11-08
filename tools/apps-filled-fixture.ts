@@ -12,7 +12,7 @@ function startWithIgnoredServices(plugins: readonly Plugin[]): void {
 	runtime()
 		.builtInPlugins(...plugins)
 		.state(new MemoryPluginStateStore(plugins.map(({ id }) => id)))
-		.provide(backend, () => ({ module: ignored, moduleOf: ignored }))
+		.provide(backend, () => ({ module: ignored, moduleOf: ignored, server: ignored }))
 		.provide(windows, () => ({ module: ignored, moduleOf: ignored, serverModule: ignored }))
 		.provide(shell, () => ({ tabPage: ignored, layer: ignored, provider: ignored, frameModule: ignored }))
 		.start();

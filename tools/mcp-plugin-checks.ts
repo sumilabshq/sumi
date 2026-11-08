@@ -1,27 +1,24 @@
-import { runtime } from "@widgetarium/data-framework";
+import { localTransport, runtime } from "@widgetarium/data-framework";
 import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widgetarium/plugin-framework";
+import type { Plugin } from "@widgetarium/plugin-framework";
 import { questions } from "@widgetarium/questions/contract";
 import { questions as questionsModule } from "@widgetarium/questions/implementation";
 import { mcp as mcpContract } from "@sumi/mcp/contract";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { mcp } from "../plugins/mcp/src/index.ts";
-import { BackgroundModuleSchema, sumiHost } from "../plugins/sumi-host/src/index.ts";
+import { backend } from "../plugins/sumi-host/src/index.ts";
+import { backendFor, emptyHostRegistrations } from "../apps/studio/src/plugins/host-services.ts";
+import type { HostRegistrations } from "../apps/studio/src/plugins/host-services.ts";
+import { startBackendServers } from "../apps/studio/src/tabs/backend-servers.ts";
 import { FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
 
-const probe = plugin("probe")
-	.require(mcp)
-	.fill(
-		mcp.mcpModules.add({
-			id: "questions",
-			module: () => questionsModule,
-			contract: questions,
-		}),
-	);
-const started = pluginRuntime()
-	.builtInPlugins(sumiHost, mcp, probe)
-	.state(new MemoryPluginStateStore(["sumi-host", "mcp", "probe"]))
-	.start();
+interface StartedHost {
+	readonly registered: HostRegistrations;
+	readonly refusals: readonly string[];
+	readonly core: ReturnType<ReturnType<typeof runtime>["start"]>;
+}
+
 const offers = {
 	store: new StoreClient(new FakeStore().invoke),
 	file: {
@@ -29,49 +26,80 @@ const offers = {
 		write: () => Promise.resolve(),
 	},
 };
-const background = started.fillsOf(sumiHost.backgroundModules).map((fill) => ({
-	pluginId: fill.pluginId,
-	item: BackgroundModuleSchema.parse(fill.item),
-}));
 
-check("the plugins start with no refusal", started.refusals, []);
-check(
-	"mcp.mcpModules.add puts the module in the background modules, filled by the mcp plugin",
-	background.map(({ pluginId, item }) => [pluginId, item.contract.name, item.exposes.length]),
-	[
-		["mcp", "mcp", 0],
-		["mcp", "questions", 1],
-	],
-);
-
-const core = runtime()
-	.modules(...background.map(({ pluginId, item }) => item.module({ ...offers, ...started.readerOf(pluginId) })))
-	.start({
-		platform: "server",
-		env: {},
-		scope: { workspaceId: "mcp-plugin-workspace" },
+function startedHost(plugins: readonly Plugin[]): StartedHost {
+	const registered = emptyHostRegistrations();
+	const started = pluginRuntime()
+		.builtInPlugins(...plugins)
+		.state(new MemoryPluginStateStore(plugins.map(({ id }) => id)))
+		.provide(backend, backendFor(registered))
+		.start();
+	const own = localTransport();
+	const core = runtime()
+		.modules(...registered.backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
+		.start({
+			platform: "server",
+			env: {},
+			scope: { workspaceId: "mcp-plugin-workspace" },
+		});
+	own.serve(core);
+	startBackendServers({
+		workspaceId: "mcp-plugin-workspace",
+		core: own,
+		backgroundModules: registered.backgroundModules,
+		servers: registered.servers,
 	});
-const exposures = background.flatMap(({ item }) =>
-	item.exposes.map((expose) => () =>
-		expose({
-			runtime: core,
-			module: item.contract.name,
-		}),
-	),
-);
-exposures.forEach((expose) => expose());
-check("serveMcp mounts the questions module over MCP, and only it", exposures.length, 1);
+	return {
+		registered,
+		refusals: started.refusals,
+		core,
+	};
+}
 
-const listed = await core.send(mcpContract.servers.mcpServers);
+const probe = plugin("probe")
+	.require(mcp)
+	.apply((app) => {
+		app.use(mcp).tools([questionsModule]);
+	});
+const host = startedHost([mcp, probe]);
+
+check("the plugins start with no refusal", host.refusals, []);
 check(
-	"the mcp module lists every module of its slot as a server, with its tools",
+	"the mcp plugin puts its listing module in the backend and asks for one server holding the tools",
+	[
+		host.registered.backgroundModules.map(({ contract }) => contract.name),
+		host.registered.servers.map(({ name, modules }) => [name, modules.length]),
+	],
+	[["mcp"], [["mcp", 1]]],
+);
+
+const listed = await host.core.send(mcpContract.servers.mcpServers);
+check(
+	"the mcp module lists the running server with the tools of every module in it",
 	listed.ok ? listed.output.map(({ name, kind, tools }) => [name, kind, tools.length > 0]) : listed.reason,
-	[["questions", "module", true]],
+	[["mcp", "module", true]],
 );
 check(
-	"a listed tool is named by its path in the module",
-	listed.ok ? listed.output[0]?.tools.some(({ name }) => name === "dock_chat-questions") : listed.reason,
+	"a tool is named by its module and its path",
+	listed.ok ? listed.output[0]?.tools.some(({ name }) => name === "questions_dock_chat-questions") : listed.reason,
 	true,
+);
+
+const twice = plugin("twice")
+	.require(backend, mcp)
+	.apply((app) => {
+		app.use(backend).module(questionsModule, questions);
+		app.use(mcp).tools([questionsModule]);
+	});
+const quiet = console.error;
+console.error = () => undefined;
+const doubled = startedHost([mcp, twice]);
+console.error = quiet;
+const doubledListing = await doubled.core.send(mcpContract.servers.mcpServers);
+check(
+	"a module both in the backend and in a server is refused for the server: one owner; the backend still answers",
+	doubledListing.ok ? doubledListing.output.length : doubledListing.reason,
+	0,
 );
 
 if (tally.failed > 0) {

@@ -89,7 +89,6 @@ export type { RelayPortOptions, ServePortOptions } from "./message-port-transpor
 export { FrameCommandKeySchema } from "./frame-command-keys";
 export { mcpServerOf } from "./mcp-server";
 export type { McpReply, McpServer } from "./mcp-server";
-export { mcpToolsOf } from "./mcp-tools";
 export type { McpTool } from "./mcp-tools";
 export { orpcTransport } from "./wire-client";
 export { wireAnswerOf } from "./wire";

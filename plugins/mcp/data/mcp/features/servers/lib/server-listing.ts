@@ -1,14 +1,13 @@
-import { mcpToolsOf } from "@widgetarium/data-framework";
-import type { ContractShape } from "@widgetarium/data-framework";
+import type { McpServer } from "@widgetarium/data-framework";
 import type { McpServerListing } from "../../../shared/schema/mcp-server.schema.js";
 
-export function serverListingOf(contract: ContractShape): McpServerListing {
+export function serverListingOf({ name, tools }: McpServer): McpServerListing {
 	return {
-		name: contract.name,
+		name,
 		kind: "module",
-		tools: mcpToolsOf(contract).map(({ name, description }) => ({
-			name,
-			description: description ?? null,
+		tools: tools.map((tool) => ({
+			name: tool.name,
+			description: tool.description ?? null,
 		})),
 	};
 }

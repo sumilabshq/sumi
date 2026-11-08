@@ -11,9 +11,6 @@ import { terminal } from "@widgetarium/terminal/implementation";
 import type { ServerSideModule } from "@widgetarium/data-framework";
 import { AppsSchema } from "@sumi/apps/contract";
 import { apps as appsModule } from "../plugins/apps/data/apps/generated/module.ts";
-import { apps } from "../plugins/apps/src/index.ts";
-import { chat } from "../plugins/chat/src/index.ts";
-import { main } from "../plugins/main/src/index.ts";
 import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
 import { localTransport } from "@widgetarium/data-framework";
 import { MemoryPluginStateStore, PLUGIN_STATE_FILE } from "@widgetarium/plugin-framework";
@@ -143,14 +140,14 @@ check(
 	[fileSystem.definition.name, terminal.definition.name],
 );
 check(
-	"the background modules slot holds the apps plugin's places and apps, the chat plugin's questions, the old app's tasks and the mcp plugin's servers, none of the host's",
+	"the backend holds the apps plugin's places and apps, the chat plugin's questions, the old app's tasks and the mcp plugin's server list, none of the host's",
 	resolved.backgroundModules.map(({ contract }) => contract.name),
 	[
-		mcpModule.definition.name,
 		places.definition.name,
 		appsModule.definition.name,
 		questions.definition.name,
 		tasks.definition.name,
+		mcpModule.definition.name,
 	],
 );
 check(

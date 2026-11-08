@@ -76,6 +76,7 @@ const started = pluginRuntime()
 	.provide(backend, () => ({
 		module: () => undefined,
 		moduleOf: () => undefined,
+		server: () => undefined,
 	}))
 	.provide(windows, ({ pluginId }) => ({
 		module: (module) => {
