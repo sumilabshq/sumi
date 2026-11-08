@@ -15,6 +15,7 @@ import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/mem
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import { NodeTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/node.gateway.ts";
+import { NodeProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/node.gateway.ts";
 import { TerminalModule } from "../apps/tauri/capabilities/terminal/module.ts";
 import { paged, waitUntil } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -32,7 +33,7 @@ const served = dataFrameworkMiddleware(
 	runtime()
 		.modules(
 			FileSystemModule({ injects: { files: new NodeFilesGateway(appData, "contract-frame") } }),
-			TerminalModule({ injects: { sessions: terminal } }),
+			TerminalModule({ injects: { sessions: terminal, programs: new NodeProgramsGateway() } }),
 			PlacesModule({
 				injects: {
 					placedApps: builtInPlacedApps(),

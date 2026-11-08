@@ -1,3 +1,4 @@
+use super::program_run;
 use super::studio_caller::refuse_foreign_caller;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -15,6 +16,8 @@ use tauri::plugin::{Builder, TauriPlugin};
 use tauri::Wry;
 
 pub const PLUGIN_NAME: &str = "terminal";
+
+const RUN: &str = "run";
 
 const DEFAULT_SHELL: &str = "/bin/zsh";
 const DEFAULT_LANG: &str = "en_US.UTF-8";
@@ -245,9 +248,36 @@ fn answered(invoke: &Invoke<Wry>) -> Result<Value, String> {
     }
 }
 
+fn run_input_of(message: &InvokeMessage<Wry>) -> Result<program_run::RunInput, String> {
+    let InvokeBody::Json(args) = message.payload() else { return Err(MISSING_ARGUMENT.replace("{name}", "folder")) };
+    serde_json::from_value(args.clone()).map_err(|error| format!("The terminal run call is malformed: {error}"))
+}
+
+fn run_on_thread(invoke: Invoke<Wry>) {
+    let Invoke { message, resolver, .. } = invoke;
+
+    if let Err(refused) = refuse_foreign_caller(message.webview().label()) {
+        resolver.reject(refused);
+        return;
+    }
+
+    let input = run_input_of(&message);
+    std::thread::spawn(move || {
+        let answer = input
+            .and_then(|input| program_run::run(&input))
+            .and_then(|output| serde_json::to_value(output).map_err(|error| error.to_string()));
+        resolver.respond(answer.map_err(InvokeError::from));
+    });
+}
+
 pub fn init() -> TauriPlugin<Wry> {
     Builder::new(PLUGIN_NAME)
         .invoke_handler(|invoke| {
+            if invoke.message.command() == RUN {
+                run_on_thread(invoke);
+                return true;
+            }
+
             let answer = answered(&invoke);
             invoke.resolver.respond(answer.map_err(InvokeError::from));
             true

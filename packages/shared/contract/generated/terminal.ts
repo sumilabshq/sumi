@@ -34,6 +34,22 @@ export const TerminalOutputSchema = z.object({
 
 export type TerminalOutput = z.infer<typeof TerminalOutputSchema>;
 
+export const RunProgramInputSchema = z.object({
+	folder: z.string().min(1).max(4096).startsWith("/"),
+	program: z.string().min(1).max(256),
+	args: z.array(z.string().max(65536)).max(128),
+});
+
+export type RunProgramInput = z.infer<typeof RunProgramInputSchema>;
+
+export const ProgramOutputSchema = z.object({
+	code: z.number().int(),
+	out: z.string(),
+	err: z.string(),
+});
+
+export type ProgramOutput = z.infer<typeof ProgramOutputSchema>;
+
 export const TerminalOutputQuery = query("terminal/terminal-output")
 	.public()
 	.input(TerminalSessionSchema)
@@ -50,5 +66,10 @@ export const SendTerminalCommand = command("terminal/send-terminal")
 	.public()
 	.input(SendTerminalInputSchema)
 	.idempotencyKey(PerCall);
+export const RunProgramCommand = command("terminal/run-program")
+	.public()
+	.input(RunProgramInputSchema)
+	.output(ProgramOutputSchema)
+	.idempotencyKey(PerCall);
 
-export const TerminalModule = moduleContract("terminal", Server, [TerminalOutputQuery, ResizeTerminalCommand, TypeTerminalCommand, SendTerminalCommand]);
+export const TerminalModule = moduleContract("terminal", Server, [TerminalOutputQuery, ResizeTerminalCommand, TypeTerminalCommand, SendTerminalCommand, RunProgramCommand]);

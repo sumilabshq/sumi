@@ -72,7 +72,7 @@ const STUDIO_LOG_COMMANDS: &[&str] = &["line"];
 
 const AGENT_COMMANDS: &[&str] = &["open_channel", "answer"];
 
-const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close"];
+const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close", "run"];
 
 const FILES_COMMANDS: &[&str] =
     &[
