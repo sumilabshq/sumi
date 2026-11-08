@@ -288,13 +288,14 @@ const api = runtime().modules(billing, users).start({ platform: "server", env: p
 const http = dataFrameworkMiddleware(api, { authenticate });
 ```
 
-| Adapter                                                         | Exposes the runtime to                                                            |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `<RuntimeProvider runtime={…}>`                                 | views in the same process (`useQuery`, `useCommand`); no guard, no user           |
-| `dataFrameworkMiddleware(runtime, { authenticate? })`           | HTTP: a Hono app answering `/rpc/*` and the changes stream at `/rpc-changes`      |
-| `servePort(runtime, port, { authenticate?, headers? })`         | a page over a `MessagePort` ([The frame transport](#the-frame-transport))         |
-| `local.serve(runtime, { authenticate? })` on `localTransport()` | other runtimes of the same process, importing over that transport                 |
-| `runtime.expose({ adapter, authenticate? })`                    | an adapter a host writes itself (the core's IPC): `{ answer, changes, requests }` |
+| Adapter                                                         | Exposes the runtime to                                                                                                                                                                                                                                           |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<RuntimeProvider runtime={…}>`                                 | views in the same process (`useQuery`, `useCommand`); no guard, no user                                                                                                                                                                                          |
+| `dataFrameworkMiddleware(runtime, { authenticate? })`           | HTTP: a Hono app answering `/rpc/*` and the changes stream at `/rpc-changes`                                                                                                                                                                                     |
+| `servePort(runtime, port, { authenticate?, headers? })`         | a page over a `MessagePort` ([The frame transport](#the-frame-transport))                                                                                                                                                                                        |
+| `local.serve(runtime, { authenticate? })` on `localTransport()` | other runtimes of the same process, importing over that transport                                                                                                                                                                                                |
+| `runtime.expose({ adapter, authenticate?, module? })`           | an adapter a host writes itself (the core's IPC): `{ answer, changes, requests }`; with `module`, only that module's requests are mounted and answered                                                                                                           |
+| `mcpServerOf(runtime, { module })`                              | MCP clients (agents): one module's `.public()` requests as tools (path dots → `_`, `metadata.description`, the input's JSON schema, a non-object input wrapped in `{ input }`); `answer(message)` replies to `initialize`, `ping`, `tools/list` and `tools/call` |
 
 - `.modules(...)` take the runnable module from `<package>/implementation`, any placement. `start({ platform: "server" })` refuses a `Device` module; any other platform runs all three.
 - `.imports(...)` take `Server` and `Anywhere` modules, by the descriptor in their `"./contract"` entry, called with a transport: `billing({ over: transport })`. Only those two are callable (a `Device` module is a type error, and refused where it is called). No server code reaches the bundle.
