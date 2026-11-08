@@ -1,10 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { PickFolderCommand } from "@sumi/contract";
 import type { RepoRow } from "@sumi/git";
-import { useCommand } from "@widgetarium/data-framework";
 import { LAST_COMMIT } from "../../lib/git-address.js";
 import type { GitAddress } from "../../lib/git-address.js";
+import { useOpensPickedFolder } from "../../lib/use-opens-picked-folder.js";
 import { Glyph } from "../glyph/glyph.js";
 
 export interface NoRepoProps {
@@ -15,10 +14,9 @@ export interface NoRepoProps {
 }
 
 const INSIDE = "Inside this folder";
-const OPEN_FOLDER = "Open folder…";
+const OPEN_FOLDER = "Open folder";
 
 export function NoRepo({ title, said, repos, go }: NoRepoProps): ReactElement {
-	const pickFolder = useCommand(PickFolderCommand);
 	const open = (folder: string): void =>
 		go({
 			folder,
@@ -26,15 +24,7 @@ export function NoRepo({ title, said, repos, go }: NoRepoProps): ReactElement {
 			base: LAST_COMMIT,
 			only: null,
 		});
-	const openPicked = async (): Promise<void> => {
-		const answer = await pickFolder.run();
-
-		if (!answer.ok || answer.output.path === null) {
-			return;
-		}
-
-		open(answer.output.path);
-	};
+	const openPicked = useOpensPickedFolder(open);
 	return (
 		<section className="wg-git-empty">
 			<div>

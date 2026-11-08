@@ -1,9 +1,11 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { NearbyReposQuery } from "@sumi/git";
+import { PopoverSeparator } from "@widgetarium/kit";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { useGitPage } from "../../lib/git-page-context.js";
 import { fuzzyFiltered } from "../../lib/fuzzy-rank.js";
+import { useOpensPickedFolder } from "../../lib/use-opens-picked-folder.js";
 import { GitNote } from "../git-note/git-note.js";
 import { MenuRow } from "../menu-row/menu-row.js";
 import { MenuSection } from "../menu-section/menu-section.js";
@@ -14,10 +16,18 @@ export interface MenuProps {
 }
 
 const IN_FOLDER = "In {folder}";
+const OPEN_FOLDER = "Open folder";
 
 export function RepoMenu({ filter, close }: MenuProps): ReactElement | null {
 	const page = useGitPage();
 	const nearby = useOptionalQuery(NearbyReposQuery, { root: page.root });
+	const openPicked = useOpensPickedFolder((folder) =>
+		page.go({
+			folder,
+			head: null,
+			only: null,
+		}),
+	);
 
 	if (nearby.failure !== null) {
 		return <GitNote said={nearby.failure} />;
@@ -28,8 +38,9 @@ export function RepoMenu({ filter, close }: MenuProps): ReactElement | null {
 	}
 
 	return (
-		<MenuSection label={IN_FOLDER.replace("{folder}", nearby.data.parent)} isShown hasRule={false}>
-			{fuzzyFiltered(nearby.data.repos, filter, ({ name }) => name).map((repo) => (
+		<Fragment>
+			<MenuSection label={IN_FOLDER.replace("{folder}", nearby.data.parent)} isShown hasRule={false}>
+				{fuzzyFiltered(nearby.data.repos, filter, ({ name }) => name).map((repo) => (
 					<MenuRow
 						key={repo.path}
 						glyph="folder"
@@ -51,6 +62,17 @@ export function RepoMenu({ filter, close }: MenuProps): ReactElement | null {
 						}}
 					/>
 				))}
-		</MenuSection>
+			</MenuSection>
+			<PopoverSeparator />
+			<MenuRow
+				glyph="plus"
+				isChosen={false}
+				label={OPEN_FOLDER}
+				onPick={() => {
+					close();
+					void openPicked();
+				}}
+			/>
+		</Fragment>
 	);
 }
