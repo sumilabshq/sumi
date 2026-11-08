@@ -8,14 +8,7 @@ function ignored(): void {
 	return undefined;
 }
 
-export function appsFilledBy(fillers: readonly Plugin[]): readonly FilledApp[] {
-	const filled: FilledApp[] = [];
-	const appsStub = plugin("apps").apply(() => ({
-		app: (entry: FilledApp): void => {
-			filled.push(entry);
-		},
-	}));
-	const plugins = [appsStub, commandMenu, ...fillers];
+function startWithIgnoredServices(plugins: readonly Plugin[]): void {
 	runtime()
 		.builtInPlugins(...plugins)
 		.state(new MemoryPluginStateStore(plugins.map(({ id }) => id)))
@@ -23,5 +16,15 @@ export function appsFilledBy(fillers: readonly Plugin[]): readonly FilledApp[] {
 		.provide(windows, () => ({ module: ignored, moduleOf: ignored, serverModule: ignored }))
 		.provide(shell, () => ({ tabPage: ignored, layer: ignored, provider: ignored, frameModule: ignored }))
 		.start();
+}
+
+export function appsFilledBy(fillers: readonly Plugin[]): readonly FilledApp[] {
+	const filled: FilledApp[] = [];
+	const appsStub = plugin("apps").apply(() => ({
+		app: (entry: FilledApp): void => {
+			filled.push(entry);
+		},
+	}));
+	startWithIgnoredServices([appsStub, commandMenu, ...fillers]);
 	return filled;
 }
