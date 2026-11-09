@@ -21,12 +21,13 @@ const MISSING_ARGUMENT: &str = "The call is missing its {name} argument.";
 const NOT_A_CHANNEL: &str = "The call's onEvent argument is not a channel.";
 const NOT_SERVER_NAMES: &str = "The call's servers argument is not a list of MCP server names.";
 const NO_HUB: &str = "The agent tools have not started.";
+const NO_STORE: &str = "The agent tools start after the store: register store::init() before agent::init().";
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new(PLUGIN_NAME)
         .invoke_handler(dispatch)
         .setup(|app, _api| {
-            let folder = app.path().app_data_dir()?;
+            let folder = app.try_state::<crate::store::Store>().ok_or(NO_STORE)?.global_folder();
             std::fs::create_dir_all(&folder)?;
             let hub = Arc::new(AgentHub::new(folder.join(SOCKET_FILE)));
             socket::listen(hub.clone())?;

@@ -109,7 +109,7 @@ impl Store {
         lines::read_before(place, before, limit)
     }
 
-    fn global_folder(&self) -> PathBuf {
+    pub fn global_folder(&self) -> PathBuf {
         self.home.join(APP_FOLDER)
     }
 

@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { appDataDir } from "@tauri-apps/api/path";
 import { z } from "zod";
 import { FileInfoSchema, FolderEntrySchema } from "../../shared/schema/files.schema.js";
 import type { FileInfo, FolderEntry } from "../../shared/schema/files.schema.js";
@@ -11,8 +10,8 @@ const DoneSchema = z.null();
 const LocatedSchema = z.string().nullable();
 
 export class TauriFilesGateway extends FilesGateway {
-	override appDataFolder(): Promise<string> {
-		return appDataDir();
+	override async appDataFolder(): Promise<string> {
+		return z.string().parse(await invoke(`${FILES}global_folder`));
 	}
 
 	override async readFile(path: string): Promise<string> {

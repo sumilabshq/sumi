@@ -1,4 +1,5 @@
 use super::store::atomic::write_atomically;
+use super::store::Store;
 use super::studio_caller::refuse_foreign_caller;
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
@@ -19,6 +20,7 @@ use tauri_plugin_dialog::DialogExt;
 pub const PLUGIN_NAME: &str = "files";
 
 const PICK_FOLDER: &str = "pick_folder";
+const GLOBAL_FOLDER: &str = "global_folder";
 
 pub const MAX_PATH_BYTES: usize = 4096;
 
@@ -354,6 +356,12 @@ fn handle(invoke: Invoke<Wry>) -> bool {
 
     if let Err(refused) = refuse_foreign_caller(message.webview().label()) {
         resolver.reject(refused);
+        return true;
+    }
+
+    if message.command() == GLOBAL_FOLDER {
+        let folder = message.webview().app_handle().state::<Store>().global_folder();
+        resolver.respond(answered(Ok(folder.display().to_string())).map_err(InvokeError::from));
         return true;
     }
 

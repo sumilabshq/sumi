@@ -89,6 +89,7 @@ const FILES_COMMANDS: &[&str] =
     "copy",
     "open_in_system_app",
     "pick_folder",
+    "global_folder",
 ];
 
 const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows", "quit_listening", "flushed_before_quit"];

@@ -2,7 +2,7 @@ use super::refusal::Refusal;
 use crate::path_guard::{is_symlink, joined_without_symlinks, relative_parts};
 use std::path::{Path, PathBuf};
 
-pub const APP_FOLDER: &str = ".ink";
+pub const APP_FOLDER: &str = ".sumi";
 
 const GLOBAL_ROOT: &str = "global";
 const WORKSPACE_ROOT_PREFIX: &str = "workspace:";
