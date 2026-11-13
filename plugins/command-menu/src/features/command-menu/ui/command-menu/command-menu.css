@@ -5,11 +5,13 @@
 	font-family: var(--sumi-font-ui);
 	font-feature-settings: var(--sumi-font-features);
 	font-size: var(--sumi-fs-13);
-	line-height: 1.4;
-	letter-spacing: -0.006em;
+	line-height: 1.5;
+	letter-spacing: 0;
 	color: var(--sumi-text);
 	-webkit-font-smoothing: antialiased;
 	pointer-events: auto;
+	background: var(--sumi-plate);
+	--wg-cm-gutter: max(var(--sumi-sp-8), calc(50% - 560px));
 }
 
 .wg-cm-layer * {
@@ -29,19 +31,22 @@
 
 .wg-cm-panel {
 	position: absolute;
-	left: 50%;
-	top: 116px;
-	width: min(680px, calc(100vw - 32px));
-	transform: translateX(-50%);
+	left: 0;
+	top: 0;
+	width: 100%;
+	transform: none;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	border-radius: 16px;
-	background: color-mix(in srgb, var(--sumi-plate) 90%, transparent);
-	-webkit-backdrop-filter: var(--sumi-blur-pick);
-	backdrop-filter: var(--sumi-blur-pick);
-	box-shadow: var(--sumi-shadow-float);
-	animation: wg-cm-panel-in var(--sumi-dur-base) var(--sumi-ease-out) both;
+	border-radius: 0;
+	background: var(--sumi-plate);
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
+	box-shadow: none;
+	animation: none;
+	height: 100%;
+	box-sizing: border-box;
+	padding-top: 72px;
 }
 
 @keyframes wg-cm-panel-in {
@@ -60,12 +65,17 @@
 }
 
 .wg-cm-field {
-	height: 56px;
+	height: 68px;
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	padding: 0 16px;
-	color: var(--sumi-text-3);
+	padding: 0 var(--wg-cm-gutter) var(--sumi-sp-9);
+	color: var(--sumi-text);
+	flex: none;
+	box-sizing: border-box;
+	border-bottom: 1px solid var(--sumi-line);
+	font-size: 28px;
+	line-height: 1.3;
 }
 
 .wg-cm-token {
@@ -75,7 +85,7 @@
 	align-items: center;
 	gap: 6px;
 	flex: none;
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 	background: var(--sumi-active);
 	font-size: var(--sumi-fs-12);
 	font-weight: var(--sumi-fw-medium);
@@ -93,7 +103,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 }
 
 .wg-cm-token-drop:hover {
@@ -138,6 +148,9 @@
 	outline: 0;
 	background: transparent;
 	color: var(--sumi-text);
+	font: inherit;
+	caret-color: var(--sumi-accent);
+	caret-shape: block;
 }
 
 .wg-cm-input::placeholder {
@@ -235,23 +248,23 @@
 }
 
 .wg-cm-head {
-	height: 48px;
+	height: var(--sumi-header-h);
 	flex: none;
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	padding: 0 12px 0 8px;
+	gap: var(--sumi-sp-6);
+	padding: 0 var(--wg-cm-gutter);
 }
 
 .wg-cm-mode {
 	height: 28px;
-	padding: 0 8px;
+	padding: 0;
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	font-size: var(--sumi-fs-13);
-	font-weight: var(--sumi-fw-semi);
+	font-weight: var(--sumi-fw-regular);
 	color: var(--sumi-text-3);
 	transition:
 		color var(--sumi-dur-fast) var(--sumi-ease),
@@ -297,7 +310,7 @@
 	padding: 0 8px;
 	display: inline-flex;
 	align-items: center;
-	border-radius: 6px;
+	border-radius: 0;
 	background: var(--sumi-active);
 	color: var(--sumi-text-2);
 }
@@ -315,14 +328,16 @@
 }
 
 .wg-cm-list {
-	max-height: min(500px, calc(100vh - 300px));
+	max-height: none;
 	overflow-y: auto;
-	padding: 0 6px 6px;
+	padding: 0 0 var(--sumi-sp-6);
 	display: flex;
 	flex-direction: column;
 	transition:
 		opacity var(--sumi-dur-base) var(--sumi-ease),
 		transform var(--sumi-dur-base) var(--sumi-ease-out);
+	flex: 1;
+	min-height: 0;
 }
 
 [data-cm-leaving] > .wg-cm-list-frame > .wg-cm-list {
@@ -347,9 +362,9 @@
 }
 
 .wg-cm-nothing + .wg-cm-label {
-	margin: 6px -6px 0;
+	margin: var(--sumi-sp-3) 0 0;
 	border-top: 1px solid var(--sumi-line);
-	padding: 12px 16px 4px;
+	padding: var(--sumi-sp-5) var(--wg-cm-gutter) var(--sumi-sp-2);
 }
 
 @keyframes wg-cm-row-in {
@@ -360,22 +375,23 @@
 }
 
 .wg-cm-label {
-	padding: 10px 10px 4px;
+	padding: var(--sumi-sp-6) var(--wg-cm-gutter) var(--sumi-sp-2);
 	font-size: var(--sumi-fs-12);
-	color: var(--sumi-text-2);
+	color: var(--sumi-text-3);
 }
 
 .wg-cm-row {
 	width: 100%;
-	height: 40px;
+	height: var(--sumi-h-row);
 	flex: none;
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 0 10px;
-	border-radius: 10px;
-	font-size: var(--sumi-fs-14);
-	color: var(--sumi-text);
+	gap: 10px;
+	padding: 0 var(--wg-cm-gutter);
+	border-radius: 0;
+	font-size: var(--sumi-fs-13);
+	color: var(--sumi-text-2);
+	box-sizing: border-box;
 }
 
 .wg-cm-row[aria-selected="true"] {
@@ -398,7 +414,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--sumi-r-xs);
+	border-radius: 0;
 	background: var(--sumi-text);
 	color: var(--sumi-plate);
 	font-size: 10px;
@@ -408,14 +424,14 @@
 .wg-cm-letter[data-shape="round"] {
 	width: 18px;
 	height: 18px;
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 	font-weight: var(--sumi-fw-semi);
 }
 
 .wg-cm-ink {
 	width: 17px;
 	height: 17px;
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 	background:
 		radial-gradient(1.3px 1.7px at 36% 46%, var(--sumi-plate) 98%, transparent),
 		radial-gradient(1.3px 1.7px at 64% 46%, var(--sumi-plate) 98%, transparent), var(--sumi-text);
@@ -470,7 +486,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: 5px;
+	border-radius: 0;
 	background: var(--sumi-active);
 	font-family: inherit;
 	font-size: var(--sumi-fs-11);
@@ -487,7 +503,7 @@
 	padding: 0 8px;
 	border: 0;
 	outline: 0;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	background: var(--sumi-plate);
 	box-shadow: 0 0 0 2px var(--sumi-focus-ring);
 	font: inherit;
@@ -509,7 +525,7 @@
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	font-size: var(--sumi-fs-12);
 	text-align: center;
 }
@@ -532,7 +548,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	background: var(--sumi-plate);
 	box-shadow: 0 0 0 1px var(--sumi-line);
 }
@@ -549,14 +565,16 @@
 }
 
 .wg-cm-foot {
-	height: 40px;
+	height: auto;
 	flex: none;
 	display: flex;
 	align-items: center;
 	gap: 16px;
-	padding: 0 16px;
-	font-size: var(--sumi-fs-12);
-	color: var(--sumi-text-2);
+	padding: 14px var(--wg-cm-gutter) 18px;
+	font-size: var(--sumi-fs-13);
+	color: var(--sumi-text-3);
+	border-top: 1px solid var(--sumi-line);
+	margin-top: auto;
 }
 
 .wg-cm-hint {
@@ -599,7 +617,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1px;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	background: var(--sumi-overlay);
 	-webkit-backdrop-filter: var(--sumi-blur-pop);
 	backdrop-filter: var(--sumi-blur-pop);
@@ -622,7 +640,7 @@
 	align-items: center;
 	gap: 8px;
 	padding: 0 8px;
-	border-radius: var(--sumi-r-md);
+	border-radius: 0;
 	font-size: var(--sumi-fs-13);
 }
 
@@ -689,7 +707,7 @@
 	align-items: center;
 	gap: 6px;
 	padding: 0 9px 0 4px;
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 	background: var(--sumi-active);
 	font-size: var(--sumi-fs-12);
 	font-weight: var(--sumi-fw-medium);
@@ -713,7 +731,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 	background: var(--sumi-plate);
 	box-shadow: 0 0 0 1px var(--sumi-line-strong);
 }
