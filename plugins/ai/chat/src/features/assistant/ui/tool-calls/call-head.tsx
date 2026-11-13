@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
+import { Icon } from "@widgetarium/kit";
 import { CallMetaSaid } from "./call-meta.js";
 import { CallName } from "./call-name.js";
 
@@ -23,6 +24,13 @@ export function CallHead({ call, face, canOpen, isOpen, onToggle }: CallHeadProp
 		>
 			<CallName call={call} face={face} />
 			{face.meta ? <CallMetaSaid meta={face.meta} /> : null}
+			{canOpen ? (
+				<Icon
+					name="chevron-right"
+					size={14}
+					className={isOpen ? "wg-studio-ai-tools-chevron is-open" : "wg-studio-ai-tools-chevron"}
+				/>
+			) : null}
 			{call.answered ? null : <span className="wg-studio-ai-call-spin" aria-hidden="true" />}
 		</button>
 	);

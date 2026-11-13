@@ -32,7 +32,7 @@ export function ToolsHead({ calls, faces, isOpen, onToggle }: ToolsHeadProps): R
 			{spanMs === null ? null : <span className="wg-studio-ai-tools-took">{saidElapsed(spanMs)}</span>}
 			<Icon
 				name="chevron-right"
-				size={12}
+				size={14}
 				className={isOpen ? "wg-studio-ai-tools-chevron is-open" : "wg-studio-ai-tools-chevron"}
 			/>
 		</button>

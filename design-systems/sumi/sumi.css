@@ -9,9 +9,9 @@
 	--sumi-text-3: rgba(21, 21, 19, 0.62);
 	--sumi-hover: rgba(21, 21, 19, 0.045);
 	--sumi-active: rgba(21, 21, 19, 0.12);
-	--sumi-line: rgba(21, 21, 19, 0.2);
-	--sumi-line-strong: rgba(21, 21, 19, 0.28);
-	--sumi-tree: rgba(21, 21, 19, 0.28);
+	--sumi-line: #d0d0d0;
+	--sumi-line-strong: #bdbdbd;
+	--sumi-tree: #bdbdbd;
 	--sumi-group-plain: rgba(21, 21, 19, 0.08);
 	--sumi-group-glass: transparent;
 	--sumi-essential: rgba(21, 21, 19, 0.08);
@@ -153,9 +153,9 @@
 	--sumi-text-3: rgba(233, 230, 222, 0.5);
 	--sumi-hover: rgba(233, 230, 222, 0.05);
 	--sumi-active: rgba(233, 230, 222, 0.13);
-	--sumi-line: rgba(233, 230, 222, 0.16);
-	--sumi-line-strong: rgba(233, 230, 222, 0.24);
-	--sumi-tree: rgba(233, 230, 222, 0.26);
+	--sumi-line: #32312f;
+	--sumi-line-strong: #434240;
+	--sumi-tree: #484644;
 	--sumi-group-plain: rgba(233, 230, 222, 0.09);
 	--sumi-essential: rgba(233, 230, 222, 0.09);
 	--sumi-essential-hover: rgba(233, 230, 222, 0.13);

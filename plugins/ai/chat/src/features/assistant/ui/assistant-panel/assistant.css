@@ -2408,35 +2408,47 @@
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(ul, ol) {
 	display: block;
 	margin: 0;
-	padding-left: 20px;
+	padding-left: 0;
 	line-height: 1.65;
-	list-style: disc outside;
+	list-style: none;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown :is(ul, ol) > li {
+	position: relative;
+	padding-left: 26px;
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown ol {
-	list-style-type: decimal;
+	counter-reset: wg-item;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown ol > li::before {
+	content: counter(wg-item);
+	counter-increment: wg-item;
+	position: absolute;
+	left: 0;
+	color: var(--sumi-text-3);
+	font-variant-numeric: tabular-nums;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown ul > li::before {
+	content: "";
+	position: absolute;
+	top: 0.8em;
+	left: 0;
+	width: 4px;
+	height: 4px;
+	margin-top: -2px;
+	background: var(--sumi-text-3);
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown li :is(ul, ol) {
-	margin-top: 4px;
-	list-style-type: circle;
+	margin-top: 0;
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown li {
-	display: list-item;
+	display: block;
 	margin: 0;
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown li + li {
-	margin-top: 4px;
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown li::marker {
-	color: var(--sumi-text-3);
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown ol {
-	padding-left: 22px;
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown p {
@@ -2455,11 +2467,6 @@
 
 .wg-chat-app .wg-studio-ai-said.is-markdown a:hover {
 	text-decoration: underline;
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown :is(ul, ol) li::marker {
-	color: var(--sumi-text-3);
-	font-variant-numeric: tabular-nums;
 }
 
 .wg-mark-meter {
@@ -2548,9 +2555,12 @@
 	box-shadow: inset 0 0 0 1px var(--sumi-text-3);
 }
 
-.wg-chat-app .wg-studio-ai-said.is-markdown li:has(> .wg-mark-status:first-child) {
-	list-style: none;
-	margin-left: -20px;
+.wg-chat-app .wg-studio-ai-said.is-markdown ul > li:has(> .wg-mark-status:first-child) {
+	padding-left: 0;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown ul > li:has(> .wg-mark-status:first-child)::before {
+	display: none;
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(code, pre, kbd) {
@@ -3067,11 +3077,13 @@
 	color: var(--sumi-text-3);
 	font: var(--sumi-fw-regular) var(--sumi-fs-14) var(--sumi-font-ui);
 	position: relative;
+	isolation: isolate;
+	width: 100%;
 }
 
 .wg-chat-app .wg-studio-ai-tools-list > .wg-studio-ai-call {
 	position: relative;
-	padding-left: var(--sumi-sp-9);
+	padding-left: var(--sumi-sp-7);
 }
 
 .wg-chat-app .wg-studio-ai-tools-list > .wg-studio-ai-call::before {
@@ -3079,7 +3091,7 @@
 	position: absolute;
 	top: 0;
 	bottom: 0;
-	left: var(--sumi-sp-6);
+	left: var(--sumi-sp-2);
 	width: 1px;
 	background: var(--sumi-tree);
 }
@@ -3100,7 +3112,29 @@
 }
 
 .wg-chat-app .wg-studio-ai-call-head:not(:disabled):hover {
+	background: none;
+}
+
+.wg-chat-app .wg-studio-ai-call-head::after {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	top: 0;
+	bottom: 0;
+	left: calc(-1 * var(--sumi-sp-7) - var(--sumi-sp-5));
+	right: calc(-1 * var(--sumi-sp-5));
+}
+
+.wg-chat-app .wg-studio-ai-call-head:not(:disabled):is(:hover, :focus-visible)::after {
 	background: var(--sumi-hover);
+}
+
+.wg-chat-app .wg-studio-ai-call-head .wg-studio-ai-tools-chevron {
+	color: var(--sumi-text-3);
+}
+
+.wg-chat-app .wg-studio-ai-call-head .wg-studio-ai-call-name {
+	flex-grow: 0;
 }
 
 .wg-chat-app .wg-studio-ai-call-verb {
@@ -3148,6 +3182,7 @@
 
 .wg-chat-app .wg-studio-ai-call-object {
 	color: var(--sumi-text);
+	min-width: 0;
 }
 
 .wg-chat-app .wg-studio-ai-tools-list {
