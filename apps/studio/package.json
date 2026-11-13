@@ -51,6 +51,7 @@
 		"@sumi/plan-usage-plugin": "0.1.0",
 		"@sumi/questions-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
+		"@sumi/canvas-plugin": "0.1.0",
 		"@sumi/tasks-plugin": "0.1.0",
 		"@sumi/terminal-plugin": "0.1.0",
 		"@sumi/video-viewer-plugin": "0.1.0",

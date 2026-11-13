@@ -2,7 +2,7 @@
 
 Sumi is a shell. Every page a person opens (chat, tasks, canvas, terminal, a browser page) is an app: runnable alone in a browser, drawn in a sandboxed frame, and speaking to Sumi only through `@sumi/contract`. The design behind this page, with the prior art it rests on, is https://claude.ai/artifact/Y1WxRtpr7h227vGYjpTEY9; where they disagree, this page wins.
 
-> Status: tasks is an app in this monorepo, drawn in a frame; terminal, browser-page and chat are plugin apps, drawn in the studio window; canvas and the browser are still drawn by the studio. Everything marked **planned** is not built yet.
+> Status: tasks is an app in this monorepo, drawn in a frame; terminal, browser-page, chat and canvas are plugin apps, drawn in the studio window; the browser is still drawn by the studio. Everything marked **planned** is not built yet.
 
 ## Built-in apps are part of the project
 
@@ -111,5 +111,5 @@ The frame is `<iframe sandbox="allow-scripts allow-forms">` (`APP_FRAME_SANDBOX`
 | 1. `@sumi/contract`                                                | done                                                                                                               |
 | 2. Built-in apps in `apps/*`, registered from a generated registry | done for tasks; terminal, browser-page and chat are plugin pages; the built-in chat, tasks and terminal pages gone |
 | 3. Each app looks like the page it replaced                        | chat measured against the tag; tasks, terminal, browser page planned                                               |
-| 4. Canvas and the browser become apps                              | planned: the browser needs Places' `browser` tabs (native pages, agent-held pages) to move                         |
+| 4. Canvas and the browser become apps                              | canvas done (a plugin app); the browser planned: it needs Places' `browser` tabs (native pages, agent-held pages)  |
 | 5. App builds in a release bundle                                  | planned                                                                                                            |

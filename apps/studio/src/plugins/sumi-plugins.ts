@@ -24,6 +24,7 @@ import { claudeCode } from "@sumi/claude-code-plugin";
 import { workingFolder } from "@sumi/working-folder-plugin";
 import { questions } from "@sumi/questions-plugin";
 import { tasks } from "@sumi/tasks-plugin";
+import { canvas } from "@sumi/canvas-plugin";
 import { agents, backend, secrets, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
 import type {
 	BackendOffers,
@@ -122,6 +123,7 @@ const INSTALLED_PLUGINS = [
 	agent,
 	questions,
 	tasks,
+	canvas,
 	terminal,
 	browserPage,
 	files,
@@ -145,6 +147,7 @@ const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, agent, quest
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
+		canvas.id,
 		terminal.id,
 		browserPage.id,
 		files.id,

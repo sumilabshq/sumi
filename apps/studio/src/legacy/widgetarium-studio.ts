@@ -220,8 +220,6 @@ function paneOf(started: StartedStudio, screen: StudioScreen, view: PaneView): R
 	return h(PaneAppPlate, {
 		tabId: view.tabId,
 		browser: started.browser,
-		design: started.design,
-		project: started.project,
 	});
 }
 
@@ -239,7 +237,6 @@ function appPlateOf(started: StartedStudio, { pathname, view, backToView }: Stud
 		project: started.project,
 		pathname,
 		view,
-		design: started.design,
 		browser: started.browser,
 		workspaces: started.chatsColumn.workspaces,
 		backToView,

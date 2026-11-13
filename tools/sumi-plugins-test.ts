@@ -1,3 +1,4 @@
+import { artboards } from "../plugins/canvas/data/artboards/generated/module.ts";
 import { runtime } from "@widgetarium/data-framework";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
@@ -47,6 +48,7 @@ const APPS_SLOT_OWNERS = [
 	"plugins/ai/chat/",
 	"plugins/git/",
 	"plugins/tasks/",
+	"plugins/canvas/",
 ];
 const VIEWER_APP_IDS = ["markdown-viewer", "code-viewer", "image-viewer", "video-viewer", "html-viewer"];
 const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/ai/chat/"];
@@ -140,13 +142,19 @@ check(
 	[fileSystem.definition.name, terminal.definition.name],
 );
 check(
-	"the backend holds the apps plugin's places and apps, the chat plugin's questions and the tasks plugin's tasks, none of the host's",
+	"the backend holds the apps plugin's places and apps, the chat plugin's questions, the tasks plugin's tasks and the canvas plugin's artboards, none of the host's",
 	resolved.backgroundModules.map(({ contract }) => contract.name),
-	[places.definition.name, appsModule.definition.name, questions.definition.name, tasks.definition.name],
+	[
+		places.definition.name,
+		appsModule.definition.name,
+		questions.definition.name,
+		tasks.definition.name,
+		artboards.definition.name,
+	],
 );
 check(
-	"the core starts every module it started before, each once, and the apps plugin's module",
-	coreNamesNow.length === coreModulesBefore.length + 1 &&
+	"the core starts every module it started before, each once, the apps plugin's module and the canvas plugin's artboards",
+	coreNamesNow.length === coreModulesBefore.length + 2 &&
 		coreModulesBefore.every(({ definition }) => coreNamesNow.filter((name) => name === definition.name).length === 1),
 	true,
 );
@@ -276,7 +284,7 @@ check(
 		resolved.windowLayers.map(({ id }) => id),
 	],
 	[
-		["mcp", "app-host", "tabs", "command-menu", "chat-tabs", "ask", "task-work", "pages"],
+		["mcp", "app-host", "tabs", "command-menu", "chat-tabs", "ask", "task-work", "canvas-work", "pages"],
 		["command-menu.layer-0", "terminal-cursor.layer-1"],
 	],
 );
@@ -413,6 +421,7 @@ check(
 			tasks: { enabled: true },
 			ghost: { enabled: true },
 			terminal: { enabled: true },
+			canvas: { enabled: false },
 			"browser-page": { enabled: false },
 			files: { enabled: false },
 			"markdown-viewer": { enabled: false },
