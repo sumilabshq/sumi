@@ -1,25 +1,20 @@
 import { createElement as h, useState } from "react";
-import type { FormEvent, ReactElement } from "react";
+import type { FormEvent, KeyboardEvent, ReactElement } from "react";
 import type { Question } from "@widgetarium/questions/contract";
 import type { QuestionDoing } from "../../lib/use-question-doing.js";
-import { SkipButton } from "./skip-button.js";
 
 export interface QuestionCardProps {
 	readonly question: Question;
-	readonly number: number | null;
 	readonly doing: QuestionDoing;
 }
 
-const SKIP = "Skip";
 const ANSWER = "Answer";
-const SEND = "Send";
-const OWN_PLACEHOLDER = "In my own words";
-const SKIP_SAYS = "Skip · {skipSays}";
+const OWN_PLACEHOLDER = "Or answer in your own words";
+const SEND_HINT = "↵ send";
 
-export function QuestionCard({ question, number, doing }: QuestionCardProps): ReactElement {
+export function QuestionCard({ question, doing }: QuestionCardProps): ReactElement {
 	const [picked, setPicked] = useState<readonly string[]>([]);
 	const [own, setOwn] = useState("");
-	const isOptional = question.need === "optional";
 	const press = (label: string): void => {
 		if (!question.multiple) {
 			doing.answer(question.id, [label], null);
@@ -38,40 +33,43 @@ export function QuestionCard({ question, number, doing }: QuestionCardProps): Re
 
 		doing.answer(question.id, picked, said === "" ? null : said);
 	};
+	const pressByNumber = (event: KeyboardEvent<HTMLInputElement>): void => {
+		const option = own === "" ? question.options[Number(event.key) - 1] : undefined;
+
+		if (option === undefined) {
+			return;
+		}
+
+		event.preventDefault();
+		press(option.label);
+	};
 	return (
-		<div className="wg-questions-card is-open">
-			<div className="wg-questions-card-head">
-				{number === null ? null : <span className="wg-questions-num is-on">{number}</span>}
-				<span className="wg-questions-card-question">{question.question}</span>
-				{isOptional ? <SkipButton label={SKIP} onSkip={() => doing.skip([question.id])} /> : null}
-			</div>
+		<div className="wg-questions-card">
+			<p className="wg-questions-card-question">{question.question}</p>
 			{question.detail === "" ? null : <p className="wg-questions-card-detail">{question.detail}</p>}
-			{question.options.length === 0 ? null : (
-				<div className="wg-questions-card-options">
-					{question.options.map((option, at) => (
-						<button
-							key={option.label}
-							type="button"
-							title={option.detail === "" ? undefined : option.detail}
-							aria-pressed={question.multiple ? picked.includes(option.label) : undefined}
-							className={optionClassOf({ isFirst: at === 0, isPicked: picked.includes(option.label), question })}
-							onClick={() => press(option.label)}
-						>
-							{option.label}
-						</button>
-					))}
-					{question.multiple ? (
-						<button
-							type="button"
-							className="wg-questions-btn is-ink"
-							disabled={picked.length === 0}
-							onClick={() => doing.answer(question.id, picked, null)}
-						>
-							{ANSWER}
-						</button>
-					) : null}
-				</div>
-			)}
+			{question.options.map((option, at) => (
+				<button
+					key={option.label}
+					type="button"
+					aria-pressed={question.multiple ? picked.includes(option.label) : undefined}
+					className="wg-questions-option"
+					onClick={() => press(option.label)}
+				>
+					<span className="wg-questions-option-num">{at + 1}</span>
+					<span className="wg-questions-option-label">{option.label}</span>
+					{option.detail === "" ? null : <span className="wg-questions-option-detail">{option.detail}</span>}
+				</button>
+			))}
+			{question.multiple ? (
+				<button
+					type="button"
+					className="wg-questions-answer"
+					disabled={picked.length === 0}
+					onClick={() => doing.answer(question.id, picked, null)}
+				>
+					{ANSWER}
+				</button>
+			) : null}
 			{question.ownAnswer ? (
 				<form className="wg-questions-own" onSubmit={sendOwn}>
 					<input
@@ -80,31 +78,11 @@ export function QuestionCard({ question, number, doing }: QuestionCardProps): Re
 						placeholder={OWN_PLACEHOLDER}
 						aria-label={OWN_PLACEHOLDER}
 						onChange={(event) => setOwn(event.target.value)}
+						onKeyDown={pressByNumber}
 					/>
-					<button type="submit" className="wg-questions-btn" disabled={own.trim() === ""}>
-						{SEND}
-					</button>
+					<span className="wg-questions-own-hint">{SEND_HINT}</span>
 				</form>
-			) : null}
-			{isOptional ? (
-				<p className="wg-questions-card-default">{SKIP_SAYS.replace("{skipSays}", question.skipSays)}</p>
 			) : null}
 		</div>
 	);
-}
-
-function optionClassOf({
-	isFirst,
-	isPicked,
-	question,
-}: {
-	readonly isFirst: boolean;
-	readonly isPicked: boolean;
-	readonly question: Question;
-}): string {
-	if (question.multiple) {
-		return isPicked ? "wg-questions-btn is-picked" : "wg-questions-btn";
-	}
-
-	return isFirst ? "wg-questions-btn is-ink" : "wg-questions-btn";
 }

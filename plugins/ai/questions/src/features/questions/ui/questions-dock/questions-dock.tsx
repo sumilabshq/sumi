@@ -5,8 +5,7 @@ import { questions } from "@widgetarium/questions/contract";
 import type { Report } from "@sumi/chat-plugin";
 import { useQuestionDoing } from "../../lib/use-question-doing.js";
 import { useQueuesAnswers } from "../../lib/use-queues-answers.js";
-import { NeededBlock } from "./needed-block.js";
-import { OptionalBlock } from "./optional-block.js";
+import { QuestionsBlock } from "./questions-block.js";
 
 export function QuestionsDock({
 	chatId,
@@ -19,14 +18,15 @@ export function QuestionsDock({
 	const doing = useQuestionDoing(chatId, report);
 	useQueuesAnswers(chatId, data.optional, report);
 
-	if (data.needed.length === 0 && data.optional.length === 0) {
+	const open = [...data.needed, ...data.optional.filter(({ state }) => state === "open")];
+
+	if (open.length === 0) {
 		return null;
 	}
 
 	return (
 		<div className="wg-questions-dock">
-			{data.needed.length === 0 ? null : <NeededBlock questions={data.needed} doing={doing} />}
-			{data.optional.length === 0 ? null : <OptionalBlock questions={data.optional} doing={doing} />}
+			<QuestionsBlock questions={open} doing={doing} />
 		</div>
 	);
 }
