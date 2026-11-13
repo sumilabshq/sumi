@@ -1,18 +1,15 @@
 import { createElement as h } from "react";
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement } from "react";
 import { Mascot } from "../../../mascot/ui/mascot/mascot.js";
 
-const GREETING = "What are we building?";
-const SUB = "Sumi makes apps on this computer, in a folder you choose.";
-const MASCOT_PX = 64;
+const QUESTION = "What are we building?";
+const MASCOT_PX = 40;
 
-export function ReadyEmptyChat({ starters }: { readonly starters: ReactNode }): ReactElement {
+export function ReadyEmptyChat(): ReactElement {
 	return (
 		<div className="wg-studio-ai-welcome">
 			<Mascot size={MASCOT_PX} />
-			<h2 className="wg-studio-ai-greet">{GREETING}</h2>
-			<p className="wg-studio-ai-greet-said">{SUB}</p>
-			{starters}
+			<h2 className="wg-studio-ai-greet">{QUESTION}</h2>
 		</div>
 	);
 }

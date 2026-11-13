@@ -1,16 +1,16 @@
 import { createElement as h } from "react";
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { NoProviderChat } from "./no-provider-chat.js";
 import { ReadyEmptyChat } from "./ready-empty-chat.js";
 import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
-export function EmptyChat({ starters }: { readonly starters: ReactNode }): ReactElement {
+export function EmptyChat(): ReactElement {
 	const { data: setup } = useQuery(assistant.agent.getSetup, { chat: useChatKey() });
 
 	if (setup.isReady) {
-		return <ReadyEmptyChat starters={starters} />;
+		return <ReadyEmptyChat />;
 	}
 
 	return <NoProviderChat label={setup.providerLabel} />;

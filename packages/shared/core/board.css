@@ -20556,69 +20556,46 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	background: var(--sumi-line);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai.is-empty .wg-studio-ai-scroll {
-	justify-content: center;
+	justify-content: flex-start;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-head.is-bare {
 	justify-content: flex-end;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-welcome {
 	display: flex;
+	box-sizing: border-box;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	gap: var(--sumi-sp-4);
-	margin: auto 0;
-	padding: var(--sumi-sp-8);
+	gap: 20px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 0 var(--sumi-sp-8) 28px;
 	color: var(--sumi-text);
-	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-welcome > .wg-mascot {
-	margin-bottom: var(--sumi-sp-4);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-greet {
 	margin: 0;
 	color: var(--sumi-text);
-	font: var(--sumi-fw-semi) var(--sumi-fs-20) / 1.25 var(--sumi-font-ui);
-	letter-spacing: normal;
+	font: var(--sumi-fw-medium) 22px / 1.3 var(--sumi-font-ui);
+	letter-spacing: -0.01em;
 	text-align: center;
+	text-wrap: balance;
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-greet-said {
-	margin: 0;
-	color: var(--sumi-text-2);
-	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
-	text-align: center;
+.wg-chat-app .wg-studio-ai.is-empty {
+	--wg-chat-gutter: max(var(--sumi-sp-8), calc(50% - var(--sumi-read-w) / 2));
+	gap: 0;
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-starters {
-	display: flex;
-	flex-direction: column;
-	gap: var(--sumi-sp-4);
-	width: 100%;
-	max-width: 440px;
-	margin-top: var(--sumi-sp-6);
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-starter {
-	display: flex;
-	align-items: center;
-	gap: var(--sumi-sp-4);
-	width: 100%;
-	height: auto;
-	padding: var(--sumi-sp-5);
-	border: none;
-	border-radius: 0;
-	background: var(--sumi-hover);
-	box-shadow: none;
-	color: var(--sumi-text);
-	font: var(--sumi-fw-medium) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
-	text-align: start;
-	white-space: nowrap;
-	cursor: pointer;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-starter:hover {
-	background: var(--sumi-active);
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-starter-icon {
+.wg-chat-app .wg-studio-ai.is-empty > .wg-studio-ai-scroll-frame {
 	flex: none;
-	color: var(--sumi-text-2);
+	margin-top: auto;
+}
+.wg-chat-app .wg-studio-ai.is-empty .wg-studio-ai-scroll {
+	flex: none;
+	overflow: visible;
+	padding-bottom: 0;
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai.is-empty .wg-studio-ai-composer {
+	margin-bottom: auto;
+	padding-bottom: var(--sumi-sp-8);
 }
 .wg-chat-app .wg-studio-ai-to-end {
 	background: var(--wg-kit-raise);
