@@ -20,15 +20,21 @@ import {
 	reopenPlan,
 	showEssentialPlan,
 } from "./lib/opening-plans.js";
+import { resolvedAppOf } from "../../shared/lib/tabs/app-abilities.js";
 
 export const openTab = command()
 	.public()
 	.input(OpenTabAskSchema)
 	.output(OpenedTabSettledSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ at, ...ask }, { tabs, placedApps }) =>
-		openedOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), openPlan(ask)))),
-	);
+	.handle(async ({ at, ...ask }, { tabs, placedApps }) => {
+		const apps = placedApps.placedApps();
+		return openedOf(
+			await tabs.movePlacedTabs(
+				settlingWith(at, apps, openPlan({ ...ask, app: resolvedAppOf(apps, ask.app, ask.address) })),
+			),
+		);
+	});
 
 export const openBelow = command()
 	.public()

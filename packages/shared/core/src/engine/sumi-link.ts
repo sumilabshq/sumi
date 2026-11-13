@@ -42,6 +42,7 @@ const NO_ID = "{href} names no {kind} to open";
 const BAD_ESCAPE = "{href} carries a broken %-escape in its page";
 const NESTED = "{href} names a {kind} inside another: a {kind} link holds one id";
 const LEGACY_TASKS_APP = "tasks";
+const QUERY_MARK = "?";
 
 const HOST_READS: ReadonlyMap<string, HostRead> = new Map<string, HostRead>([
 	["chat", (href, rest) => idLinkOf(href, "chat", rest)],
@@ -124,9 +125,10 @@ function legacyAppOf(href: string, rest: string): LinkRead {
 }
 
 function pageLinkOf(href: string, app: string, rest: string): LinkRead {
-	const address = decodedOf(rest);
+	const queryStart = rest.includes(QUERY_MARK) ? rest.indexOf(QUERY_MARK) : rest.length;
+	const pagePath = decodedOf(rest.slice(0, queryStart));
 
-	if (address === null) {
+	if (pagePath === null) {
 		return refusedLink(BAD_ESCAPE, href);
 	}
 
@@ -135,7 +137,7 @@ function pageLinkOf(href: string, app: string, rest: string): LinkRead {
 		target: {
 			kind: "page",
 			app,
-			address,
+			address: `${pagePath}${rest.slice(queryStart)}`,
 		},
 	};
 }

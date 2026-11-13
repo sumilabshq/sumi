@@ -18,6 +18,11 @@ export function placedAppsOf(apps: readonly PlacedApp[]): PlacedApps {
 	return { byId: new Map(apps.map((app) => [app.id, app])) };
 }
 
+export function resolvedAppOf(apps: PlacedApps, app: AppKind, address: string): AppKind {
+	const handoffApp = apps.byId.get(app)?.handoffAppOf?.(address) ?? null;
+	return handoffApp !== null && apps.byId.has(handoffApp) ? handoffApp : app;
+}
+
 export function abilitiesOf(apps: PlacedApps, app: AppKind): AppAbilities {
 	return apps.byId.get(app)?.abilities ?? PAGE_APP;
 }

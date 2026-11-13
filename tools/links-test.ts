@@ -4,6 +4,52 @@ import type { LinkTarget } from "../packages/shared/core/src/engine/sumi-link.ts
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
+import { GIT_LINK_GUIDE, gitAddressOf } from "../plugins/git/src/features/git-page/lib/git-address.ts";
+import { appLinkGuidesOf } from "../plugins/apps/src/features/app-tab/lib/app-link-guides.ts";
+import { withPromptParts } from "../plugins/ai/agent/data/assistant/shared/lib/turn-launcher.ts";
+import { appsFilledBy } from "./apps-filled-fixture.ts";
+import { files } from "../plugins/files/src/index.ts";
+import { git } from "../plugins/git/src/index.ts";
+import type { TurnFacts } from "../packages/shared/core/src/engine/assistant-port.ts";
+
+const appLinkGuides = appLinkGuidesOf(appsFilledBy([files, git]));
+check(
+	"the apps prompt part lists the git and file link forms from their own apps",
+	["- Git: sumi://git/", "- File: sumi://file/"].map((guide) => appLinkGuides.includes(guide)),
+	[true, true],
+);
+check("no app with a link guide adds no prompt part", appLinkGuidesOf([]), "");
+
+const LINKED_TURN: TurnFacts = {
+	runner: "claude-code",
+	prompt: "commit it",
+	resume: null,
+	model: null,
+	options: {},
+	project: "/work",
+	attachments: "/tmp/attach",
+	folders: [],
+	link: {
+		exe: "sumi",
+		socket: "/tmp/sumi.sock",
+		token: "t",
+		chat: "c",
+		servers: [],
+		systemPrompt: "Sumi's prompt",
+		mcpFlag: "--mcp",
+		hookFlag: "--hook",
+	},
+};
+check(
+	"prompt parts follow Sumi's prompt in the turn's system prompt, empty parts left out",
+	withPromptParts(LINKED_TURN, [() => "Git links", () => ""]).link?.systemPrompt,
+	"Sumi's prompt\n\nGit links",
+);
+check(
+	"a turn with no Sumi link takes no prompt parts",
+	withPromptParts({ ...LINKED_TURN, link: null }, [() => "Git links"]).link,
+	null,
+);
 
 console.info = () => undefined;
 console.error = () => undefined;
@@ -15,6 +61,7 @@ const TARGETS: readonly LinkTarget[] = [
 	{ kind: "page", app: "tasks", address: "" },
 	{ kind: "page", app: "notes", address: "a b/c" },
 	{ kind: "chat", id: "café ü" },
+	{ kind: "page", app: "git", address: "/r/my repo?head=a%26b&only=c1" },
 ];
 
 for (const target of TARGETS) {
@@ -31,6 +78,11 @@ const OLD_LINKS: readonly [string, LinkTarget][] = [
 	["sumi://tasks/T-1", { kind: "page", app: "tasks", address: "T-1" }],
 	["sumi://notes", { kind: "page", app: "notes", address: "" }],
 	["sumi://notes/a/b", { kind: "page", app: "notes", address: "a/b" }],
+	[
+		"sumi://git//r/my%20repo?head=a%26b&only=c1",
+		{ kind: "page", app: "git", address: "/r/my repo?head=a%26b&only=c1" },
+	],
+	["sumi://file//r/docs/plan.md", { kind: "page", app: "file", address: "/r/docs/plan.md" }],
 ];
 
 for (const [href, target] of OLD_LINKS) {
@@ -49,6 +101,15 @@ const REFUSED: readonly [string, string][] = [
 for (const [href, reason] of REFUSED) {
 	check(`${href} is refused with a reason`, linkTargetOf(href), { ok: false, reason });
 }
+
+const gitGuideExample = linkTargetOf(/\((sumi:\/\/git[^)]+)\)/.exec(GIT_LINK_GUIDE)?.[1] ?? "");
+check(
+	"the git link guide's example opens the git app at that repo, branch, base and commit",
+	gitGuideExample.ok && gitGuideExample.target.kind === "page"
+		? [gitGuideExample.target.app, gitAddressOf(gitGuideExample.target.address)]
+		: gitGuideExample,
+	["git", { folder: "/Users/me/repo", head: "feat/login", base: "main", only: "a1b2c3d" }],
+);
 
 const fakes = studioFakesOf();
 const studio = fakes.studioApp;

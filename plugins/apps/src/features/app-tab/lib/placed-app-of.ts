@@ -20,6 +20,7 @@ export function placedAppOf(app: FilledApp): PlacedApp {
 		newTabTitle: app.newTabTitle ?? null,
 		art: app.art ?? null,
 		artOf: app.artOf ?? null,
+		handoffAppOf: app.handoffAppOf ?? null,
 		abilities: {
 			...PAGE_APP_ABILITIES,
 			...declaredRulesOf(app.tabs),

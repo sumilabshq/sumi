@@ -16,6 +16,8 @@ const BASE_KEY = "base";
 const ONLY_KEY = "only";
 const APP_TITLE = "Git";
 
+export const GIT_LINK_GUIDE = `sumi://git/<absolute repo folder> shows the repo's changes. Add ?${HEAD_KEY}=<branch> for a branch, ${BASE_KEY}=<branch or commit> to compare against it (default ${LAST_COMMIT}, the last commit), ${ONLY_KEY}=<commit sha> to pick one commit or ${ONLY_KEY}=${UNCOMMITTED} for uncommitted changes. Example: [a1b2c3d](sumi://git//Users/me/repo?${HEAD_KEY}=feat/login&${BASE_KEY}=main&${ONLY_KEY}=a1b2c3d).`;
+
 export function gitAddressOf(address: string): GitAddress {
 	const mark = address.indexOf(ASKED_MARK);
 	const asked = new URLSearchParams(mark === -1 ? "" : address.slice(mark + 1));

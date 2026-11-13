@@ -1,7 +1,7 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { useTabHeader } from "@sumi/sumi-host-plugin";
-import type { AppView, ArtOf, TabModulesOf, TabRules, TitleOf } from "../../lib/app-types.js";
+import type { AppView, ArtOf, HandoffAppOf, TabModulesOf, TabRules, TitleOf } from "../../lib/app-types.js";
 
 export interface FilledApp {
 	readonly id: string;
@@ -14,6 +14,8 @@ export interface FilledApp {
 	readonly tabModules?: TabModulesOf | undefined;
 	readonly titleOf?: TitleOf | undefined;
 	readonly artOf?: ArtOf | undefined;
+	readonly handoffAppOf?: HandoffAppOf | undefined;
+	readonly linkGuide?: string | undefined;
 	readonly newTabTitle?: string | undefined;
 	readonly tabs?: TabRules | undefined;
 }

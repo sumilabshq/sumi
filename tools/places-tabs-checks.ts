@@ -1,5 +1,7 @@
 import { BARE_SCREEN } from "./places-fixture.ts";
-import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
+import { BUILT_IN_APPS, BUILT_IN_PLACED_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
+import { ListedPlacedAppsGateway } from "../plugins/apps/data/places/gateways/placed-apps/listed.gateway.ts";
+import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app-of.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
@@ -286,8 +288,59 @@ async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void>
 	);
 }
 
+const HANDOFF_APP_BY_EXTENSION: Readonly<Record<string, string>> = {
+	md: "canvas",
+	rs: "rocket",
+};
+
+const MARKDOWN_TO_CANVAS_PLACED_APP = placedAppOf({
+	id: "file",
+	title: "File",
+	handoffAppOf: (path) => HANDOFF_APP_BY_EXTENSION[path.slice(path.lastIndexOf(".") + 1)] ?? null,
+});
+
+async function openedAppAndAddressAt(main: Runtime, address: string): Promise<readonly unknown[]> {
+	const opened = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "file", address });
+	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
+	const tab = placed.ok && opened.ok ? placed.output.tabs.find(({ id }) => id === opened.output.id) : undefined;
+	return [tab?.app, tab?.lastAddress];
+}
+
+async function handoffChecks(): Promise<void> {
+	const core = localTransport();
+	core.serve(
+		runtime()
+			.modules(
+				RunnablePlacesModule({
+					injects: {
+						windows: new MemoryWindowsGateway({ windows: [] }),
+						tabs: new MemoryTabsGateway(),
+						placedApps: new ListedPlacedAppsGateway([...BUILT_IN_PLACED_APPS, MARKDOWN_TO_CANVAS_PLACED_APP]),
+					},
+				}),
+			)
+			.start({ platform: "server", env: {} }),
+	);
+	const main = windowOver(core);
+	check(
+		"an app whose handoffAppOf names another app opens the address there",
+		await openedAppAndAddressAt(main, "/notes/plan.md"),
+		["canvas", "/notes/plan.md"],
+	);
+	check(
+		"an address its handoffAppOf names no app for opens in the app itself",
+		await openedAppAndAddressAt(main, "/notes/plan.txt"),
+		["file", "/notes/plan.txt"],
+	);
+	check("a handoff to an app Sumi lacks opens in the app itself", await openedAppAndAddressAt(main, "/src/main.rs"), [
+		"file",
+		"/src/main.rs",
+	]);
+}
+
 const quiet = console.info;
 console.info = () => undefined;
+await handoffChecks();
 await migrationChecks();
 await unreadableChecks();
 await oneWriterChecks();

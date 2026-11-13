@@ -21,6 +21,7 @@ export interface PlacedApp {
 	readonly newTabTitle: string | null;
 	readonly art: string | null;
 	readonly artOf: ((address: string) => string | null) | null;
+	readonly handoffAppOf: ((address: string) => string | null) | null;
 	readonly abilities: AppAbilities;
 }
 

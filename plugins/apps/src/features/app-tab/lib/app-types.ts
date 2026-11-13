@@ -17,6 +17,8 @@ export type TitleOf = (address: string) => string;
 
 export type ArtOf = (address: string) => string | null;
 
+export type HandoffAppOf = (address: string) => string | null;
+
 export interface TabStanding {
 	readonly holderApp: string | null;
 }

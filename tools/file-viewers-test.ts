@@ -2,6 +2,7 @@ import { JSDOM } from "jsdom";
 import { CHAT_LOOK, FILE_LOOK, createCodeLines, markdownNodesOf } from "@widgetarium/markdown";
 import type { FileViewer } from "../plugins/files/src/features/viewer-choice/lib/file-viewer.ts";
 import { extensionOf, viewerOfFile } from "../plugins/files/src/features/viewer-choice/lib/viewer-of-file.ts";
+import { fileLinkAppOf } from "../plugins/files/src/features/viewer-choice/lib/file-link-app.ts";
 import { hasSecretsAt, secretsHidden, shownCodeOf } from "../plugins/code-viewer/src/features/code/lib/shown-code.ts";
 import { check, tally } from "./check-helpers.ts";
 
@@ -23,6 +24,23 @@ const LONG_BASH = ["```bash", ...Array.from({ length: 60 }, (_, at) => `echo ${a
 function chosenIdOf(path: string, choices: Readonly<Record<string, string>>): string | null {
 	return viewerOfFile(path, VIEWERS, choices).viewer?.id ?? null;
 }
+
+check(
+	"a sumi://file link opens a .md file in the viewer that declares .md",
+	fileLinkAppOf(VIEWERS).handoffAppOf?.("/notes/plan.md"),
+	"markdown-viewer",
+);
+check(
+	"a sumi://file link opens any other file in the viewer that opens any file",
+	fileLinkAppOf(VIEWERS).handoffAppOf?.("/a.rs"),
+	"code-viewer",
+);
+check("a sumi://file link opens nowhere without viewers", fileLinkAppOf([]).handoffAppOf?.("/a.rs"), null);
+check(
+	"the file link app draws no page, so a file no viewer opens is refused, not an empty tab",
+	fileLinkAppOf(VIEWERS).tabs?.runsInPage,
+	false,
+);
 
 function codeToolsOf(markdown: string, look: typeof CHAT_LOOK): readonly string[] {
 	const page = new JSDOM("<div></div>").window.document;
