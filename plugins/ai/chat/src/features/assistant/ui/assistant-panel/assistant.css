@@ -1720,7 +1720,6 @@
 	color: var(--sumi-text);
 	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.6 var(--sumi-font-ui);
 	caret-color: var(--sumi-accent);
-	caret-shape: block;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box::placeholder {
@@ -1734,6 +1733,19 @@
 	min-width: 0;
 	align-items: flex-start;
 	gap: var(--sumi-sp-4);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-caret {
+	position: absolute;
+	width: var(--sumi-caret-w);
+	height: var(--sumi-caret-h);
+	margin-top: 2px;
+	background: var(--sumi-accent);
+	pointer-events: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-box-frame:has(> .wg-studio-ai-caret) .wg-studio-ai-box {
+	caret-color: transparent;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-box-frame:has(> .wg-studio-ai-box:placeholder-shown)::before {
@@ -2584,9 +2596,9 @@
 
 .wg-chat-app .wg-studio-ai-said.is-markdown hr {
 	height: 1px;
-	margin: 4px calc(-1 * var(--wg-studio-edge));
+	margin: var(--sumi-sp-2) 0;
 	border: none;
-	background: var(--wg-kit-group-line);
+	background: var(--sumi-line);
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > * {
@@ -3435,9 +3447,9 @@
 	grid-column: 1;
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-studio-ai-dock-gap);
+	gap: 0;
 	max-width: none;
-	padding-block-start: calc(var(--sumi-sp-4) + var(--wg-studio-ai-dock-gap));
+	padding-block-start: 0;
 	background: var(--sumi-plate);
 }
 

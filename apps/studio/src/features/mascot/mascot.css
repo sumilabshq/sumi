@@ -23,6 +23,13 @@
 	--wg-mascot-shadow: rgba(0, 0, 0, 0.5);
 }
 
+[data-tabs-item] .wg-chat-tab-icon {
+	--wg-mascot-body-light: currentColor;
+	--wg-mascot-body-base: currentColor;
+	--wg-mascot-body-dark: currentColor;
+	--wg-mascot-eye: var(--sumi-plate);
+}
+
 .wg-mascot-stage {
 	position: absolute;
 	top: 0;

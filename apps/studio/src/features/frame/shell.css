@@ -24,6 +24,10 @@
 	-webkit-font-smoothing: antialiased;
 }
 
+:is(.wg-studio, .wg-kit-portal-layer.is-studio) ::selection {
+	background: var(--sumi-accent-soft);
+}
+
 .wg-shell-left {
 	position: relative;
 	z-index: 4;

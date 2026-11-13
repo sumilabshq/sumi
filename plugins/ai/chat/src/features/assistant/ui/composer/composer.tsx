@@ -16,6 +16,7 @@ import type { Attached } from "./attached-change.js";
 import { CommandSaid } from "./command-said.js";
 import { ComposerTools } from "./composer-tools.js";
 import { DraftAttachments } from "./draft-attachments.js";
+import { useBlockCaret } from "../../lib/use-block-caret.js";
 import { SendButton } from "./send-button.js";
 
 export interface ComposerProps {
@@ -68,6 +69,7 @@ export function Composer({
 	useTakesPrefill(composerBox, fill);
 	const slash = useSlashMenu({ draft, fill, box: composerBox });
 	const saidPieces = saidPiecesOf(slash.entries, draft);
+	const caret = useBlockCaret(composerBox, draft);
 	return (
 		<div className="wg-studio-ai-composer" ref={composer}>
 			<SlashMenu slash={slash} draft={draft} />
@@ -115,6 +117,7 @@ export function Composer({
 						}}
 						onBlur={() => setFocused(false)}
 					/>
+					{caret === null ? null : <span className="wg-studio-ai-caret" style={caret} aria-hidden="true" />}
 					<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 				</div>
 				<div className="wg-studio-ai-field-bar">
