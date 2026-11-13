@@ -10,11 +10,11 @@
 		}
 	},
 	"scripts": {
-		"dev": "tauri dev",
+		"dev": "tauri dev --config src-tauri/tauri.dev.conf.json",
 		"dev:frontend": "node dev-frontend.mts",
 		"build:frontend": "node build-frontend.mts",
 		"build": "tauri build --bundles app --no-sign",
-		"start": "tauri build --debug --bundles app --no-sign && open src-tauri/target/debug/bundle/macos/Widgetarium.app"
+		"start": "tauri build --debug --bundles app --no-sign --config src-tauri/tauri.dev.conf.json && open src-tauri/target/debug/bundle/macos/Widgetarium.app"
 	},
 	"dependencies": {
 		"@sumi/chat-tabs": "0.1.0",
