@@ -176,7 +176,7 @@
 	display: flex;
 	align-items: center;
 	gap: 2px;
-	padding: 0 12px 0 20px;
+	padding: 0 12px 0 var(--sumi-side-pad);
 	min-width: 0;
 }
 
@@ -259,7 +259,7 @@
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 0 var(--sumi-pad);
+	padding: 0 var(--sumi-side-pad);
 	white-space: nowrap;
 	font-size: var(--sumi-fs-13);
 	letter-spacing: normal;
@@ -411,7 +411,7 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	padding: 0 12px 0 var(--sumi-pad);
+	padding: 0 12px 0 var(--sumi-side-pad);
 	margin-top: 4px;
 	border-radius: 0;
 	font-size: var(--sumi-fs-12);
@@ -509,7 +509,7 @@
 	align-items: center;
 	gap: 4px;
 	height: 52px;
-	padding: 0 var(--sumi-sp-5) var(--sumi-sp-2) 14px;
+	padding: 0 var(--sumi-sp-5) var(--sumi-sp-2) calc(var(--sumi-side-pad) - var(--sumi-sp-3));
 	margin-left: 0;
 	position: relative;
 }

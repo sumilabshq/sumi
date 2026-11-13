@@ -288,10 +288,6 @@ body:has([data-browser-pages-live]),
 	padding-left: var(--sumi-sp-5);
 }
 
-.wg-pane-board:has(> .wg-pane ~ .wg-pane) > .wg-pane:not([data-pane-dimmed]) > .wg-shell-plate {
-	box-shadow: inset 0 2px 0 var(--sumi-text);
-}
-
 .wg-shell-left:not([data-state="docked"]) ~ .wg-shell-app-zone .wg-plate-head[data-at-top-left] .wg-plate-head-row {
 	padding-left: calc(var(--wg-shell-toggle-left) - var(--sumi-gap) + var(--sumi-h-sm) + var(--sumi-sp-3));
 }

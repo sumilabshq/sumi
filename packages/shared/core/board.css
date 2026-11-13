@@ -320,6 +320,7 @@
 		--sumi-sidebar-max: 420px;
 		--sumi-gap: 0px;
 		--sumi-pad: 20px;
+		--sumi-side-pad: 16px;
 		--sumi-caret-w: 8px;
 		--sumi-caret-h: 18px;
 
@@ -14697,14 +14698,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:-mx-\[calc\(\(var\(--wg-studio-edge\,6px\)_-_1px\)_\/_2\)\] {
 		margin-inline: calc(calc((var(--wg-studio-edge, 6px) - 1px) / 2) * -1) !important;
 	}
+	.cv\:mx-\(--sumi-side-pad\) {
+		margin-inline: var(--sumi-side-pad) !important;
+	}
 	.cv\:mx-1\.5 {
 		margin-inline: calc(var(--cv-spacing) * 1.5) !important;
 	}
 	.cv\:mx-2 {
 		margin-inline: calc(var(--cv-spacing) * 2) !important;
-	}
-	.cv\:mx-5 {
-		margin-inline: calc(var(--cv-spacing) * 5) !important;
 	}
 	.cv\:mx-px {
 		margin-inline: 1px !important;
@@ -15281,6 +15282,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:p-\[var\(--wg-kit-plate-pad\,6px\)\] {
 		padding: var(--wg-kit-plate-pad, 6px) !important;
 	}
+	.cv\:px-\(--sumi-side-pad\) {
+		padding-inline: var(--sumi-side-pad) !important;
+	}
 	.cv\:px-1 {
 		padding-inline: var(--cv-spacing) !important;
 	}
@@ -15301,9 +15305,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:px-4 {
 		padding-inline: calc(var(--cv-spacing) * 4) !important;
-	}
-	.cv\:px-5 {
-		padding-inline: calc(var(--cv-spacing) * 5) !important;
 	}
 	.cv\:px-\[10px\] {
 		padding-inline: 10px !important;
@@ -16833,7 +16834,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	display: flex;
 	align-items: center;
 	gap: 2px;
-	padding: 0 12px 0 20px;
+	padding: 0 12px 0 var(--sumi-side-pad);
 	min-width: 0;
 }
 .wg-ws-head > .wg-kit-anchor {
@@ -16904,7 +16905,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 0 var(--sumi-pad);
+	padding: 0 var(--sumi-side-pad);
 	white-space: nowrap;
 	font-size: var(--sumi-fs-13);
 	letter-spacing: normal;
@@ -17033,7 +17034,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	padding: 0 12px 0 var(--sumi-pad);
+	padding: 0 12px 0 var(--sumi-side-pad);
 	margin-top: 4px;
 	border-radius: 0;
 	font-size: var(--sumi-fs-12);
@@ -17119,7 +17120,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	align-items: center;
 	gap: 4px;
 	height: 52px;
-	padding: 0 var(--sumi-sp-5) var(--sumi-sp-2) 14px;
+	padding: 0 var(--sumi-sp-5) var(--sumi-sp-2) calc(var(--sumi-side-pad) - var(--sumi-sp-3));
 	margin-left: 0;
 	position: relative;
 }
@@ -17676,9 +17677,6 @@ body:has([data-browser-pages-live]),
 }
 .wg-plate-head.is-app .wg-plate-head-row {
 	padding-left: var(--sumi-sp-5);
-}
-.wg-pane-board:has(> .wg-pane ~ .wg-pane) > .wg-pane:not([data-pane-dimmed]) > .wg-shell-plate {
-	box-shadow: inset 0 2px 0 var(--sumi-text);
 }
 .wg-shell-left:not([data-state="docked"]) ~ .wg-shell-app-zone .wg-plate-head[data-at-top-left] .wg-plate-head-row {
 	padding-left: calc(var(--wg-shell-toggle-left) - var(--sumi-gap) + var(--sumi-h-sm) + var(--sumi-sp-3));

@@ -13,7 +13,7 @@ const STUDIO_URL: &str = "index.html?window={window}&tab={tab}";
 const CHAT_WINDOW_URL: &str = "index.html?window={window}&chat={chat}";
 const STUDIO_MIN_WIDTH: f64 = 360.0;
 const STUDIO_MIN_HEIGHT: f64 = 560.0;
-const TRAFFIC_LIGHTS_AT: LogicalPosition<f64> = LogicalPosition { x: 20.0, y: 24.0 };
+const TRAFFIC_LIGHTS_AT: LogicalPosition<f64> = LogicalPosition { x: 16.0, y: 24.0 };
 pub const STUDIO_WINDOW: TornWindow = TornWindow { width: 1100.0, height: 760.0, grab_top: 20.0 };
 static OPENING_STUDIO_WINDOW: Mutex<()> = Mutex::new(());
 

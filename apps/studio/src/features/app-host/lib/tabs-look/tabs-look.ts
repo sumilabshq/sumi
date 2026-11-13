@@ -1,7 +1,7 @@
 const EDGE_TO_EDGE_FILL =
 	"cv:isolate cv:before:absolute cv:before:inset-y-0 cv:before:right-0 cv:before:left-[-100vw] cv:before:-z-10 cv:before:content-[''] cv:before:transition-[background-color] cv:before:duration-(--sumi-dur-hover) cv:hover:before:bg-(--sumi-hover) cv:hover:before:duration-0 cv:focus-visible:before:bg-(--sumi-hover) cv:active:before:bg-(--sumi-active)";
 
-export const SIDEBAR_ROW = `cv:group/row cv:relative cv:flex cv:h-[30px] cv:w-full cv:min-w-0 cv:flex-none cv:cursor-default cv:items-center cv:gap-[10px] cv:rounded-none cv:border-0 cv:bg-transparent cv:px-5 cv:py-0 cv:text-start cv:text-[13px] cv:leading-[1.5] cv:font-normal cv:whitespace-nowrap cv:text-(--sumi-text-2) cv:[box-shadow:none] cv:outline-none cv:select-none cv:hover:text-(--sumi-text) cv:focus-visible:text-(--sumi-text) ${EDGE_TO_EDGE_FILL}`;
+export const SIDEBAR_ROW = `cv:group/row cv:relative cv:flex cv:h-[30px] cv:w-full cv:min-w-0 cv:flex-none cv:cursor-default cv:items-center cv:gap-[10px] cv:rounded-none cv:border-0 cv:bg-transparent cv:px-(--sumi-side-pad) cv:py-0 cv:text-start cv:text-[13px] cv:leading-[1.5] cv:font-normal cv:whitespace-nowrap cv:text-(--sumi-text-2) cv:[box-shadow:none] cv:outline-none cv:select-none cv:hover:text-(--sumi-text) cv:focus-visible:text-(--sumi-text) ${EDGE_TO_EDGE_FILL}`;
 
 export const SIDEBAR_ROW_SHOWN =
 	"cv:data-[shown]:font-medium cv:data-[shown]:text-(--sumi-text) cv:data-[shown]:before:bg-(--sumi-selected) cv:data-[shown]:hover:before:bg-(--sumi-selected)";
@@ -18,7 +18,7 @@ export const CARD_RADIUS_PX = 0;
 export const NESTED_ROWS = "cv:relative cv:flex cv:flex-col cv:ps-[26px]";
 
 export const CARD_HEAD_LOOK =
-	"cv:relative cv:flex cv:h-[30px] cv:w-full cv:min-w-0 cv:flex-none cv:items-center cv:gap-[10px] cv:rounded-none cv:border-0 cv:bg-transparent cv:px-5 cv:py-0 cv:text-start cv:font-[inherit] cv:text-[13px] cv:font-medium cv:whitespace-nowrap cv:text-(--sumi-text) cv:[box-shadow:none] cv:outline-none cv:select-none";
+	"cv:relative cv:flex cv:h-[30px] cv:w-full cv:min-w-0 cv:flex-none cv:items-center cv:gap-[10px] cv:rounded-none cv:border-0 cv:bg-transparent cv:px-(--sumi-side-pad) cv:py-0 cv:text-start cv:font-[inherit] cv:text-[13px] cv:font-medium cv:whitespace-nowrap cv:text-(--sumi-text) cv:[box-shadow:none] cv:outline-none cv:select-none";
 
 export const CARD_HEAD = `cv:group/head cv:cursor-default ${CARD_HEAD_LOOK} ${EDGE_TO_EDGE_FILL}`;
 

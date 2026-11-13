@@ -7,7 +7,7 @@ import { EssentialTile } from "./essential-tile.js";
 
 const ESSENTIALS = "Essentials";
 const GRID =
-	"cv:mx-5 cv:mt-1 cv:mb-2 cv:grid cv:flex-none cv:grid-cols-[repeat(var(--tabs-columns),minmax(0,1fr))] cv:gap-1.5 cv:empty:m-0";
+	"cv:mx-(--sumi-side-pad) cv:mt-1 cv:mb-2 cv:grid cv:flex-none cv:grid-cols-[repeat(var(--tabs-columns),minmax(0,1fr))] cv:gap-1.5 cv:empty:m-0";
 
 export function EssentialsGrid({ tiles }: { readonly tiles: readonly EssentialTileState[] }): ReactElement {
 	const columns: TokenStyle = { "--tabs-columns": String(columnsOf(tiles.length)) };
