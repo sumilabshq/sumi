@@ -17,12 +17,5 @@ const UNWRAPPED = {
 };
 
 export function WrapLinesAction({ isWrapped, onToggle }: WrapLinesActionProps): ReactElement {
-	return (
-		<ToggleAction
-			isOn={isWrapped}
-			whenOn={WRAPPED}
-			whenOff={UNWRAPPED}
-			onToggle={onToggle}
-		/>
-	);
+	return <ToggleAction isOn={isWrapped} whenOn={WRAPPED} whenOff={UNWRAPPED} onToggle={onToggle} />;
 }

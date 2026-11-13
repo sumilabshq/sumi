@@ -14,6 +14,7 @@ import { serveCore } from "./core-calls.js";
 import type { CoreListener } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
+import { TauriSecretVault } from "../secrets/tauri-secret-vault.js";
 
 const NOT_KEPT = "[studio-core] workspace {workspace}: the open windows were not checked ({reason})";
 const TURNS_KEPT = "[studio-core] workspace {workspace}: running marks of the last run stay ({reason})";
@@ -75,7 +76,7 @@ async function pluginsOrFailed(
 	listener: CoreListener,
 ): Promise<ResolvedPlugins | null> {
 	try {
-		const plugins = startSumiPlugins(await workspacePluginStateOf(store, workspace));
+		const plugins = startSumiPlugins(await workspacePluginStateOf(store, workspace), new TauriSecretVault(store));
 
 		for (const refusal of plugins.refusals) {
 			console.error(PLUGIN_REFUSED.replace("{workspace}", workspace).replace("{refusal}", refusal));

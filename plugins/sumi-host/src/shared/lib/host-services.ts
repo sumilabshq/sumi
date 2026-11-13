@@ -109,3 +109,11 @@ export const windows = service<Windows>("windows");
 export const shell = service<Shell>("shell");
 
 export const agents = service<Agents>("agents");
+
+export interface Secrets {
+	read(key: string): Promise<string | null>;
+	write(key: string, value: string): Promise<void>;
+	remove(key: string): Promise<void>;
+}
+
+export const secrets = service<Secrets>("secrets");

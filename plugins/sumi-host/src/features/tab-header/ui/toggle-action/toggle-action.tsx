@@ -17,11 +17,5 @@ export interface ToggleActionProps {
 export function ToggleAction({ isOn, whenOn, whenOff, onToggle }: ToggleActionProps): ReactElement {
 	const { Action } = useTabHeader();
 	const face = isOn ? whenOn : whenOff;
-	return (
-		<Action
-			label={face.label}
-			icon={face.icon}
-			onPress={onToggle}
-		/>
-	);
+	return <Action label={face.label} icon={face.icon} onPress={onToggle} />;
 }

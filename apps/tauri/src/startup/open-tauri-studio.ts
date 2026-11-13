@@ -30,6 +30,7 @@ import { tauriWorkspaceApps } from "../workspace/tauri-workspace-apps.js";
 import { reopensOnWorkspaceSwitch } from "../workspace/workspace-switch.js";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
 import type { WorkspaceEntry } from "../workspace/workspace-docs.js";
+import { TauriSecretVault } from "../secrets/tauri-secret-vault.js";
 
 export interface StudioOpening {
 	readonly project: WidgetariumProject;
@@ -120,7 +121,7 @@ function startTauriStudioApp(
 }
 
 async function pluginsOf({ store, workspace }: StudioOpening): Promise<ResolvedPlugins> {
-	const plugins = startSumiPlugins(await workspacePluginStateOf(store, workspace.id));
+	const plugins = startSumiPlugins(await workspacePluginStateOf(store, workspace.id), new TauriSecretVault(store));
 
 	for (const refusal of plugins.refusals) {
 		console.warn(PLUGIN_REFUSED.replace("{workspace}", workspace.id).replace("{refusal}", refusal));

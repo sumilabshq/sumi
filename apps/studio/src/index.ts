@@ -7,4 +7,5 @@ export { startBrowserApp } from "./browser/browser-app.js";
 export type { BrowserAppAsk } from "./browser/browser-app.js";
 export { BUILT_IN_PROFILE, builtInPluginState, startSumiPlugins } from "./plugins/sumi-plugins.js";
 export type { ResolvedPlugins, BackgroundModule, HostServer } from "./plugins/sumi-plugins.js";
+export type { SecretVault } from "./plugins/secret-vault.js";
 export { startBackendServers } from "./tabs/backend-servers.js";

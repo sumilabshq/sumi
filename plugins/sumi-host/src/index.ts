@@ -1,4 +1,4 @@
-export { agents, backend, shell, windows } from "./shared/lib/host-services.js";
+export { agents, backend, secrets, shell, windows } from "./shared/lib/host-services.js";
 export type {
 	Agents,
 	Backend,
@@ -7,6 +7,7 @@ export type {
 	CoreChanges,
 	DrawnTabPage,
 	FrameServing,
+	Secrets,
 	Shell,
 	TabModules,
 	TabPageProps,
