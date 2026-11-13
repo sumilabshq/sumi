@@ -2,15 +2,22 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { terminal as definition } from "../module.js";
 import { output, rereadOutput, resize, sendLine, typeText } from "../features/lines/requests.js";
+import { getOutput, rereadProcessOutput, start, stop } from "../features/processes/requests.js";
 import { run } from "../features/programs/requests.js";
+import { processOutputChanged } from "../gateways/processes/processes.events.js";
 import { outputChanged } from "../gateways/terminal-sessions/terminal-sessions.events.js";
 
 export const terminal = handledModule(definition, [
 	rereadOutput,
+	rereadProcessOutput,
 	named("lines.output", output),
 	named("lines.resize", resize),
 	named("lines.send-line", sendLine),
 	named("lines.type-text", typeText),
+	named("processes.get-output", getOutput),
+	named("processes.process-output-changed", processOutputChanged),
+	named("processes.start", start),
+	named("processes.stop", stop),
 	named("programs.run", run),
 	named("terminal-sessions.output-changed", outputChanged),
 ]);

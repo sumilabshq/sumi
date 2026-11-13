@@ -1,12 +1,12 @@
-use super::commands::{self, ClaudeAsk, StartAsk};
+use super::commands::{self, LaunchAsk};
 use super::drops;
 use super::state::Assistant;
-use super::turns::TurnSink;
+use crate::process_runs::ProcessSink;
 use crate::agent::hub::{AgentHub, AgentLink};
 use serde_json::Value;
 use crate::store::{opened_working_folder, Store};
 use crate::studio_caller::refuse_foreign_caller;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use tauri::Manager;
@@ -38,10 +38,18 @@ pub fn handle<R: Runtime>(assistant: &Arc<Assistant>, invoke: Invoke<R>) -> bool
             let project = working_folder_of(&message);
             off_main_thread(resolver, move || Ok(commands::providers(&assistant, project.as_deref())))
         }
-        "start_turn" => match turn_start_of(&message) {
-            Ok(start) => {
+        "turn_facts" => match texts_argument(&message, "folders") {
+            Ok(folders) => {
                 let project = working_folder_of(&message);
-                off_main_thread(resolver, move || start_turn(&assistant, project.as_deref(), start))
+                let link = agent_link_of(&message);
+                off_main_thread(resolver, move || commands::turn_facts(&assistant, project.as_deref(), &folders, link.as_ref()))
+            }
+            Err(refusal) => resolver.respond(as_reply(Err(refusal))),
+        },
+        "start_launch" => match launch_ask_of(&message).and_then(|launch| channel_sink(&message).map(|sink| (launch, sink))) {
+            Ok((launch, sink)) => {
+                let project = working_folder_of(&message);
+                off_main_thread(resolver, move || commands::start_launch(&assistant, project.as_deref(), &launch, sink))
             }
             Err(refusal) => resolver.respond(as_reply(Err(refusal))),
         },
@@ -103,7 +111,7 @@ fn number_argument<R: Runtime>(message: &InvokeMessage<R>, name: &str) -> Result
     argument(message, name)?.as_u64().ok_or_else(|| MISSING_ARGUMENT.replace("{name}", name))
 }
 
-fn channel_sink<R: Runtime>(message: &InvokeMessage<R>) -> Result<TurnSink, String> {
+fn channel_sink<R: Runtime>(message: &InvokeMessage<R>) -> Result<ProcessSink, String> {
     let named = text_argument(message, "onEvent")?;
     let id = JavaScriptChannelId::from_str(named).map_err(|_| NOT_A_CHANNEL.to_string())?;
     let channel: Channel<Value> = id.channel_on(message.webview());
@@ -111,23 +119,7 @@ fn channel_sink<R: Runtime>(message: &InvokeMessage<R>) -> Result<TurnSink, Stri
 }
 
 const NOT_TEXTS: &str = "The call's {name} argument must be a list of texts.";
-const NOT_CLAUDE_OPTIONS: &str = "The call's claude argument must hold a mode, a model and an effort.";
-
-struct ClaudeStart {
-    mode: String,
-    model: String,
-    effort: String,
-}
-
-struct TurnStart {
-    provider_id: String,
-    prompt: String,
-    resume: Option<String>,
-    claude: Option<ClaudeStart>,
-    folders: Vec<String>,
-    sink: TurnSink,
-    agent: Option<AgentLink>,
-}
+const NOT_ENV: &str = "The call's env argument must map names to texts.";
 
 fn agent_link_of<R: Runtime>(message: &InvokeMessage<R>) -> Option<AgentLink> {
     let Some(chat) = json_args(message).and_then(|args| args.get("chatId")).and_then(Value::as_str) else {
@@ -155,38 +147,20 @@ fn texts_argument<R: Runtime>(message: &InvokeMessage<R>, name: &str) -> Result<
     rows.iter().map(|row| row.as_str().map(str::to_string).ok_or_else(refused)).collect()
 }
 
-fn claude_start_of<R: Runtime>(message: &InvokeMessage<R>) -> Result<Option<ClaudeStart>, String> {
-    let Some(held) = json_args(message).and_then(|args| args.get("claude")).filter(|held| !held.is_null()) else {
-        return Ok(None);
+fn env_argument<R: Runtime>(message: &InvokeMessage<R>) -> Result<Vec<(String, String)>, String> {
+    let Some(held) = json_args(message).and_then(|args| args.get("env")).filter(|held| !held.is_null()) else {
+        return Ok(Vec::new());
     };
-    let text = |name: &str| held.get(name).and_then(Value::as_str).map(str::to_string).ok_or(NOT_CLAUDE_OPTIONS);
-    Ok(Some(ClaudeStart { mode: text("mode")?, model: text("model")?, effort: text("effort")? }))
+    let named = held.as_object().ok_or(NOT_ENV)?;
+    named.iter().map(|(name, value)| value.as_str().map(|text| (name.clone(), text.to_string())).ok_or_else(|| NOT_ENV.to_string())).collect()
 }
 
-fn turn_start_of<R: Runtime>(message: &InvokeMessage<R>) -> Result<TurnStart, String> {
-    let resume = json_args(message).and_then(|args| args.get("resume")).and_then(Value::as_str);
-    Ok(TurnStart {
-        provider_id: text_argument(message, "providerId")?.to_string(),
-        prompt: text_argument(message, "prompt")?.to_string(),
-        resume: resume.map(str::to_string),
-        claude: claude_start_of(message)?,
-        folders: texts_argument(message, "folders")?,
-        sink: channel_sink(message)?,
-        agent: agent_link_of(message),
+fn launch_ask_of<R: Runtime>(message: &InvokeMessage<R>) -> Result<LaunchAsk, String> {
+    Ok(LaunchAsk {
+        program: text_argument(message, "program")?.to_string(),
+        args: texts_argument(message, "args")?,
+        env: env_argument(message)?,
     })
-}
-
-fn start_turn(assistant: &Assistant, project: Option<&Path>, start: TurnStart) -> Answer {
-    let claude = start.claude.as_ref().map(|held| ClaudeAsk { mode: &held.mode, model: &held.model, effort: &held.effort });
-    let ask = StartAsk {
-        provider_id: &start.provider_id,
-        prompt: &start.prompt,
-        resume: start.resume.as_deref(),
-        claude,
-        folders: &start.folders,
-        agent: start.agent.as_ref(),
-    };
-    commands::start_turn(assistant, project, &ask, start.sink)
 }
 
 fn pick_folder<R: Runtime>(assistant: &Assistant, app: &tauri::AppHandle<R>) -> Answer {

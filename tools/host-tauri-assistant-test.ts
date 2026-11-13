@@ -1,4 +1,11 @@
-import type { AssistantPort, AssistantSession } from "../packages/shared/core/src/engine/assistant-port.ts";
+import type {
+	AssistantPort,
+	AssistantSession,
+	TurnFacts,
+	TurnLaunch,
+} from "../packages/shared/core/src/engine/assistant-port.ts";
+import type { Runner } from "../plugins/ai/agent/data/assistant/shared/host/runner.host.ts";
+import { launcherFrom } from "../plugins/ai/agent/data/assistant/shared/lib/turn-launcher.ts";
 import type { IpcOptions, TauriIpc } from "../apps/tauri/src/assistant/assistant-bridge.ts";
 import {
 	ATTACHMENT_PATH_HEADER,
@@ -9,9 +16,9 @@ import {
 } from "../apps/tauri/src/assistant/assistant-bridge.ts";
 import { cssPointOf, dragStepOf, isInside } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
 import type { ChatSpot, WebviewDragSource } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
-import { assistant as assistantModule } from "../plugins/chat/data/assistant/generated/module.ts";
-import { attachmentFilesIn } from "../plugins/chat/data/assistant/gateways/assistant-parts/port.gateway.ts";
-import { assistant as assistantContract } from "../plugins/chat/data/assistant/generated/contract.ts";
+import { assistant as assistantModule } from "../plugins/ai/agent/data/assistant/generated/module.ts";
+import { attachmentFilesIn } from "../plugins/ai/agent/data/assistant/gateways/assistant-parts/port.gateway.ts";
+import { assistant as assistantContract } from "../plugins/ai/agent/data/assistant/generated/contract.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
@@ -89,6 +96,7 @@ const PROVIDERS = {
 
 interface FakeIpc extends TauriIpc {
 	readonly called: Called[];
+	readonly launched: TurnFacts[];
 	channels: FakeChannel[];
 	startRefusal: string | null;
 	providersAnswer: unknown;
@@ -114,8 +122,23 @@ const NO_FOLDER_PICKS: TauriWorkspaceFolders = {
 	opened: OPENED,
 };
 
+const RUNNERS_OF = new WeakMap<TauriAssistant, readonly Runner[]>();
+
+function recordingRunnersOf(ipc: FakeIpc): readonly Runner[] {
+	const recording = (facts: TurnFacts): TurnLaunch => {
+		ipc.launched.push(facts);
+		return { program: facts.runner, args: [facts.prompt], env: {} };
+	};
+	return ["claude-code", "opencode"].map((id) => ({ id, label: id, models: [], meters: [], launchOf: recording }));
+}
+
+function factsAnswerOf(args: unknown): unknown {
+	const folders = typeof args === "object" && args !== null ? Reflect.get(args, "folders") : [];
+	return { project: "/work", attachments: "/attachments", folders: folders ?? [], link: null };
+}
+
 function startedAssistant(ipc: FakeIpc, page: object, usageMemory: UsageMemory = memoryShelf()): TauriAssistant {
-	return startTauriAssistant({
+	const started = startTauriAssistant({
 		ipc,
 		page,
 		workspace: NO_FOLDER_PICKS,
@@ -123,6 +146,10 @@ function startedAssistant(ipc: FakeIpc, page: object, usageMemory: UsageMemory =
 		chat: CHAT_SPOT,
 		usageMemory,
 	});
+	const runners = recordingRunnersOf(ipc);
+	RUNNERS_OF.set(started, runners);
+	started.port.useLauncher?.(launcherFrom(runners, []));
+	return started;
 }
 
 function memoryShelf(): UsageMemory {
@@ -135,9 +162,9 @@ function memoryShelf(): UsageMemory {
 	};
 }
 
-function chatOver({ host }: TauriAssistant): Runtime {
+function chatOver(started: TauriAssistant): Runtime {
 	return runtime()
-		.modules(assistantModule(host))
+		.modules(assistantModule({ ...started.host, runners: RUNNERS_OF.get(started) ?? [] }))
 		.start({
 			platform: "tauri",
 			scope: {
@@ -149,6 +176,7 @@ function chatOver({ host }: TauriAssistant): Runtime {
 function fakeIpc(): FakeIpc {
 	const ipc: FakeIpc = {
 		called: [],
+		launched: [],
 		channels: [],
 		startRefusal: null,
 		pickedFolder: null,
@@ -161,8 +189,9 @@ function fakeIpc(): FakeIpc {
 			if (command.endsWith("|pick_folder")) return ipc.pickedFolder;
 			if (command.endsWith("|drop_paths")) return ipc.dropped;
 			if (command.endsWith("|read_dropped")) return ipc.droppedBytes;
-			if (command.endsWith("|start_turn") && ipc.startRefusal !== null) throw new Error(ipc.startRefusal);
-			return command.endsWith("|start_turn") ? 40 + ipc.called.length : null;
+			if (command.endsWith("|turn_facts")) return factsAnswerOf(args);
+			if (command.endsWith("|start_launch") && ipc.startRefusal !== null) throw new Error(ipc.startRefusal);
+			return command.endsWith("|start_launch") ? 40 + ipc.called.length : null;
 		},
 		channel: (onMessage) => {
 			const channel = { onMessage };
@@ -259,16 +288,33 @@ async function streamChecks(): Promise<void> {
 	const ipc = fakeIpc();
 	const { port } = startedAssistant(ipc, {});
 	const channel = await sendAndStart(port, ipc, "Reply with the single word ok");
-	const started = callsNamed(ipc, "start_turn")[0]?.args;
-	check("the turn names the provider, the prompt and its chat, never a command line", started, {
-		providerId: "claude-code",
-		prompt: "Reply with the single word ok",
-		resume: null,
-		claude: { mode: "auto", model: "opus", effort: "medium" },
-		folders: [],
-		chatId: "chat-1",
-		onEvent: channel,
-	});
+	const started = ipc.launched[0];
+	check(
+		"the runner gets the turn as facts: the runner, the prompt, the model and options, the folders",
+		started === undefined
+			? null
+			: {
+					runner: started.runner,
+					prompt: started.prompt,
+					resume: started.resume,
+					model: started.model,
+					options: started.options,
+					folders: started.folders,
+				},
+		{
+			runner: "claude-code",
+			prompt: "Reply with the single word ok",
+			resume: null,
+			model: "opus",
+			options: { mode: "auto", effort: "medium" },
+			folders: [],
+		},
+	);
+	check(
+		"the host starts what the runner built, never a command line of its own",
+		callsNamed(ipc, "start_launch")[0]?.args,
+		{ program: "claude-code", args: ["Reply with the single word ok"], env: {}, onEvent: channel },
+	);
 	check("a sent turn is busy", port.session().busy, true);
 
 	streamed(channel, CLAUDE_TURN);
@@ -290,11 +336,7 @@ async function streamChecks(): Promise<void> {
 	);
 
 	await sendAndStart(port, ipc, "again");
-	check(
-		"the next turn resumes the streamed session",
-		(callsNamed(ipc, "start_turn")[1]?.args as { resume?: unknown }).resume,
-		"sess-1",
-	);
+	check("the next turn resumes the streamed session", ipc.launched[1]?.resume, "sess-1");
 }
 
 async function resumeChecks(): Promise<void> {
@@ -306,8 +348,7 @@ async function resumeChecks(): Promise<void> {
 	await flush();
 	await port.chooseProvider("opencode");
 	const opencode = await sendAndStart(port, ipc, "second");
-	const resumeOf = (index: number): unknown =>
-		(callsNamed(ipc, "start_turn")[index]?.args as { resume?: unknown }).resume;
+	const resumeOf = (index: number): unknown => ipc.launched[index]?.resume;
 	check("a Claude session is never handed to another provider", resumeOf(1), null);
 	said(opencode, { kind: "exited", code: 0 });
 	await flush();
@@ -343,7 +384,7 @@ async function failedWriteChecks(): Promise<void> {
 	await flush();
 	check(
 		"a failed write stops the turn before it starts",
-		[port.session().failure, callsNamed(ipc, "start_turn").length],
+		[port.session().failure, ipc.launched.length],
 		["The answer could not be started: An attached file could not be written: disk full", 0],
 	);
 }
@@ -423,18 +464,15 @@ async function folderAndOptionChecks(): Promise<void> {
 	await chat.send(assistantContract.agent.chooseClaudeOption, { chat: null, option: { effort: "xhigh" } });
 	await chat.send(assistantContract.composer.sendMessage, { chat: null, said: "Match its style" });
 	await flush();
-	const started = callsNamed(ipc, "start_turn").at(-1)?.args;
-	const startedArgs = typeof started === "object" && started !== null ? started : {};
+	const started = ipc.launched.at(-1);
 	check(
 		"the turn lends the picked folder and carries the chosen options as names",
-		[Reflect.get(startedArgs, "folders"), Reflect.get(startedArgs, "claude")],
+		[started?.folders, { mode: started?.options["mode"], model: started?.model, effort: started?.options["effort"] }],
 		[["/Users/me/Apps/habits"], { mode: "auto", model: "sonnet", effort: "xhigh" }],
 	);
 	check(
 		"the message names the folder by its path, as a folder to read",
-		String(Reflect.get(startedArgs, "prompt")).includes(
-			'- folder "habits" (a folder you may read): /Users/me/Apps/habits',
-		),
+		String(started?.prompt).includes('- folder "habits" (a folder you may read): /Users/me/Apps/habits'),
 		true,
 	);
 	streamed(lastChannel(ipc), [
@@ -681,10 +719,7 @@ const COMPACT_RUN = [
 ];
 
 function startedPrompts(ipc: FakeIpc): unknown[] {
-	return callsNamed(ipc, "start_turn").map(({ args }) => {
-		const { prompt, resume } = args as { prompt?: unknown; resume?: unknown };
-		return [prompt, resume];
-	});
+	return ipc.launched.map(({ prompt, resume }) => [prompt, resume]);
 }
 
 function lostResult(sessionId: string): unknown {
@@ -898,12 +933,12 @@ async function queueChecks(): Promise<void> {
 	const ipc = fakeIpc();
 	const { port } = startedAssistant(ipc, {});
 	const first = await sendAndStart(port, ipc, "build the queue");
-	const startsBefore = callsNamed(ipc, "start_turn").length;
+	const startsBefore = ipc.launched.length;
 	await port.send("use a pencil icon");
 	await flush();
 	check(
 		"a message sent while the agent works is queued, not refused and not started",
-		[port.session().queued.map(({ text }) => text), port.session().turns.length, callsNamed(ipc, "start_turn").length],
+		[port.session().queued.map(({ text }) => text), port.session().turns.length, ipc.launched.length],
 		[["use a pencil icon"], 2, startsBefore],
 	);
 
@@ -938,7 +973,7 @@ async function queueChecks(): Promise<void> {
 
 	port.changeQueue?.({ kind: "edit", id: held, said: "then run the chat tests" });
 	await flush();
-	const edited = callsNamed(ipc, "start_turn").at(-1)?.args;
+	const edited = ipc.launched.at(-1);
 	check(
 		"an edit saved while the agent is idle sends the queue at once",
 		[Reflect.get(edited ?? {}, "prompt"), port.session().busy, port.session().queued.length],
@@ -958,7 +993,7 @@ async function queueChecks(): Promise<void> {
 	streamed(running, [{ type: "result", is_error: false, usage: { output_tokens: 1 } }]);
 	said(running, { kind: "exited", code: 0 });
 	await flush();
-	const next = callsNamed(ipc, "start_turn").at(-1)?.args;
+	const next = ipc.launched.at(-1);
 	check(
 		"a turn that ends sends the ready queue as the next prompt, each message its own bubble",
 		[
@@ -984,10 +1019,7 @@ async function queueChecks(): Promise<void> {
 	await flush();
 	check(
 		"send now stops the running step and sends the queue",
-		[
-			callsNamed(ipc, "stop_turn").length - stopsBefore,
-			Reflect.get(callsNamed(ipc, "start_turn").at(-1)?.args ?? {}, "prompt"),
-		],
+		[callsNamed(ipc, "stop_turn").length - stopsBefore, Reflect.get(ipc.launched.at(-1) ?? {}, "prompt")],
 		[1, "stop and read this"],
 	);
 }

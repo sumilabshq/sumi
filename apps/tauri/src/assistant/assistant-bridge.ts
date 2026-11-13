@@ -1,5 +1,11 @@
 import { isObject } from "@widgetarium/data-framework/is-object";
-import type { AttachedFilesReach, ProviderReads } from "@widgetarium/core/engine/assistant-port.js";
+import { z } from "zod";
+import type {
+	AttachedFilesReach,
+	ProviderReads,
+	TurnFacts,
+	TurnLaunch,
+} from "@widgetarium/core/engine/assistant-port.js";
 
 export interface ProviderFacts {
 	readonly id: string;
@@ -28,14 +34,30 @@ export interface ClaudeStart {
 	readonly effort: string;
 }
 
-export interface TurnStart {
-	readonly providerId: string;
-	readonly prompt: string;
-	readonly resume: string | null;
-	readonly claude: ClaudeStart | null;
+export interface TurnFactsAsk {
 	readonly folders: readonly string[];
 	readonly chatId: string | null;
 }
+
+export type HostTurnFacts = Pick<TurnFacts, "project" | "attachments" | "folders" | "link">;
+
+const AgentLinkFactsSchema = z.object({
+	exe: z.string(),
+	socket: z.string(),
+	token: z.string(),
+	chat: z.string(),
+	servers: z.array(z.string()),
+	systemPrompt: z.string(),
+	mcpFlag: z.string(),
+	hookFlag: z.string(),
+});
+
+const HostTurnFactsSchema = z.object({
+	project: z.string(),
+	attachments: z.string(),
+	folders: z.array(z.string()),
+	link: AgentLinkFactsSchema.nullable(),
+});
 
 export interface DroppedEntry {
 	readonly path: string;
@@ -46,7 +68,8 @@ export interface DroppedEntry {
 
 export interface AssistantBridge {
 	providers(): Promise<ProvidersAnswer>;
-	startTurn(start: TurnStart, onEvent: (event: TurnEvent) => void): Promise<number>;
+	turnFacts(ask: TurnFactsAsk): Promise<HostTurnFacts>;
+	startLaunch(launch: TurnLaunch, onEvent: (event: TurnEvent) => void): Promise<number>;
 	stopTurn(turnId: number): Promise<void>;
 	writeAttachment(path: string, bytes: Uint8Array): Promise<void>;
 	removeAttachment(path: string): Promise<void>;
@@ -116,16 +139,15 @@ export function tauriAssistantBridge(ipc: TauriIpc): AssistantBridge {
 		ipc.invoke(commandNamed(name), args);
 	return {
 		providers: async () => providersAnswerIn(await call("providers")),
-		startTurn: async ({ providerId, prompt, resume, claude, folders, chatId }, onEvent) => {
+		turnFacts: async ({ folders, chatId }) => HostTurnFactsSchema.parse(await call("turn_facts", { folders, chatId })),
+		startLaunch: async ({ program, args, env }, onEvent) => {
 			const onEventChannel = ipc.channel((message) => {
 				const event = turnEventIn(message);
 				if (event !== null) {
 					onEvent(event);
 				}
 			});
-			return turnIdIn(
-				await call("start_turn", { providerId, prompt, resume, claude, folders, chatId, onEvent: onEventChannel }),
-			);
+			return turnIdIn(await call("start_launch", { program, args, env, onEvent: onEventChannel }));
 		},
 		stopTurn: async (turnId) => void (await call("stop_turn", { turnId })),
 		writeAttachment: async (path, bytes) =>

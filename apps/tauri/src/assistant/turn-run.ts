@@ -1,6 +1,7 @@
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import { createLineSplitter, plainText, readerNamed } from "@widgetarium/core/engine/provider-stream.js";
 import type { Emit, LineSplitter, PlanUsage, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
+import type { TurnLauncher } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, TurnEvent } from "./assistant-bridge.js";
 
 export type RunFailureKind = "silent" | "usage_limit" | "other";
@@ -23,12 +24,15 @@ export interface TurnAsk {
 	readonly claude: ClaudeStart | null;
 	readonly folders: readonly string[];
 	readonly chatId: string | null;
+	readonly launcher: TurnLauncher | null;
 	readonly isWaitingOnPerson?: () => Promise<boolean>;
 }
 
 export const IDLE_MS = 180000;
 
 const TEXT_FORMAT = "text";
+
+const NO_RUNNER = "{runner} has no runner plugin to start its turn: turn the plugin on in the plugin list.";
 
 const ENDED_BADLY = "{command} exited with code {code}. {said}";
 const ENDED_BY_A_SIGNAL = "{command} was ended by a signal before it finished. {said}";
@@ -223,10 +227,8 @@ function eventHandler(scope: RunScope, emit: Emit): (event: TurnEvent) => void {
 }
 
 function begin(scope: RunScope, emit: Emit): void {
-	const { provider, prompt, resume, claude, folders, chatId } = scope.ask;
 	heard(scope);
-	scope.bridge
-		.startTurn({ providerId: provider.id, prompt, resume, claude, folders, chatId }, eventHandler(scope, emit))
+	startedTurn(scope, emit)
 		.then((turnId) => {
 			scope.held.turnId = turnId;
 			if (scope.held.stopping) {
@@ -234,6 +236,25 @@ function begin(scope: RunScope, emit: Emit): void {
 			}
 		})
 		.catch((failed: unknown) => finish(scope, failureAnswerOf(failureMessage(failed), scope.held.usage)));
+}
+
+async function startedTurn(scope: RunScope, emit: Emit): Promise<number> {
+	const { provider, prompt, resume, claude, folders, chatId, launcher } = scope.ask;
+
+	if (launcher === null) {
+		throw new Error(NO_RUNNER.replace("{runner}", provider.label));
+	}
+
+	const facts = await scope.bridge.turnFacts({ folders, chatId });
+	const launch = launcher({
+		...facts,
+		runner: provider.id,
+		prompt,
+		resume,
+		model: claude?.model ?? null,
+		options: claude === null ? {} : { mode: claude.mode, effort: claude.effort },
+	});
+	return scope.bridge.startLaunch(launch, eventHandler(scope, emit));
 }
 
 function freshHeld(): RunHeld {

@@ -10,21 +10,20 @@ use std::thread;
 use std::time::Duration;
 
 const HARD_STOP_AFTER: Duration = Duration::from_secs(5);
-const MCP_TOOL_TIMEOUT: &str = "MCP_TOOL_TIMEOUT";
-const PERSON_ANSWER_MS: &str = "86400000";
 const OWN_PROCESS_GROUP: i32 = 0;
 const GRACE_ON_QUIT: Duration = Duration::from_millis(300);
 const NOT_STARTED: &str = "{command} could not be started: {why}";
 
-pub type TurnSink = Arc<dyn Fn(Value) + Send + Sync>;
+pub type ProcessSink = Arc<dyn Fn(Value) + Send + Sync>;
 
 type RunningGroups = Arc<Mutex<HashMap<u64, u32>>>;
 
-pub struct TurnLaunch<'a> {
+pub struct ProcessLaunch<'a> {
     pub binary: &'a Path,
     pub argv: &'a [String],
     pub cwd: &'a Path,
     pub search_path: &'a str,
+    pub env: &'a [(String, String)],
 }
 
 pub fn out_event(text: String) -> Value {
@@ -39,38 +38,38 @@ pub fn exited_event(code: Option<i32>) -> Value {
     json!({ "kind": "exited", "code": code })
 }
 
-pub struct Turns {
+pub struct ProcessRuns {
     next_id: AtomicU64,
     running: RunningGroups,
 }
 
-impl Turns {
+impl ProcessRuns {
     pub fn new() -> Self {
-        Turns { next_id: AtomicU64::new(0), running: Arc::new(Mutex::new(HashMap::new())) }
+        ProcessRuns { next_id: AtomicU64::new(0), running: Arc::new(Mutex::new(HashMap::new())) }
     }
 
-    pub fn start(&self, launch: &TurnLaunch, sink: TurnSink) -> Result<u64, String> {
+    pub fn start(&self, launch: &ProcessLaunch, sink: ProcessSink) -> Result<u64, String> {
         let mut child = spawn_in_own_group(launch).map_err(|why| not_started(launch.binary, &why))?;
-        let turn_id = self.next_id.fetch_add(1, Ordering::Relaxed) + 1;
-        lock(&self.running).insert(turn_id, child.id());
+        let run_id = self.next_id.fetch_add(1, Ordering::Relaxed) + 1;
+        lock(&self.running).insert(run_id, child.id());
         let readers = [
             stream_lines(child.stdout.take(), sink.clone(), out_event),
             stream_lines(child.stderr.take(), sink.clone(), err_event),
         ];
         let running = self.running.clone();
-        thread::spawn(move || watch_exit(ExitWatch { child, readers, running, turn_id, sink }));
-        Ok(turn_id)
+        thread::spawn(move || watch_exit(ExitWatch { child, readers, running, run_id, sink }));
+        Ok(run_id)
     }
 
-    pub fn stop(&self, turn_id: u64) {
-        let Some(group) = self.group_of(turn_id) else {
+    pub fn stop(&self, run_id: u64) {
+        let Some(group) = self.group_of(run_id) else {
             return;
         };
         signal_group(group, libc::SIGTERM);
         let running = self.running.clone();
         thread::spawn(move || {
             thread::sleep(HARD_STOP_AFTER);
-            if lock(&running).get(&turn_id) == Some(&group) {
+            if lock(&running).get(&run_id) == Some(&group) {
                 signal_group(group, libc::SIGKILL);
             }
         });
@@ -83,12 +82,12 @@ impl Turns {
         groups.iter().for_each(|group| signal_group(*group, libc::SIGKILL));
     }
 
-    pub fn is_running(&self, turn_id: u64) -> bool {
-        self.group_of(turn_id).is_some()
+    pub fn is_running(&self, run_id: u64) -> bool {
+        self.group_of(run_id).is_some()
     }
 
-    fn group_of(&self, turn_id: u64) -> Option<u32> {
-        lock(&self.running).get(&turn_id).copied()
+    fn group_of(&self, run_id: u64) -> Option<u32> {
+        lock(&self.running).get(&run_id).copied()
     }
 }
 
@@ -96,8 +95,8 @@ struct ExitWatch {
     child: Child,
     readers: [Option<thread::JoinHandle<()>>; 2],
     running: RunningGroups,
-    turn_id: u64,
-    sink: TurnSink,
+    run_id: u64,
+    sink: ProcessSink,
 }
 
 // TRADE-OFF: helpers the CLI started may still hold its pipes after it exits, so the whole group is ended before the pipes are drained rather than waiting on them
@@ -105,7 +104,7 @@ fn watch_exit(mut watch: ExitWatch) {
     let code = watch.child.wait().ok().and_then(|status| status.code());
     signal_group(watch.child.id(), libc::SIGTERM);
     watch.readers.into_iter().flatten().for_each(|reader| drop(reader.join()));
-    lock(&watch.running).remove(&watch.turn_id);
+    lock(&watch.running).remove(&watch.run_id);
     (watch.sink)(exited_event(code));
 }
 
@@ -117,12 +116,12 @@ fn not_started(binary: &Path, why: &std::io::Error) -> String {
     NOT_STARTED.replace("{command}", &binary.to_string_lossy()).replace("{why}", &why.to_string())
 }
 
-fn spawn_in_own_group(launch: &TurnLaunch) -> std::io::Result<Child> {
+fn spawn_in_own_group(launch: &ProcessLaunch) -> std::io::Result<Child> {
     Command::new(launch.binary)
         .args(launch.argv)
         .current_dir(launch.cwd)
         .env("PATH", launch.search_path)
-        .env(MCP_TOOL_TIMEOUT, PERSON_ANSWER_MS)
+        .envs(launch.env.iter().map(|(name, value)| (name.as_str(), value.as_str())))
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -132,7 +131,7 @@ fn spawn_in_own_group(launch: &TurnLaunch) -> std::io::Result<Child> {
 
 fn stream_lines<P: Read + Send + 'static>(
     pipe: Option<P>,
-    sink: TurnSink,
+    sink: ProcessSink,
     event_of: fn(String) -> Value,
 ) -> Option<thread::JoinHandle<()>> {
     let pipe = pipe?;

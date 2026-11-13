@@ -8,13 +8,13 @@ use std::time::{Duration, Instant, SystemTime};
 use widgetarium_host_tauri_lib::assistant::attachments::{
     ensure_private_folder, private_folder_for, remove_older_than, write_private_file,
 };
-use widgetarium_host_tauri_lib::assistant::commands::{self, ClaudeAsk, StartAsk, NO_PROJECT, NOTHING_TO_SEND, NOT_A_SESSION};
+use widgetarium_host_tauri_lib::assistant::commands::{self, LaunchAsk, NO_PROJECT};
 use widgetarium_host_tauri_lib::assistant::drops::{self, dropped_file_refusal, LARGEST_IMAGE_BYTES, LARGEST_TEXT_BYTES};
 use widgetarium_host_tauri_lib::assistant::paths::{attachment_file_in, OUTSIDE_THE_FOLDER, UNSAFE_NAME};
-use widgetarium_host_tauri_lib::assistant::providers::{is_session_id, provider_by_id, ClaudeChoice, TurnAsk, TurnPlaces, PROVIDERS};
-use widgetarium_host_tauri_lib::assistant::search_path::{find_command, joined_path, path_after_mark};
+use widgetarium_host_tauri_lib::assistant::providers::PROVIDERS;
+use widgetarium_host_tauri_lib::login_path::{find_command, joined_path, path_after_mark};
 use widgetarium_host_tauri_lib::assistant::state::Assistant;
-use widgetarium_host_tauri_lib::assistant::turns::{TurnLaunch, TurnSink, Turns};
+use widgetarium_host_tauri_lib::process_runs::{ProcessLaunch, ProcessRuns, ProcessSink};
 use widgetarium_host_tauri_lib::assistant::attachments_script;
 
 struct Checks {
@@ -40,17 +40,11 @@ fn scratch(name: &str) -> PathBuf {
     folder
 }
 
-fn argv_for(id: &str, prompt: &str, resume: Option<&str>) -> Vec<String> {
-    let (project, attachments) = (PathBuf::from("/work/app"), PathBuf::from("/tmp/attach"));
-    let places = TurnPlaces { project: &project, attachments: &attachments, folders: &[] };
-    provider_by_id(id).expect("a known provider").argv(&TurnAsk { prompt, resume, claude: None, agent: None }, &places)
-}
-
 fn mode_of(path: &Path) -> u32 {
     fs::metadata(path).expect("the path exists").permissions().mode() & 0o777
 }
 
-fn recording_sink() -> (TurnSink, Arc<Mutex<Vec<Value>>>) {
+fn recording_sink() -> (ProcessSink, Arc<Mutex<Vec<Value>>>) {
     let heard = Arc::new(Mutex::new(Vec::new()));
     let kept = heard.clone();
     (Arc::new(move |event: Value| kept.lock().expect("the events").push(event)), heard)
@@ -70,28 +64,7 @@ fn wait_for_exit(heard: &Arc<Mutex<Vec<Value>>>, within: Duration) -> Option<Val
 
 fn allowlist(checks: &mut Checks) {
     let ids: Vec<&str> = PROVIDERS.iter().map(|provider| provider.id).collect();
-    checks.check("only the fixed providers are known", ids, vec!["claude-code", "codex", "opencode", "gemini"]);
-    checks.check("a custom command is refused", provider_by_id("custom").is_none(), true);
-    checks.check("an id with a shell line is refused", provider_by_id("claude-code; rm -rf /").is_none(), true);
-
-    let claude = argv_for("claude-code", "--permission-mode bypassPermissions", Some("abc-123"));
-    checks.check(
-        "claude gets the prompt as one argument after the end of options",
-        claude[claude.len() - 4..].to_vec(),
-        vec!["--resume".to_string(), "abc-123".into(), "--".into(), "--permission-mode bypassPermissions".into()],
-    );
-    let dirs: Vec<&str> = claude.windows(2).filter(|pair| pair[0] == "--add-dir").map(|pair| pair[1].as_str()).collect();
-    checks.check("claude may read the project and the attachments only", dirs, vec!["/work/app", "/tmp/attach"]);
-    checks.check("claude is never told to bypass permissions", claude.iter().filter(|arg| arg.contains("bypass")).count(), 1);
-
-    checks.check("a dash prompt is no codex option", argv_for("codex", "-x", None).last().cloned(), Some(" -x".into()));
-    checks.check("a dash prompt is no opencode option", argv_for("opencode", "--yolo", None).last().cloned(), Some(" --yolo".into()));
-    checks.check("gemini takes the prompt as the option's own value", argv_for("gemini", "--yolo", None)[0].clone(), "--prompt=--yolo".into());
-
-    checks.check("a session id is a plain token", is_session_id("4f1c-aa_9"), true);
-    checks.check("a session id with spaces is refused", is_session_id("a b"), false);
-    checks.check("a session id with shell letters is refused", is_session_id("x;rm"), false);
-    checks.check("a session id is never an option", is_session_id("--yolo"), false);
+    checks.check("the host builds no command line: only Claude Code's facts are left", ids, vec!["claude-code"]);
 }
 
 fn turn_refusals(checks: &mut Checks) {
@@ -99,16 +72,16 @@ fn turn_refusals(checks: &mut Checks) {
     let assistant = Assistant::new(attachments.clone());
     let project = Some(attachments.as_path());
     let (sink, _) = recording_sink();
-    let ask = |provider_id, prompt, resume| StartAsk { provider_id, prompt, resume, claude: None, folders: &[], agent: None };
+    let launch = |program: &str| LaunchAsk { program: program.to_string(), args: vec!["hi".into()], env: Vec::new() };
 
-    let unknown = commands::start_turn(&assistant, project, &ask("custom", "hi", None), sink.clone());
-    checks.check("an unknown provider is refused", unknown.err(), Some("This provider is not one Widgetarium can start: custom".into()));
-    let no_project = commands::start_turn(&assistant, None, &ask("claude-code", "hi", None), sink.clone());
+    let no_project = commands::start_launch(&assistant, None, &launch("sh"), sink.clone());
     checks.check("no project folder means no turn", no_project.err(), Some(NO_PROJECT.into()));
-    let empty = commands::start_turn(&assistant, project, &ask("claude-code", "  ", None), sink.clone());
-    checks.check("an empty prompt is refused", empty.err(), Some(NOTHING_TO_SEND.into()));
-    let bad_session = commands::start_turn(&assistant, project, &ask("claude-code", "hi", Some("--yolo")), sink);
-    checks.check("a session that is not an id is refused", bad_session.err(), Some(NOT_A_SESSION.into()));
+    let missing = commands::start_launch(&assistant, project, &launch("no-such-widgetarium-tool"), sink);
+    checks.check(
+        "a program that is not on the machine is refused",
+        missing.err(),
+        Some("no-such-widgetarium-tool is not installed on this machine, or is not on the login shell's PATH.".into()),
+    );
 }
 
 fn attachment_paths(checks: &mut Checks) {
@@ -169,11 +142,11 @@ fn search_paths(checks: &mut Checks) {
 }
 
 fn turns_stream_and_stop(checks: &mut Checks) {
-    let turns = Turns::new();
+    let turns = ProcessRuns::new();
     let cwd = scratch("turns");
     let (sink, heard) = recording_sink();
     let argv = vec!["-c".to_string(), "printf 'one\\ntwo\\n'; printf 'bad\\n' >&2; exit 3".into()];
-    let launch = TurnLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin" };
+    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[] };
     turns.start(&launch, sink).expect("the turn starts");
     let exited = wait_for_exit(&heard, Duration::from_secs(5));
     checks.check("the exit code reaches the page", exited.map(|event| event["code"].clone()), Some(Value::from(3)));
@@ -184,7 +157,7 @@ fn turns_stream_and_stop(checks: &mut Checks) {
 
     let (sink, heard) = recording_sink();
     let argv = vec!["-c".to_string(), "sleep 30 & wait".into()];
-    let launch = TurnLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin" };
+    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[] };
     let turn_id = turns.start(&launch, sink).expect("the long turn starts");
     turns.stop(turn_id);
     let stopped = wait_for_exit(&heard, Duration::from_secs(3));
@@ -199,59 +172,28 @@ fn turns_stream_and_stop(checks: &mut Checks) {
 
     let (sink, heard) = recording_sink();
     let argv = vec!["-c".to_string(), "sleep 30 & echo started".into()];
-    let launch = TurnLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin" };
+    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[] };
     turns.start(&launch, sink).expect("a turn that leaves a helper behind starts");
     let exited = wait_for_exit(&heard, Duration::from_secs(3));
     checks.check("a helper holding the pipe does not keep the turn open", exited.map(|event| event["code"].clone()), Some(Value::from(0)));
 
-    let missing = TurnLaunch { binary: Path::new("/no/such/tool"), argv: &[], cwd: &cwd, search_path: "" };
+    let missing = ProcessLaunch { binary: Path::new("/no/such/tool"), argv: &[], cwd: &cwd, search_path: "", env: &[] };
     let (sink, _) = recording_sink();
     checks.check("a binary that cannot start is refused", turns.start(&missing, sink).is_err(), true);
-}
-
-fn claude_choices(checks: &mut Checks) {
-    let claude = provider_by_id("claude-code").expect("claude");
-    let codex = provider_by_id("codex").expect("codex");
-    let asked = |mode, model, effort| ClaudeAsk { mode, model, effort };
-    let chosen = commands::checked_claude(claude, Some(&asked("auto", "opus", "xhigh"))).expect("allowed values pass");
-    let choice = chosen.expect("a choice");
-    checks.check("a mode, model and effort from the lists pass", (choice.mode, choice.model, choice.effort), ("auto", "opus", "xhigh"));
-    let refused = |mode, model, effort| commands::checked_claude(claude, Some(&asked(mode, model, effort))).err();
-    checks.check("bypassing permissions is never a mode", refused("bypassPermissions", "opus", "low"), Some("The permission mode is not one Widgetarium passes to Claude Code: bypassPermissions".into()));
-    checks.check("a model outside the list is refused", refused("auto", "opus --dangerously-skip-permissions", "low").is_some(), true);
-    checks.check("an effort outside the list is refused", refused("auto", "opus", "ultra").is_some(), true);
-    checks.check("a mode that looks like an option is refused", refused("--yolo", "opus", "low").is_some(), true);
-    checks.check("another provider takes no Claude options", commands::checked_claude(codex, Some(&asked("auto", "opus", "low"))).is_err(), true);
-    checks.check("no options asked passes as none", commands::checked_claude(claude, None).map(|held| held.is_none()), Ok(true));
-
-    let (project, attachments) = (PathBuf::from("/work/app"), PathBuf::from("/tmp/attach"));
-    let folders = vec![PathBuf::from("/work/lent")];
-    let places = TurnPlaces { project: &project, attachments: &attachments, folders: &folders };
-    let choice = ClaudeChoice { mode: "plan", model: "sonnet", effort: "low" };
-    let argv = claude.argv(&TurnAsk { prompt: "hi", resume: None, claude: Some(choice), agent: None }, &places);
-    let pair = |flag: &str| argv.windows(2).filter(|pair| pair[0] == flag).map(|pair| pair[1].clone()).collect::<Vec<_>>();
-    checks.check("the chosen mode reaches claude", pair("--permission-mode"), vec!["plan".to_string()]);
-    checks.check("the chosen model reaches claude", pair("--model"), vec!["sonnet".to_string()]);
-    checks.check("the chosen effort reaches claude", pair("--effort"), vec!["low".to_string()]);
-    checks.check("a lent folder is added for claude to read", pair("--add-dir"), vec!["/work/app".to_string(), "/tmp/attach".into(), "/work/lent".into()]);
-    checks.check("the prompt still ends the line", argv[argv.len() - 2..].to_vec(), vec!["--".to_string(), "hi".into()]);
 }
 
 fn lent_folders(checks: &mut Checks) {
     let attachments = scratch("lent");
     let assistant = Assistant::new(attachments.clone());
     let picked = scratch("picked-folder");
-    let claude = provider_by_id("claude-code").expect("claude");
-    let codex = provider_by_id("codex").expect("codex");
     let asked = vec![picked.to_string_lossy().into_owned()];
-    checks.check("a folder the webview names but nobody picked is refused", commands::checked_folders(&assistant, claude, &asked).is_err(), true);
+    checks.check("a folder the webview names but nobody picked is refused", commands::checked_folders(&assistant, &asked).is_err(), true);
     let remembered = commands::remember_picked_folder(&assistant, &picked).expect("a picked folder is kept");
     let real = picked.canonicalize().expect("real");
     checks.check("the picked folder answers its real path", remembered, Value::from(real.to_string_lossy().into_owned()));
-    checks.check("a picked folder is lent", commands::checked_folders(&assistant, claude, &asked).ok(), Some(vec![real.clone()]));
-    checks.check("a provider that reads no files gets no folder", commands::checked_folders(&assistant, codex, &asked).is_err(), true);
+    checks.check("a picked folder is lent", commands::checked_folders(&assistant, &asked).ok(), Some(vec![real.clone()]));
     let climbing = vec![format!("{}/../{}", picked.display(), "elsewhere")];
-    checks.check("a path climbing out of a picked folder is refused", commands::checked_folders(&assistant, claude, &climbing).is_err(), true);
+    checks.check("a path climbing out of a picked folder is refused", commands::checked_folders(&assistant, &climbing).is_err(), true);
     let file = picked.join("a.txt");
     fs::write(&file, b"x").expect("a file");
     checks.check("a file is never taken as a picked folder", commands::remember_picked_folder(&assistant, &file).is_err(), true);
@@ -304,7 +246,6 @@ fn main() {
     let mut checks = Checks { failed: 0 };
     dropped_rules(&mut checks);
     dropped_list(&mut checks);
-    claude_choices(&mut checks);
     lent_folders(&mut checks);
     allowlist(&mut checks);
     turn_refusals(&mut checks);

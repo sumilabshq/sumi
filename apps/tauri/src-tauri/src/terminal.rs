@@ -1,3 +1,5 @@
+use super::login_path::{find_command, search_path};
+use super::process_runs::{ProcessLaunch, ProcessRuns, ProcessSink};
 use super::program_run;
 use super::studio_caller::refuse_foreign_caller;
 use serde_json::{json, Value};
@@ -6,6 +8,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::os::fd::{AsRawFd, FromRawFd, RawFd};
 use std::os::unix::process::CommandExt;
+use std::path::PathBuf;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -25,6 +28,7 @@ const NO_SESSION: &str = "This terminal is closed.";
 const NOT_A_CHANNEL: &str = "onData must be a channel.";
 const MISSING_ARGUMENT: &str = "The terminal call is missing {name}.";
 const UNKNOWN_COMMAND: &str = "The terminal has no command {name}.";
+const NOT_ON_THIS_MACHINE: &str = "{program} is not on this machine.";
 const CELLS_OUT_OF_RANGE: &str = "The terminal's {name} must be 1 to 1000, not {asked}.";
 const MOST_CELLS: u16 = 1000;
 const READ_CHUNK_BYTES: usize = 16 * 1024;
@@ -39,6 +43,58 @@ struct Session {
 
 static SESSIONS: OnceLock<Mutex<HashMap<u64, Arc<Session>>>> = OnceLock::new();
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
+
+fn runs() -> &'static ProcessRuns {
+    static RUNS: OnceLock<ProcessRuns> = OnceLock::new();
+    RUNS.get_or_init(ProcessRuns::new)
+}
+
+#[derive(serde::Deserialize)]
+struct SpawnInput {
+    folder: PathBuf,
+    program: String,
+    args: Vec<String>,
+    #[serde(default)]
+    env: HashMap<String, String>,
+}
+
+fn channel_of(message: &InvokeMessage<Wry>) -> Result<Channel<Value>, String> {
+    let named = argument(message, "onData")?.as_str().ok_or(NOT_A_CHANNEL)?;
+    let channel_id = JavaScriptChannelId::from_str(named).map_err(|_| NOT_A_CHANNEL.to_string())?;
+    Ok(channel_id.channel_on(message.webview()))
+}
+
+fn program_path(path: &str, program: &str) -> Result<PathBuf, String> {
+    if program.contains('/') {
+        return Ok(PathBuf::from(program));
+    }
+
+    find_command(path, program).ok_or_else(|| NOT_ON_THIS_MACHINE.replace("{program}", program))
+}
+
+fn spawn(message: &InvokeMessage<Wry>) -> Result<Value, String> {
+    let on_data = channel_of(message)?;
+    let InvokeBody::Json(args) = message.payload() else { return Err(MISSING_ARGUMENT.replace("{name}", "program")) };
+    let input: SpawnInput =
+        serde_json::from_value(args.clone()).map_err(|error| format!("The terminal spawn call is malformed: {error}"))?;
+    let path = search_path();
+    let binary = program_path(path, &input.program)?;
+    let env: Vec<(String, String)> = input.env.into_iter().collect();
+    let launch = ProcessLaunch { binary: &binary, argv: &input.args, cwd: &input.folder, search_path: path, env: &env };
+    let sink: ProcessSink = Arc::new(move |event| {
+        let _ = on_data.send(event);
+    });
+    let id = runs().start(&launch, sink)?;
+    eprintln!("[terminal] process {id}: none → running ({})", input.program);
+    Ok(Value::from(id))
+}
+
+fn stop(message: &InvokeMessage<Wry>) -> Result<Value, String> {
+    let id = number_of(message, "id")?;
+    runs().stop(id);
+    eprintln!("[terminal] process {id}: running → stopping (asked)");
+    Ok(Value::Null)
+}
 
 fn sessions() -> &'static Mutex<HashMap<u64, Arc<Session>>> {
     SESSIONS.get_or_init(|| Mutex::new(HashMap::new()))
@@ -181,9 +237,7 @@ fn pipe_output(id: u64, mut reader: File, on_data: Channel<Value>) {
 }
 
 fn open(message: &InvokeMessage<Wry>) -> Result<Value, String> {
-    let named = argument(message, "onData")?.as_str().ok_or(NOT_A_CHANNEL)?;
-    let channel_id = JavaScriptChannelId::from_str(named).map_err(|_| NOT_A_CHANNEL.to_string())?;
-    let on_data: Channel<Value> = channel_id.channel_on(message.webview());
+    let on_data = channel_of(message)?;
     let size = cells_of(message)?;
     let (master, slave) = opened_pty(&size)?;
     let child = spawned_shell(slave);
@@ -244,6 +298,8 @@ fn answered(invoke: &Invoke<Wry>) -> Result<Value, String> {
         "write" => write(message),
         "resize" => resize(message),
         "close" => close(message),
+        "spawn" => spawn(message),
+        "stop" => stop(message),
         other => Err(UNKNOWN_COMMAND.replace("{name}", other)),
     }
 }
@@ -282,5 +338,6 @@ pub fn init() -> TauriPlugin<Wry> {
             invoke.resolver.respond(answer.map_err(InvokeError::from));
             true
         })
+        .on_drop(|_app| runs().stop_all())
         .build()
 }

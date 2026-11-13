@@ -6,10 +6,9 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::sync::Arc;
 use std::thread;
-use widgetarium_host_tauri_lib::agent::hub::{AgentHub, AgentLink};
+use widgetarium_host_tauri_lib::agent::hub::AgentHub;
 use widgetarium_host_tauri_lib::agent::hub::tool_answer_of;
-use widgetarium_host_tauri_lib::agent::{hook, socket, PROMPT};
-use widgetarium_host_tauri_lib::assistant::providers::{provider_by_id, TurnAsk, TurnPlaces};
+use widgetarium_host_tauri_lib::agent::{hook, socket};
 
 struct Checks {
     failed: usize,
@@ -34,48 +33,8 @@ fn scratch(name: &str) -> PathBuf {
     folder
 }
 
-fn link() -> AgentLink {
-    AgentLink {
-        exe: "/Applications/Sumi.app/sumi".into(),
-        socket: "/tmp/sumi.sock".into(),
-        token: "t0k".into(),
-        chat: "chat-7".into(),
-        servers: vec!["questions".into(), "tasks".into()],
-    }
-}
-
-fn argv_with_agent(id: &str) -> Vec<String> {
-    let (project, attachments) = (PathBuf::from("/work/app"), PathBuf::from("/tmp/attach"));
-    let places = TurnPlaces { project: &project, attachments: &attachments, folders: &[] };
-    let agent = link();
-    let ask = TurnAsk { prompt: "which tabs?", resume: None, claude: None, agent: Some(&agent) };
-    provider_by_id(id).expect("a known provider").argv(&ask, &places)
-}
-
-fn after(argv: &[String], flag: &str) -> Option<String> {
-    argv.iter().position(|arg| arg == flag).and_then(|at| argv.get(at + 1)).cloned()
-}
-
-fn check_claude_args(checks: &mut Checks) {
-    let argv = argv_with_agent("claude-code");
-    checks.check("Claude Code gets Sumi's prompt", after(&argv, "--append-system-prompt").as_deref(), Some(PROMPT));
-    checks.check("the person's own settings and CLAUDE.md load", after(&argv, "--setting-sources").as_deref(), Some("user,project,local"));
-    let config: Value = serde_json::from_str(&after(&argv, "--mcp-config").unwrap_or_default()).unwrap_or(Value::Null);
-    let names: Vec<&str> = config["mcpServers"].as_object().map(|servers| servers.keys().map(String::as_str).collect()).unwrap_or_default();
-    checks.check("one MCP server per server a plugin registered, none hardcoded", names, vec!["questions", "tasks"]);
-    let server = &config["mcpServers"]["tasks"];
-    checks.check("the MCP server is the Sumi binary", server["command"].as_str(), Some("/Applications/Sumi.app/sumi"));
-    let args: Vec<&str> = server["args"].as_array().map(|all| all.iter().filter_map(Value::as_str).collect()).unwrap_or_default();
-    checks.check("it starts in MCP mode for this server, chat and folder", args, vec!["--mcp", "--server", "tasks", "--socket", "/tmp/sumi.sock", "--token", "t0k", "--chat", "chat-7", "--folder", "/work/app"]);
-    checks.check("every registered server's tools are allowed, and only those", after(&argv, "--allowedTools").as_deref(), Some("mcp__questions,mcp__tasks"));
-    checks.check("Claude Code's own question tool is off", after(&argv, "--disallowedTools").as_deref(), Some("AskUserQuestion"));
-    let settings: Value = serde_json::from_str(&after(&argv, "--settings").unwrap_or_default()).unwrap_or(Value::Null);
-    let hook = settings["hooks"]["PostToolUse"][0]["hooks"][0]["command"].as_str().unwrap_or_default();
-    checks.check("a hook after every tool hands over settled answers", hook, "'/Applications/Sumi.app/sumi' '--hook' '--socket' '/tmp/sumi.sock' '--token' 't0k' '--chat' 'chat-7'");
+fn check_hook_context(checks: &mut Checks) {
     checks.check("the hook adds the answers as context", hook::context_of("answers")["hookSpecificOutput"]["additionalContext"].as_str(), Some("answers"));
-    checks.check("the person's message stays last", argv.last().map(String::as_str), Some("which tabs?"));
-    let codex = argv_with_agent("codex");
-    checks.check("another provider gets no Claude-only flags", codex.iter().any(|arg| arg == "--mcp-config"), false);
 }
 
 fn reply_of(socket: &PathBuf, call: Value) -> Value {
@@ -186,7 +145,7 @@ fn check_tool_answers(checks: &mut Checks) {
 fn main() {
     let mut checks = Checks { failed: 0 };
     check_tool_answers(&mut checks);
-    check_claude_args(&mut checks);
+    check_hook_context(&mut checks);
     check_app_socket(&mut checks);
     check_mcp_process(&mut checks);
     if checks.failed > 0 {

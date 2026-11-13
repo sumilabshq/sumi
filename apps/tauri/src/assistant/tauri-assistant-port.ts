@@ -5,6 +5,7 @@ import type {
 	AssistantSetup,
 	QueueChange,
 	RenderMarkdown,
+	TurnLauncher,
 } from "@widgetarium/core/engine/assistant-port.js";
 import type { ClaudeOptions } from "@widgetarium/assistant/contract";
 import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
@@ -40,8 +41,7 @@ export interface TauriAssistantDoors {
 
 export const PREFERRED_PROVIDER = "claude-code";
 
-export const NO_PROVIDER_FOUND =
-	"No AI command line was found on this machine: install Claude Code, Codex, OpenCode or Gemini CLI.";
+export const NO_PROVIDER_FOUND = "No AI command line was found on this machine: install Claude Code.";
 
 export const UNKNOWN_PROVIDER = "This provider is not one Widgetarium can start here: {id}";
 
@@ -75,6 +75,7 @@ type SessionDoors = Pick<
 type SetupDoors = Pick<AssistantPort, "setup" | "onSetup" | "chooseProvider" | "setHelperAgents">;
 
 interface PortHeld {
+	launcher: TurnLauncher | null;
 	answer: Promise<ProvidersAnswer> | null;
 	chosen: string | null;
 	helperAgents: boolean;
@@ -83,7 +84,7 @@ interface PortHeld {
 
 // TODO: the brief, the helper agents, persisted transcripts, call faces and chat cards from the Obsidian session are not wired in Tauri yet
 export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPort {
-	const held: PortHeld = { answer: null, chosen: null, helperAgents: false, setupWatchers: new Set() };
+	const held: PortHeld = { launcher: null, answer: null, chosen: null, helperAgents: false, setupWatchers: new Set() };
 	const sessions = new ChatSessions(doors.chats ?? ONE_CHAT_LINK, turnStarter(doors, held));
 	const setup = setupDoorsOf(doors, held);
 	const chatPorts = new Map<string, AssistantPort>();
@@ -93,6 +94,9 @@ export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPo
 		...sessionDoorsOf(sessions, doors, held),
 		...setup,
 		lendDrafts: (isDrafted) => sessions.lendDrafts(isDrafted),
+		useLauncher: (launcher) => {
+			held.launcher = launcher;
+		},
 		forChat: (chatId) => {
 			const made = chatPorts.get(chatId) ?? { ...port, ...chatDoorsOf(sessions, chatId, { doors, held }) };
 			chatPorts.set(chatId, made);
@@ -253,6 +257,7 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn 
 			claude: provider.id === PREFERRED_PROVIDER ? claudeStartOf(doors.claude.value()) : null,
 			folders: doors.folders.take(),
 			chatId,
+			launcher: held.launcher,
 			isWaitingOnPerson: () => questions.isWaitingOnPerson(chatId),
 		};
 		const run = runTurn(doors.bridge, ask, hearingUsage(doors.claude, emit));

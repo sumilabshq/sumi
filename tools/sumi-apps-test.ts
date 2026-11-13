@@ -13,13 +13,14 @@ import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
 import { fileSystem } from "../apps/tauri/capabilities/file-system/generated/module.ts";
+import { MemoryProcessesGateway } from "../apps/tauri/capabilities/terminal/gateways/processes/memory.gateway.ts";
 import { NodeTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/node.gateway.ts";
 import { terminal as terminalModule } from "../apps/tauri/capabilities/terminal/generated/module.ts";
 import { MemoryProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/memory.gateway.ts";
 import { tasks } from "../plugins/tasks/data/tasks/generated/module.ts";
 import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
 import { places } from "../plugins/apps/data/places/generated/module.ts";
-import { questions } from "../plugins/questions/data/questions/generated/module.ts";
+import { questions } from "../plugins/ai/questions/data/questions/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
@@ -150,6 +151,7 @@ const sumiCore = runtime()
 			injects: {
 				sessions: terminal,
 				programs: new MemoryProgramsGateway(),
+				processes: new MemoryProcessesGateway(),
 			},
 		}),
 		tasks({

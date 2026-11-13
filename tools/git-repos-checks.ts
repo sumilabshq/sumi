@@ -9,6 +9,7 @@ import { git as gitContract } from "../plugins/git/data/git/generated/contract.t
 import { git as gitModule } from "../plugins/git/data/git/generated/module.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
 import { fileSystem as fileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";
+import { MemoryProcessesGateway } from "../apps/tauri/capabilities/terminal/gateways/processes/memory.gateway.ts";
 import { NodeProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/node.gateway.ts";
 import { MemoryTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/memory.gateway.ts";
 import { terminal as terminalModule } from "../apps/tauri/capabilities/terminal/generated/module.ts";
@@ -55,6 +56,7 @@ const core = runtime()
 			injects: {
 				sessions: new MemoryTerminalSessionsGateway(),
 				programs: new NodeProgramsGateway(),
+				processes: new MemoryProcessesGateway(),
 			},
 		}),
 	)

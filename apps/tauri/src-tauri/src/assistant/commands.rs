@@ -1,47 +1,34 @@
 use super::attachments::{remove_file, remove_older_than, write_private_file};
 use super::paths::attachment_file_in;
-use super::providers::{
-    allowed, is_session_id, provider_by_id, ClaudeChoice, Provider, TurnAsk, TurnPlaces, EFFORTS, FILES_BY_PATH, MODELS,
-    PERMISSION_MODES, PROVIDERS,
-};
-use super::search_path::{find_command, search_path};
+use super::providers::{Provider, PROVIDERS};
 use super::state::Assistant;
-use super::turns::{TurnLaunch, TurnSink};
+use crate::agent::hook::HOOK_FLAG;
 use crate::agent::hub::AgentLink;
+use crate::agent::mcp::MCP_FLAG;
+use crate::agent::PROMPT;
+use crate::login_path::{find_command, search_path};
+use crate::process_runs::{ProcessLaunch, ProcessSink};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-pub const UNKNOWN_PROVIDER: &str = "This provider is not one Widgetarium can start: {id}";
 pub const NO_PROJECT: &str = "No workspace is open, so there is no folder to work in.";
-pub const NOTHING_TO_SEND: &str = "There is nothing to send.";
-pub const NOT_A_SESSION: &str = "The conversation to resume is not a session id Widgetarium can pass on.";
 pub const NOT_ON_THIS_MACHINE: &str = "{command} is not installed on this machine, or is not on the login shell's PATH.";
-
-pub const NOT_ALLOWED: &str = "{what} is not one Widgetarium passes to Claude Code: {value}";
 pub const NOT_PICKED: &str = "This folder was not picked in this app, so it is not lent to the agent: {path}";
-pub const NO_FOLDER_READS: &str = "{label} cannot read attached folders.";
-pub const OPTIONS_ONLY_FOR_CLAUDE: &str = "Mode, model and effort are Claude Code's own; {label} takes none.";
 pub const NOT_A_FOLDER: &str = "The picked path is not a folder: {path}";
-pub const CLAUDE_CODE: &str = "claude-code";
 
-pub struct ClaudeAsk<'a> {
-    pub mode: &'a str,
-    pub model: &'a str,
-    pub effort: &'a str,
-}
-
-pub struct StartAsk<'a> {
-    pub provider_id: &'a str,
-    pub prompt: &'a str,
-    pub resume: Option<&'a str>,
-    pub claude: Option<ClaudeAsk<'a>>,
-    pub folders: &'a [String],
-    pub agent: Option<&'a AgentLink>,
+pub struct LaunchAsk {
+    pub program: String,
+    pub args: Vec<String>,
+    pub env: Vec<(String, String)>,
 }
 
 fn is_found(provider: &Provider) -> bool {
     find_command(search_path(), provider.command).is_some()
+}
+
+fn shown(path: &Path) -> String {
+    path.to_string_lossy().into_owned()
 }
 
 pub fn providers(assistant: &Assistant, project: Option<&Path>) -> Value {
@@ -53,34 +40,7 @@ pub fn providers(assistant: &Assistant, project: Option<&Path>) -> Value {
     })
 }
 
-fn checked_provider(provider_id: &str) -> Result<&'static Provider, String> {
-    provider_by_id(provider_id).ok_or_else(|| UNKNOWN_PROVIDER.replace("{id}", provider_id))
-}
-
-fn allowed_or(choices: &[&'static str], what: &str, asked: &str) -> Result<&'static str, String> {
-    allowed(choices, asked).ok_or_else(|| NOT_ALLOWED.replace("{what}", what).replace("{value}", asked))
-}
-
-pub fn checked_claude(provider: &Provider, asked: Option<&ClaudeAsk>) -> Result<Option<ClaudeChoice>, String> {
-    let Some(asked) = asked else {
-        return Ok(None);
-    };
-    if provider.id != CLAUDE_CODE {
-        return Err(OPTIONS_ONLY_FOR_CLAUDE.replace("{label}", provider.label));
-    }
-
-    Ok(Some(ClaudeChoice {
-        mode: allowed_or(&PERMISSION_MODES, "The permission mode", asked.mode)?,
-        model: allowed_or(&MODELS, "The model", asked.model)?,
-        effort: allowed_or(&EFFORTS, "The effort", asked.effort)?,
-    }))
-}
-
-pub fn checked_folders(assistant: &Assistant, provider: &Provider, asked: &[String]) -> Result<Vec<PathBuf>, String> {
-    if !asked.is_empty() && provider.files != FILES_BY_PATH {
-        return Err(NO_FOLDER_READS.replace("{label}", provider.label));
-    }
-
+pub fn checked_folders(assistant: &Assistant, asked: &[String]) -> Result<Vec<PathBuf>, String> {
     asked
         .iter()
         .map(|path| {
@@ -90,17 +50,38 @@ pub fn checked_folders(assistant: &Assistant, provider: &Provider, asked: &[Stri
         .collect()
 }
 
-fn checked_ask<'a>(provider: &Provider, ask: &StartAsk<'a>) -> Result<TurnAsk<'a>, String> {
-    if ask.prompt.trim().is_empty() {
-        return Err(NOTHING_TO_SEND.into());
-    }
+fn link_facts(link: &AgentLink) -> Value {
+    json!({
+        "exe": link.exe,
+        "socket": link.socket,
+        "token": link.token,
+        "chat": link.chat,
+        "servers": link.servers,
+        "systemPrompt": PROMPT,
+        "mcpFlag": MCP_FLAG,
+        "hookFlag": HOOK_FLAG,
+    })
+}
 
-    if ask.resume.is_some_and(|session| !is_session_id(session)) {
-        return Err(NOT_A_SESSION.into());
-    }
+pub fn turn_facts(assistant: &Assistant, project: Option<&Path>, folders: &[String], link: Option<&AgentLink>) -> Result<Value, String> {
+    let project = project.ok_or(NO_PROJECT)?;
+    let folders: Vec<String> = checked_folders(assistant, folders)?.iter().map(|folder| shown(folder)).collect();
+    Ok(json!({
+        "project": shown(project),
+        "attachments": shown(&assistant.attachments),
+        "folders": folders,
+        "link": link.map(link_facts),
+    }))
+}
 
-    let claude = checked_claude(provider, ask.claude.as_ref())?;
-    Ok(TurnAsk { prompt: ask.prompt, resume: ask.resume, claude, agent: ask.agent })
+pub fn start_launch(assistant: &Assistant, project: Option<&Path>, launch: &LaunchAsk, sink: ProcessSink) -> Result<Value, String> {
+    let project = project.ok_or(NO_PROJECT)?;
+    let path = search_path();
+    let binary = find_command(path, &launch.program).ok_or_else(|| NOT_ON_THIS_MACHINE.replace("{command}", &launch.program))?;
+    let process = ProcessLaunch { binary: &binary, argv: &launch.args, cwd: project, search_path: path, env: &launch.env };
+    let run_id = assistant.turns.start(&process, sink)?;
+    eprintln!("[ink-assistant] turn {run_id}: none → running ({})", launch.program);
+    Ok(json!(run_id))
 }
 
 pub fn remember_picked_folder(assistant: &Assistant, picked: &Path) -> Result<Value, String> {
@@ -113,21 +94,8 @@ pub fn remember_picked_folder(assistant: &Assistant, picked: &Path) -> Result<Va
     Ok(json!(real.to_string_lossy()))
 }
 
-pub fn start_turn(assistant: &Assistant, project: Option<&Path>, ask: &StartAsk, sink: TurnSink) -> Result<Value, String> {
-    let provider = checked_provider(ask.provider_id)?;
-    let turn_ask = checked_ask(provider, ask)?;
-    let folders = checked_folders(assistant, provider, ask.folders)?;
-    let project = project.ok_or(NO_PROJECT)?;
-    let path = search_path();
-    let binary = find_command(path, provider.command).ok_or_else(|| NOT_ON_THIS_MACHINE.replace("{command}", provider.command))?;
-    let places = TurnPlaces { project, attachments: &assistant.attachments, folders: &folders };
-    let argv = provider.argv(&turn_ask, &places);
-    let launch = TurnLaunch { binary: &binary, argv: &argv, cwd: project, search_path: path };
-    assistant.turns.start(&launch, sink).map(|turn_id| json!(turn_id))
-}
-
-pub fn stop_turn(assistant: &Assistant, turn_id: u64) -> Value {
-    assistant.turns.stop(turn_id);
+pub fn stop_turn(assistant: &Assistant, run_id: u64) -> Value {
+    assistant.turns.stop(run_id);
     Value::Null
 }
 

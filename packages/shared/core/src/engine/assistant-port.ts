@@ -190,7 +190,39 @@ export interface AssistantPort {
 	lendDrafts?(isDrafted: (chatId: string) => boolean): void;
 	sendFromHost?(said: string): Promise<void>;
 	changeQueue?(change: QueueChange): string | null;
+	useLauncher?(launcher: TurnLauncher): void;
 }
+
+export interface AgentLinkFacts {
+	readonly exe: string;
+	readonly socket: string;
+	readonly token: string;
+	readonly chat: string;
+	readonly servers: readonly string[];
+	readonly systemPrompt: string;
+	readonly mcpFlag: string;
+	readonly hookFlag: string;
+}
+
+export interface TurnFacts {
+	readonly runner: string;
+	readonly prompt: string;
+	readonly resume: string | null;
+	readonly model: string | null;
+	readonly options: Readonly<Record<string, string>>;
+	readonly project: string;
+	readonly attachments: string;
+	readonly folders: readonly string[];
+	readonly link: AgentLinkFacts | null;
+}
+
+export interface TurnLaunch {
+	readonly program: string;
+	readonly args: readonly string[];
+	readonly env: Readonly<Record<string, string>>;
+}
+
+export type TurnLauncher = (facts: TurnFacts) => TurnLaunch;
 
 export function portForChat(port: AssistantPort, chatId: string): AssistantPort {
 	return port.forChat?.(chatId) ?? port;

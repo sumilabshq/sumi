@@ -3,7 +3,8 @@ use tauri_build::{Attributes, DefaultPermissionRule, InlinedPlugin};
 const ASSISTANT_COMMANDS: &[&str] =
     &[
     "providers",
-    "start_turn",
+    "turn_facts",
+    "start_launch",
     "pick_folder",
     "stop_turn",
     "write_attachment",
@@ -72,7 +73,7 @@ const STUDIO_LOG_COMMANDS: &[&str] = &["line"];
 
 const AGENT_COMMANDS: &[&str] = &["open_channel", "answer"];
 
-const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close", "run"];
+const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close", "run", "spawn", "stop"];
 
 const FILES_COMMANDS: &[&str] =
     &[

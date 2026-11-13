@@ -4,9 +4,7 @@ pub mod dispatch;
 pub mod drops;
 pub mod paths;
 pub mod providers;
-pub mod search_path;
 pub mod state;
-pub mod turns;
 
 use attachments::ensure_private_folder;
 use state::Assistant;
@@ -33,7 +31,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(move |invoke| dispatch::handle(&held, invoke))
         .setup(move |_app, _api| {
             ensure_private_folder(&assistant.attachments)?;
-            thread::spawn(search_path::search_path);
+            thread::spawn(crate::login_path::search_path);
             Ok(())
         })
         .on_drop(move |_app| leaving.turns.stop_all())

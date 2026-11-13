@@ -5,7 +5,7 @@ pub mod socket;
 
 use crate::studio_caller::refuse_foreign_caller;
 use hub::AgentHub;
-use serde_json::{json, Value};
+use serde_json::Value;
 use std::str::FromStr;
 use std::sync::Arc;
 use tauri::ipc::{Channel, Invoke, InvokeBody, InvokeError, InvokeMessage, JavaScriptChannelId};
@@ -16,7 +16,6 @@ pub const PLUGIN_NAME: &str = "agent";
 pub const PROMPT: &str = include_str!("sumi-prompt.md");
 
 const SOCKET_FILE: &str = "agent-tools.sock";
-pub const DISALLOWED_TOOLS: &[&str] = &["AskUserQuestion"];
 const MISSING_ARGUMENT: &str = "The call is missing its {name} argument.";
 const NOT_A_CHANNEL: &str = "The call's onEvent argument is not a channel.";
 const NOT_SERVER_NAMES: &str = "The call's servers argument is not a list of MCP server names.";
@@ -35,42 +34,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             Ok(())
         })
         .build()
-}
-
-pub struct TurnHeaders<'a> {
-    pub folder: &'a str,
-    pub model: Option<&'a str>,
-}
-
-pub fn claude_flags(link: &hub::AgentLink, headers: &TurnHeaders) -> Vec<String> {
-    vec![
-        "--append-system-prompt".into(),
-        PROMPT.into(),
-        "--mcp-config".into(),
-        mcp_config_of(link, headers),
-        "--allowedTools".into(),
-        allowed_tools(link),
-        "--disallowedTools".into(),
-        DISALLOWED_TOOLS.join(","),
-        "--settings".into(),
-        hook::settings_of(link),
-    ]
-}
-
-pub fn mcp_config_of(link: &hub::AgentLink, headers: &TurnHeaders) -> String {
-    let mut servers = serde_json::Map::new();
-    for server in &link.servers {
-        let mut args = vec![mcp::MCP_FLAG, "--server", server, "--socket", &link.socket, "--token", &link.token, "--chat", &link.chat, "--folder", headers.folder];
-        if let Some(model) = headers.model {
-            args.extend(["--model", model]);
-        }
-        servers.insert(server.clone(), json!({ "command": link.exe, "args": args }));
-    }
-    json!({ "mcpServers": servers }).to_string()
-}
-
-pub fn allowed_tools(link: &hub::AgentLink) -> String {
-    link.servers.iter().map(|server| format!("mcp__{server}")).collect::<Vec<_>>().join(",")
 }
 
 fn dispatch<R: Runtime>(invoke: Invoke<R>) -> bool {

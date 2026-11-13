@@ -1,18 +1,18 @@
 use super::attachments::private_folder;
-use super::turns::Turns;
+use crate::process_runs::ProcessRuns;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, PoisonError};
 
 pub struct Assistant {
     pub attachments: PathBuf,
-    pub turns: Turns,
+    pub turns: ProcessRuns,
     picked_folders: Mutex<Vec<PathBuf>>,
     dropped_files: Mutex<Vec<PathBuf>>,
 }
 
 impl Assistant {
     pub fn new(attachments: PathBuf) -> Self {
-        Assistant { attachments, turns: Turns::new(), picked_folders: Mutex::new(Vec::new()), dropped_files: Mutex::new(Vec::new()) }
+        Assistant { attachments, turns: ProcessRuns::new(), picked_folders: Mutex::new(Vec::new()), dropped_files: Mutex::new(Vec::new()) }
     }
 
     pub fn remember_picked(&self, folder: PathBuf) {
