@@ -167,6 +167,11 @@ The relay (`apps/tauri/src/agent/agent-relay.ts`, `apps/tauri/src-tauri/src/agen
 | `questions`    | `questions`   | `ask` (`plugins/ai/questions/data/ask`)                                                                                                                   |
 | `agent`        | `agent-tools` | `agent-tools` (`plugins/ai/agent/data/agent-tools`): files, shell, web, PNG images, clock, tool search; its own runtime calls the core as the `agent` app |
 | `tasks`        | `tasks`       | `task-work` (`plugins/tasks/data/task-work`)                                                                                                              |
+| `canvas`       | `canvas`      | `canvas-work` (`plugins/canvas/data/canvas-work`): read, draw, arrange and shoot the HTML artboards of canvas tabs; shots are drawn in the window         |
+
+## Example: canvas
+
+`plugins/canvas` owns `artboards` (`plugins/canvas/data/artboards`, `@sumi/artboards`), started in the core through `backend.moduleOf` on the workspace store: each canvas tab's pages, its artboards (a whole HTML document, a name, a place and a size each) and the view it was left in, kept in `canvases.json` keyed by tab id, a new canvas starting with one page, Untitled page. It adds the `canvas` app to `apps` with no view and registers its own tab page (`header: "shell"`, importing `artboards` over `offers.core`): the pages and layers panel, the pan and zoom field with each artboard in a sandboxed frame, and the zoom and panel toggle in the shell header. It serves the `canvas` MCP server (`canvas-work`, run in each window with a renderer that draws shots and reads layers through the window's DOM) and adds the agent's prompt part: the canvas exists, and design work is drawn there before code.
 
 ## Example: terminal cursor
 

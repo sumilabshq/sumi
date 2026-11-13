@@ -1,0 +1,31 @@
+{
+	"name": "@sumi/canvas-plugin",
+	"version": "0.1.0",
+	"description": "Canvas: pages of HTML artboards on a pan and zoom field, their pages and layers panel, and the canvas tools served to agents over MCP",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/agent-plugin": "0.1.0",
+		"@sumi/apps-plugin": "0.1.0",
+		"@sumi/artboards": "0.1.0",
+		"@sumi/canvas-work": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/behaviors": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}
