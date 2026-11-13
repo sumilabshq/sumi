@@ -1,8 +1,8 @@
-import type { MascotState } from "../../mascot/lib/mascot-state.schema.js";
+import type { SumiMood } from "@sumi/sumi-host-plugin";
 import type { PageFailureKind } from "@widgetarium/browser/contract";
 
 export interface FailureCopy {
-	readonly mood: MascotState;
+	readonly mood: SumiMood;
 	readonly title: string;
 	readonly reason: string;
 }

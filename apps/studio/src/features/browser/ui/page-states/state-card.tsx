@@ -1,10 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { SumiFigure, sumiStateOf } from "@sumi/sumi-host-plugin";
-import type { MascotState } from "../../../mascot/lib/mascot-state.schema.js";
+import type { SumiMood } from "@sumi/sumi-host-plugin";
 
 export interface StateCardProps {
-	readonly mood: MascotState;
+	readonly mood: SumiMood;
 	readonly title: string;
 	readonly reason?: ReactNode;
 	readonly children?: ReactNode;

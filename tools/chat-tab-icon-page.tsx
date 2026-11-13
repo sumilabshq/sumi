@@ -11,6 +11,7 @@ reportsFailures();
 const COPIES_PER_STATE = 10;
 
 const host = document.getElementById("root");
+
 if (host === null) {
 	throw new Error("chat tab icon page: no #root");
 }
@@ -33,28 +34,15 @@ function StateRow({ state }: { readonly state: ChatTabState }): ReactElement {
 	);
 }
 
-function LargeRow(): ReactElement {
-	return (
-		<div className="row big" id="large">
-			{ChatTabStateSchema.options.map((state) => (
-				<ChatTabIcon key={state} state={state} />
-			))}
-		</div>
-	);
-}
-
 createRoot(host).render(
 	<div className="wg-root">
-		<div id="small">
+		<div data-icons="small">
 			{ChatTabStateSchema.options.map((state) => (
 				<StateRow key={state} state={state} />
 			))}
 		</div>
-		<LargeRow />
-		<div className="row big dark" id="dark">
-			{ChatTabStateSchema.options.map((state) => (
-				<ChatTabIcon key={state} state={state} />
-			))}
+		<div className="row theme-dark dark-row">
+			<ChatTabIcon state="idle" />
 		</div>
 	</div>,
 );

@@ -1,13 +1,13 @@
 export type StateParts = Readonly<Record<string, string>>;
 
 export const BOARD_CARD: StateParts = {
-	ink: ".state .wg-mascot",
+	ink: ".state .sumi-figure",
 	title: ".st-t",
 	reason: ".st-r",
 	primary: ".acts .b52",
 	quiet: ".acts .b48:not(.wash)",
 	ask: ".b48.wash",
-	askInk: ".b48.wash .wg-mascot",
+	askInk: ".b48.wash .sumi-figure",
 	nearMatch: ".fchip.wash",
 	field: ".bigfield",
 	fieldIcon: ".bigfield > span:first-child > svg",
@@ -19,13 +19,13 @@ export const BOARD_CARD: StateParts = {
 };
 
 export const BUILT_CARD: StateParts = {
-	ink: "[data-browser-page-state] .wg-mascot",
+	ink: "[data-browser-page-state] .sumi-figure",
 	title: "[data-browser-page-state] h2",
 	reason: "[data-browser-page-state] > p",
 	primary: "[data-browser-primary-action]",
 	quiet: "[data-browser-quiet-action]",
 	ask: "[data-browser-ask-ink]",
-	askInk: "[data-browser-ask-ink] .wg-mascot",
+	askInk: "[data-browser-ask-ink] .sumi-figure",
 	nearMatch: "[data-browser-near-match]",
 	field: "[data-browser-new-tab-field]",
 	fieldIcon: "[data-browser-new-tab-field] > svg",

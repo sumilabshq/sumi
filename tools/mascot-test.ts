@@ -10,13 +10,21 @@ import {
 	SURPRISE_HELD_MS,
 	mascotStateOf,
 	nextDecisionAt,
-} from "../apps/studio/src/features/mascot/lib/mascot-state.ts";
-import type { MascotTouch } from "../apps/studio/src/features/mascot/lib/mascot-state.ts";
-import { bodyPoseOf, lookTargetOf, springStep } from "../apps/studio/src/features/mascot/lib/mascot-motion.ts";
-import type { Spring } from "../apps/studio/src/features/mascot/lib/mascot-motion.ts";
-import { OUTFITS, sceneOf } from "../apps/studio/src/features/mascot/lib/wardrobe/outfits.ts";
-import { OutfitIdSchema } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
-import type { MascotState } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
+} from "../plugins/ai/chat/src/features/mascot/lib/mascot-state.ts";
+import type { MascotTouch } from "../plugins/ai/chat/src/features/mascot/lib/mascot-state.ts";
+import { MascotStateSchema } from "../plugins/ai/chat/src/features/mascot/lib/mascot-state.schema.ts";
+import type { MascotState } from "../plugins/ai/chat/src/features/mascot/lib/mascot-state.schema.ts";
+import { gazeGoalOf, lidOf } from "../plugins/sumi-host/src/features/mascot/lib/sumi-goals.ts";
+import {
+	EYE_TENSION,
+	bodyPointsOf,
+	cornerGoalsOf,
+	eyeTransformOf,
+	restingCorners,
+	restingSpring,
+	springToward,
+} from "../plugins/sumi-host/src/features/mascot/lib/sumi-springs.ts";
+import { sumiStateOf } from "../plugins/sumi-host/src/features/mascot/lib/sumi-state-of.ts";
 import { activityAfter } from "../plugins/ai/chat/data/mascot/features/activity/lib/activity-after.ts";
 import { MemoryAgentActivityGateway } from "../plugins/ai/chat/data/mascot/gateways/agent-activity/memory.gateway.ts";
 import { AgentActivitySchema, mascot } from "../plugins/ai/chat/data/mascot/generated/contract.ts";
@@ -191,99 +199,71 @@ check(
 );
 check("nothing changed: nothing told", agentEventsBetween(running, running), []);
 
-const thinking = [0, 0.5].map((seconds) => lookTargetOf("thinking", seconds, [0, 0]).map((at) => at.toFixed(3)));
-check("thinking rolls the eyes around the top", thinking[0] !== thinking[1] && Number(thinking[0]?.[1]) < 0, true);
-check("idle looks where the pointer is", lookTargetOf("idle", 3, [0.4, -0.2]), [0.4, -0.2]);
-let spring: Spring = { look: [0, 0], velocity: [0, 0] };
+const looked = { x: 0.4, y: -0.2 };
+check("rest looks where the pointer is", gazeGoalOf("rest", 1000, looked), looked);
+check("listening looks down at the composer", gazeGoalOf("listening", 1000, looked).y > 0, true);
+check("working holds the eye in the centre", gazeGoalOf("working", 1000, looked), { x: 0, y: 0 });
+check(
+	"waits looks down and taps between two heights",
+	[gazeGoalOf("waits", 0, looked).y, gazeGoalOf("waits", 450, looked).y],
+	[0.8, 0.58],
+);
+check(
+	"done nods up and down, then settles in the centre",
+	[gazeGoalOf("done", 0, looked).y < 0, gazeGoalOf("done", 160, looked).y > 0, gazeGoalOf("done", 900, looked)],
+	[true, true, { x: 0, y: 0 }],
+);
+check(
+	"error shakes side to side, then settles",
+	[gazeGoalOf("error", 0, looked).x, gazeGoalOf("error", 100, looked).x, gazeGoalOf("error", 900, looked)],
+	[-0.6, 0.6, { x: 0, y: 0 }],
+);
+check("asleep sinks low", gazeGoalOf("asleep", 0, looked), { x: 0, y: 0.78 });
+check(
+	"rest blinks at the start of each cycle and is open between",
+	[lidOf("rest", 75) < 0.5, lidOf("rest", 1000), lidOf("working", 75), lidOf("asleep", 1000)],
+	[true, 1, 1, 0.14],
+);
+const settling = restingSpring();
 for (let frame = 0; frame < 120; frame += 1) {
-	spring = springStep(spring, [1, 0], 1 / 60);
+	springToward(settling, { x: 1, y: 0 }, EYE_TENSION, 1 / 60);
 }
+check("the eye spring settles on its goal", [settling.x.toFixed(2), settling.y.toFixed(2)], ["1.00", "0.00"]);
 check(
-	"the spring settles on its target",
-	spring.look.map((at) => at.toFixed(2)),
-	["1.00", "0.00"],
-);
-check(
-	"asleep, the body stops turning; awake it turns",
+	"a still eye is square; a fast one stretches along its move, never turns",
 	[
-		bodyPoseOf([1, 0], "sleep").body === bodyPoseOf([0, 0], "sleep").body,
-		bodyPoseOf([1, 0], "idle").body === bodyPoseOf([0, 0], "idle").body,
+		eyeTransformOf(restingSpring(), 200, 1),
+		/scale\(([\d.]+) ([\d.]+)\)/
+			.exec(eyeTransformOf({ x: 0, y: 0, vx: 8, vy: 0 }, 200, 1))
+			?.slice(1)
+			.map(Number)
+			.map((at) => at > 1),
+		eyeTransformOf({ x: 0, y: 0, vx: 8, vy: 8 }, 200, 1).includes("rotate"),
 	],
-	[true, false],
+	["translate(0.00 0.00) scale(1.000 1.000)", [true, false], false],
 );
-const IDS = { paint: "g", shine: "s", clip: "c" };
-const LOOKS: readonly (readonly [number, number])[] = [
-	[0, 0],
-	[0.8, 0.3],
-	[-0.6, -0.6],
-	[0.3, 0.9],
-	[-0.9, 0.2],
-];
-const dressed = OutfitIdSchema.options.map((outfit) => {
-	for (let warm = 0; warm < 30; warm += 1) {
-		sceneOf(outfit, { look: [warm / 30, 0], time: warm, ids: IDS });
-	}
-
-	const timed = LOOKS.flatMap((look) =>
-		[0, 1.3, 2.7].map((time) => {
-			const started = performance.now();
-			const scene = sceneOf(outfit, { look, time, ids: IDS });
-			return { scene, ms: performance.now() - started };
-		}),
-	);
-	const scenes = timed.map((one) => one.scene);
-	const ms = timed.map((one) => one.ms).sort((x, y) => x - y)[Math.floor(timed.length / 2)] ?? 0;
-	const parts = scenes.map((scene) => scene.behind.length + scene.hats.length + scene.ahead.length);
-	const isSwayingSeen =
-		sceneOf(outfit, { look: [0, 0], time: 0, ids: IDS })
-			.ahead.map((one) => one.d)
-			.join() !==
-		sceneOf(outfit, { look: [0, 0], time: 1.1, ids: IDS })
-			.ahead.map((one) => one.d)
-			.join();
-	return {
-		outfit,
-		ms,
-		hasParts: Math.min(...parts) > 0,
-		isSwayingSeen,
-		isFinite: scenes.every((scene) => !JSON.stringify(scene).includes("NaN")),
-	};
-});
+const pulledDown = cornerGoalsOf({ x: 0, y: 1 }, 1, { x: 0, y: 0 }, 0, 140);
 check(
-	"bare Sumi wears nothing; every other outfit draws parts at every look",
-	dressed.filter((one) => one.hasParts === (one.outfit === "bare")).map((one) => one.outfit),
-	[],
+	"a pointer below pulls the bottom corners down, the top ones stay",
+	pulledDown.map((goal) => goal.y > 0),
+	[false, false, true, true],
+);
+check("no pointer, no move: every corner rests", cornerGoalsOf({ x: 0, y: 0 }, 0, { x: 0, y: 0 }, 0, 140), [
+	{ x: 0, y: 0 },
+	{ x: 0, y: 0 },
+	{ x: 0, y: 0 },
+	{ x: 0, y: 0 },
+]);
+check(
+	"the resting body is the square itself",
+	bodyPointsOf(restingCorners(), 40),
+	"-20.0,-20.0 20.0,-20.0 20.0,20.0 -20.0,20.0",
 );
 check(
-	"no outfit draws a NaN",
-	dressed.filter((one) => !one.isFinite).map((one) => one.outfit),
-	[],
+	"every old mood has a square state",
+	MascotStateSchema.options.map((mood) => sumiStateOf(mood)),
+	["rest", "listening", "working", "working", "done", "waits", "error", "asleep", "rest", "surprised"],
 );
-check(
-	"only the outfits declared swaying move with time",
-	dressed.filter((one) => one.isSwayingSeen !== OUTFITS[one.outfit].isSwaying).map((one) => one.outfit),
-	[],
-);
-check(
-	"a frame of any outfit costs under a millisecond, by the median of fifteen",
-	dressed.filter((one) => one.ms > 1).map((one) => `${one.outfit} ${one.ms.toFixed(3)}`),
-	[],
-);
-console.log(`     scene cost per frame, ms: ${dressed.map((one) => `${one.outfit} ${one.ms.toFixed(3)}`).join(", ")}`);
-
-const EYE_PATHS: Readonly<Record<MascotState, string>> = {
-	idle: "M0 -9 Q0 0 0 9",
-	listening: "M0 -9 Q0 0 0 9",
-	thinking: "M0 -5 Q0 0 0 5",
-	working: "M0 0.5 Q0 2 0 3.5",
-	done: "M-4.5 3 Q0 -6 4.5 3",
-	pleased: "M-4.5 3 Q0 -6 4.5 3",
-	question: "M0 -1.5 Q0 0 0 1.5",
-	error: "M0 -6 Q0 0.5 0 7",
-	sleep: "M-4 3 Q0 6 4 3",
-	surprised: "M0 -13 Q0 0 0 12",
-};
-const tokensOf = (path: string): string => (path.match(/-?[\d.]+|[A-Z]/g) ?? []).join(" ");
 
 const bundle = await bundleOf("tools/mascot-page.tsx");
 const sheet = readFileSync(BOARD_SHEET, "utf8");
@@ -298,22 +278,29 @@ await new Promise<void>((listening) => server.listen(0, "127.0.0.1", listening))
 const address = server.address();
 const origin = typeof address === "object" && address !== null ? `http://127.0.0.1:${address.port}/` : "";
 
-const EYES_BY_STATE = `Object.fromEntries([...document.querySelectorAll("[data-row]")].map((row) =>
-	[row.dataset.row, getComputedStyle(row.querySelector(".wg-mascot-eye.is-left")).d]))`;
+const FILLS = `(() => {
+	const ink = (variable) => { const probe = document.createElement("span"); probe.style.color = "var(" + variable + ")"; document.querySelector(".mascot-page").append(probe); const colour = getComputedStyle(probe).color; probe.remove(); return colour; };
+	const body = (at) => getComputedStyle(document.querySelector(at + " .sumi-figure-body")).fill;
+	return {
+		rest: body("[data-row=rest]") === ink("--sumi-text"),
+		waits: body("[data-row=waits]") === ink("--sumi-accent"),
+		done: body("[data-row=done]") === ink("--sumi-success"),
+		error: body("[data-row=error]") === ink("--sumi-danger"),
+		eye: getComputedStyle(document.querySelector("[data-row=rest] .sumi-figure-eye")).fill === ink("--sumi-plate"),
+		dark: body("#dark") !== body("[data-row=rest]"),
+		glow: getComputedStyle(document.querySelector("[data-row=working] .sumi-figure-eye")).animationName,
+	};
+})()`;
 const LIVE = `(() => {
-	const live = document.querySelector("#live .wg-mascot");
-	const eye = live.querySelector(".wg-mascot-eye.is-left");
+	const live = document.querySelector("#live .sumi-figure");
 	const box = live.getBoundingClientRect();
 	return {
 		state: live.dataset.state,
-		eye: getComputedStyle(eye).d,
-		turn: eye.closest(".wg-mascot-turn").style.transform,
-		breath: getComputedStyle(live.querySelector(".wg-mascot-breath")).animationName,
-		morph: getComputedStyle(eye).transitionDuration,
+		eye: live.querySelector(".sumi-figure-eye").getAttribute("transform"),
+		body: live.querySelector(".sumi-figure-body").getAttribute("points"),
 		centre: [box.left + box.width / 2, box.top + box.height / 2],
 	};
 })()`;
-
 const FRAMES_IN_A_SECOND = `new Promise((done) => {
 	let asked = 0;
 	const real = window.requestAnimationFrame;
@@ -324,16 +311,15 @@ const FRAMES_IN_A_SECOND = `new Promise((done) => {
 interface Live {
 	readonly state: string;
 	readonly eye: string;
-	readonly turn: string;
-	readonly breath: string;
-	readonly morph: string;
+	readonly body: string;
 	readonly centre: readonly [number, number];
 }
 
-const isLive = (value: unknown): value is Live => typeof value === "object" && value !== null && "turn" in value;
+const isLive = (value: unknown): value is Live => typeof value === "object" && value !== null && "eye" in value;
 
 async function liveOf(page: AskedPage): Promise<Live> {
 	const read = await page.ask(LIVE);
+
 	if (!isLive(read)) {
 		throw new Error(`the live mascot did not answer: ${JSON.stringify(read)}`);
 	}
@@ -341,91 +327,61 @@ async function liveOf(page: AskedPage): Promise<Live> {
 	return read;
 }
 
-async function turnsWhenPointedFrom(page: AskedPage, centre: readonly [number, number]): Promise<readonly string[]> {
-	const turns: string[] = [];
-	for (const dx of [-400, 400]) {
+async function eyesWhenPointedFrom(page: AskedPage, centre: readonly [number, number]): Promise<readonly string[]> {
+	const eyes: string[] = [];
+
+	for (const dx of [-300, 300]) {
 		for (let step = 0; step < 4; step += 1) {
 			await page.hover(centre[0] + dx + step, centre[1] + step);
 			await waited(60);
 		}
 
 		await waited(700);
-		turns.push((await liveOf(page)).turn);
+		eyes.push((await liveOf(page)).eye);
 	}
 
-	return turns;
+	return eyes;
 }
 
-const translateX = (transform: string): number =>
-	Number(/matrix\((?:[-\d.]+, ){4}([-\d.]+)/.exec(transform)?.[1] ?? NaN);
+const eyeX = (transform: string): number => Number(/translate\(([-\d.]+)/.exec(transform)?.[1] ?? NaN);
+const lowestY = (points: string): number => Math.max(...points.split(" ").map((one) => Number(one.split(",")[1])));
 
 const page = await paged(origin, "mascot", { size: [1300, 700] });
 try {
 	await waited(800);
-	const eyes = await page.ask(EYES_BY_STATE);
-	const shownEyes = typeof eyes === "object" && eyes !== null ? Object.entries(eyes) : [];
-	check(
-		"every state draws its own eye path",
-		Object.fromEntries(
-			Object.keys(EYE_PATHS).map((state) => [state, tokensOf(String(Object.fromEntries(shownEyes)[state]))]),
-		),
-		Object.fromEntries(Object.entries(EYE_PATHS).map(([state, d]) => [state, tokensOf(d)])),
-	);
-	const idle = await liveOf(page);
-	check(
-		"the live mascot starts idle, breathing, morphing",
-		[idle.state, idle.breath, idle.morph.startsWith("0.5s")],
-		["idle", "wg-mascot-breathe", true],
-	);
-	const [fromLeft = "", fromRight = ""] = await turnsWhenPointedFrom(page, idle.centre);
-	check("its eyes follow the pointer", translateX(fromLeft) < translateX(fromRight) - 2, true);
+	check("each state paints its body, the eye is the paper, working glows", await page.ask(FILLS), {
+		rest: true,
+		waits: true,
+		done: true,
+		error: true,
+		eye: true,
+		dark: true,
+		glow: "sumi-eye-glow",
+	});
+	const resting = await liveOf(page);
+	check("the live mascot starts at rest", resting.state, "rest");
+	const [fromLeft = "", fromRight = ""] = await eyesWhenPointedFrom(page, resting.centre);
+	check("its eye follows the pointer", eyeX(fromLeft) < eyeX(fromRight) - 2, true);
+	await page.hover(resting.centre[0], resting.centre[1] + 160);
+	await waited(800);
+	check("a pointer below pulls the body down past its square", lowestY((await liveOf(page)).body) > 90, true);
 	await page.ask(`window.__RECORD__(["sent"]); true`);
 	await waited(300);
-	check("a sent message: thinking", (await liveOf(page)).state, "thinking");
-	await page.ask(`window.__RECORD__(["toolStarted"]); true`);
-	await waited(800);
-	const working = await liveOf(page);
-	check(
-		"a tool started: working, the eyes morphed",
-		[working.state, tokensOf(working.eye)],
-		["working", tokensOf(EYE_PATHS.working)],
-	);
-	await page.ask(`window.__RECORD__(["toolFinished", "runFinished"]); true`);
+	check("a sent message: working", (await liveOf(page)).state, "working");
+	await page.ask(`window.__RECORD__(["runFinished"]); true`);
 	await waited(300);
 	check("the run finished: done", (await liveOf(page)).state, "done");
-	const outfitParts = await page.ask(
-		`Object.fromEntries([...document.querySelectorAll("[data-outfit-row]")].map((row) => [row.dataset.outfitRow, row.querySelectorAll("svg path").length]))`,
-	);
-	const partCounts = typeof outfitParts === "object" && outfitParts !== null ? Object.entries(outfitParts) : [];
-	const bareParts = Number(Object.fromEntries(partCounts)["bare"]);
-	check(
-		"every outfit draws on the page, more than bare Sumi",
-		partCounts.filter(([outfit, count]) => outfit !== "bare" && Number(count) <= bareParts).map(([outfit]) => outfit),
-		[],
-	);
-	const themed = await page.ask(
-		`(() => { const of = (root) => [getComputedStyle(root.querySelector(".wg-mascot-body-base")).stopColor, getComputedStyle(root.querySelector(".wg-mascot-eye")).stroke]; return [of(document.querySelector("[data-row=idle]")), of(document.querySelector("#dark"))]; })()`,
-	);
-	check("Sumi is black with white eyes, and white with black eyes in a dark theme", themed, [
-		["rgb(23, 24, 27)", "rgb(255, 255, 255)"],
-		["rgb(241, 241, 238)", "rgb(23, 24, 27)"],
-	]);
 	await page.ask(`location.hash = "quiet"; location.reload(); true`);
 	await waited(1500);
-	check("at rest, bare Sumi asks for no frames", await page.ask(FRAMES_IN_A_SECOND), 0);
-	await page.ask(`window.__WEAR__("sprout"); true`);
-	await waited(300);
-	check("a swaying sprout keeps the frames coming", Number(await page.ask(FRAMES_IN_A_SECOND)) > 20, true);
+	check("small figures ask for no frames", await page.ask(FRAMES_IN_A_SECOND), 0);
 	await page.ask(`location.hash = ""; true`);
 	await page.reduceMotion();
 	await page.ask(`location.reload(); true`);
 	await waited(1000);
 	const still = await liveOf(page);
-	check("reduced motion: no breathing, no morph", [still.breath, still.morph], ["none", "0s"]);
-	const [stillLeft, stillRight] = await turnsWhenPointedFrom(page, still.centre);
-	check("reduced motion: the eyes stay ahead", stillLeft === stillRight && stillLeft !== "", true);
-	const boom = await page.ask(`document.getElementById("boom").textContent`);
-	check("the page drew without a failure", boom, "");
+	const [stillLeft, stillRight] = await eyesWhenPointedFrom(page, still.centre);
+	check("reduced motion: the eye stays put", stillLeft === stillRight && stillLeft !== "", true);
+	check("the page drew without a failure", await page.ask(`document.getElementById("boom").textContent`), "");
 } finally {
 	page.close();
 	server.close();
