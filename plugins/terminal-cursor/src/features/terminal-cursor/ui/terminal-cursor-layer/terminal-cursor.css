@@ -1,0 +1,97 @@
+:root[data-terminal-cursor-on] {
+	--sumi-terminal-cursor-w: calc(8em / 14);
+	--sumi-terminal-cursor-h: calc(18em / 14);
+	--sumi-terminal-cursor-edge: 1.5px;
+	--sumi-terminal-cursor-rest: var(--sumi-text-3);
+}
+
+:root[data-terminal-cursor-on]
+	:is(
+		textarea,
+		input:not([type]),
+		input[type="text"],
+		input[type="search"],
+		input[type="url"],
+		input[type="tel"],
+		input[type="password"]
+	):not([data-terminal-cursor="off"]) {
+	caret-color: transparent;
+}
+
+:root[data-terminal-cursor-on]
+	:is(
+		textarea,
+		input:not([type]),
+		input[type="text"],
+		input[type="search"],
+		input[type="url"],
+		input[type="tel"],
+		input[type="password"]
+	):not([data-terminal-cursor="off"]):placeholder-shown {
+	text-indent: calc(var(--sumi-terminal-cursor-w) + 0.5em);
+}
+
+:root[data-terminal-cursor-on]
+	:is(
+		textarea,
+		input:not([type]),
+		input[type="text"],
+		input[type="search"],
+		input[type="url"],
+		input[type="tel"],
+		input[type="password"]
+	):not([data-terminal-cursor="off"]):placeholder-shown:not([data-terminal-cursor-drawn]) {
+	background-image:
+		linear-gradient(
+			to right,
+			var(--sumi-terminal-cursor-rest) var(--sumi-terminal-cursor-edge),
+			transparent var(--sumi-terminal-cursor-edge)
+		),
+		linear-gradient(
+			to left,
+			var(--sumi-terminal-cursor-rest) var(--sumi-terminal-cursor-edge),
+			transparent var(--sumi-terminal-cursor-edge)
+		),
+		linear-gradient(
+			to bottom,
+			var(--sumi-terminal-cursor-rest) var(--sumi-terminal-cursor-edge),
+			transparent var(--sumi-terminal-cursor-edge)
+		),
+		linear-gradient(
+			to top,
+			var(--sumi-terminal-cursor-rest) var(--sumi-terminal-cursor-edge),
+			transparent var(--sumi-terminal-cursor-edge)
+		);
+	background-repeat: no-repeat;
+	background-origin: content-box;
+	background-size: var(--sumi-terminal-cursor-w) var(--sumi-terminal-cursor-h);
+	background-position: 0 50%;
+}
+
+:root[data-terminal-cursor-on]
+	textarea:placeholder-shown:not([data-terminal-cursor-drawn], [data-terminal-cursor="off"]) {
+	background-position: 0 calc((1lh - var(--sumi-terminal-cursor-h)) / 2);
+}
+
+.sumi-terminal-cursor {
+	position: fixed;
+	z-index: 900;
+	overflow: hidden;
+	background: var(--sumi-accent);
+	color: var(--sumi-on-accent);
+	white-space: pre;
+	pointer-events: none;
+	animation: sumi-terminal-cursor-blink 1.06s step-end 0.53s infinite;
+}
+
+@keyframes sumi-terminal-cursor-blink {
+	50% {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sumi-terminal-cursor {
+		animation: none;
+	}
+}

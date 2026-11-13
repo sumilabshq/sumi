@@ -275,7 +275,10 @@ check(
 		resolved.windowModules.map((windowModule) => windowModule.moduleOf({}).definition.name),
 		resolved.windowLayers.map(({ id }) => id),
 	],
-	[["mcp", "app-host", "tabs", "command-menu", "chat-tabs", "ask", "task-work", "pages"], ["command-menu.layer-0"]],
+	[
+		["mcp", "app-host", "tabs", "command-menu", "chat-tabs", "ask", "task-work", "pages"],
+		["command-menu.layer-0", "terminal-cursor.layer-1"],
+	],
 );
 
 const startedCore = runtime()
@@ -426,6 +429,7 @@ check(
 			"permission-mode": { enabled: false },
 			"working-folder": { enabled: false },
 			"plan-usage": { enabled: false },
+			"terminal-cursor": { enabled: false },
 		},
 		1,
 		undefined,

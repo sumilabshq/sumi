@@ -45,6 +45,7 @@ import { htmlViewer } from "@sumi/html-viewer-plugin";
 import { imageViewer } from "@sumi/image-viewer-plugin";
 import { markdownViewer } from "@sumi/markdown-viewer-plugin";
 import { terminal } from "@sumi/terminal-plugin";
+import { terminalCursor } from "@sumi/terminal-cursor-plugin";
 import { videoViewer } from "@sumi/video-viewer-plugin";
 
 export interface BackgroundModule {
@@ -138,6 +139,7 @@ const INSTALLED_PLUGINS = [
 	permissionMode,
 	workingFolder,
 	planUsage,
+	terminalCursor,
 ];
 const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, agent, questions, tasks];
 
@@ -160,6 +162,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		permissionMode.id,
 		workingFolder.id,
 		planUsage.id,
+		terminalCursor.id,
 	],
 };
 

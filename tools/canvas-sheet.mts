@@ -52,6 +52,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/plan-usage/src/features/plan-usage/ui/usage-button/usage-button.css",
 	"@sumi/sumi-host-plugin/sumi-figure.css": "plugins/sumi-host/src/features/mascot/ui/sumi-figure/sumi-figure.css",
 	"@sumi/chat-plugin/new-chat-row.css": "plugins/ai/chat/src/features/new-chat/ui/new-chat-row/new-chat-row.css",
+	"@sumi/terminal-cursor-plugin/terminal-cursor.css":
+		"plugins/terminal-cursor/src/features/terminal-cursor/ui/terminal-cursor-layer/terminal-cursor.css",
 	"@sumi/model-picker-plugin/model-menu.css":
 		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-menu.css",
 };
@@ -77,6 +79,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/plan-usage-plugin/usage-button.css";
 @import "@sumi/chat-plugin/new-chat-row.css";
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
+@import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 `;
 
 export async function canvasSheet(repo: string): Promise<string> {

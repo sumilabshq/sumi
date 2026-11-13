@@ -168,6 +168,15 @@ The relay (`apps/tauri/src/agent/agent-relay.ts`, `apps/tauri/src-tauri/src/agen
 | `agent`        | `agent-tools` | `agent-tools` (`plugins/ai/agent/data/agent-tools`): files, shell, web, PNG images, clock, tool search; its own runtime calls the core as the `agent` app |
 | `tasks`        | `tasks`       | `task-work` (`plugins/tasks/data/task-work`)                                                                                                              |
 
+## Example: terminal cursor
+
+`plugins/terminal-cursor` registers one `shell.layer` and owns no data. It draws a blinking block over the caret of the focused `textarea` or text `input` of the window, inverts the letter under it, and draws a hollow block in an empty field at rest; the native caret is hidden only while the plugin runs (`:root[data-terminal-cursor-on]`), so a window without it shows plain inputs. A field with no area or no visible text of its own (xterm's helper textarea) is skipped. Another plugin's field chooses through one attribute, never an import:
+
+| `data-terminal-cursor` | The field                                                                                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"off"`                | keeps the native caret: no block, no hollow block, no placeholder indent                                                                             |
+| `"held"`               | keeps its block while no text field has focus; its writer sets it on one field at a time, only while a typed letter would land there (the chat does) |
+
 ## Example: chat
 
 `plugins/ai/chat` owns `plugins/ai/agent/data/assistant` (`@widgetarium/assistant`), `plugins/ai/chat/data/mascot` (`@widgetarium/mascot`) and `plugins/ai/chat/data/chat-tabs`, and every drawn part of the chat. Its `apply` adds the `chat` app to `apps`, registers the chat tab page (no shell header; `modulesOf` runs `mascot` and imports `assistant` over `offers.windowServer` plus whatever other plugins add), runs `chatTabs` in each window, serves `assistant(offers.assistant)` per window (`windows.serverModule`; each request names its `chat`), wraps the window in the Ask composer (`shell.provider`) and adds the menu's Ask door ⌘I with its page. A chat is a tab of the `chat` app in places.
