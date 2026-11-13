@@ -1,5 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
+import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
+import type { Report } from "../../../../shared/lib/failure-line.js";
 import type { CardAsks, ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { liveToolsOf } from "../../lib/live-tools.js";
 import { OpenGroupsContext } from "../../lib/use-remembers-group-open.js";
@@ -14,9 +16,10 @@ export interface ChatTurnsProps {
 	readonly cards: ChatCardsSlot;
 	readonly asks: CardAsks;
 	readonly chatId?: string | undefined;
+	readonly report: Report;
 }
 
-export function ChatTurns({ chat, cards, asks, chatId }: ChatTurnsProps): ReactElement {
+export function ChatTurns({ chat, cards, asks, chatId, report }: ChatTurnsProps): ReactElement {
 	const [openGroups] = useState(() => new Set<string>());
 
 	if (chat.session.turns.length === 0) {
@@ -27,6 +30,7 @@ export function ChatTurns({ chat, cards, asks, chatId }: ChatTurnsProps): ReactE
 	return (
 		<OpenGroupsContext.Provider value={openGroups}>
 			<TurnRows chat={chat} cards={cards} asks={asks} live={live} />
+			{chatId === undefined ? null : <ListPluginSlot name="chat.before-live" props={{ chatId, report }} />}
 			<LiveRow live={live} session={chat.session} chatId={chatId} />
 			<EndLine chat={chat} />
 		</OpenGroupsContext.Provider>

@@ -6,14 +6,13 @@ import { ask } from "../plugins/ai/questions/data/ask/generated/module.ts";
 import { questions as questionsContract } from "../plugins/ai/questions/data/questions/generated/contract.ts";
 import { questions as questionsModule } from "../plugins/ai/questions/data/questions/generated/module.ts";
 import { MemoryQuestionsGateway } from "../plugins/ai/questions/data/questions/gateways/questions/memory.gateway.ts";
-import { QuestionsDock } from "../plugins/ai/questions/src/features/questions/ui/questions-dock/questions-dock.tsx";
+import { BackToQuestions } from "../plugins/ai/questions/src/features/questions/ui/back-to-questions/back-to-questions.tsx";
+import { OpenQuestions } from "../plugins/ai/questions/src/features/questions/ui/questions-block/open-questions.tsx";
 import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { check, tally } from "./check-helpers.ts";
 
-const NEEDED_SAID =
-	"Ask the person questions you cannot go on without: a permission, a choice only they can make, a fact that is nowhere to read. Sumi shows them in a black block above the input that stays until answered, one at a time, and this call waits for every answer. Ask only what truly blocks you; for anything with a sensible default use ask_questions_optional. Use it instead of AskUserQuestion, which does not work here.";
-const OPTIONAL_SAID =
-	"Ask the person questions that do not stop you: a preference, a side fix you noticed, a clean-up. Sumi folds them into a grey pill the person opens when they like; every one can be skipped. The call answers at once with their ids: keep working on your default. Answers arrive between your steps or with the person's next message, as a list of answers; a skipped question means you do what its skipSays said.";
+const ASK_SAID =
+	"Ask the person questions you cannot go on without: a permission, a choice only they can make, a fact that is nowhere to read. Sumi shows them in a grey block in the chat that stays until answered, one at a time, and this call waits for every answer. Ask only what truly blocks you. Use it instead of AskUserQuestion, which does not work here.";
 
 function windowAppOf(): Runtime {
 	return runtime()
@@ -60,23 +59,20 @@ function headersOf(chat: string): { readonly headers: Headers } {
 	return { headers: new Headers({ "sumi-chat": chat }) };
 }
 
-async function openOf(windowApp: Runtime, chat: string): Promise<{ needed: string[]; optional: string[] }> {
-	const answer = await windowApp.send(questionsContract.dock.questionsOfChat, { chat });
+async function openOf(windowApp: Runtime, chat: string): Promise<string[]> {
+	const answer = await windowApp.send(questionsContract.chat.questionsOfChat, { chat });
 
 	if (!answer.ok) {
 		throw new Error(answer.reason);
 	}
 
-	return {
-		needed: answer.output.needed.map(({ question }) => question),
-		optional: answer.output.optional.map(({ question }) => question),
-	};
+	return answer.output.open.map(({ question }) => question);
 }
 
-async function neededIdOf(windowApp: Runtime, chat: string): Promise<string> {
+async function firstOpenIdOf(windowApp: Runtime, chat: string): Promise<string> {
 	for (;;) {
-		const answer = await windowApp.send(questionsContract.dock.questionsOfChat, { chat });
-		const [first] = answer.ok ? answer.output.needed : [];
+		const answer = await windowApp.send(questionsContract.chat.questionsOfChat, { chat });
+		const [first] = answer.ok ? answer.output.open : [];
 
 		if (first !== undefined) {
 			return first.id;
@@ -93,9 +89,12 @@ check(
 	[],
 );
 check(
-	"the questions plugin fills the chat's dock slot with the questions dock",
-	resolved.slotFills.fillOf("chat.dock").added.includes(QuestionsDock),
-	true,
+	"the questions plugin draws the open questions in the chat and names the way back to them",
+	[
+		resolved.slotFills.fillOf("chat.before-live").added.includes(OpenQuestions),
+		resolved.slotFills.fillOf("chat.to-end-label").added.includes(BackToQuestions),
+	],
+	[true, true],
 );
 check(
 	"the questions plugin starts the questions module in the core",
@@ -108,65 +107,47 @@ const served: McpServer[] = resolved.agentMcpServers.map(({ serve }) => serve(of
 const server = served.find(({ name }) => name === "questions");
 check("the questions plugin registers the questions MCP server through mcp", server?.name, "questions");
 check(
-	"the server serves the ask tools under their short names",
+	"the server serves one ask tool, and no optional one",
 	server?.tools.map(({ name }) => name),
-	["ask_questions_needed", "ask_questions_optional"],
+	["ask_questions_ask-person"],
 );
 check(
-	"each tool carries the old tool's description, pointing at the new sibling's name",
+	"the tool says where Sumi shows the questions",
 	server?.tools.map(({ description }) => description),
-	[NEEDED_SAID, OPTIONAL_SAID],
+	[ASK_SAID],
 );
 check(
-	"needed takes at most 4 questions, optional at most 10 and requires skipSays",
+	"the tool takes at most 4 questions and no skipSays",
 	server?.tools.map(({ inputSchema }) => [
-		JSON.stringify(inputSchema).match(/"maxItems":(4|10)\b/)?.[1],
-		JSON.stringify(inputSchema).includes('"required":["question","skipSays"]'),
+		JSON.stringify(inputSchema).includes('"maxItems":4'),
+		JSON.stringify(inputSchema).includes("skipSays"),
 	]),
-	[
-		["4", false],
-		["10", true],
-	],
-);
-
-const posted = await server?.answer(
-	toolCall("ask_questions_optional", {
-		questions: [{ question: "Rename the file too?", detail: null, options: null, skipSays: "I leave the name" }],
-	}),
-	headersOf("chat-7"),
-);
-check(
-	"optional answers at once with one posted id",
-	z.object({ ids: z.array(z.string()) }).parse(toolOutputOf(posted)).ids.length,
-	1,
-);
-check(
-	"optional posts the question for the chat the header names, and no other",
-	[await openOf(windowApp, "chat-7"), await openOf(windowApp, "chat-8")],
-	[
-		{ needed: [], optional: ["Rename the file too?"] },
-		{ needed: [], optional: [] },
-	],
+	[[true, false]],
 );
 
 const refused = await server?.answer(
-	toolCall("ask_questions_optional", { questions: [{ question: "Anyone there?", skipSays: "I go on" }] }),
+	toolCall("ask_questions_ask-person", { questions: [{ question: "Anyone there?" }] }),
 	{},
 );
 check("a call with no sumi-chat header is refused", JSON.stringify(refused).includes('"isError":true'), true);
-check("a refused call posts nothing", (await openOf(windowApp, "chat-7")).optional, ["Rename the file too?"]);
 
 const waiting = server?.answer(
-	toolCall("ask_questions_needed", {
+	toolCall("ask_questions_ask-person", {
 		questions: [{ question: "Push to main?", options: [{ label: "No" }, { label: "Yes" }] }],
 	}),
 	headersOf("chat-9"),
 );
-const neededId = await neededIdOf(windowApp, "chat-9");
-await windowApp.send(questionsContract.dock.answer, { chat: "chat-9", id: neededId, picked: ["No"], own: null });
-check("needed waits for the person and answers with their pick", toolOutputOf(await waiting), {
+const firstOpenId = await firstOpenIdOf(windowApp, "chat-9");
+check(
+	"the question is open for the chat the header names, and no other",
+	[await openOf(windowApp, "chat-9"), await openOf(windowApp, "chat-8")],
+	[["Push to main?"], []],
+);
+await windowApp.send(questionsContract.chat.answer, { chat: "chat-9", id: firstOpenId, picked: ["No"], own: null });
+check("the ask waits for the person and answers with their pick", toolOutputOf(await waiting), {
 	answers: [{ question: "Push to main?", picked: ["No"], own: null }],
 });
+check("an answered question is no longer open", await openOf(windowApp, "chat-9"), []);
 
 windowApp.stop();
 

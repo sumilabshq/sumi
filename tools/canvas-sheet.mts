@@ -39,7 +39,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/chat-plugin/assistant-utilities.css":
 		"plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant-utilities.css",
 	"@sumi/chat-plugin/queue.css": "plugins/ai/chat/src/features/assistant/ui/queue/queue.css",
-	"@sumi/questions-plugin/questions.css": "plugins/ai/questions/src/features/questions/ui/questions-dock/questions.css",
+	"@sumi/questions-plugin/questions.css":
+		"plugins/ai/questions/src/features/questions/ui/questions-block/questions.css",
 	"@sumi/chat-plugin/chat-page.css": "plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-page.css",
 	"@sumi/composer-expand-plugin/expand-frame.css":
 		"plugins/ai/composer-expand/src/features/composer-expand/ui/expand-frame/expand-frame.css",

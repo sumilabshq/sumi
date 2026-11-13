@@ -3,14 +3,14 @@ import { command, query } from "#module";
 import { answersText } from "../../shared/lib/answer-text.js";
 import {
 	deliverableIn,
-	neededWithdrawn,
+	openIn,
 	questionsDelivered,
 	questionsPosted,
+	withdrawAllOpen,
 } from "../../shared/lib/question-moves.js";
 import {
 	ChangedCountSchema,
 	ChatQuestionsAskSchema,
-	DeliverQuestionsAskSchema,
 	DeliveredSchema,
 	PostQuestionsAskSchema,
 	PostedSchema,
@@ -19,7 +19,7 @@ import {
 	WaitingSchema,
 } from "../../shared/schema/question.schema.js";
 import type { Question } from "../../shared/schema/question.schema.js";
-import { questionsOfChat } from "../dock/requests.js";
+import { questionsOfChat } from "../chat/requests.js";
 
 export const post = command()
 	.public()
@@ -30,7 +30,7 @@ export const post = command()
 		const changed = questions.changeQuestions(
 			ask.chat,
 			(held) => questionsPosted(held, ask, Date.now()),
-			`post ${ask.questions.length} ${ask.need}`,
+			`post ${ask.questions.length}`,
 		);
 		invalidate(questionsOfChat);
 
@@ -56,12 +56,12 @@ export const isWaitingOnPerson = query()
 	.output(WaitingSchema)
 	.settlesNow()
 	.handle(({ chat }, { questions }) => ({
-		isWaiting: questions.questionsOf(chat).some(({ need, state }) => need === "needed" && state === "open"),
+		isWaiting: openIn(questions.questionsOf(chat)).length > 0,
 	}));
 
 export const deliver = command()
 	.public()
-	.input(DeliverQuestionsAskSchema)
+	.input(QuestionsAskSchema)
 	.output(DeliveredSchema)
 	.idempotencyKey(Repeatable)
 	.handle((ask, { questions, invalidate }) => {
@@ -74,7 +74,7 @@ export const deliver = command()
 				taken.delivered = deliverableIn(held, ask);
 				return questionsDelivered(held, taken.delivered);
 			},
-			ask.ids === null ? "deliver settled optional" : `deliver ${ask.ids.join(", ")}`,
+			`deliver ${ask.ids.join(", ")}`,
 		);
 		invalidate(questionsOfChat);
 
@@ -88,7 +88,7 @@ export const deliver = command()
 		};
 	});
 
-export const withdrawNeeded = command()
+export const withdrawOpen = command()
 	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(ChangedCountSchema)
@@ -100,10 +100,10 @@ export const withdrawNeeded = command()
 		const changed = questions.changeQuestions(
 			chat,
 			(held) => {
-				counted.open = held.filter(({ need, state }) => need === "needed" && state === "open").length;
-				return neededWithdrawn(held, chat, Date.now());
+				counted.open = openIn(held).length;
+				return withdrawAllOpen(held, chat, Date.now());
 			},
-			"turn ended → withdraw needed",
+			"turn ended → withdraw open",
 		);
 		invalidate(questionsOfChat);
 		return changed.ok ? { changed: counted.open } : refuse(changed.refusal);

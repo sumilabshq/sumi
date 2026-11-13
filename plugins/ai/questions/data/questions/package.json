@@ -1,7 +1,7 @@
 {
 	"name": "@widgetarium/questions",
 	"version": "0.1.0",
-	"description": "Questions the agent asks the person: needed ones hold the turn, optional ones wait with a default",
+	"description": "Questions the agent asks the person: each one holds the turn until it is answered",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"files": [

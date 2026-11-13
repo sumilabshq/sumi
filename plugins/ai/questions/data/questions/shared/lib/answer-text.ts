@@ -1,18 +1,8 @@
 import type { Question } from "../schema/question.schema.js";
 
 const HEAD = "The person answered your questions in Sumi:";
-const SKIPPED = "skipped, so you do what you said: {skipSays}";
-const WITHDRAWN = "not answered: the turn ended first";
 
-export function answerOf(question: Question): string {
-	if (question.state === "skipped") {
-		return SKIPPED.replace("{skipSays}", question.skipSays);
-	}
-
-	if (question.state === "withdrawn") {
-		return WITHDRAWN;
-	}
-
+function answerOf(question: Question): string {
 	return [...question.picked, ...(question.own === null ? [] : [question.own])].join("; ");
 }
 

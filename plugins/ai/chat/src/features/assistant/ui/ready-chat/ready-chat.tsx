@@ -16,7 +16,7 @@ import { BareLead } from "../chat-lead/bare-lead.js";
 import { ChatLeadHead } from "../chat-lead/chat-lead.js";
 import { ChatPart } from "../chat-part/chat-part.js";
 import { FailureSaid } from "../failure-said/failure-said.js";
-import { ListPluginSlot, PluginSlot } from "@widgetarium/plugin-framework/react";
+import { PluginSlot } from "@widgetarium/plugin-framework/react";
 import { ChatTurns } from "./chat-turns.js";
 import { QueueZone } from "../queue/queue-zone.js";
 import { useQueueActions } from "../../lib/use-queue-actions.js";
@@ -60,13 +60,12 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 		>
 			{isEmpty ? <BareLead lead={lead} /> : <ChatLeadHead lead={lead} title={title ?? TITLE} />}
 			<ChatScroll key={chatId}>
-				<ChatTurns chat={chat} cards={cards} asks={asks} chatId={chatId} />
+				<ChatTurns chat={chat} cards={cards} asks={asks} chatId={chatId} report={report} />
 			</ChatScroll>
 			<ChatDock>
 				<Pinned session={session} showCard={showCard} />
 				<Strip showCard={showCard} />
 				<FailureSaid failure={failure ?? setupFailure} />
-				{chatId === undefined ? null : <ListPluginSlot name="chat.dock" props={{ chatId, report }} />}
 				<QueueZone
 					queued={chat.queued}
 					isBusy={session.busy}

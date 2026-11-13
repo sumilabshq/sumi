@@ -21353,15 +21353,19 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--sumi-h-md);
+	gap: var(--sumi-sp-4);
+	min-width: var(--sumi-h-md);
 	height: var(--sumi-h-md);
 	padding: 0;
 	border: none;
 	border-radius: 0;
-	background-color: var(--sumi-overlay);
-	box-shadow: var(--sumi-shadow-pop);
-	backdrop-filter: var(--sumi-blur-pop);
-	color: var(--sumi-text-2);
+	background-color: var(--sumi-text);
+	@supports (color: color-mix(in lab, red, red)) {
+		background-color: color-mix(in srgb, var(--sumi-text) 14%, var(--sumi-plate));
+	}
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1 var(--sumi-font-ui);
+	white-space: nowrap;
 	cursor: pointer;
 	transition:
 		color var(--sumi-dur-base) var(--sumi-ease),
@@ -21370,9 +21374,14 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 .wg-chat-app .wg-studio-ai-to-end-button:hover {
 	background-color: var(--sumi-text);
 	@supports (color: color-mix(in lab, red, red)) {
-		background-color: color-mix(in srgb, var(--sumi-text) 9%, var(--sumi-overlay));
+		background-color: color-mix(in srgb, var(--sumi-text) 22%, var(--sumi-plate));
 	}
-	color: var(--sumi-text);
+}
+.wg-chat-app .wg-studio-ai-to-end-button:has(.wg-studio-ai-to-end-label:not(:empty)) {
+	padding: 0 var(--sumi-sp-5) 0 var(--sumi-sp-4);
+}
+.wg-chat-app .wg-studio-ai-to-end-label:empty {
+	display: none;
 }
 .wg-chat-app .wg-studio-ai-to-end-button:focus-visible {
 	outline: 2px solid var(--sumi-focus-ring);
@@ -21928,47 +21937,28 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	background: var(--sumi-text);
 	color: var(--sumi-plate);
 }
-:is(.wg-root, .wg-portal) .wg-questions-dock {
-	--wg-questions-gutter: max(var(--sumi-sp-8), calc(50% - var(--sumi-read-w) / 2));
-	display: flex;
-	flex: none;
-	flex-direction: column;
-	min-height: 0;
-	border-top: 1px solid var(--sumi-line);
-	color: var(--sumi-text);
-	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.6 var(--sumi-font-ui);
-}
-.wg-chat-app .wg-studio-ai-dock > .wg-questions-dock {
-	max-width: none;
-}
 :is(.wg-root, .wg-portal) .wg-questions-block {
 	display: flex;
 	flex-direction: column;
-	min-height: 0;
-	overflow-y: auto;
-	overscroll-behavior: contain;
+	padding: var(--sumi-sp-6) var(--sumi-sp-6) var(--sumi-sp-4);
+	background: var(--sumi-soft);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.6 var(--sumi-font-ui);
 }
 :is(.wg-root, .wg-portal) .wg-questions-block-head {
 	display: flex;
 	flex: none;
 	align-items: center;
 	gap: 10px;
-	padding: var(--sumi-sp-5) var(--wg-questions-gutter) var(--sumi-sp-2);
 }
 :is(.wg-root, .wg-portal) .wg-questions-block-head b {
 	font-weight: var(--sumi-fw-semi);
 }
+:is(.wg-root, .wg-portal) .wg-questions-block-head .wg-mascot {
+	flex: none;
+}
 :is(.wg-root, .wg-portal) .wg-questions-place {
 	color: var(--sumi-text-3);
-}
-:is(.wg-root, .wg-portal) .wg-questions-face {
-	flex: none;
-	width: 18px;
-	height: 18px;
-	fill: var(--sumi-text);
-}
-:is(.wg-root, .wg-portal) .wg-questions-face .wg-questions-face-eye {
-	fill: var(--sumi-plate);
 }
 :is(.wg-root, .wg-portal) .wg-questions-card {
 	display: flex;
@@ -21977,12 +21967,12 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 :is(.wg-root, .wg-portal) .wg-questions-card-question {
 	margin: 0;
-	padding: var(--sumi-sp-2) var(--wg-questions-gutter) 0;
+	padding-top: var(--sumi-sp-5);
 	font-weight: var(--sumi-fw-semi);
 }
 :is(.wg-root, .wg-portal) .wg-questions-card-detail {
 	margin: 0;
-	padding: var(--sumi-sp-1) var(--wg-questions-gutter) var(--sumi-sp-4);
+	padding: var(--sumi-sp-1) 0 var(--sumi-sp-5);
 	color: var(--sumi-text-3);
 }
 :is(.wg-root, .wg-portal) .wg-questions-option {
@@ -21990,9 +21980,9 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	flex: none;
 	align-items: center;
 	gap: var(--sumi-sp-5);
-	width: 100%;
 	height: 34px;
-	padding: 0 var(--wg-questions-gutter);
+	margin: 0 calc(-1 * var(--sumi-sp-6));
+	padding: 0 var(--sumi-sp-6);
 	border: 0;
 	border-radius: 0;
 	background: none;
@@ -22015,16 +22005,17 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: 18px;
-	height: 18px;
-	box-shadow: inset 0 0 0 1px var(--sumi-line);
+	width: 20px;
+	height: 20px;
+	background: var(--sumi-active);
 	color: var(--sumi-text-3);
 	font: var(--sumi-fw-medium) var(--sumi-fs-11) / 1 var(--sumi-font-mono);
 }
-:is(.wg-root, .wg-portal) .wg-questions-option[aria-pressed="true"] .wg-questions-option-num {
+:is(.wg-root, .wg-portal)
+	.wg-questions-option:is(:hover, :focus-visible, [aria-pressed="true"])
+	.wg-questions-option-num {
 	background: var(--sumi-text);
-	box-shadow: none;
-	color: var(--sumi-plate);
+	color: var(--sumi-soft);
 }
 :is(.wg-root, .wg-portal) .wg-questions-option-label {
 	min-width: 0;
@@ -22039,18 +22030,17 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 :is(.wg-root, .wg-portal) .wg-questions-answer {
 	align-self: flex-start;
 	height: var(--sumi-h-sm);
-	margin: var(--sumi-sp-2) var(--wg-questions-gutter) 0;
+	margin-top: var(--sumi-sp-2);
 	padding: 0 var(--sumi-sp-5);
 	border: 0;
 	border-radius: 0;
 	background: var(--sumi-text);
-	color: var(--sumi-plate);
+	color: var(--sumi-soft);
 	font: inherit;
 	cursor: pointer;
 }
 :is(.wg-root, .wg-portal) .wg-questions-answer:disabled {
-	background: none;
-	box-shadow: inset 0 0 0 1px var(--sumi-line);
+	background: var(--sumi-active);
 	color: var(--sumi-text-3);
 	cursor: default;
 }
@@ -22060,8 +22050,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	align-items: center;
 	gap: var(--sumi-sp-4);
 	height: var(--sumi-h-lg);
-	margin: var(--sumi-sp-3) 0 0;
-	padding: 0 var(--wg-questions-gutter);
+	margin: var(--sumi-sp-2) 0 0;
 	color: var(--sumi-text-3);
 }
 :is(.wg-root, .wg-portal) .wg-questions-own::before {
@@ -22105,13 +22094,12 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	flex: none;
 	align-items: center;
 	gap: var(--sumi-sp-5);
-	height: var(--sumi-h-row);
-	padding: 0 var(--wg-questions-gutter);
+	height: 34px;
 	color: var(--sumi-text-3);
 	white-space: nowrap;
 }
 :is(.wg-root, .wg-portal) .wg-questions-next-num {
-	width: 18px;
+	width: 20px;
 	flex: none;
 	font: var(--sumi-fw-regular) var(--sumi-fs-11) / 1 var(--sumi-font-mono);
 	text-align: center;

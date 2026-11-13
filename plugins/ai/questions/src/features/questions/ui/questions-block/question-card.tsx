@@ -1,23 +1,23 @@
 import { createElement as h, useState } from "react";
 import type { FormEvent, KeyboardEvent, ReactElement } from "react";
 import type { Question } from "@widgetarium/questions/contract";
-import type { QuestionDoing } from "../../lib/use-question-doing.js";
+import type { AnswerQuestion } from "../../lib/use-answers-question.js";
 
 export interface QuestionCardProps {
 	readonly question: Question;
-	readonly doing: QuestionDoing;
+	readonly answer: AnswerQuestion;
 }
 
 const ANSWER = "Answer";
 const OWN_PLACEHOLDER = "Or answer in your own words";
 const SEND_HINT = "↵ send";
 
-export function QuestionCard({ question, doing }: QuestionCardProps): ReactElement {
+export function QuestionCard({ question, answer }: QuestionCardProps): ReactElement {
 	const [picked, setPicked] = useState<readonly string[]>([]);
 	const [own, setOwn] = useState("");
 	const press = (label: string): void => {
 		if (!question.multiple) {
-			doing.answer(question.id, [label], null);
+			answer(question.id, [label], null);
 			return;
 		}
 
@@ -31,7 +31,7 @@ export function QuestionCard({ question, doing }: QuestionCardProps): ReactEleme
 			return;
 		}
 
-		doing.answer(question.id, picked, said === "" ? null : said);
+		answer(question.id, picked, said === "" ? null : said);
 	};
 	const pressByNumber = (event: KeyboardEvent<HTMLInputElement>): void => {
 		const option = own === "" ? question.options[Number(event.key) - 1] : undefined;
@@ -65,7 +65,7 @@ export function QuestionCard({ question, doing }: QuestionCardProps): ReactEleme
 					type="button"
 					className="wg-questions-answer"
 					disabled={picked.length === 0}
-					onClick={() => doing.answer(question.id, picked, null)}
+					onClick={() => answer(question.id, picked, null)}
 				>
 					{ANSWER}
 				</button>
@@ -80,7 +80,7 @@ export function QuestionCard({ question, doing }: QuestionCardProps): ReactEleme
 						onChange={(event) => setOwn(event.target.value)}
 						onKeyDown={pressByNumber}
 					/>
-					<span className="wg-questions-own-hint">{SEND_HINT}</span>
+					<span>{SEND_HINT}</span>
 				</form>
 			) : null}
 		</div>

@@ -266,7 +266,7 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn 
 	};
 }
 
-// TRADE-OFF: a slash command goes as typed, so a turn started by one carries no task or answers trailer
+// TRADE-OFF: a slash command goes as typed, so a turn started by one carries no task trailer
 async function withTrailers(
 	doors: TauriAssistantDoors,
 	{ chatId, asked }: { readonly chatId: string; readonly asked: string },
@@ -275,11 +275,8 @@ async function withTrailers(
 		return asked;
 	}
 
-	const [{ trailer }, answers] = await Promise.all([
-		(doors.chats?.tasks ?? NO_CHAT_TASKS).askTrailer(chatId),
-		(doors.chats?.questions ?? NO_CHAT_QUESTIONS).answersTrailer(chatId),
-	]);
-	return [asked, answers, trailer].filter((part) => part !== null).join("\n\n");
+	const { trailer } = await (doors.chats?.tasks ?? NO_CHAT_TASKS).askTrailer(chatId);
+	return [asked, trailer].filter((part) => part !== null).join("\n\n");
 }
 
 function claudeStartOf({ mode, model, effort }: ClaudeOptions): ClaudeStart {

@@ -81,7 +81,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 - **Link**: Sumi yellow text, underline on hover. A file path is a link and looks the same.
 - **Table** ("Quiet"): a line under the header row only, no lines between rows, header in ink-3, numbers right-aligned with tabular figures, full width of the reading column.
 - **Tool group**: a summary row ("Edited 2 files, ran 3 commands +12 −3 14s") with the chevron on the right; its rows hang under a drawn tree line (│ ├ └ as continuous 1px lines, never characters); an opened diff or output is a code block indented one step under its row.
-- **Questions**: one kind only, every question required. A block above the input: the mascot face and "Sumi is waiting for you 1 of N", the question in 600, a line of why, numbered options (press 1–9), "Or answer in your own words" with the caret, the next question as one quiet row. An answered question becomes a tool-group-like row "Asked 1 question" with the question and answer under the tree.
+- **Questions**: one kind only, every question required. A block with the soft fill, the last thing in the chat: the mascot and "Sumi is waiting for you 1 of N", the question in 600, a line of why, numbered options (press 1–9, the number a filled square), "Or answer in your own words" with the caret, the next question as one quiet row. An answered question becomes a tool-group-like row "Asked 1 question" with the question and answer under the tree. Scrolled away from it, the arrow that scrolls to the latest message says "Back to questions".
 - **Composer**: the caret (a yellow block when focused, an outlined block when not), the hint, expand at the top right; below, `+` attach, model, effort, mode, folder, usage bar, and Send at the right.
 - **Send**: the one solid control: ink square with a paper arrow; an outline when the input is empty; a stop square while the agent works.
 - **Popup**: paper, 1px edge, no shadow, rows 32px; a divider runs edge to edge; the chosen item has a bare tick.
@@ -91,9 +91,9 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 
 - One surface: panes are separated by a vertical hairline, never by a gap or a plate.
 - One left line: in a pane, every row, paragraph, table and question starts at the same x. Nesting is shown by the tree line, and a chevron sits on the right, after the text.
-- Reading column: chat text sits in a 768px column centred in its pane; dividers, hover fills of rows and the questions block's lines still run the full width of the pane.
+- Reading column: chat text sits in a 768px column centred in its pane; dividers and hover fills of rows still run the full width of the pane.
 - A pane header has no line under it. The exception is an app with an inner divider that must meet one (the Git app).
-- A chat pane keeps two dividers at most: above the questions block and above the input.
+- A chat pane keeps one divider: above the input.
 - Spacing groups first, a hairline second, never a box around a pane's whole content; content that fills a pane goes edge to edge.
 - The shell is one left sidebar (essentials, Pinned, Recents with each chat's tabs nested under it, New tab, workspace switcher) and one or more panes.
 

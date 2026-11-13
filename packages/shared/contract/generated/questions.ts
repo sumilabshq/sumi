@@ -2,21 +2,17 @@
 import { Repeatable, Server, command, moduleContract, named, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
-export const MOST_OPTIONAL_AT_ONCE = 10;
+const MOST_QUESTIONS_AT_ONCE = 4;
 
-export const MOST_OPTIONS = 6;
+const MOST_OPTIONS = 6;
 
-export const MOST_IDS_AT_ONCE = 40;
+const MOST_IDS_AT_ONCE = 40;
 
 export const ChatIdSchema = z.string().min(1).max(200);
 
 export const QuestionIdSchema = z.string().min(1).max(40);
 
-export const QuestionNeedSchema = z.enum(["needed", "optional"]);
-
-export type QuestionNeed = z.infer<typeof QuestionNeedSchema>;
-
-export const QuestionStateSchema = z.enum(["open", "answered", "skipped", "withdrawn"]);
+export const QuestionStateSchema = z.enum(["open", "answered", "withdrawn"]);
 
 export type QuestionState = z.infer<typeof QuestionStateSchema>;
 
@@ -33,7 +29,6 @@ export const AskedQuestionSchema = z.object({
 	options: z.array(QuestionOptionSchema).max(MOST_OPTIONS).default([]),
 	multiple: z.boolean().default(false),
 	ownAnswer: z.boolean().default(true),
-	skipSays: z.string().trim().max(200).default(""),
 });
 
 export type AskedQuestion = z.infer<typeof AskedQuestionSchema>;
@@ -41,7 +36,6 @@ export type AskedQuestion = z.infer<typeof AskedQuestionSchema>;
 export const QuestionSchema = AskedQuestionSchema.extend({
 	id: QuestionIdSchema,
 	chat: ChatIdSchema,
-	need: QuestionNeedSchema,
 	state: QuestionStateSchema,
 	picked: z.array(z.string()).default([]),
 	own: z.string().nullable().default(null),
@@ -54,8 +48,7 @@ export type Question = z.infer<typeof QuestionSchema>;
 
 export const PostQuestionsAskSchema = z.object({
 	chat: ChatIdSchema,
-	need: QuestionNeedSchema,
-	questions: z.array(AskedQuestionSchema).min(1).max(MOST_OPTIONAL_AT_ONCE),
+	questions: z.array(AskedQuestionSchema).min(1).max(MOST_QUESTIONS_AT_ONCE),
 });
 
 export type PostQuestionsAsk = z.infer<typeof PostQuestionsAskSchema>;
@@ -69,8 +62,7 @@ export const ChatQuestionsAskSchema = z.object({
 });
 
 export const ChatQuestionsSchema = z.object({
-	needed: z.array(QuestionSchema),
-	optional: z.array(QuestionSchema),
+	open: z.array(QuestionSchema),
 });
 
 export type ChatQuestions = z.infer<typeof ChatQuestionsSchema>;
@@ -89,26 +81,10 @@ export const QuestionsAskSchema = z.object({
 	ids: z.array(QuestionIdSchema).min(1).max(MOST_IDS_AT_ONCE),
 });
 
-export type QuestionsAsk = z.infer<typeof QuestionsAskSchema>;
-
-export const QuestionAskSchema = z.object({
-	chat: ChatIdSchema,
-	id: QuestionIdSchema,
-});
-
-export const DeliverQuestionsAskSchema = z.object({
-	chat: ChatIdSchema,
-	ids: z.array(QuestionIdSchema).nullable().default(null),
-});
-
-export type DeliverQuestionsAsk = z.infer<typeof DeliverQuestionsAskSchema>;
-
 export const DeliveredSchema = z.object({
 	questions: z.array(QuestionSchema),
 	text: z.string().nullable(),
 });
-
-export type Delivered = z.infer<typeof DeliveredSchema>;
 
 export const ChangedCountSchema = z.object({
 	changed: z.number().int().min(0),
@@ -137,38 +113,24 @@ export const questions = moduleContract("questions", Server, {
 			.settlesNow()),
 		deliver: named("agent.deliver", command()
 			.public()
-			.input(DeliverQuestionsAskSchema)
+			.input(QuestionsAskSchema)
 			.output(DeliveredSchema)
 			.idempotencyKey(Repeatable)),
-		withdrawNeeded: named("agent.withdraw-needed", command()
+		withdrawOpen: named("agent.withdraw-open", command()
 			.public()
 			.input(ChatQuestionsAskSchema)
 			.output(ChangedCountSchema)
 			.idempotencyKey(Repeatable)),
 	},
-	dock: {
-		questionsOfChat: named("dock.questions-of-chat", query()
+	chat: {
+		questionsOfChat: named("chat.questions-of-chat", query()
 			.public()
 			.input(ChatQuestionsAskSchema)
 			.output(ChatQuestionsSchema)
 			.settlesNow()),
-		answer: named("dock.answer", command()
+		answer: named("chat.answer", command()
 			.public()
 			.input(AnswerQuestionAskSchema)
 			.idempotencyKey(Repeatable)),
-		skip: named("dock.skip", command()
-			.public()
-			.input(QuestionsAskSchema)
-			.output(ChangedCountSchema)
-			.idempotencyKey(Repeatable)),
-		reopen: named("dock.reopen", command()
-			.public()
-			.input(QuestionAskSchema)
-			.idempotencyKey(Repeatable)),
-		readyAnswers: named("dock.ready-answers", query()
-			.public()
-			.input(ChatQuestionsAskSchema)
-			.output(DeliveredSchema)
-			.settlesNow()),
 	},
 });
