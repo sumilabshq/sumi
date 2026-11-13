@@ -46,6 +46,7 @@ export interface MeasuredGrid {
 	readonly element: HTMLElement | null;
 	readonly rect: Rect;
 	readonly tiles: readonly Measured[];
+	readonly cells: number;
 }
 
 export interface MeasuredHead {
@@ -135,7 +136,7 @@ export function middleOf(rect: Rect): number {
 }
 
 export function columnsOf(tiles: number): number {
-	return Math.max(GRID_COLUMNS, Math.min(GRID_COLUMNS, tiles));
+	return Math.max(1, Math.min(GRID_COLUMNS, tiles));
 }
 
 export function cellWidthOf(grid: MeasuredGrid, columns: number): number {

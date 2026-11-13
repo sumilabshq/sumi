@@ -1,6 +1,6 @@
 import { apps } from "@sumi/apps-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
-import { shell, windows } from "@sumi/sumi-host-plugin";
+import { shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
 import { agent } from "@sumi/agent-plugin";
 import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { plugin } from "@widgetarium/plugin-framework";
@@ -10,9 +10,10 @@ import { DATA_MARKS_GUIDE } from "./features/assistant/lib/data-marks-guide.js";
 import type { ChatPageImportOf } from "./features/chat-page/lib/chat-modules-of.js";
 import { chatTabPageOf } from "./features/chat-page/lib/chat-tab-page.js";
 import { isOutsideHolders } from "./features/chat-page/lib/chat-standing.js";
+import { NewChatRow } from "./features/new-chat/ui/new-chat-row/new-chat-row.js";
 
 export const chat = plugin("chat")
-	.require(windows, shell, apps, commandMenu, agent)
+	.require(sumiHost, windows, shell, apps, commandMenu, agent)
 	.apply((app) => {
 		const pageImports: ChatPageImportOf[] = [];
 		app.use(apps).app({
@@ -24,6 +25,7 @@ export const chat = plugin("chat")
 		});
 		app.use(shell).tabPage(chatTabPageOf(pageImports));
 		app.use(windows).module(chatTabs);
+		app.use(sumiHost).slots.sidebarActions.add(NewChatRow);
 		app.use(shell).provider(askComposerProviderOf);
 		app.use(commandMenu).door({
 			id: "ask",

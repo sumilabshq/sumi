@@ -298,8 +298,8 @@ function isTearable({ source, opensOwnWindow }: PickedItem): boolean {
 
 function ghostSizesOf(layout: SidebarLayout, { element, source }: PickedItem): ListSizes {
 	const picked = element.getBoundingClientRect();
-	const tiles = layout.grid.tiles.length + (source.kind === "essential" ? 0 : 1);
-	const cellWidth = cellWidthOf(layout.grid, columnsOf(tiles));
+	const cells = layout.grid.cells + (source.kind === "essential" ? 0 : 1);
+	const cellWidth = cellWidthOf(layout.grid, columnsOf(cells));
 	return {
 		row: {
 			width: source.kind === "essential" ? layout.scrollerRect.width : picked.width,

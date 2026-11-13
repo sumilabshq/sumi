@@ -1,7 +1,7 @@
 import type { TabDrop } from "@widgetarium/app-host/contract";
 import type { DragSource } from "./drag-source.js";
 import type { DropAim } from "./drop-aim.js";
-import { GRID_GAP_PX, bottomOf, middleOf, scrolledOf } from "./sidebar-layout.js";
+import { GRID_GAP_PX, bottomOf, columnsOf, middleOf, scrolledOf } from "./sidebar-layout.js";
 import type { SidebarLayout } from "./sidebar-layout.js";
 
 const EMPTY_ESSENTIALS_BAND_PX = 16;
@@ -28,8 +28,7 @@ export function isOverEssentials(layout: SidebarLayout, source: DragSource, { y 
 export function essentialsDropOf(layout: SidebarLayout, source: DragSource, { x, y }: DropAim): TabDrop {
 	const { tiles } = layout.grid;
 	const others = tiles.filter((tile) => tile.id !== source.id);
-	const firstTop = tiles[0]?.rect.top ?? 0;
-	const columns = Math.max(1, tiles.filter((tile) => tile.rect.top === firstTop).length);
+	const columns = columnsOf(layout.grid.cells);
 	const cell = tiles[0]?.rect ?? layout.grid.rect;
 	const column = clamped(Math.floor((x - layout.grid.rect.left) / (cell.width + GRID_GAP_PX)), columns - 1);
 	const row = Math.max(0, Math.floor((y - layout.grid.rect.top) / (cell.height + GRID_GAP_PX)));

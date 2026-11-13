@@ -27,6 +27,13 @@ const NOWHERE: Rect = {
 	height: 0,
 };
 
+const NO_GRID: MeasuredGrid = {
+	element: null,
+	rect: NOWHERE,
+	tiles: [],
+	cells: 0,
+};
+
 export function measuredLayoutOf(holder: HTMLElement): SidebarLayout {
 	const scroller = holder.querySelector<HTMLElement>("[data-host-column-scroll]");
 	const lists = [...holder.querySelectorAll<HTMLElement>("[data-tabs-list]")].flatMap((element) =>
@@ -93,17 +100,14 @@ function measuredRowsOf(found: Iterable<HTMLElement>): readonly MeasuredRow[] {
 
 function measuredGridOf(element: HTMLElement | null): MeasuredGrid {
 	if (element === null) {
-		return {
-			element,
-			rect: NOWHERE,
-			tiles: [],
-		};
+		return NO_GRID;
 	}
 
 	return {
 		element,
 		rect: rectOf(element),
 		tiles: measuredOf(element.querySelectorAll<HTMLElement>('[data-tabs-item="essential"]')),
+		cells: element.children.length,
 	};
 }
 
