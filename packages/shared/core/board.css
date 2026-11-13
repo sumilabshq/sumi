@@ -218,7 +218,7 @@
 	:root {
 		--sumi-frame: #ffffff;
 		--sumi-plate: #ffffff;
-		--sumi-soft: rgba(21, 21, 19, 0.08);
+		--sumi-soft: #f2f2f0;
 		--sumi-sunken: rgba(21, 21, 19, 0.045);
 		--sumi-overlay: #ffffff;
 		--sumi-text: #151513;
@@ -231,7 +231,7 @@
 		--sumi-tree: #bdbdbd;
 		--sumi-group-plain: rgba(21, 21, 19, 0.08);
 		--sumi-group-glass: transparent;
-		--sumi-essential: rgba(21, 21, 19, 0.08);
+		--sumi-essential: var(--sumi-soft);
 		--sumi-essential-hover: rgba(21, 21, 19, 0.12);
 		--sumi-essential-on: rgba(21, 21, 19, 0.16);
 		--sumi-accent: #a84a06;
@@ -331,7 +331,7 @@
 		--sumi-ease: cubic-bezier(0.2, 0, 0, 1);
 		--sumi-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-		--sumi-selected: rgba(21, 21, 19, 0.08);
+		--sumi-selected: var(--sumi-soft);
 		--sumi-glyph-rest: var(--sumi-text-3);
 		--sumi-glyph-hover: var(--sumi-text-2);
 		--sumi-glyph-on: var(--sumi-text);
@@ -362,7 +362,7 @@
 	.theme-dark {
 		--sumi-frame: #0f0f0e;
 		--sumi-plate: #0f0f0e;
-		--sumi-soft: rgba(233, 230, 222, 0.09);
+		--sumi-soft: #1c1c1a;
 		--sumi-sunken: rgba(233, 230, 222, 0.05);
 		--sumi-overlay: #0f0f0e;
 		--sumi-text: #e9e6de;
@@ -374,7 +374,7 @@
 		--sumi-line-strong: #434240;
 		--sumi-tree: #484644;
 		--sumi-group-plain: rgba(233, 230, 222, 0.09);
-		--sumi-essential: rgba(233, 230, 222, 0.09);
+		--sumi-essential: var(--sumi-soft);
 		--sumi-essential-hover: rgba(233, 230, 222, 0.13);
 		--sumi-essential-on: rgba(233, 230, 222, 0.18);
 		--sumi-accent: #e8b84a;
@@ -394,7 +394,7 @@
 		--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
 		--sumi-shadow-float: none;
 
-		--sumi-selected: rgba(233, 230, 222, 0.09);
+		--sumi-selected: var(--sumi-soft);
 		--sumi-pick: #0f0f0e;
 	}
 
@@ -20035,7 +20035,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :not(pre) > code {
 	padding: 2px 5px;
-	background: var(--sumi-selected);
+	background: var(--sumi-soft);
 	font-size: var(--sumi-fs-13);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown blockquote {
@@ -21038,8 +21038,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	position: relative;
 	overflow: hidden;
 	border-radius: 0;
-	background: none;
-	border: 1px solid var(--sumi-line);
+	background: var(--sumi-soft);
+	border: 0;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock pre {
 	margin: 0;
@@ -21077,7 +21077,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	gap: 2px;
 	height: calc(2 * var(--wg-code-pad-block) + var(--wg-code-line) * var(--wg-code-size));
 	padding: 0 var(--sumi-sp-3);
-	background: var(--sumi-plate);
+	background: var(--sumi-soft);
 	opacity: 1;
 	transition: opacity var(--sumi-dur-fast) var(--sumi-ease);
 }
@@ -21108,7 +21108,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	cursor: pointer;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tool:hover {
-	background: var(--sumi-hover);
+	background: var(--sumi-active);
 	color: var(--sumi-text);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tool.is-copied {
@@ -21159,7 +21159,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	bottom: 0;
 	left: 0;
 	height: 96px;
-	background: linear-gradient(180deg, transparent, var(--sumi-plate) 72%);
+	background: linear-gradient(180deg, transparent, var(--sumi-soft) 72%);
 	pointer-events: none;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock.is-cut > .wg-studio-ai-more {
@@ -21356,8 +21356,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 .wg-chat-app .wg-studio-ai-call-part-said {
 	tab-size: 2;
 	padding: var(--sumi-sp-3) 10px;
-	border: 1px solid var(--sumi-line);
-	background: none;
+	border: 0;
+	background: var(--sumi-soft);
 	font-size: var(--sumi-fs-13);
 }
 .wg-chat-app .wg-studio-ai-more,
@@ -22213,6 +22213,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	font-size: var(--sumi-fs-13);
 	line-height: 1.4;
 	letter-spacing: -0.006em;
+	--wg-kit-fill: var(--sumi-soft);
+	--wg-kit-group-fill: var(--sumi-soft);
 }
 .wg-chat-app,
 .wg-chat-app > .wg-studio-ai-host {

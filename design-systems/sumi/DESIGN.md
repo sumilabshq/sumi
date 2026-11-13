@@ -16,21 +16,21 @@ Everything else is fixed.
 
 ## Color Palette & Roles
 
-| Role                                        | Step                                                                         |
-| ------------------------------------------- | ---------------------------------------------------------------------------- |
-| `background`, `sidebar`                     | paper: the one surface; sidebars and panes are the same paper                |
-| `card`, `group`, `muted`, `fill`, `field`   | soft: inline code, a selected row, a user's message, a filled essential tile |
-| `popover`, `raise`                          | paper with a 1px `border`, no shadow: the only floating thing                |
-| `sidebar-accent`                            | selected: the shown tab, the chosen option                                   |
-| `accent`, `secondary`, `fill-hover`         | active: pressed                                                              |
-| `foreground`                                | ink                                                                          |
-| `muted-foreground`, `ink-muted`             | ink-2: rarely used; secondary text takes ink-3                               |
-| `faint`                                     | ink-3: times, verbs in tool rows, hints, table headers                       |
-| `group-line`, `sidebar-border`              | line: every divider and table rule                                           |
-| `border`, `input`                           | edge: the code block and popup outline                                       |
-| `primary`, `brand`                          | contrast: the one solid control per view, Send                               |
-| `tint`, `on-wash`                           | Sumi yellow: the caret and links, nothing else                               |
-| `success`, `destructive`, `info`, `warning` | data marks and diff colours only: ok, fail, progress, waits                  |
+| Role                                        | Step                                                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `background`, `sidebar`                     | paper: the one surface; sidebars and panes are the same paper                                     |
+| `card`, `group`, `muted`, `fill`, `field`   | soft: the one fill: code blocks, inline code, a selected row, a user's message, an essential tile |
+| `popover`, `raise`                          | paper with a 1px `border`, no shadow: the only floating thing                                     |
+| `sidebar-accent`                            | selected: the shown tab, the chosen option                                                        |
+| `accent`, `secondary`, `fill-hover`         | active: pressed                                                                                   |
+| `foreground`                                | ink                                                                                               |
+| `muted-foreground`, `ink-muted`             | ink-2: rarely used; secondary text takes ink-3                                                    |
+| `faint`                                     | ink-3: times, verbs in tool rows, hints, table headers                                            |
+| `group-line`, `sidebar-border`              | line: every divider and table rule                                                                |
+| `border`, `input`                           | edge: the code block and popup outline                                                            |
+| `primary`, `brand`                          | contrast: the one solid control per view, Send                                                    |
+| `tint`, `on-wash`                           | Sumi yellow: the caret and links, nothing else                                                    |
+| `success`, `destructive`, `info`, `warning` | data marks and diff colours only: ok, fail, progress, waits                                       |
 
 ## Typography Rules
 
@@ -55,7 +55,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 - **Row** (sidebar, menu, list): 30px, no corner, a 16px solid icon, 10px gap. Hover and keyboard focus: one light fill. Pressed: a stronger fill. Selected: the soft fill and 500.
 - **Essentials**: a grid of filled square tiles, 46px, the app's solid icon in ink.
 - **Icons**: Sumi's own apps use solid drawn icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
-- **Code block**: a 1px `border` box on the paper, mono 13px, syntax in muted colours, copy and wrap icons at the right.
+- **Code block**: filled with the soft step, no border, mono 13px, syntax in muted colours, copy and wrap icons at the right.
 - **Inline code**: the soft fill, mono 13px, square, padding 2px 5px.
 - **Link**: Sumi yellow text, underline on hover. A file path is a link and looks the same.
 - **Table** ("Quiet"): a line under the header row only, no lines between rows, header in ink-3, numbers right-aligned with tabular figures, full width of the reading column.
@@ -84,7 +84,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 | Popup        | menus, pickers              | paper, 1px edge, no shadow                                      |
 | Command menu | the ⌘K menu                 | covers the whole window in the paper colour; no shadow, no blur |
 
-Nothing casts a shadow. A line stands between panes, under a table header, around a code block and as the two chat dividers.
+Nothing casts a shadow. A line stands between panes, under a table header and as the two chat dividers; a code block is filled, never outlined.
 
 ## Do's and Don'ts
 

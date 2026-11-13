@@ -1,7 +1,7 @@
 :root {
 	--sumi-frame: #ffffff;
 	--sumi-plate: #ffffff;
-	--sumi-soft: rgba(21, 21, 19, 0.08);
+	--sumi-soft: #f2f2f0;
 	--sumi-sunken: rgba(21, 21, 19, 0.045);
 	--sumi-overlay: #ffffff;
 	--sumi-text: #151513;
@@ -14,7 +14,7 @@
 	--sumi-tree: #bdbdbd;
 	--sumi-group-plain: rgba(21, 21, 19, 0.08);
 	--sumi-group-glass: transparent;
-	--sumi-essential: rgba(21, 21, 19, 0.08);
+	--sumi-essential: var(--sumi-soft);
 	--sumi-essential-hover: rgba(21, 21, 19, 0.12);
 	--sumi-essential-on: rgba(21, 21, 19, 0.16);
 	--sumi-accent: #a84a06;
@@ -114,7 +114,7 @@
 	--sumi-ease: cubic-bezier(0.2, 0, 0, 1);
 	--sumi-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-	--sumi-selected: rgba(21, 21, 19, 0.08);
+	--sumi-selected: var(--sumi-soft);
 	--sumi-glyph-rest: var(--sumi-text-3);
 	--sumi-glyph-hover: var(--sumi-text-2);
 	--sumi-glyph-on: var(--sumi-text);
@@ -145,7 +145,7 @@
 .theme-dark {
 	--sumi-frame: #0f0f0e;
 	--sumi-plate: #0f0f0e;
-	--sumi-soft: rgba(233, 230, 222, 0.09);
+	--sumi-soft: #1c1c1a;
 	--sumi-sunken: rgba(233, 230, 222, 0.05);
 	--sumi-overlay: #0f0f0e;
 	--sumi-text: #e9e6de;
@@ -157,7 +157,7 @@
 	--sumi-line-strong: #434240;
 	--sumi-tree: #484644;
 	--sumi-group-plain: rgba(233, 230, 222, 0.09);
-	--sumi-essential: rgba(233, 230, 222, 0.09);
+	--sumi-essential: var(--sumi-soft);
 	--sumi-essential-hover: rgba(233, 230, 222, 0.13);
 	--sumi-essential-on: rgba(233, 230, 222, 0.18);
 	--sumi-accent: #e8b84a;
@@ -177,7 +177,7 @@
 	--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
 	--sumi-shadow-float: none;
 
-	--sumi-selected: rgba(233, 230, 222, 0.09);
+	--sumi-selected: var(--sumi-soft);
 	--sumi-pick: #0f0f0e;
 }
 

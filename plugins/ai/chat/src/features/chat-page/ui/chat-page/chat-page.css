@@ -18,6 +18,8 @@
 	font-size: var(--sumi-fs-13);
 	line-height: 1.4;
 	letter-spacing: -0.006em;
+	--wg-kit-fill: var(--sumi-soft);
+	--wg-kit-group-fill: var(--sumi-soft);
 }
 
 .wg-chat-app,
