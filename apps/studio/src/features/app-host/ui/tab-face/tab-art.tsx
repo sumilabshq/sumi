@@ -27,6 +27,10 @@ const LETTER_PX: Readonly<Record<TabArtSize, number>> = {
 	row: 16,
 	tile: 18,
 };
+const VIEW_BOX: Readonly<Record<TabArtSize, string>> = {
+	row: "1 1 18 18",
+	tile: "0 0 20 20",
+};
 const ART = "cv:block cv:flex-none";
 
 export function TabArt({ icon, favicon, title, address, size }: TabArtProps): ReactElement {
@@ -45,7 +49,7 @@ function shapeArtOf(icon: Exclude<TabArtName, "site">, size: TabArtSize, maskId:
 	const shapes = TAB_ART_SHAPES[icon];
 	const cuts = shapes.filter((shape) => shape.isCut === true);
 	return (
-		<svg viewBox="0 0 20 20" aria-hidden="true" width={px} height={px} className={ART} data-tab-art={icon}>
+		<svg viewBox={VIEW_BOX[size]} aria-hidden="true" width={px} height={px} className={ART} data-tab-art={icon}>
 			{cuts.length === 0 ? null : (
 				<mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
 					<rect width="20" height="20" fill={MASK_KEEP} />

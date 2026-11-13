@@ -158,6 +158,10 @@ approved brief is `design-systems/sumi/references/quiet-ui-brief.md`, and the bo
   alone matches.
 - Quiet: hierarchy from text and spacing, controls ghost until hovered, one loud thing per view, monochrome
   with blue only as a wash, no borders and no inner plate around app content, no uppercase labels.
+- **Terminal minimalism, not everything square.** The aim is a terminal-like quiet with everything extra removed,
+  icons only where they earn their place. Square applies to frames: an app icon's tile, a plate, a control's
+  corner. What sits inside a frame keeps its natural shape: the git icon's nodes stay circles, a line keeps round
+  caps. Never square off a glyph's insides to match the frame.
 - **A divider runs edge to edge.** A line inside a card, menu or list reaches both edges of its card, never
   inset by the card's padding; the command menu is the reference. A board that draws it inset is wrong here.
 
