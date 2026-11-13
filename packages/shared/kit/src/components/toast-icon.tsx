@@ -11,7 +11,7 @@ export interface ToastIconProps {
 
 const ICON_OF: Readonly<Record<ToastType, string | null>> = {
 	default: null,
-	success: "circle-check",
+	success: "tick",
 	error: "circle-x",
 	warning: "triangle-alert",
 	info: "info",
