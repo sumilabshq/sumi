@@ -8,7 +8,7 @@ export interface FoldBoxProps {
 
 const FOLD =
 	"cv:grid cv:grid-rows-[0fr] cv:opacity-0 cv:[transition:grid-template-rows_var(--sumi-dur-slow)_var(--sumi-ease),opacity_var(--sumi-dur-base)_var(--sumi-ease-out)] cv:motion-reduce:transition-none cv:in-data-[tabs-arranging]:transition-none cv:data-[open]:grid-rows-[1fr] cv:data-[open]:opacity-100";
-const INSIDE = "cv:min-h-0 cv:overflow-x-visible cv:overflow-y-clip";
+const INSIDE = "cv:min-h-0 cv:min-w-0 cv:overflow-x-visible cv:overflow-y-clip";
 
 export function FoldBox({ isOpen, children }: FoldBoxProps): ReactElement {
 	return (
