@@ -23,6 +23,7 @@ const SOURCES = [
 	"plugins/ai/model-picker/src",
 	"plugins/ai/effort-picker/src",
 ];
+const INSTALLED = "node_modules/";
 const SCANNED = /\.(ts|tsx)$/;
 const CANDIDATE = /[^\s"'`]+/g;
 const NAMED_SHEETS: Readonly<Record<string, string>> = {
@@ -81,6 +82,12 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 `;
+
+export function canvasSheetSources(repo: string): string[] {
+	return Object.values(NAMED_SHEETS)
+		.filter((sheet) => !sheet.startsWith(INSTALLED))
+		.map((sheet) => path.join(repo, sheet));
+}
 
 export async function canvasSheet(repo: string): Promise<string> {
 	const compiler = await compile(ENTRY, {

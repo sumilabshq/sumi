@@ -6,9 +6,10 @@ const PROJECT_VARIABLE = "WIDGETARIUM_PROJECT";
 const BUNDLED_PROJECT = path.join(import.meta.dirname, "project");
 const PROJECT_VITE = "node_modules/vite/bin/vite.js";
 const TAURI_CONFIG = path.join(import.meta.dirname, "vite.tauri.config.ts");
-const REPO = path.resolve(import.meta.dirname, "../..");
+export const REPO = path.resolve(import.meta.dirname, "../..");
 const SHEETS_LAYER = "tools/lay-studio-sheets.mts";
 const TOOL_LOADER = "./tools/loader/register.mts";
+export const SHEETS_LAYING: readonly string[] = ["--single-threaded", "--import", TOOL_LOADER, SHEETS_LAYER];
 
 export function runProjectVite(command: readonly string[]): number {
 	const laid = layStudioSheets();
@@ -27,7 +28,7 @@ export function runProjectVite(command: readonly string[]): number {
 }
 
 function layStudioSheets(): number {
-	const laid = spawnSync(process.execPath, ["--single-threaded", "--import", TOOL_LOADER, SHEETS_LAYER], {
+	const laid = spawnSync(process.execPath, SHEETS_LAYING, {
 		cwd: REPO,
 		stdio: "inherit",
 		env: process.env,

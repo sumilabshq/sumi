@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { relaysStudioSheets } from "./relays-studio-sheets.mts";
 import { tauriOnlyInHost } from "./tauri-reach.mts";
 
 type Config = Readonly<Record<string, unknown>>;
@@ -42,7 +43,7 @@ async function projectConfig(): Promise<Config> {
 function withTauriBuild(config: Config): Config {
 	return {
 		...config,
-		plugins: [tauriOnlyInHost, ...pluginsOf(config)],
+		plugins: [tauriOnlyInHost, relaysStudioSheets, ...pluginsOf(config)],
 		build: {
 			...fieldOf(config, "build"),
 			outDir: FRONTEND_DIST,
