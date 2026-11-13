@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { assistant } from "@widgetarium/assistant/contract";
-import { SKILL_ENTRIES } from "../../lib/slash-matches.js";
+import { CHAT_SKILLS } from "../../../../shared/lib/chat-skills.js";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const TITLE_OF: Readonly<Record<string, string>> = {
@@ -16,7 +16,7 @@ export function Starters(): ReactElement {
 	const prefillDraft = useCommand(assistant.prefill.prefillDraft);
 	return (
 		<div className="wg-studio-ai-starters">
-			{SKILL_ENTRIES.map(({ name, icon }) => (
+			{CHAT_SKILLS.map(({ name, icon }) => (
 				<button
 					key={name}
 					type="button"

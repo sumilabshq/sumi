@@ -167,11 +167,7 @@ check(
 	answeredApps.map(({ id }) => id).filter((id) => VIEWER_APP_IDS.includes(id) || id === "file"),
 	["file", ...VIEWER_APP_IDS],
 );
-check(
-	"the file link app is unlisted",
-	answeredFaceOf("file")?.isListed,
-	false,
-);
+check("the file link app is unlisted", answeredFaceOf("file")?.isListed, false);
 check(
 	"the apps module is the only list of apps: no other module answers app faces",
 	sourcesNaming("AppFacesQuery").filter((file) => !file.includes("/generated/")),
@@ -423,12 +419,13 @@ check(
 			"html-viewer": { enabled: false },
 			git: { enabled: false },
 			"composer-expand": { enabled: false },
+			"slash-commands": { enabled: false },
 			"claude-code": { enabled: false },
-			"working-folder": { enabled: false },
-			"permission-mode": { enabled: false },
-			"plan-usage": { enabled: false },
 			"model-picker": { enabled: false },
 			"effort-picker": { enabled: false },
+			"permission-mode": { enabled: false },
+			"working-folder": { enabled: false },
+			"plan-usage": { enabled: false },
 		},
 		1,
 		undefined,

@@ -13,6 +13,7 @@ import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { composerExpand } from "@sumi/composer-expand-plugin";
+import { slashCommands } from "@sumi/slash-commands-plugin";
 import { effortPicker } from "@sumi/effort-picker-plugin";
 import { modelPicker } from "@sumi/model-picker-plugin";
 import { permissionMode } from "@sumi/permission-mode-plugin";
@@ -130,6 +131,7 @@ const INSTALLED_PLUGINS = [
 	htmlViewer,
 	git,
 	composerExpand,
+	slashCommands,
 	claudeCode,
 	modelPicker,
 	effortPicker,
@@ -151,6 +153,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		htmlViewer.id,
 		git.id,
 		composerExpand.id,
+		slashCommands.id,
 		claudeCode.id,
 		modelPicker.id,
 		effortPicker.id,

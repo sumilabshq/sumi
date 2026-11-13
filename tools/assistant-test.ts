@@ -21,7 +21,11 @@ import { assistant as assistantModule } from "../plugins/ai/agent/data/assistant
 import { turnStepsOf } from "../plugins/ai/agent/data/assistant/features/chat/lib/turn-steps.ts";
 import { toolsSummaryOf } from "../plugins/ai/chat/src/features/assistant/lib/tools-summary.ts";
 import { assistant } from "../plugins/ai/agent/data/assistant/generated/contract.ts";
-import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../plugins/ai/chat/src/features/assistant/lib/slash-matches.ts";
+import {
+	commandPiecesOf,
+	slashQueryAt,
+	slashEntriesOf,
+} from "../plugins/ai/slash-commands/src/features/slash-menu/lib/slash-matches.ts";
 import { AssistantSessionGateway } from "../plugins/ai/agent/data/assistant/gateways/assistant-session/assistant-session.gateway.ts";
 import { AssistantSetupGateway } from "../plugins/ai/agent/data/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
 import { PrivateFolderAttachmentFilesGateway } from "../plugins/ai/agent/data/assistant/gateways/attachment-files/private-folder.gateway.ts";
@@ -603,7 +607,7 @@ slashed.setup.compacts = true;
 check("one that can offers /clear and /compact", await slashNames(), ["clear", "compact"]);
 const bothEntries = slashEntriesOf(["clear", "compact"]);
 const namesOf = (draft: string, entries = bothEntries): string[] | null =>
-	slashAskOf(entries, draft, draft.length)?.matches.map(({ name }) => name) ?? null;
+	slashQueryAt(entries, draft, draft.length)?.matches.map(({ name }) => name) ?? null;
 check(
 	"“/” at the start lists every command and skill; inside the text only skills; letters filter by name or alias",
 	[
@@ -640,11 +644,11 @@ check(
 check(
 	"a command is marked only at the start, a skill anywhere it stands as its own word",
 	[
-		saidPiecesOf(bothEntries, "/clear"),
-		saidPiecesOf(bothEntries, "/create-app a habit tracker"),
-		saidPiecesOf(bothEntries, "build it with /design-app first"),
-		saidPiecesOf(bothEntries, "/cle"),
-		saidPiecesOf(bothEntries, "say /clear"),
+		commandPiecesOf(bothEntries, "/clear"),
+		commandPiecesOf(bothEntries, "/create-app a habit tracker"),
+		commandPiecesOf(bothEntries, "build it with /design-app first"),
+		commandPiecesOf(bothEntries, "/cle"),
+		commandPiecesOf(bothEntries, "say /clear"),
 	],
 	[
 		[{ text: "/clear", isCommand: true }],

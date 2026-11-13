@@ -1737,6 +1737,10 @@
 	gap: var(--sumi-sp-4);
 }
 
+:is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box.is-text-hidden {
+	color: transparent;
+}
+
 :is(.wg-root, .wg-portal) .wg-studio-ai-caret {
 	position: absolute;
 	width: var(--sumi-caret-w);
@@ -1766,27 +1770,6 @@
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box:placeholder-shown {
 	caret-color: transparent;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box.has-command {
-	color: transparent;
-	caret-color: var(--sumi-text);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-box-mirror {
-	position: absolute;
-	inset: 0;
-	overflow: hidden;
-	color: var(--sumi-text);
-	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.6 var(--sumi-font-ui);
-	white-space: pre-wrap;
-	overflow-wrap: break-word;
-	pointer-events: none;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-command {
-	background: none;
-	color: var(--sumi-accent-text);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar {
@@ -2236,37 +2219,6 @@
 	height: 1px;
 	margin: var(--sumi-sp-2) calc(-1 * var(--sumi-sp-2));
 	background: var(--sumi-line);
-}
-
-.wg-studio-ai-menu-foot {
-	display: flex;
-	align-items: center;
-	gap: var(--sumi-sp-6);
-	padding: 6px var(--sumi-sp-4) var(--sumi-sp-2);
-	color: var(--sumi-text-2);
-	font: var(--sumi-fw-regular) var(--sumi-fs-12) var(--sumi-font-ui);
-}
-
-.wg-studio-ai-menu-hint {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	white-space: nowrap;
-}
-
-.wg-studio-ai-menu-hint kbd {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 20px;
-	height: 20px;
-	padding: 0 5px;
-	border: none;
-	border-radius: 0;
-	background: var(--sumi-active);
-	box-shadow: none;
-	color: var(--sumi-text-2);
-	font: var(--sumi-fw-medium) var(--sumi-fs-11) var(--sumi-font-ui);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai.is-empty .wg-studio-ai-scroll {

@@ -4,6 +4,7 @@ import { chat as definition } from "../plugin.js";
 
 export const chat = pluginWithSlots(definition, {
 	slots: {
+		composerInput: listPluginSlot<{ readonly input: never }>("chat.composer-input"),
 		composerBar: listPluginSlot<{ readonly composer: never; readonly box: never; readonly fitBox: never }>("chat.composer-bar"),
 		liveTail: listPluginSlot<{ readonly chatId: never; readonly onRowsCounted: never }>("chat.live-tail"),
 		liveRows: listPluginSlot<{ readonly chatId: never }>("chat.live-rows"),

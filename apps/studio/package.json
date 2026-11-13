@@ -43,6 +43,7 @@
 		"@sumi/claude-code-plugin": "0.1.0",
 		"@sumi/working-folder-plugin": "0.1.0",
 		"@sumi/composer-expand-plugin": "0.1.0",
+		"@sumi/slash-commands-plugin": "0.1.0",
 		"@sumi/effort-picker-plugin": "0.1.0",
 		"@sumi/model-picker-plugin": "0.1.0",
 		"@sumi/permission-mode-plugin": "0.1.0",

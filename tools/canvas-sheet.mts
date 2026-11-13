@@ -15,6 +15,7 @@ const SOURCES = [
 	"plugins/ai/chat/src",
 	"plugins/ai/questions/src",
 	"plugins/ai/composer-expand/src",
+	"plugins/ai/slash-commands/src",
 	"plugins/ai/claude-code/src",
 	"plugins/ai/working-folder/src",
 	"plugins/ai/permission-mode/src",
@@ -44,6 +45,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/composer-expand/src/features/composer-expand/ui/expand-frame/expand-frame.css",
 	"@sumi/composer-expand-plugin/expand-toggle.css":
 		"plugins/ai/composer-expand/src/features/composer-expand/ui/expand-toggle/expand-toggle.css",
+	"@sumi/slash-commands-plugin/slash-commands.css":
+		"plugins/ai/slash-commands/src/features/slash-menu/ui/slash-commands/slash-commands.css",
 	"@sumi/plan-usage-plugin/usage-button.css":
 		"plugins/ai/plan-usage/src/features/plan-usage/ui/usage-button/usage-button.css",
 	"@sumi/model-picker-plugin/model-menu.css":
@@ -66,6 +69,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/chat-plugin/chat-page.css";
 @import "@sumi/composer-expand-plugin/expand-frame.css";
 @import "@sumi/composer-expand-plugin/expand-toggle.css";
+@import "@sumi/slash-commands-plugin/slash-commands.css";
 @import "@sumi/model-picker-plugin/model-menu.css";
 @import "@sumi/plan-usage-plugin/usage-button.css";
 `;
