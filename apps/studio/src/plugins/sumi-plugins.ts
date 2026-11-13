@@ -13,11 +13,17 @@ import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { composerExpand } from "@sumi/composer-expand-plugin";
+import { effortPicker } from "@sumi/effort-picker-plugin";
+import { modelPicker } from "@sumi/model-picker-plugin";
+import { permissionMode } from "@sumi/permission-mode-plugin";
+import { planUsage } from "@sumi/plan-usage-plugin";
 import { main } from "@sumi/main-plugin";
-import { mcp } from "@sumi/mcp-plugin";
+import { agent } from "@sumi/agent-plugin";
+import { claudeCode } from "@sumi/claude-code-plugin";
+import { workingFolder } from "@sumi/working-folder-plugin";
 import { questions } from "@sumi/questions-plugin";
 import { tasks } from "@sumi/tasks-plugin";
-import { agents, backend, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
+import { agents, backend, secrets, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
 import type {
 	BackendOffers,
 	DrawnTabPage,
@@ -28,6 +34,8 @@ import type {
 	WindowServerOffers,
 } from "@sumi/sumi-host-plugin";
 import { agentsFor, backendFor, emptyHostRegistrations, shellFor, windowsFor } from "./host-services.js";
+import { MemorySecretVault, secretsFor } from "./secret-vault.js";
+import type { SecretVault } from "./secret-vault.js";
 import { browserPage } from "@sumi/browser-page-plugin";
 import { codeViewer } from "@sumi/code-viewer-plugin";
 import { files } from "@sumi/files-plugin";
@@ -109,7 +117,7 @@ const INSTALLED_PLUGINS = [
 	commandMenu,
 	chat,
 	main,
-	mcp,
+	agent,
 	questions,
 	tasks,
 	terminal,
@@ -122,8 +130,14 @@ const INSTALLED_PLUGINS = [
 	htmlViewer,
 	git,
 	composerExpand,
+	claudeCode,
+	modelPicker,
+	effortPicker,
+	permissionMode,
+	workingFolder,
+	planUsage,
 ];
-const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, mcp, questions, tasks];
+const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, agent, questions, tasks];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
@@ -137,6 +151,12 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		htmlViewer.id,
 		git.id,
 		composerExpand.id,
+		claudeCode.id,
+		modelPicker.id,
+		effortPicker.id,
+		permissionMode.id,
+		workingFolder.id,
+		planUsage.id,
 	],
 };
 
@@ -144,7 +164,10 @@ export function builtInPluginState(): PluginStateStore {
 	return new MemoryPluginStateStore(BUILT_IN_PROFILE.plugins);
 }
 
-export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
+export function startSumiPlugins(
+	store: PluginStateStore,
+	vault: SecretVault = new MemorySecretVault(),
+): ResolvedPlugins {
 	const registered = emptyHostRegistrations();
 	const started = runtime()
 		.builtInPlugins(...INSTALLED_PLUGINS)
@@ -155,6 +178,7 @@ export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
 		.provide(windows, windowsFor(registered))
 		.provide(shell, shellFor(registered))
 		.provide(agents, agentsFor(registered))
+		.provide(secrets, secretsFor(vault))
 		.start();
 	return {
 		backgroundModules: registered.backgroundModules,

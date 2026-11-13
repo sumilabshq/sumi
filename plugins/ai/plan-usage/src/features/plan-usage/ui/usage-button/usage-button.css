@@ -1,0 +1,67 @@
+.sumi-usage-squares {
+	display: inline-flex;
+	gap: 2px;
+}
+
+.sumi-usage-squares i {
+	width: 4px;
+	height: 10px;
+	background: var(--sumi-text-2);
+}
+
+.sumi-usage-squares i.is-empty {
+	background: none;
+	box-shadow: inset 0 0 0 1px var(--sumi-line);
+}
+
+.sumi-usage-meter {
+	display: flex;
+	flex-direction: column;
+	padding: var(--sumi-sp-2) var(--sumi-sp-5) var(--sumi-sp-3);
+}
+
+.sumi-usage-meter-head {
+	display: flex;
+	justify-content: space-between;
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
+}
+
+.sumi-usage-meter-head b {
+	font-weight: var(--sumi-fw-regular);
+}
+
+.sumi-usage-meter-head span {
+	color: var(--sumi-text-2);
+}
+
+.sumi-usage-meter-bar {
+	position: relative;
+	height: var(--sumi-sp-2);
+	margin: 6px 0 var(--sumi-sp-2);
+	overflow: hidden;
+	border-radius: 0;
+	background: var(--sumi-selected);
+}
+
+.sumi-usage-meter-bar i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	border-radius: 0;
+	background: var(--sumi-text);
+}
+
+.sumi-usage-meter small {
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-12);
+	line-height: 1.4;
+}
+
+.sumi-usage-note {
+	max-width: 240px;
+	padding: var(--sumi-sp-2) var(--sumi-sp-5);
+	color: var(--sumi-text-2);
+	font-size: var(--sumi-fs-12);
+	line-height: 1.4;
+}

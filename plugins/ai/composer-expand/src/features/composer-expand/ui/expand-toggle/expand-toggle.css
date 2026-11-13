@@ -4,14 +4,15 @@
 	align-items: center;
 	justify-content: center;
 	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
+	height: 22px;
 	padding: 0;
 	border: none;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	background: none;
 	box-shadow: none;
-	color: var(--sumi-text-2);
+	color: var(--sumi-text-3);
 	cursor: pointer;
+	margin-right: calc(-1 * var(--sumi-sp-3));
 }
 
 :is(.wg-root, .wg-portal) .sumi-composer-expand-toggle:hover {
