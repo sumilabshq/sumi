@@ -10,7 +10,7 @@ interface Granted {
 const GROUP = "cv:flex cv:flex-col cv:gap-2";
 const LABEL = "cv:text-xs cv:text-muted-foreground";
 const ROW = "cv:flex cv:flex-wrap cv:gap-1.5";
-const CHIP = "cv:flex cv:h-8 cv:items-center cv:gap-1.5 cv:rounded-full cv:px-3 cv:text-xs";
+const CHIP = "cv:flex cv:h-8 cv:items-center cv:gap-1.5 cv:rounded-none cv:px-3 cv:text-xs";
 const GETS_CHIP = `${CHIP} cv:bg-brand-wash cv:text-brand`;
 const NEVER_CHIP = `${CHIP} cv:border cv:border-line cv:text-muted-foreground`;
 

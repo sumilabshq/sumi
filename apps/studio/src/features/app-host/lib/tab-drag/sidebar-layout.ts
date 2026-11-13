@@ -135,7 +135,7 @@ export function middleOf(rect: Rect): number {
 }
 
 export function columnsOf(tiles: number): number {
-	return Math.min(GRID_COLUMNS, Math.max(1, tiles));
+	return Math.max(GRID_COLUMNS, Math.min(GRID_COLUMNS, tiles));
 }
 
 export function cellWidthOf(grid: MeasuredGrid, columns: number): number {

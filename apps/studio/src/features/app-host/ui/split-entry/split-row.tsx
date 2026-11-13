@@ -14,7 +14,7 @@ export interface SplitRowProps {
 
 const JOINER = " + ";
 const STACK = "cv:flex cv:flex-none cv:items-center cv:[&>*+*]:-ms-1";
-const STACKED = "cv:flex cv:rounded-[4px] cv:bg-(--sumi-plate) cv:[box-shadow:0_0_0_2px_var(--sumi-frame)]";
+const STACKED = "cv:flex cv:rounded-none cv:bg-(--sumi-plate) cv:[box-shadow:0_0_0_2px_var(--sumi-frame)]";
 const MAP = "cv:ms-auto cv:flex cv:flex-none";
 
 export function SplitRow({ split, focused }: SplitRowProps): ReactElement {

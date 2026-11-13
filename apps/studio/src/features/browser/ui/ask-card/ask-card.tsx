@@ -6,12 +6,12 @@ import { browser } from "@widgetarium/browser/contract";
 import { AskChips } from "./ask-chips.js";
 
 const CARD =
-	"cv:absolute cv:bottom-6 cv:left-1/2 cv:z-[3] cv:flex cv:w-[min(32rem,calc(100%-2rem))] cv:-translate-x-1/2 cv:flex-col cv:gap-4 cv:rounded-[28px] cv:border cv:border-edge cv:bg-raise cv:p-5";
+	"cv:absolute cv:bottom-6 cv:left-1/2 cv:z-[3] cv:flex cv:w-[min(32rem,calc(100%-2rem))] cv:-translate-x-1/2 cv:flex-col cv:gap-4 cv:rounded-none cv:border cv:border-edge cv:bg-raise cv:p-5";
 const TITLE = "cv:m-0 cv:text-lg cv:font-medium cv:text-ink";
 const SUBTITLE = "cv:m-0 cv:text-sm cv:break-all cv:text-muted-foreground";
 const ANSWERS = "cv:flex cv:gap-2";
 const ANSWER =
-	"cv:h-13 cv:flex-1 cv:cursor-pointer cv:rounded-full cv:border-0 cv:px-5 cv:font-[inherit] cv:text-sm cv:font-medium cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
+	"cv:h-13 cv:flex-1 cv:cursor-pointer cv:rounded-none cv:border-0 cv:px-5 cv:font-[inherit] cv:text-sm cv:font-medium cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
 const PRIMARY = `${ANSWER} cv:flex-[1.6] cv:bg-primary cv:text-primary-foreground cv:hover:bg-primary/85`;
 const SECONDARY = `${ANSWER} cv:bg-fill cv:text-ink cv:hover:bg-fill-hover`;
 const FOOTNOTE = "cv:m-0 cv:text-xs cv:text-muted-foreground";

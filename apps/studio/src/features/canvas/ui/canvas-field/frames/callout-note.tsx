@@ -27,7 +27,7 @@ const TONE_WASH: Readonly<Record<CalloutShown["tone"], string>> = {
 	note: "cv:bg-warning-wash",
 };
 const WIDGET_BUTTON =
-	"cv:mt-1 cv:cursor-pointer cv:self-start cv:rounded-full cv:border-0 cv:bg-page cv:px-2.5 cv:py-1 cv:text-base cv:font-semibold cv:text-ink cv:shadow-none cv:transition-colors cv:hover:bg-fill cv:focus-visible:bg-fill cv:focus-visible:outline-none";
+	"cv:mt-1 cv:cursor-pointer cv:self-start cv:rounded-none cv:border-0 cv:bg-page cv:px-2.5 cv:py-1 cv:text-base cv:font-semibold cv:text-ink cv:shadow-none cv:transition-colors cv:hover:bg-fill cv:focus-visible:bg-fill cv:focus-visible:outline-none";
 
 export function CalloutNote({ callout, at, place, side }: CalloutNoteProps): ReactElement | null {
 	const focus = useCommand(canvas.pages.focusWidget);
@@ -35,7 +35,7 @@ export function CalloutNote({ callout, at, place, side }: CalloutNoteProps): Rea
 	if (!isHere) return null;
 	return (
 		<div
-			className={`cv:absolute cv:inset-x-0 cv:flex cv:flex-col cv:gap-1 cv:rounded-md cv:px-4 cv:py-3.5 cv:text-lg cv:leading-[1.4] cv:text-ink cv:odd:-rotate-1 cv:even:rotate-1 ${TONE_WASH[callout.tone]}`}
+			className={`cv:absolute cv:inset-x-0 cv:flex cv:flex-col cv:gap-1 cv:rounded-none cv:px-4 cv:py-3.5 cv:text-lg cv:leading-[1.4] cv:text-ink cv:odd:-rotate-1 cv:even:rotate-1 ${TONE_WASH[callout.tone]}`}
 			{...{ [CALLOUT]: at }}
 			style={place ? { top: place.top } : { visibility: "hidden" }}
 		>

@@ -1,6 +1,5 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { SITE_TILE_FILLS } from "../../lib/tab-art/tab-art-shapes.js";
 import type { TabArtSize } from "./tab-art.js";
 
 export interface SiteLetterProps {
@@ -14,7 +13,7 @@ const LETTER_TYPE: Readonly<Record<TabArtSize, string>> = {
 	tile: "cv:text-[11px]",
 };
 const LETTER =
-	"cv:mx-px cv:inline-flex cv:flex-none cv:items-center cv:justify-center cv:rounded-[4px] cv:font-bold cv:leading-none cv:text-white";
+	"cv:mx-px cv:inline-flex cv:flex-none cv:items-center cv:justify-center cv:rounded-none cv:bg-(--sumi-text-2) cv:font-semibold cv:leading-none cv:text-(--sumi-plate)";
 
 export function SiteLetter({ letter, size, px }: SiteLetterProps): ReactElement {
 	return (
@@ -24,7 +23,6 @@ export function SiteLetter({ letter, size, px }: SiteLetterProps): ReactElement 
 			style={{
 				width: px,
 				height: px,
-				background: SITE_TILE_FILLS[letter.charCodeAt(0) % SITE_TILE_FILLS.length],
 			}}
 			data-tab-art="site"
 		>

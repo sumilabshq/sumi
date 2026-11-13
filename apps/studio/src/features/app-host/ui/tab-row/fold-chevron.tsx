@@ -15,7 +15,7 @@ export interface FoldChevronProps {
 
 const FOLD_LABEL = "Fold {title}";
 const UNFOLD_LABEL = "Unfold {title}";
-const CHEVRON = `cv:flex cv:size-5 cv:flex-none cv:cursor-pointer cv:items-center cv:justify-center cv:rounded-[6px] cv:border-0 cv:bg-transparent cv:p-0 cv:[font:inherit] cv:text-(--sumi-text-2) cv:outline-none cv:transition-[background-color] cv:duration-(--sumi-dur-hover) cv:ease-(--sumi-ease) cv:hover:bg-(--sumi-active) cv:hover:duration-0 cv:focus-visible:[box-shadow:inset_0_0_0_1.5px_var(--sumi-focus-ring)] cv:group-hover/row:opacity-100 ${HOVER_SHOWN}`;
+const CHEVRON = `cv:flex cv:size-5 cv:flex-none cv:cursor-pointer cv:items-center cv:justify-center cv:rounded-none cv:border-0 cv:bg-transparent cv:p-0 cv:[font:inherit] cv:text-(--sumi-text-2) cv:outline-none cv:transition-[background-color] cv:duration-(--sumi-dur-hover) cv:ease-(--sumi-ease) cv:hover:bg-(--sumi-active) cv:hover:duration-0 cv:focus-visible:[box-shadow:inset_0_0_0_1.5px_var(--sumi-focus-ring)] cv:group-hover/row:opacity-100 ${HOVER_SHOWN}`;
 const TURN =
 	"cv:flex cv:transition-transform cv:duration-(--sumi-dur-base) cv:ease-(--sumi-ease-out) cv:motion-reduce:transition-none cv:data-[folded]:-rotate-90";
 

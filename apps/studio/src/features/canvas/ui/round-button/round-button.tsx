@@ -20,7 +20,7 @@ const BUTTON =
 	"cv:grid cv:flex-none cv:cursor-pointer cv:place-items-center cv:border-0 cv:p-0 cv:shadow-none cv:focus-visible:outline-2 cv:disabled:cursor-default cv:disabled:opacity-50 cv:aria-disabled:cursor-default cv:aria-disabled:opacity-50 cv:aria-busy:motion-safe:animate-canvas-pulse";
 
 const ROUND =
-	"cv:rounded-full cv:transition-[background-color,color] cv:duration-150 cv:ease-standard cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
+	"cv:rounded-none cv:transition-[background-color,color] cv:duration-150 cv:ease-standard cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
 
 const TONE: Readonly<Record<RoundTone, string>> = {
 	ink: "cv:bg-primary cv:text-primary-foreground cv:hover:bg-primary/85",

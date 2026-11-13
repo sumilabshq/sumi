@@ -10,7 +10,7 @@ export interface PrimaryActionProps {
 	readonly iconSize?: number;
 }
 
-const PRIMARY = `${BUTTON_RESET} cv:h-[52px] cv:gap-2.5 cv:rounded-full cv:bg-primary cv:px-6 cv:shadow-none cv:text-[15px] cv:text-primary-foreground`;
+const PRIMARY = `${BUTTON_RESET} cv:h-[52px] cv:gap-2.5 cv:rounded-none cv:bg-primary cv:px-6 cv:shadow-none cv:text-[15px] cv:text-primary-foreground`;
 
 export function PrimaryAction({ icon, label, onPress, iconSize = 16 }: PrimaryActionProps): ReactElement {
 	return (

@@ -12,7 +12,7 @@ const PICK_A_PAGE = "Pick a page, {page} shown";
 const PAGE_NAME = `cv:truncate ${PAGE_NAME_AND_PHOTO_LEAVE}`;
 const TRIGGER_BASE =
 	"cv:flex cv:min-w-0 cv:cursor-pointer cv:items-center cv:border-0 cv:font-[inherit] cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
-const TRIGGER_RAISED = `${TRIGGER_BASE} cv:h-full cv:gap-1.5 cv:rounded-full cv:bg-transparent cv:p-0 cv:text-base cv:font-medium cv:text-ink`;
+const TRIGGER_RAISED = `${TRIGGER_BASE} cv:h-full cv:gap-1.5 cv:rounded-none cv:bg-transparent cv:p-0 cv:text-base cv:font-medium cv:text-ink`;
 const TRIGGER_GHOST = `${TRIGGER_BASE} cv:gap-[var(--sumi-sp-1)] ${GHOST_TEXT_BUTTON}`;
 
 export function PagePicker(): ReactElement {

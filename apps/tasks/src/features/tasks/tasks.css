@@ -92,7 +92,7 @@
 	width: 12px;
 	height: 12px;
 	border: 1.5px solid currentColor;
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 	color: var(--sumi-text-2);
 }
 
@@ -251,7 +251,7 @@
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
 	padding: 4px;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 }
 
 .wg-tasks-col[data-tasks-column="ready_to_test"] {
@@ -283,7 +283,7 @@
 	min-height: 160px;
 	padding: 10px 0 0;
 	border: 0;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	background: var(--sumi-hover);
 	color: var(--sumi-text-2);
 	font: var(--sumi-fs-12) var(--sumi-font-ui);
@@ -313,7 +313,7 @@
 	min-height: 72px;
 	padding: 12px;
 	border: 1px dashed var(--sumi-line-strong);
-	border-radius: 10px;
+	border-radius: 0;
 	color: var(--sumi-text-3);
 	font-size: var(--sumi-fs-12);
 }
@@ -324,7 +324,7 @@
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
 	padding: 12px;
-	border-radius: 10px;
+	border-radius: 0;
 	background: var(--sumi-hover);
 	color: inherit;
 	text-decoration: none;
@@ -362,14 +362,14 @@
 	min-width: 24px;
 	height: 3px;
 	overflow: hidden;
-	border-radius: 2px;
+	border-radius: 0;
 	background: var(--sumi-line);
 }
 
 .wg-tasks-bar i {
 	display: block;
 	height: 100%;
-	border-radius: 2px;
+	border-radius: 0;
 	background: var(--sumi-text);
 }
 
@@ -381,7 +381,7 @@
 	height: 20px;
 	padding: 0 6px;
 	overflow: hidden;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	background: var(--wg-tasks-chip);
 	color: var(--sumi-text-2);
 	font-size: var(--sumi-fs-11);
@@ -394,7 +394,7 @@
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
 	padding: 6px 8px;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	font-size: var(--sumi-fs-12);
 	line-height: 1.4;
 }
@@ -527,7 +527,7 @@
 	height: 36px;
 	padding: 0 8px;
 	border: 0;
-	border-radius: var(--sumi-r-md);
+	border-radius: 0;
 	background: transparent;
 	color: var(--sumi-text);
 	font: var(--sumi-fs-13) var(--sumi-font-ui);
@@ -694,7 +694,7 @@
 	align-items: center;
 	gap: var(--sumi-sp-3);
 	padding: 12px 14px;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	background: var(--sumi-hover);
 }
 
@@ -719,7 +719,7 @@
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
 	padding: 12px;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	background: var(--sumi-hover);
 }
 
@@ -773,7 +773,7 @@
 	height: 14px;
 	margin-top: 2px;
 	border: 1.5px solid var(--sumi-text-3);
-	border-radius: 4px;
+	border-radius: 0;
 }
 
 .wg-tasks-box[data-state="met"] {
@@ -808,7 +808,7 @@
 	height: 8px;
 	margin-top: 5px;
 	border: 1.5px solid var(--sumi-text-3);
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 }
 
 .wg-tasks-dot[data-state="done"] {
@@ -828,7 +828,7 @@
 
 .wg-tasks-tp {
 	padding: 4px;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	background: var(--sumi-hover);
 }
 
@@ -863,7 +863,7 @@
 	gap: var(--sumi-sp-3);
 	margin-bottom: 2px;
 	padding: 12px;
-	border-radius: var(--sumi-r-md);
+	border-radius: 0;
 	background: var(--sumi-plate);
 }
 
@@ -896,7 +896,7 @@
 .wg-tasks-fail {
 	margin-top: 8px;
 	padding: 8px 10px;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	background: var(--sumi-hover);
 	font-family: var(--sumi-font-mono);
 	font-size: var(--sumi-fs-12);
@@ -914,7 +914,7 @@
 	grid-template-columns: 36px minmax(0, 1fr);
 	gap: var(--sumi-sp-3);
 	padding: 14px;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	background: var(--sumi-hover);
 }
 
@@ -924,7 +924,7 @@
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	border-radius: 10px;
+	border-radius: 0;
 	background: var(--sumi-plate);
 	color: var(--sumi-text-2);
 }
@@ -971,7 +971,7 @@
 	min-width: 260px;
 	max-width: 340px;
 	padding: 16px;
-	border-radius: var(--sumi-r-lg);
+	border-radius: 0;
 	background: var(--sumi-hover);
 }
 
@@ -1046,7 +1046,7 @@
 	margin: 0 0 6px;
 	padding: 0 10px;
 	border: 0;
-	border-radius: var(--sumi-r-md);
+	border-radius: 0;
 	background: transparent;
 	color: var(--sumi-text);
 	font: var(--sumi-fs-13) var(--sumi-font-ui);

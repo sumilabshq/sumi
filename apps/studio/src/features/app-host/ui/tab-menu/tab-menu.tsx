@@ -15,7 +15,7 @@ export interface TabMenuProps {
 }
 
 const RENAME_FIELD =
-	"cv:h-9 cv:w-60 cv:rounded-full cv:border-0 cv:bg-group cv:px-3 cv:text-sm cv:text-ink cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-ring";
+	"cv:h-9 cv:w-60 cv:rounded-none cv:border-0 cv:bg-group cv:px-3 cv:text-sm cv:text-ink cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-ring";
 
 export function TabMenu({ tabs, menu, onRenameInPlace }: TabMenuProps): ReactElement {
 	const [renaming, setRenaming] = useState<PointedTab | null>(null);

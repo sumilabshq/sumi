@@ -15,7 +15,7 @@ export function ModeSwitch(): ReactElement {
 			value={mode}
 			onValueChange={(picked) => void setMode.run({ mode: picked })}
 			size="s"
-			className="cv:rounded-full cv:bg-page cv:shadow-[0_0_0_1px_var(--wg-kit-card-edge)]"
+			className="cv:rounded-none cv:bg-page cv:shadow-[0_0_0_1px_var(--wg-kit-card-edge)]"
 		/>
 	);
 }

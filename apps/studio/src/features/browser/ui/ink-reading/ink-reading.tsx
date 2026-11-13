@@ -5,9 +5,9 @@ import type { ReadKind } from "@widgetarium/browser/contract";
 import { browser } from "@widgetarium/browser/contract";
 
 const PILL =
-	"cv:absolute cv:bottom-6 cv:left-1/2 cv:z-[2] cv:flex cv:h-12 cv:-translate-x-1/2 cv:items-center cv:gap-3 cv:rounded-full cv:bg-ink cv:ps-5 cv:pe-1 cv:text-sm cv:whitespace-nowrap cv:text-page";
+	"cv:absolute cv:bottom-6 cv:left-1/2 cv:z-[2] cv:flex cv:h-12 cv:-translate-x-1/2 cv:items-center cv:gap-3 cv:rounded-none cv:bg-ink cv:ps-5 cv:pe-1 cv:text-sm cv:whitespace-nowrap cv:text-page";
 const STOP =
-	"cv:h-10 cv:cursor-pointer cv:rounded-full cv:border-0 cv:bg-page cv:px-4 cv:font-[inherit] cv:text-sm cv:font-medium cv:text-ink cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
+	"cv:h-10 cv:cursor-pointer cv:rounded-none cv:border-0 cv:bg-page cv:px-4 cv:font-[inherit] cv:text-sm cv:font-medium cv:text-ink cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
 
 const DOING: Readonly<Record<ReadKind, string>> = {
 	content: "Sumi is reading page content",

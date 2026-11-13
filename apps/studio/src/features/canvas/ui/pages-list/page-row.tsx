@@ -11,7 +11,7 @@ export interface PageRowProps {
 	readonly onPick: (from: Element, page: string) => void;
 }
 
-const DOT = "cv:size-1.5 cv:flex-none cv:rounded-full";
+const DOT = "cv:size-1.5 cv:flex-none cv:rounded-none";
 const RESTING_DOT = `${DOT} cv:bg-page-dot`;
 const SHOWN_DOT = `${DOT} cv:bg-brand`;
 const RUNNING_DOT = `${SHOWN_DOT} cv:motion-safe:animate-canvas-pulse`;

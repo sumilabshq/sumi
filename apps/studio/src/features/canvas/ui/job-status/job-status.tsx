@@ -12,7 +12,7 @@ export function JobStatus(): ReactElement | null {
 
 	return (
 		<div
-			className="cv:pointer-events-auto cv:rounded-xl cv:bg-page cv:px-4 cv:py-2.5 cv:shadow-[0_0_0_1px_var(--wg-kit-card-edge)]"
+			className="cv:pointer-events-auto cv:rounded-none cv:bg-page cv:px-4 cv:py-2.5 cv:shadow-[0_0_0_1px_var(--wg-kit-card-edge)]"
 			data-canvas-chrome=""
 		>
 			<JobLine job={shown.job} spent={shown.spent} isInline onStop={() => void stop.run({ id: shown.job.id })} />

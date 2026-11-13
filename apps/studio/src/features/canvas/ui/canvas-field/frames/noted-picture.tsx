@@ -21,7 +21,7 @@ export function NotedPicture({ reference }: { readonly reference: ReferenceShown
 		<div className="cv:relative cv:grid cv:grid-cols-[280px_auto_280px] cv:items-start cv:gap-12" ref={body}>
 			{left}
 			<img
-				className="cv:h-[540px] cv:w-auto cv:max-w-none cv:rounded-2xl cv:ring-1 cv:ring-edge"
+				className="cv:h-[540px] cv:w-auto cv:max-w-none cv:rounded-none cv:ring-1 cv:ring-edge"
 				src={reference.src}
 				alt={reference.alt}
 				draggable={false}

@@ -8,7 +8,7 @@ export interface AskInkButtonProps {
 	readonly onPress: () => void;
 }
 
-const ASK = `${BUTTON_RESET} ${WASH_INK} cv:h-12 cv:gap-2 cv:rounded-full cv:shadow-none cv:ps-2.5 cv:pe-5 cv:text-[14px]`;
+const ASK = `${BUTTON_RESET} ${WASH_INK} cv:h-12 cv:gap-2 cv:rounded-none cv:shadow-none cv:ps-2.5 cv:pe-5 cv:text-[14px]`;
 const INK = "cv:me-0.5 cv:flex-none";
 const INK_PX = 32;
 

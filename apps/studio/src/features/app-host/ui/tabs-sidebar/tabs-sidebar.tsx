@@ -22,9 +22,9 @@ import { useRowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 const TABS = "Tabs";
 const WORKSPACE_LIST = SectionListSchema.enum.workspace;
 const SIDEBAR =
-	"cv:flex cv:min-h-0 cv:w-full cv:flex-1 cv:flex-col cv:[&,&_*]:box-border cv:gap-px cv:font-[family-name:var(--sumi-font-ui)] cv:text-[13px] cv:leading-[1.4] cv:text-(--sumi-text) cv:antialiased cv:[font-feature-settings:'cv11','ss03']";
+	"cv:flex cv:min-h-0 cv:w-full cv:flex-1 cv:flex-col cv:[&,&_*]:box-border cv:font-[family-name:var(--sumi-font-ui)] cv:text-[13px] cv:leading-[1.5] cv:text-(--sumi-text) cv:antialiased";
 const SCROLLER =
-	"cv:-mx-1 cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:gap-px cv:overflow-y-auto cv:px-1 cv:pb-2 cv:[scrollbar-width:none]";
+	"cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:overflow-x-hidden cv:overflow-y-auto cv:pb-2 cv:[scrollbar-width:none]";
 
 export function TabsSidebar(): ReactElement {
 	const sidebar = useQuery(appHost.tabs.tabsSidebar).data;

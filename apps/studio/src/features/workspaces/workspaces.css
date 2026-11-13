@@ -10,9 +10,9 @@
 	font-family: var(--sumi-font-ui);
 	font-feature-settings: var(--sumi-font-features);
 	font-optical-sizing: auto;
-	letter-spacing: -0.006em;
+	letter-spacing: 0;
 	-webkit-font-smoothing: antialiased;
-	line-height: 1.4;
+	line-height: 1.5;
 	color: var(--sumi-text);
 	box-sizing: border-box;
 }
@@ -55,7 +55,7 @@
 	min-width: 0;
 	height: auto;
 	padding: 0;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	font-size: inherit;
 	font-weight: inherit;
 	line-height: inherit;
@@ -69,7 +69,7 @@
 
 .wg-ws-column.wg-root :is(.wg-kit-btn, .wg-kit-icon)::before,
 .wg-kit-pop.wg-ws-pick :is(.wg-kit-btn, .wg-kit-icon)::before {
-	border-radius: inherit;
+	border-radius: 0;
 }
 
 .wg-ws-column.wg-root :is(.wg-kit-btn, .wg-kit-icon):hover::before,
@@ -105,7 +105,7 @@
 .wg-ws-dot {
 	width: 7px;
 	height: 7px;
-	border-radius: var(--sumi-r-full);
+	border-radius: 0;
 	background: currentColor;
 	display: block;
 }
@@ -153,8 +153,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
-	gap: 2px;
-	padding-right: 2px;
+	gap: 4px;
+	padding-right: 12px;
 }
 
 .wg-ws-column .wg-ws-top-button.wg-kit-icon,
@@ -176,7 +176,7 @@
 	display: flex;
 	align-items: center;
 	gap: 2px;
-	padding: 0 2px 0 8px;
+	padding: 0 12px 0 20px;
 	min-width: 0;
 }
 
@@ -194,10 +194,10 @@
 	max-width: 100%;
 	min-width: 0;
 	padding: 0 6px;
-	border-radius: var(--sumi-r-md);
-	font-size: var(--sumi-fs-17);
+	border-radius: 0;
+	font-size: var(--sumi-fs-15);
 	font-weight: var(--sumi-fw-semi);
-	letter-spacing: -0.01em;
+	letter-spacing: 0;
 }
 
 .wg-ws-column .wg-ws-name.wg-kit-btn:hover {
@@ -239,7 +239,6 @@
 .wg-ws-section-rows {
 	display: flex;
 	flex-direction: column;
-	gap: 1px;
 }
 
 .wg-ws-chats > .wg-kit-anchor {
@@ -253,14 +252,14 @@
 .wg-ws-column .wg-ws-line-row.wg-kit-btn,
 .wg-ws-row {
 	position: relative;
-	height: 34px;
+	height: var(--sumi-h-row);
 	width: 100%;
 	flex: none;
-	border-radius: 10px;
+	border-radius: 0;
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 0 8px;
+	padding: 0 var(--sumi-pad);
 	white-space: nowrap;
 	font-size: var(--sumi-fs-13);
 	letter-spacing: normal;
@@ -324,7 +323,7 @@
 	content: "";
 	position: absolute;
 	inset: 0;
-	border-radius: inherit;
+	border-radius: 0;
 }
 
 .wg-ws-column .wg-ws-row-pick:focus-visible {
@@ -354,10 +353,10 @@
 }
 
 .wg-ws-unread {
-	width: 8px;
-	height: 8px;
-	border-radius: var(--sumi-r-full);
-	background: var(--sumi-accent);
+	width: 6px;
+	height: 6px;
+	border-radius: 0;
+	background: var(--sumi-text);
 	flex: none;
 }
 
@@ -403,7 +402,6 @@
 .wg-ws-section {
 	display: flex;
 	flex-direction: column;
-	gap: 1px;
 }
 
 .wg-ws-section-head {
@@ -413,11 +411,11 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	padding: 0 10px 0 8px;
-	margin-top: 10px;
-	border-radius: 10px;
+	padding: 0 12px 0 var(--sumi-pad);
+	margin-top: 4px;
+	border-radius: 0;
 	font-size: var(--sumi-fs-12);
-	color: var(--sumi-text-2);
+	color: var(--sumi-text-3);
 	transition: background-color var(--sumi-dur-fast) var(--sumi-ease);
 }
 
@@ -436,7 +434,7 @@
 	align-items: center;
 	justify-content: center;
 	flex: none;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	color: var(--sumi-text-2);
 	transition:
 		width var(--sumi-dur-base) var(--sumi-ease-out),
@@ -472,7 +470,7 @@
 .wg-ws-section-label {
 	flex: 1;
 	min-width: 0;
-	color: var(--sumi-text-2);
+	color: var(--sumi-text-3);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -509,8 +507,9 @@
 	flex: none;
 	display: flex;
 	align-items: center;
-	gap: 2px;
-	padding: 8px 2px 2px 0;
+	gap: 4px;
+	height: 48px;
+	padding: 0 12px;
 	margin-left: 0;
 	position: relative;
 }
@@ -548,14 +547,14 @@
 }
 
 .wg-ws-column .wg-ws-strip-icon.wg-kit-icon {
-	width: 36px;
-	height: 36px;
-	border-radius: 11px;
+	width: 28px;
+	height: 28px;
+	border-radius: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	flex: none;
-	font-size: var(--sumi-fs-glyph);
+	font-size: var(--sumi-fs-16);
 	line-height: 1;
 	color: var(--sumi-glyph-rest);
 	transition:
@@ -571,14 +570,14 @@
 }
 
 .wg-ws-column .wg-ws-strip-icon.wg-kit-icon:is([aria-current="true"], [data-opening], [data-running], :active) {
-	background: var(--sumi-active);
+	background: var(--sumi-selected);
 	color: var(--sumi-glyph-on);
 	transition-duration: 0ms, 0ms, var(--wg-press);
 }
 
 .wg-ws-column .wg-ws-strip-icon .wg-kit-icon-glyph {
-	width: 18px;
-	height: 18px;
+	width: 16px;
+	height: 16px;
 }
 
 .wg-ws-menu-spot {
@@ -612,7 +611,7 @@
 
 .wg-kit-portal-layer .wg-kit-pop.wg-ws-pop .wg-kit-pop-sep {
 	height: 1px;
-	margin: 4px -4px;
+	margin: 4px 0;
 	background: var(--sumi-line);
 }
 
@@ -651,8 +650,8 @@
 .wg-kit-portal-layer .wg-kit-pop.wg-ws-pick {
 	width: 336px;
 	min-width: 0;
-	padding: 10px;
-	border-radius: 16px;
+	padding: 12px;
+	border-radius: 0;
 	background: var(--sumi-pick);
 	-webkit-backdrop-filter: var(--sumi-blur-pick);
 	backdrop-filter: var(--sumi-blur-pick);
@@ -670,7 +669,7 @@
 .wg-ws-pick-now {
 	width: 36px;
 	height: 36px;
-	border-radius: 10px;
+	border-radius: 0;
 	background: var(--sumi-active);
 	display: flex;
 	align-items: center;
@@ -694,7 +693,7 @@
 	flex: 1;
 	min-width: 0;
 	height: 36px;
-	border-radius: 10px;
+	border-radius: 0;
 	background: var(--sumi-active);
 	display: flex;
 	align-items: center;
@@ -730,7 +729,7 @@
 .wg-ws-pick .wg-ws-pick-tab.wg-kit-btn {
 	height: 30px;
 	padding: 0 12px;
-	border-radius: var(--sumi-r-md);
+	border-radius: 0;
 	font-weight: var(--sumi-fw-semi);
 	font-size: var(--sumi-fs-14);
 	color: var(--sumi-text-2);
@@ -749,7 +748,7 @@
 	margin-left: auto;
 	height: 30px;
 	padding: 0 8px;
-	border-radius: var(--sumi-r-md);
+	border-radius: 0;
 	font-size: var(--sumi-fs-13);
 	font-weight: var(--sumi-fw-medium);
 	color: var(--sumi-text-2);
@@ -761,8 +760,8 @@
 
 .wg-ws-pick-search {
 	height: 34px;
-	border-radius: 10px;
-	box-shadow: inset 0 0 0 1.5px var(--sumi-accent);
+	border-radius: 0;
+	box-shadow: inset 0 0 0 1px var(--sumi-line);
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -786,7 +785,7 @@
 .wg-ws-pick .wg-ws-pick-cell.wg-kit-icon {
 	width: auto;
 	height: 40px;
-	border-radius: 10px;
+	border-radius: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -822,7 +821,7 @@
 .wg-ws-crumb {
 	height: 28px;
 	padding: 0 8px;
-	border-radius: var(--sumi-r-sm);
+	border-radius: 0;
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
@@ -850,7 +849,7 @@
 }
 
 .wg-ws-section[data-ws-drop="recents"] .wg-ws-section-rows {
-	border-radius: 10px;
+	border-radius: 0;
 	background: var(--sumi-hover);
 }
 
@@ -862,7 +861,7 @@
 	position: fixed;
 	z-index: 2147483000;
 	height: 2px;
-	border-radius: 1px;
+	border-radius: 0;
 	background: var(--sumi-text-2);
 	pointer-events: none;
 }

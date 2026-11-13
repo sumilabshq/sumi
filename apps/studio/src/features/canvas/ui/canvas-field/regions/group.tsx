@@ -15,7 +15,7 @@ export function Group({ title, sub, badge, mark, children }: GroupProps): ReactE
 			<header className="cv:flex cv:flex-wrap cv:items-baseline cv:gap-3 cv:text-[24px] cv:text-ink">
 				<b>{title}</b>
 				{badge ? (
-					<span className="cv:rounded-full cv:bg-fill cv:px-2.5 cv:py-0.5 cv:text-base cv:text-muted-foreground">
+					<span className="cv:rounded-none cv:bg-fill cv:px-2.5 cv:py-0.5 cv:text-base cv:text-muted-foreground">
 						{badge}
 					</span>
 				) : null}

@@ -11,54 +11,54 @@ export const CUT_INK = "#000000";
 
 export const MASK_KEEP = "#FFFFFF";
 
+const INK = "currentColor";
+
 const CUT = true;
 
 const PAGE = "M5 2h7l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z";
 const FOLD = "M12 2v3a1 1 0 0 0 1 1h3z";
 
-function codeOf(fill: string, letters: string, ink: string | typeof CUT): readonly ArtShape[] {
-	return [codeBadgeOf(fill), codeLettersOf(letters, ink)];
-}
-
-function codeBadgeOf(fill: string): ArtShape {
-	return {
-		tag: "rect",
-		attrs: {
-			x: "2",
-			y: "2",
-			width: "16",
-			height: "16",
-			rx: "3.5",
-			fill,
+function codeOf(letters: string): readonly ArtShape[] {
+	return [
+		{
+			tag: "rect",
+			attrs: {
+				x: "2",
+				y: "2",
+				width: "16",
+				height: "16",
+				fill: INK,
+			},
 		},
-	};
-}
-
-function codeLettersOf(letters: string, ink: string | typeof CUT): ArtShape {
-	return {
-		tag: "text",
-		isCut: ink === CUT,
-		attrs: {
-			x: "16",
-			y: "15.4",
-			"text-anchor": "end",
-			"font-family": "Inter, Arial, sans-serif",
-			"font-size": letters.length > 2 ? "6.2" : "7.6",
-			"font-weight": "700",
-			fill: ink === CUT ? CUT_INK : ink,
+		{
+			tag: "text",
+			isCut: CUT,
+			attrs: {
+				x: "16",
+				y: "15.4",
+				"text-anchor": "end",
+				"font-family": "JetBrains Mono, monospace",
+				"font-size": letters.length > 2 ? "6.2" : "7.6",
+				"font-weight": "700",
+				fill: CUT_INK,
+			},
+			text: letters,
 		},
-		text: letters,
-	};
+	];
 }
 
-// TRADE-OFF: the icon set is artwork with its own fixed colours, the same in both themes, as the board draws it
 export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly ArtShape[]>> = {
 	canvas: [
-		{ tag: "rect", attrs: { x: "7.5", y: "7.5", width: "10", height: "10", rx: "3", fill: "#7C5CFF" } },
-		{ tag: "circle", attrs: { cx: "7", cy: "7", r: "5", fill: "#FFB020", "fill-opacity": ".92" } },
+		{ tag: "rect", attrs: { x: "7.5", y: "7.5", width: "10", height: "10", fill: INK } },
+		{ tag: "circle", attrs: { cx: "7", cy: "7", r: "5", fill: INK } },
+		{
+			tag: "circle",
+			isCut: CUT,
+			attrs: { cx: "7", cy: "7", r: "5.6", fill: "none", stroke: CUT_INK, "stroke-width": "1.2" },
+		},
 	],
 	tasks: [
-		{ tag: "rect", attrs: { x: "2", y: "2", width: "16", height: "16", rx: "4", fill: "#E5484D" } },
+		{ tag: "rect", attrs: { x: "2", y: "2", width: "16", height: "16", fill: INK } },
 		{
 			tag: "path",
 			isCut: CUT,
@@ -73,7 +73,7 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		},
 	],
 	browser: [
-		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: "#3D8EF0" } },
+		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: INK } },
 		{
 			tag: "path",
 			isCut: CUT,
@@ -90,32 +90,32 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 			tag: "path",
 			attrs: {
 				d: "M6 6v8M14 9.2v.8a4 4 0 0 1-4 4H8.2",
-				stroke: "#F05A28",
+				stroke: INK,
 				"stroke-width": "2",
 				"stroke-linecap": "round",
 				fill: "none",
 			},
 		},
-		{ tag: "circle", attrs: { cx: "6", cy: "4.2", r: "2.4", fill: "#F05A28" } },
-		{ tag: "circle", attrs: { cx: "6", cy: "15.8", r: "2.4", fill: "#F05A28" } },
-		{ tag: "circle", attrs: { cx: "14", cy: "7", r: "2.4", fill: "#F59E0B" } },
+		{ tag: "circle", attrs: { cx: "6", cy: "4.2", r: "2.4", fill: INK } },
+		{ tag: "circle", attrs: { cx: "6", cy: "15.8", r: "2.4", fill: INK } },
+		{ tag: "circle", attrs: { cx: "14", cy: "7", r: "2.4", fill: INK } },
 	],
 	files: [
 		{
 			tag: "path",
 			attrs: {
 				d: "M2 5a1.5 1.5 0 0 1 1.5-1.5h4l2 2h7A1.5 1.5 0 0 1 18 7v8.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 2 15.5z",
-				fill: "#3D8EF0",
+				fill: INK,
 			},
 		},
-		{ tag: "path", attrs: { d: "M2 8.2h16v7.3a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 2 15.5z", fill: "#7DBBFF" } },
+		{ tag: "path", attrs: { d: "M2 8.2h16v7.3a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 2 15.5z", fill: INK } },
 	],
 	routines: [
-		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: "#12A594" } },
+		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: INK } },
 		{ tag: "path", isCut: CUT, attrs: { d: "M11 4.8 6.6 11h3.2l-.8 4.2L13.4 9h-3.2z", fill: CUT_INK } },
 	],
 	settings: [
-		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: "#8E8E93" } },
+		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: INK } },
 		{
 			tag: "circle",
 			isCut: CUT,
@@ -132,8 +132,8 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		{ tag: "circle", isCut: CUT, attrs: { cx: "10", cy: "10", r: "1.6", fill: CUT_INK } },
 	],
 	note: [
-		{ tag: "path", attrs: { d: PAGE, fill: "#F2B544" } },
-		{ tag: "path", attrs: { d: FOLD, fill: "#C98A1B" } },
+		{ tag: "path", attrs: { d: PAGE, fill: INK } },
+		{ tag: "path", attrs: { d: FOLD, fill: INK } },
 		{
 			tag: "path",
 			isCut: CUT,
@@ -141,22 +141,22 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		},
 	],
 	table: [
-		{ tag: "path", attrs: { d: PAGE, fill: "#2FA35B" } },
-		{ tag: "path", attrs: { d: FOLD, fill: "#1E7A41" } },
+		{ tag: "path", attrs: { d: PAGE, fill: INK } },
+		{ tag: "path", attrs: { d: FOLD, fill: INK } },
 		{
 			tag: "path",
 			isCut: CUT,
 			attrs: { d: "M7 9h6v6H7zM7 12h6M10 9v6", stroke: CUT_INK, "stroke-width": "1.3", fill: "none" },
 		},
 	],
-	"code-ts": codeOf("#3178C6", "TS", CUT),
-	"code-js": codeOf("#F7DF1E", "JS", "#1D1D1F"),
-	"code-py": codeOf("#3776AB", "PY", "#FFD43B"),
-	"code-css": codeOf("#663399", "CSS", CUT),
+	"code-ts": codeOf("TS"),
+	"code-js": codeOf("JS"),
+	"code-py": codeOf("PY"),
+	"code-css": codeOf("CSS"),
 	image: [
-		{ tag: "rect", attrs: { x: "2", y: "3", width: "16", height: "14", rx: "3", fill: "#FCD9E6" } },
-		{ tag: "circle", attrs: { cx: "13.5", cy: "7.5", r: "1.8", fill: "#F7B500" } },
-		{ tag: "path", attrs: { d: "M2 14.5l4.5-5 4 4.2 2-2L18 15v-1 2a1 1 0 0 1-1 1H5a3 3 0 0 1-3-3z", fill: "#E0457B" } },
+		{ tag: "rect", attrs: { x: "2", y: "3", width: "16", height: "14", fill: INK } },
+		{ tag: "circle", isCut: CUT, attrs: { cx: "13.5", cy: "7.5", r: "1.8", fill: CUT_INK } },
+		{ tag: "path", isCut: CUT, attrs: { d: "M4 15l3.5-4 3 3.2 2-2L16 15z", fill: CUT_INK } },
 	],
 	// TRADE-OFF: a chat's art is the mascot drawn by ChatTabIcon; an empty entry keeps TabArt total over TabArt names
 	chat: [],
@@ -165,7 +165,7 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 			tag: "path",
 			attrs: {
 				d: "m4.5 6.8 5 5M3.7 11.8l5-5 1.7-2.5M2 4.3h10M6 2h.8M18 18l-4.2-8.4L9.6 18M11.3 14.8h5",
-				stroke: "#DC2626",
+				stroke: INK,
 				"stroke-width": "1.8",
 				"stroke-linecap": "round",
 				"stroke-linejoin": "round",
@@ -174,14 +174,3 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		},
 	],
 };
-
-export const SITE_TILE_FILLS: readonly string[] = [
-	"#C5221F",
-	"#1A73E8",
-	"#A259FF",
-	"#1D4ED8",
-	"#0E7490",
-	"#24292F",
-	"#6750A4",
-	"#0F2B46",
-];

@@ -7,9 +7,9 @@ import { DropTint } from "../drop-tint/drop-tint.js";
 import { TabFaceIcon } from "../tab-face/tab-face-icon.js";
 import { LIFTED_HIDDEN, useLiftedMark } from "../../lib/tab-drag/lifted-look.js";
 
-const TILE_RADIUS_PX = 14;
+const TILE_RADIUS_PX = 0;
 const TILE =
-	"cv:relative cv:flex cv:[font:inherit] cv:text-inherit cv:h-[46px] cv:min-w-0 cv:cursor-default cv:items-center cv:justify-center cv:rounded-[14px] cv:border-0 cv:bg-(--sumi-essential) cv:p-0 cv:[box-shadow:none] cv:outline-none cv:select-none cv:transition-[background-color] cv:duration-(--sumi-dur-hover) cv:hover:bg-(--sumi-essential-hover) cv:hover:duration-0 cv:data-[shown]:bg-(--sumi-essential-on) cv:focus-visible:[box-shadow:inset_0_0_0_1.5px_var(--sumi-focus-ring)]";
+	"cv:relative cv:flex cv:[font:inherit] cv:text-inherit cv:h-[46px] cv:min-w-0 cv:cursor-default cv:items-center cv:justify-center cv:rounded-none cv:border-0 cv:bg-(--sumi-essential) cv:p-0 cv:[box-shadow:none] cv:outline-none cv:select-none cv:transition-[background-color] cv:duration-(--sumi-dur-hover) cv:hover:bg-(--sumi-essential-hover) cv:hover:duration-0 cv:data-[shown]:bg-(--sumi-essential-on) cv:focus-visible:[box-shadow:inset_0_0_0_1.5px_var(--sumi-focus-ring)]";
 
 export const EssentialTile = memo(function EssentialTile({
 	tile,

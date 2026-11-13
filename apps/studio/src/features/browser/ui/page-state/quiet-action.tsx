@@ -12,7 +12,7 @@ export interface QuietActionProps {
 	readonly onPress: () => void;
 }
 
-const QUIET = `${BUTTON_RESET} ${EDGED} cv:h-12 cv:gap-2 cv:rounded-full cv:px-5 cv:text-[14px]`;
+const QUIET = `${BUTTON_RESET} ${EDGED} cv:h-12 cv:gap-2 cv:rounded-none cv:px-5 cv:text-[14px]`;
 const TEXT_OF_TONE: Readonly<Record<QuietTone, string>> = {
 	ink: "cv:text-ink",
 	success: "cv:text-success",

@@ -72,7 +72,7 @@ interface Previewed {
 	readonly preview: PaneRect | undefined;
 }
 
-const GAP_PX = 8;
+const GAP_PX = 1;
 const FOCUS_EASE_MS = 260;
 const EDGE_SLACK_PX = 1;
 

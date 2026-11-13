@@ -28,8 +28,8 @@ export interface TabRowProps {
 
 const MIDDLE_BUTTON = 1;
 const RENAME_FIELD =
-	"cv:h-6 cv:min-w-0 cv:flex-1 cv:rounded-[6px] cv:border-0 cv:bg-(--sumi-plate) cv:px-1.5 cv:font-[inherit] cv:text-[13px] cv:text-(--sumi-text) cv:[box-shadow:inset_0_0_0_1.5px_var(--sumi-accent)] cv:outline-none";
-const ROW_RADIUS_PX = 10;
+	"cv:h-6 cv:min-w-0 cv:flex-1 cv:rounded-none cv:border-0 cv:bg-(--sumi-plate) cv:px-1.5 cv:font-[inherit] cv:text-[13px] cv:text-(--sumi-text) cv:[box-shadow:inset_0_0_0_1.5px_var(--sumi-accent)] cv:outline-none";
+const ROW_RADIUS_PX = 0;
 
 export const TabRow = memo(function TabRow({
 	item,

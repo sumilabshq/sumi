@@ -46,7 +46,7 @@ export function JobLine({ job, spent = job.spent, isInline = false, onStop }: Jo
 				{onStop ? (
 					<button
 						type="button"
-						className="cv:-mx-2 cv:-my-[3px] cv:cursor-pointer cv:rounded-lg cv:border-0 cv:bg-transparent cv:px-2 cv:py-[3px] cv:font-[inherit] cv:text-[length:inherit] cv:font-semibold cv:text-muted-foreground cv:shadow-none cv:transition-colors cv:hover:bg-fill cv:hover:text-ink cv:focus-visible:bg-fill cv:focus-visible:outline-none cv:active:scale-[0.96]"
+						className="cv:-mx-2 cv:-my-[3px] cv:cursor-pointer cv:rounded-none cv:border-0 cv:bg-transparent cv:px-2 cv:py-[3px] cv:font-[inherit] cv:text-[length:inherit] cv:font-semibold cv:text-muted-foreground cv:shadow-none cv:transition-colors cv:hover:bg-fill cv:hover:text-ink cv:focus-visible:bg-fill cv:focus-visible:outline-none cv:active:scale-[0.96]"
 						onClick={onStop}
 					>
 						{PAUSE}
