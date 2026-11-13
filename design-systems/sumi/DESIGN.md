@@ -1,5 +1,26 @@
 # Sumi
 
+## The idea
+
+Sumi is a quiet tool that gives the screen to the work. Four aims, in this order; every rule below follows from them.
+
+1. **Content first.** The person's work (a chat, a page, code) is the loudest thing on the screen. The interface steps back: no decoration, no frame or fill that spacing can replace, controls invisible until touched.
+2. **Minimal and quiet.** Remove what does not help the task, an icon included. Hierarchy comes from text and spacing, not from boxes.
+3. **A terminal's feel, not its look.** Taken from the terminal: instant reaction, a clean surface, the keyboard first, the caret, mono where code and commands live. Not taken: green on black, ASCII art, a screen only a developer can read. Sumi reads as a normal product to someone who never opened a terminal.
+4. **Monochrome so nothing distracts.** Colour stays out so the eye stays on the content; monochrome is a means, never the point. Colour comes back where it carries meaning: a status, a data mark, the person's own content.
+
+### Consequences, not the idea
+
+Today's answers to the aims. Each may change when a better answer serves the same aims; none is a direction to push further.
+
+- **Square corners.** Frames are square because it reads cleaner today. What sits inside a frame keeps its natural shape: a dot is round, a git node is a circle, a stroke has round caps. "Make it more square" is never a reason for a change; square is the easiest place to go wrong.
+- **One surface, no shadows, lines edge to edge.** Depth and boxes compete with content.
+- **Icons in one colour.** An icon's margin lives in the icon itself, so an author can draw it to the box's full size.
+
+### Testing a change
+
+A change is right when it puts the content forward, removes something, makes a reaction faster or keeps the eye on the work. Making the interface more consistent with a consequence (squarer, greyer, flatter) is not a reason on its own.
+
 ## Visual Theme & Atmosphere
 
 The window is one sheet of paper with ink on it. Nothing floats over the page but a popup; nothing is boxed but code. Calm comes from a single surface, one size of text, one left line and few, full-length lines; speed comes from a terminal-like caret and instant answers. It must read as a normal product to a person who never opened a terminal, and feel like home to one who lives in it.

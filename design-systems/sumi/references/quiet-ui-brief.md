@@ -1,6 +1,6 @@
 # Sumi Design System — "Quiet UI"
 
-Hand this file to the agent as the single source of truth for Sumi's look.
+History: the first brief, kept for its reasoning. Where it disagrees with `../DESIGN.md` (its idea section first), `DESIGN.md` wins.
 Reference products for the feel: Dia, Zen, Arc, Linear, Notion. Take their ideas, not their assets.
 
 ---

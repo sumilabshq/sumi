@@ -141,8 +141,8 @@ map of which folder is MIT and which FSL-1.1-ALv2, and `REUSE.toml` maps paths t
 ## Sumi — the studio's design system
 
 **Sumi ("Quiet UI") is the one design system of the studio and the Tauri app.** The package is
-`design-systems/sumi/` (`DESIGN.md`, `tokens.css`, the runtime `sumi.css` with every `--sumi-*` token), the
-approved brief is `design-systems/sumi/references/quiet-ui-brief.md`, and the boards are the canvas
+`design-systems/sumi/` (`DESIGN.md`, `tokens.css`, the runtime `sumi.css` with every `--sumi-*` token); its
+idea is the first section of `DESIGN.md` and wins over any rule, `references/quiet-ui-brief.md` is history, and the boards are the canvas
 "Studio two layers" (https://claude.ai/artifact/4YPtzqciNLEEfHLBeJZePw), copied as artboards into
 `docs/reference/sumi-layout/`. Sumi is also the mascot's name.
 
@@ -156,12 +156,12 @@ approved brief is `design-systems/sumi/references/quiet-ui-brief.md`, and the bo
   neighbouring rows starts on one axis, and every gap is a step of the 4px scale, the same wherever the same
   relation repeats. The boards keep this; an implementation that breaks it is wrong even when each block
   alone matches.
-- Quiet: hierarchy from text and spacing, controls ghost until hovered, one loud thing per view, monochrome
-  with blue only as a wash, no borders and no inner plate around app content, no uppercase labels.
-- **Terminal minimalism, not everything square.** The aim is a terminal-like quiet with everything extra removed,
-  icons only where they earn their place. Square applies to frames: an app icon's tile, a plate, a control's
-  corner. What sits inside a frame keeps its natural shape: the git icon's nodes stay circles, a line keeps round
-  caps. Never square off a glyph's insides to match the frame.
+- **The idea first: content first, minimal and quiet, a terminal's feel (instant, clean) not its look,
+  monochrome only so nothing distracts.** Square corners, no shadows and one colour are consequences that may
+  change, never directions to push: square applies to frames, and what sits inside a frame keeps its natural
+  shape (a dot is round, git nodes are circles, strokes have round caps).
+- Quiet: hierarchy from text and spacing, controls ghost until hovered, one loud thing per view, no borders and
+  no inner plate around app content, no uppercase labels.
 - **A divider runs edge to edge.** A line inside a card, menu or list reaches both edges of its card, never
   inset by the card's padding; the command menu is the reference. A board that draws it inset is wrong here.
 
