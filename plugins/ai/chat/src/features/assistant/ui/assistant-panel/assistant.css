@@ -1631,9 +1631,11 @@
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown :not(pre) > code {
-	padding: 2px 5px;
+	padding: 1px 4px;
 	background: var(--sumi-soft);
-	font-size: var(--sumi-fs-13);
+	font-size: 12.5px;
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown blockquote {
@@ -2837,7 +2839,7 @@
 	height: calc(2 * var(--wg-code-pad-block) + var(--wg-code-line) * var(--wg-code-size));
 	padding: 0 var(--sumi-sp-3);
 	background: var(--sumi-soft);
-	opacity: 1;
+	opacity: 0;
 	transition: opacity var(--sumi-dur-fast) var(--sumi-ease);
 }
 

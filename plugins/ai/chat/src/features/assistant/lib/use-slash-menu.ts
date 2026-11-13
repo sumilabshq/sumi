@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, RefObject } from "react";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import type { MenuSpot } from "./menu-spot.js";
@@ -74,6 +74,16 @@ export function useSlashMenu({ draft, fill, box }: SlashMenuAsk): SlashMenu {
 	const move = (step: number): void =>
 		setHeld({ ...current, at: (current.at + step + matches.length) % matches.length });
 	const dismiss = (): void => setHeld({ ...current, isDismissed: true });
+	const lastPress = useLastPress();
+	const dismissOnPressOutsideField = (): void => {
+		const field = box.current?.closest(".wg-studio-ai-field");
+
+		if (lastPress.current instanceof Node && field?.contains(lastPress.current)) {
+			return;
+		}
+
+		dismiss();
+	};
 	return {
 		entries,
 		isOpen,
@@ -81,7 +91,7 @@ export function useSlashMenu({ draft, fill, box }: SlashMenuAsk): SlashMenu {
 		active,
 		spot: isOpen ? spotAbove(box.current) : null,
 		run,
-		dismiss,
+		dismiss: dismissOnPressOutsideField,
 		reopen: () => setHeld({ ...current, isDismissed: false }),
 		takesKey: (event) => {
 			if (!isOpen) {
@@ -149,10 +159,24 @@ function takesMenuKey(event: KeyboardEvent<HTMLTextAreaElement>, { active, run, 
 
 function spotAbove(box: HTMLTextAreaElement | null): MenuSpot | null {
 	const field = box?.closest(".wg-studio-ai-field");
-	if (!field) {
+	const line = box?.closest(".wg-studio-ai-box-frame");
+	if (!field || !line) {
 		return null;
 	}
 
-	const { left, top } = field.getBoundingClientRect();
-	return { x: left, y: top - ABOVE_FIELD_PX };
+	return { x: line.getBoundingClientRect().left, y: field.getBoundingClientRect().top - ABOVE_FIELD_PX };
+}
+
+function useLastPress(): RefObject<EventTarget | null> {
+	const lastPress = useRef<EventTarget | null>(null);
+
+	useEffect(() => {
+		const keep = (event: PointerEvent): void => {
+			lastPress.current = event.target;
+		};
+		document.addEventListener("pointerdown", keep, true);
+		return () => document.removeEventListener("pointerdown", keep, true);
+	}, []);
+
+	return lastPress;
 }
