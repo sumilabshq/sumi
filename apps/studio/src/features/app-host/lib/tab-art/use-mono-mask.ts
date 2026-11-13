@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { groundCutOf, hasOpaqueGround } from "./mono-mask.js";
+import { fillCutOf, groundCutOf, hasOpaqueGround } from "./mono-mask.js";
 
 export interface MonoMask {
 	readonly src: string;
@@ -61,11 +61,13 @@ function maskOf(image: HTMLImageElement): string | null {
 		pen.drawImage(image, 0, 0, SIDE_PX, SIDE_PX);
 		const read = pen.getImageData(0, 0, SIDE_PX, SIDE_PX);
 
-		if (!hasOpaqueGround(read.data, SIDE_PX)) {
+		const cut = hasOpaqueGround(read.data, SIDE_PX) ? groundCutOf(read.data, SIDE_PX) : fillCutOf(read.data);
+
+		if (cut === null) {
 			return null;
 		}
 
-		pen.putImageData(new ImageData(new Uint8ClampedArray(groundCutOf(read.data, SIDE_PX)), SIDE_PX, SIDE_PX), 0, 0);
+		pen.putImageData(new ImageData(new Uint8ClampedArray(cut), SIDE_PX, SIDE_PX), 0, 0);
 		return canvas.toDataURL("image/png");
 	} catch {
 		return null;
