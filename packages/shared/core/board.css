@@ -218,7 +218,7 @@
 	:root {
 		--sumi-frame: #ffffff;
 		--sumi-plate: #ffffff;
-		--sumi-soft: #f2f2f0;
+		--sumi-soft: #f5f5f5;
 		--sumi-sunken: rgba(21, 21, 19, 0.045);
 		--sumi-overlay: #ffffff;
 		--sumi-text: #151513;
@@ -22239,14 +22239,11 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	transition: margin 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 .sumi-composer-expand.is-expanded :is(.wg-studio-ai-field, .wg-studio-ai-field.is-focused) {
-	margin: -1px -1px 0;
-	padding: 0 0 var(--sumi-sp-4);
 	border-color: transparent;
 }
 .sumi-composer-expand.is-expanded .wg-studio-ai-box-frame {
 	flex: 1 1 auto;
 	min-height: 0;
-	margin-inline: calc((var(--sumi-h-sm) - 16px) / 2);
 }
 .sumi-composer-expand .wg-studio-ai > .wg-studio-ai-scroll-frame {
 	transition: opacity 160ms cubic-bezier(0.2, 0, 0, 1);

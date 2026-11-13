@@ -15,15 +15,12 @@
 }
 
 .sumi-composer-expand.is-expanded :is(.wg-studio-ai-field, .wg-studio-ai-field.is-focused) {
-	margin: -1px -1px 0;
-	padding: 0 0 var(--sumi-sp-4);
 	border-color: transparent;
 }
 
 .sumi-composer-expand.is-expanded .wg-studio-ai-box-frame {
 	flex: 1 1 auto;
 	min-height: 0;
-	margin-inline: calc((var(--sumi-h-sm) - 16px) / 2);
 }
 
 .sumi-composer-expand .wg-studio-ai > .wg-studio-ai-scroll-frame {
