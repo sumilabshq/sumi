@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
-import { wheeled } from "@widgetarium/gpu";
+import { scaledAround, wheeled } from "@widgetarium/gpu";
 import type { StageLook } from "@widgetarium/gpu";
 
 export interface PointerMoves {
@@ -38,8 +38,53 @@ export function useNativeWheel(
 			moveTo(wheeled(lookNow(), event, { x: event.clientX - box.left, y: event.clientY - box.top }));
 		};
 		field.addEventListener("wheel", onWheel, { passive: false });
-		return () => field.removeEventListener("wheel", onWheel);
+		const stopPinch = listenToPinch(field, moving);
+		return () => {
+			field.removeEventListener("wheel", onWheel);
+			stopPinch();
+		};
 	}, [fieldRef, ownScroll, lookNow, moveTo]);
+}
+
+// TRADE-OFF: WebKit sends a trackpad pinch as non-standard gesture events, not as a ctrl wheel, so they are read by name
+function listenToPinch(field: HTMLElement, { lookNow, moveTo }: Moving): () => void {
+	let pinchStart: StageLook | null = null;
+	const onStart = (event: Event): void => {
+		event.preventDefault();
+		pinchStart = lookNow();
+	};
+	const onChange = (event: Event): void => {
+		event.preventDefault();
+		const scale = Reflect.get(event, "scale");
+
+		if (pinchStart === null || typeof scale !== "number") {
+			return;
+		}
+
+		moveTo(scaledAround(pinchStart, pinchStart.scale * scale, pinchPointOf(field, event)));
+	};
+	const onEnd = (event: Event): void => {
+		event.preventDefault();
+		pinchStart = null;
+	};
+	field.addEventListener("gesturestart", onStart);
+	field.addEventListener("gesturechange", onChange);
+	field.addEventListener("gestureend", onEnd);
+	return () => {
+		field.removeEventListener("gesturestart", onStart);
+		field.removeEventListener("gesturechange", onChange);
+		field.removeEventListener("gestureend", onEnd);
+	};
+}
+
+function pinchPointOf(field: HTMLElement, event: Event): { readonly x: number; readonly y: number } {
+	const box = field.getBoundingClientRect();
+	const clientX = Reflect.get(event, "clientX");
+	const clientY = Reflect.get(event, "clientY");
+	return {
+		x: (typeof clientX === "number" ? clientX : box.left + box.width / 2) - box.left,
+		y: (typeof clientY === "number" ? clientY : box.top + box.height / 2) - box.top,
+	};
 }
 
 export function useDragMoves({ lookNow, moveTo }: Moving, { isHand, pressable }: Grips): PointerMoves {

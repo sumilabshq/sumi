@@ -18,6 +18,7 @@ export function usePainter(
 	useEffect(
 		() => () => {
 			window.cancelAnimationFrame(frame.current);
+			frame.current = 0;
 			window.clearTimeout(settle.current);
 		},
 		[],
