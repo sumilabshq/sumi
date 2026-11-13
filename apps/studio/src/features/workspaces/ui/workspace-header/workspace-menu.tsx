@@ -6,7 +6,7 @@ import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 import { workspaces } from "@widgetarium/workspaces/contract";
 
 const MENU_LABEL = "Workspaces";
-const NAME_AND_ICON = "Name and icon…";
+const NAME_AND_ICON = "Name and icon";
 const NEW_WORKSPACE = "New workspace";
 const ITEM_ICON_PX = 18;
 

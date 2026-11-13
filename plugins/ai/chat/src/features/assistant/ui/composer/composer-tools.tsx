@@ -13,7 +13,7 @@ import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const ADD = "Add";
 const ATTACH_FILES = "Attach images or files";
-const ATTACH_FOLDER = "Attach a folder…";
+const ATTACH_FOLDER = "Attach a folder";
 const DROP_OR_PASTE = "Drop or paste anywhere in the chat";
 
 export function ComposerTools(): ReactElement {

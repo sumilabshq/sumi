@@ -105,7 +105,7 @@
 .wg-ws-dot {
 	width: 7px;
 	height: 7px;
-	border-radius: 0;
+	border-radius: 50%;
 	background: currentColor;
 	display: block;
 }

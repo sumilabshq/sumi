@@ -8,7 +8,7 @@ import { folderNameOf } from "../../lib/short-path.js";
 import { FolderMenu } from "./folder-menu.js";
 
 const CHOOSE_A_FOLDER = "Choose a folder";
-const WORK_IN_A_FOLDER = "Work in a folder…";
+const WORK_IN_A_FOLDER = "Work in a folder";
 
 export function FolderButton({ chat, surface }: ComposerOptionProps): ReactElement | null {
 	const folders = useOptionalQuery(assistant.agent.workingFolders, { chat }).data ?? null;

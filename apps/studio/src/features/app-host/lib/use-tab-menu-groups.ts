@@ -51,7 +51,7 @@ export function useTabMenuGroups(tab: AppTab, { onRename, onCopyLink }: TabMenuA
 		[
 			action("reload", { label: "Reload tab", icon: "rotate-cw", isDisabled: address === null }, run.reload),
 			// TODO: mute tab once the browser package reports a page's audio
-			action("rename", { label: "Rename tab…", icon: "pencil" }, onRename),
+			action("rename", { label: "Rename tab", icon: "pencil" }, onRename),
 		],
 		[
 			action("copy-link", { label: "Copy link", icon: "link", isDisabled: address === null }, () => {

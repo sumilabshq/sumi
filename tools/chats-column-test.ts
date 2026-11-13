@@ -294,7 +294,7 @@ async function workspaceChecks(page: AskedPage): Promise<void> {
 		`[...document.querySelectorAll("[data-ws-menu] .wg-kit-pop-item")].map((item) => [...item.childNodes].filter((part) => !part.classList?.contains("wg-ws-item-glyph")).map((part) => part.textContent).join(""))`,
 	);
 	check(
-		"the menu lists every workspace with ⌘1…⌘6, then Name and icon… and New workspace, and no settings",
+		"the menu lists every workspace with ⌘1…⌘6, then Name and icon and New workspace, and no settings",
 		JSON.stringify(items) ===
 			JSON.stringify([
 				"Default⌘1",
@@ -303,7 +303,7 @@ async function workspaceChecks(page: AskedPage): Promise<void> {
 				"Personal⌘4",
 				"Travel⌘5",
 				"Reading⌘6",
-				"Name and icon…",
+				"Name and icon",
 				"New workspace",
 			]),
 		items,

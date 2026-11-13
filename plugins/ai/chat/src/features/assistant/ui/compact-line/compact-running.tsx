@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 
-const COMPACTING = "Compacting the conversation…";
+const COMPACTING = "Compacting the conversation";
 
 export function CompactRunning(): ReactElement {
 	return (
