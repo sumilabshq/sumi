@@ -39,7 +39,7 @@ export function SendButton({ state, isEditing, onSend, onStop }: SendButtonProps
 			{isStreaming ? (
 				<span className="wg-studio-ai-stop-square" aria-hidden={true} />
 			) : (
-				<Icon name={isEditing ? "check" : "arrow-up"} size={14} />
+				<Icon name={isEditing ? "check" : "arrow-up"} size={16} />
 			)}
 		</button>
 	);

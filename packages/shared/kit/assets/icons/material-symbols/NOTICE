@@ -1,0 +1,5 @@
+src/icons/sharp-table.ts holds icon paths from Material Symbols, Sharp style, weight 400
+(https://github.com/google/material-design-icons), Copyright Google LLC, licensed under the
+Apache License, Version 2.0, a copy of which sits beside this file.
+
+Taken unmodified from the npm package @material-symbols/svg-400@0.49.0 (sharp/*.svg).

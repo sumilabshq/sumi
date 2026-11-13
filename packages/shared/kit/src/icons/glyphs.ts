@@ -1,4 +1,5 @@
 import { ICON_TABLE, ICON_VIEW_BOX } from "./icon-table";
+import { SHARP_TABLE, SHARP_VIEW_BOX } from "./sharp-table";
 
 export const GLYPHS: Readonly<Record<string, string>> = {
 	chevron: '<path d="M8.25 5.5l4.5 4.5-4.5 4.5"/>',
@@ -50,13 +51,16 @@ export interface IconDrawing {
 	readonly body: string;
 	readonly viewBox: string;
 	readonly isLucide: boolean;
+	readonly isFilled: boolean;
 }
 
 export function iconOf(name: unknown): IconDrawing | null {
 	if (typeof name !== "string") return null;
+	const sharpBody = Object.hasOwn(SHARP_TABLE, name) ? SHARP_TABLE[name] : undefined;
+	if (sharpBody !== undefined) return { body: sharpBody, viewBox: SHARP_VIEW_BOX, isLucide: false, isFilled: true };
 	const kitBody = Object.hasOwn(GLYPHS, name) ? GLYPHS[name] : undefined;
-	if (kitBody !== undefined) return { body: kitBody, viewBox: KIT_VIEW_BOX, isLucide: false };
+	if (kitBody !== undefined) return { body: kitBody, viewBox: KIT_VIEW_BOX, isLucide: false, isFilled: false };
 	const lucideBody = Object.hasOwn(LUCIDE_BODIES, name) ? LUCIDE_BODIES[name] : undefined;
-	if (lucideBody !== undefined) return { body: lucideBody, viewBox: ICON_VIEW_BOX, isLucide: true };
+	if (lucideBody !== undefined) return { body: lucideBody, viewBox: ICON_VIEW_BOX, isLucide: true, isFilled: false };
 	return null;
 }

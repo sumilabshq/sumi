@@ -1648,6 +1648,11 @@ body {
 	--wg-icon-grid: 24;
 }
 
+:is(.wg-root, .wg-portal) .wg-kit-icon-glyph.is-filled {
+	fill: currentColor;
+	stroke: none;
+}
+
 :is(.wg-root, .wg-portal) .wg-kit-emoji {
 	flex: none;
 	display: block;
@@ -20236,8 +20241,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	background: var(--sumi-text);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-stop-square {
-	width: 10px;
-	height: 10px;
+	width: 7px;
+	height: 7px;
 	border-radius: 0;
 	background: var(--sumi-plate);
 }

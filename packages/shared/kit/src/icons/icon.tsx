@@ -20,7 +20,7 @@ export function Icon({ name, fallback, size = ICON_PX, className: cls }: IconPro
 	if (!drawn) return null;
 	return (
 		<svg
-			className={cn("wg-kit-icon-glyph", drawn.isLucide && "is-lucide", cls)}
+			className={cn("wg-kit-icon-glyph", drawn.isLucide && "is-lucide", drawn.isFilled && "is-filled", cls)}
 			viewBox={drawn.viewBox}
 			width={size}
 			height={size}
