@@ -1,5 +1,5 @@
 import { createElement as h, useRef } from "react";
-import type { MouseEvent, ReactElement, ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { Icon } from "@widgetarium/kit";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import type { QueuedShown } from "@widgetarium/assistant/contract";
@@ -13,7 +13,7 @@ import { AttachedChip } from "./attached-change.js";
 import type { Attached } from "./attached-change.js";
 import { ComposerTools } from "./composer-tools.js";
 import { DraftAttachments } from "./draft-attachments.js";
-import { useBlockCaret } from "../../lib/use-block-caret.js";
+import { useFocusesFromChat } from "../../lib/use-focuses-from-chat.js";
 import { SendButton } from "./send-button.js";
 
 export interface ComposerProps {
@@ -64,14 +64,10 @@ export function Composer({
 	useFocusesWhen(composerBox, attached?.label ?? null);
 	useTakesPrefill(composerBox, fill);
 	const { input, takesKey, isBoxTextHidden } = useComposerInput({ draft, fill, box: composerBox, field });
-	const caret = useBlockCaret(composerBox, draft);
+	useFocusesFromChat(composerBox);
 	return (
 		<div className="wg-studio-ai-composer" ref={composer}>
-			<div
-				ref={field}
-				className={fieldClassOf(busy)}
-				onClick={(event) => focusBox(event, composerBox.current)}
-			>
+			<div ref={field} className={fieldClassOf(busy)}>
 				{editing === null ? null : (
 					<div className="wg-studio-ai-edit-bar">
 						<Icon name="pencil" size={13} />
@@ -107,7 +103,6 @@ export function Composer({
 						}}
 						onPaste={onPaste}
 					/>
-					{caret === null ? null : <span className="wg-studio-ai-caret" style={caret} aria-hidden="true" />}
 					<ListPluginSlot name="chat.composer-input" props={{ input }} />
 					<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 				</div>
@@ -123,11 +118,6 @@ export function Composer({
 
 function fieldClassOf(busy: boolean): string {
 	return busy ? "wg-studio-ai-field is-working" : "wg-studio-ai-field";
-}
-
-function focusBox(event: MouseEvent<HTMLDivElement>, box: HTMLTextAreaElement | null): void {
-	if (event.target instanceof Element && event.target.closest("button, textarea, input")) return;
-	box?.focus();
 }
 
 function placeholderOf({

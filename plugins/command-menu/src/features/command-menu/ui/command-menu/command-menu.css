@@ -149,8 +149,6 @@
 	background: transparent;
 	color: var(--sumi-text);
 	font: inherit;
-	caret-color: var(--sumi-accent);
-	caret-shape: block;
 }
 
 .wg-cm-input::placeholder {

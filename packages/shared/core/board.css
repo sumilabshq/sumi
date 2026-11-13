@@ -17785,8 +17785,6 @@ body:has([data-browser-pages-live]),
 	background: transparent;
 	color: var(--sumi-text);
 	font: inherit;
-	caret-color: var(--sumi-accent);
-	caret-shape: block;
 }
 .wg-cm-input::placeholder {
 	color: var(--sumi-text-3);
@@ -18308,6 +18306,22 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	height: 100%;
 	min-height: 0;
 	gap: 8px;
+	-webkit-user-select: none;
+	user-select: none;
+}
+:is(.wg-root, .wg-portal)
+	.wg-studio-ai
+	:is(.wg-studio-ai-scroll-content, .wg-studio-ai-failure-reason, input, textarea, [contenteditable]) {
+	-webkit-user-select: text;
+	user-select: text;
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai-scroll-content :is(button, .wg-studio-ai-welcome, .wg-studio-ai-finish-mark) {
+	-webkit-user-select: none;
+	user-select: none;
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai-scroll-content button :is(.wg-studio-ai-call-name, .wg-studio-ai-call-meta) {
+	-webkit-user-select: text;
+	user-select: text;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-head {
 	display: flex;
@@ -19805,14 +19819,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	animation: sumi-sweep 1.8s linear infinite;
 	pointer-events: none;
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working .wg-studio-ai-caret,
-:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working .wg-studio-ai-box-frame::before {
-	animation: sumi-breathe 1.6s ease-in-out infinite;
-}
 @media (prefers-reduced-motion: reduce) {
-	:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working::after,
-	:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working .wg-studio-ai-caret,
-	:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working .wg-studio-ai-box-frame::before {
+	:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working::after {
 		animation: none;
 	}
 }
@@ -19825,7 +19833,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	padding: 0;
 	color: var(--sumi-text);
 	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.6 var(--sumi-font-ui);
-	caret-color: var(--sumi-accent);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box::placeholder {
 	color: var(--sumi-text-3);
@@ -19840,32 +19847,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box.is-text-hidden {
 	color: transparent;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-caret {
-	position: absolute;
-	width: var(--sumi-caret-w);
-	height: var(--sumi-caret-h);
-	margin-top: 2px;
-	background: var(--sumi-accent);
-	pointer-events: none;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-box-frame:has(> .wg-studio-ai-caret) .wg-studio-ai-box {
-	caret-color: transparent;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-box-frame:has(> .wg-studio-ai-box:placeholder-shown)::before {
-	content: "";
-	flex: none;
-	width: var(--sumi-caret-w);
-	height: var(--sumi-caret-h);
-	margin: 2px var(--sumi-sp-3) 0 0;
-	box-shadow: inset 0 0 0 1.5px var(--sumi-text-3);
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-box-frame:has(> .wg-studio-ai-box:placeholder-shown:focus)::before {
-	background: var(--sumi-accent);
-	box-shadow: none;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box:placeholder-shown {
-	caret-color: transparent;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar {
 	display: flex;
@@ -20009,9 +19990,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	:is(.wg-studio-ai-strip, .wg-studio-ai-field-bar)
 	.wg-kit-btn.is-ghost
 	.wg-kit-select-chevron {
-	width: 14px;
-	height: 14px;
-	color: inherit;
+	display: none;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field:has(> .wg-studio-ai-attachments) {
 	padding-top: var(--sumi-sp-4);
@@ -21776,20 +21755,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	margin: var(--sumi-sp-2) 0 0;
 	color: var(--sumi-text-3);
 }
-:is(.wg-root, .wg-portal) .wg-questions-own::before {
-	content: "";
-	flex: none;
-	width: var(--sumi-caret-w);
-	height: var(--sumi-caret-h);
-	box-shadow: inset 0 0 0 1.5px var(--sumi-text-3);
-}
-:is(.wg-root, .wg-portal) .wg-questions-own:focus-within::before {
-	background: var(--sumi-accent);
-	box-shadow: none;
-}
-:is(.wg-root, .wg-portal) .wg-questions-own:has(.wg-questions-own-field:not(:placeholder-shown))::before {
-	display: none;
-}
 :is(.wg-root, .wg-portal) .wg-questions-own-field {
 	flex: 1;
 	min-width: 120px;
@@ -21801,12 +21766,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	box-shadow: none;
 	outline: none;
 	color: var(--sumi-text);
-	caret-color: var(--sumi-accent);
-	caret-shape: block;
 	font: inherit;
-}
-:is(.wg-root, .wg-portal) .wg-questions-own-field:placeholder-shown {
-	caret-color: transparent;
 }
 :is(.wg-root, .wg-portal) .wg-questions-own-field::placeholder {
 	color: var(--sumi-text-3);

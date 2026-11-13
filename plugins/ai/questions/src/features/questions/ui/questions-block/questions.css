@@ -132,23 +132,6 @@
 	color: var(--sumi-text-3);
 }
 
-:is(.wg-root, .wg-portal) .wg-questions-own::before {
-	content: "";
-	flex: none;
-	width: var(--sumi-caret-w);
-	height: var(--sumi-caret-h);
-	box-shadow: inset 0 0 0 1.5px var(--sumi-text-3);
-}
-
-:is(.wg-root, .wg-portal) .wg-questions-own:focus-within::before {
-	background: var(--sumi-accent);
-	box-shadow: none;
-}
-
-:is(.wg-root, .wg-portal) .wg-questions-own:has(.wg-questions-own-field:not(:placeholder-shown))::before {
-	display: none;
-}
-
 :is(.wg-root, .wg-portal) .wg-questions-own-field {
 	flex: 1;
 	min-width: 120px;
@@ -160,13 +143,7 @@
 	box-shadow: none;
 	outline: none;
 	color: var(--sumi-text);
-	caret-color: var(--sumi-accent);
-	caret-shape: block;
 	font: inherit;
-}
-
-:is(.wg-root, .wg-portal) .wg-questions-own-field:placeholder-shown {
-	caret-color: transparent;
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-own-field::placeholder {
