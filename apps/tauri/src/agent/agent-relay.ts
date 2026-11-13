@@ -1,10 +1,13 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
 import type { McpServer } from "@widgetarium/data-framework";
+import { DomProbeAskSchema, answerDomProbe } from "./dom-probe.js";
 
 interface QueueTaker {
 	readonly handQueueToAgent: (chatId: string) => string | null;
 }
+
+export type LinkOpener = (href: string, opensNew: boolean) => Promise<string | null>;
 
 const OPEN_CHANNEL = "plugin:agent|open_channel";
 const ANSWER = "plugin:agent|answer";
@@ -27,7 +30,14 @@ const BetweenStepsAskSchema = z.object({
 	chat: z.string(),
 });
 
-const RelayAskSchema = z.discriminatedUnion("kind", [McpAskSchema, BetweenStepsAskSchema]);
+const OpenAskSchema = z.object({
+	id: z.number().int(),
+	kind: z.literal("open"),
+	href: z.string().min(1).max(2048),
+	opensNew: z.boolean().default(false),
+});
+
+const RelayAskSchema = z.discriminatedUnion("kind", [McpAskSchema, BetweenStepsAskSchema, OpenAskSchema, DomProbeAskSchema]);
 
 const AskIdSchema = z.object({ id: z.number().int() });
 
@@ -36,12 +46,19 @@ type RelayAsk = z.infer<typeof RelayAskSchema>;
 interface Relayed {
 	readonly servers: ReadonlyMap<string, McpServer>;
 	readonly queue: QueueTaker;
+	readonly opensLink: LinkOpener;
 }
 
-export function openAgentRelay(servers: readonly McpServer[], queue: QueueTaker): void {
+export interface RelayReach {
+	readonly queue: QueueTaker;
+	readonly opensLink: LinkOpener;
+}
+
+export function openAgentRelay(servers: readonly McpServer[], { queue, opensLink }: RelayReach): void {
 	const relayed = {
 		servers: new Map(servers.map((server) => [server.name, server])),
 		queue,
+		opensLink,
 	};
 	const channel = new Channel<unknown>((message) => void answerAsk(relayed, message));
 	const names = [...relayed.servers.keys()];
@@ -86,13 +103,27 @@ async function answerWith(answer: Readonly<Record<string, unknown>>): Promise<vo
 	}
 }
 
-async function valueOf({ servers, queue }: Relayed, asked: RelayAsk): Promise<unknown> {
+async function valueOf({ servers, queue, opensLink }: Relayed, asked: RelayAsk): Promise<unknown> {
 	switch (asked.kind) {
 		case "between-steps":
 			return { text: queue.handQueueToAgent(asked.chat) ?? "" };
 		case "mcp":
 			return answerOfServer(servers, asked);
+		case "open":
+			return openedLink(opensLink, asked);
+		case "dom":
+			return answerDomProbe(asked);
 	}
+}
+
+async function openedLink(opensLink: LinkOpener, asked: z.infer<typeof OpenAskSchema>): Promise<unknown> {
+	const refusal = await opensLink(asked.href, asked.opensNew);
+
+	if (refusal !== null) {
+		throw new Error(refusal);
+	}
+
+	return { opened: asked.href };
 }
 
 function answerOfServer(

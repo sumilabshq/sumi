@@ -1,6 +1,7 @@
 pub mod hook;
 pub mod hub;
 pub mod mcp;
+pub mod open;
 pub mod socket;
 
 use crate::studio_caller::refuse_foreign_caller;
@@ -15,7 +16,7 @@ use tauri::{Manager, Runtime};
 pub const PLUGIN_NAME: &str = "agent";
 pub const PROMPT: &str = include_str!("sumi-prompt.md");
 
-const SOCKET_FILE: &str = "agent-tools.sock";
+pub const SOCKET_FILE: &str = "agent-tools.sock";
 const MISSING_ARGUMENT: &str = "The call is missing its {name} argument.";
 const NOT_A_CHANNEL: &str = "The call's onEvent argument is not a channel.";
 const NOT_SERVER_NAMES: &str = "The call's servers argument is not a list of MCP server names.";

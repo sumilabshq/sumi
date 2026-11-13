@@ -101,7 +101,13 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	});
 	await assistant.port.shownRead();
 	const started = startedStudioOf(opening, { plugins, studioApp, assistant, core });
-	openAgentRelay(started.agentMcpServers, assistant.port);
+	openAgentRelay(started.agentMcpServers, {
+		queue: assistant.port,
+		opensLink: async (href, opensNew) => {
+			const answer = await studioApp.send(appHost.links.openLink, { href, opensNew });
+			return answer.ok ? null : answer.reason;
+		},
+	});
 	return started;
 }
 

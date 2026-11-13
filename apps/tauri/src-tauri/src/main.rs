@@ -1,4 +1,4 @@
-use widgetarium_host_tauri_lib::agent::{hook, mcp};
+use widgetarium_host_tauri_lib::agent::{hook, mcp, open};
 use widgetarium_host_tauri_lib::app_pages::{self, scheme};
 
 fn main() {
@@ -10,6 +10,9 @@ fn main() {
     if hook::is_asked(&args) {
         hook::run(&args);
         return;
+    }
+    if open::is_asked(&args) {
+        std::process::exit(open::run(&args));
     }
 
     tauri::Builder::default()

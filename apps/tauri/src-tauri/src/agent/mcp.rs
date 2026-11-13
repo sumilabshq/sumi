@@ -26,9 +26,21 @@ struct Relay {
     headers: Value,
 }
 
+pub fn bridge_of(args: &[String]) -> Bridge {
+    let socket = flag_value(args, "--socket");
+    let token = flag_value(args, "--token");
+    if !socket.is_empty() && !token.is_empty() {
+        return Bridge { socket, token };
+    }
+
+    let default_socket = std::env::var("HOME").map(|home| std::path::Path::new(&home).join(crate::store::place::APP_FOLDER).join(super::SOCKET_FILE)).unwrap_or_default();
+    let token = std::fs::read_to_string(default_socket.with_extension(super::socket::TOKEN_EXTENSION)).unwrap_or_default();
+    Bridge { socket: default_socket.to_string_lossy().into_owned(), token: token.trim().to_string() }
+}
+
 pub fn serve(args: &[String]) {
     let relay = Relay {
-        bridge: Bridge { socket: flag_value(args, "--socket"), token: flag_value(args, "--token") },
+        bridge: bridge_of(args),
         server: flag_value(args, "--server"),
         headers: headers_of(args),
     };
