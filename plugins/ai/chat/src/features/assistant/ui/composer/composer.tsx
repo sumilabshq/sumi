@@ -1,4 +1,4 @@
-import { createElement as h, useRef, useState } from "react";
+import { createElement as h, useRef } from "react";
 import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { Icon } from "@widgetarium/kit";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
@@ -53,7 +53,6 @@ export function Composer({
 	const composer = useRef<HTMLDivElement>(null);
 	const composerBox = useRef<HTMLTextAreaElement>(null);
 	const field = useRef<HTMLDivElement>(null);
-	const [isFocused, setFocused] = useState(false);
 	const sendOrSave = editing === null ? onSend : (said: string) => onSaveEdit(editing.id, said);
 	const { draft, state, sendDraft, onChange, onKeyDown, onPaste, fill } = useComposerDraft({
 		busy,
@@ -70,7 +69,7 @@ export function Composer({
 		<div className="wg-studio-ai-composer" ref={composer}>
 			<div
 				ref={field}
-				className={`wg-studio-ai-field${isFocused ? " is-focused" : ""}`}
+				className={fieldClassOf(busy)}
 				onClick={(event) => focusBox(event, composerBox.current)}
 			>
 				{editing === null ? null : (
@@ -107,8 +106,6 @@ export function Composer({
 							onKeyDown(event);
 						}}
 						onPaste={onPaste}
-						onFocus={() => setFocused(true)}
-						onBlur={() => setFocused(false)}
 					/>
 					{caret === null ? null : <span className="wg-studio-ai-caret" style={caret} aria-hidden="true" />}
 					<ListPluginSlot name="chat.composer-input" props={{ input }} />
@@ -122,6 +119,10 @@ export function Composer({
 			</div>
 		</div>
 	);
+}
+
+function fieldClassOf(busy: boolean): string {
+	return busy ? "wg-studio-ai-field is-working" : "wg-studio-ai-field";
 }
 
 function focusBox(event: MouseEvent<HTMLDivElement>, box: HTMLTextAreaElement | null): void {

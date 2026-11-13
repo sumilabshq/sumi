@@ -39,10 +39,18 @@ export function SendButton({ state, isEditing, onSend, onStop }: SendButtonProps
 			{isStreaming ? (
 				<span className="wg-studio-ai-stop-square" aria-hidden={true} />
 			) : (
-				<Icon name={isEditing ? "check" : "arrow-up"} size={16} />
+				<SendGlyph isEditing={isEditing} />
 			)}
 		</button>
 	);
+}
+
+function SendGlyph({ isEditing }: { readonly isEditing: boolean }): ReactElement {
+	if (isEditing) {
+		return <Icon name="tick" size={16} />;
+	}
+
+	return <span className="wg-studio-ai-send-play" aria-hidden={true} />;
 }
 
 function saidOf(state: SendState, isEditing: boolean): string {

@@ -26,7 +26,7 @@ export const IDLE_PARTS: Parts = {
 	plus: { board: ".ib", built: ".wg-studio-ai-plus", keys: [...BOX, "border", "color"] },
 	plusGlyph: { board: ".ib svg", built: ".wg-studio-ai-plus svg", keys: ["w", "h"] },
 	sendIdle: { board: ".send.off", built: ".wg-studio-ai-send.is-idle", keys: [...BOX, "border", "color"] },
-	sendGlyph: { board: ".send.off svg", built: ".wg-studio-ai-send.is-idle svg", keys: ["w", "h"] },
+	sendGlyph: { board: ".send.off svg", built: ".wg-studio-ai-send.is-idle .wg-studio-ai-send-play", keys: ["w", "h"] },
 	strip: { board: STRIP_BOARD, built: ".wg-studio-ai-strip", keys: ["pad", "gap"] },
 	stripButton: { board: ".gt", built: AUTO_BUILT, keys: [...FLAT, "border", "fs", "fw", "color"] },
 	stripChevron: { board: ".gt svg", built: `${AUTO_BUILT} svg`, keys: ["w", "h"] },
@@ -39,10 +39,9 @@ export const IDLE_PARTS: Parts = {
 };
 
 export const TYPED_PARTS: Parts = {
-	fieldFocused: { board: ".composer.focus", built: ".wg-studio-ai-field.is-focused", keys: ["edge", "border"] },
 	typedText: { board: ".composer > span", built: ".wg-studio-ai-box", keys: ["fs", "fw", "lh", "color"] },
 	sendReady: { board: ".send:not(.off)", built: ".wg-studio-ai-send.is-typing", keys: [...BOX, "border", "color"] },
-	sendGlyph: { board: ".send:not(.off) svg", built: ".wg-studio-ai-send.is-typing svg", keys: ["w", "h"] },
+	sendGlyph: { board: ".send:not(.off) svg", built: ".wg-studio-ai-send.is-typing .wg-studio-ai-send-play", keys: ["w", "h"] },
 };
 
 export const UNJUDGED = [

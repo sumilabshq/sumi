@@ -1699,17 +1699,13 @@
 	box-sizing: border-box;
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
-	padding: var(--sumi-sp-5) var(--wg-chat-gutter) var(--sumi-sp-6);
+	margin: 0 var(--wg-chat-gutter) var(--sumi-sp-5);
+	padding: var(--sumi-sp-5);
 	border-radius: 0;
 	background: var(--sumi-plate);
-	box-shadow: none;
+	box-shadow: inset 0 0 0 1px var(--sumi-line);
 	cursor: text;
 	border: 0;
-	border-top: 1px solid var(--sumi-line);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-focused {
-	border-color: var(--sumi-line);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working {
@@ -1719,7 +1715,7 @@
 :is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working::after {
 	content: "";
 	position: absolute;
-	top: -1px;
+	top: 0;
 	left: 0;
 	width: 36%;
 	height: 1px;
@@ -1861,10 +1857,9 @@
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle {
-	background: none;
+	background: var(--sumi-soft);
 	color: var(--sumi-text-3);
 	cursor: default;
-	box-shadow: inset 0 0 0 1px var(--sumi-line);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-send:not(.is-idle):is(:hover, :focus-visible) {
@@ -1880,6 +1875,14 @@
 	height: 7px;
 	border-radius: 0;
 	background: var(--sumi-plate);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-send-play {
+	width: 9px;
+	height: 10px;
+	margin-left: 2px;
+	background: currentColor;
+	clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-starter-chip {
@@ -3427,8 +3430,7 @@
 }
 
 .wg-chat-app .wg-studio-ai-live-task-dot.is-now {
-	background: var(--sumi-text);
-	box-shadow: 0 0 0 2px color-mix(in srgb, var(--sumi-text) 12%, transparent);
+	background: var(--sumi-accent);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-dock {

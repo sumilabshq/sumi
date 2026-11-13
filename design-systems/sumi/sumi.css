@@ -144,11 +144,11 @@
 :root.dark,
 .dark,
 .theme-dark {
-	--sumi-frame: #0f0f0e;
-	--sumi-plate: #0f0f0e;
-	--sumi-soft: #1c1c1a;
+	--sumi-frame: #000000;
+	--sumi-plate: #000000;
+	--sumi-soft: #1a1a19;
 	--sumi-sunken: rgba(233, 230, 222, 0.05);
-	--sumi-overlay: #0f0f0e;
+	--sumi-overlay: #000000;
 	--sumi-text: #e9e6de;
 	--sumi-text-2: rgba(233, 230, 222, 0.7);
 	--sumi-text-3: rgba(233, 230, 222, 0.5);
@@ -161,10 +161,10 @@
 	--sumi-essential: var(--sumi-soft);
 	--sumi-essential-hover: rgba(233, 230, 222, 0.13);
 	--sumi-essential-on: rgba(233, 230, 222, 0.18);
-	--sumi-accent: #e8b84a;
-	--sumi-on-accent: #0f0f0e;
-	--sumi-accent-soft: rgba(232, 184, 74, 0.14);
-	--sumi-accent-text: #e8b84a;
+	--sumi-accent: #e6c36f;
+	--sumi-on-accent: #000000;
+	--sumi-accent-soft: rgba(230, 195, 111, 0.14);
+	--sumi-accent-text: #e6c36f;
 	--sumi-focus-ring: rgba(233, 230, 222, 0.5);
 	--sumi-success: #9dbf8a;
 	--sumi-warning: #e8b84a;
@@ -179,7 +179,8 @@
 	--sumi-shadow-float: none;
 
 	--sumi-selected: var(--sumi-soft);
-	--sumi-pick: #0f0f0e;
+	--sumi-pick: #000000;
+	--sumi-selection: rgba(230, 195, 111, 0.26);
 }
 
 .sumi-ink-dark {

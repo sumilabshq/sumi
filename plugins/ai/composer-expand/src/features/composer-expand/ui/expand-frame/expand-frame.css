@@ -14,8 +14,8 @@
 	transition: margin 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-.sumi-composer-expand.is-expanded :is(.wg-studio-ai-field, .wg-studio-ai-field.is-focused) {
-	border-color: transparent;
+.sumi-composer-expand.is-expanded .wg-studio-ai-field {
+	box-shadow: none;
 }
 
 .sumi-composer-expand.is-expanded .wg-studio-ai-box-frame {
