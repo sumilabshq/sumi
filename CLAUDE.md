@@ -32,7 +32,7 @@ runs in the background because a plugin registers it with `app.use(backend).modu
 it. Nothing in host code names a plugin's module.
 
 **CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
-`plugins/<name>/` and nothing else: `src/plugin.ts` (always; only the `plugin()` definition, no helper,
+`plugins/<name>/`, or `plugins/<group>/<name>/` inside a group folder that holds only plugins (`plugins/ai/`), and nothing else: `src/plugin.ts` (always; only the `plugin()` definition, no helper,
 schema or type), `src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by `data-framework generate`), every other file of `src/` placed as in a client package
 (`features/<feature>/ui/<block>/*.tsx` with the `.css` a block uses beside it, `features/<feature>/lib/*.ts`,
 `shared/ui/` and `shared/lib/` for what two features use, nothing else loose in `src/`, no feature importing
@@ -89,10 +89,16 @@ plugins/apps             FSL  @sumi/apps-plugin: API app(entry), its modules (pl
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, added through apps
 plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, added through apps, and its module (plugins/browser-page/data/web-page, @widgetarium/web-page) served to every frame through shell.frameModule
 plugins/command-menu     FSL  @sumi/command-menu-plugin: API door, page, rowSource; its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
-plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/questions/data/questions, plugins/chat/data/mascot, plugins/chat/data/chat-tabs: the chat list and which chat a new or empty pane opens), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
-plugins/mcp              FSL  @sumi/mcp-plugin: API server({ name, modules }), each plugin's own MCP server, run in each window and handed to agents through agents.mcpServer, and its module (plugins/mcp/data/mcp, @sumi/mcp) listing them
-plugins/questions        FSL  @sumi/questions-plugin: the questions module (plugins/questions/data/questions), the dock drawn in the chat through a slot, the ask tools (plugins/questions/data/ask) as the questions MCP server
-plugins/composer-expand  FSL  @sumi/composer-expand-plugin: the toggle that grows the chat composer over the chat, through the chat.frame and chat.composer-bar slots
+plugins/ai/chat             FSL  @sumi/chat-plugin: a view of the agent core; its modules (plugins/ai/chat/data/mascot, plugins/ai/chat/data/chat-tabs: the chat list and which chat a new or empty pane opens), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
+plugins/ai/agent            FSL  @sumi/agent-plugin: the agent core every agent interface reads; owns the assistant module (plugins/ai/agent/data/assistant, @widgetarium/assistant: sessions, turns, the chosen model) served per window, and MCP: API mcp.addServer({ name, modules }), each plugin's own MCP server, run in each window and handed to agents through agents.mcpServer, with its module (plugins/ai/agent/data/mcp, @sumi/mcp) listing them
+plugins/ai/questions        FSL  @sumi/questions-plugin: the questions module (plugins/ai/questions/data/questions), the dock drawn in the chat through a slot, the ask tools (plugins/ai/questions/data/ask) as the questions MCP server
+plugins/ai/composer-expand  FSL  @sumi/composer-expand-plugin: the toggle that grows the chat composer over the chat, through the chat.frame and chat.composer-bar slots
+plugins/ai/claude-code      FSL  @sumi/claude-code-plugin: the Claude Code runner: agent.addRunner with its models, their options (mode, effort), its usage meter and launchOf, which turns the host's TurnFacts into the claude command line the host starts as it is
+plugins/ai/working-folder   FSL  @sumi/working-folder-plugin: the composer's folder menu for a new chat, through chat.options-start
+plugins/ai/permission-mode  FSL  @sumi/permission-mode-plugin: the composer's permission mode select (the chosen model's `mode` option), through chat.options-start
+plugins/ai/plan-usage       FSL  @sumi/plan-usage-plugin: the composer's usage ring and menu (the runner's `usage` meter), through chat.options-end
+plugins/ai/model-picker     FSL  @sumi/model-picker-plugin: the composer's runner and model menu, through chat.options-end
+plugins/ai/effort-picker    FSL  @sumi/effort-picker-plugin: the composer's effort select (the chosen model's `effort` option), through chat.options-end
 plugins/tasks            FSL  @sumi/tasks-plugin: the tasks module (plugins/tasks/data/tasks), the Tasks app, the chat's tasks UI through slots, the task tools (plugins/tasks/data/task-work) as the tasks MCP server
       ↓
 packages/domain/*             business data modules: workspaces, browser, canvas, fixture-billing
@@ -111,7 +117,7 @@ packages/shared/sdk      FSL  what a widget author compiles against (legacy)
 registry/                MIT  the widget library (legacy)
 ```
 
-`packages/` holds only the four layer folders `domain/`, `state/`, `client/` and `shared/`; hosts are apps; each plugin is a folder of `plugins/`. Only `apps/tauri` touches Tauri: anywhere else an import of `@tauri-apps/*` fails the build and the test loader (`apps/tauri/tauri-reach.mts`, `npm run test:tauri-boundary`).
+`packages/` holds only the four layer folders `domain/`, `state/`, `client/` and `shared/`; hosts are apps; each plugin is a folder of `plugins/` or of a group folder in it (`plugins/ai/`). Only `apps/tauri` touches Tauri: anywhere else an import of `@tauri-apps/*` fails the build and the test loader (`apps/tauri/tauri-reach.mts`, `npm run test:tauri-boundary`).
 
 **The engine ships as versioned packages.** Every published package's `exports` carries three
 conditions: `source` → `src` (the monorepo and the test loader resolve it), `types`
@@ -216,6 +222,9 @@ scopes, same body as before, only the subject is short.
 - **CRITICAL: NEVER A CHECK MARK INSIDE A BOX OR A CIRCLE.** A chosen, done, viewed or selected state is the bare
   tick only: the kit icon `tick`. The kit's `check` is a tick in a rounded square and is forbidden, as are
   `square-check`, `check-square`, `circle-check` and `check-circle`. Seeing one, the person stops the work.
+- **CRITICAL: NO ELLIPSIS IN WRITTEN TEXT.** A label, menu item, button, placeholder or status is written
+  without "…" or "...": "Add a provider", never "Add a provider…". Only an overflowing line cut by CSS
+  (`text-overflow: ellipsis`) may show one.
 - All colours from tokens (`--sumi-*` in the studio, `--wg-kit-*` in the kit); no hardcoded colours. The kit's controls paint fill and corner
   on a `::before` — the element itself is `border-radius: 0` by design.
 - Comments only with the prefixes `TODO:` and `TRADE-OFF:`, fewest possible words. `CONTEXT:` is

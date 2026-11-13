@@ -8,7 +8,7 @@ How code is written inside the architecture. The rules hold in any project built
 
 | Thing              | Rule                                                             | Example                                                         |
 | ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------- |
-| a query            | noun phrase, camelCase, no `get`                                 | `frameSides`                                                    |
+| a query            | verb phrase starting with `get`, camelCase                       | `getFrameSides`                                                 |
 | a command          | verb phrase, camelCase                                           | `toggleFrameSide`                                               |
 | a full name        | kebab segments joined by dots: module, feature folder, constant  | `layout.frame-sides.toggle`                                     |
 | an event           | a fact in the past tense, camelCase                              | `panesChanged`                                                  |
@@ -21,6 +21,10 @@ How code is written inside the architecture. The rules hold in any project built
 | a gateway method   | the data it reads or writes, never a generic verb                | `sides()`, `saveSides(sides, reason)`, `sidesChanged(listener)` |
 | a storage shape    | `Kept<Name>Schema`, beside its gateway                           | `KeptPaneTreeSchema`                                            |
 | a file             | kebab-case                                                       | `requests.ts`, `tauri.gateway.ts`, `side-looks.ts`              |
+
+**Every request is a verb phrase.** A query is `get` and what it answers (`getFrameSides`, `assistant.agent.getSetup`); a command says what it does (`toggleFrameSide`, `createTask`). Queries still named as nouns (`frameSides`, `current`, `all`) are the older style: each is renamed to `get…` when its module is next changed, never all at once.
+
+**A plugin's API is verb phrases too.** What a plugin's `apply` returns says what the call does: `agent.addRunner(...)`, `agent.addServer(...)`, `files.addViewer(...)`. Reading goes through the plugin's module, so an API has no getters. APIs still named as nouns (`files.viewer`, `mcp.server`, `apps.app`) are the older style and are renamed when their plugin is next changed.
 
 `building-block-names` enforces the camelCase rows and the PascalCase and suffix ones; `no-choice-strings` and the generator refuse a string name. A segment is `a-z` words joined by `-`: no digits, capitals, `/` or `_`. Two subscribers of one feature doing the same on different events add what changed: `rereadFieldForDesign`.
 

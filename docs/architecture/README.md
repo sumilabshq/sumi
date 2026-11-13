@@ -137,7 +137,7 @@ packages/shared/      code with no domain: framework (requests, mediator, hooks)
 
 | Declares                      | Written                                          | Named                       | Example                  |
 | ----------------------------- | ------------------------------------------------ | --------------------------- | ------------------------ |
-| a read and its handler        | `query().output(…).handle(fn)`                   | noun phrase, camelCase      | `frameSides`             |
+| a read and its handler        | `query().output(…).handle(fn)`                   | `get` + noun, camelCase     | `getFrameSides`          |
 | a write and its handler       | `command().input(…).idempotencyKey(…)….handle()` | verb phrase, camelCase      | `toggleFrameSide`        |
 | a fact that happened          | `event().input(…)`                               | past tense, camelCase       | `panesChanged`           |
 | what an event sets off        | `subscriber(event).handle(fn)`                   | what it does, camelCase     | `rereadPanes`            |
