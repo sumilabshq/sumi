@@ -11,6 +11,8 @@ export const CUT_INK = "#000000";
 
 export const MASK_KEEP = "#FFFFFF";
 
+export const ART_VIEW_BOX = "-0.6667 -0.6667 21.3333 21.3333";
+
 const INK = "currentColor";
 
 const CUT = true;

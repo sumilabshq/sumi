@@ -1,6 +1,6 @@
 import { createElement as h, useId } from "react";
 import type { ReactElement } from "react";
-import { MASK_KEEP, TAB_ART_SHAPES } from "../../lib/tab-art/tab-art-shapes.js";
+import { ART_VIEW_BOX, MASK_KEEP, TAB_ART_SHAPES } from "../../lib/tab-art/tab-art-shapes.js";
 import type { ArtShape } from "../../lib/tab-art/tab-art-shapes.js";
 import { siteLetterOf } from "../../lib/tab-art/site-letter.js";
 import { webOriginOf } from "../../lib/tab-art/site-origin.js";
@@ -20,18 +20,14 @@ export interface TabArtProps {
 }
 
 const ART_PX: Readonly<Record<TabArtSize, number>> = {
-	row: 18,
+	row: 16,
 	tile: 20,
 };
 const LETTER_PX: Readonly<Record<TabArtSize, number>> = {
 	row: 16,
 	tile: 18,
 };
-const VIEW_BOX: Readonly<Record<TabArtSize, string>> = {
-	row: "1 1 18 18",
-	tile: "0 0 20 20",
-};
-const ART = "cv:block cv:flex-none";
+const ART = "cv:mx-px cv:block cv:flex-none";
 
 export function TabArt({ icon, favicon, title, address, size }: TabArtProps): ReactElement {
 	const idOfMask = useId();
@@ -49,7 +45,7 @@ function shapeArtOf(icon: Exclude<TabArtName, "site">, size: TabArtSize, maskId:
 	const shapes = TAB_ART_SHAPES[icon];
 	const cuts = shapes.filter((shape) => shape.isCut === true);
 	return (
-		<svg viewBox={VIEW_BOX[size]} aria-hidden="true" width={px} height={px} className={ART} data-tab-art={icon}>
+		<svg viewBox={ART_VIEW_BOX} aria-hidden="true" width={px} height={px} className={ART} data-tab-art={icon}>
 			{cuts.length === 0 ? null : (
 				<mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
 					<rect width="20" height="20" fill={MASK_KEEP} />
