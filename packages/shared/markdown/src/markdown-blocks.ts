@@ -1,6 +1,7 @@
 import { inlineNodesOf } from "./inline-nodes.js";
 import { createCodeBlock } from "./code-block.js";
 import { createTableFrame } from "./table-frame.js";
+import { DATA_MARK_ANYWHERE } from "./data-marks.js";
 import type { MarkdownLook } from "./markdown-look.js";
 
 const FENCE = /^\s*(```|~~~)/;
@@ -174,25 +175,33 @@ function isInsideItem(line: string, indent: number): boolean {
 	return leading > indent;
 }
 
+const NUMBER_CELL = /^[+\-−]?\d[\d\s.,:]*(?:%|[a-zµ]{1,3}|\sof\s\d+)?$/i;
+
 function tableAt(page: Document, lines: readonly string[], at: number): Block {
 	const table = page.createElement("table");
 	const head = table.appendChild(page.createElement("thead")).appendChild(page.createElement("tr"));
 
-	for (const cell of cellsOf(lines[at] ?? "")) {
-		head.appendChild(page.createElement("th")).append(...inlineNodesOf(page, cell));
-	}
-
-	const body = table.appendChild(page.createElement("tbody"));
 	let next = at + 2;
 
 	while (next < lines.length && (lines[next] ?? "").includes("|") && !BLANK.test(lines[next] ?? "")) {
-		const row = body.appendChild(page.createElement("tr"));
-
-		for (const cell of cellsOf(lines[next] ?? "")) {
-			row.appendChild(page.createElement("td")).append(...inlineNodesOf(page, cell));
-		}
-
 		next += 1;
+	}
+
+	const rows = lines.slice(at + 2, next).map(cellsOf);
+	const isNumberColumn = (column: number): boolean =>
+		rows.length > 0 &&
+		rows.every((cells) => NUMBER_CELL.test((cells[column] ?? "").replace(DATA_MARK_ANYWHERE, "").trim()));
+	const cellIn = (row: Element, tag: "th" | "td", said: string, column: number): void => {
+		const cell = row.appendChild(page.createElement(tag));
+		cell.className = isNumberColumn(column) ? "is-number" : "";
+		cell.append(...inlineNodesOf(page, said));
+	};
+	cellsOf(lines[at] ?? "").forEach((said, column) => cellIn(head, "th", said, column));
+	const body = table.appendChild(page.createElement("tbody"));
+
+	for (const cells of rows) {
+		const row = body.appendChild(page.createElement("tr"));
+		cells.forEach((said, column) => cellIn(row, "td", said, column));
 	}
 
 	return {

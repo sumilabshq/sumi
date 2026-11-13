@@ -1,4 +1,5 @@
 import { isSumiLink, linkOf, linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
+import { DATA_MARK, dataMarkOf } from "./data-marks.js";
 
 const OLD_TAB_LINK = /^tab:([\w-]+)$/;
 const WEB_LINK = /^https?:\/\//;
@@ -9,7 +10,7 @@ export const LINK_ICON_CLASS = "wg-studio-ai-link-icon";
 
 interface InlineRule {
 	readonly pattern: RegExp;
-	readonly tag: "code" | "strong" | "em" | "del" | "a";
+	readonly tag: "code" | "strong" | "em" | "del" | "a" | "mark";
 }
 
 const INLINE_RULES: readonly InlineRule[] = [
@@ -20,6 +21,10 @@ const INLINE_RULES: readonly InlineRule[] = [
 	{
 		pattern: /\[([^\]\n]+)\]\(([^)\s]+)\)/,
 		tag: "a",
+	},
+	{
+		pattern: DATA_MARK,
+		tag: "mark",
 	},
 	{
 		pattern: /\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*/,
@@ -103,6 +108,10 @@ function elementOf(page: Document, rule: InlineRule, match: RegExpExecArray): No
 
 	if (rule.tag === "a") {
 		return linkNodeOf(page, inner, oldTabLinkRead(match[2] ?? ""));
+	}
+
+	if (rule.tag === "mark") {
+		return dataMarkOf(page, inner, match[2] ?? "") ?? page.createTextNode(match[0]);
 	}
 
 	const element = page.createElement(rule.tag);
