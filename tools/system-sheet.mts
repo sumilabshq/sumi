@@ -31,29 +31,19 @@ interface FontFace {
 
 const STUDIO_FONT_FACES: readonly FontFace[] = [
 	{
-		family: "Geist",
+		family: "IBM Plex Sans",
 		weight: "400",
-		file: "geist/Geist-Regular.woff2",
+		file: "ibm-plex-sans/IBMPlexSans-400-latin.woff2",
 	},
 	{
-		family: "Geist",
+		family: "IBM Plex Sans",
 		weight: "500",
-		file: "geist/Geist-Medium.woff2",
+		file: "ibm-plex-sans/IBMPlexSans-500-latin.woff2",
 	},
 	{
-		family: "Geist",
+		family: "IBM Plex Sans",
 		weight: "600",
-		file: "geist/Geist-SemiBold.woff2",
-	},
-	{
-		family: "Inter Variable",
-		weight: "100 900",
-		file: "inter/InterVariable-latin.woff2",
-	},
-	{
-		family: "Spectral",
-		weight: "500",
-		file: "spectral/Spectral-Medium-latin.woff2",
+		file: "ibm-plex-sans/IBMPlexSans-600-latin.woff2",
 	},
 	{
 		family: "JetBrains Mono",

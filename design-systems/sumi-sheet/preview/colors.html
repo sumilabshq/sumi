@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Colours</title>
+		<link rel="stylesheet" href="../tokens.css" />
+		<style>
+			body {
+				margin: 0;
+				font-family: var(--font-sans);
+				font-size: var(--type-m);
+				background: var(--background);
+				color: var(--foreground);
+			}
+			.themes {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+			}
+			.theme {
+				padding: var(--gap-section) var(--gap-plate);
+				background: var(--background);
+				color: var(--foreground);
+			}
+			.theme h2 {
+				margin: 0 0 var(--gap-plate);
+				font-size: var(--type-l);
+			}
+			.swatches {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+				gap: var(--gap-plate);
+			}
+			.swatch {
+				display: grid;
+				gap: 4px;
+				font-size: var(--type-xs);
+				color: var(--muted-foreground);
+			}
+			.swatch span {
+				display: grid;
+				place-items: center;
+				height: 56px;
+				border-radius: var(--radius);
+				box-shadow: inset 0 0 0 1px var(--border);
+				font-size: var(--type-s);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="themes">
+			<section class="theme">
+				<h2>Light</h2>
+				<div class="swatches"></div>
+			</section>
+			<section class="theme dark">
+				<h2>Dark</h2>
+				<div class="swatches"></div>
+			</section>
+		</div>
+		<script>
+			const PAIRS = [
+				["background", "foreground"],
+				["card", "card-foreground"],
+				["popover", "popover-foreground"],
+				["primary", "primary-foreground"],
+				["secondary", "secondary-foreground"],
+				["muted", "muted-foreground"],
+				["accent", "accent-foreground"],
+				["brand", "brand-foreground"],
+				["sidebar", "sidebar-foreground"],
+				["sidebar-primary", "sidebar-primary-foreground"],
+				["sidebar-accent", "sidebar-accent-foreground"],
+				["destructive", "background"],
+				["group", "foreground"],
+				["raise", "foreground"],
+				["fill", "foreground"],
+				["fill-hover", "foreground"],
+				["accent-wash", "foreground"],
+				["border", "foreground"],
+				["ring", "background"],
+			];
+			const TONES = ["success", "warning", "info", "note", "standout", "highlight"];
+			const PALETTE = ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "pink"];
+			const CHARTS = ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"];
+			const swatchOf = (fill, ink) => {
+				const figure = document.createElement("div");
+				figure.className = "swatch";
+				const sample = figure.appendChild(document.createElement("span"));
+				sample.style.background = `var(--${fill})`;
+				sample.style.color = `var(--${ink})`;
+				sample.textContent = "Aa";
+				figure.append(fill);
+				return figure;
+			};
+			const rows = [...PAIRS, ...[...TONES, ...PALETTE, ...CHARTS].map((name) => [name, "background"])];
+			for (const swatches of document.querySelectorAll(".swatches")) {
+				swatches.append(...rows.map(([fill, ink]) => swatchOf(fill, ink)));
+			}
+		</script>
+	</body>
+</html>

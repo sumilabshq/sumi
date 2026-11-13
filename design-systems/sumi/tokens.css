@@ -1,23 +1,23 @@
 :root {
-	--hue: 268.26;
-	--chroma: 0.2416;
-	--neutral-chroma: 0;
-	--l-frame: 0.9761;
+	--hue: 82;
+	--chroma: 0.13;
+	--neutral-chroma: 0.003;
+	--l-frame: 1;
 	--l-plate: 1;
-	--l-soft: 0.9761;
+	--l-soft: 0.965;
 	--l-raise: 1;
 	--l-inset: 1;
-	--l-selected: 1;
-	--l-step: -0.0458;
-	--l-line: 0.9389;
-	--l-edge: 0.9157;
-	--l-ink: 0.2316;
-	--l-ink-muted: 0.5103;
-	--l-faint: 0.683;
-	--l-contrast: 0.2316;
+	--l-selected: 0.955;
+	--l-step: -0.06;
+	--l-line: 0.88;
+	--l-edge: 0.82;
+	--l-ink: 0.19;
+	--l-ink-muted: 0.47;
+	--l-faint: 0.6;
+	--l-contrast: 0.19;
 	--l-on-contrast: 1;
-	--l-tint: 0.5546;
-	--l-ring: 0.683;
+	--l-tint: 0.55;
+	--l-ring: 0.6;
 	--wash: 10%;
 	--wash-hover: 16%;
 	--l-wash-ink: 0;
@@ -69,8 +69,8 @@
 	--border: oklch(var(--l-edge) var(--neutral-chroma) var(--hue));
 	--input: var(--border);
 	--ring: oklch(var(--l-ring) var(--neutral-chroma) var(--hue));
-	--radius: 12px;
-	--control-radius: 6px;
+	--radius: 0px;
+	--control-radius: 0px;
 
 	--chart-1: var(--brand);
 	--chart-2: var(--cyan);
@@ -102,8 +102,8 @@
 	--standout: var(--pink);
 	--highlight: var(--yellow);
 
-	--font-sans: "Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-	--font-serif: Spectral, Georgia, serif;
+	--font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	--font-serif: "IBM Plex Serif", Georgia, serif;
 	--font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 	--type-xs: 12px;
 	--type-s: 13px;
@@ -120,23 +120,23 @@
 
 .dark,
 .theme-dark {
-	--chroma: 0.2024;
-	--l-frame: 0.1913;
-	--l-plate: 0.2393;
-	--l-soft: 0.2686;
-	--l-raise: 0.2686;
-	--l-inset: 0.2393;
-	--l-selected: 0.2851;
-	--l-step: 0.0824;
-	--l-line: 0.3128;
-	--l-edge: 0.3652;
-	--l-ink: 0.9461;
-	--l-ink-muted: 0.7376;
-	--l-faint: 0.5747;
-	--l-contrast: 0.9461;
-	--l-on-contrast: 0.2393;
-	--l-tint: 0.6233;
-	--l-ring: 0.5747;
+	--chroma: 0.13;
+	--l-frame: 0.17;
+	--l-plate: 0.17;
+	--l-soft: 0.215;
+	--l-raise: 0.215;
+	--l-inset: 0.17;
+	--l-selected: 0.215;
+	--l-step: 0.06;
+	--l-line: 0.29;
+	--l-edge: 0.35;
+	--l-ink: 0.93;
+	--l-ink-muted: 0.72;
+	--l-faint: 0.58;
+	--l-contrast: 0.93;
+	--l-on-contrast: 0.17;
+	--l-tint: 0.8;
+	--l-ring: 0.58;
 	--wash: 18%;
 	--wash-hover: 26%;
 	--l-wash-ink: 1;
@@ -188,8 +188,8 @@
 	--border: oklch(var(--l-edge) var(--neutral-chroma) var(--hue));
 	--input: var(--border);
 	--ring: oklch(var(--l-ring) var(--neutral-chroma) var(--hue));
-	--radius: 12px;
-	--control-radius: 6px;
+	--radius: 0px;
+	--control-radius: 0px;
 
 	--chart-1: var(--brand);
 	--chart-2: var(--cyan);

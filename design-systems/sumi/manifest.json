@@ -3,11 +3,11 @@
 	"id": "sumi",
 	"name": "Sumi",
 	"category": "Product",
-	"description": "Quiet UI: hierarchy from text and spacing, ghost controls until touched, white plates on a pale frame, one loud thing per view and blue only as a wash.",
+	"description": "One calm surface like a sheet of paper: no plates, ink text on near-black or white, hairline dividers edge to edge, one left line, one size of text, and Sumi yellow only for the caret and links.",
 	"source": {
 		"type": "authored",
-		"origin": "the approved Quiet UI brief and the Studio two layers canvas boards, 2026-10-22",
-		"credit": "Widgetarium studio design; Inter by The Inter Project Authors, Spectral by Production Type, JetBrains Mono by JetBrains, all SIL OFL 1.1"
+		"origin": "the canvas \"Sumi — paper directions\" (https://claude.ai/artifact/H8ZPbB1u4ALCSWcqciU268), decided with the user on 2026-11-13",
+		"credit": "Widgetarium studio design; IBM Plex Sans by IBM, JetBrains Mono by JetBrains, both SIL OFL 1.1"
 	},
 	"files": {
 		"design": "DESIGN.md",
@@ -16,11 +16,11 @@
 	"usage": "USAGE.md",
 	"fit": {
 		"centre": ["function", "information"],
-		"activity": ["create", "operate", "edit"],
+		"activity": ["create", "operate", "edit", "study"],
 		"photogenic": ["no", "user-photos"],
 		"session": ["long-work", "browse"],
 		"density": ["medium", "high"],
-		"tone": ["quiet", "calm", "precise"],
+		"tone": ["quiet", "calm", "precise", "terminal"],
 		"device": ["desktop"]
 	},
 	"preview": {
