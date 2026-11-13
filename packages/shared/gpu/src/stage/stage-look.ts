@@ -16,8 +16,8 @@ export interface StagePoint {
 
 export type LookWatcher = (look: StageLook) => void;
 
-const ZOOM_FLOOR = 0.1;
-const ZOOM_CEILING = 2;
+const ZOOM_FLOOR = 0.02;
+const ZOOM_CEILING = 32;
 const PINCH_RATE = 0.012;
 const WHEEL_RATE = 0.003;
 const PINCH_DELTA_BELOW = 30;
@@ -33,7 +33,7 @@ export function wheeled(look: StageLook, event: WheelEvent, at: StagePoint): Sta
 	return scaledAround(look, look.scale * Math.exp(-event.deltaY * rate), at);
 }
 
-function scaledAround(look: StageLook, wanted: number, at: StagePoint): StageLook {
+export function scaledAround(look: StageLook, wanted: number, at: StagePoint): StageLook {
 	const scale = Math.max(ZOOM_FLOOR, Math.min(wanted, ZOOM_CEILING));
 	return { scale, x: at.x - ((at.x - look.x) * scale) / look.scale, y: at.y - ((at.y - look.y) * scale) / look.scale };
 }

@@ -21,7 +21,7 @@ export { GPU_FRAMES, reasonOf, useGpuFailure } from "./src/stage/gpu-frames.js";
 export type { GpuFrameClaim, GpuFrames } from "./src/stage/gpu-frames.js";
 export { GpuFramesHost } from "./src/stage/gpu-frames-host.js";
 export type { FramesLayout } from "./src/stage/gpu-frames-host.js";
-export { fitLook, wheeled } from "./src/stage/stage-look.js";
+export { fitLook, scaledAround, wheeled } from "./src/stage/stage-look.js";
 export type { LookWatcher, StageLook, StagePoint, StageSize } from "./src/stage/stage-look.js";
 export { easedInOut, flightBetween } from "./src/stage/flight.js";
 export type { Box, Flight } from "./src/stage/flight.js";
