@@ -1,13 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { MascotFigure } from "../../../mascot/ui/mascot-figure/mascot-figure.js";
+import { SumiFigure } from "@sumi/sumi-host-plugin";
 
-export interface BusyMarkProps {
-	readonly state: "thinking" | "working";
-}
+const MARK_PX = 14;
 
-const MARK_PX = 16;
-
-export function BusyMark({ state }: BusyMarkProps): ReactElement {
-	return <MascotFigure outfit="bare" size={MARK_PX} state={state} />;
+export function BusyMark(): ReactElement {
+	return <SumiFigure state="working" size={MARK_PX} />;
 }

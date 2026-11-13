@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { MascotFigure } from "../../../mascot/ui/mascot-figure/mascot-figure.js";
+import { SumiFigure, sumiStateOf } from "@sumi/sumi-host-plugin";
 import type { MascotState } from "../../../mascot/lib/mascot-state.schema.js";
 
 export interface StateCardProps {
@@ -10,11 +10,11 @@ export interface StateCardProps {
 	readonly children?: ReactNode;
 }
 
-const INK_PX = 150;
+const INK_PX = 88;
 const CARD =
 	"cv:absolute cv:inset-0 cv:z-[1] cv:flex cv:flex-col cv:items-center cv:justify-center cv:overflow-auto cv:bg-raise cv:p-10 cv:text-center cv:@max-[600px]/page:p-5";
-const INK_SPOT = "cv:relative cv:size-[150px] cv:flex-none cv:@max-[600px]/page:size-[92px]";
-const INK_SCALE = "cv:origin-top-left cv:@max-[600px]/page:scale-[0.6133]";
+const INK_SPOT =
+	"cv:relative cv:flex cv:size-[150px] cv:flex-none cv:items-center cv:justify-center cv:@max-[600px]/page:size-[92px]";
 const TITLE =
 	"cv:m-0 cv:mt-[22px] cv:text-[30px] cv:leading-[1.15] cv:font-medium cv:tracking-[-0.03em] cv:text-ink cv:@max-[600px]/page:mt-[14px] cv:@max-[600px]/page:text-[21px] cv:@max-[600px]/page:tracking-[-0.02em]";
 const REASON =
@@ -24,9 +24,7 @@ export function StateCard({ mood, title, reason, children }: StateCardProps): Re
 	return (
 		<section className={CARD} data-browser-page-state={mood}>
 			<div className={INK_SPOT}>
-				<div className={INK_SCALE}>
-					<MascotFigure outfit="bare" size={INK_PX} state={mood} />
-				</div>
+				<SumiFigure state={sumiStateOf(mood)} size={INK_PX} />
 			</div>
 			<h2 className={TITLE}>{title}</h2>
 			{reason === undefined ? null : <p className={REASON}>{reason}</p>}

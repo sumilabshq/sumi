@@ -1,0 +1,68 @@
+:is(.wg-root, .wg-portal) .sumi-figure {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+	vertical-align: middle;
+}
+
+:is(.wg-root, .wg-portal) .sumi-figure-art {
+	display: block;
+	flex: none;
+	overflow: visible;
+	pointer-events: none;
+}
+
+:is(.wg-root, .wg-portal) .sumi-figure-body {
+	fill: var(--sumi-text);
+	transition: fill 420ms ease;
+}
+
+:is(.wg-root, .wg-portal) .sumi-figure-eye {
+	fill: var(--sumi-plate);
+}
+
+:is(.wg-root, .wg-portal) .sumi-figure.is-waits .sumi-figure-body {
+	fill: var(--sumi-accent);
+}
+
+:is(.wg-root, .wg-portal) .sumi-figure.is-done .sumi-figure-body {
+	fill: var(--sumi-success);
+	transition-duration: 120ms;
+}
+
+:is(.wg-root, .wg-portal) .sumi-figure.is-error .sumi-figure-body {
+	fill: var(--sumi-danger);
+	transition-duration: 120ms;
+}
+
+:is(.wg-root, .wg-portal) .sumi-figure.is-working .sumi-figure-eye {
+	animation: sumi-eye-glow 2.4s ease-in-out infinite;
+}
+
+:is(.wg-root, .wg-portal) .sumi-figure.is-asleep {
+	animation: sumi-figure-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes sumi-eye-glow {
+	50% {
+		fill: color-mix(in srgb, var(--sumi-accent) 45%, var(--sumi-plate));
+		filter: drop-shadow(0 0 3px var(--sumi-accent));
+	}
+}
+
+@keyframes sumi-figure-breathe {
+	50% {
+		opacity: 0.78;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:is(.wg-root, .wg-portal) .sumi-figure.is-working .sumi-figure-eye,
+	:is(.wg-root, .wg-portal) .sumi-figure.is-asleep {
+		animation: none;
+	}
+
+	:is(.wg-root, .wg-portal) .sumi-figure.is-working .sumi-figure-eye {
+		fill: color-mix(in srgb, var(--sumi-accent) 45%, var(--sumi-plate));
+	}
+}

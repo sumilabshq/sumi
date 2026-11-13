@@ -23,7 +23,7 @@ export function LiveHead({ calls, faces, session, tail, isOpen, onPress }: LiveH
 	const changed = changedLinesOf(faces);
 	return (
 		<button className="wg-studio-ai-tools-head is-live" type="button" aria-expanded={isOpen} onClick={onPress}>
-			<BusyMark state={now === "" ? "thinking" : "working"} />
+			<BusyMark />
 			<span className="wg-studio-ai-tools-said">
 				{done}
 				{now === "" ? null : <span className="wg-studio-ai-live-now">{now}</span>}

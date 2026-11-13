@@ -31,9 +31,9 @@ Object.assign(window, {
 });
 
 function Live() {
-	const [outfit, wear] = useState<OutfitId>("bare");
+	const [, wear] = useState<OutfitId>("bare");
 	Object.assign(window, { __WEAR__: wear });
-	return h("div", { id: "live" }, h(RuntimeProvider, { runtime: started }, h(Mascot, { outfit, size: 180 })));
+	return h("div", { id: "live" }, h(RuntimeProvider, { runtime: started }, h(Mascot, { size: 180 })));
 }
 
 const isQuiet = location.hash === "#quiet";
