@@ -1,5 +1,5 @@
 import { apps } from "@sumi/apps-plugin";
-import { mcp } from "@sumi/mcp-plugin";
+import { agent } from "@sumi/agent-plugin";
 import { pages } from "@sumi/pages/implementation";
 import { shell } from "@sumi/sumi-host-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
@@ -10,7 +10,7 @@ import { webPageServingOf } from "./features/web-page/lib/web-page-serving.js";
 import { ReloadPageAction } from "./features/web-page/ui/reload-page-action/reload-page-action.js";
 
 export const browserPage = plugin("browser-page")
-	.require(shell, apps, mcp)
+	.require(shell, apps, agent)
 	.apply((app) => {
 		app.use(apps).app({
 			id: "browser-page",
@@ -20,5 +20,5 @@ export const browserPage = plugin("browser-page")
 			actions: [ReloadPageAction],
 		});
 		app.use(shell).frameModule(webPage, webPageServingOf);
-		app.use(mcp).server({ name: "browser", modules: [pages] });
+		app.use(agent).mcp.addServer({ name: "browser", modules: [pages] });
 	});

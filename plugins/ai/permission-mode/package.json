@@ -1,0 +1,27 @@
+{
+	"name": "@sumi/permission-mode-plugin",
+	"version": "0.1.0",
+	"description": "Permission mode: the chat footer's choice of how much the agent may do without asking",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/chat-plugin": "0.1.0",
+		"@widgetarium/assistant": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

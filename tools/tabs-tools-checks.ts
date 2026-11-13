@@ -5,9 +5,9 @@ import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widge
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { WindowOffers } from "@sumi/sumi-host-plugin";
 import { apps } from "../plugins/apps/src/index.ts";
-import { mcp } from "../plugins/mcp/src/index.ts";
+import { agent } from "../plugins/ai/agent/src/index.ts";
 import { agents, backend, shell, windows } from "../plugins/sumi-host/src/index.ts";
-import { chatTabs } from "../plugins/chat/data/chat-tabs/generated/module.ts";
+import { chatTabs } from "../plugins/ai/chat/data/chat-tabs/generated/module.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/module.ts";
@@ -44,7 +44,7 @@ const probeApps = plugin("probe-apps")
 		app.use(apps).app({ id: "probe-notes", title: "Probe notes", art: "canvas" });
 		app.use(apps).app({ id: "probe-maps", title: "Probe maps", art: "canvas" });
 	});
-const plugins = [mcp, apps, probeApps];
+const plugins = [agent, apps, probeApps];
 const registered = emptyHostRegistrations();
 const started = pluginRuntime()
 	.builtInPlugins(...plugins)

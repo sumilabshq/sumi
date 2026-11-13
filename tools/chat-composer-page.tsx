@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AssistantPanel } from "../plugins/chat/src/features/assistant/ui/assistant-panel/assistant-panel.tsx";
-import { assistant } from "../plugins/chat/data/assistant/generated/module.ts";
-import { tauriAssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/tauri.gateway.ts";
+import { AssistantPanel } from "../plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant-panel.tsx";
+import { assistant } from "../plugins/ai/agent/data/assistant/generated/module.ts";
+import { tauriAssistantParts } from "../plugins/ai/agent/data/assistant/gateways/assistant-parts/tauri.gateway.ts";
 import { claudeOptionsCell, DEFAULT_CLAUDE_OPTIONS } from "../apps/tauri/src/assistant/claude-options-cell.ts";
 import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
@@ -13,7 +13,9 @@ import type {
 	AssistantSetup,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
-import { mascot } from "../plugins/chat/data/mascot/generated/module.ts";
+import { PluginSlotsContext } from "../packages/shared/plugin-framework/src/react/index.ts";
+import { COMPOSER_OPTION_FILLS } from "./composer-option-fills.ts";
+import { mascot } from "../plugins/ai/chat/data/mascot/generated/module.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
 import { MemoryChatDraftShelf } from "../apps/tauri/src/chat/tauri-chat-drafts.ts";
 import { oneChatParts } from "./assistant-one-chat-parts.ts";
@@ -238,6 +240,10 @@ createRoot(holder).render(
 	h(
 		RuntimeProvider,
 		{ runtime: chat },
-		h(AssistantPanel, { title: "Habit tracker", lead: h("span", { className: "chat-composer-lead" }) }),
+		h(
+			PluginSlotsContext.Provider,
+			{ value: COMPOSER_OPTION_FILLS },
+			h(AssistantPanel, { title: "Habit tracker", lead: h("span", { className: "chat-composer-lead" }) }),
+		),
 	),
 );

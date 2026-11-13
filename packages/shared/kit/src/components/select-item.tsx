@@ -8,10 +8,11 @@ export interface SelectItemProps {
 	readonly value: unknown;
 	readonly disabled?: boolean | undefined;
 	readonly className?: string | undefined;
+	readonly sub?: ReactNode;
 	readonly children?: ReactNode;
 }
 
-export function SelectItem({ value, disabled, className: cls, children }: SelectItemProps): ReactElement {
+export function SelectItem({ value, disabled, className: cls, sub, children }: SelectItemProps): ReactElement {
 	const { selected, choose } = useSelect();
 	const isChosen = Object.is(selected, value);
 	return (
@@ -21,6 +22,7 @@ export function SelectItem({ value, disabled, className: cls, children }: Select
 			aria-selected={isChosen}
 			checked={isChosen}
 			disabled={disabled}
+			sub={sub}
 			className={cn("wg-kit-select-item", cls)}
 			onClick={() => choose(value)}
 		>

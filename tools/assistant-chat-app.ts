@@ -1,8 +1,8 @@
-import { assistant } from "../plugins/chat/data/assistant/generated/module.ts";
+import { assistant } from "../plugins/ai/agent/data/assistant/generated/module.ts";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { mascot } from "../plugins/chat/data/mascot/generated/module.ts";
+import { mascot } from "../plugins/ai/chat/data/mascot/generated/module.ts";
 
 export interface MemoryFolder {
 	readonly files: Map<string, Uint8Array>;

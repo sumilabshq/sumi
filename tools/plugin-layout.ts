@@ -24,18 +24,38 @@ const NOT_A_BLOCK = "ui/ holds only block folders, ui/<block>/";
 const NOT_UI_FILE = "a block folder holds only its .tsx and the .css it uses";
 const NOT_LIB_FILE = "lib/ holds only .ts files, no folder, no .tsx, no .css";
 const FOREIGN_LIB = "a feature's lib/ is its own; what two features use goes to shared/lib/";
+const GROUP_HOLDS_PLUGINS = "a group folder (no package.json, no src/) holds only plugin folders";
 const NOT_GENERATED = "src/generated/ holds only what data-framework generate writes, plugin.ts";
 
-export function layoutRefusalsOf(pluginsRoot: string): readonly string[] {
+export function layoutRefusalsOf(pluginsRoot: string, shownRoot = "plugins"): readonly string[] {
 	return readdirSync(pluginsRoot)
 		.filter((name) => !name.startsWith(".") && statSync(path.join(pluginsRoot, name)).isDirectory())
 		.sort()
-		.flatMap((name) => pluginRefusalsOf(pluginsRoot, name));
+		.flatMap((name) => {
+			const folder = path.join(pluginsRoot, name);
+			const shown = `${shownRoot}/${name}`;
+
+			if (isGroupFolder(folder)) {
+				return groupRefusalsOf(folder, shown);
+			}
+
+			return pluginRefusalsOf(folder, shown);
+		});
 }
 
-function pluginRefusalsOf(pluginsRoot: string, name: string): readonly string[] {
-	const folder = path.join(pluginsRoot, name);
-	const at = (relative: string): string => `plugins/${name}/${relative}`;
+function isGroupFolder(folder: string): boolean {
+	return !existsSync(path.join(folder, "package.json")) && !existsSync(path.join(folder, "src"));
+}
+
+function groupRefusalsOf(folder: string, shown: string): readonly string[] {
+	const looseFiles = readdirSync(folder)
+		.filter((name) => !name.startsWith(".") && !statSync(path.join(folder, name)).isDirectory())
+		.map((name) => `${shown}/${name}: ${GROUP_HOLDS_PLUGINS}`);
+	return [...looseFiles, ...layoutRefusalsOf(folder, shown)];
+}
+
+function pluginRefusalsOf(folder: string, shown: string): readonly string[] {
+	const at = (relative: string): string => `${shown}/${relative}`;
 	return [
 		...topRefusalsOf(folder, at),
 		...pluginFileRefusalsOf(folder, at),

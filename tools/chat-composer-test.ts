@@ -11,10 +11,10 @@ const REPO = path.resolve(import.meta.dirname, "..");
 const SEEN = `(() => ({
 	header: document.querySelectorAll(".wg-studio-ai-head:not(.is-bare)").length,
 	strip: document.querySelectorAll("[data-claude-strip]").length,
-	folder: document.querySelectorAll('.wg-studio-ai-strip-button[aria-label="Choose a folder"]').length,
+	folder: document.querySelectorAll('.wg-studio-ai-strip .wg-kit-btn[aria-label="Choose a folder"]').length,
 	welcome: document.querySelectorAll(".wg-studio-ai-welcome").length,
 	bar: [...document.querySelectorAll(".wg-studio-ai-field-bar")].map((bar) => bar.textContent).join(""),
-	model: document.querySelector(".wg-studio-ai-strip-button[aria-label=Model]")?.textContent ?? null,
+	model: document.querySelector(".wg-studio-ai-strip .wg-kit-btn[aria-label=Model]")?.textContent ?? null,
 }))()`;
 
 let failed = 0;
@@ -73,13 +73,13 @@ check(
 		model: "Opus",
 	},
 );
-check("another provider has no Claude strip; the model button names the provider", await seenIn("codex", bundled), {
+check("a provider with no runner has no options and asks for a model", await seenIn("codex", bundled), {
 	header: 1,
 	strip: 0,
 	folder: 0,
 	welcome: 0,
 	bar: "",
-	model: "Codex",
+	model: "Choose a model",
 });
 UNJUDGED.forEach((why) => console.log(`unjudged: ${why}`));
 const report = await composerDiffReport();

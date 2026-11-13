@@ -1,14 +1,14 @@
 import { createElement as h, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
-import { Mascot } from "../plugins/chat/src/features/mascot/ui/mascot/mascot.tsx";
+import { Mascot } from "../plugins/ai/chat/src/features/mascot/ui/mascot/mascot.tsx";
 import { MascotFigure } from "../apps/studio/src/features/mascot/ui/mascot-figure/mascot-figure.tsx";
 import { MascotStateSchema } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
 import { OutfitIdSchema } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
 import type { OutfitId } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
-import { mascot } from "../plugins/chat/data/mascot/generated/contract.ts";
-import type { AgentEvent } from "../plugins/chat/data/mascot/generated/contract.ts";
-import { mascot as mascotModule } from "../plugins/chat/data/mascot/generated/module.ts";
+import { mascot } from "../plugins/ai/chat/data/mascot/generated/contract.ts";
+import type { AgentEvent } from "../plugins/ai/chat/data/mascot/generated/contract.ts";
+import { mascot as mascotModule } from "../plugins/ai/chat/data/mascot/generated/module.ts";
 import { reportsFailures } from "./page-harness.ts";
 
 reportsFailures();

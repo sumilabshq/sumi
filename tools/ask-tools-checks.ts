@@ -2,11 +2,11 @@ import { z } from "zod";
 import { runtime } from "@widgetarium/data-framework";
 import type { McpServer, Runtime } from "@widgetarium/data-framework";
 import type { WindowOffers } from "@sumi/sumi-host-plugin";
-import { ask } from "../plugins/questions/data/ask/generated/module.ts";
-import { questions as questionsContract } from "../plugins/questions/data/questions/generated/contract.ts";
-import { questions as questionsModule } from "../plugins/questions/data/questions/generated/module.ts";
-import { MemoryQuestionsGateway } from "../plugins/questions/data/questions/gateways/questions/memory.gateway.ts";
-import { QuestionsDock } from "../plugins/questions/src/features/questions/ui/questions-dock/questions-dock.tsx";
+import { ask } from "../plugins/ai/questions/data/ask/generated/module.ts";
+import { questions as questionsContract } from "../plugins/ai/questions/data/questions/generated/contract.ts";
+import { questions as questionsModule } from "../plugins/ai/questions/data/questions/generated/module.ts";
+import { MemoryQuestionsGateway } from "../plugins/ai/questions/data/questions/gateways/questions/memory.gateway.ts";
+import { QuestionsDock } from "../plugins/ai/questions/src/features/questions/ui/questions-dock/questions-dock.tsx";
 import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { check, tally } from "./check-helpers.ts";
 

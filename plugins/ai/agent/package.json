@@ -1,0 +1,29 @@
+{
+	"name": "@sumi/agent-plugin",
+	"version": "0.1.0",
+	"description": "Agent: the core every agent interface reads. Owns the assistant module (sessions, turns, chosen model) and the MCP servers handed to every turn",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/agent-tools": "0.1.0",
+		"@sumi/contract": "0.6.0",
+		"@sumi/mcp": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/assistant": "0.1.0",
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

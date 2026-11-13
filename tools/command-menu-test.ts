@@ -94,7 +94,7 @@ const MENU = `(() => {
 const COMPOSER = `(() => ({
 	cards: document.querySelectorAll(".wg-cm-ask .wg-studio-ai-card").length,
 	plus: document.querySelector(".wg-cm-ask .wg-studio-ai-plus") !== null,
-	buttons: [...document.querySelectorAll(".wg-cm-ask .wg-studio-ai-strip-button")].map((one) => one.textContent.trim()),
+	buttons: [...document.querySelectorAll(".wg-cm-ask .wg-studio-ai-field-bar .wg-kit-btn.is-ghost")].map((one) => one.textContent.trim()),
 	hasUsage: document.querySelector('.wg-cm-ask [aria-label="Usage"]') !== null,
 	carried: document.querySelector("[data-cm-carried]")?.textContent ?? "",
 	open: document.querySelector(".wg-cm-panel") !== null,
@@ -278,7 +278,7 @@ try {
 	const folder = await centerOf(light, '.wg-cm-ask [aria-label="Choose a folder"]');
 	await light.press(folder[0], folder[1]);
 	await waited(SETTLE_MS);
-	const recipes = await centerOf(light, ".wg-studio-ai-menu-row:nth-of-type(2)");
+	const recipes = await centerOf(light, ".wg-kit-pop.is-open .wg-kit-pop-item:nth-of-type(2)");
 	const onTop = await light.ask(
 		`document.elementFromPoint(${recipes[0]}, ${recipes[1]})?.closest(".wg-kit-pop") !== null`,
 	);

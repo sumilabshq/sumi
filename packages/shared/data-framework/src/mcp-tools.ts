@@ -1,10 +1,12 @@
 import { z } from "zod";
 import type { ExposedRequest } from "./exposure";
+import { isObject } from "./is-object";
 
 export interface McpTool {
 	readonly name: string;
 	readonly description?: string;
 	readonly inputSchema: Readonly<Record<string, unknown>>;
+	readonly _meta?: Readonly<Record<string, unknown>>;
 }
 
 type ToolInputShape = "none" | "fields" | "wrapped";
@@ -49,12 +51,13 @@ export function inputOf({ inputShape }: ServedTool, args: Readonly<Record<string
 
 function servedToolOf({ name, request }: ExposedRequest): ServedTool {
 	const { inputShape, inputSchema } = toolInputOf(request.inputSchema);
-	const description = request.metadata()["description"];
+	const { description, mcp } = request.metadata();
 	return {
 		tool: {
 			name: name.split(".").join("_"),
 			inputSchema,
 			...(typeof description === "string" ? { description } : {}),
+			...(isObject(mcp) ? { _meta: mcp } : {}),
 		},
 		requestName: name,
 		inputShape,

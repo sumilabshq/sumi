@@ -7,7 +7,7 @@ import type { WindowOffers } from "@sumi/sumi-host-plugin";
 import { pages } from "@sumi/pages/implementation";
 import { apps } from "../plugins/apps/src/index.ts";
 import { browserPage } from "../plugins/browser-page/src/index.ts";
-import { mcp } from "../plugins/mcp/src/index.ts";
+import { agent } from "../plugins/ai/agent/src/index.ts";
 import { agents, backend, shell, windows } from "../plugins/sumi-host/src/index.ts";
 import {
 	agentsFor,
@@ -18,7 +18,7 @@ import {
 } from "../apps/studio/src/plugins/host-services.ts";
 import { check, tally } from "./check-helpers.ts";
 
-const PLUGINS: readonly Plugin[] = [apps, mcp, browserPage];
+const PLUGINS: readonly Plugin[] = [apps, agent, browserPage];
 const HELD_TABS = [
 	{
 		id: "tab-page",

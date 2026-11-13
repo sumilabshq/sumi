@@ -11,7 +11,9 @@ import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/wo
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
 import { commandMenu } from "../plugins/command-menu/data/command-menu/generated/contract.ts";
 import { CommandMenuLayer } from "../plugins/command-menu/src/features/command-menu/ui/command-menu-layer/command-menu-layer.tsx";
-import { AskComposerBar } from "../plugins/chat/src/features/ask/ui/ask-composer-bar/ask-composer-bar.tsx";
+import { AskComposerBar } from "../plugins/ai/chat/src/features/ask/ui/ask-composer-bar/ask-composer-bar.tsx";
+import { PluginSlotsContext } from "../packages/shared/plugin-framework/src/react/index.ts";
+import { COMPOSER_OPTION_FILLS } from "./composer-option-fills.ts";
 import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
 import { SearchButton } from "../apps/studio/src/features/workspaces/ui/search-button/search-button.tsx";
 import { useTogglesMenuOnShown } from "../apps/studio/src/features/plate/lib/use-toggles-menu-on-shown.ts";
@@ -26,8 +28,8 @@ import { placedTabsOf, placesOver } from "./places-fixture.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { AskComposerContext, TabFaceContext } from "@sumi/sumi-host-plugin";
 import type { AskComposer } from "@sumi/sumi-host-plugin";
-import { assistant } from "../plugins/chat/data/assistant/generated/module.ts";
-import { tauriAssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/tauri.gateway.ts";
+import { assistant } from "../plugins/ai/agent/data/assistant/generated/module.ts";
+import { tauriAssistantParts } from "../plugins/ai/agent/data/assistant/gateways/assistant-parts/tauri.gateway.ts";
 import { claudeOptionsCell } from "../apps/tauri/src/assistant/claude-options-cell.ts";
 import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
@@ -215,25 +217,27 @@ function Demo(): ReturnType<typeof h> {
 	const openNewTab = useTogglesNewTabMenu(SHOWN_TAB_SECTION);
 	const openHere = useTogglesMenuOnShown("Canvas", null);
 	return (
-		<IsTooltipHosted.Provider value={true}>
-			<div className="wg-cm-demo">
-				<aside className="wg-cm-demo-side">
-					<div className="wg-cm-demo-top">
-						<SearchButton className="wg-cm-demo-search" iconPx={16} />
-					</div>
-					<button type="button" className="wg-cm-demo-new" data-demo-new-tab="" onClick={openNewTab}>
-						New tab
-					</button>
-				</aside>
-				<main className="wg-cm-demo-plate">
-					<button type="button" className="wg-cm-demo-crumb" data-demo-crumb="" onClick={openHere}>
-						Canvas
-					</button>
-				</main>
-			</div>
-			<CommandMenuLayer />
-			<TooltipHost />
-		</IsTooltipHosted.Provider>
+		<PluginSlotsContext.Provider value={COMPOSER_OPTION_FILLS}>
+			<IsTooltipHosted.Provider value={true}>
+				<div className="wg-cm-demo">
+					<aside className="wg-cm-demo-side">
+						<div className="wg-cm-demo-top">
+							<SearchButton className="wg-cm-demo-search" iconPx={16} />
+						</div>
+						<button type="button" className="wg-cm-demo-new" data-demo-new-tab="" onClick={openNewTab}>
+							New tab
+						</button>
+					</aside>
+					<main className="wg-cm-demo-plate">
+						<button type="button" className="wg-cm-demo-crumb" data-demo-crumb="" onClick={openHere}>
+							Canvas
+						</button>
+					</main>
+				</div>
+				<CommandMenuLayer />
+				<TooltipHost />
+			</IsTooltipHosted.Provider>
+		</PluginSlotsContext.Provider>
 	);
 }
 

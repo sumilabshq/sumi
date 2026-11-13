@@ -1,8 +1,8 @@
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { questions as questionsContract } from "../plugins/questions/data/questions/generated/contract.ts";
-import { questions as questionsModule } from "../plugins/questions/data/questions/generated/module.ts";
-import { MemoryQuestionsGateway } from "../plugins/questions/data/questions/gateways/questions/memory.gateway.ts";
+import { questions as questionsContract } from "../plugins/ai/questions/data/questions/generated/contract.ts";
+import { questions as questionsModule } from "../plugins/ai/questions/data/questions/generated/module.ts";
+import { MemoryQuestionsGateway } from "../plugins/ai/questions/data/questions/gateways/questions/memory.gateway.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const CHAT = "chat-1";

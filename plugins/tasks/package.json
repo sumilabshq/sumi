@@ -12,7 +12,7 @@
 	"dependencies": {
 		"@sumi/apps-plugin": "0.1.0",
 		"@sumi/chat-plugin": "0.1.0",
-		"@sumi/mcp-plugin": "0.1.0",
+		"@sumi/agent-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@sumi/task-work": "0.1.0",
 		"@widgetarium/core": "0.1.0",

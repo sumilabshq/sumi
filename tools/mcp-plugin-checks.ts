@@ -5,7 +5,7 @@ import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widge
 import type { Plugin } from "@widgetarium/plugin-framework";
 import { mcp as mcpContract } from "@sumi/mcp/contract";
 import type { WindowOffers } from "@sumi/sumi-host-plugin";
-import { mcp } from "../plugins/mcp/src/index.ts";
+import { agent } from "../plugins/ai/agent/src/index.ts";
 import { agents, windows } from "../plugins/sumi-host/src/index.ts";
 import { agentsFor, emptyHostRegistrations, windowsFor } from "../apps/studio/src/plugins/host-services.ts";
 import type { HostRegistrations } from "../apps/studio/src/plugins/host-services.ts";
@@ -61,19 +61,21 @@ function offersOf(windowApp: Runtime): WindowOffers {
 }
 
 const probe = plugin("probe")
-	.require(mcp)
+	.require(agent)
 	.apply((app) => {
-		app.use(mcp).server({ name: "probe", modules: [probeTools] });
+		app.use(agent).mcp.addServer({ name: "probe", modules: [probeTools] });
 	});
-const host = startedWindow([mcp, probe]);
+const host = startedWindow([agent, probe]);
 check("the plugins start with no refusal", host.refusals, []);
 check(
-	"a plugin's server registers its modules in the window and one MCP server for agents, none hardcoded",
+	"a plugin's server is one more MCP server for agents, beside the agent's own agent-tools",
 	host.registered.agentMcpServers.length,
-	1,
+	2,
 );
 
-const [served] = host.registered.agentMcpServers.map(({ serve }) => serve(offersOf(host.windowApp)));
+const served = host.registered.agentMcpServers
+	.map(({ serve }) => serve(offersOf(host.windowApp)))
+	.find(({ name }) => name === "probe");
 check(
 	"the server serves only its own modules' requests",
 	served?.tools.map(({ name }) => name),
@@ -83,7 +85,11 @@ check(
 const listed = await host.windowApp.send(mcpContract.servers.all);
 check(
 	"the mcp module lists the served server with its tools",
-	listed.ok ? listed.output.map(({ name, tools }) => [name, tools.map((tool) => tool.name)]) : listed.reason,
+	listed.ok
+		? listed.output
+				.filter(({ name }) => name === "probe")
+				.map(({ name, tools }) => [name, tools.map((tool) => tool.name)])
+		: listed.reason,
 	[["probe", ["probe-tools_asking_who"]]],
 );
 check(
@@ -96,11 +102,11 @@ check(
 );
 
 const badName = plugin("bad-name")
-	.require(mcp)
+	.require(agent)
 	.apply((app) => {
-		app.use(mcp).server({ name: "Has Spaces", modules: [] });
+		app.use(agent).mcp.addServer({ name: "Has Spaces", modules: [] });
 	});
-const refused = startedWindow([mcp, badName]);
+const refused = startedWindow([agent, badName]);
 check(
 	"a server name agents cannot allow refuses its plugin",
 	refused.refusals.some((refusal) => refusal.includes("Has Spaces")),

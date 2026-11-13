@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import http from "node:http";
-import { agentEventsBetween } from "../plugins/chat/src/features/assistant/lib/agent-activity.ts";
-import type { ChatMoment } from "../plugins/chat/src/features/assistant/lib/agent-activity.ts";
+import { agentEventsBetween } from "../plugins/ai/chat/src/features/assistant/lib/agent-activity.ts";
+import type { ChatMoment } from "../plugins/ai/chat/src/features/assistant/lib/agent-activity.ts";
 import {
 	ASLEEP_AFTER_MS,
 	DONE_HELD_MS,
@@ -17,11 +17,11 @@ import type { Spring } from "../apps/studio/src/features/mascot/lib/mascot-motio
 import { OUTFITS, sceneOf } from "../apps/studio/src/features/mascot/lib/wardrobe/outfits.ts";
 import { OutfitIdSchema } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
 import type { MascotState } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
-import { activityAfter } from "../plugins/chat/data/mascot/features/activity/lib/activity-after.ts";
-import { MemoryAgentActivityGateway } from "../plugins/chat/data/mascot/gateways/agent-activity/memory.gateway.ts";
-import { AgentActivitySchema, mascot } from "../plugins/chat/data/mascot/generated/contract.ts";
-import type { AgentActivity, AgentEvent } from "../plugins/chat/data/mascot/generated/contract.ts";
-import { mascot as mascotModule } from "../plugins/chat/data/mascot/generated/module.ts";
+import { activityAfter } from "../plugins/ai/chat/data/mascot/features/activity/lib/activity-after.ts";
+import { MemoryAgentActivityGateway } from "../plugins/ai/chat/data/mascot/gateways/agent-activity/memory.gateway.ts";
+import { AgentActivitySchema, mascot } from "../plugins/ai/chat/data/mascot/generated/contract.ts";
+import type { AgentActivity, AgentEvent } from "../plugins/ai/chat/data/mascot/generated/contract.ts";
+import { mascot as mascotModule } from "../plugins/ai/chat/data/mascot/generated/module.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";

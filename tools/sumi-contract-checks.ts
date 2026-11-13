@@ -7,7 +7,7 @@ import { fileSystem } from "../packages/shared/contract/index.ts";
 import { assistant, webPage } from "../packages/shared/contract/index.ts";
 import type { RemoteModule, RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { webPage as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/generated/module.ts";
-import { assistant as RunnableAssistantModule } from "../plugins/chat/data/assistant/generated/module.ts";
+import { assistant as RunnableAssistantModule } from "../plugins/ai/agent/data/assistant/generated/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
 import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
 import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";

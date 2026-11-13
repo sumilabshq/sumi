@@ -1,0 +1,29 @@
+import type { CallFace, CallKind } from "@widgetarium/core/engine/assistant-port.js";
+
+const DONE_VERBS: Readonly<Record<CallKind, string>> = {
+	search: "Searched",
+	read: "Read",
+	edit: "Edited",
+	run: "Ran",
+	other: "",
+};
+
+const DOING_VERBS: Readonly<Record<CallKind, string>> = {
+	search: "Searching",
+	read: "Reading",
+	edit: "Editing",
+	run: "Running",
+	other: "Running",
+};
+
+export function callVerbOf(face: CallFace, isAnswered: boolean): string {
+	if (!isAnswered) {
+		return face.doing === "" ? DOING_VERBS[face.kind] : capitalized(face.doing);
+	}
+
+	return face.verb === "" ? DONE_VERBS[face.kind] : capitalized(face.verb);
+}
+
+function capitalized(said: string): string {
+	return said.charAt(0).toUpperCase() + said.slice(1);
+}

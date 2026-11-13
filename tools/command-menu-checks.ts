@@ -9,7 +9,7 @@ import { browser } from "../packages/domain/browser/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
-import { chatTabs } from "../plugins/chat/data/chat-tabs/generated/contract.ts";
+import { chatTabs } from "../plugins/ai/chat/data/chat-tabs/generated/contract.ts";
 import {
 	firstChats,
 	memoryWorkspacesParts,

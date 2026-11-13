@@ -1,7 +1,7 @@
 import { runtime } from "@widgetarium/data-framework";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { assistant } from "../plugins/chat/data/assistant/generated/contract.ts";
-import { assistant as assistantModule } from "../plugins/chat/data/assistant/generated/module.ts";
+import { assistant } from "../plugins/ai/agent/data/assistant/generated/contract.ts";
+import { assistant as assistantModule } from "../plugins/ai/agent/data/assistant/generated/module.ts";
 import { check, tally } from "./check-helpers.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
 

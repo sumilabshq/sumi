@@ -13,7 +13,7 @@ const TEXT: PartKeys = ["fs", "fw", "lh", "color", "spacing"];
 const FLAT: PartKeys = ["h", "radius", "pad", "gap", "bg", "edge"];
 
 const STRIP_BOARD = ":scope > div:last-child";
-const AUTO_BUILT = '.wg-studio-ai-strip-button[aria-label="Permission mode"]';
+const AUTO_BUILT = '.wg-studio-ai-strip .wg-kit-btn[aria-label="Permission mode"]';
 
 export const IDLE_PARTS: Parts = {
 	field: {
@@ -99,20 +99,20 @@ export const REMOVE_PARTS: Parts = {
 	removeGlyph: { board: ".img .x svg", built: `${IMAGE_CARD} .wg-studio-ai-card-remove svg`, keys: ["w", "h"] },
 };
 
-const PICKED_BUILT = "menu .wg-studio-ai-menu-row.is-picked";
+const PICKED_BUILT = 'menu .wg-kit-pop-item[aria-checked="true"]';
 
 export const MENU_PARTS: Parts = {
 	menu: { board: "menu", built: "menu", keys: ["radius", "pad", "w", "bg", "edge"] },
-	label: { board: "menu .mh", built: "menu .wg-studio-ai-menu-label", keys: ["pad", ...TEXT] },
+	label: { board: "menu .mh", built: "menu :is(.wg-kit-menu-label, .sumi-pane-head)", keys: ["pad", ...TEXT] },
 	row: {
 		board: "menu .mi:has(.d):not(.sel):not(.hov)",
-		built: "menu .wg-studio-ai-menu-row.is-two:not(.is-picked):not(:hover)",
+		built: 'menu .wg-kit-pop-item.is-two:not([aria-checked="true"]):not(:hover)',
 		keys: [...FLAT, ...TEXT],
 	},
-	small: { board: "menu .mi .d", built: "menu .wg-studio-ai-menu-row small", keys: TEXT },
+	small: { board: "menu .mi .d", built: "menu .wg-kit-pop-sub", keys: TEXT },
 	picked: { board: "menu .mi.sel", built: PICKED_BUILT, keys: ["h", "radius", "pad", "bg"] },
-	tick: { board: "menu .mi.sel .chk", built: `${PICKED_BUILT} .wg-studio-ai-menu-end svg`, keys: ["w", "h", "color"] },
-	hovered: { board: "menu .mi.hov", built: "menu .wg-studio-ai-menu-row:hover", keys: ["bg"] },
+	tick: { board: "menu .mi.sel .chk", built: `${PICKED_BUILT} .wg-kit-pop-tick`, keys: ["w", "h", "color"] },
+	hovered: { board: "menu .mi.hov", built: "menu .wg-kit-pop-item:hover", keys: ["bg"] },
 };
 
 export const ATTACH_PARTS: Parts = {
@@ -127,21 +127,21 @@ export const ATTACH_PARTS: Parts = {
 };
 
 export const USAGE_PARTS: Parts = {
-	label: { board: "menu > div:first-child", built: "menu .wg-studio-ai-menu-label", keys: ["fs", "fw", "color"] },
-	head: { board: "menu > div:nth-child(2)", built: "menu .wg-studio-ai-meter-head", keys: ["fs", "fw", "color"] },
+	label: { board: "menu > div:first-child", built: "menu .wg-kit-menu-label", keys: ["fs", "fw", "color"] },
+	head: { board: "menu > div:nth-child(2)", built: "menu .sumi-usage-meter-head", keys: ["fs", "fw", "color"] },
 	headValue: {
 		board: "menu > div:nth-child(2) > span:last-child",
-		built: "menu .wg-studio-ai-meter-head span",
+		built: "menu .sumi-usage-meter-head span",
 		keys: ["fs", "color"],
 	},
-	bar: { board: "menu .bar", built: "menu .wg-studio-ai-meter-bar", keys: ["h", "radius", "bg", "margin"] },
-	fill: { board: "menu .bar span", built: "menu .wg-studio-ai-meter-bar i", keys: ["bg"] },
-	small: { board: "menu > div:nth-child(4)", built: "menu .wg-studio-ai-meter small", keys: ["fs", "color"] },
+	bar: { board: "menu .bar", built: "menu .sumi-usage-meter-bar", keys: ["h", "radius", "bg", "margin"] },
+	fill: { board: "menu .bar span", built: "menu .sumi-usage-meter-bar i", keys: ["bg"] },
+	small: { board: "menu > div:nth-child(4)", built: "menu .sumi-usage-meter small", keys: ["fs", "color"] },
 };
 
 const WELCOME_BOARD = "sc-if > div:has(> h1)";
 const FOLDER_BOARD = "sc-if > .gt";
-const FOLDER_BUILT = '.wg-studio-ai-strip-button[aria-label="Choose a folder"]';
+const FOLDER_BUILT = '.wg-studio-ai-strip .wg-kit-btn[aria-label="Choose a folder"]';
 
 export const EMPTY_PARTS: Parts = {
 	welcome: { board: WELCOME_BOARD, built: ".wg-studio-ai-welcome", keys: ["pad", "gap"] },
@@ -168,15 +168,15 @@ export const EMPTY_PARTS: Parts = {
 		keys: [],
 	},
 	folderButton: { board: FOLDER_BOARD, built: FOLDER_BUILT, keys: [...FLAT, "border", "fs", "fw", "color"] },
-	usageRing: { board: 'button[aria-label^="Usage"] svg', built: ".wg-studio-ai-usage-ring", keys: ["w", "h"] },
+	usageRing: { board: 'button[aria-label^="Usage"] svg', built: ".sumi-usage-ring", keys: ["w", "h"] },
 	usageTrack: {
 		board: 'button[aria-label^="Usage"] circle:first-child',
-		built: ".wg-studio-ai-usage-ring .is-track",
+		built: ".sumi-usage-ring .is-track",
 		keys: ["stroke", "strokeWidth"],
 	},
 	usageUsed: {
 		board: 'button[aria-label^="Usage"] circle:last-child',
-		built: ".wg-studio-ai-usage-ring .is-used",
+		built: ".sumi-usage-ring .is-used",
 		keys: ["stroke", "strokeWidth"],
 	},
 	folderGlyph: { board: `${FOLDER_BOARD} svg`, built: `${FOLDER_BUILT} svg`, keys: ["w", "h"] },
@@ -206,8 +206,8 @@ export const PART_PROBE = `((scope, parts, side) => {
 	const menuOf = () => {
 		const asked = window.__MENU_LABEL__ === undefined ? null : window.__MENU_LABEL__[side];
 		if (side === "board") return document.querySelector(\`.menu[aria-label="\${asked}"]\`);
-		const menus = [...document.querySelectorAll(".wg-studio-ai-menu.is-open")];
-		return menus.find((menu) => menu.getClientRects().length > 0 && (asked === null || (menu.querySelector(".wg-studio-ai-menu-label")?.textContent ?? "") === asked)) ?? null;
+		const menus = [...document.querySelectorAll(".wg-kit-pop.is-open")];
+		return menus.find((menu) => menu.getClientRects().length > 0 && (asked === null || (menu.querySelector(".wg-kit-menu-label, .wg-studio-ai-menu-label, .sumi-pane-head > span")?.textContent ?? "") === asked)) ?? null;
 	};
 	const within = (selector) => {
 		if (selector.startsWith("menu")) {
@@ -235,22 +235,23 @@ export const PART_PROBE = `((scope, parts, side) => {
 	};
 	const looks = (el) => {
 		const s = getComputedStyle(el);
+		const paint = el.matches(".wg-kit-pop-item, .wg-kit-btn") ? getComputedStyle(el, "::before") : s;
 		const box = el.getBoundingClientRect();
-		const radius = parseFloat(s.borderTopLeftRadius);
+		const radius = parseFloat(paint.borderTopLeftRadius);
 		const previous = el.previousElementSibling;
 		return {
 			h: Math.round(box.height * 2) / 2,
 			w: Math.round(box.width * 2) / 2,
 			minH: s.minHeight,
 			minW: s.minWidth,
-			radius: radius >= box.height / 2 - 0.5 && box.height > 0 ? "pill" : s.borderTopLeftRadius,
+			radius: radius >= box.height / 2 - 0.5 && box.height > 0 ? "pill" : paint.borderTopLeftRadius,
 			pad: [s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft].join(" "),
 			gap: s.columnGap,
 			flexGap: s.rowGap,
 			margin: [s.marginTop, s.marginRight, s.marginBottom, s.marginLeft].join(" "),
 			marginTop: s.marginTop,
 			marginBottom: s.marginBottom,
-			bg: ownBg(s),
+			bg: ownBg(paint),
 			edge: firstColour(s.boxShadow),
 			border: s.borderTopStyle === "none" || parseFloat(s.borderTopWidth) === 0 ? null : [s.borderTopWidth, rgb(s.borderTopColor)],
 			opacity: s.opacity,

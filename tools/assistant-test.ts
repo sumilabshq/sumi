@@ -17,24 +17,24 @@ import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { toastRefusal } from "../packages/shared/data-framework/src/command-refusals.ts";
 import { toast } from "../packages/shared/kit/src/utils/toast.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { assistant as assistantModule } from "../plugins/chat/data/assistant/generated/module.ts";
-import { turnStepsOf } from "../plugins/chat/data/assistant/features/chat/lib/turn-steps.ts";
-import { toolsSummaryOf } from "../plugins/chat/src/features/assistant/lib/tools-summary.ts";
-import { assistant } from "../plugins/chat/data/assistant/generated/contract.ts";
-import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../plugins/chat/src/features/assistant/lib/slash-matches.ts";
-import { AssistantSessionGateway } from "../plugins/chat/data/assistant/gateways/assistant-session/assistant-session.gateway.ts";
-import { AssistantSetupGateway } from "../plugins/chat/data/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
-import { PrivateFolderAttachmentFilesGateway } from "../plugins/chat/data/assistant/gateways/attachment-files/private-folder.gateway.ts";
-import { CellClaudeOptionsGateway } from "../plugins/chat/data/assistant/gateways/claude-options/cell.gateway.ts";
-import { ClockGateway } from "../plugins/chat/data/assistant/gateways/clock/clock.gateway.ts";
-import { ClientWorkingFoldersGateway } from "../plugins/chat/data/assistant/gateways/working-folders/client.gateway.ts";
-import { portAssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/port.gateway.ts";
-import type { AssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/assistant-parts.gateway.ts";
-import type { WorkspaceFolder } from "../plugins/chat/data/assistant/shared/host/workspace-folders.host.ts";
-import { isSameDrafts } from "../plugins/chat/data/assistant/features/composer/lib/drafts.ts";
-import { shortPathOf } from "../plugins/chat/data/assistant/shared/lib/short-path.ts";
-import { attachmentsIn, withAttachments } from "../plugins/chat/data/assistant/shared/lib/attachment-trailer.ts";
-import { KEPT_AT_MOST_MS } from "../plugins/chat/data/assistant/features/composer/lib/attachment-sweep.ts";
+import { assistant as assistantModule } from "../plugins/ai/agent/data/assistant/generated/module.ts";
+import { turnStepsOf } from "../plugins/ai/agent/data/assistant/features/chat/lib/turn-steps.ts";
+import { toolsSummaryOf } from "../plugins/ai/chat/src/features/assistant/lib/tools-summary.ts";
+import { assistant } from "../plugins/ai/agent/data/assistant/generated/contract.ts";
+import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../plugins/ai/chat/src/features/assistant/lib/slash-matches.ts";
+import { AssistantSessionGateway } from "../plugins/ai/agent/data/assistant/gateways/assistant-session/assistant-session.gateway.ts";
+import { AssistantSetupGateway } from "../plugins/ai/agent/data/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
+import { PrivateFolderAttachmentFilesGateway } from "../plugins/ai/agent/data/assistant/gateways/attachment-files/private-folder.gateway.ts";
+import { CellClaudeOptionsGateway } from "../plugins/ai/agent/data/assistant/gateways/claude-options/cell.gateway.ts";
+import { ClockGateway } from "../plugins/ai/agent/data/assistant/gateways/clock/clock.gateway.ts";
+import { ClientWorkingFoldersGateway } from "../plugins/ai/agent/data/assistant/gateways/working-folders/client.gateway.ts";
+import { portAssistantParts } from "../plugins/ai/agent/data/assistant/gateways/assistant-parts/port.gateway.ts";
+import type { AssistantParts } from "../plugins/ai/agent/data/assistant/gateways/assistant-parts/assistant-parts.gateway.ts";
+import type { WorkspaceFolder } from "../plugins/ai/agent/data/assistant/shared/host/workspace-folders.host.ts";
+import { isSameDrafts } from "../plugins/ai/agent/data/assistant/features/composer/lib/drafts.ts";
+import { shortPathOf } from "../plugins/ai/agent/data/assistant/shared/lib/short-path.ts";
+import { attachmentsIn, withAttachments } from "../plugins/ai/agent/data/assistant/shared/lib/attachment-trailer.ts";
+import { KEPT_AT_MOST_MS } from "../plugins/ai/agent/data/assistant/features/composer/lib/attachment-sweep.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { claudeOptionsCell } from "../apps/tauri/src/assistant/claude-options-cell.ts";
 import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";
@@ -521,7 +521,7 @@ check(
 
 const rendering = benchWith(CLAUDE);
 rendering.setup.renderMarkdown = () => () => undefined;
-const renderingSetup = await rendering.chat.send(assistant.agent.setup, { chat: null });
+const renderingSetup = await rendering.chat.send(assistant.agent.getSetup, { chat: null });
 check(
 	"the agent's setup crosses a MessagePort: it carries no function, even from a host that renders markdown",
 	renderingSetup.ok ? isCloned(renderingSetup.output) : renderingSetup.reason,

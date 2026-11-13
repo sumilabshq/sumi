@@ -44,12 +44,12 @@ const APPS_SLOT_OWNERS = [
 	"plugins/browser-page/",
 	"plugins/files/",
 	"plugins/main/",
-	"plugins/chat/",
+	"plugins/ai/chat/",
 	"plugins/git/",
 	"plugins/tasks/",
 ];
 const VIEWER_APP_IDS = ["markdown-viewer", "code-viewer", "image-viewer", "video-viewer", "html-viewer"];
-const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];
+const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/ai/chat/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
 const HOST_ROOTS = ["apps/studio/src", "apps/tauri/src"];
 const CHAT_PLUGIN_NAMES = ["@sumi/chat-plugin"];
@@ -151,7 +151,7 @@ check(
 	true,
 );
 const answeredApps = AppsSchema.parse(await appIdsAnsweredBy(resolved)).apps;
-const answeredFaceOf = (id: string): unknown => answeredApps.find((face) => face.id === id) ?? null;
+const answeredFaceOf = (id: string) => answeredApps.find((face) => face.id === id) ?? null;
 check(
 	"the apps plugin's module answers the terminal and browser-page plugins' apps, read from the apps plugin's own slot",
 	[answeredFaceOf("terminal"), answeredFaceOf("browser-page")],
@@ -163,9 +163,14 @@ check(
 	["canvas", "browser", "tasks", "chat"].map((id) => BUILT_IN_FACES.find((face) => face.id === id) ?? id),
 );
 check(
-	"the files plugin passes every viewer of its own slot on to the apps slot, registered once, and adds no app of its own",
+	"the files plugin passes every viewer of its own slot on to the apps slot, registered once, beside the unlisted file link app",
 	answeredApps.map(({ id }) => id).filter((id) => VIEWER_APP_IDS.includes(id) || id === "file"),
-	VIEWER_APP_IDS,
+	["file", ...VIEWER_APP_IDS],
+);
+check(
+	"the file link app is unlisted",
+	answeredFaceOf("file")?.isListed,
+	false,
 );
 check(
 	"the apps module is the only list of apps: no other module answers app faces",
@@ -225,15 +230,15 @@ check(
 	[],
 );
 check(
-	"the chat plugin serves one assistant per window through the host's window server modules slot",
+	"the agent plugin serves one assistant per window through the host's window server modules slot",
 	resolved.windowServerModules.map(({ id }) => id),
-	["chat.server-0"],
+	["agent.server-0"],
 );
 check(
 	"no source starts an assistant per chat: no per-chat app, no host narrowed to a chat outside the module's gateways",
 	[
 		...["ChatApps", "chatAppOf"].flatMap(sourcesNaming),
-		...sourcesNaming("hostForChat").filter((file) => !file.includes("plugins/chat/data/assistant/gateways/")),
+		...sourcesNaming("hostForChat").filter((file) => !file.includes("plugins/ai/agent/data/assistant/gateways/")),
 	],
 	[],
 );
@@ -371,7 +376,7 @@ check(
 		defaultPlugins?.refusals,
 	],
 	[
-		["sumi-host", "mcp", "apps", "command-menu", "chat", "main", "questions", "tasks", "terminal"],
+		["sumi-host", "agent", "apps", "command-menu", "chat", "main", "questions", "tasks", "terminal"],
 		[],
 		["plugin ghost is enabled in sumi.plugins.json but not built in: its entry stays"],
 		BUILT_IN_STARTED,
@@ -404,7 +409,7 @@ check(
 			"command-menu": { enabled: true },
 			chat: { enabled: true },
 			main: { enabled: true },
-			mcp: { enabled: true },
+			agent: { enabled: true },
 			questions: { enabled: true },
 			tasks: { enabled: true },
 			ghost: { enabled: true },
@@ -418,10 +423,16 @@ check(
 			"html-viewer": { enabled: false },
 			git: { enabled: false },
 			"composer-expand": { enabled: false },
+			"claude-code": { enabled: false },
+			"working-folder": { enabled: false },
+			"permission-mode": { enabled: false },
+			"plan-usage": { enabled: false },
+			"model-picker": { enabled: false },
+			"effort-picker": { enabled: false },
 		},
 		1,
 		undefined,
-		["sumi-host", "mcp", "apps", "command-menu", "chat", "main", "questions", "tasks", "terminal"],
+		["sumi-host", "agent", "apps", "command-menu", "chat", "main", "questions", "tasks", "terminal"],
 	],
 );
 const keptStart = await quietly(async () => {
@@ -484,7 +495,7 @@ check(
 		brokenStarts.infos.filter((said) => said.includes("was written by another window first, rev 1 stays")).length,
 	],
 	[
-		["sumi-host", "mcp", "apps", "command-menu", "chat", "main", "questions", "tasks", "terminal"],
+		["sumi-host", "agent", "apps", "command-menu", "chat", "main", "questions", "tasks", "terminal"],
 		true,
 		[
 			"[studio] workspace broken: sumi.plugins.json unparseable → kept aside as sumi.plugins.json.corrupt-1 beside it; plugin choices reset to sumi.profile.json",
@@ -507,7 +518,7 @@ const racedStart = await quietly(async () => {
 check(
 	"a save that loses the rev race re-reads the file and logs the plugins it computed → the ones stored",
 	racedStart.infos.filter((said) =>
-		said.includes('was written by another window first at rev 1, plugins of this start {"apps"'),
+		said.includes('was written by another window first at rev 1, plugins of this start {"agent"'),
 	).length === 1 && racedStart.infos.some((said) => said.includes('→ stored {"git":{"enabled":false}}')),
 	true,
 );

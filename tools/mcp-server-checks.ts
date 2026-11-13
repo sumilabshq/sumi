@@ -31,7 +31,7 @@ const ON_SERVER = {
 
 const count = named("board.count", query<TallyParts>())
 	.public()
-	.metadata({ description: "How far the counter went." })
+	.metadata({ description: "How far the counter went.", mcp: { running: "Counting", done: "Counted" } })
 	.output(z.number())
 	.handle((_input, { counter }) => counter.value);
 
@@ -95,7 +95,10 @@ function call(id: number, method: string, params?: unknown): Promise<unknown> {
 	});
 }
 
-check("metadata: a request keeps its fields", count.request.metadata(), { description: "How far the counter went." });
+check("metadata: a request keeps its fields", count.request.metadata(), {
+	description: "How far the counter went.",
+	mcp: { running: "Counting", done: "Counted" },
+});
 check("metadata: a second call merges", query().metadata({ a: 1 }).metadata({ b: 2 }).metadata(), { a: 1, b: 2 });
 check("metadata: none is an empty object", query().metadata(), {});
 check("metadata: an event keeps its fields", event().metadata({ http: "doc" }).metadata(), { http: "doc" });
@@ -122,6 +125,16 @@ check(
 	"tools: description comes from metadata",
 	tally$.tools.find(({ name }) => name === "tally_board_count")?.description,
 	"How far the counter went.",
+);
+check(
+	"tools: metadata.mcp is listed as the tool's _meta",
+	tally$.tools.find(({ name }) => name === "tally_board_count")?._meta,
+	{ running: "Counting", done: "Counted" },
+);
+check(
+	"tools: a tool with no metadata.mcp lists no _meta",
+	Object.hasOwn(tally$.tools.find(({ name }) => name === "tally_board_bump") ?? {}, "_meta"),
+	false,
 );
 check(
 	"tools: no input is an empty object schema",

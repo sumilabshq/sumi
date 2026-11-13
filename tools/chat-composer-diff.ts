@@ -165,8 +165,8 @@ const PHASES: readonly Phase[] = [
 		menuLabel: { board: "Permission mode", built: "Permission mode" },
 		state: "composer",
 		act: async (page) => {
-			await pressed(page, ".wg-studio-ai-strip-button", "Permission mode");
-			await hoveredOn(page, ".wg-studio-ai-menu.is-open .wg-studio-ai-menu-row:not(.is-picked)");
+			await pressed(page, ".wg-studio-ai-strip .wg-kit-btn", "Permission mode");
+			await hoveredOn(page, '.wg-kit-pop.is-open .wg-kit-pop-item:not([aria-checked="true"])');
 		},
 		parts: MENU_PARTS,
 	},
@@ -177,10 +177,10 @@ const PHASES: readonly Phase[] = [
 		menuLabel: { board: "Provider", built: "Provider" },
 		state: "composer",
 		act: async (page) => {
-			await pressed(page, ".wg-studio-ai-strip-button", "Model");
+			await pressed(page, ".wg-studio-ai-strip .wg-kit-btn", "Model");
 			await hoveredOn(
 				page,
-				".wg-studio-ai-menu.is-open .wg-studio-ai-menu-pane:not(.is-providers) .wg-studio-ai-menu-row:not(.is-picked)",
+				'.wg-kit-pop.is-open .sumi-model-pane:not(.is-providers) .sumi-model-list:not([data-hidden]) .wg-kit-pop-item:not([aria-checked="true"])',
 			);
 		},
 		parts: MENU_PARTS,
@@ -191,7 +191,7 @@ const PHASES: readonly Phase[] = [
 		boardScope: { light: "", dark: "" },
 		menuLabel: { board: "Usage", built: "Usage" },
 		state: "composer",
-		act: async (page) => pressed(page, ".wg-studio-ai-strip-button", "Usage"),
+		act: async (page) => pressed(page, ".wg-studio-ai-strip .wg-kit-btn", "Usage"),
 		parts: USAGE_PARTS,
 	},
 	{

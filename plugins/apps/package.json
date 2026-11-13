@@ -18,7 +18,7 @@
 		"@widgetarium/app-host": "0.1.0",
 		"@widgetarium/places": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",
-		"@sumi/mcp-plugin": "0.1.0",
+		"@sumi/agent-plugin": "0.1.0",
 		"@sumi/tabs": "0.1.0"
 	},
 	"peerDependencies": {
