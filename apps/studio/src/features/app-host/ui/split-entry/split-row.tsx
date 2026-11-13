@@ -14,17 +14,19 @@ export interface SplitRowProps {
 
 const JOINER = " + ";
 const STACK = "cv:flex cv:flex-none cv:items-center cv:[&>*+*]:-ms-1";
-const STACKED = "cv:flex cv:rounded-none cv:bg-(--sumi-plate) cv:[box-shadow:0_0_0_2px_var(--sumi-frame)]";
+const STACKED = "cv:relative cv:flex cv:[&+&]:[filter:drop-shadow(-1.5px_0_0_var(--split-ring))]";
 const MAP = "cv:ms-auto cv:flex cv:flex-none";
+const SPLIT_RING =
+	"cv:[--split-ring:var(--sumi-plate)] cv:hover:[--split-ring:color-mix(in_srgb,var(--sumi-plate),var(--sumi-text)_5%)]";
 
 export function SplitRow({ split, focused }: SplitRowProps): ReactElement {
 	const { show } = useRowPick(focused);
 	const title = split.members.map((member) => rowFaceOf(member.item).title).join(JOINER);
 	return (
-		<button type="button" className={SIDEBAR_ROW} onClick={show} data-split-row={split.id}>
+		<button type="button" className={`${SIDEBAR_ROW} ${SPLIT_RING}`} onClick={show} data-split-row={split.id}>
 			<span className={STACK} aria-hidden="true">
-				{split.members.map((member) => (
-					<span key={rowFaceOf(member.item).id} className={STACKED}>
+				{split.members.map((member, at) => (
+					<span key={rowFaceOf(member.item).id} className={STACKED} style={{ zIndex: at + 1 }}>
 						<RowIcon item={member.item} />
 					</span>
 				))}

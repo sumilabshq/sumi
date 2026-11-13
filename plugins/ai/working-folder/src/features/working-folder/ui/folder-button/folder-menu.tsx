@@ -1,6 +1,6 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
+import { PopoverItem, PopoverSeparator } from "@widgetarium/kit";
 import type { WorkingFolders } from "@widgetarium/assistant/contract";
 import { folderNameOf, shortPathOf } from "../../lib/short-path.js";
 
@@ -11,7 +11,7 @@ export interface FolderMenuProps {
 }
 
 const FOLDERS_IN = "Folders in {workspace}";
-const OPEN_ANOTHER = "Open another folder…";
+const OPEN_ANOTHER = "Open another folder";
 
 export function FolderMenu({ folders, onChoose, onPickAnother }: FolderMenuProps): ReactElement {
 	return (
@@ -24,15 +24,11 @@ export function FolderMenu({ folders, onChoose, onPickAnother }: FolderMenuProps
 					sub={shortPathOf(path)}
 					onClick={() => onChoose(path)}
 				>
-					<Icon name="folder" size={16} />
 					{folderNameOf(path)}
 				</PopoverItem>
 			))}
 			{folders.recent.length === 0 ? null : <PopoverSeparator />}
-			<PopoverItem onClick={onPickAnother}>
-				<Icon name="folder-plus" size={16} />
-				{OPEN_ANOTHER}
-			</PopoverItem>
+			<PopoverItem onClick={onPickAnother}>{OPEN_ANOTHER}</PopoverItem>
 		</>
 	);
 }

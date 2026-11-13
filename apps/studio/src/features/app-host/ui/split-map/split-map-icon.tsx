@@ -17,7 +17,7 @@ interface PixelCell {
 const WIDTH_PX = 16;
 const HEIGHT_PX = 11;
 const GAP_PX = 1;
-const LEAST_CELL_PX = 3;
+const LEAST_CELL_PX = 2;
 const CELL = "cv:fill-(--sumi-line-strong) cv:data-[marked]:fill-(--sumi-text)";
 const BOX = "cv:block cv:flex-none cv:overflow-visible";
 
@@ -31,6 +31,7 @@ export function SplitMapIcon({ map, label }: SplitMapIconProps): ReactElement {
 			role={label === null ? undefined : "img"}
 			aria-label={label ?? undefined}
 			aria-hidden={label === null ? true : undefined}
+			shapeRendering="crispEdges"
 			data-split-map=""
 		>
 			{map.cells.map((cell) => {
@@ -43,7 +44,6 @@ export function SplitMapIcon({ map, label }: SplitMapIconProps): ReactElement {
 						y={pixel.y}
 						width={pixel.w}
 						height={pixel.h}
-						rx={1}
 						data-split-cell={cell.tabId}
 						data-marked={cell.tabId === map.markedId || undefined}
 					/>
