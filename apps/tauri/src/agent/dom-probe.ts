@@ -3,7 +3,7 @@ import { z } from "zod";
 export const DomProbeAskSchema = z.object({
 	id: z.number().int(),
 	kind: z.literal("dom"),
-	action: z.enum(["inspect", "wheel", "drag", "pinch"]),
+	action: z.enum(["inspect", "click", "wheel", "drag", "pinch"]),
 	selector: z.string().min(1).max(300),
 	deltaX: z.number().default(0),
 	deltaY: z.number().default(0),
@@ -31,6 +31,10 @@ export async function answerDomProbe(asked: DomProbeAsk): Promise<unknown> {
 		throw new Error(NO_MATCH.replace("{selector}", asked.selector));
 	}
 
+	if (asked.action === "click") {
+		element.click();
+	}
+
 	if (asked.action === "wheel") {
 		element.dispatchEvent(wheelAt(element, asked));
 	}
@@ -56,6 +60,7 @@ function snapshotOf(selector: string): unknown {
 			box,
 			transform: match instanceof HTMLElement ? match.style.transform : "",
 			style: match.getAttribute("style") ?? "",
+			background: getComputedStyle(match).backgroundColor,
 			text: (match.textContent ?? "").trim().slice(0, 80),
 			connected: match.isConnected,
 			pointerEvents: getComputedStyle(match).pointerEvents,
