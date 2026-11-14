@@ -1,6 +1,11 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command } from "#module";
-import { CanvasAskSchema, KeepCameraAskSchema, ResizePanelAskSchema } from "../../shared/schema/asks.schema.js";
+import {
+	CanvasAskSchema,
+	KeepCameraAskSchema,
+	ResizePanelAskSchema,
+	SetBackgroundAskSchema,
+} from "../../shared/schema/asks.schema.js";
 
 export const togglePanel = command()
 	.public()
@@ -25,6 +30,17 @@ export const resizePanel = command()
 		console.info(`[artboards] ${tabId}: ${reason}`);
 	});
 
+export const setBackground = command()
+	.public()
+	.input(SetBackgroundAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(({ tabId, background }, { canvases }) => {
+		const canvas = canvases.canvas(tabId);
+		const reason = `background ${backgroundWord(canvas.background)} → ${backgroundWord(background)}`;
+		canvases.saveCanvas(tabId, { ...canvas, background }, reason);
+		console.info(`[artboards] ${tabId}: ${reason}`);
+	});
+
 export const keepCamera = command()
 	.public()
 	.input(KeepCameraAskSchema)
@@ -36,6 +52,10 @@ export const keepCamera = command()
 
 const PANEL_LEAST_PX = 200;
 const PANEL_MOST_PX = 480;
+
+function backgroundWord(background: string | null): string {
+	return background ?? "theme";
+}
 
 function shownWord(isShown: boolean): string {
 	return isShown ? "shown" : "hidden";

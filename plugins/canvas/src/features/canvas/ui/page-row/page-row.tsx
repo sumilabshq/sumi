@@ -25,7 +25,7 @@ export function PageRow({ page, isShown }: PageRowProps): ReactElement {
 			isPicked={isShown}
 			depth={0}
 			icon={null}
-			end={<span className="sumi-canvas-row-count">{page.boardCount}</span>}
+			end={page.boardCount}
 			onPick={() => void show.run({ tabId, page: page.id })}
 			onRename={(name) => void rename.run({ tabId, page: page.id, name })}
 			onDelete={() => void remove.run({ tabId, page: page.id })}

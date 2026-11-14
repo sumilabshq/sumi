@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { artboards } from "@sumi/artboards/contract";
 import { useEdgeResize } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/data-framework";
+import { SidePanel } from "@widgetarium/kit";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 import { LayersList } from "../layers-list/layers-list.js";
 import { PagesList } from "../pages-list/pages-list.js";
@@ -23,28 +24,29 @@ export function CanvasPanel({ width }: CanvasPanelProps): ReactElement {
 	};
 	const edge = useEdgeResize({
 		widthOf: () => held ?? width,
+		edge: "start",
 		onResize: setHeld,
 		onReset: () => keep(DEFAULT_WIDTH),
 	});
 	return (
-		<aside className="sumi-canvas-panel" style={{ width: held ?? width }} aria-label="Pages and layers">
-			<PagesList />
-			<LayersList />
-			<div
-				className="sumi-canvas-panel-edge"
-				role="separator"
-				aria-orientation="vertical"
-				aria-label="Resize pages and layers"
-				tabIndex={0}
-				{...edge}
-				onPointerUp={() => {
+		<SidePanel
+			side="end"
+			width={held ?? width}
+			label="Pages and layers"
+			edgeLabel="Resize pages and layers"
+			edge={{
+				...edge,
+				onPointerUp: () => {
 					edge.onPointerUp();
 
 					if (held !== null) {
 						keep(held);
 					}
-				}}
-			/>
-		</aside>
+				},
+			}}
+		>
+			<PagesList />
+			<LayersList />
+		</SidePanel>
 	);
 }

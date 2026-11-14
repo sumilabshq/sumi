@@ -13,146 +13,6 @@
 	-webkit-user-select: none;
 }
 
-.sumi-canvas-panel {
-	position: absolute;
-	top: 0;
-	bottom: 8px;
-	left: 8px;
-	z-index: 2;
-	display: flex;
-	flex-direction: column;
-	min-height: 0;
-	padding-top: 4px;
-	background: color-mix(in srgb, var(--sumi-soft) 62%, transparent);
-	backdrop-filter: blur(16px) saturate(1.2);
-	-webkit-backdrop-filter: blur(16px) saturate(1.2);
-}
-
-.sumi-canvas-panel-edge {
-	position: absolute;
-	top: 0;
-	right: -4px;
-	bottom: 0;
-	width: 7px;
-	cursor: col-resize;
-	touch-action: none;
-}
-
-.sumi-canvas-panel-edge:hover,
-.sumi-canvas-panel-edge:focus-visible {
-	outline: none;
-	background: linear-gradient(var(--sumi-line-strong), var(--sumi-line-strong)) center / 1px 100% no-repeat;
-}
-
-.sumi-canvas-pages {
-	display: flex;
-	flex: none;
-	flex-direction: column;
-	max-height: 40%;
-	overflow-y: auto;
-	scrollbar-width: none;
-}
-
-.sumi-canvas-layers {
-	margin-top: 12px;
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	min-height: 0;
-}
-
-.sumi-canvas-scroll {
-	flex: 1;
-	min-height: 0;
-	overflow-y: auto;
-	scrollbar-width: none;
-}
-
-.sumi-canvas-label {
-	display: flex;
-	flex: none;
-	align-items: center;
-	height: 32px;
-	padding: 0 16px;
-	color: var(--sumi-text-3);
-	font-size: var(--sumi-fs-12);
-}
-
-.sumi-canvas-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
-	margin-right: -9px;
-	margin-left: auto;
-	padding: 0;
-	border: 0;
-	background: none;
-	color: var(--sumi-text-3);
-	cursor: pointer;
-}
-
-.sumi-canvas-icon:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-}
-
-.sumi-canvas-row {
-	display: flex;
-	flex: none;
-	align-items: center;
-	gap: 8px;
-	width: 100%;
-	height: 28px;
-	padding: 0 16px;
-	border: 0;
-	background: none;
-	color: var(--sumi-text-2);
-	font: inherit;
-	text-align: left;
-	white-space: nowrap;
-	cursor: default;
-}
-
-.sumi-canvas-row:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-}
-
-.sumi-canvas-row.is-picked {
-	background: var(--sumi-group-plain);
-	color: var(--sumi-text);
-	font-weight: var(--sumi-fw-medium);
-}
-
-.sumi-canvas-row-name {
-	flex: 1;
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.sumi-canvas-row-count {
-	color: var(--sumi-text-3);
-	font-variant-numeric: tabular-nums;
-}
-
-.sumi-canvas-row-icon {
-	flex: none;
-	color: var(--sumi-text-3);
-}
-
-.sumi-canvas-row.is-picked .sumi-canvas-row-icon {
-	color: var(--sumi-text);
-}
-
-.sumi-canvas-row-chevron {
-	flex: none;
-	margin-left: auto;
-	color: var(--sumi-text-3);
-}
-
 .sumi-canvas-row-field {
 	flex: 1;
 	min-width: 0;
@@ -179,6 +39,7 @@
 
 .sumi-canvas-field {
 	position: relative;
+	background: var(--sumi-plate);
 	flex: 1;
 	min-width: 0;
 	overflow: hidden;
@@ -199,19 +60,6 @@
 
 .sumi-canvas-board {
 	position: absolute;
-}
-
-.sumi-canvas-glow {
-	position: absolute;
-	background: radial-gradient(
-		closest-side,
-		var(--sumi-hover) 0%,
-		color-mix(in srgb, var(--sumi-hover) 82%, transparent) 30%,
-		color-mix(in srgb, var(--sumi-hover) 50%, transparent) 58%,
-		color-mix(in srgb, var(--sumi-hover) 20%, transparent) 80%,
-		transparent 100%
-	);
-	pointer-events: none;
 }
 
 .sumi-canvas-board.is-picked {
@@ -277,4 +125,46 @@
 	color: var(--sumi-text-3);
 	font-size: var(--sumi-fs-13);
 	font-variant-numeric: tabular-nums;
+}
+
+.sumi-canvas-background {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
+
+.sumi-canvas-background:hover {
+	background: var(--sumi-hover);
+}
+
+.sumi-canvas-swatch {
+	display: inline-block;
+	flex: none;
+	width: 14px;
+	height: 14px;
+	background: var(--sumi-plate);
+	box-shadow: inset 0 0 0 1px var(--sumi-line-strong);
+}
+
+.sumi-canvas-swatch.is-custom {
+	background: conic-gradient(
+		var(--sumi-hue-red),
+		var(--sumi-hue-amber),
+		var(--sumi-hue-green),
+		var(--sumi-progress),
+		var(--sumi-hue-red)
+	);
+}
+
+.sumi-canvas-menu-spot {
+	position: fixed;
+	width: 0;
+	height: 0;
+	pointer-events: none;
 }

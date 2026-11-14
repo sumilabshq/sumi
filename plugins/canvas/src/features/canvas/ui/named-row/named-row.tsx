@@ -1,7 +1,14 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@widgetarium/kit";
-import { rowIndentOf } from "../../lib/row-indent.js";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuSeparator,
+	ContextMenuTrigger,
+	SidePanelRow,
+	sidePanelIndentOf,
+} from "@widgetarium/kit";
 import { NameField } from "../name-field/name-field.js";
 
 export interface NamedRowProps {
@@ -18,13 +25,23 @@ export interface NamedRowProps {
 const RENAME = "Rename";
 const DELETE = "Delete";
 
-export function NamedRow({ name, isPicked, depth, icon, end, onPick, onRename, onDelete }: NamedRowProps): ReactElement {
+export function NamedRow({
+	name,
+	isPicked,
+	depth,
+	icon,
+	end,
+	onPick,
+	onRename,
+	onDelete,
+}: NamedRowProps): ReactElement {
 	const [isRenaming, setRenaming] = useState(false);
-	const look = isPicked ? "sumi-canvas-row is-picked" : "sumi-canvas-row";
-
 	if (isRenaming) {
 		return (
-			<div className={look} style={{ paddingLeft: rowIndentOf(depth) }}>
+			<div
+				className={isPicked ? "wg-kit-side-panel-row is-picked" : "wg-kit-side-panel-row"}
+				style={{ paddingLeft: sidePanelIndentOf(depth) }}
+			>
 				{icon}
 				<NameField
 					name={name}
@@ -45,18 +62,15 @@ export function NamedRow({ name, isPicked, depth, icon, end, onPick, onRename, o
 	return (
 		<ContextMenu>
 			<ContextMenuTrigger asChild>
-				<button
-					type="button"
-					className={look}
-					style={{ paddingLeft: rowIndentOf(depth) }}
-					aria-current={isPicked ? "true" : undefined}
+				<SidePanelRow
+					icon={icon}
+					label={name}
+					end={end}
+					depth={depth}
+					isPicked={isPicked}
 					onClick={onPick}
 					onDoubleClick={() => setRenaming(true)}
-				>
-					{icon}
-					<span className="sumi-canvas-row-name">{name}</span>
-					{end}
-				</button>
+				/>
 			</ContextMenuTrigger>
 			<ContextMenuContent>
 				<ContextMenuItem onSelect={() => setRenaming(true)}>{RENAME}</ContextMenuItem>

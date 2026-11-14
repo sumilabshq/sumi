@@ -55,6 +55,7 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/chat-plugin/new-chat-row.css": "plugins/ai/chat/src/features/new-chat/ui/new-chat-row/new-chat-row.css",
 	"@sumi/terminal-cursor-plugin/terminal-cursor.css":
 		"plugins/terminal-cursor/src/features/terminal-cursor/ui/terminal-cursor-layer/terminal-cursor.css",
+	"@widgetarium/kit/side-panel.css": "packages/shared/kit/side-panel.css",
 	"@sumi/canvas-plugin/canvas-page.css": "plugins/canvas/src/features/canvas/ui/canvas-page/canvas-page.css",
 	"@sumi/model-picker-plugin/model-menu.css":
 		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-menu.css",
@@ -82,6 +83,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/chat-plugin/new-chat-row.css";
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
+@import "@widgetarium/kit/side-panel.css";
 @import "@sumi/canvas-plugin/canvas-page.css";
 `;
 

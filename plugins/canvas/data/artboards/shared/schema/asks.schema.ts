@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BoardIdSchema, CameraSchema, NameSchema, PageIdSchema, TabIdSchema } from "./canvas.schema.js";
+import { BackgroundSchema, BoardIdSchema, CameraSchema, NameSchema, PageIdSchema, TabIdSchema } from "./canvas.schema.js";
 
 export const CanvasAskSchema = z.object({ tabId: TabIdSchema });
 
@@ -51,6 +51,11 @@ export const SearchAskSchema = z.object({ words: z.string().trim().min(1).max(20
 export const ResizePanelAskSchema = z.object({
 	tabId: TabIdSchema,
 	width: z.number(),
+});
+
+export const SetBackgroundAskSchema = z.object({
+	tabId: TabIdSchema,
+	background: BackgroundSchema,
 });
 
 export const KeepCameraAskSchema = z.object({

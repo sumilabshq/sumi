@@ -1,11 +1,12 @@
-import { createElement as h, useEffect, useRef } from "react";
+import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { artboards } from "@sumi/artboards/contract";
 import { usePanZoom } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 import { ArtboardFrame } from "../artboard-frame/artboard-frame.js";
-import { CanvasGlow } from "../canvas-glow/canvas-glow.js";
+import { FieldMenu } from "../field-menu/field-menu.js";
+import type { MenuSpot } from "../field-menu/field-menu.js";
 
 const GRIPS = {
 	isHand: true,
@@ -23,6 +24,7 @@ export function ArtboardField(): ReactElement {
 	const keep = useCommand(artboards.view.keepCamera);
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const fieldRef = useRef<HTMLDivElement | null>(null);
+	const [menuSpot, setMenuSpot] = useState<MenuSpot | null>(null);
 	const pan = usePanZoom({ layerRef, fieldRef }, GRIPS, {
 		camera: canvas.camera,
 		onKept: (camera) => void keep.run({ tabId, camera }),
@@ -40,7 +42,18 @@ export function ArtboardField(): ReactElement {
 	return (
 		<div
 			className="sumi-canvas-field"
+			style={canvas.background === null ? undefined : { background: canvas.background }}
 			ref={pan.fieldRef}
+			onContextMenu={(event) => {
+				event.preventDefault();
+
+				if (event.target instanceof Element && event.target.closest("[data-artboard]") === null) {
+					setMenuSpot({
+						x: event.clientX,
+						y: event.clientY,
+					});
+				}
+			}}
 			{...pan.moves}
 			onPointerDown={(event) => {
 				if (event.target instanceof Element && event.target.closest("[data-artboard]") === null) {
@@ -56,13 +69,13 @@ export function ArtboardField(): ReactElement {
 				style={{ width: width + 2 * FIELD_MARGIN_PX, height: height + 2 * FIELD_MARGIN_PX }}
 			>
 				<div className="sumi-canvas-origin" style={{ left: FIELD_MARGIN_PX, top: FIELD_MARGIN_PX }}>
-					<CanvasGlow boards={boards} />
 					{boards.map((board) => (
 						<ArtboardFrame key={board.id} board={board} scaleNow={() => pan.lookNow().scale} />
 					))}
 				</div>
 			</div>
 			{boards.length === 0 ? <p className="sumi-canvas-empty">{EMPTY}</p> : null}
+			<FieldMenu spot={menuSpot} onClose={() => setMenuSpot(null)} />
 		</div>
 	);
 }

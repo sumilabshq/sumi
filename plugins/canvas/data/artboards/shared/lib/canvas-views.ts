@@ -14,6 +14,7 @@ export function canvasViewOf(tabId: string, canvas: Canvas): CanvasView {
 		shownPage: canvas.shownPage,
 		isPanelOpen: canvas.isPanelOpen,
 		panelWidth: canvas.panelWidth,
+		background: canvas.background,
 		camera: canvas.camera,
 	};
 }

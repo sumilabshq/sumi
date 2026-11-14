@@ -23,10 +23,8 @@ export function BoardRow({ board, isPicked }: BoardRowProps): ReactElement {
 			name={board.name}
 			isPicked={isPicked}
 			depth={0}
-			icon={<Icon name="hash" size={16} className="sumi-canvas-row-icon" />}
-			end={
-				<Icon name={isPicked ? "chevron-down" : "chevron-right"} size={16} className="sumi-canvas-row-chevron" />
-			}
+			icon={<Icon name="hash" size={16} />}
+			end={<Icon name={isPicked ? "chevron-down" : "chevron-right"} size={16} />}
 			onPick={() => pickBoard(isPicked ? null : board.id)}
 			onRename={(name) => void rename.run({ tabId, board: board.id, name })}
 			onDelete={() => void remove.run({ tabId, board: board.id })}

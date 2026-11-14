@@ -5,18 +5,19 @@ import { ToggleAction, useTabHeader } from "@sumi/sumi-host-plugin";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 import { useZoom } from "../../lib/zoom-store.js";
+import { BackgroundAction } from "../background-action/background-action.js";
 
 const HIDE_PANEL = {
 	label: "Hide pages and layers",
-	icon: "panel-left",
+	icon: "panel-right",
 };
 const SHOW_PANEL = {
 	label: "Show pages and layers",
-	icon: "panel-left",
+	icon: "panel-right",
 };
 
 export function CanvasActions(): ReactElement {
-	const { Actions } = useTabHeader();
+	const { Actions, Tint } = useTabHeader();
 	const view = useCanvasView();
 	const { tabId } = view;
 	const zoom = useZoom(view.zoom);
@@ -24,6 +25,8 @@ export function CanvasActions(): ReactElement {
 	const toggle = useCommand(artboards.view.togglePanel);
 	return (
 		<Actions>
+			<Tint fill={canvas.background} />
+			<BackgroundAction />
 			<span className="sumi-canvas-zoom" aria-label="Zoom">
 				{`${Math.round(zoom * 100)}%`}
 			</span>

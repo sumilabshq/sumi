@@ -29,6 +29,7 @@ export function createEmptyCanvas(): Canvas {
 		shownPage: FIRST_PAGE.id,
 		isPanelOpen: true,
 		panelWidth: PANEL_WIDTH,
+		background: null,
 		camera: null,
 	};
 }

@@ -4,7 +4,7 @@ import { artboards as definition } from "../module.js";
 import { getBoard, getBoards, getBoardsMatching, getShownPageBoards, moveBoard, removeBoard, renameBoard, rereadBoards, writeBoard } from "../features/boards/requests.js";
 import { getCanvas, getCanvases, rereadCanvases } from "../features/canvases/requests.js";
 import { createPage, removePage, renamePage, showPage } from "../features/pages/requests.js";
-import { keepCamera, resizePanel, togglePanel } from "../features/view/requests.js";
+import { keepCamera, resizePanel, setBackground, togglePanel } from "../features/view/requests.js";
 import { canvasesChanged } from "../gateways/canvases/canvases.events.js";
 
 export type { ArtboardsConfig } from "../module.js";
@@ -29,5 +29,6 @@ export const artboards = handledModule(definition, [
 	named("pages.show-page", showPage),
 	named("view.keep-camera", keepCamera),
 	named("view.resize-panel", resizePanel),
+	named("view.set-background", setBackground),
 	named("view.toggle-panel", togglePanel),
 ]);

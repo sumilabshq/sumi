@@ -62,6 +62,16 @@ export const ResizePanelAskSchema = z.object({
 	width: z.number(),
 });
 
+export const BackgroundSchema = z
+	.string()
+	.regex(/^#[0-9a-f]{6}$/i)
+	.nullable();
+
+export const SetBackgroundAskSchema = z.object({
+	tabId: TabIdSchema,
+	background: BackgroundSchema,
+});
+
 export const CameraSchema = z.object({
 	x: z.number(),
 	y: z.number(),
@@ -109,6 +119,7 @@ export const CanvasViewSchema = z.object({
 	shownPage: PageIdSchema,
 	isPanelOpen: z.boolean(),
 	panelWidth: z.number(),
+	background: BackgroundSchema,
 	camera: CameraSchema.nullable(),
 });
 
@@ -213,6 +224,10 @@ export const artboards = moduleContract("artboards", Server, {
 		resizePanel: named("view.resize-panel", command()
 			.public()
 			.input(ResizePanelAskSchema)
+			.idempotencyKey(Repeatable)),
+		setBackground: named("view.set-background", command()
+			.public()
+			.input(SetBackgroundAskSchema)
 			.idempotencyKey(Repeatable)),
 		keepCamera: named("view.keep-camera", command()
 			.public()

@@ -22351,6 +22351,145 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 		animation: none;
 	}
 }
+.wg-kit-side-panel {
+	position: absolute;
+	top: 0;
+	bottom: var(--wg-kit-side-panel-inset, 0px);
+	left: var(--wg-kit-side-panel-inset, 0px);
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	padding-top: 4px;
+	background: var(--wg-kit-side-panel-fill, var(--group));
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	font-size: var(--type-s);
+	user-select: none;
+	-webkit-user-select: none;
+}
+.wg-kit-side-panel.is-end {
+	right: var(--wg-kit-side-panel-inset, 0px);
+	left: auto;
+}
+.wg-kit-side-panel-edge {
+	position: absolute;
+	top: 0;
+	right: -4px;
+	bottom: 0;
+	z-index: 1;
+	width: 7px;
+	cursor: col-resize;
+	touch-action: none;
+}
+.wg-kit-side-panel.is-end .wg-kit-side-panel-edge {
+	right: auto;
+	left: -4px;
+}
+.wg-kit-side-panel-edge:hover,
+.wg-kit-side-panel-edge:focus-visible {
+	outline: none;
+	background: linear-gradient(var(--border), var(--border)) center / 1px 100% no-repeat;
+}
+.wg-kit-side-panel-section {
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	min-height: 0;
+	max-height: 40%;
+}
+.wg-kit-side-panel-section + .wg-kit-side-panel-section {
+	margin-top: 12px;
+}
+.wg-kit-side-panel-section.is-growing {
+	flex: 1;
+	max-height: none;
+}
+.wg-kit-side-panel-rows {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	scrollbar-width: none;
+}
+.wg-kit-side-panel-label {
+	display: flex;
+	flex: none;
+	align-items: center;
+	height: 32px;
+	padding: 0 16px;
+	color: var(--faint);
+	font-size: var(--type-xs);
+}
+.wg-kit-side-panel-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	margin-right: -9px;
+	margin-left: auto;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--faint);
+	cursor: pointer;
+}
+.wg-kit-side-panel-action:hover {
+	background: var(--control-hover);
+	color: var(--foreground);
+}
+.wg-kit-side-panel-row {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	height: 28px;
+	padding: 0 16px;
+	border: 0;
+	background: none;
+	color: var(--muted-foreground);
+	font: inherit;
+	text-align: left;
+	white-space: nowrap;
+	cursor: default;
+}
+.wg-kit-side-panel-row:hover {
+	background: var(--control-hover);
+	color: var(--foreground);
+}
+.wg-kit-side-panel-row.is-open:not(.is-picked) {
+	background: var(--control-open);
+}
+.wg-kit-side-panel-row.is-picked {
+	background: var(--wg-kit-side-panel-pick, var(--foreground));
+	@supports (color: color-mix(in lab, red, red)) {
+		background: var(--wg-kit-side-panel-pick, color-mix(in srgb, var(--foreground) 9%, transparent));
+	}
+	color: var(--foreground);
+	font-weight: 500;
+}
+.wg-kit-side-panel-icon,
+.wg-kit-side-panel-end {
+	display: inline-flex;
+	gap: 4px;
+	flex: none;
+	align-items: center;
+	color: var(--faint);
+	font-variant-numeric: tabular-nums;
+}
+.wg-kit-side-panel-end {
+	margin-left: auto;
+}
+.wg-kit-side-panel-row.is-picked .wg-kit-side-panel-icon {
+	color: var(--foreground);
+}
+.wg-kit-side-panel-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 .sumi-canvas {
 	position: relative;
 	display: flex;
@@ -22364,132 +22503,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	font-size: var(--sumi-fs-13);
 	user-select: none;
 	-webkit-user-select: none;
-}
-.sumi-canvas-panel {
-	position: absolute;
-	top: 0;
-	bottom: 8px;
-	left: 8px;
-	z-index: 2;
-	display: flex;
-	flex-direction: column;
-	min-height: 0;
-	padding-top: 4px;
-	background: var(--sumi-soft);
-	@supports (color: color-mix(in lab, red, red)) {
-		background: color-mix(in srgb, var(--sumi-soft) 62%, transparent);
-	}
-	backdrop-filter: blur(16px) saturate(1.2);
-	-webkit-backdrop-filter: blur(16px) saturate(1.2);
-}
-.sumi-canvas-panel-edge {
-	position: absolute;
-	top: 0;
-	right: -4px;
-	bottom: 0;
-	width: 7px;
-	cursor: col-resize;
-	touch-action: none;
-}
-.sumi-canvas-panel-edge:hover,
-.sumi-canvas-panel-edge:focus-visible {
-	outline: none;
-	background: linear-gradient(var(--sumi-line-strong), var(--sumi-line-strong)) center / 1px 100% no-repeat;
-}
-.sumi-canvas-pages {
-	display: flex;
-	flex: none;
-	flex-direction: column;
-	max-height: 40%;
-	overflow-y: auto;
-	scrollbar-width: none;
-}
-.sumi-canvas-layers {
-	margin-top: 12px;
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	min-height: 0;
-}
-.sumi-canvas-scroll {
-	flex: 1;
-	min-height: 0;
-	overflow-y: auto;
-	scrollbar-width: none;
-}
-.sumi-canvas-label {
-	display: flex;
-	flex: none;
-	align-items: center;
-	height: 32px;
-	padding: 0 16px;
-	color: var(--sumi-text-3);
-	font-size: var(--sumi-fs-12);
-}
-.sumi-canvas-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
-	margin-right: -9px;
-	margin-left: auto;
-	padding: 0;
-	border: 0;
-	background: none;
-	color: var(--sumi-text-3);
-	cursor: pointer;
-}
-.sumi-canvas-icon:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-}
-.sumi-canvas-row {
-	display: flex;
-	flex: none;
-	align-items: center;
-	gap: 8px;
-	width: 100%;
-	height: 28px;
-	padding: 0 16px;
-	border: 0;
-	background: none;
-	color: var(--sumi-text-2);
-	font: inherit;
-	text-align: left;
-	white-space: nowrap;
-	cursor: default;
-}
-.sumi-canvas-row:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-}
-.sumi-canvas-row.is-picked {
-	background: var(--sumi-group-plain);
-	color: var(--sumi-text);
-	font-weight: var(--sumi-fw-medium);
-}
-.sumi-canvas-row-name {
-	flex: 1;
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.sumi-canvas-row-count {
-	color: var(--sumi-text-3);
-	font-variant-numeric: tabular-nums;
-}
-.sumi-canvas-row-icon {
-	flex: none;
-	color: var(--sumi-text-3);
-}
-.sumi-canvas-row.is-picked .sumi-canvas-row-icon {
-	color: var(--sumi-text);
-}
-.sumi-canvas-row-chevron {
-	flex: none;
-	margin-left: auto;
-	color: var(--sumi-text-3);
 }
 .sumi-canvas-row-field {
 	flex: 1;
@@ -22515,6 +22528,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 .sumi-canvas-field {
 	position: relative;
+	background: var(--sumi-plate);
 	flex: 1;
 	min-width: 0;
 	overflow: hidden;
@@ -22532,28 +22546,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 .sumi-canvas-board {
 	position: absolute;
-}
-.sumi-canvas-glow {
-	position: absolute;
-	background: radial-gradient(
-		closest-side,
-		var(--sumi-hover) 0%,
-		var(--sumi-hover) 30%,
-		var(--sumi-hover) 58%,
-		var(--sumi-hover) 80%,
-		transparent 100%
-	);
-	@supports (color: color-mix(in lab, red, red)) {
-		background: radial-gradient(
-			closest-side,
-			var(--sumi-hover) 0%,
-			color-mix(in srgb, var(--sumi-hover) 82%, transparent) 30%,
-			color-mix(in srgb, var(--sumi-hover) 50%, transparent) 58%,
-			color-mix(in srgb, var(--sumi-hover) 20%, transparent) 80%,
-			transparent 100%
-		);
-	}
-	pointer-events: none;
 }
 .sumi-canvas-board.is-picked {
 	outline: calc(1px / var(--sumi-canvas-zoom, 1)) solid var(--sumi-text);
@@ -22610,6 +22602,43 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	color: var(--sumi-text-3);
 	font-size: var(--sumi-fs-13);
 	font-variant-numeric: tabular-nums;
+}
+.sumi-canvas-background {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
+.sumi-canvas-background:hover {
+	background: var(--sumi-hover);
+}
+.sumi-canvas-swatch {
+	display: inline-block;
+	flex: none;
+	width: 14px;
+	height: 14px;
+	background: var(--sumi-plate);
+	box-shadow: inset 0 0 0 1px var(--sumi-line-strong);
+}
+.sumi-canvas-swatch.is-custom {
+	background: conic-gradient(
+		var(--sumi-hue-red),
+		var(--sumi-hue-amber),
+		var(--sumi-hue-green),
+		var(--sumi-progress),
+		var(--sumi-hue-red)
+	);
+}
+.sumi-canvas-menu-spot {
+	position: fixed;
+	width: 0;
+	height: 0;
+	pointer-events: none;
 }
 @property --tw-translate-x {
 	syntax: "*";

@@ -8,6 +8,11 @@ export const BoardIdSchema = z.string().min(1).max(80);
 
 export const NameSchema = z.string().trim().min(1).max(120);
 
+export const BackgroundSchema = z
+	.string()
+	.regex(/^#[0-9a-f]{6}$/i)
+	.nullable();
+
 export const CameraSchema = z.object({
 	x: z.number(),
 	y: z.number(),
@@ -37,6 +42,7 @@ export const CanvasSchema = z.object({
 	shownPage: PageIdSchema,
 	isPanelOpen: z.boolean(),
 	panelWidth: z.number().min(120).max(800).default(240),
+	background: BackgroundSchema.default(null),
 	camera: CameraSchema.nullable(),
 });
 
@@ -51,6 +57,7 @@ export const CanvasViewSchema = z.object({
 	shownPage: PageIdSchema,
 	isPanelOpen: z.boolean(),
 	panelWidth: z.number(),
+	background: BackgroundSchema,
 	camera: CameraSchema.nullable(),
 });
 
