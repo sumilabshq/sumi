@@ -45,10 +45,7 @@ export function cursorSpotOf(field: TextField): CursorSpot | null {
 	}
 
 	const look = getComputedStyle(field);
-	const shown =
-		field instanceof HTMLInputElement && field.type === "password"
-			? PASSWORD_DOT.repeat(field.value.length)
-			: field.value;
+	const shown = shownTextOf(field);
 	const under = String.fromCodePoint(shown.codePointAt(at) ?? BLANK_CODE_POINT);
 	const isUnderDrawn = !BLANK.test(under);
 	const mirror = mirrorOf(field, look);
@@ -82,6 +79,16 @@ export function cursorSpotOf(field: TextField): CursorSpot | null {
 	return isSeenInField(field, spot.left + spot.width / 2, centerY) ? spot : null;
 }
 
+function shownTextOf(field: TextField): string {
+	if (field.value === "") {
+		return field.placeholder;
+	}
+
+	return field instanceof HTMLInputElement && field.type === "password"
+		? PASSWORD_DOT.repeat(field.value.length)
+		: field.value;
+}
+
 function isSeenInField(field: TextField, centerX: number, centerY: number): boolean {
 	const fieldBox = field.getBoundingClientRect();
 	const isInBox =
@@ -108,6 +115,6 @@ function mirrorOf(field: TextField, look: CSSStyleDeclaration): HTMLDivElement {
 	mirror.style.lineHeight = look.lineHeight;
 	mirror.style.whiteSpace = isArea ? "pre-wrap" : "pre";
 	mirror.style.overflowWrap = isArea ? "break-word" : "normal";
-	mirror.style.textIndent = field.value === "" ? "0" : look.textIndent;
+	mirror.style.textIndent = look.textIndent;
 	return mirror;
 }

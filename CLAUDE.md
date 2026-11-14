@@ -100,7 +100,7 @@ plugins/ai/permission-mode  FSL  @sumi/permission-mode-plugin: the composer's pe
 plugins/ai/plan-usage       FSL  @sumi/plan-usage-plugin: the composer's usage ring and menu (the runner's `usage` meter), through chat.options-end
 plugins/ai/model-picker     FSL  @sumi/model-picker-plugin: the composer's runner and model menu, through chat.options-end
 plugins/ai/effort-picker    FSL  @sumi/effort-picker-plugin: the composer's effort select (the chosen model's `effort` option), through chat.options-end
-plugins/terminal-cursor  FSL  @sumi/terminal-cursor-plugin: the blinking block caret over every focused text field of the window and the hollow block in an empty one, through shell.layer; a field opts out with data-terminal-cursor="off", and the one field marked "held" keeps its block while no text field has focus (the chat marks the composer that takes typing)
+plugins/terminal-cursor  FSL  @sumi/terminal-cursor-plugin: the blinking block caret over every focused text field of the window, over the first placeholder letter in an empty one, through shell.layer; a field opts out with data-terminal-cursor="off", and the one field marked "held" keeps its block while no text field has focus (the chat marks the composer that takes typing)
 plugins/tasks            FSL  @sumi/tasks-plugin: the tasks module (plugins/tasks/data/tasks), the Tasks app, the chat's tasks UI through slots, the task tools (plugins/tasks/data/task-work) as the tasks MCP server
 plugins/canvas           FSL  @sumi/canvas-plugin: the Canvas app: its artboards module (plugins/canvas/data/artboards: pages of HTML artboards per canvas tab), its tab page, the canvas tools (plugins/canvas/data/canvas-work) as the canvas MCP server and the agent's design-first prompt part
       ↓

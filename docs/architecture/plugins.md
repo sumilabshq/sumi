@@ -175,11 +175,11 @@ The relay (`apps/tauri/src/agent/agent-relay.ts`, `apps/tauri/src-tauri/src/agen
 
 ## Example: terminal cursor
 
-`plugins/terminal-cursor` registers one `shell.layer` and owns no data. It draws a blinking block over the caret of the focused `textarea` or text `input` of the window, inverts the letter under it, and draws a hollow block in an empty field at rest; the native caret is hidden only while the plugin runs (`:root[data-terminal-cursor-on]`), so a window without it shows plain inputs. A field with no area or no visible text of its own (xterm's helper textarea) is skipped. Another plugin's field chooses through one attribute, never an import:
+`plugins/terminal-cursor` registers one `shell.layer` and owns no data. It draws a blinking block over the caret of the focused `textarea` or text `input` of the window, and inverts the letter under it, the first placeholder letter in an empty field; the native caret is hidden only while the plugin runs (`:root[data-terminal-cursor-on]`), so a window without it shows plain inputs. A field with no area or no visible text of its own (xterm's helper textarea) is skipped. Another plugin's field chooses through one attribute, never an import:
 
 | `data-terminal-cursor` | The field                                                                                                                                            |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `"off"`                | keeps the native caret: no block, no hollow block, no placeholder indent                                                                             |
+| `"off"`                | keeps the native caret: no block                                                                                                                     |
 | `"held"`               | keeps its block while no text field has focus; its writer sets it on one field at a time, only while a typed letter would land there (the chat does) |
 
 ## Example: chat
