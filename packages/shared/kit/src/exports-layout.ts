@@ -55,3 +55,10 @@ export {
 export { DirectionProvider } from "./components/direction-provider";
 export { useDirection } from "./components/direction-context";
 export { Marker, MarkerContent, MarkerIcon, markerVariants } from "./components/marker";
+export { SIDE_PANEL_MIN_WIDTH, SidePanel } from "./components/side-panel";
+export type { SidePanelProps, SidePanelSide } from "./components/side-panel";
+export { SidePanelSection } from "./components/side-panel-section";
+export type { SidePanelSectionProps } from "./components/side-panel-section";
+export { SidePanelRow, sidePanelIndentOf } from "./components/side-panel-row";
+export type { SidePanelRowProps } from "./components/side-panel-row";
+export { SidePanelAction } from "./components/side-panel-action";
