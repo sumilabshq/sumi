@@ -5,3 +5,7 @@ export function NoHeaderActions(): null {
 export function NoHeaderAction(): null {
 	return null;
 }
+
+export function NoHeaderTint(): null {
+	return null;
+}

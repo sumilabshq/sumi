@@ -5,6 +5,7 @@ import type { TabHeader } from "@sumi/sumi-host-plugin";
 import { AppHeader } from "../app-header/app-header.js";
 import { PageHeaderAction } from "../app-header/page-header-action.js";
 import { PageHeaderActions } from "../app-header/page-header-actions.js";
+import { PageHeaderTint } from "../app-header/page-header-tint.js";
 import { useAppPageView } from "../../lib/use-app-page-view.js";
 import { FrameNote } from "../frame-note/frame-note.js";
 import { MissingApp } from "../missing-app/missing-app.js";
@@ -20,6 +21,7 @@ const NO_TAB = "This tab was closed";
 const PAGE_HEADER: TabHeader = {
 	Actions: PageHeaderActions,
 	Action: PageHeaderAction,
+	Tint: PageHeaderTint,
 };
 
 export function AppPage({ app, tabId }: AppPageProps): ReactElement {
