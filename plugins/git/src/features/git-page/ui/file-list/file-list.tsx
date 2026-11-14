@@ -1,16 +1,19 @@
-import { createElement as h, Fragment, useState } from "react";
+import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { git } from "@sumi/git/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
+import { SidePanelSection } from "@widgetarium/kit";
 import { comparisonInputOf, useGitPage } from "../../lib/git-page-context.js";
 import { anchorOf } from "../../lib/git-names.js";
 import { fuzzyFiltered } from "../../lib/fuzzy-rank.js";
-import { FileListHead } from "../file-list-head/file-list-head.js";
+import { FileShapeAction } from "../file-shape-action/file-shape-action.js";
 import { FileRow } from "../file-row/file-row.js";
 import { FileTree } from "../file-tree/file-tree.js";
 import { SearchField } from "../search-field/search-field.js";
 
 const FILTER = "Filter files";
+const FILES = "Files {count}";
+const VIEWED = "{viewed} of {count} viewed";
 
 export function FileList(): ReactElement | null {
 	const page = useGitPage();
@@ -29,8 +32,12 @@ export function FileList(): ReactElement | null {
 	};
 	const shown = fuzzyFiltered(files, filter, ({ path }) => path);
 	return (
-		<Fragment>
-			<FileListHead count={files.length} viewedCount={page.viewed.size} isTree={isTree} />
+		<SidePanelSection
+			label={(page.viewed.size === 0 ? FILES : VIEWED)
+				.replace("{count}", String(files.length))
+				.replace("{viewed}", String(page.viewed.size))}
+			action={<FileShapeAction isTree={isTree} />}
+		>
 			<SearchField value={filter} placeholder={FILTER} isFocused={false} onChange={setFilter} />
 			{isTree ? (
 				<FileTree files={shown} filter={filter} picked={picked} viewed={page.viewed} onPick={pick} />
@@ -45,6 +52,6 @@ export function FileList(): ReactElement | null {
 					/>
 				))
 			)}
-		</Fragment>
+		</SidePanelSection>
 	);
 }

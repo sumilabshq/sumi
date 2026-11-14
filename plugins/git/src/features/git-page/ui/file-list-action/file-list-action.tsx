@@ -8,11 +8,11 @@ import { RepoOnly } from "../repo-only/repo-only.js";
 
 const SHOWN = {
 	label: "Hide file list",
-	icon: "panel-left-close",
+	icon: "panel-right-close",
 };
 const HIDDEN = {
 	label: "Show file list",
-	icon: "panel-left-open",
+	icon: "panel-right-open",
 };
 
 export function FileListAction({ tabId }: AppViewProps): ReactElement {

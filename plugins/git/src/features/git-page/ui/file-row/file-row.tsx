@@ -1,6 +1,7 @@
-import { createElement as h } from "react";
+import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import type { FileDiff } from "@sumi/git/contract";
+import { SidePanelRow } from "@widgetarium/kit";
 import { fileFolderOf, fileNameOf } from "../../lib/git-names.js";
 import { ChangeNums } from "../change-nums/change-nums.js";
 import { Glyph } from "../glyph/glyph.js";
@@ -14,34 +15,30 @@ export interface FileRowProps {
 	onPick(): void;
 }
 
-const ROW = "wg-git-row";
-const PICKED = " is-sel";
-const VIEWED = " is-seen";
-const TREE_ROW = " wg-git-tree-row";
-const ROW_INSET_PX = 10;
-const DEPTH_STEP_PX = 16;
+const VIEWED = "is-seen";
+const TREE_ROW = "wg-git-tree-row";
 
 export function FileRow({ file, depth, isPicked, isViewed, onPick }: FileRowProps): ReactElement {
+	const isInTree = depth !== undefined;
 	return (
-		<button
-			className={`${ROW}${depth === undefined ? "" : TREE_ROW}${isPicked ? PICKED : ""}${isViewed ? VIEWED : ""}`}
-			style={depth === undefined ? undefined : { paddingLeft: ROW_INSET_PX + depth * DEPTH_STEP_PX }}
+		<SidePanelRow
+			className={[isInTree ? TREE_ROW : "", isViewed ? VIEWED : ""].join(" ").trim()}
+			icon={<StatusLetter status={file.status} />}
+			label={
+				isInTree ? (
+					fileNameOf(file.path)
+				) : (
+					<Fragment>
+						{fileNameOf(file.path)} <span className="wg-git-dim">{fileFolderOf(file.path)}</span>
+					</Fragment>
+				)
+			}
+			end={
+				isViewed ? <Glyph name="tick" size={14} /> : <ChangeNums added={file.added} removed={file.removed} hidesZero />
+			}
+			depth={depth ?? 0}
+			isPicked={isPicked}
 			onClick={onPick}
-		>
-			<StatusLetter status={file.status} />
-			<span className="wg-git-nm">{fileNameOf(file.path)}</span>
-			{depth === undefined ? (
-				<span className="wg-git-dim">{fileFolderOf(file.path)}</span>
-			) : (
-				<span className="wg-git-gap" />
-			)}
-			{isViewed ? (
-				<span className="is-faint">
-					<Glyph name="tick" size={14} />
-				</span>
-			) : (
-				<ChangeNums added={file.added} removed={file.removed} hidesZero />
-			)}
-		</button>
+		/>
 	);
 }

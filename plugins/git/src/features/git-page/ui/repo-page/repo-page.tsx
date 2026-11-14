@@ -8,7 +8,6 @@ import { GitPageContext } from "../../lib/git-page-context.js";
 import { useRereadsWhileShown } from "../../lib/use-rereads-while-shown.js";
 import { withToggled } from "../../lib/toggled-set.js";
 import { FILE_LIST_WIDTH_VAR } from "../../lib/use-file-list-resize.js";
-import { FileListEdge } from "../file-list-edge/file-list-edge.js";
 import { DiffList } from "../diff-list/diff-list.js";
 import { SidePanel } from "../side-panel/side-panel.js";
 
@@ -50,8 +49,7 @@ export function RepoPage({ place, address, go }: RepoPageProps): ReactElement {
 				className={isFileListShown ? "wg-git-page" : "wg-git-page is-list-hidden"}
 				style={{ [FILE_LIST_WIDTH_VAR]: `${String(fileListPx)}px` } as CSSProperties}
 			>
-				<SidePanel />
-				<FileListEdge px={fileListPx} />
+				<SidePanel px={fileListPx} />
 				<DiffList />
 			</div>
 		</GitPageContext.Provider>

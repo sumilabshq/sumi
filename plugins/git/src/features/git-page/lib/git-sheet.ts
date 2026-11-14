@@ -4,9 +4,7 @@ export const GIT_SHEET = `
 :where(.wg-git) :where(button, input) { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; text-align: left; }
 :where(.wg-git) :where(button) { cursor: pointer; }
 .wg-git-glyph { flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.wg-git-page { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; padding-left: 6px; overflow: hidden; }
-.wg-git-side { position: absolute; z-index: 2; top: 0; bottom: 6px; left: 6px; width: var(--wg-git-list-w, 256px); transition: transform var(--sumi-dur-slow) var(--sumi-ease-out), visibility 0s; display: flex; flex-direction: column; padding: 6px; border-radius: var(--sumi-r-md); background: var(--sumi-soft); min-height: 0; }
-.wg-git-lists { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; margin: 0 -6px; padding: 0 6px; }
+.wg-git-page { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; overflow-x: clip; }
 .wg-git-row { height: var(--sumi-h-row); width: 100%; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: var(--sumi-r-md); white-space: nowrap; flex: none; transition: background var(--sumi-dur-hover) var(--sumi-ease); }
 .wg-git-row:hover { background: var(--sumi-hover); }
 .wg-git-row.is-act { background: var(--sumi-active); }
@@ -15,7 +13,7 @@ export const GIT_SHEET = `
 .wg-git-row .is-faint { color: var(--sumi-text-3); }
 .wg-git-nm { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .wg-git-nm.is-fill { flex: 1; min-width: 0; }
-.wg-git-row.is-seen .wg-git-nm { color: var(--sumi-text-2); font-weight: var(--sumi-fw-regular); }
+.wg-kit-side-panel-row.is-seen { color: var(--sumi-text-2); font-weight: var(--sumi-fw-regular); }
 .wg-git-dim { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--sumi-text-3); font-weight: var(--sumi-fw-regular); }
 .wg-git-lbl { color: var(--sumi-text-3); }
 .wg-git-hint { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: var(--sumi-fs-12); color: var(--sumi-text-3); font-weight: var(--sumi-fw-regular); }
@@ -26,17 +24,14 @@ export const GIT_SHEET = `
 .wg-git-st[data-status="added"] { color: var(--sumi-success); }
 .wg-git-st[data-status="deleted"] { color: var(--sumi-danger); }
 .wg-git-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sumi-warning); flex: none; }
-.wg-git-sec { height: var(--sumi-h-row); flex: none; display: flex; align-items: center; gap: 6px; padding: 0 10px; margin-top: 16px; font-size: var(--sumi-fs-12); color: var(--sumi-text-2); }
-.wg-git-sec b { font-weight: var(--sumi-fw-semi); color: var(--sumi-text); }
 .wg-git-fold-mark { width: 14px; flex: none; display: inline-flex; color: var(--sumi-text-3); transition: transform var(--sumi-dur-fast) var(--sumi-ease-out); }
 .wg-git-folder[aria-expanded="true"] .wg-git-fold-mark { transform: rotate(90deg); }
 .wg-git-tree-row { animation: wg-git-row-in var(--sumi-dur-fast) var(--sumi-ease-out); }
 @keyframes wg-git-row-in { from { opacity: 0; transform: translateY(-2px); } }
 @media (prefers-reduced-motion: reduce) { .wg-git-tree-row { animation: none; } .wg-git-fold-mark { transition: none; } }
 .wg-git-folder > .wg-git-glyph { color: var(--sumi-text-2); }
-.wg-git-sec > .wg-kit-icon { margin-right: -6px; }
-.wg-git-meta { display: flex; gap: 6px; padding: 2px 10px 8px 34px; font-size: var(--sumi-fs-12); color: var(--sumi-text-2); }
-.wg-git-field { height: var(--sumi-h-md); flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px; margin: 2px 0 4px; border-radius: var(--sumi-r-md); background: var(--sumi-hover); color: var(--sumi-text-3); }
+.wg-git-meta { display: flex; gap: 6px; padding: 2px 16px 8px 40px; font-size: var(--sumi-fs-12); color: var(--sumi-text-2); }
+.wg-git-field { height: var(--sumi-h-md); flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px; margin: 2px 8px 6px; background: var(--sumi-hover); color: var(--sumi-text-3); }
 .wg-git-field input { flex: 1; min-width: 0; height: 100%; outline: none; color: var(--sumi-text); }
 .wg-git-field input::placeholder { color: var(--sumi-text-3); }
 .wg-git-pick { flex: none; }
@@ -45,13 +40,8 @@ export const GIT_SHEET = `
 .wg-git-mi-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
 .wg-git-mi-hint { flex: none; max-width: 45%; display: inline-flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--sumi-fs-12); color: var(--sumi-text-3); }
 .wg-git-mlabel { padding: 8px 10px 4px; font-size: var(--sumi-fs-12); color: var(--sumi-text-3); }
-.wg-git-diffs { --wg-git-diff-inset: var(--sumi-r-md); flex: 1; min-width: 0; min-height: 0; margin-left: calc(var(--wg-git-list-w, 256px) - var(--sumi-r-md)); padding-left: var(--wg-git-diff-inset); overflow-x: hidden; overflow-y: auto; }
-.wg-git-page.is-list-hidden .wg-git-side { transform: translateX(calc(-100% - 12px)); visibility: hidden; transition: transform var(--sumi-dur-slow) var(--sumi-ease-out), visibility 0s linear var(--sumi-dur-slow); }
-.wg-git-edge { position: absolute; z-index: 3; top: 0; bottom: 6px; left: calc(6px + var(--wg-git-list-w, 256px)); width: 8px; transform: translateX(-50%); cursor: col-resize; touch-action: none; outline: none; }
-.wg-git-edge::after { content: ""; position: absolute; top: var(--sumi-r-md); bottom: var(--sumi-r-md); left: 3px; width: 2px; border-radius: 1px; background: transparent; transition: background var(--sumi-dur-fast) var(--sumi-ease); }
-.wg-git-edge:is(:hover, :active, :focus-visible)::after { background: var(--sumi-line); }
-.wg-git-page.is-list-hidden .wg-git-edge { display: none; }
-.wg-git-page.is-list-hidden .wg-git-diffs { --wg-git-diff-inset: 0px; margin-left: -6px; }
+.wg-git-diffs { --wg-git-diff-inset: 0px; flex: 1; min-width: 0; min-height: 0; margin-right: calc(var(--wg-git-list-w, 256px) + 16px); overflow-x: hidden; overflow-y: auto; }
+.wg-git-page.is-list-hidden .wg-git-diffs { margin-right: 0; }
 .wg-git-file + .wg-git-file { border-top: 1px solid var(--sumi-line); }
 .wg-git-fold { width: 24px; height: 24px; flex: none; display: inline-flex; align-items: center; justify-content: center; color: var(--sumi-text-2); }
 .wg-git-fhead:focus-visible { outline: 2px solid var(--sumi-focus-ring); outline-offset: -2px; }

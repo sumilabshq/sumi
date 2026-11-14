@@ -3,14 +3,14 @@ import { git } from "@sumi/git/contract";
 import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/data-framework";
+import { SIDE_PANEL_MIN_WIDTH } from "@widgetarium/kit";
 
 export const FILE_LIST_WIDTH_VAR = "--wg-git-list-w";
 
 const DEFAULT_PX = 256;
-const LEAST_PX = 200;
 const LEAST_DIFFS_PX = 240;
 
-export function useFileListResize(edge: HTMLElement | null, savedPx: number): EdgeResizeHandlers {
+export function useFileListResize(panel: HTMLElement | null, savedPx: number): EdgeResizeHandlers {
 	const resize = useCommand(git.gitLook.resizeFileList);
 	const livePx = useRef(savedPx);
 	const keptPx = useRef(savedPx);
@@ -24,7 +24,7 @@ export function useFileListResize(edge: HTMLElement | null, savedPx: number): Ed
 
 		frame.current = requestAnimationFrame(() => {
 			frame.current = 0;
-			edge?.parentElement?.style.setProperty(FILE_LIST_WIDTH_VAR, `${livePx.current}px`);
+			panel?.parentElement?.style.setProperty(FILE_LIST_WIDTH_VAR, `${livePx.current}px`);
 		});
 	};
 	const kept = (): void => {
@@ -43,7 +43,8 @@ export function useFileListResize(edge: HTMLElement | null, savedPx: number): Ed
 
 	const handlers = useEdgeResize({
 		widthOf: () => livePx.current,
-		onResize: (px) => drawn(clampedPx(px, edge)),
+		edge: "start",
+		onResize: (px) => drawn(clampedPx(px, panel)),
 		onReset: () => {
 			drawn(DEFAULT_PX);
 			kept();
@@ -66,7 +67,7 @@ export function useFileListResize(edge: HTMLElement | null, savedPx: number): Ed
 	};
 }
 
-function clampedPx(px: number, edge: HTMLElement | null): number {
-	const most = (edge?.parentElement?.clientWidth ?? Number.MAX_SAFE_INTEGER) - LEAST_DIFFS_PX;
-	return Math.round(Math.max(LEAST_PX, Math.min(px, most)));
+function clampedPx(px: number, panel: HTMLElement | null): number {
+	const most = (panel?.parentElement?.clientWidth ?? Number.MAX_SAFE_INTEGER) - LEAST_DIFFS_PX;
+	return Math.round(Math.max(SIDE_PANEL_MIN_WIDTH, Math.min(px, most)));
 }
