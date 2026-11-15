@@ -1,0 +1,25 @@
+.sumi-title-bar {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--sumi-sp-2);
+	box-sizing: border-box;
+	height: var(--sumi-header-h);
+	padding: 0 var(--sumi-sp-3) 0 calc(var(--wg-shell-chrome-left, 0px) + var(--sumi-sp-3) + var(--sumi-sp-4));
+	background: var(--sumi-frame);
+}
+
+.sumi-title-bar-tabs {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	min-width: 0;
+	height: 100%;
+}
+
+.sumi-title-bar-end {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--sumi-sp-1);
+}

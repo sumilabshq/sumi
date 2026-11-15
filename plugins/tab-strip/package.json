@@ -1,0 +1,32 @@
+{
+	"name": "@sumi/tab-strip-plugin",
+	"version": "0.1.0",
+	"description": "Tab strip: the window's tabs in the title row beside the traffic lights",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/apps": "0.1.0",
+		"@sumi/command-menu": "0.1.0",
+		"@sumi/chat-tabs": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/app-host": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/layout": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0",
+		"@sumi/control-menu-plugin": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

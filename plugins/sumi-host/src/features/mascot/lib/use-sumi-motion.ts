@@ -64,10 +64,14 @@ export function useSumiMotion(state: SumiState, size: number): SumiParts {
 			return undefined;
 		}
 
-		return runsMotion({
-			body,
-			eye,
-		}, wanted, size);
+		return runsMotion(
+			{
+				body,
+				eye,
+			},
+			wanted,
+			size,
+		);
 	}, [size]);
 	return {
 		body,

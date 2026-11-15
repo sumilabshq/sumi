@@ -1,16 +1,7 @@
 import type { SumiState } from "./sumi-state.js";
 
 export type SumiMood =
-	| "idle"
-	| "listening"
-	| "thinking"
-	| "working"
-	| "done"
-	| "question"
-	| "error"
-	| "sleep"
-	| "pleased"
-	| "surprised";
+	"idle" | "listening" | "thinking" | "working" | "done" | "question" | "error" | "sleep" | "pleased" | "surprised";
 
 const STATE_OF: Readonly<Record<SumiMood, SumiState>> = {
 	idle: "rest",

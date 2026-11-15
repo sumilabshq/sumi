@@ -1,28 +1,12 @@
-export interface Point {
-	readonly x: number;
-	readonly y: number;
-}
+import { restingSpring } from "@widgetarium/kit";
+import type { Point, Spring, Tension } from "@widgetarium/kit";
 
-export interface Spring {
-	x: number;
-	y: number;
-	vx: number;
-	vy: number;
-}
-
-export interface Tension {
-	readonly stiff: number;
-	readonly damp: number;
-}
+export { CORNER_TENSION, restingSpring, springToward } from "@widgetarium/kit";
+export type { Point, Spring, Tension } from "@widgetarium/kit";
 
 export const EYE_TENSION: Tension = {
 	stiff: 520,
 	damp: 26,
-};
-
-export const CORNER_TENSION: Tension = {
-	stiff: 170,
-	damp: 18,
 };
 
 export const EYE_OF_SIZE = 0.2;
@@ -52,24 +36,8 @@ const CORNER_UNITS: readonly Point[] = [
 	},
 ];
 
-export function restingSpring(): Spring {
-	return {
-		x: 0,
-		y: 0,
-		vx: 0,
-		vy: 0,
-	};
-}
-
 export function restingCorners(): Spring[] {
 	return CORNER_UNITS.map(() => restingSpring());
-}
-
-export function springToward(spring: Spring, goal: Point, { stiff, damp }: Tension, dt: number): void {
-	spring.vx += ((goal.x - spring.x) * stiff - spring.vx * damp) * dt;
-	spring.vy += ((goal.y - spring.y) * stiff - spring.vy * damp) * dt;
-	spring.x += spring.vx * dt;
-	spring.y += spring.vy * dt;
 }
 
 export function eyeTravelOf(size: number): number {

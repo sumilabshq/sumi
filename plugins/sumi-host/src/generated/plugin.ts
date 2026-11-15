@@ -5,5 +5,7 @@ import { sumiHost as definition } from "../plugin.js";
 export const sumiHost = pluginWithSlots(definition, {
 	slots: {
 		sidebarActions: listPluginSlot<{}>("sumi-host.sidebar-actions"),
+		titleTabs: listPluginSlot<{}>("sumi-host.title-tabs"),
+		titleEnd: listPluginSlot<{}>("sumi-host.title-end"),
 	},
 });

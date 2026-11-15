@@ -25,6 +25,7 @@ export * from "./features/tab-header/ui/toggle-action/toggle-action.js";
 export * from "./features/tab-header/ui/wrap-lines-action/wrap-lines-action.js";
 export * from "./features/layers/lib/opens-layer-mark.js";
 export * from "./features/sidebar/ui/sidebar-actions/sidebar-actions.js";
+export * from "./features/title-bar/ui/title-bar/title-bar.js";
 export * from "./features/mascot/ui/sumi-figure/sumi-figure.js";
 export * from "./features/mascot/lib/sumi-state-of.js";
 export type { SumiState } from "./features/mascot/lib/sumi-state.js";
