@@ -12,16 +12,18 @@ export type BoxedGroup = Pick<GroupState, "id" | "name" | "hue" | "isOpen">;
 
 export interface GroupBoxProps {
 	readonly group: BoxedGroup;
-	readonly count: number;
 	readonly holdsChat?: boolean;
+	readonly isRenaming: boolean;
+	readonly onRenamed: () => void;
 	readonly children: ReactNode;
 }
 
 export const GroupBox = memo(function GroupBox({
 	group,
-	count,
 	children,
 	holdsChat = false,
+	isRenaming,
+	onRenamed,
 }: GroupBoxProps): ReactElement {
 	const lifted = useLiftedMark(group.id, null);
 	return (
@@ -36,7 +38,7 @@ export const GroupBox = memo(function GroupBox({
 			}}
 		>
 			{lifted === null ? null : <DropTint isOn={lifted.isMarked} radius={CARD_RADIUS_PX} />}
-			<GroupHead group={group} count={count} />
+			<GroupHead group={group} isRenaming={isRenaming} onRenamed={onRenamed} />
 			<FoldBox isOpen={group.isOpen}>
 				<div className={NESTED_ROWS} data-tabs-rows="">
 					{children}

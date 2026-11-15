@@ -726,6 +726,36 @@
 	margin-bottom: 10px;
 }
 
+.wg-ws-ink-row {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 10px;
+}
+
+.wg-ws-pick .wg-ws-ink.wg-kit-icon {
+	width: 30px;
+	height: 30px;
+	border-radius: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.wg-ws-pick .wg-ws-ink.wg-kit-icon:hover {
+	background: var(--sumi-hover);
+}
+
+.wg-ws-pick .wg-ws-ink.wg-kit-icon[aria-checked="true"] {
+	box-shadow: inset 0 0 0 1px var(--sumi-text);
+}
+
+.wg-ws-ink-swatch {
+	width: 14px;
+	height: 14px;
+	background: var(--sumi-accent);
+}
+
 .wg-ws-pick .wg-ws-pick-tab.wg-kit-btn {
 	height: 30px;
 	padding: 0 12px;

@@ -13,6 +13,8 @@ import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { composerExpand } from "@sumi/composer-expand-plugin";
+import { controlMenu } from "@sumi/control-menu-plugin";
+import { tabStrip } from "@sumi/tab-strip-plugin";
 import { slashCommands } from "@sumi/slash-commands-plugin";
 import { effortPicker } from "@sumi/effort-picker-plugin";
 import { modelPicker } from "@sumi/model-picker-plugin";
@@ -142,6 +144,8 @@ const INSTALLED_PLUGINS = [
 	workingFolder,
 	planUsage,
 	terminalCursor,
+	controlMenu,
+	tabStrip,
 ];
 const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, agent, questions, tasks];
 
@@ -166,6 +170,8 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		workingFolder.id,
 		planUsage.id,
 		terminalCursor.id,
+		controlMenu.id,
+		tabStrip.id,
 	],
 };
 

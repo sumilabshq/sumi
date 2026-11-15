@@ -24,7 +24,7 @@ export function liftedSplitIdOf(source: DragSource, drop: TabDrop): string | nul
 }
 
 export function isDraggedRow(source: DragSource, row: { readonly id: string | null }): boolean {
-	return source.kind !== "essential" && row.id === source.id;
+	return row.id === source.id;
 }
 
 function unsplitRowsOf(layout: SidebarLayout): readonly Measured[] {

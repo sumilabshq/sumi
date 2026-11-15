@@ -6,7 +6,7 @@ import { FOLD_HOST_ROW, ROW_WORDS, SIDEBAR_ROW, SIDEBAR_ROW_SHOWN } from "../../
 import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";
 import { useRowPick } from "../../lib/tabs-sidebar/use-row-pick.js";
 import { DropTint } from "../drop-tint/drop-tint.js";
-import { RenameField } from "../rename-field/rename-field.js";
+import { TabRenameField } from "../rename-field/tab-rename-field.js";
 import { LIFTED_HIDDEN, useLiftedMark } from "../../lib/tab-drag/lifted-look.js";
 import { RowIcon } from "./row-icon.js";
 import { RowTail } from "./row-tail.js";
@@ -27,8 +27,6 @@ export interface TabRowProps {
 }
 
 const MIDDLE_BUTTON = 1;
-const RENAME_FIELD =
-	"cv:h-6 cv:min-w-0 cv:flex-1 cv:rounded-none cv:border-0 cv:bg-(--sumi-plate) cv:px-1.5 cv:font-[inherit] cv:text-[13px] cv:text-(--sumi-text) cv:[box-shadow:inset_0_0_0_1.5px_var(--sumi-accent)] cv:outline-none";
 const ROW_RADIUS_PX = 0;
 
 export const TabRow = memo(function TabRow({
@@ -80,7 +78,7 @@ export const TabRow = memo(function TabRow({
 			{lifted === null ? null : <DropTint isOn={lifted.isMarked} radius={ROW_RADIUS_PX} />}
 			<RowIcon item={item} />
 			{isRenaming ? (
-				<RenameField named={face} className={RENAME_FIELD} onDone={onRenamed} />
+				<TabRenameField named={face} onDone={onRenamed} />
 			) : (
 				<span className={ROW_WORDS} data-tabs-words="">
 					{face.title}

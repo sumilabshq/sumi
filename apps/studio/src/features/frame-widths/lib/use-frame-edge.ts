@@ -28,7 +28,7 @@ export function useFrameEdge({ edge, px, plateLeastPx }: FrameEdgeAsk): EdgeResi
 	const handlers = useEdgeResize({
 		widthOf: () => drag.widthOr(px),
 		edge: "end",
-		onResize: (asked) => drag.drawWidth(edge, asked),
+		onResize: (asked) => drag.drawWidth(asked),
 		onReset: () => void reset.run({ edge, mostPx: drag.endForReset(edge, px) }),
 	});
 	return handlersTracking(handlers, {

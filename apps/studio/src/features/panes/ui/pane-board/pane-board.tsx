@@ -34,7 +34,14 @@ export function PaneBoard({ drawn, empty, chatPx, bounds, onChatPx }: PaneBoardP
 				/>
 			))}
 			{look.tree.leaves.map((leaf) => (
-				<PaneSlot key={leaf.id} leaf={leaf} look={look.slotOf(leaf)} drawn={drawn} onFocused={focusMember} />
+				<PaneSlot
+					key={leaf.id}
+					leaf={leaf}
+					look={look.slotOf(leaf)}
+					isClosable={look.tree.closableIds.includes(leaf.id)}
+					drawn={drawn}
+					onFocused={focusMember}
+				/>
 			))}
 			{look.aim === null
 				? look.edges.map((edge) => (

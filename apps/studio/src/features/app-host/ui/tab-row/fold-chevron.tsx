@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { MouseEvent, ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { HOVER_SHOWN } from "../../lib/tabs-look/tabs-look.js";
+import { CHEVRON_TURN, ROW_CHEVRON } from "../../lib/tabs-look/tabs-look.js";
 
 export interface RowFold {
 	readonly isFolded: boolean;
@@ -15,9 +15,7 @@ export interface FoldChevronProps {
 
 const FOLD_LABEL = "Fold {title}";
 const UNFOLD_LABEL = "Unfold {title}";
-const CHEVRON = `cv:flex cv:size-5 cv:flex-none cv:cursor-pointer cv:items-center cv:justify-center cv:rounded-none cv:border-0 cv:bg-transparent cv:p-0 cv:[font:inherit] cv:text-(--sumi-text-2) cv:outline-none cv:transition-[background-color] cv:duration-(--sumi-dur-hover) cv:ease-(--sumi-ease) cv:hover:bg-(--sumi-active) cv:hover:duration-0 cv:focus-visible:[box-shadow:inset_0_0_0_1.5px_var(--sumi-focus-ring)] cv:group-hover/row:opacity-100 ${HOVER_SHOWN}`;
-const TURN =
-	"cv:flex cv:transition-transform cv:duration-(--sumi-dur-base) cv:ease-(--sumi-ease-out) cv:motion-reduce:transition-none cv:data-[folded]:-rotate-90";
+const CHEVRON = `${ROW_CHEVRON} cv:cursor-pointer cv:rounded-none cv:border-0 cv:bg-transparent cv:p-0 cv:[font:inherit] cv:outline-none cv:hover:bg-(--sumi-active) cv:hover:duration-0 cv:focus-visible:[box-shadow:inset_0_0_0_1.5px_var(--sumi-focus-ring)]`;
 
 export function FoldChevron({ title, fold }: FoldChevronProps): ReactElement {
 	const label = (fold.isFolded ? UNFOLD_LABEL : FOLD_LABEL).replace("{title}", title);
@@ -35,7 +33,7 @@ export function FoldChevron({ title, fold }: FoldChevronProps): ReactElement {
 			data-tabs-fold=""
 			data-folded={fold.isFolded || undefined}
 		>
-			<span className={TURN} data-folded={fold.isFolded || undefined}>
+			<span className={CHEVRON_TURN} data-folded={fold.isFolded || undefined}>
 				<Icon name="chevron-down" size={12} />
 			</span>
 		</button>

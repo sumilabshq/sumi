@@ -3,9 +3,6 @@ import type { ReactElement } from "react";
 import { Slot } from "@widgetarium/data-framework";
 import { TipSurface } from "../../../canvas/ui/tip-surface/tip-surface.js";
 import { TabsSidebar } from "../../../app-host/ui/tabs-sidebar/tabs-sidebar.js";
-import { WorkspaceHeader } from "../workspace-header/workspace-header.js";
-import { WorkspaceKeys } from "../workspace-keys/workspace-keys.js";
-import { WorkspaceStrip } from "../workspace-strip/workspace-strip.js";
 import { ColumnTop } from "./column-top.js";
 import { OpeningVeil } from "./opening-veil.js";
 import { SidebarKeys } from "./sidebar-keys.js";
@@ -20,11 +17,8 @@ export function ChatsColumn(): ReactElement {
 				<Slot loading={null}>
 					<OpeningVeil>
 						<ColumnTop />
-						<WorkspaceHeader />
 						<TabsSidebar />
 					</OpeningVeil>
-					<WorkspaceStrip />
-					<WorkspaceKeys />
 				</Slot>
 				<Slot loading={null}>
 					<SidebarKeys column={column} />

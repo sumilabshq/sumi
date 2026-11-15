@@ -1,3 +1,13 @@
+@property --wg-shell-left-dragged {
+	syntax: "*";
+	inherits: false;
+}
+
+@property --wg-shell-chat-dragged {
+	syntax: "*";
+	inherits: false;
+}
+
 .wg-studio.wg-shell {
 	--wg-shell-left-w: max(var(--sumi-sidebar-min), var(--wg-shell-left, var(--sumi-chats-w)));
 	--wg-shell-float-pad: var(--sumi-sp-4);
@@ -33,7 +43,7 @@
 	z-index: 4;
 	flex: 0 1 auto;
 	box-sizing: border-box;
-	width: var(--wg-shell-left-w);
+	width: var(--wg-shell-left-dragged, var(--wg-shell-left-w));
 	min-width: var(--sumi-sidebar-min);
 	min-height: 0;
 }
@@ -62,7 +72,7 @@
 
 .wg-shell-side[data-shell-side="left"] {
 	left: 0;
-	width: var(--wg-shell-left-w);
+	width: max(var(--sumi-sidebar-min), var(--wg-shell-left-dragged, var(--wg-shell-left-w)));
 }
 
 .wg-shell-left[data-state="docked"] > .wg-shell-side {
@@ -132,6 +142,111 @@
 	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
 }
 
+.wg-studio.wg-shell.is-flat {
+	padding: 0;
+}
+
+.wg-studio.wg-shell.is-titled {
+	flex-direction: column;
+}
+
+.wg-shell.is-flat .wg-shell-toggle {
+	top: calc((var(--sumi-header-h) - var(--sumi-h-sm)) / 2);
+}
+
+.wg-shell-end {
+	position: absolute;
+	top: 0;
+	right: var(--sumi-sp-3);
+	z-index: 4;
+	display: flex;
+	align-items: center;
+	width: auto;
+	height: var(--sumi-header-h);
+}
+
+.wg-shell.is-flat {
+	--sumi-corner-h: var(--sumi-header-h);
+	--sumi-corner-start-w: calc(var(--wg-shell-toggle-left) + var(--sumi-h-sm) + var(--sumi-sp-3));
+	--sumi-corner-end-w: calc(var(--sumi-h-sm) + 2 * var(--sumi-sp-3));
+}
+
+.wg-pane {
+	--sumi-corner-start: 0px;
+	--sumi-corner-end: 0px;
+	--sumi-corner-top: 0px;
+}
+
+.wg-shell.is-side-hidden .wg-pane[data-corner-start] {
+	--sumi-corner-start: var(--sumi-corner-start-w);
+	--sumi-corner-top: var(--sumi-corner-h);
+}
+
+.wg-shell.is-flat:not(.is-titled) .wg-pane[data-corner-end] {
+	--sumi-corner-end: var(--sumi-corner-end-w);
+	--sumi-corner-top: var(--sumi-corner-h);
+}
+
+.wg-pane .wg-shell-plate-body {
+	transition: padding-top var(--sumi-dur-base) var(--sumi-ease);
+}
+
+.wg-pane .wg-shell-plate-body:not(:has([data-sumi-corner])) {
+	padding-top: var(--sumi-corner-top);
+}
+
+.wg-pane .wg-shell-plate-body:has([data-sumi-corner]) {
+	--wg-kit-side-panel-top: var(--sumi-corner-top);
+}
+
+.wg-pane .wg-shell-plate-body:has([data-sumi-corner="fade"])::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 2;
+	height: var(--sumi-corner-top);
+	background: linear-gradient(var(--wg-plate-fill, var(--sumi-plate)) 55%, transparent);
+	pointer-events: none;
+}
+
+.wg-shell-corner-plate {
+	position: absolute;
+	top: calc((var(--sumi-header-h) - var(--sumi-h-sm)) / 2 - var(--sumi-sp-1));
+	z-index: 3;
+	display: none;
+	height: calc(var(--sumi-h-sm) + 2 * var(--sumi-sp-1));
+	border: 1px solid var(--sumi-line);
+	background: color-mix(in oklch, var(--sumi-plate) 88%, transparent);
+	-webkit-backdrop-filter: var(--sumi-blur-pop);
+	backdrop-filter: var(--sumi-blur-pop);
+	pointer-events: none;
+}
+
+.wg-shell-corner-plate.is-start {
+	left: var(--sumi-sp-2);
+	width: calc(var(--sumi-corner-start-w) - var(--sumi-sp-3));
+}
+
+.wg-shell-corner-plate.is-end {
+	right: var(--sumi-sp-2);
+	width: calc(var(--sumi-corner-end-w) - 2 * var(--sumi-sp-2));
+}
+
+.wg-shell.is-side-hidden:has(.wg-pane[data-corner-start] [data-sumi-corner="float"]) .wg-shell-corner-plate.is-start,
+.wg-shell.is-flat:not(.is-titled):has(.wg-pane[data-corner-end] [data-sumi-corner="float"]) .wg-shell-corner-plate.is-end {
+	display: block;
+}
+
+.wg-shell.is-titled .sumi-title-bar {
+	padding-left: calc(var(--wg-shell-toggle-left) + var(--sumi-h-sm) + var(--sumi-sp-3));
+}
+
+.wg-shell.is-flat .wg-plate-head {
+	display: none;
+}
+
 .wg-shell-app-zone {
 	position: relative;
 	display: flex;
@@ -171,8 +286,9 @@
 	position: relative;
 	z-index: 5;
 	flex: none;
+	--sumi-edge-ink: var(--sumi-line);
 	width: 1px;
-	background: var(--sumi-line);
+	background: linear-gradient(transparent, var(--sumi-edge-ink) calc(2 * var(--sumi-sp-9)));
 	cursor: col-resize;
 	touch-action: none;
 	outline: none;
@@ -185,7 +301,7 @@
 }
 
 .wg-shell-edge:is(:hover, :active, :focus-visible) {
-	background: var(--sumi-text-3);
+	--sumi-edge-ink: var(--sumi-text-3);
 }
 
 .wg-shell-plate {
@@ -220,7 +336,7 @@ body:has([data-browser-pages-live]),
 
 .wg-shell-plate.is-chat {
 	flex: 0 1 auto;
-	width: max(var(--sumi-plate-min), var(--wg-shell-chat, var(--sumi-chat-w)));
+	width: max(var(--sumi-plate-min), var(--wg-shell-chat-dragged, var(--wg-shell-chat, var(--sumi-chat-w))));
 }
 
 .wg-shell-plate.is-app {
@@ -237,8 +353,7 @@ body:has([data-browser-pages-live]),
 			calc(
 				pow(min(1, var(--wg-plate-lift-ratio) * (pow(l, 3) + 0.05) - 0.05), 1 / 3) *
 					(1 - clamp(0, (l - 0.6) * 1000, 1)) +
-					pow(max(0, (pow(l, 3) + 0.05) / var(--wg-plate-lift-ratio) - 0.05), 1 / 3) *
-					clamp(0, (l - 0.6) * 1000, 1)
+					pow(max(0, (pow(l, 3) + 0.05) / var(--wg-plate-lift-ratio) - 0.05), 1 / 3) * clamp(0, (l - 0.6) * 1000, 1)
 			)
 			c h
 	);
@@ -247,8 +362,7 @@ body:has([data-browser-pages-live]),
 			calc(
 				pow(min(1, var(--wg-plate-pick-ratio) * (pow(l, 3) + 0.05) - 0.05), 1 / 3) *
 					(1 - clamp(0, (l - 0.6) * 1000, 1)) +
-					pow(max(0, (pow(l, 3) + 0.05) / var(--wg-plate-pick-ratio) - 0.05), 1 / 3) *
-					clamp(0, (l - 0.6) * 1000, 1)
+					pow(max(0, (pow(l, 3) + 0.05) / var(--wg-plate-pick-ratio) - 0.05), 1 / 3) * clamp(0, (l - 0.6) * 1000, 1)
 			)
 			c h
 	);
@@ -582,7 +696,7 @@ body:has([data-browser-pages-live]),
 .wg-pane-edge[data-pane-edge-dir="row"] {
 	width: 9px;
 	margin-left: -4.5px;
-	background: linear-gradient(var(--sumi-line), var(--sumi-line)) center / 1px 100% no-repeat;
+	background: linear-gradient(transparent, var(--sumi-line) calc(2 * var(--sumi-sp-9))) center / 1px 100% no-repeat;
 	cursor: col-resize;
 }
 

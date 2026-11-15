@@ -20,8 +20,6 @@ export const NESTED_ROWS = "cv:relative cv:flex cv:flex-col cv:ps-[26px]";
 export const CARD_HEAD_LOOK =
 	"cv:relative cv:flex cv:h-[30px] cv:w-full cv:min-w-0 cv:flex-none cv:items-center cv:gap-[10px] cv:rounded-none cv:border-0 cv:bg-transparent cv:px-(--sumi-side-pad) cv:py-0 cv:text-start cv:font-[inherit] cv:text-[13px] cv:font-medium cv:whitespace-nowrap cv:text-(--sumi-text) cv:[box-shadow:none] cv:outline-none cv:select-none";
 
-export const CARD_HEAD = `cv:group/head cv:cursor-default ${CARD_HEAD_LOOK} ${EDGE_TO_EDGE_FILL}`;
-
 export const CARD_HEAD_NAME = "cv:min-w-0 cv:flex-1 cv:overflow-hidden cv:text-ellipsis cv:whitespace-nowrap";
 
 export const CARD_HEAD_ICON = "cv:flex cv:size-5 cv:flex-none cv:items-center cv:justify-center cv:not-italic";
@@ -30,6 +28,11 @@ export const CARD_HEAD_COUNT = "cv:ms-auto cv:text-[12px] cv:font-normal cv:text
 
 export const HOVER_SHOWN =
 	"cv:opacity-0 cv:transition-[background-color,opacity] cv:duration-(--sumi-dur-hover) cv:ease-(--sumi-ease) cv:motion-reduce:transition-none cv:focus-visible:opacity-100 cv:data-[folded]:opacity-100";
+
+export const ROW_CHEVRON = `cv:flex cv:size-5 cv:flex-none cv:items-center cv:justify-center cv:text-(--sumi-text-2) cv:group-hover/row:opacity-100 cv:group-focus-visible/row:opacity-100 ${HOVER_SHOWN}`;
+
+export const CHEVRON_TURN =
+	"cv:flex cv:transition-transform cv:duration-(--sumi-dur-base) cv:ease-(--sumi-ease-out) cv:motion-reduce:transition-none cv:data-[folded]:-rotate-90";
 
 export const ROW_WORDS = "cv:min-w-0 cv:flex-1 cv:overflow-hidden cv:text-ellipsis";
 

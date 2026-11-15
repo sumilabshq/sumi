@@ -29,7 +29,12 @@ export function HolderChildren({ holderId, children, renaming }: HolderChildrenP
 				child.kind === "tab" ? (
 					childOf(child, null)
 				) : (
-					<GroupBox key={child.group.id} group={child.group} count={child.group.tabs.length}>
+					<GroupBox
+						key={child.group.id}
+						group={child.group}
+						isRenaming={renaming.id === child.group.id}
+						onRenamed={renaming.onRenamed}
+					>
 						{child.group.tabs.map((tab) => childOf({ kind: "tab", tab }, child.group.id))}
 					</GroupBox>
 				),

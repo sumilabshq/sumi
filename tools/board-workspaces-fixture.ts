@@ -7,20 +7,20 @@ import type { SeededFacts } from "./places-fixture.ts";
 export type WorkspacesCount = "one" | "board" | "many";
 
 const BOARD_WORKSPACES: readonly Workspace[] = [
-	{ id: "default", name: "Default", icon: { kind: "icon", name: "house" } },
-	{ id: "widgetarium", name: "Widgetarium", icon: { kind: "emoji", emoji: "🧩" } },
-	{ id: "urcraft", name: "Urcraft", icon: { kind: "icon", name: "briefcase-business" } },
-	{ id: "personal", name: "Personal", icon: null },
-	{ id: "travel", name: "Travel", icon: { kind: "icon", name: "plane" } },
-	{ id: "reading", name: "Reading", icon: { kind: "emoji", emoji: "📚" } },
+	{ id: "default", name: "Default", icon: { kind: "icon", name: "house" }, ink: "yellow" },
+	{ id: "widgetarium", name: "Widgetarium", icon: { kind: "emoji", emoji: "🧩" }, ink: "yellow" },
+	{ id: "urcraft", name: "Urcraft", icon: { kind: "icon", name: "briefcase-business" }, ink: "yellow" },
+	{ id: "personal", name: "Personal", icon: null, ink: "yellow" },
+	{ id: "travel", name: "Travel", icon: { kind: "icon", name: "plane" }, ink: "yellow" },
+	{ id: "reading", name: "Reading", icon: { kind: "emoji", emoji: "📚" }, ink: "yellow" },
 ];
 
 const MORE_WORKSPACES: readonly Workspace[] = [
-	{ id: "finance", name: "Finance", icon: { kind: "emoji", emoji: "💸" } },
-	{ id: "music", name: "Music", icon: { kind: "icon", name: "music-2" } },
-	{ id: "garden", name: "Garden", icon: { kind: "icon", name: "leaf" } },
-	{ id: "lab", name: "Lab", icon: { kind: "icon", name: "flask-conical" } },
-	{ id: "side", name: "Side project", icon: { kind: "emoji", emoji: "🚀" } },
+	{ id: "finance", name: "Finance", icon: { kind: "emoji", emoji: "💸" }, ink: "yellow" },
+	{ id: "music", name: "Music", icon: { kind: "icon", name: "music-2" }, ink: "yellow" },
+	{ id: "garden", name: "Garden", icon: { kind: "icon", name: "leaf" }, ink: "yellow" },
+	{ id: "lab", name: "Lab", icon: { kind: "icon", name: "flask-conical" }, ink: "yellow" },
+	{ id: "side", name: "Side project", icon: { kind: "emoji", emoji: "🚀" }, ink: "yellow" },
 ];
 
 function chatOf(id: string, title: string, at: number): KeptChat {

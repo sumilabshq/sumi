@@ -9,6 +9,7 @@ import type {
 import { arrangedSidebar } from "../apps/studio/src/features/app-host/lib/tab-drag/arranged-sidebar.ts";
 import type { DragSource } from "../apps/studio/src/features/app-host/lib/tab-drag/drag-source.ts";
 import { DragPreview } from "../apps/studio/src/features/app-host/lib/tab-drag/drag-preview.ts";
+import { PendingMoves } from "../apps/studio/src/features/app-host/lib/tab-drag/pending-moves.ts";
 import { check, tally } from "./check-helpers.ts";
 
 function tabOf(id: string): AppTabState {
@@ -380,25 +381,24 @@ check(
 );
 
 Reflect.set(globalThis, "window", globalThis);
+Reflect.set(globalThis, "requestAnimationFrame", (run: () => void) => setTimeout(run, 0));
 const preview = new DragPreview();
 const toEnd: TabDrop = { kind: "list", list: "workspace", groupId: null, before: null };
 const firstLift = preview.lift(tab("t1"), toEnd);
 preview.land(firstLift, () => undefined);
 const secondLift = preview.lift(tab("t4"), toEnd);
 preview.rest(firstLift);
-preview.glided(firstLift);
-preview.committed(firstLift);
+preview.rest(firstLift);
 const carriedOn = preview.now();
 preview.land(secondLift, () => undefined);
-preview.glided(firstLift);
-preview.committed(firstLift);
-preview.heard({ ...SIDEBAR, essentials: [] });
+preview.rest(firstLift);
 check(
 	"a landing still running when the next drag lifts neither ends that drag nor settles its landing",
 	[carriedOn?.source.id, carriedOn?.isLanding, preview.now()?.source.id, preview.now()?.isLanding],
 	["t4", false, "t4", true],
 );
 preview.rest(secondLift);
+check("a landing rests once its ghost glided, before any answer", preview.now(), null);
 
 function withOpenRows(sidebar: TabsSidebar, entries: readonly SidebarEntry[]): TabsSidebar {
 	return {
@@ -407,20 +407,49 @@ function withOpenRows(sidebar: TabsSidebar, entries: readonly SidebarEntry[]): T
 	};
 }
 
+function macrotask(): Promise<void> {
+	return new Promise((done) => setTimeout(done, 0));
+}
+
 const OPEN_ROWS = SIDEBAR.sections[1]?.entries ?? [];
-const answering = new DragPreview();
-answering.heard(SIDEBAR);
-const answeringLift = answering.lift(tab("t1"), toEnd);
-answering.land(answeringLift, () => undefined);
-answering.glided(answeringLift);
-answering.committed(answeringLift);
-answering.heard(withOpenRows(SIDEBAR, [...OPEN_ROWS, rowOf("t9")]));
-const isLandingThroughOtherChange = answering.now()?.isLanding;
-answering.heard(withOpenRows(SIDEBAR, [...OPEN_ROWS.slice(1), rowOf("t9"), rowOf("t1")]));
+const sentIds: string[] = [];
+const answers: ((isPlaced: boolean) => void)[] = [];
+const pending = new PendingMoves();
+pending.setSender((source) => {
+	sentIds.push(source.id);
+	return new Promise((answer) => answers.push(answer));
+});
+pending.hearSidebar(SIDEBAR);
+pending.queueMove(tab("t1"), { kind: "essentials", at: 2 });
+pending.queueMove({ kind: "essential", id: "t1", at: 2 }, toEnd);
+const shownAtOnce = pending.applyMovesTo(SIDEBAR);
 check(
-	"a landing waits through a change that leaves its tab in place, and rests once its tab moves",
-	[isLandingThroughOtherChange, answering.now()],
-	[true, null],
+	"two moves show at once while only the first is sent",
+	[shownAtOnce.essentials.map((tile) => tile.id), sectionsOf(shownAtOnce), sentIds],
+	[
+		["e1", "e2"],
+		{ pinned: ["p1"], workspace: [...(sectionsOf(SIDEBAR) as { workspace: unknown[] }).workspace.slice(1), "t1"] },
+		["t1"],
+	],
+);
+const heardFirst: TabsSidebar = {
+	...withOpenRows(SIDEBAR, OPEN_ROWS.slice(1)),
+	essentials: [
+		...SIDEBAR.essentials,
+		{ id: "e9", title: "t1", icon: "site", favicon: null, isShown: false, isLive: true },
+	],
+};
+answers[0]?.(true);
+await macrotask();
+pending.hearSidebar(heardFirst);
+await macrotask();
+check("a settled move renames its item in the waiting move, which is sent under the new id", sentIds, ["t1", "e9"]);
+answers[1]?.(false);
+await macrotask();
+check(
+	"a refused move is undone: the sidebar shows what was heard",
+	pending.applyMovesTo(heardFirst) === heardFirst,
+	true,
 );
 
 console.log(tally.failed ? `tabs arrange: ${tally.failed} check(s) failed` : "tabs arrange: all checks passed");

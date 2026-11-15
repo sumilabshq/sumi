@@ -1,8 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/data-framework";
 import { NEW_CHAT_TITLE } from "@widgetarium/core/engine/focused-chat-port.js";
-import { workspaces } from "@widgetarium/workspaces/contract";
 import type { ChatRenaming } from "../../lib/chat-renaming.js";
 import { useRenamingIdIn } from "../../lib/chat-renaming.js";
 import { useChatRow } from "../../lib/use-chat-row.js";
@@ -15,13 +13,12 @@ export interface ChatCrumbProps {
 }
 
 export function ChatCrumb({ renaming, chatId }: ChatCrumbProps): ReactElement {
-	const { workspace } = useQuery(workspaces.chats.workspaceCrumb).data;
 	const row = useChatRow(chatId);
 	const renamingId = useRenamingIdIn(renaming, "crumb");
 
 	if (row !== null && row.id === renamingId) {
-		return <RenamingCrumb workspace={workspace} chat={row} renaming={renaming} />;
+		return <RenamingCrumb chat={row} renaming={renaming} />;
 	}
 
-	return <ChatLinkCrumb chatId={chatId} words={{ first: workspace, second: row?.title ?? NEW_CHAT_TITLE }} />;
+	return <ChatLinkCrumb chatId={chatId} words={{ first: row?.title ?? NEW_CHAT_TITLE, second: null }} />;
 }

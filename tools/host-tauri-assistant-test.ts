@@ -920,6 +920,33 @@ async function clearChecks(): Promise<void> {
 	check("and /compact has nothing to compact yet", await refusalOf(() => session.compact()), NOTHING_TO_COMPACT);
 }
 
+const SHOT_PATH = "/t/shot.png";
+const SHOT_PREVIEW = "data:image/png;base64,iVBORw0KGgo=";
+
+async function pictureChecks(): Promise<void> {
+	const store = new StoreClient(new FakeStore().invoke);
+	const logs = await readChatLogs(store, DEFAULT.id);
+	const session = createTurnSession(() => Promise.reject(new Error("no provider")), {
+		history: await logs.historyOf("p1"),
+	});
+	await session.send("look at this", { [SHOT_PATH]: SHOT_PREVIEW });
+	await flush();
+	session.retry();
+	await flush();
+	check(
+		"trying again keeps the picture on the question",
+		session.now().turns.map(({ role, pictures }) => (role === "user" ? pictures : null))[0],
+		{ [SHOT_PATH]: SHOT_PREVIEW },
+	);
+	await quietly(() => logs.sessions.flush());
+	const reopened = await (await readChatLogs(store, DEFAULT.id)).historyOf("p1");
+	check(
+		"a sent picture is kept in the chat's own record and read back after a restart",
+		reopened.kept.session.turns.find(({ role }) => role === "user")?.pictures,
+		{ [SHOT_PATH]: SHOT_PREVIEW },
+	);
+}
+
 const READ_CALL = {
 	type: "assistant",
 	message: { content: [{ type: "tool_use", id: "q1", name: "Read", input: { file_path: "a.ts" } }] },
@@ -1038,6 +1065,7 @@ await folderAndOptionChecks();
 await fileDropChecks();
 await compactChecks();
 await clearChecks();
+await pictureChecks();
 
 console.log(`\nhost-tauri assistant: ${failed === 0 ? "clean" : "BLOCKED"} — ${checks - failed}/${checks} checks`);
 process.exit(failed === 0 ? 0 : 1);

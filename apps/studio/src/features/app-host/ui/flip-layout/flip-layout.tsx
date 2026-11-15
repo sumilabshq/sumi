@@ -16,7 +16,12 @@ const NOTHING_SEEN: Sight = new Map();
 
 export class FlipLayout extends Component<FlipLayoutProps, object, Sight> {
 	override getSnapshotBeforeUpdate(was: FlipLayoutProps): Sight {
-		return this.isGliding(was) ? sightOf(this.props.holder.current) : NOTHING_SEEN;
+		if (!this.isGliding(was)) {
+			return NOTHING_SEEN;
+		}
+
+		this.props.motion.dropEnded();
+		return sightOf(this.props.holder.current);
 	}
 
 	override componentDidMount(): void {

@@ -155,27 +155,11 @@ async function oneWriterChecks(): Promise<void> {
 
 	const [mainView, sideView] = await Promise.all([listsIn(main, "main"), listsIn(side, "studio-2")]);
 	check(
-		"each window keeps the tab it shows apart, over one list of tabs",
+		"each window keeps only the tabs it opened, in a list of its own",
 		[Array.isArray(mainView) ? mainView : [], Array.isArray(sideView) ? sideView : []],
 		[
-			[
-				{
-					workspace: [
-						{ kind: "tab", id: "tab-1" },
-						{ kind: "tab", id: "tab-2" },
-					],
-				},
-				"tab-1",
-			],
-			[
-				{
-					workspace: [
-						{ kind: "tab", id: "tab-1" },
-						{ kind: "tab", id: "tab-2" },
-					],
-				},
-				"tab-2",
-			],
+			[{ workspace: [{ kind: "tab", id: "tab-1" }] }, "tab-1"],
+			[{ workspace: [{ kind: "tab", id: "tab-2" }] }, "tab-2"],
 		],
 	);
 
@@ -183,7 +167,7 @@ async function oneWriterChecks(): Promise<void> {
 	main.routes.watch(places.tabs.placedTabs, { window: "main" }, () => {
 		heard.count += 1;
 	});
-	await side.send(places.tabShowing.show, { at: askAt("studio-2"), id: "tab-1" });
+	await side.send(places.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" });
 	check("and the other window hears the change without asking", await waitFor(() => heard.count > 0), true);
 }
 
@@ -338,6 +322,152 @@ async function handoffChecks(): Promise<void> {
 	]);
 }
 
+async function sidebarTabIdsIn(windowApp: Runtime, at: TabsAsk): Promise<unknown> {
+	const sidebar = await windowApp.send(places.tabs.sidebar, { at, essentials: [] });
+	return sidebar.ok
+		? sidebar.output.sections.map((section) => [
+				section.list,
+				section.entries.flatMap((entry) => (entry.kind === "tab" ? [entry.tab.id] : [])),
+			])
+		: sidebar.reason;
+}
+
+async function windowTabsChecks(): Promise<void> {
+	const tabs = new MemoryTabsGateway();
+	const [main, side] = windowsOver(tabs);
+	await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
+	await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
+	await side.send(places.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" });
+	check(
+		"two windows each see only their own tabs in the sidebar",
+		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
+		[
+			[
+				["pinned", []],
+				["workspace", ["tab-1", "tab-2"]],
+			],
+			[
+				["pinned", []],
+				["workspace", ["tab-3"]],
+			],
+		],
+	);
+
+	const foreign = await side.send(places.tabShowing.show, { at: askAt("studio-2"), id: "tab-1" });
+	check(
+		"a window cannot show a tab another window holds",
+		foreign.ok ? "shown" : foreign.reason,
+		'the host holds no tab "tab-1"',
+	);
+
+	await main.send(places.tabPlacing.pin, { window: "main", id: "tab-2", isPinned: true });
+	check(
+		"pinning stays in the window that pinned",
+		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
+		[
+			[
+				["pinned", ["tab-2"]],
+				["workspace", ["tab-1"]],
+			],
+			[
+				["pinned", []],
+				["workspace", ["tab-3"]],
+			],
+		],
+	);
+
+	const torn: TabsAsk = {
+		window: "studio-2",
+		screen: { ...BARE_SCREEN, tabPanes: [{ paneId: "pane-1", tabId: "tab-1" }] },
+	};
+	await side.send(places.tabShowing.fitToPanes, { at: torn });
+	check(
+		"a torn-off tab moves into the list of the window that shows it",
+		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
+		[
+			[
+				["pinned", ["tab-2"]],
+				["workspace", []],
+			],
+			[
+				["pinned", []],
+				["workspace", ["tab-3", "tab-1"]],
+			],
+		],
+	);
+
+	await side.send(places.windows.closeWindow, { window: "studio-2" });
+	const placed = await tabs.placedTabs();
+	check(
+		"closing a window forgets its tabs into the closed history",
+		[
+			placed.tabs.map((tab) => tab.id),
+			placed.closed.map(({ tab }) => tab.id),
+			Object.keys(placed.lists),
+			Object.keys(placed.views).includes("studio-2"),
+		],
+		[["tab-2"], ["tab-3", "tab-1"], ["window:main", "window:main:pinned"], false],
+	);
+
+	await main.send(places.windows.closeWindow, { window: "main" });
+	check(
+		"the main window keeps its tabs when it closes",
+		(await tabs.placedTabs()).tabs.map((tab) => tab.id),
+		["tab-2"],
+	);
+
+	await side.send(places.tabOpening.openTab, { at: askAt("studio-3"), app: "canvas" });
+	await main.send(places.windows.keepLiveWindows, { windows: ["main"] });
+	check(
+		"a window no longer open forgets its tabs when the core checks what is open",
+		(await tabs.placedTabs()).tabs.map((tab) => tab.id),
+		["tab-2"],
+	);
+}
+
+async function workspaceListsMigrationChecks(): Promise<void> {
+	const fake = new FakeStore();
+	const root = workspaceRootOf(DEFAULT.id);
+	fake.put(`${root}:places.json`, {
+		v: 1,
+		rev: 1,
+		tabs: {
+			tabs: ["tab-1", "tab-2"].map((id) => ({ id, app: "canvas", pageId: null, label: null })),
+			lists: { workspace: [{ kind: "tab", id: "tab-1" }], pinned: [{ kind: "tab", id: "tab-2" }] },
+			minted: 2,
+			closed: [],
+		},
+	});
+	const store = new StoreClient(fake.invoke);
+	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
+	const [main, side] = windowsOver(new TauriTabsGateway({ store, root, kept, apps: BUILT_IN_APPS }));
+	check(
+		"workspace-wide lists of an older places.json move into the main window on first read",
+		[
+			await sidebarTabIdsIn(main, askAt("main")),
+			await sidebarTabIdsIn(side, askAt("studio-2")),
+			Object.keys(KeptPlacesSchema.parse(fake.files.get(`${root}:places.json`)).tabs ?? {}).length > 0,
+		],
+		[
+			[
+				["pinned", ["tab-2"]],
+				["workspace", ["tab-1"]],
+			],
+			[
+				["pinned", []],
+				["workspace", []],
+			],
+			true,
+		],
+	);
+	const stored = fake.files.get(`${root}:places.json`)?.["tabs"];
+	check(
+		"and the file keeps them under the main window's list ids",
+		typeof stored === "object" && stored !== null && "lists" in stored ? Object.keys(stored.lists ?? {}) : stored,
+		["window:main", "window:main:pinned"],
+	);
+}
+
 const quiet = console.info;
 console.info = () => undefined;
 await handoffChecks();
@@ -346,6 +476,8 @@ await unreadableChecks();
 await oneWriterChecks();
 await lawChecks();
 await declaredRuleChecks();
+await windowTabsChecks();
+await workspaceListsMigrationChecks();
 console.info = quiet;
 console.log(tally.failed ? `places tabs: ${tally.failed} check(s) failed` : "places tabs: all checks passed");
 process.exit(tally.failed ? 1 : 0);

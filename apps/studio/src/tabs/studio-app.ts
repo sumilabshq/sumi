@@ -98,7 +98,7 @@ function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModu
 	}
 
 	const { store, windows, ipc } = lent;
-	return [layout({ tauri: { store, windows } }), browser({ tauri: { ipc } }), workspaces({ tauri: { store } })];
+	return [layout({ tauri: { store, windows } }), browser({ tauri: { ipc } }), workspaces({ tauri: { store, ipc } })];
 }
 
 function boardFileInMemory(): BoardFile {

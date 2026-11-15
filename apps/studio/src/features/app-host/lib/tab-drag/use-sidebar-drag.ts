@@ -16,6 +16,7 @@ import type { TabRef } from "./tab-ref.js";
 const NOT_A_HANDLE = "button:not([data-tabs-item]), input";
 const DRAGGED_ITEM = '[data-tabs-item="tab"], [data-tabs-item="essential"], [data-tabs-item="group"]';
 const DRAGGED_WORDS = "[data-tabs-words]";
+const LISTED_ROW = '[data-tabs-item="tab"], [data-host-column-add]';
 
 export interface SidebarDragging {
 	readonly parts: SidebarDragParts;
@@ -65,7 +66,7 @@ function createTabDragSession(
 	return new TabDragSession({
 		holder,
 		picked,
-		face: ghostFaceOf(picked, start),
+		face: ghostFaceOf(holder, picked, start),
 		pointerId,
 		start: now,
 		...droppingOf(dragging),
@@ -114,13 +115,18 @@ function pickedOf(element: HTMLElement, source: DragSource, opensOwnWindows: boo
 	};
 }
 
-function ghostFaceOf({ element, source }: PickedItem, [x, y]: readonly [number, number]): GhostFace {
+function ghostFaceOf(
+	holder: HTMLElement,
+	{ element, source }: PickedItem,
+	[x, y]: readonly [number, number],
+): GhostFace {
 	const from = rectOf(element);
+	const row = source.kind === "essential" ? holder.querySelector<HTMLElement>(LISTED_ROW) : null;
 	return {
-		art: source.kind === "group" ? null : element.firstElementChild,
+		art: element.firstElementChild,
 		title: (element.querySelector(DRAGGED_WORDS)?.textContent ?? element.getAttribute("aria-label") ?? "").trim(),
 		grabOffset: [x - from.left, y - from.top],
-		contentStart: contentStartOf(element),
+		contentStart: contentStartOf(row ?? element),
 	};
 }
 

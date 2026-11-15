@@ -12,6 +12,7 @@ import type {
 	CallFace,
 	ProviderReads,
 	QueueChange,
+	SentPictures,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { toastRefusal } from "../packages/shared/data-framework/src/command-refusals.ts";
@@ -31,6 +32,7 @@ import { AssistantSetupGateway } from "../plugins/ai/agent/data/assistant/gatewa
 import { PrivateFolderAttachmentFilesGateway } from "../plugins/ai/agent/data/assistant/gateways/attachment-files/private-folder.gateway.ts";
 import { CellClaudeOptionsGateway } from "../plugins/ai/agent/data/assistant/gateways/claude-options/cell.gateway.ts";
 import { ClockGateway } from "../plugins/ai/agent/data/assistant/gateways/clock/clock.gateway.ts";
+import { PicturePreviewsGateway } from "../plugins/ai/agent/data/assistant/gateways/picture-previews/picture-previews.gateway.ts";
 import { ClientWorkingFoldersGateway } from "../plugins/ai/agent/data/assistant/gateways/working-folders/client.gateway.ts";
 import { portAssistantParts } from "../plugins/ai/agent/data/assistant/gateways/assistant-parts/port.gateway.ts";
 import type { AssistantParts } from "../plugins/ai/agent/data/assistant/gateways/assistant-parts/assistant-parts.gateway.ts";
@@ -76,6 +78,7 @@ const MEGABYTE = 1024 * 1024;
 
 class FakeSessionGateway extends AssistantSessionGateway {
 	readonly sent: string[] = [];
+	readonly sentPictures: SentPictures[] = [];
 	readonly queueChanges: QueueChange[] = [];
 	busy = false;
 	refusesWith: string | null = null;
@@ -87,7 +90,7 @@ class FakeSessionGateway extends AssistantSessionGateway {
 
 	session(): AssistantSession {
 		return {
-			turns: this.sent.map((text) => ({ role: "user", text, calls: [] })),
+			turns: this.sent.map((text, at) => ({ role: "user", text, calls: [], pictures: this.sentPictures[at] ?? {} })),
 			busy: this.busy,
 			failure: null,
 			tool: null,
@@ -124,12 +127,13 @@ class FakeSessionGateway extends AssistantSessionGateway {
 		};
 	}
 
-	async send(said: string): Promise<void> {
+	async send(said: string, pictures?: SentPictures): Promise<void> {
 		if (this.refusesWith !== null) {
 			throw new Error(this.refusesWith);
 		}
 
 		this.sent.push(said);
+		this.sentPictures.push(pictures ?? {});
 		this.watchers.forEach((changed) => changed());
 	}
 
@@ -203,7 +207,7 @@ interface Bench {
 	readonly folder: string;
 }
 
-function benchWith(reads: ProviderReads): Bench {
+function benchWith(reads: ProviderReads, picturePreviews?: PicturePreviewsGateway): Bench {
 	const folder = mkdtempSync(path.join(tmpdir(), "wg-attachments-"));
 	fs.chmodSync(folder, 0o700);
 	const session = new FakeSessionGateway();
@@ -215,6 +219,7 @@ function benchWith(reads: ProviderReads): Bench {
 		assistantSession: session,
 		assistantSetup: setup,
 		clock,
+		...(picturePreviews === undefined ? {} : { picturePreviews }),
 	};
 	return {
 		chat: chatOver(parts),
@@ -290,6 +295,32 @@ check(
 		entries: [
 			{ kind: "image", name: "a_b.png", size: "8 B", path: "/t/a.png", text: null },
 			{ kind: "text", name: "notes.md", size: "5 B", path: null, text: null },
+		],
+	},
+);
+check(
+	"a message of only a file, trimmed by the session, still reads back to its file and no text",
+	attachmentsIn(
+		withAttachments("", [
+			{
+				kind: "image",
+				name: "image.png",
+				size: "457 KB",
+				path: "/t/image.png",
+				text: null,
+			},
+		]).trim(),
+	),
+	{
+		said: "",
+		entries: [
+			{
+				kind: "image",
+				name: "image.png",
+				size: "457 KB",
+				path: "/t/image.png",
+				text: null,
+			},
 		],
 	},
 );
@@ -448,13 +479,14 @@ check(
 	written.map((at) => existsSync(at)),
 	[false, false],
 );
+const shownAfterSweep = await claude.chat.send(assistant.chat.one, { chat: null });
 check(
-	"and forgets them, keeping the thumbnails",
+	"and forgets them, while the sent message keeps its thumbnail",
 	[
 		claude.parts.sentAttachments.sentAttachments().onDisk.length,
-		claude.parts.sentAttachments.sentAttachments().previews.size,
+		shownAfterSweep.ok ? shownAfterSweep.output.turns[0]?.attached.map(({ preview }) => preview !== null) : null,
 	],
-	[0, 1],
+	[0, [true, false]],
 );
 
 await claude.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("again.png", PNG_BYTES)] });
@@ -1002,7 +1034,45 @@ check(
 	["Ollama can't read images", "At most 3 files can be attached to one message"],
 );
 
+const SMALLER_PREVIEW = "data:image/png;base64,c20=";
+
+class FakePicturePreviews extends PicturePreviewsGateway {
+	readonly askedEdges: number[] = [];
+	isFailing = false;
+	answers = SMALLER_PREVIEW;
+
+	async previewWithin(_preview: string, largestEdge: number): Promise<string> {
+		this.askedEdges.push(largestEdge);
+
+		if (this.isFailing) {
+			throw new Error("no canvas here");
+		}
+
+		return this.answers;
+	}
+}
+
+const picturePreviews = new FakePicturePreviews();
+const resizing = benchWith(CLAUDE, picturePreviews);
+await resizing.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("wide.png", PNG_BYTES)] });
+await resizing.chat.send(assistant.composer.sendMessage, { chat: null, said: "one" });
+picturePreviews.isFailing = true;
+await resizing.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("tall.png", PNG_BYTES)] });
+await resizing.chat.send(assistant.composer.sendMessage, { chat: null, said: "two" });
+picturePreviews.isFailing = false;
+picturePreviews.answers = `${SMALLER_PREVIEW}${"A".repeat(64)}`;
+await resizing.chat.send(assistant.composer.attachFiles, { chat: null, files: [fileOf("grown.png", PNG_BYTES)] });
+await resizing.chat.send(assistant.composer.sendMessage, { chat: null, said: "three" });
+const resizedChat = await resizing.chat.send(assistant.chat.one, { chat: null });
+const keptPreviews = resizedChat.ok ? resizedChat.output.turns.map((turn) => turn.attached[0]?.preview ?? null) : null;
+check(
+	"a sent picture is kept within 2048 px; one that cannot be made smaller, or grows, is kept whole",
+	[picturePreviews.askedEdges, ...(keptPreviews ?? []).map((preview) => preview?.slice(22))],
+	[[2048, 2048, 2048], "c20=", "iVBORw0KGgo=", "iVBORw0KGgo="],
+);
+
 for (const bench of [
+	resizing,
 	claude,
 	ollama,
 	codex,

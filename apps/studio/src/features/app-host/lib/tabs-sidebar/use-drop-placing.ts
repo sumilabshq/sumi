@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { TabDropSchema, appHost } from "@widgetarium/app-host/contract";
 import type { TabDrop } from "@widgetarium/app-host/contract";
 import type { DragSource } from "../tab-drag/drag-source.js";
+import type { SendMove } from "../tab-drag/pending-moves.js";
 import type { SidebarDragParts } from "../tab-drag/sidebar-drag-parts.js";
 import { useSidebarDrag } from "../tab-drag/use-sidebar-drag.js";
 import { useTearOffOverlay } from "../../../browser/lib/use-tear-off-overlay.js";
@@ -19,16 +21,18 @@ export function useDropPlacing(
 	opensOwnWindows: boolean,
 	parts: SidebarDragParts,
 ): void {
+	const sendMove = usePlacesDrops();
+	useEffect(() => parts.pending.setSender(sendMove));
 	useSidebarDrag(holder, {
 		parts,
 		opensOwnWindows,
 		onTearOff: useTearsOffRows(),
 		tearOffGhost: useTearOffOverlay(),
-		onDrop: usePlacesDrops(),
+		onDrop: parts.pending.queueMove,
 	});
 }
 
-function usePlacesDrops(): (source: DragSource, drop: TabDrop) => Promise<boolean> {
+function usePlacesDrops(): SendMove {
 	const placers = useDropPlacers();
 	return (source, drop) => placeDrop(placers, source, drop);
 }

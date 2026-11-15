@@ -6,6 +6,7 @@ import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
 import { tabOf } from "../../lib/look-choices.js";
 import type { LookTab } from "../../lib/look-choices.js";
+import { InkRow } from "./ink-row.js";
 import { LookGrid } from "./look-grid.js";
 import { LookName } from "./look-name.js";
 
@@ -25,6 +26,7 @@ export function WorkspaceLook({ workspace }: { readonly workspace: WorkspaceRow 
 	return (
 		<div role="group" aria-label={LOOK_LABEL} data-ws-look="">
 			<LookName workspace={workspace} />
+			<InkRow workspace={workspace} />
 			<div className="wg-ws-pick-tabs" role="tablist">
 				{TABS.map(([kind, said]) => (
 					<Button

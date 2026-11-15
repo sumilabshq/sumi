@@ -1,9 +1,8 @@
-import type { TabDrop, TabsSidebar } from "@widgetarium/app-host/contract";
-import { arrangedSidebar } from "./arranged-sidebar.js";
-import { arrangementKeyOf } from "./arrangement-key.js";
-import { isSameDrop } from "./tab-drops.js";
+import type { TabDrop } from "@widgetarium/app-host/contract";
+import { isSameDrop, renameDrop } from "./tab-drops.js";
+import type { Rename } from "./tab-drops.js";
+import { renameSource } from "./drag-source.js";
 import type { DragSource } from "./drag-source.js";
-import { sourceSpotOf } from "./source-spot.js";
 
 export interface DragPreviewState {
 	readonly lift: number;
@@ -13,17 +12,10 @@ export interface DragPreviewState {
 	readonly isLanding: boolean;
 }
 
-const LANDING_MOST_MS = 1500;
-
 export class DragPreview {
 	private state: DragPreviewState | null = null;
 	private readonly listeners = new Set<() => void>();
 	private lifts = 0;
-	private heardSidebar: TabsSidebar | null = null;
-	private isGlided = false;
-	private isCommitted = false;
-	private spotAtLanding: string | null = null;
-	private landingTimer = 0;
 	private onRest: () => void = () => undefined;
 
 	readonly subscribe = (listener: () => void): (() => void) => {
@@ -65,6 +57,22 @@ export class DragPreview {
 		return true;
 	}
 
+	readonly renameItem = (rename: Rename): void => {
+		const { state } = this;
+		const source = state === null ? null : renameSource(state.source, rename);
+		const drop = state === null ? null : renameDrop(state.drop, rename);
+
+		if (state === null || source === null || drop === null || (source === state.source && drop === state.drop)) {
+			return;
+		}
+
+		this.write({
+			...state,
+			source,
+			drop,
+		});
+	};
+
 	land(lift: number, onRest: () => void): void {
 		const { state } = this;
 
@@ -73,35 +81,12 @@ export class DragPreview {
 			return;
 		}
 
-		this.armLanding(state.source.id, onRest);
+		this.onRest = onRest;
 		this.write({
 			...state,
 			isMarked: false,
 			isLanding: true,
 		});
-	}
-
-	glided(lift: number): void {
-		if (!this.isShowing(lift)) {
-			return;
-		}
-
-		this.isGlided = true;
-		this.restIfPlaced();
-	}
-
-	committed(lift: number): void {
-		if (!this.isShowing(lift)) {
-			return;
-		}
-
-		this.isCommitted = true;
-		this.restIfPlaced();
-	}
-
-	heard(sidebar: TabsSidebar): void {
-		this.heardSidebar = sidebar;
-		this.restIfPlaced();
 	}
 
 	rest(lift: number): void {
@@ -111,7 +96,6 @@ export class DragPreview {
 	}
 
 	private restNow(): void {
-		window.clearTimeout(this.landingTimer);
 		const onRest = this.onRest;
 		this.onRest = () => undefined;
 
@@ -120,36 +104,6 @@ export class DragPreview {
 		}
 
 		onRest();
-	}
-
-	private armLanding(sourceId: string, onRest: () => void): void {
-		this.onRest = onRest;
-		this.isGlided = false;
-		this.isCommitted = false;
-		this.spotAtLanding = this.heardSidebar === null ? null : sourceSpotOf(this.heardSidebar, sourceId);
-		this.landingTimer = window.setTimeout(() => this.restLate(), LANDING_MOST_MS);
-	}
-
-	private restIfPlaced(): void {
-		const { state, heardSidebar } = this;
-
-		if (state === null || !state.isLanding || !this.isGlided || heardSidebar === null) {
-			return;
-		}
-
-		const isAnswered = this.isCommitted && sourceSpotOf(heardSidebar, state.source.id) !== this.spotAtLanding;
-		const isShown = arrangementKeyOf(arrangedSidebar(heardSidebar, state)) === arrangementKeyOf(heardSidebar);
-
-		if (isAnswered || isShown) {
-			this.restNow();
-		}
-	}
-
-	private restLate(): void {
-		console.info(
-			`[widgetarium] tab drag of ${this.state?.source.id ?? ""} landing → resting (the sidebar did not show the drop in ${LANDING_MOST_MS} ms)`,
-		);
-		this.restNow();
 	}
 
 	private write(state: DragPreviewState | null): void {

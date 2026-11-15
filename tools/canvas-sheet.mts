@@ -22,6 +22,8 @@ const SOURCES = [
 	"plugins/ai/plan-usage/src",
 	"plugins/ai/model-picker/src",
 	"plugins/ai/effort-picker/src",
+	"plugins/control-menu/src",
+	"plugins/tab-strip/src",
 ];
 const INSTALLED = "node_modules/";
 const SCANNED = /\.(ts|tsx)$/;
@@ -36,6 +38,7 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@widgetarium/studio/shell.css": "apps/studio/src/features/frame/shell.css",
 	"@widgetarium/studio/command-menu.css":
 		"plugins/command-menu/src/features/command-menu/ui/command-menu/command-menu.css",
+	"@sumi/command-menu-plugin/home-page.css": "plugins/command-menu/src/features/command-menu/ui/home-page/home-page.css",
 	"@sumi/chat-plugin/assistant.css": "plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant.css",
 	"@sumi/chat-plugin/assistant-utilities.css":
 		"plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant-utilities.css",
@@ -52,9 +55,15 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/plan-usage-plugin/usage-button.css":
 		"plugins/ai/plan-usage/src/features/plan-usage/ui/usage-button/usage-button.css",
 	"@sumi/sumi-host-plugin/sumi-figure.css": "plugins/sumi-host/src/features/mascot/ui/sumi-figure/sumi-figure.css",
+	"@sumi/control-menu-plugin/control-menu.css":
+		"plugins/control-menu/src/features/control-menu/ui/control-menu/control-menu.css",
+	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
+	"@sumi/sumi-host-plugin/title-bar.css": "plugins/sumi-host/src/features/title-bar/ui/title-bar/title-bar.css",
 	"@sumi/chat-plugin/new-chat-row.css": "plugins/ai/chat/src/features/new-chat/ui/new-chat-row/new-chat-row.css",
 	"@sumi/terminal-cursor-plugin/terminal-cursor.css":
 		"plugins/terminal-cursor/src/features/terminal-cursor/ui/terminal-cursor-layer/terminal-cursor.css",
+	"@sumi/keyboard-language-plugin/keyboard-language-tag.css":
+		"plugins/ai/keyboard-language/src/features/keyboard-language/ui/keyboard-language-tag/keyboard-language-tag.css",
 	"@widgetarium/kit/side-panel.css": "packages/shared/kit/side-panel.css",
 	"@sumi/canvas-plugin/canvas-page.css": "plugins/canvas/src/features/canvas/ui/canvas-page/canvas-page.css",
 	"@sumi/model-picker-plugin/model-menu.css":
@@ -70,6 +79,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@widgetarium/studio/workspaces.css";
 @import "@widgetarium/studio/shell.css";
 @import "@widgetarium/studio/command-menu.css";
+@import "@sumi/command-menu-plugin/home-page.css";
 @import "@sumi/chat-plugin/assistant.css";
 @import "@sumi/chat-plugin/assistant-utilities.css";
 @import "@sumi/chat-plugin/queue.css";
@@ -82,9 +92,13 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/plan-usage-plugin/usage-button.css";
 @import "@sumi/chat-plugin/new-chat-row.css";
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
+@import "@sumi/sumi-host-plugin/title-bar.css";
+@import "@sumi/control-menu-plugin/control-menu.css";
+@import "@sumi/tab-strip-plugin/tab-strip.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
 @import "@sumi/canvas-plugin/canvas-page.css";
+@import "@sumi/keyboard-language-plugin/keyboard-language-tag.css";
 `;
 
 export function canvasSheetSources(repo: string): string[] {

@@ -9,7 +9,7 @@ import { scrolledOf } from "./sidebar-layout.js";
 import { contentStartOf } from "./sidebar-measure.js";
 import type { Rect } from "./sidebar-layout.js";
 
-export type OnTabDrop = (source: DragSource, drop: TabDrop) => Promise<boolean>;
+export type OnTabDrop = (source: DragSource, drop: TabDrop) => void;
 
 export interface SidebarLandingAsk {
 	readonly holder: HTMLElement;
@@ -26,7 +26,7 @@ interface Slot {
 	readonly contentStart: number;
 }
 
-const GLIDE_MS = 200;
+const GLIDE_MS = 120;
 const NO_LIFT = 0;
 
 export class SidebarLanding {
@@ -38,21 +38,17 @@ export class SidebarLanding {
 		this.lift = lift;
 	}
 
-	async land(onDrop: OnTabDrop): Promise<void> {
-		const { aim, preview } = this.ask;
+	land(onDrop: OnTabDrop): void {
+		const { aim, source } = this.ask;
 
 		if (aim.isStill()) {
 			this.settleBack();
 			return;
 		}
 
-		if (!(await this.landAndPlace(onDrop))) {
-			preview.rest(this.lift);
-			return;
-		}
-
-		preview.committed(this.lift);
-		console.info(`[widgetarium] tab drag of ${this.ask.source.id} lifted → placed (dropped in the sidebar)`);
+		onDrop(source, aim.current());
+		this.startLanding();
+		console.info(`[widgetarium] tab drag of ${source.id} lifted → placed (dropped in the sidebar)`);
 	}
 
 	settleBack(): void {
@@ -67,16 +63,6 @@ export class SidebarLanding {
 
 	rest(): void {
 		this.ask.preview.rest(this.lift);
-	}
-
-	private landAndPlace(onDrop: OnTabDrop): Promise<boolean> {
-		const { aim, source } = this.ask;
-		const drop = aim.current();
-		this.startLanding();
-		return onDrop(source, drop).catch((failure: unknown) => {
-			console.error(`[widgetarium] tab drag of ${source.id} landing → resting (the drop failed)`, failure);
-			return false;
-		});
 	}
 
 	private startLanding(): void {
@@ -106,12 +92,12 @@ export class SidebarLanding {
 		const slot = this.slotNow();
 
 		if (slot === null) {
-			preview.glided(this.lift);
+			preview.rest(this.lift);
 			return;
 		}
 
 		ghost.land(slot.rect, slot.shape, slot.contentStart);
-		setTimeout(() => preview.glided(this.lift), Math.max(GLIDE_MS, this.ask.laidOut.settlesInMs()));
+		setTimeout(() => preview.rest(this.lift), Math.max(GLIDE_MS, this.ask.laidOut.settlesInMs()));
 	}
 
 	private slotNow(): Slot | null {

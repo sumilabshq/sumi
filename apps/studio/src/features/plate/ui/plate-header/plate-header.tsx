@@ -59,7 +59,7 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 					<span className="wg-plate-target" ref={targets.controls} />
 				</span>
 				{more}
-				{paneClosing === null ? null : (
+				{paneClosing?.isClosable !== true ? null : (
 					<HeaderButton
 						label={CLOSE_PANE}
 						icon="x"

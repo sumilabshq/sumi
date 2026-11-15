@@ -96,6 +96,12 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	check("a tab picked from New tab is shown in the list New tab names", landed === addsTo, [landed, addsTo]);
 }
 
+const GROUP_RENAMING = `document.querySelector("[data-tabs-item=group] [data-host-tab-rename]") !== null`;
+const TYPED_INTO_RENAME = (name: string): string =>
+	`(() => { const field = document.querySelector("[data-host-tab-rename]"); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set; set.call(field, ${JSON.stringify(name)}); field.dispatchEvent(new Event("input", { bubbles: true })); field.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })); return true; })()`;
+const MARKED_GROUP = "[data-check-group]";
+const MARK_GROUP_NAMED = (name: string): string =>
+	`(() => { const head = [...document.querySelectorAll("[data-tabs-item=group]")].find((one) => one.querySelector("[data-tabs-words]")?.textContent === ${JSON.stringify(name)}); head?.setAttribute("data-check-group", ""); return head !== undefined; })()`;
 const FOLDED_AWAY = (id: string): string =>
 	`(() => { const row = document.querySelector('[data-tabs-list] [data-tabs-id="${id}"]'); return row === null || row.closest("[data-fold-box]:not([data-open])") !== null; })()`;
 const TRANSLATOR_TILE_SHOWN = `document.querySelector('[data-tabs-id="chat-translator"][data-shown], [data-tabs-in="chat-translator"] [data-shown]') !== null`;
@@ -158,55 +164,49 @@ async function checksGroups(page: AskedPage): Promise<void> {
 	await page.ask(pointedAt("[data-tabs-list]"));
 	await waited(250);
 	await timed(page, "new group", () => menuPick(page, "New group"));
+	const isRenamingNew = await waitUntil(async () => (await page.ask(GROUP_RENAMING)) === true, 1500, 50);
+	check("New group starts renaming the new group in place", isRenamingNew, await idsOf(page, GROUP_NAMES));
+	await page.ask(TYPED_INTO_RENAME("Reading"));
 	await waited(200);
 	check(
-		"New group makes a grey group named New group and opens its menu",
-		JSON.stringify(await idsOf(page, GROUP_NAMES)).includes('"New group"') &&
-			(await page.ask(`document.querySelector("[data-tabs-group-menu]") !== null`)) === true,
+		"a name typed in place names the group",
+		JSON.stringify(await idsOf(page, GROUP_NAMES)).includes('"Reading"'),
 		await idsOf(page, GROUP_NAMES),
 	);
-	check(
-		"the group menu stands in the kit's popover",
-		(await page.ask(`document.querySelector("[data-tabs-group-menu]")?.closest(".wg-kit-pop") != null`)) === true,
-		null,
-	);
+	await page.ask(MARK_GROUP_NAMED("Reading"));
+	await page.ask(pointedAt(MARKED_GROUP));
+	await waited(250);
+	await timed(page, "open a group's colours", () => menuPick(page, "Colour"));
+	await waited(200);
 	await timed(page, "colour a group", () => pressOn(page, "[data-tabs-hue=green]"));
 	check(
 		"picking a colour tints the group",
 		(await page.ask(`document.querySelectorAll("[data-tabs-box][data-hue=green]").length`)) === 1,
 		null,
 	);
-	await page.ask(
-		`document.activeElement?.blur(); document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); true`,
-	);
 	await waited(250);
 	await page.ask(pointedAt('[data-tabs-id="tab-8"]'));
 	await waited(250);
 	await timed(page, "new group with this tab", () => menuPick(page, "New group with this tab"));
-	await waited(200);
+	const isRenamingMade = await waitUntil(async () => (await page.ask(GROUP_RENAMING)) === true, 1500, 50);
 	check(
-		"a group made with a chat's tab is that list's own New group and holds the tab",
-		(await idsOf(page, GROUP_NAMES)).filter((name) => name === "New group").length === 2 &&
+		"a group made with a chat's tab holds the tab and starts renaming in place",
+		isRenamingMade &&
 			(await page.ask(
 				`document.querySelector('[data-tabs-list]:not([data-tabs-list="workspace"]) [data-tabs-box] [data-tabs-id="tab-8"]') !== null`,
 			)) === true,
 		await idsOf(page, GROUP_NAMES),
 	);
-	const isMenuOpen = await waitUntil(
-		async () => (await page.ask(`document.querySelector("[data-tabs-group-menu]") !== null`)) === true,
-		1500,
-		50,
+	await page.ask(
+		`document.querySelector("[data-host-tab-rename]")?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); true`,
 	);
-	check(
-		"the group made with a tab opens its menu",
-		isMenuOpen,
-		await page.ask(`document.activeElement?.outerHTML.slice(0, 80)`),
-	);
-	await timed(page, "close a group's tabs", () => pressOn(page, "[data-tabs-group-action=close]"));
+	await waited(200);
+	await page.ask(pointedAt(`[data-tabs-box]:has([data-tabs-id="tab-8"]) [data-tabs-item=group]`));
+	await waited(250);
+	await timed(page, "close a group's tabs", () => menuPick(page, "Close 1 tab"));
 	check(
 		"Close 1 tab closes the tab and drops the group",
-		!(await idsOf(page, LIST_IDS)).includes("tab-8") &&
-			(await idsOf(page, GROUP_NAMES)).filter((name) => name === "New group").length === 1,
+		!(await idsOf(page, LIST_IDS)).includes("tab-8") && !(await idsOf(page, GROUP_NAMES)).includes("New group"),
 		await idsOf(page, GROUP_NAMES),
 	);
 	await timed(page, "fold a group", () => pressOn(page, '[data-tabs-item=group][data-tabs-id="group-12"]'));
@@ -215,7 +215,7 @@ async function checksGroups(page: AskedPage): Promise<void> {
 	await waited(SETTLED_MS);
 	await page.ask(pointedAt('[data-tabs-item=group][data-tabs-id="group-13"]'));
 	await waited(300);
-	await timed(page, "ungroup", () => pressOn(page, "[data-tabs-group-action=ungroup]"));
+	await timed(page, "ungroup", () => menuPick(page, "Ungroup"));
 	check(
 		"Ungroup spills the group's tabs into the list where it stood",
 		!JSON.stringify(await idsOf(page, GROUP_NAMES)).includes("Research") &&
@@ -392,7 +392,7 @@ async function checksSections(page: AskedPage, folder: string): Promise<void> {
 	check(
 		"folding Open hides only its rows",
 		(await page.ask(
-			`document.querySelector('[data-tabs-list="workspace"]').hidden && !document.querySelector('[data-tabs-list="pinned"]').hidden`,
+			`document.querySelector('[data-tabs-list="workspace"]').closest("[data-fold-box]:not([data-open])") !== null && document.querySelector('[data-tabs-list="pinned"]').parentElement.closest("[data-fold-box]").hasAttribute("data-open")`,
 		)) === true,
 		null,
 	);

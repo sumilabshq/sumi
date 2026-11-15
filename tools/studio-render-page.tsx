@@ -1,5 +1,7 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
+import { appHost } from "@widgetarium/app-host/contract";
+import { chatTabs } from "@sumi/chat-tabs/contract";
 import type { Page, PageInput } from "../packages/shared/core/src/gateway/page.js";
 import { PageInputSchema, PageOf } from "../packages/shared/core/src/gateway/page.js";
 import { IQuery } from "../packages/shared/core/src/gateway/queries.js";
@@ -241,7 +243,7 @@ function studioOverOpenedProject(): StartedStudio {
 
 function startedStudioOf(mode: unknown): StartedStudio {
 	const started = mode === "studio-memory" ? studioOverOpenedProject() : startStudio(PROJECT, studioStartOf(mode));
-	Object.assign(window, { __CATALOGUE__: started.catalogue });
+	Object.assign(window, { __CATALOGUE__: started.catalogue, __STUDIO_APP__: started.studioApp, __APP_HOST__: appHost, __CHAT_TABS__: chatTabs });
 	return started;
 }
 

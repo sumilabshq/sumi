@@ -348,6 +348,7 @@ const queueAt = {
 	liveWindows: async () => [],
 };
 const shotPath = `${tempFolder}/0b1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e-shot.png`;
+const SHOT_PREVIEW = "data:image/png;base64,iVBORw0KGgo=";
 const withShot = `look at this\n\n<attachments>\n- image "shot.png" (8 B): ${shotPath}\n</attachments>`;
 const beforeRestart = tempFiles();
 beforeRestart.write(shotPath, PNG);
@@ -355,7 +356,7 @@ const queuesBefore = await TauriChatQueueShelf.read(queueAt);
 const working = await sessionsOver(queuesBefore, beforeRestart).sessionOf("chat-1");
 void working.send("start the work");
 await waitFor(() => working.now().busy);
-await working.send(withShot);
+await working.send(withShot, { [shotPath]: SHOT_PREVIEW });
 await working.send("and this too");
 const heldId = working.now().queued[1]?.id ?? "";
 working.changeQueue({
@@ -387,6 +388,11 @@ check(
 		restoredPath === shotPath,
 	],
 	[PNG.length, true, false],
+);
+check(
+	"and its picture comes back under the new file's path; a message with no picture has none",
+	[restoredQueue[0]?.pictures, restoredQueue[1]?.pictures],
+	[{ [restoredPath]: SHOT_PREVIEW }, undefined],
 );
 
 const SENDING = "7d8e9f0a-1b2c-4d3e-8f4a-5b6c7d8e9f0a";

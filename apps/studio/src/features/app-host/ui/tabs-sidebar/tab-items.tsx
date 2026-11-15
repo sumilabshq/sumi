@@ -5,7 +5,6 @@ import { ContextMenuGroup, ContextMenuSeparator } from "@widgetarium/kit";
 import { SectionListSchema, appHost } from "@widgetarium/app-host/contract";
 import { POINTER_LINE } from "../../lib/menu-look/menu-look.js";
 import { groupsOfList } from "../../lib/tabs-sidebar/sidebar-groups.js";
-import { AddToEssentialsItem } from "./add-to-essentials-item.js";
 import { MoveToGroupMenu } from "./move-to-group-menu.js";
 import { PointerItem } from "./pointer-item.js";
 import type { Pointed, PointerMenuProps } from "./pointer-menu.js";
@@ -16,23 +15,22 @@ export function TabItems({
 	pointed,
 	sidebar,
 	onRename,
-	onGroupMade,
 }: PointerMenuProps & { readonly pointed: Extract<Pointed, { kind: "tab" }> }): ReactElement {
 	const pinTab = useCommand(appHost.tabActions.pin);
 	const newGroup = useCommand(appHost.groups.create);
 	const closeTab = useCommand(appHost.tabActions.closeTab);
+	const unsplit = useCommand(appHost.splits.unsplit);
 	const isPinned = pointed.list === PINNED_LIST;
 	const groups = groupsOfList(sidebar, pointed.list).filter((group) => group.id !== pointed.groupId);
 	const groupWithTab = async (): Promise<void> => {
 		const made = await newGroup.run({ withTabId: pointed.id });
 
 		if (made.ok) {
-			onGroupMade(made.output.id);
+			onRename(made.output.id);
 		}
 	};
 	return (
 		<ContextMenuGroup>
-			<AddToEssentialsItem pointed={pointed} at={sidebar.essentials.length} />
 			<PointerItem
 				icon={isPinned ? "pin-off" : "pin"}
 				label={isPinned ? "Unpin" : "Pin"}
@@ -42,6 +40,9 @@ export function TabItems({
 			<MoveToGroupMenu tabId={pointed.id} list={pointed.list} groups={groups} />
 			<PointerItem icon="pencil" label="Rename" onSelect={() => onRename(pointed.id)} />
 			<ContextMenuSeparator className={POINTER_LINE} />
+			{pointed.splitId === null ? null : (
+				<PointerItem icon="panel-right-close" label="Unsplit" onSelect={() => void unsplit.run({ tabIds: [pointed.id] })} />
+			)}
 			<PointerItem icon="x" label="Close" onSelect={() => void closeTab.run({ id: pointed.id })} />
 		</ContextMenuGroup>
 	);

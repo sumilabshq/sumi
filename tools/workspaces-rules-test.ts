@@ -51,11 +51,13 @@ function seededParts(): WorkspacesParts {
 				id: "home",
 				name: "Home",
 				icon: null,
+				ink: "yellow",
 			},
 			{
 				id: "lab",
 				name: "Untitled 2",
 				icon: null,
+				ink: "yellow",
 			},
 		],
 		currentId: "home",
@@ -94,6 +96,11 @@ async function workspaceChecks(): Promise<void> {
 	check("a rename keeps the trimmed name", parts.workspaces.workspaces()[0]?.name, "Base");
 	const unknown = await workspaces.send(workspacesContract.workspaces.setIcon, { id: "nope", icon: null });
 	check("an icon for an unknown workspace is refused", outputOf(unknown), "There is no workspace nope.");
+	check("a workspace starts in Sumi yellow", parts.workspaces.workspaces()[0]?.ink, "yellow");
+	await workspaces.send(workspacesContract.workspaces.setInk, { id: "home", ink: "iris" });
+	check("a chosen ink is kept", parts.workspaces.workspaces()[0]?.ink, "iris");
+	const unknownInk = await workspaces.send(workspacesContract.workspaces.setInk, { id: "nope", ink: "moss" });
+	check("an ink for an unknown workspace is refused", outputOf(unknownInk), "There is no workspace nope.");
 
 	await workspaces.send(workspacesContract.workspaces.openByPosition, { position: 9 });
 	check("⌘10 opens nothing", parts.currentWorkspace.currentWorkspace().currentId, "home");
@@ -120,11 +127,13 @@ async function lostFolderChecks(): Promise<void> {
 			id: "home",
 			name: "Home",
 			icon: null,
+			ink: "yellow",
 		},
 		{
 			id: "lab",
 			name: "Lab",
 			icon: null,
+			ink: "yellow",
 		},
 	]);
 	const parts = {

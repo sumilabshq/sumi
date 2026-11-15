@@ -107,6 +107,7 @@ function newChatWorkspaces(): ReturnType<typeof memoryWorkspacesParts> {
 				id: TAURI_WORKSPACE,
 				name: TAURI_WORKSPACE,
 				icon: null,
+				ink: "yellow",
 			},
 		],
 		currentId: TAURI_WORKSPACE,

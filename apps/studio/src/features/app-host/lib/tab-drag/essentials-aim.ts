@@ -13,7 +13,7 @@ export function isOverEssentials(layout: SidebarLayout, source: DragSource, { y 
 
 	const { grid } = layout;
 
-	if (grid.tiles.length === 0) {
+	if (grid.rect.height === 0) {
 		return y < layout.scrollerRect.top + EMPTY_ESSENTIALS_BAND_PX;
 	}
 

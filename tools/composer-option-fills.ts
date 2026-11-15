@@ -7,6 +7,7 @@ import { UsageButton } from "../plugins/ai/plan-usage/src/features/plan-usage/ui
 import { ModelButton } from "../plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-button.tsx";
 import { EffortButton } from "../plugins/ai/effort-picker/src/features/effort-picker/ui/effort-button/effort-button.tsx";
 import { SlashCommands } from "../plugins/ai/slash-commands/src/features/slash-menu/ui/slash-commands/slash-commands.tsx";
+import { KeyboardLanguageTag } from "../plugins/ai/keyboard-language/src/features/keyboard-language/ui/keyboard-language-tag/keyboard-language-tag.tsx";
 
 type ComposerOptionSlot = "chat.options-start" | "chat.options-end";
 
@@ -30,5 +31,11 @@ export const COMPOSER_OPTION_FILLS = new SlotFills([
 		pluginId: "slash-commands",
 		kind: "add" as const,
 		component: SlashCommands,
+	},
+	{
+		slot: "chat.composer-input",
+		pluginId: "keyboard-language",
+		kind: "add" as const,
+		component: KeyboardLanguageTag,
 	},
 ]);

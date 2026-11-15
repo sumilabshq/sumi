@@ -12,11 +12,18 @@ import { usePaneClosing } from "../../lib/use-pane-closing.js";
 export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
 	readonly look: SlotLook;
+	readonly isClosable: boolean;
 	readonly drawn: (view: PaneView) => ReactNode;
 	readonly onFocused: (paneId: string) => void;
 }
 
-export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn, onFocused }: PaneSlotProps): ReactElement {
+export const PaneSlot = memo(function PaneSlot({
+	leaf,
+	look,
+	isClosable,
+	drawn,
+	onFocused,
+}: PaneSlotProps): ReactElement {
 	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners } = look;
 	const close = usePaneClosing(leaf);
 	const aimPane = useCommand(layout.panes.aim);
@@ -34,9 +41,10 @@ export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn, onFocused }:
 			paneId: leaf.id,
 			isAtTopLeft,
 			isAtTopRight,
+			isClosable,
 			close,
 		}),
-		[close, leaf.id, isAtTopLeft, isAtTopRight],
+		[close, leaf.id, isAtTopLeft, isAtTopRight, isClosable],
 	);
 	return (
 		<div
@@ -52,6 +60,8 @@ export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn, onFocused }:
 			data-pane-grouped={corners === undefined ? undefined : ""}
 			data-pane-away={isAway ? "" : undefined}
 			data-pane-view={leaf.view.kind}
+			data-corner-start={isAtTopLeft ? "" : undefined}
+			data-corner-end={isAtTopRight ? "" : undefined}
 			data-pane-dimmed={isDimmed ? "" : undefined}
 			data-pane-moving={isMoving ? "" : undefined}
 			onPointerDownCapture={aim}
@@ -75,6 +85,7 @@ export function rectStyleOf(rect: PaneRect): CSSProperties {
 function isSameSlot(before: PaneSlotProps, after: PaneSlotProps): boolean {
 	return (
 		before.leaf === after.leaf &&
+		before.isClosable === after.isClosable &&
 		before.drawn === after.drawn &&
 		before.onFocused === after.onFocused &&
 		isSameLook(before.look, after.look)

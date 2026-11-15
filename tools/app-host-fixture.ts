@@ -172,6 +172,7 @@ function workspacesOf(title: string | null): ReturnType<typeof memoryWorkspacesP
 				id: "home",
 				name: "Home",
 				icon: null,
+				ink: "yellow",
 			},
 		],
 		currentId: "home",

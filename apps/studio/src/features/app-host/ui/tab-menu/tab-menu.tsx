@@ -5,7 +5,7 @@ import type { AppTab } from "@widgetarium/app-host/contract";
 import { LinkCopiedNote } from "../link-copied/link-copied.js";
 import type { PointedTab, PointerMenu } from "../../lib/use-pointer-menu.js";
 import { PointerPopover } from "../pointer-popover/pointer-popover.js";
-import { RenameField } from "../rename-field/rename-field.js";
+import { TabRenameField } from "../rename-field/tab-rename-field.js";
 import { TabMenuOf } from "./tab-menu-of.js";
 
 export interface TabMenuProps {
@@ -37,7 +37,7 @@ export function TabMenu({ tabs, menu, onRenameInPlace }: TabMenuProps): ReactEle
 			)}
 			<PointerPopover spot={renamedTab === null ? null : (renaming?.spot ?? null)} onDismiss={() => setRenaming(null)}>
 				{renamedTab === null ? null : (
-					<RenameField named={renamedTab} className={RENAME_FIELD} onDone={() => setRenaming(null)} />
+					<TabRenameField named={renamedTab} className={RENAME_FIELD} onDone={() => setRenaming(null)} />
 				)}
 			</PointerPopover>
 			<LinkCopiedNote spot={linkCopied.spot} />

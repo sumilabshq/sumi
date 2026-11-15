@@ -11,6 +11,7 @@ import type { TabDrop } from "@widgetarium/app-host/contract";
 import { BoardCarry } from "./board-carry.js";
 import { DeafSidebar } from "./deaf-sidebar.js";
 import type { DragPreview } from "./drag-preview.js";
+import { measureSince } from "./drag-timing.js";
 import { stillDropOf } from "./drop-aim.js";
 import { EdgeScroll } from "./edge-scroll.js";
 import type { LaidOutSidebar } from "./laid-out-sidebar.js";
@@ -41,6 +42,7 @@ export interface TabDragAsk {
 const DRAG_NAME = "tab drag";
 const CAPTURED = true;
 const ESCAPE = "Escape";
+const STILL_HELD_PX = 8;
 
 export class TabDragSession {
 	private readonly deaf: DeafSidebar;
@@ -50,6 +52,7 @@ export class TabDragSession {
 	private readonly scroller: HTMLElement | null;
 	private readonly aim: SidebarAim;
 	private readonly landing: SidebarLanding;
+	private readonly liftedAt = performance.now();
 	private isRunning = false;
 	private pointer: readonly [number, number];
 	private recarryTimer = 0;
@@ -80,6 +83,7 @@ export class TabDragSession {
 		this.deaf.deafen();
 		this.landing.follow(preview.lift(picked.source, this.aim.current()));
 		this.tearOff.start(...this.pointer);
+		requestAnimationFrame(() => measureSince("lift-shown", this.liftedAt));
 		console.info(`[widgetarium] tab drag of ${picked.source.id} none → lifted (pointer drag started)`);
 	}
 
@@ -134,6 +138,12 @@ export class TabDragSession {
 	};
 
 	private carry(): void {
+		const carryStartedAt = performance.now();
+		this.carryToPointer();
+		measureSince("carry", carryStartedAt);
+	}
+
+	private carryToPointer(): void {
 		const isOverSidebar = this.isOverSidebar();
 		const [x, y] = this.pointer;
 		const drop = this.aimedDrop(isOverSidebar);
@@ -167,6 +177,10 @@ export class TabDragSession {
 			return this.aim.aimAway();
 		}
 
+		if (this.aim.isStill() && this.isHeldStill()) {
+			return this.aim.current();
+		}
+
 		if (y < this.ask.holder.getBoundingClientRect().top) {
 			const current = this.aim.current();
 			return current.kind === "own-window" ? this.aim.aimHome() : current;
@@ -175,17 +189,25 @@ export class TabDragSession {
 		return this.aim.aimAt(x, y);
 	}
 
+	private isHeldStill(): boolean {
+		const [x, y] = this.pointer;
+		const [liftedX, liftedY] = this.ask.start;
+		return Math.hypot(x - liftedX, y - liftedY) < STILL_HELD_PX;
+	}
+
 	private isOffBoard(zone: WindowZone): boolean {
 		return zone === "outside" || (isTearable(this.ask.picked) && zone !== "inside");
 	}
 
 	private readonly onUp = (event: PointerEvent): void => {
+		const releasedAt = performance.now();
 		this.pointer = [event.clientX, event.clientY];
 		this.stop();
 		swallowNextClick(this.ask.holder);
+		requestAnimationFrame(() => measureSince("drop-shown", releasedAt));
 
 		if (this.isOverSidebar()) {
-			void this.landing.land(this.ask.onDrop);
+			this.landing.land(this.ask.onDrop);
 			return;
 		}
 

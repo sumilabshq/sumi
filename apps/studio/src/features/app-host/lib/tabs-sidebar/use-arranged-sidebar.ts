@@ -1,6 +1,6 @@
 import { useMemo, useSyncExternalStore } from "react";
 import type { TabsSidebar } from "@widgetarium/app-host/contract";
-import { arrangedSidebar } from "../tab-drag/arranged-sidebar.js";
+import { heldSidebar } from "../tab-drag/arranged-sidebar.js";
 import type { DragPreviewState } from "../tab-drag/drag-preview.js";
 import { useLiftedLook } from "../tab-drag/lifted-look.js";
 import type { LiftedLook } from "../tab-drag/lifted-look.js";
@@ -14,7 +14,11 @@ export interface ArrangedSidebar {
 
 export function useArrangedSidebar(drag: SidebarDragParts, sidebar: TabsSidebar): ArrangedSidebar {
 	const preview = useSyncExternalStore(drag.preview.subscribe, drag.preview.now);
-	const shown = useMemo(() => (preview === null ? sidebar : arrangedSidebar(sidebar, preview)), [sidebar, preview]);
+	const pending = useSyncExternalStore(drag.pending.subscribe, drag.pending.queued);
+	const shown = useMemo(() => {
+		const moved = drag.pending.applyMovesTo(sidebar);
+		return preview === null ? moved : heldSidebar(moved, preview);
+	}, [drag, sidebar, preview, pending]);
 	return {
 		preview,
 		shown,

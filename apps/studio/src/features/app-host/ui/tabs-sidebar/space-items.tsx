@@ -9,7 +9,7 @@ import type { Pointed, PointerMenuProps } from "./pointer-menu.js";
 
 export function SpaceItems({
 	pointed,
-	onGroupMade,
+	onRename,
 }: PointerMenuProps & { readonly pointed: Extract<Pointed, { kind: "space" }> }): ReactElement {
 	const openNewTabMenu = useTogglesNewTabMenu(pointed.list);
 	const newGroup = useCommand(appHost.groups.create);
@@ -17,7 +17,7 @@ export function SpaceItems({
 		const made = await newGroup.run({ list: pointed.list });
 
 		if (made.ok) {
-			onGroupMade(made.output.id);
+			onRename(made.output.id);
 		}
 	};
 	return (

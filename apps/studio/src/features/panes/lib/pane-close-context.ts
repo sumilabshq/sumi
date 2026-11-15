@@ -4,6 +4,7 @@ export interface PaneClosing {
 	readonly paneId: string;
 	readonly isAtTopLeft: boolean;
 	readonly isAtTopRight: boolean;
+	readonly isClosable: boolean;
 	readonly close: () => void;
 }
 

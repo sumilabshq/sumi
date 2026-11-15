@@ -17,6 +17,16 @@ interface Counted {
 
 const counted: Counted = { commits: 0 };
 const exact = exactStudio();
+const latency = { ms: 0 };
+const slowedApp: typeof exact.studioApp = Object.assign(Object.create(exact.studioApp), {
+	send: async (...sent: Parameters<typeof exact.studioApp.send>) => {
+		if (latency.ms > 0) {
+			await new Promise((resolve) => setTimeout(resolve, latency.ms));
+		}
+
+		return exact.studioApp.send(...sent);
+	},
+});
 const state = createStudioState(exact.studioApp);
 const placedNow: { tabs: PlacedTabs | null } = { tabs: null };
 const readPlaced = (): void => void exact.places.placedTabs().then((tabs) => (placedNow.tabs = tabs));
@@ -25,6 +35,9 @@ exact.places.placedTabsChanged(readPlaced);
 
 Reflect.set(window, "__SIDEBAR__", {
 	counted,
+	latency,
+	app: exact.studioApp,
+	appHost,
 	tearOffAsked: () => TEAR_OFF_ASKED.join(" | "),
 	switchChat: exact.switchChat,
 	holdElsewhere: exact.holdElsewhere,
@@ -59,7 +72,7 @@ try {
 	studioLayer.className = "wg-root wg-portal wg-kit-portal-layer is-studio";
 	document.body.appendChild(studioLayer);
 	createRoot(root).render(
-		<RuntimeProvider runtime={exact.studioApp}>
+		<RuntimeProvider runtime={slowedApp}>
 			<Profiler
 				id="tabs"
 				onRender={() => {

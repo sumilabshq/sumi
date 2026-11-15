@@ -13,12 +13,23 @@ export type PointedItem =
 			readonly head: HTMLElement;
 	  }
 	| {
+			readonly kind: "split";
+			readonly id: string;
+	  }
+	| {
 			readonly kind: "space";
 			readonly list: string;
 	  };
 
 export function pointedOf(target: EventTarget | null): PointedItem {
 	const element = target instanceof Element ? target : null;
+	const splitId = element?.closest("[data-split-head], [data-split-row]")?.closest<HTMLElement>("[data-tabs-split]")
+		?.dataset["tabsSplit"];
+
+	if (splitId !== undefined) {
+		return { kind: "split", id: splitId };
+	}
+
 	const item = element?.closest<HTMLElement>("[data-tabs-item]") ?? null;
 	const id = item?.dataset["tabsId"];
 
@@ -37,14 +48,6 @@ export function listIdOf(element: Element | null): string {
 	}
 
 	return list;
-}
-
-export function groupHeadOf(holder: HTMLElement | null, groupId: string | null): HTMLElement | null {
-	if (holder === null || groupId === null) {
-		return null;
-	}
-
-	return holder.querySelector<HTMLElement>(`[data-tabs-item="group"][data-tabs-id="${CSS.escape(groupId)}"]`);
 }
 
 export function tabRefOf(item: HTMLElement, id: string): TabRef {

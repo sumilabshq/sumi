@@ -36,6 +36,40 @@ export function arrangedSidebar(sidebar: TabsSidebar, { source, drop, isLanding 
 	return carried === null ? sidebar : putIn(without, carried, drop);
 }
 
+export function heldSidebar(sidebar: TabsSidebar, aimed: Aimed): TabsSidebar {
+	const arranged = arrangedSidebar(sidebar, aimed);
+	return aimed.source.kind === "group" ? withGroupFolded(arranged, aimed.source.id) : arranged;
+}
+
+function withGroupFolded(sidebar: TabsSidebar, groupId: string): TabsSidebar {
+	return {
+		...sidebar,
+		sections: sidebar.sections.map((section) => ({
+			...section,
+			entries: section.entries.map((entry) => entryWithGroupFolded(entry, groupId)),
+		})),
+	};
+}
+
+function entryWithGroupFolded(entry: SidebarEntry, groupId: string): SidebarEntry {
+	if (entry.kind === "group") {
+		return entry.group.id === groupId ? { kind: "group", group: { ...entry.group, isOpen: false } } : entry;
+	}
+
+	if (entry.kind !== "tab" || entry.children === undefined) {
+		return entry;
+	}
+
+	return {
+		...entry,
+		children: entry.children.map((child) =>
+			child.kind === "group" && child.group.id === groupId
+				? { kind: "group", group: { ...child.group, isOpen: false } }
+				: child,
+		),
+	};
+}
+
 function withMemberMoved(sidebar: TabsSidebar, id: string, drop: SplitDrop): TabsSidebar {
 	return {
 		...sidebar,

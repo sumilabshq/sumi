@@ -318,12 +318,6 @@ const TABS_COLUMN: readonly Pair[] = [
 	{ name: "plain group head", board: "aside .grp.plain .gh", built: `${PLAIN_BOX} [data-tabs-item=group]` },
 	{ name: "tinted group head", board: "aside .grp.tint .gh", built: `${HUED_BOX} [data-tabs-item=group]` },
 	{
-		name: "group count",
-		board: "aside .grp.plain .gh .n",
-		built: `${PLAIN_BOX} [data-tabs-item=group] [data-card-count]`,
-		only: WORDS,
-	},
-	{
 		name: "group chevron",
 		board: "aside .grp.plain .gh svg",
 		built: `${PLAIN_BOX} [data-tabs-item=group] [data-card-chevron] svg`,
@@ -471,29 +465,6 @@ export const SCENES: readonly Scene[] = [
 			{ name: "menu item glyph", board: ".menu .msep + .mi svg", built: "[data-ws-item=look] svg", only: GLYPH },
 		],
 		enter: (page) => pressing(page, "[data-ws-name]"),
-		leave: rested,
-	},
-	{
-		name: "tabs-group-menu",
-		board: "Tb4-group-menu",
-		boardSize: [420, 1000],
-		pairs: [
-			{
-				name: "group menu",
-				board: ".menu",
-				built: ".wg-kit-pop:has([data-tabs-group-menu])",
-				skip: ["height"],
-				waived: { paintHeight: OTHER_ITEMS },
-			},
-			{ name: "name field", board: ".menu .nf", built: "[data-tabs-group-name]" },
-			{ name: "colour label", board: ".menu .mlab", built: "[data-tabs-group-name] + div" },
-			{ name: "swatches", board: ".menu .sw", built: "[data-tabs-group-menu] [role=radiogroup]" },
-			{ name: "hue swatch", board: ".menu .sw .h-red", built: "[data-tabs-hue=red]" },
-			{ name: "no colour, picked", board: ".menu .sw .none", built: "[data-tabs-hue=none]" },
-			{ name: "menu row", board: ".menu .mi", built: "[data-tabs-group-action=ungroup]" },
-			{ name: "menu row glyph", board: ".menu .mi svg", built: "[data-tabs-group-action=ungroup] svg", only: GLYPH },
-		],
-		enter: (page) => pointingAt(page, `${PLAIN_BOX} [data-tabs-item=group]`),
 		leave: rested,
 	},
 	{

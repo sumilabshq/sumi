@@ -2,33 +2,16 @@ import { seenPlacedAs } from "./layout-sight.js";
 import type { Seen, Sight } from "./layout-sight.js";
 
 const GROWN = "[data-tabs-box], [data-tabs-split], [data-tabs-card]";
-const EASE = "cubic-bezier(0.33, 0.33, 0.5, 1)";
-const SHORTEST_MS = 250;
-const ROW_LONGEST_MS = 1000;
-const ROW_MS_PER_PX = 3.8;
-const TILE_LONGEST_MS = 450;
-const TILE_MS_PER_PX = 1.8;
+const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+const SHORTEST_MS = 100;
+const ROW_LONGEST_MS = 180;
+const ROW_MS_PER_PX = 1.2;
+const TILE_LONGEST_MS = 180;
+const TILE_MS_PER_PX = 0.9;
 const TILE = "[data-tabs-item=essential]";
 const LIFTED = "[data-tabs-lifted]";
-const POP_FROM = 0.85;
-const POP_SCALE = 0.8;
 const STILL_PX = 0.5;
 const CALM = "(prefers-reduced-motion: reduce)";
-const POPPED_IN: Keyframe[] = [
-	{
-		opacity: 0,
-		transform: `scale(${POP_SCALE})`,
-	},
-	{
-		opacity: 0,
-		transform: `scale(${POP_SCALE})`,
-		offset: POP_FROM,
-	},
-	{
-		opacity: 1,
-		transform: "none",
-	},
-];
 
 interface Move {
 	readonly element: HTMLElement;
@@ -37,13 +20,18 @@ interface Move {
 	readonly grown: number;
 }
 
+interface Glide {
+	readonly animation: Animation;
+	readonly endsAt: number;
+}
+
 interface GlideTiming {
 	readonly msOf: (move: Move) => number;
 	readonly longestMs: number;
 }
 
 export class LayoutMotion {
-	private running: readonly Animation[] = [];
+	private running: readonly Glide[] = [];
 	private movingUntil = 0;
 
 	isMoving(): boolean {
@@ -55,9 +43,16 @@ export class LayoutMotion {
 	}
 
 	stop(): void {
-		this.running.forEach((animation) => animation.cancel());
+		this.running.forEach(({ animation }) => animation.cancel());
 		this.running = [];
 		this.movingUntil = 0;
+	}
+
+	// TRADE-OFF: own clock, not playState; WebKit measures an ended animation as restarted until its next frame
+	dropEnded(): void {
+		const now = performance.now();
+		this.running.filter(({ endsAt }) => endsAt <= now).forEach(({ animation }) => animation.cancel());
+		this.running = this.running.filter(({ endsAt }) => endsAt > now);
 	}
 
 	glide(before: Sight, after: Sight): void {
@@ -67,7 +62,7 @@ export class LayoutMotion {
 
 		const moves = movesOf(before, after);
 		const timing = glideTimingOf(moves);
-		this.running = moves.flatMap((move) => animationsOf(move, timing.msOf(move)));
+		this.running = moves.flatMap((move) => glidesOf(move, timing.msOf(move)));
 		this.movingUntil = moves.length === 0 ? 0 : performance.now() + timing.longestMs;
 	}
 }
@@ -145,10 +140,8 @@ function durationOf(moves: readonly Move[], msPerPx: number, longestMs: number):
 	return Math.min(longestMs, Math.max(SHORTEST_MS, farthest * msPerPx));
 }
 
-function animationsOf(move: Move, duration: number): readonly Animation[] {
-	const { element, dy } = move;
-
-	if (typeof element.animate !== "function") {
+function glidesOf(move: Move, duration: number): readonly Glide[] {
+	if (typeof move.element.animate !== "function") {
 		return [];
 	}
 
@@ -156,12 +149,8 @@ function animationsOf(move: Move, duration: number): readonly Animation[] {
 		duration,
 		easing: EASE,
 	};
-
-	if (element.matches(TILE) && Math.abs(dy) >= STILL_PX) {
-		return [element.animate(POPPED_IN, timing)];
-	}
-
-	return [...slidOf(move, timing), ...revealedOf(move, timing)];
+	const endsAt = performance.now() + duration;
+	return [...slidOf(move, timing), ...revealedOf(move, timing)].map((animation) => ({ animation, endsAt }));
 }
 
 function slidOf({ element, dx, dy }: Move, timing: KeyframeAnimationOptions): readonly Animation[] {

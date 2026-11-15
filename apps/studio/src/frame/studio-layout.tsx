@@ -53,7 +53,6 @@ export function StudioLayout({
 							<StudioFrame
 								frame={frame}
 								chromeLeftPx={chromeLeftPx}
-								readCursor={studio.cursorInWindow}
 								left={left}
 								panes={panes}
 								panel={panel}

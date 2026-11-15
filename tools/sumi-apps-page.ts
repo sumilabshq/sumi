@@ -77,6 +77,7 @@ const studioApp = runtime()
 						id: SUMI_APPS_WORKSPACE,
 						name: "Sumi apps",
 						icon: null,
+						ink: "yellow",
 					},
 				],
 				currentId: SUMI_APPS_WORKSPACE,

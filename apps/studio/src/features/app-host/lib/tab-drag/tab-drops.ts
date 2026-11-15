@@ -4,6 +4,11 @@ export type ListDrop = Extract<TabDrop, { kind: "list" }>;
 
 export type SplitDrop = Extract<TabDrop, { kind: "split" }>;
 
+export interface Rename {
+	readonly was: string;
+	readonly now: string;
+}
+
 export function isSameDrop(one: TabDrop, other: TabDrop): boolean {
 	if (one.kind === "essentials" && other.kind === "essentials") {
 		return one.at === other.at;
@@ -34,6 +39,17 @@ export function splitDrop(splitId: string, before: string | null): SplitDrop {
 		kind: "split",
 		splitId,
 		before,
+	};
+}
+
+export function renameDrop(drop: TabDrop, { was, now }: Rename): TabDrop {
+	if ((drop.kind !== "list" && drop.kind !== "split") || drop.before !== was) {
+		return drop;
+	}
+
+	return {
+		...drop,
+		before: now,
 	};
 }
 

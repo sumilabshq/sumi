@@ -1,4 +1,4 @@
-export const WATCHED_BLOCKS = ["ChatRow", "ChatList", "ChatSection", "StripButton", "WorkspaceHeader", "ChatCrumb"];
+export const WATCHED_BLOCKS = ["ChatRow", "ChatList", "ChatSection", "StripButton", "ChatCrumb"];
 
 export const INSTRUMENT = `(() => {
 	const watched = new Set(${JSON.stringify(WATCHED_BLOCKS)});

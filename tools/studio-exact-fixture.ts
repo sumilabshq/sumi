@@ -219,6 +219,7 @@ function boardChats(): WorkspacesParts {
 				id: "exact",
 				name: EXACT_WORKSPACE,
 				icon: null,
+				ink: "yellow",
 			},
 		],
 		currentId: "exact",

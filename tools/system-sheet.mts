@@ -26,29 +26,106 @@ const FONTS_FOLDER = "packages/shared/kit/assets/fonts";
 interface FontFace {
 	readonly family: string;
 	readonly weight: string;
+	readonly style: "normal" | "italic";
 	readonly file: string;
+	readonly unicodeRange: string | null;
 }
+
+const LATIN_UNICODE_RANGE =
+	"U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD";
+const CYRILLIC_UNICODE_RANGE = "U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116";
 
 const STUDIO_FONT_FACES: readonly FontFace[] = [
 	{
 		family: "IBM Plex Sans",
 		weight: "400",
+		style: "normal",
 		file: "ibm-plex-sans/IBMPlexSans-400-latin.woff2",
+		unicodeRange: LATIN_UNICODE_RANGE,
 	},
 	{
 		family: "IBM Plex Sans",
 		weight: "500",
+		style: "normal",
 		file: "ibm-plex-sans/IBMPlexSans-500-latin.woff2",
+		unicodeRange: LATIN_UNICODE_RANGE,
 	},
 	{
 		family: "IBM Plex Sans",
 		weight: "600",
+		style: "normal",
 		file: "ibm-plex-sans/IBMPlexSans-600-latin.woff2",
+		unicodeRange: LATIN_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Sans",
+		weight: "400",
+		style: "normal",
+		file: "ibm-plex-sans/ibm-plex-sans-cyrillic-400-normal.woff2",
+		unicodeRange: CYRILLIC_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Sans",
+		weight: "500",
+		style: "normal",
+		file: "ibm-plex-sans/ibm-plex-sans-cyrillic-500-normal.woff2",
+		unicodeRange: CYRILLIC_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Sans",
+		weight: "600",
+		style: "normal",
+		file: "ibm-plex-sans/ibm-plex-sans-cyrillic-600-normal.woff2",
+		unicodeRange: CYRILLIC_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Serif",
+		weight: "400",
+		style: "normal",
+		file: "ibm-plex-serif/ibm-plex-serif-latin-400-normal.woff2",
+		unicodeRange: LATIN_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Serif",
+		weight: "400",
+		style: "italic",
+		file: "ibm-plex-serif/ibm-plex-serif-latin-400-italic.woff2",
+		unicodeRange: LATIN_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Serif",
+		weight: "500",
+		style: "normal",
+		file: "ibm-plex-serif/ibm-plex-serif-latin-500-normal.woff2",
+		unicodeRange: LATIN_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Serif",
+		weight: "400",
+		style: "normal",
+		file: "ibm-plex-serif/ibm-plex-serif-cyrillic-400-normal.woff2",
+		unicodeRange: CYRILLIC_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Serif",
+		weight: "400",
+		style: "italic",
+		file: "ibm-plex-serif/ibm-plex-serif-cyrillic-400-italic.woff2",
+		unicodeRange: CYRILLIC_UNICODE_RANGE,
+	},
+	{
+		family: "IBM Plex Serif",
+		weight: "500",
+		style: "normal",
+		file: "ibm-plex-serif/ibm-plex-serif-cyrillic-500-normal.woff2",
+		unicodeRange: CYRILLIC_UNICODE_RANGE,
 	},
 	{
 		family: "JetBrains Mono",
 		weight: "100 800",
+		style: "normal",
 		file: "jetbrains-mono/JetBrainsMonoVariable-latin.woff2",
+		unicodeRange: null,
 	},
 ];
 
@@ -97,10 +174,11 @@ function scopedSelectorsOf(selectors: string, scopes: readonly string[]): string
 
 // TRADE-OFF: fonts ride in the sheet as base64, because Obsidian loads styles.css as text and resolves no font URL beside it
 function fontFacesOf(repo: string): string {
-	return STUDIO_FONT_FACES.map(({ family, weight, file }) => {
+	return STUDIO_FONT_FACES.map(({ family, weight, style, file, unicodeRange }) => {
 		const font = fs.readFileSync(path.join(repo, FONTS_FOLDER, file)).toString("base64");
+		const unicodeRangeDeclaration = unicodeRange === null ? "" : `\tunicode-range: ${unicodeRange};\n`;
 		return indent(
-			`@font-face {\n\tfont-family: "${family}";\n\tfont-style: normal;\n\tfont-weight: ${weight};\n\tfont-display: swap;\n\tsrc: url("data:font/woff2;base64,${font}") format("woff2");\n}\n\n`,
+			`@font-face {\n\tfont-family: "${family}";\n\tfont-style: ${style};\n\tfont-weight: ${weight};\n\tfont-display: swap;\n\tsrc: url("data:font/woff2;base64,${font}") format("woff2");\n${unicodeRangeDeclaration}}\n\n`,
 		);
 	}).join("");
 }
