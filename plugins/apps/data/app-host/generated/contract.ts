@@ -421,6 +421,10 @@ export const appHost = moduleContract("app-host", Device, {
 			.public()
 			.input(z.object({ paneId: z.string().min(1), tabId: z.string().min(1).nullable() }))
 			.idempotencyKey(Repeatable)),
+		unsplit: named("splits.unsplit", command()
+			.public()
+			.input(z.object({ tabIds: z.array(z.string().min(1)).min(1).readonly() }))
+			.idempotencyKey(Repeatable)),
 		resize: named("splits.resize", command()
 			.public()
 			.input(
@@ -472,6 +476,10 @@ export const appHost = moduleContract("app-host", Device, {
 		closeTab: named("tab-actions.close-tab", command()
 			.public()
 			.input(z.object({ id: z.string() }))
+			.idempotencyKey(Repeatable)),
+		closeTabs: named("tab-actions.close-tabs", command()
+			.public()
+			.input(z.object({ ids: z.array(z.string()).min(1).readonly() }))
 			.idempotencyKey(Repeatable)),
 		closeShown: named("tab-actions.close-shown", command()
 			.public()

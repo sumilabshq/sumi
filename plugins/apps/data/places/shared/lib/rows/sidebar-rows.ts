@@ -34,7 +34,7 @@ export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
 	return {
 		essentials: ask.essentials.map((essential) => rows.tileOf(essential)),
 		sections: SECTION_ORDER.map((list) => entries.sectionOf(list)),
-		newTabList: newTabPlaceOf(ask.moment, null).chatId,
+		newTabList: newTabPlaceOf(null).chatId,
 	};
 }
 

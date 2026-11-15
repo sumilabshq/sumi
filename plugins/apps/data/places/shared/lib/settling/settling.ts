@@ -11,6 +11,8 @@ import { tabBreaksOf } from "../tabs/tab-invariants.js";
 import { splitBreaksOf, splitsPruned } from "../splits/split-members.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 import { withSplitFollowed } from "../showing/split-showing.js";
+import { adoptedBy } from "../tabs/window-moves.js";
+import type { WindowsMove } from "../tabs/window-moves.js";
 
 export interface PlacedTabsMove<T> {
 	readonly next: PlacedTabs | null;
@@ -73,7 +75,9 @@ export function settling(at: TabsAsk, apps: PlacedApps, plan: ShowingPlan): Move
 }
 
 export function settlingWith<E>(at: TabsAsk, apps: PlacedApps, plan: ExtraPlan<E>): MovePlacedTabs<Answer<Settled<E>>> {
-	return (placed) => {
+	return (stored) => {
+		const adoption = adoptedBy(stored, at);
+		const placed = adoption?.placed ?? stored;
 		const was = showingOf(momentOfWindow(placed, at.window, apps));
 		const facts = tabFactsOf(at.screen);
 		const planned = plan(was, facts);
@@ -82,7 +86,21 @@ export function settlingWith<E>(at: TabsAsk, apps: PlacedApps, plan: ExtraPlan<E
 			return refusedMove(planned.refusal);
 		}
 
-		return settledMove({ placed, window: at.window, was: was.moment }, { ...planned, facts });
+		return withAdoption(settledMove({ placed, window: at.window, was: was.moment }, { ...planned, facts }), adoption);
+	};
+}
+
+function withAdoption<T>(moved: PlacedTabsMove<Answer<T>>, adoption: WindowsMove | null): PlacedTabsMove<Answer<T>> {
+	if (adoption === null || moved.answer.isRefused) {
+		return moved;
+	}
+
+	const reason = [...adoption.reasons, moved.reason].join("; ");
+	console.info(`[widgetarium] tabs ${adoption.reasons.join("; ")}`);
+	return {
+		...moved,
+		next: moved.next ?? adoption.placed,
+		reason,
 	};
 }
 

@@ -201,7 +201,7 @@ function askedPlaceOf(moment: HostTabsMoment, { list, groupId }: AskedPlace): Ta
 		return refusal(NO_LIST.replace("{list}", list));
 	}
 
-	return newTabPlaceOf(moment, list);
+	return newTabPlaceOf(list);
 }
 
 function duplicatePlaceOf(moment: HostTabsMoment, asked: AskedPlace & { readonly id: string }): TabPlace | Refusal {

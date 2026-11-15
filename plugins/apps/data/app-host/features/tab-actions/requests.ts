@@ -94,6 +94,18 @@ export const closeTab = command()
 		);
 	});
 
+export const closeTabs = command()
+	.public()
+	.input(z.object({ ids: z.array(z.string()).min(1).readonly() }))
+	.idempotencyKey(Repeatable)
+	.handle(async ({ ids }, { send, emit, ...injects }) => {
+		for (const id of ids) {
+			await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+				send(places.tabClosing.closeTab, { at, id }),
+			);
+		}
+	});
+
 export const closeShown = command()
 	.public()
 	.idempotencyKey(Repeatable)

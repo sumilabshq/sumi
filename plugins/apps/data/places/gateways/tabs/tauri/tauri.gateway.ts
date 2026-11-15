@@ -12,8 +12,10 @@ import {
 	chatEntriesOf,
 	migratedTabsOf,
 	migrationSaid,
+	unheldTabsOf,
+	windowedTabsOf,
 } from "./kept-session.js";
-import type { KeptChatsRead, KeptSessionDoc } from "./kept-session.js";
+import type { KeptChatsRead, KeptSessionDoc, ReshapedTabs } from "./kept-session.js";
 import { TabsGateway } from "../tabs.gateway.js";
 
 export interface TabsStore {
@@ -85,17 +87,35 @@ async function readyTabsIn(at: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<He
 	const { tabs } = kept.now();
 
 	if (tabs === undefined || tabs === null) {
-		return migrated(at, kept);
+		return movedBy(await migrated(at, kept), unheldTabsOf);
 	}
 
-	if (PlacedTabsSchema.safeParse(tabs).success) {
-		return kept;
+	const readable = PlacedTabsSchema.safeParse(tabs);
+
+	if (readable.success) {
+		return movedBy(await movedBy(kept, windowedTabsOf), unheldTabsOf);
 	}
 
 	const reason = "tabs unreadable → none, the unreadable ones kept aside as unreadableTabs";
 	console.error(`[widgetarium] places ${reason}`);
 	kept.change({ tabs: emptyPlacedTabs(), unreadableTabs: tabs }, `places ${reason}`);
 	await kept.flush();
+	return kept;
+}
+
+async function movedBy(
+	kept: HeldDoc<KeptPlaces>,
+	move: (placed: PlacedTabs) => ReshapedTabs | null,
+): Promise<HeldDoc<KeptPlaces>> {
+	const moved = move(placedIn(kept));
+
+	if (moved === null) {
+		return kept;
+	}
+
+	kept.change({ tabs: moved.placed }, `places ${moved.reason}`);
+	await kept.flush();
+	console.info(`[widgetarium] ${moved.reason}`);
 	return kept;
 }
 

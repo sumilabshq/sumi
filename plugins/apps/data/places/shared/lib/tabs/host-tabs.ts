@@ -7,6 +7,7 @@ import {
 	findGroup,
 	isSectionList,
 	placeAfterOf,
+	sectionNameOf,
 	locationOf,
 	withTabAt,
 	withoutTab,
@@ -100,7 +101,7 @@ export function isHolderTabId(moment: HostTabsMoment, id: string): boolean {
 }
 
 export function isKnownList(moment: HostTabsMoment, listId: string): boolean {
-	return isSectionList(listId) || isHolderTabId(moment, listId);
+	return sectionNameOf(listId) !== null || isHolderTabId(moment, listId);
 }
 
 export function pageTabIdsOf(moment: HostTabsMoment, listId: string): readonly string[] {
@@ -112,10 +113,9 @@ export function topPageTabIdsOf(moment: HostTabsMoment): readonly string[] {
 	return [...pageTabIdsOf(moment, WORKSPACE_LIST), ...pageTabIdsOf(moment, PINNED_LIST)];
 }
 
-export function newTabPlaceOf(moment: HostTabsMoment, asked: string | null): TabPlace {
-	const shownList = moment.shownId === null ? null : (locationOf(moment, moment.shownId)?.chatId ?? null);
+export function newTabPlaceOf(asked: string | null): TabPlace {
 	return {
-		chatId: asked ?? (shownList === null || isSectionList(shownList) ? WORKSPACE_LIST : shownList),
+		chatId: asked !== null && isSectionList(asked) ? asked : WORKSPACE_LIST,
 		groupId: null,
 		before: null,
 	};

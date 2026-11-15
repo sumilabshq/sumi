@@ -4,6 +4,7 @@ import { emptyMoment, momentSaid } from "./host-tabs.js";
 import type { HostTabsMoment } from "./host-tabs.js";
 import { placedAppsOf } from "./app-abilities.js";
 import type { PlacedApps } from "./app-abilities.js";
+import { elsewhereOf, keptElsewhere, mergedById, shownListsOf, storedListsOf } from "./window-share.js";
 
 const NO_VIEW: WindowView = {
 	shownId: null,
@@ -31,9 +32,14 @@ export function emptyPlacedTabs(): PlacedTabs {
 
 export function momentOfWindow(placed: PlacedTabs, window: string | null, apps: PlacedApps): HostTabsMoment {
 	const { views, ...shared } = placed;
+	const elsewhere = elsewhereOf(placed, window);
 	return {
 		...shared,
 		...((window === null ? undefined : views[window]) ?? NO_VIEW),
+		tabs: shared.tabs.filter((tab) => !elsewhere.tabIds.has(tab.id)),
+		lists: shownListsOf(shared.lists, elsewhere, window),
+		groups: shared.groups.filter((group) => !elsewhere.groupIds.has(group.id)),
+		splits: shared.splits.filter((split) => !elsewhere.splitIds.has(split.id)),
 		apps,
 	};
 }
@@ -53,9 +59,13 @@ export function windowTabsOf(moment: HostTabsMoment): WindowTabs {
 export function placedWith(placed: PlacedTabs, window: string | null, moment: HostTabsMoment): PlacedTabs {
 	const { shownId, lastShown, ...shared } = windowTabsOf(moment);
 	const { splits, mintedSplits, shownSplitId, selectedId, view } = moment;
+	const elsewhere = elsewhereOf(placed, window);
 	return PlacedTabsSchema.parse({
 		...shared,
-		splits,
+		tabs: mergedById(placed.tabs, elsewhere.tabIds, shared.tabs),
+		lists: { ...keptElsewhere(placed.lists, elsewhere), ...storedListsOf(shared.lists, window) },
+		groups: mergedById(placed.groups, elsewhere.groupIds, shared.groups),
+		splits: mergedById(placed.splits, elsewhere.splitIds, splits),
 		mintedSplits,
 		askedLinks: placed.askedLinks,
 		mintedLinks: placed.mintedLinks,

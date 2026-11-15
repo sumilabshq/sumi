@@ -13,7 +13,7 @@ import { all, closeWindow, keepLiveWindows, openWindow, reread } from "../featur
 import { placedTabsChanged } from "../gateways/tabs/tabs.events.js";
 import { windowsChanged } from "../gateways/windows/windows.events.js";
 
-export type { AppAbilities, CanStandIn, PlacedApp, PlacesConfig, TabStanding } from "../module.js";
+export type { AppAbilities, PlacedApp, PlacesConfig } from "../module.js";
 
 export const places = handledModule(definition, [
 	reread,

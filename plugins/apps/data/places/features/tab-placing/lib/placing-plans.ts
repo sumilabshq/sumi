@@ -119,7 +119,7 @@ function placeRefusalOf(moment: HostTabsMoment, id: string, asked: TabPlaceAsked
 		return NOT_HELD.replace("{id}", id);
 	}
 
-	return refuseStanding(moment, tab, asked.list) ?? listRefusalOf(moment, asked);
+	return refuseStanding(tab, asked.list) ?? listRefusalOf(moment, asked);
 }
 
 function listRefusalOf(moment: HostTabsMoment, asked: TabPlaceAsked): string | null {

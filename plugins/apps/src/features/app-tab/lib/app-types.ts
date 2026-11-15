@@ -19,14 +19,7 @@ export type ArtOf = (address: string) => string | null;
 
 export type HandoffAppOf = (address: string) => string | null;
 
-export interface TabStanding {
-	readonly holderApp: string | null;
-}
-
-export type CanStandIn = (standing: TabStanding) => boolean;
-
 export interface TabRules {
-	readonly canStandIn?: CanStandIn | undefined;
 	readonly holdsTabs?: boolean | undefined;
 	readonly navigates?: boolean | undefined;
 	readonly splits?: boolean | undefined;

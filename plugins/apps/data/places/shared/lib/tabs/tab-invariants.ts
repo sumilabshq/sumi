@@ -1,10 +1,10 @@
 import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "./host-tabs-moment.js";
-import { canStandIn, holderIdsOf } from "./app-abilities.js";
+import { holderIdsOf } from "./app-abilities.js";
 import { findGroup, isSectionList } from "./tab-lists.js";
 
 const LIST_OF_NO_HOLDER = 'the list "{list}" belongs to no tab that holds tabs: only such an app owns a list';
-const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": its app does not let it';
+const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands only in Open or Pinned';
 const NOT_ONE_PLACE = 'the tab "{id}" stands in {count} places: a tab stands in exactly one list';
 const UNKNOWN_ENTRY = 'the list "{list}" names "{id}", which is no tab or group here';
 const GROUP_NOT_ONE_LIST = 'the group "{id}" stands in {count} lists: a group stands in exactly one';
@@ -16,15 +16,8 @@ interface Standing {
 
 type TabLaws = Pick<HostTabsMoment, "tabs" | "lists" | "groups" | "apps">;
 
-export function refuseStanding(
-	moment: TabLaws,
-	tab: { readonly id: string; readonly app: string },
-	list: string,
-): string | null {
-	const holderApp = isSectionList(list) ? null : (moment.tabs.find((one) => one.id === list)?.app ?? null);
-	return canStandIn(moment.apps, tab, holderApp)
-		? null
-		: REFUSED_STANDING.replace("{id}", tab.id).replace("{list}", list);
+export function refuseStanding(tab: { readonly id: string }, list: string): string | null {
+	return isSectionList(list) ? null : REFUSED_STANDING.replace("{id}", tab.id).replace("{list}", list);
 }
 
 export function tabBreaksOf(moment: TabLaws): readonly string[] {
@@ -68,7 +61,7 @@ function tabsStandingRefused(moment: TabLaws): readonly string[] {
 	const tabOf = new Map(moment.tabs.map((tab) => [tab.id, tab]));
 	return standingsOf(moment).flatMap(({ list, tabId }) => {
 		const tab = tabOf.get(tabId);
-		const refusal = tab === undefined ? null : refuseStanding(moment, tab, list);
+		const refusal = tab === undefined ? null : refuseStanding(tab, list);
 		return refusal === null ? [] : [refusal];
 	});
 }

@@ -121,7 +121,7 @@ function groupPlaceRefusalOf(moment: HostTabsMoment, group: TabGroup, { list }: 
 
 	const holdsRefused = group.tabIds.some((tabId) => {
 		const tab = heldTabOf(moment, tabId);
-		return tab !== undefined && refuseStanding(moment, tab, list) !== null;
+		return tab !== undefined && refuseStanding(tab, list) !== null;
 	});
 	return holdsRefused ? REFUSED_IN_GROUP.replace("{id}", group.id).replace("{list}", list) : null;
 }

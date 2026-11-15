@@ -6,8 +6,8 @@ import { closeEssential, placeEssential, remove, showEssential } from "../featur
 import { create, fold, foldTab, placeGroup, renameGroup, setHue, ungroup } from "../features/groups/requests.js";
 import { openLink } from "../features/links/requests.js";
 import { current, rereadShownView, rereadShownViewForCore, showView } from "../features/shown-view/requests.js";
-import { closeViewPane, placeInView, rereadShown, rereadShownForCore, resize, shown } from "../features/splits/requests.js";
-import { closeGroup, closeOthers, closeShown, closeTab, duplicate, openBelow, openTab, pin, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
+import { closeViewPane, placeInView, rereadShown, rereadShownForCore, resize, shown, unsplit } from "../features/splits/requests.js";
+import { closeGroup, closeOthers, closeShown, closeTab, closeTabs, duplicate, openBelow, openTab, pin, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
 import { appTabs, canOpenOwnWindow, ensurePanePages, forwardChatsToTabs, heldTabs, placeTab, rememberPages, rereadForAccessAsks, rereadForChats, rereadForInk, rereadForPages, rereadSidebarForEssentials, rereadTabs, rereadTabsForCore, restore, showTab, syncChat, tabsSidebar } from "../features/tabs/requests.js";
 import { studioCoreChanged } from "../gateways/core-changes/core-changes.events.js";
 import { essentialsChanged } from "../gateways/essentials/essentials.events.js";
@@ -54,10 +54,12 @@ export const appHost = handledModule(definition, [
 	named("splits.place-in-view", placeInView),
 	named("splits.resize", resize),
 	named("splits.shown", shown),
+	named("splits.unsplit", unsplit),
 	named("tab-actions.close-group", closeGroup),
 	named("tab-actions.close-others", closeOthers),
 	named("tab-actions.close-shown", closeShown),
 	named("tab-actions.close-tab", closeTab),
+	named("tab-actions.close-tabs", closeTabs),
 	named("tab-actions.duplicate", duplicate),
 	named("tab-actions.open-below", openBelow),
 	named("tab-actions.open-tab", openTab),

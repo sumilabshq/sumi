@@ -48,6 +48,38 @@ export const WORKSPACE_END: TabPlace = {
 
 const NEW_GROUP = "New group";
 
+const WINDOW_LIST_PREFIX = "window:";
+
+const PINNED_SUFFIX = ":pinned";
+
+export function windowListOf(window: string, section: SectionList): string {
+	return section === PINNED_LIST ? `${WINDOW_LIST_PREFIX}${window}${PINNED_SUFFIX}` : `${WINDOW_LIST_PREFIX}${window}`;
+}
+
+export function windowOfList(listId: string): string | null {
+	if (!listId.startsWith(WINDOW_LIST_PREFIX)) {
+		return null;
+	}
+
+	const rest = listId.slice(WINDOW_LIST_PREFIX.length);
+	return rest.endsWith(PINNED_SUFFIX) ? rest.slice(0, -PINNED_SUFFIX.length) : rest;
+}
+
+export function windowSectionOf(listId: string): SectionList | null {
+	const window = windowOfList(listId);
+
+	if (window === null) {
+		return null;
+	}
+
+	return listId === windowListOf(window, PINNED_LIST) ? PINNED_LIST : WORKSPACE_LIST;
+}
+
+export function sectionNameOf(listId: string): SectionList | null {
+	const parsed = SectionListSchema.safeParse(listId);
+	return parsed.success ? parsed.data : null;
+}
+
 export function locationOf(layout: TabLayout, tabId: string): TabLocation | null {
 	for (const chatId of Object.keys(layout.lists)) {
 		const location = topLocationOf(layout, chatId, tabId) ?? groupedLocationOf(layout, chatId, tabId);
@@ -99,7 +131,7 @@ export function withTabAt(layout: TabLayout, tabId: string, place: TabPlace): Ta
 }
 
 export function isSectionList(listId: string): boolean {
-	return SECTION_LISTS.includes(listId);
+	return SECTION_LISTS.includes(listId) || windowOfList(listId) !== null;
 }
 
 export function withEntryBefore(lists: ChatLists, chatId: string, entry: ListEntry, before: string | null): ChatLists {

@@ -6,7 +6,6 @@ export interface PlacedApps {
 }
 
 const PAGE_APP: AppAbilities = {
-	canStandIn: () => true,
 	holdsTabs: false,
 	navigates: false,
 	splits: false,
@@ -25,16 +24,6 @@ export function resolvedAppOf(apps: PlacedApps, app: AppKind, address: string): 
 
 export function abilitiesOf(apps: PlacedApps, app: AppKind): AppAbilities {
 	return apps.byId.get(app)?.abilities ?? PAGE_APP;
-}
-
-export function canStandIn(apps: PlacedApps, tab: { readonly app: AppKind }, holderApp: AppKind | null): boolean {
-	return abilitiesOf(apps, tab.app).canStandIn({ holderApp }) === true;
-}
-
-export function canStandInHolders(apps: PlacedApps, tab: { readonly app: AppKind }): boolean {
-	return [...apps.byId.values()]
-		.filter(({ abilities }) => abilities.holdsTabs)
-		.every((holder) => canStandIn(apps, tab, holder.id));
 }
 
 export function isTearable(apps: PlacedApps, tab: { readonly app: AppKind }): boolean {

@@ -1,11 +1,19 @@
 import type { NamedRecord } from "../../schema/tab-facts.schema.js";
-import type { TabMark } from "../../schema/tabs.schema.js";
+import type { SectionList, TabMark } from "../../schema/tabs.schema.js";
 import { titleOfTab } from "../rows/tab-face.js";
 import { holderAppOf, holdsTabs } from "./app-abilities.js";
 import type { PlacedApps } from "./app-abilities.js";
 import type { HostTab, HostTabsMoment, MovedTabs } from "./host-tabs.js";
 import { placeTab } from "./host-tabs.js";
-import { PINNED_LIST, WORKSPACE_LIST, flatTabIdsOf, locationOf, tabEntryOf, withEntryBefore } from "./tab-lists.js";
+import {
+	PINNED_LIST,
+	WORKSPACE_LIST,
+	flatTabIdsOf,
+	locationOf,
+	tabEntryOf,
+	windowSectionOf,
+	withEntryBefore,
+} from "./tab-lists.js";
 import type { ChatLists } from "./tab-lists.js";
 
 export interface ChatTabRow {
@@ -21,11 +29,14 @@ export interface ChatTabRows {
 
 export function chatTabRowsOf(moment: Pick<HostTabsMoment, "tabs" | "lists" | "groups" | "apps">): ChatTabRows {
 	const holderOf = new Map(moment.tabs.filter((tab) => holdsTabs(moment.apps, tab)).map((tab) => [tab.id, tab]));
-	const rowsIn = (listId: string): readonly ChatTabRow[] =>
-		flatTabIdsOf(moment, listId).flatMap((id) => {
-			const holder = holderOf.get(id);
-			return holder === undefined ? [] : [chatTabRowOf(moment.apps, holder)];
-		});
+	const rowsIn = (section: SectionList): readonly ChatTabRow[] =>
+		Object.keys(moment.lists)
+			.filter((listId) => windowSectionOf(listId) === section)
+			.flatMap((listId) => flatTabIdsOf(moment, listId))
+			.flatMap((id) => {
+				const holder = holderOf.get(id);
+				return holder === undefined ? [] : [chatTabRowOf(moment.apps, holder)];
+			});
 	return {
 		pinned: rowsIn(PINNED_LIST),
 		open: rowsIn(WORKSPACE_LIST),
@@ -48,7 +59,7 @@ export function pinTab(moment: HostTabsMoment, id: string, isPinned: boolean): M
 	});
 }
 
-export function keepChatTabs(moment: HostTabsMoment, chats: readonly NamedRecord[]): MovedTabs | null {
+export function keepChatTabs(moment: HostTabsMoment, chats: readonly NamedRecord[], listId: string): MovedTabs | null {
 	const holderApp = holderAppOf(moment.apps);
 	const missing = holderApp === null ? [] : chatsWithNoTab(moment, chats);
 	const renamed = chats.filter((chat) => isRenamed(moment, chat));
@@ -60,10 +71,10 @@ export function keepChatTabs(moment: HostTabsMoment, chats: readonly NamedRecord
 	return {
 		moment: {
 			...moment,
-			lists: withChatsOnTop(moment.lists, missing),
+			lists: withChatsOnTop(moment.lists, missing, listId),
 			tabs: [...withTitles(moment.tabs, renamed), ...missing.map((chat) => chatTabOf(holderApp ?? "", chat))],
 		},
-		reason: keptSaid(missing, renamed),
+		reason: keptSaid(missing, renamed, listId),
 	};
 }
 
@@ -93,18 +104,18 @@ function withTitles(tabs: readonly HostTab[], renamed: readonly NamedRecord[]): 
 	});
 }
 
-function keptSaid(missing: readonly NamedRecord[], renamed: readonly NamedRecord[]): string {
-	const kept = missing.length === 0 ? [] : [`chat tabs ${missing.map(({ id }) => id).join(", ")} kept on top of Open`];
+function keptSaid(missing: readonly NamedRecord[], renamed: readonly NamedRecord[], listId: string): string {
+	const kept =
+		missing.length === 0 ? [] : [`chat tabs ${missing.map(({ id }) => id).join(", ")} kept on top of ${listId}`];
 	const titled = renamed.length === 0 ? [] : [`titles of ${renamed.map(({ id }) => id).join(", ")} follow their chats`];
 	return [...kept, ...titled].join("; ");
 }
 
-function withChatsOnTop(lists: ChatLists, chats: readonly NamedRecord[]): ChatLists {
+function withChatsOnTop(lists: ChatLists, chats: readonly NamedRecord[], listId: string): ChatLists {
 	return [...chats]
 		.reverse()
 		.reduce(
-			(placed, { id }) =>
-				withEntryBefore(placed, WORKSPACE_LIST, tabEntryOf(id), placed[WORKSPACE_LIST]?.[0]?.id ?? null),
+			(placed, { id }) => withEntryBefore(placed, listId, tabEntryOf(id), placed[listId]?.[0]?.id ?? null),
 			lists,
 		);
 }

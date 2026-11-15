@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable } from "@widgetarium/data-framework";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { places } from "@widgetarium/places/contract";
 import { layout } from "@widgetarium/layout/contract";
@@ -7,6 +7,8 @@ import { studioCoreChanged } from "../../gateways/core-changes/core-changes.even
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { ShownSplitSchema, SplitPlacingSchema } from "../../shared/schema/split.schema.js";
+
+const LAST_PANE = 'pane "{id}" stays: closing it would leave the board empty';
 
 export const shown = query()
 	.public()
@@ -30,6 +32,12 @@ export const closeViewPane = command()
 	.input(z.object({ paneId: z.string().min(1), tabId: z.string().min(1).nullable() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ paneId, tabId }, { send, emit, ...injects }) => {
+		const board = await send(layout.panes.paneTree);
+
+		if (!board.closableIds.includes(paneId)) {
+			return refuse(LAST_PANE.replace("{id}", paneId));
+		}
+
 		const left =
 			tabId === null
 				? null
@@ -39,6 +47,18 @@ export const closeViewPane = command()
 
 		if (left?.isMember !== true) {
 			await send(layout.panes.close, { id: paneId });
+		}
+	});
+
+export const unsplit = command()
+	.public()
+	.input(z.object({ tabIds: z.array(z.string().min(1)).min(1).readonly() }))
+	.idempotencyKey(Repeatable)
+	.handle(async ({ tabIds }, { send, emit, ...injects }) => {
+		for (const tabId of tabIds) {
+			await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+				send(places.splits.remove, { at, tabId }),
+			);
 		}
 	});
 

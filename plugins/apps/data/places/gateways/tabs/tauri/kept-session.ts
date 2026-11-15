@@ -8,7 +8,13 @@ import {
 	PlacedTabsSchema,
 } from "../../../shared/schema/tabs.schema.js";
 import type { ListEntry, PlacedTabs } from "../../../shared/schema/tabs.schema.js";
-import { isSectionList, tabEntryOf, WORKSPACE_LIST, PINNED_LIST } from "../../../shared/lib/tabs/tab-lists.js";
+import {
+	isSectionList,
+	tabEntryOf,
+	windowListOf,
+	WORKSPACE_LIST,
+	PINNED_LIST,
+} from "../../../shared/lib/tabs/tab-lists.js";
 
 export const KeptSessionTabsSchema = z.object({
 	tabs: z.array(KeptTabSchema),
@@ -51,6 +57,56 @@ export function chatEntriesOf(read: KeptChatsRead): readonly KeptChatEntry[] {
 }
 
 type KeptLists = Readonly<Record<string, readonly ListEntry[]>>;
+
+const MAIN_OPEN = windowListOf(MAIN_STUDIO_WINDOW, WORKSPACE_LIST);
+
+const MAIN_PINNED = windowListOf(MAIN_STUDIO_WINDOW, PINNED_LIST);
+
+export interface ReshapedTabs {
+	readonly placed: PlacedTabs;
+	readonly reason: string;
+}
+
+export function windowedTabsOf(placed: PlacedTabs): ReshapedTabs | null {
+	const { [WORKSPACE_LIST]: open, [PINNED_LIST]: pinned, ...rest } = placed.lists;
+
+	if (open === undefined && pinned === undefined) {
+		return null;
+	}
+
+	return {
+		placed: {
+			...placed,
+			lists: {
+				...rest,
+				[MAIN_OPEN]: [...(rest[MAIN_OPEN] ?? []), ...(open ?? [])],
+				[MAIN_PINNED]: [...(rest[MAIN_PINNED] ?? []), ...(pinned ?? [])],
+			},
+		},
+		reason: `tabs lists workspace and pinned → window ${MAIN_STUDIO_WINDOW} (${open?.length ?? 0} open, ${pinned?.length ?? 0} pinned; tabs belong to a window now)`,
+	};
+}
+
+export function unheldTabsOf(placed: PlacedTabs): ReshapedTabs | null {
+	const held = Object.entries(placed.lists).filter(([list]) => !isSectionList(list));
+
+	if (held.length === 0) {
+		return null;
+	}
+
+	const sections = Object.entries(placed.lists).filter(([list]) => isSectionList(list));
+	const besideChat = sections.map(([list, entries]): [string, ListEntry[]] => [
+		list,
+		entries.flatMap((entry) => (entry.kind === "tab" ? [entry, ...(placed.lists[entry.id] ?? [])] : [entry])),
+	]);
+	const standingIds = new Set(besideChat.flatMap(([, entries]) => entries.map((entry) => entry.id)));
+	const strays = held.flatMap(([, entries]) => entries).filter((entry) => !standingIds.has(entry.id));
+	const lists = Object.fromEntries(besideChat);
+	return {
+		placed: { ...placed, lists: { ...lists, [MAIN_OPEN]: [...(lists[MAIN_OPEN] ?? []), ...strays] } },
+		reason: `tabs held in ${held.length} chats → beside their chat (${strays.length} strays to the end of Open; a chat holds no tabs now)`,
+	};
+}
 
 const NO_SESSION: KeptSessionTabs = {
 	tabs: [],
@@ -96,8 +152,8 @@ function migratedListsOf(
 	const chatIds = new Set(chats.map((chat) => chat.id));
 	return {
 		...chatListsOf(lists, chatIds),
-		[PINNED_LIST]: chatEntriesIn(pinnedOf(chatTabs)),
-		[WORKSPACE_LIST]: [
+		[MAIN_PINNED]: chatEntriesIn(pinnedOf(chatTabs)),
+		[MAIN_OPEN]: [
 			...chatEntriesIn(openOf(chatTabs)),
 			...(lists[WORKSPACE_LIST] ?? []),
 			...orphanEntriesOf(lists, chatIds),
