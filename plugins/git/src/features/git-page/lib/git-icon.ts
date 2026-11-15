@@ -6,6 +6,6 @@ export const GIT_ICON = [
 	'<circle cx="7.5" cy="14" r="1.5" stroke="#000000" stroke-width="1.5" fill="none"/>',
 	'<circle cx="12.5" cy="7.5" r="1.5" stroke="#000000" stroke-width="1.5" fill="none"/>',
 	"</mask>",
-	'<rect x="2" y="2" width="16" height="16" fill="#000000" mask="url(#cut)"/>',
+	'<rect x="2" y="2" width="16" height="16" fill="#f05032" mask="url(#cut)"/>',
 	"</svg>",
 ].join("");

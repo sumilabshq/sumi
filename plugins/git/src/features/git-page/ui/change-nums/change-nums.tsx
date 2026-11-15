@@ -14,7 +14,9 @@ export function ChangeNums({ added, removed, hidesZero }: ChangeNumsProps): Reac
 	return (
 		<span className="wg-git-nums">
 			{hidesZero && added === 0 ? null : <span className="wg-git-add">{ADDED.replace("{count}", String(added))} </span>}
-			{hidesZero && removed === 0 ? null : <span className="wg-git-del">{REMOVED.replace("{count}", String(removed))}</span>}
+			{hidesZero && removed === 0 ? null : (
+				<span className="wg-git-del">{REMOVED.replace("{count}", String(removed))}</span>
+			)}
 		</span>
 	);
 }

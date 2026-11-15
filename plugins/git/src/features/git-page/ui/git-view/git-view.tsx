@@ -18,10 +18,7 @@ export function GitView({ tabId }: AppViewProps): ReactElement | null {
 	}
 
 	return (
-		<main
-			className="wg-git wg-root"
-			aria-label={APP_NAME}
-		>
+		<main className="wg-git wg-root" aria-label={APP_NAME}>
 			<style>{GIT_SHEET}</style>
 			{tab.address.folder === "" ? (
 				<NoRepo title={NO_FOLDER} said={NO_FOLDER_SAID} repos={[]} go={tab.go} />

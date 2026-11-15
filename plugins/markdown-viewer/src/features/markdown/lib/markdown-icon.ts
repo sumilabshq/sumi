@@ -4,6 +4,6 @@ export const MARKDOWN_ICON = [
 	'<rect width="20" height="20" fill="#FFFFFF"/>',
 	'<path d="M11.5 2v4.5H16M6.5 10.5h7M6.5 13.5h5" stroke="#000000" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
 	"</mask>",
-	'<path d="M4 2h8l4 4v12H4Z" fill="#000000" mask="url(#cut)"/>',
+	'<path d="M4 2h8l4 4v12H4Z" fill="#3b82f6" mask="url(#cut)"/>',
 	"</svg>",
 ].join("");

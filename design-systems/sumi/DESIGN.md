@@ -2,12 +2,13 @@
 
 ## The idea
 
-Sumi is a quiet tool that gives the screen to the work. Four aims, in this order; every rule below follows from them.
+Sumi is a quiet tool that gives the screen to the work. Five aims, in this order; every rule below follows from them.
 
 1. **Content first.** The person's work (a chat, a page, code) is the loudest thing on the screen. The interface steps back: no decoration, no frame or fill that spacing can replace, controls invisible until touched.
 2. **Minimal and quiet.** Remove what does not help the task, an icon included. Hierarchy comes from text and spacing, not from boxes.
 3. **A terminal's feel, not its look.** Taken from the terminal: instant reaction, a clean surface, the keyboard first, the caret, mono where code and commands live. Not taken: green on black, ASCII art, a screen only a developer can read. Sumi reads as a normal product to someone who never opened a terminal.
 4. **Monochrome so nothing distracts.** Colour stays out so the eye stays on the content; monochrome is a means, never the point. Colour comes back where it carries meaning: a status, a data mark, the person's own content.
+5. **Alive under the hand.** Quiet is the base, not the whole: every press answers, the agent's work is visible while it happens, an empty screen greets the person. Delight is spent in a few places, each with a job (the workspace ink, the working light, the serif voice, the mascot), never as decoration.
 
 ### Consequences, not the idea
 
@@ -19,47 +20,50 @@ Today's answers to the aims. Each may change when a better answer serves the sam
 
 ### Testing a change
 
-A change is right when it puts the content forward, removes something, makes a reaction faster or keeps the eye on the work. Making the interface more consistent with a consequence (squarer, greyer, flatter) is not a reason on its own.
+A change is right when it puts the content forward, removes something, makes a reaction faster, keeps the eye on the work or makes a touch answer. Making the interface more consistent with a consequence (squarer, greyer, flatter) is not a reason on its own.
 
 ## Visual Theme & Atmosphere
 
-The window is one sheet of paper with ink on it. Nothing floats over the page but a popup; nothing is boxed but code. Calm comes from a single surface, one size of text, one left line and few, full-length lines; speed comes from a terminal-like caret and instant answers. It must read as a normal product to a person who never opened a terminal, and feel like home to one who lives in it.
+The window is one sheet of paper with ink on it. Nothing floats over the page but a popup; nothing is boxed but code. Calm comes from a single surface, one size of text, one left line and few, full-length lines; speed comes from a terminal-like caret and instant answers. The paper is felt, not flat: a fine grain and a soft light from the top of the window, in both themes. It must read as a normal product to a person who never opened a terminal, and feel like home to one who lives in it.
 
 The canvas "Sumi — paper directions" (https://claude.ai/artifact/H8ZPbB1u4ALCSWcqciU268) draws every rule below; `references/README.md` says which board to read for what. The pictures the direction came from: notes in light ink on a dark tablet, an e-reader's matte page, schematic and sci-fi panels in one colour.
 
-| Setting    | Values           | Default | What changes                                                    |
-| ---------- | ---------------- | ------- | --------------------------------------------------------------- |
-| `theme`    | `dark`, `light`  | host    | dark is near-black paper, light is plain white                  |
-| `text`     | `sans`, `mono`   | `sans`  | mono sets the whole interface in JetBrains Mono, for developers |
-| `favicons` | `mono`, `colour` | `mono`  | site icons as one-colour masks or as they are                   |
+| Setting    | Values                                | Default | What changes                                                         |
+| ---------- | ------------------------------------- | ------- | -------------------------------------------------------------------- |
+| `theme`    | `dark`, `light`                       | host    | dark is near-black paper, light is plain white                       |
+| `text`     | `sans`, `mono`                        | `sans`  | mono sets the whole interface in JetBrains Mono, for developers      |
+| `favicons` | `mono`, `colour`                      | `mono`  | site icons as one-colour masks or as they are                        |
+| `ink`      | yellow, ember, moss, tide, iris, rose | yellow  | per workspace: the hue of the tint step (82, 42, 145, 225, 285, 355) |
+| `paper`    | `grain`, `flat`                       | `grain` | flat drops the grain and the top light                               |
 
-Everything else is fixed.
+Everything else is fixed. The delight layers are drawn on the canvas's "Delight" page.
 
 ## Color Palette & Roles
 
-| Role                                        | Step                                                                                              |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `background`, `sidebar`                     | paper: the one surface; sidebars and panes are the same paper                                     |
-| `card`, `group`, `muted`, `fill`, `field`   | soft: the one fill: code blocks, inline code, a selected row, a user's message, an essential tile |
-| `popover`, `raise`                          | paper with a 1px `border`, no shadow: the only floating thing                                     |
-| `sidebar-accent`                            | selected: the shown tab, the chosen option                                                        |
-| `accent`, `secondary`, `fill-hover`         | active: pressed                                                                                   |
-| `foreground`                                | ink                                                                                               |
-| `muted-foreground`, `ink-muted`             | ink-2: rarely used; secondary text takes ink-3                                                    |
-| `faint`                                     | ink-3: times, verbs in tool rows, hints, table headers                                            |
-| `group-line`, `sidebar-border`              | line: every divider and table rule                                                                |
-| `border`, `input`                           | edge: the code block and popup outline                                                            |
-| `primary`, `brand`                          | contrast: the one solid control per view, Send                                                    |
-| `tint`, `on-wash`                           | Sumi yellow: the caret and links, nothing else                                                    |
-| `success`, `destructive`, `info`, `warning` | data marks and diff colours only: ok, fail, progress, waits                                       |
+| Role                                        | Step                                                                                                                                                                               |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `background`, `sidebar`                     | paper: the one surface; sidebars and panes are the same paper                                                                                                                      |
+| `card`, `group`, `muted`, `fill`, `field`   | soft: the one fill: code blocks, inline code, a selected row, a user's message, an essential tile                                                                                  |
+| `popover`, `raise`                          | paper with a 1px `border`, no shadow: the only floating thing                                                                                                                      |
+| `sidebar-accent`                            | selected: the shown tab, the chosen option                                                                                                                                         |
+| `accent`, `secondary`, `fill-hover`         | active: pressed                                                                                                                                                                    |
+| `foreground`                                | ink                                                                                                                                                                                |
+| `muted-foreground`, `ink-muted`             | ink-2: rarely used; secondary text takes ink-3                                                                                                                                     |
+| `faint`                                     | ink-3: times, verbs in tool rows, hints, table headers                                                                                                                             |
+| `group-line`, `sidebar-border`              | line: every divider and table rule                                                                                                                                                 |
+| `border`, `input`                           | edge: the code block and popup outline                                                                                                                                             |
+| `primary`, `brand`                          | contrast: the one solid control per view, Send                                                                                                                                     |
+| `tint`, `on-wash`                           | the workspace ink (Sumi yellow by default): the caret, links, text selection at 26%, the workspace mark, the working line and shimmer, the italic line of a greeting; nothing else |
+| `success`, `destructive`, `info`, `warning` | data marks and diff colours only: ok, fail, progress, waits                                                                                                                        |
 
 ## Typography Rules
 
-IBM Plex Sans for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme.
+IBM Plex Sans for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme; IBM Plex Serif, the one serif, for the voice: greetings, empty pages and a document's title. Plex Serif carries Cyrillic in roman and italic.
 
 | Step       | Size / weight      | Use                                                       |
 | ---------- | ------------------ | --------------------------------------------------------- |
-| Page title | 24 / 600           | a document's title in a pane                              |
+| Voice      | 28–34 / 400 serif  | an empty page: two lines, the second italic in the ink    |
+| Page title | 30 / 500 serif     | a document's title in a pane                              |
 | Workspace  | 15 / 600           | the workspace name in the sidebar                         |
 | Chat       | 14 / 400, line 1.6 | every message, tool row, table, question and the composer |
 | UI         | 13 / 400           | sidebar rows, headers, menus, options                     |
@@ -78,13 +82,17 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 - **Icons**: Sumi's own apps use solid drawn icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
 - **Code block**: filled with the soft step, no border, mono 13px, syntax in muted colours, copy and wrap icons at the right.
 - **Inline code**: the soft fill, mono 13px, square, padding 2px 5px.
-- **Link**: Sumi yellow text, underline on hover. A file path is a link and looks the same.
+- **Link**: ink-coloured text, underline on hover. A file path is a link and looks the same.
+- **Done item**: the bare tick draws itself in 220ms where the number stood; the text turns ink-3 and is struck through.
+- **Working state**: while the agent works, a light of the ink runs along the composer divider (a 36% wide band, 1.8s, linear), the status row holds the mascot and a shimmering line ("Editing Release plan.md"), the chat's row in the sidebar says "working" in the same shimmer, and the caret breathes. The shimmer is a band of the ink sliding across the text, never a blink. Nothing of it stays when the agent stops.
+- **Live task list**: `{task <id>}` in an answer draws that task's checklist in place, as part of the chat, and updates it as the task moves; numbered steps turn into ticks as they are done.
+- **Empty page**: the mascot (its eyes carry the mood), two lines in the voice serif with the second italic in the ink, one line of plain facts in ink-3, one or two quiet rows to act. It stands on the pane's left line near the top, never centred. No card, no chip, no picture.
 - **Table** ("Quiet"): a line under the header row only, no lines between rows, header in ink-3, numbers right-aligned with tabular figures, full width of the reading column.
 - **Tool group**: a summary row ("Edited 2 files, ran 3 commands +12 −3 14s") with the chevron on the right; its rows hang under a drawn tree line (│ ├ └ as continuous 1px lines, never characters); an opened diff or output is a code block indented one step under its row.
 - **Questions**: one kind only, every question required. A block with the soft fill, the last thing in the chat: the mascot and "Sumi is waiting for you 1 of N", the question in 600, a line of why, numbered options (press 1–9, the number a filled square), "Or answer in your own words" with the caret, the next question as one quiet row. An answered question becomes a tool-group-like row "Asked 1 question" with the question and answer under the tree. Scrolled away from it, the arrow that scrolls to the latest message says "Back to questions".
 - **Composer**: the caret (a yellow block when focused, an outlined block when not), the hint, expand at the top right; below, `+` attach, model, effort, mode, folder, usage bar, and Send at the right.
 - **Send**: the one solid control: ink square with a paper arrow; an outline when the input is empty; a stop square while the agent works.
-- **Popup**: paper, 1px edge, no shadow, rows 32px; a divider runs edge to edge; the chosen item has a bare tick.
+- **Popup**: opaque paper in the double frame (Cube grammar), no shadow, no blur, rows 32px; a divider runs edge to edge; the highlighted row is the inverted block; the picked item ends with the mascot mark.
 - **Data marks** (a plugin): `{meter done/total}` squares, the rest empty; `{meter passed/failed/total}` adds red ones; `{bar N%}`; `{trend a b c …}`; `{ok}` green, `{progress}` blue, `{fail}` red, `{neutral}` white, `{skip}` outline. The text always says the number too.
 
 ## Layout Principles
@@ -99,11 +107,11 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 
 ## Depth & Elevation
 
-| Level        | What                        | Anatomy                                                         |
-| ------------ | --------------------------- | --------------------------------------------------------------- |
-| Paper        | the window, sidebars, panes | one colour, no edge                                             |
-| Popup        | menus, pickers              | paper, 1px edge, no shadow                                      |
-| Command menu | the ⌘K menu                 | covers the whole window in the paper colour; no shadow, no blur |
+| Level        | What                        | Anatomy                                                                                                                                        |
+| ------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Paper        | the window, sidebars, panes | one colour, no edge; a fractal-noise grain at 8% and a radial light at 5% ink from the top centre, over everything, never catching the pointer |
+| Popup        | menus, pickers              | paper in the double frame, no shadow                                                                                                           |
+| Command menu | the ⌘K menu                 | covers the whole window in the paper colour; no shadow, no blur                                                                                |
 
 Nothing casts a shadow. A line stands between panes, under a table header and as the two chat dividers; a code block is filled, never outlined.
 
@@ -112,7 +120,7 @@ Nothing casts a shadow. A line stands between panes, under a table header and as
 Suits long work at a desk: an agent chat beside apps, a browser, an editor, a git view, used many times a day by developers and by people who never use a terminal.
 
 - Do keep everything on one surface and one left line.
-- Do spend solid colour once per view (Send) and Sumi yellow only on the caret and links.
+- Do spend solid colour once per view (Send) and the workspace ink only where its role lists it.
 - Do let dividers reach both edges of their pane.
 - Don't add a plate, a card, a rounded corner or a second surface level.
 - Don't box statuses or put them in uppercase badges.
@@ -151,16 +159,30 @@ Every neutral is one ladder on a warm hue at almost no chroma; Sumi yellow is th
 
 ## Imagery
 
-Imagery is domain content only: favicons, app icons, the user's own pictures. Favicons are shown as one-colour masks of the real file (background removed, shape kept, filled with the text colour); a site without one gets its first letter. Attached pictures are square-cornered thumbnails. No illustrations, no hero art; an empty state is a title and one line.
+Imagery is domain content only: favicons, app icons, the user's own pictures. Favicons are shown as one-colour masks of the real file (background removed, shape kept, filled with the text colour); a site without one gets its first letter. Attached pictures are square-cornered thumbnails. No illustrations, no hero art; the mascot is the only character, and an empty state is the empty page above.
 
 ## Behaviour
 
-- The first response to any press or key is under 100ms; hover fills appear at once and leave in 100ms.
+- The first response to any press or key is under 100ms.
+- One motion scale, one easing (`cubic-bezier(.2,.8,.2,1)`): hover 0ms in, 80ms out; press 80ms, a fill and a dip to 0.97 (Send to 0.9, an essential tile to 0.95); release 180ms; a tick or a new row 220ms.
 - Clicking anywhere in the chat puts the caret in the composer, like a terminal.
 - Arrow keys and the mouse move one shared highlight in lists and menus; the last one used wins.
-- Menus open at once and close in 100ms; a sidebar slides out over 180ms; nothing bounces, nothing scales above 1.
-- Motion appears only when a thing changes place.
+- Menus grow out of their trigger and fold back into it (Cube grammar); a sidebar slides out over 180ms; nothing scales.
+- Motion appears when a thing changes place, answers a touch or shows that the agent works.
 - `prefers-reduced-motion` turns all motion off.
+
+## Cube grammar
+
+The mascot, a square with an eye, is the alphabet: a few signs taken from it repeat on every screen, so any screen reads as Sumi with the logo covered. Drawn on the canvas "Граматика куба".
+
+- **Frame**: what floats (a menu, a picker, a popover, a floating panel) wears two 1px lines 3px apart, the outer `line-strong`, the inner `line`, on opaque paper. Nothing else is framed.
+- **Highlight**: the highlighted row is inverted, one block that slides between rows; its leading edge is faster, so it stretches while it travels and closes up when it lands. It covers the inner line of the frame at both sides, and at the top and bottom rows. It opens from the row's middle and closes back into a line when the pointer leaves; over a label or a gap it stays where it was.
+- **Pick mark**: a picked option ends with the mascot mark, a 10px square of ink with a paper eye, where a tick would stand.
+- **One spring**: the mascot's corner spring, stiffness 170 and damping 18, moves everything that springs.
+- **Grow**: a floating thing opens as a frame growing out of what opened it, every corner on the spring, so the far corner overshoots and comes back; it settles in about half a second. The content stands still at its final place, cut by the growing frame, and fades in over 160ms. It closes the same way backwards, folding into what opened it in about 150ms, without the overshoot. Nothing scales. The highlight is hidden while the frame grows or folds.
+- **Lean**: while it is open, the corners facing the pointer lean towards it, up to 6px, fading out 320px away. Only the frame bends: content never scales, moves or reflows.
+- **Stillness**: what is read or typed into (fields, sidebars, text, the composer) never bends; one live thing at a time.
+- **Reduced motion**: no growth, no lean, no slide; the highlight jumps.
 
 ## Never
 
@@ -168,7 +190,8 @@ Imagery is domain content only: favicons, app icons, the user's own pictures. Fa
 - A rounded corner.
 - A divider cut short of its pane's edges, or a line under a chat pane's header.
 - An ellipsis written into text, or `·` used as a separator.
-- A tick inside a box or a circle: a chosen state is the bare tick.
-- Sumi yellow anywhere but the caret and links; a gradient; a violet accent nobody chose.
+- A tick inside a box or a circle: a done state is the bare tick, a picked option the mascot mark.
+- Uppercase, or a line drawn beside a label: section names are written in normal case.
+- The ink anywhere its role does not list; a gradient but the working line, the shimmer and the top light; a violet accent nobody chose; a rainbow glow.
 - A third grey, a second text size inside the chat, bold for anything but a heading.
 - A status in an uppercase badge.
