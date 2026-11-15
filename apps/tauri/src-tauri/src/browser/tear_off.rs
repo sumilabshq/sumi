@@ -11,6 +11,8 @@ const NO_STUDIO_WINDOW: &str = "No studio window is called \"{window}\".";
 const STUDIO_TITLE: &str = "Widgetarium";
 const STUDIO_URL: &str = "index.html?window={window}&tab={tab}";
 const CHAT_WINDOW_URL: &str = "index.html?window={window}&chat={chat}";
+const PROFILE_WINDOW_URL: &str = "index.html?window={window}&profile={profile}";
+const PROFILE_PARAM: &str = "profile";
 const STUDIO_MIN_WIDTH: f64 = 360.0;
 const STUDIO_MIN_HEIGHT: f64 = 560.0;
 const TRAFFIC_LIGHTS_AT: LogicalPosition<f64> = LogicalPosition { x: 16.0, y: 24.0 };
@@ -121,18 +123,36 @@ fn studio_window_origin(app: &AppHandle<Wry>, at: Option<(f64, f64)>) -> Result<
     Ok(LogicalPosition::new(x, y))
 }
 
-pub fn open_studio_window(app: &AppHandle<Wry>, tab: &str, at: Option<(f64, f64)>) -> Result<Value, String> {
+pub fn open_studio_window(app: &AppHandle<Wry>, opener: &str, tab: &str, at: Option<(f64, f64)>) -> Result<Value, String> {
     policy::label_of(tab)?;
-    let label = open_window_with(app, at, |label| STUDIO_URL.replace("{window}", label).replace("{tab}", tab))?;
+    let profile = profile_part_of(app, opener);
+    let label = open_window_with(app, at, |label| STUDIO_URL.replace("{window}", label).replace("{tab}", tab) + &profile)?;
     eprintln!("[browser] studio window none → {label} (tab {tab} torn off)");
     Ok(json!({ "window": label }))
 }
 
-pub fn open_chat_window(app: &AppHandle<Wry>, chat: &str, at: Option<(f64, f64)>) -> Result<Value, String> {
+pub fn open_chat_window(app: &AppHandle<Wry>, opener: &str, chat: &str, at: Option<(f64, f64)>) -> Result<Value, String> {
     policy::label_of(chat)?;
-    let label = open_window_with(app, at, |label| CHAT_WINDOW_URL.replace("{window}", label).replace("{chat}", chat))?;
+    let profile = profile_part_of(app, opener);
+    let label = open_window_with(app, at, |label| CHAT_WINDOW_URL.replace("{window}", label).replace("{chat}", chat) + &profile)?;
     eprintln!("[browser] studio window none → {label} (chat {chat} torn off)");
     Ok(json!({ "window": label }))
+}
+
+pub fn open_profile_window(app: &AppHandle<Wry>, profile: &str) -> Result<Value, String> {
+    policy::label_of(profile)?;
+    let label = open_window_with(app, None, |label| PROFILE_WINDOW_URL.replace("{window}", label).replace("{profile}", profile))?;
+    eprintln!("[browser] studio window none → {label} (profile {profile})");
+    Ok(json!({ "window": label }))
+}
+
+fn profile_part_of(app: &AppHandle<Wry>, opener: &str) -> String {
+    let Some(window) = app.get_webview_window(opener) else { return String::new() };
+    let Ok(url) = window.url() else { return String::new() };
+    url.query_pairs()
+        .find(|(name, _)| name == PROFILE_PARAM)
+        .map(|(_, profile)| format!("&{PROFILE_PARAM}={profile}"))
+        .unwrap_or_default()
 }
 
 fn open_window_with(app: &AppHandle<Wry>, at: Option<(f64, f64)>, url_of: impl Fn(&str) -> String) -> Result<String, String> {

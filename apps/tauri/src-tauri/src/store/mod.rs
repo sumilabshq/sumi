@@ -110,7 +110,7 @@ impl Store {
     }
 
     pub fn global_folder(&self) -> PathBuf {
-        self.home.join(APP_FOLDER)
+        self.home.join(place::home_app_folder())
     }
 
     fn workspace_folder(&self, id: &str) -> Result<PathBuf, Refusal> {

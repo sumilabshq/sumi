@@ -6,7 +6,7 @@ const NO_BUTTONS = 0;
 const DOUBLE_PRESS = 2;
 const KEYBOARD_CLICK = 0;
 const PULL_PX = 4;
-const OWN_DRAG_SELECTOR = "input, textarea, select, [contenteditable=true], [draggable=true]";
+const OWN_DRAG_SELECTOR = "input, textarea, select, [contenteditable=true], [draggable=true], [data-own-drag]";
 const OWN_DRAG_CURSORS: ReadonlySet<string> = new Set(["text", "grab", "col-resize", "ew-resize"]);
 const CONTROL_SELECTOR = "button, a, summary, [role=button], [role=tab], [role=menuitem]";
 const CONTROL_CURSOR = "pointer";

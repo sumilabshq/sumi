@@ -2,6 +2,7 @@ import type {
 	AssistantCall,
 	AssistantSession,
 	AssistantTurn,
+	SentPictures,
 	TurnOutcome,
 } from "@widgetarium/core/engine/assistant-port.js";
 import { freshCallOf } from "@widgetarium/core/engine/assistant-port.js";
@@ -17,15 +18,28 @@ export const EMPTY_SESSION: AssistantSession = {
 	queued: [],
 };
 
-export function startedTurn(session: AssistantSession, asked: readonly string[], at: number): AssistantSession {
-	return withStarted(session, [...asked.map((text) => questionOf(text, at)), freshAnswerOf(at)]);
+export interface AskedMessage {
+	readonly text: string;
+	readonly pictures?: SentPictures | undefined;
 }
 
-export function heardMidTurn(session: AssistantSession, heard: readonly string[], at: number): AssistantSession {
+export function askedMessageOf(text: string, pictures: SentPictures | undefined): AskedMessage {
+	if (pictures === undefined || Object.keys(pictures).length === 0) {
+		return { text };
+	}
+
+	return { text, pictures };
+}
+
+export function startedTurn(session: AssistantSession, asked: readonly AskedMessage[], at: number): AssistantSession {
+	return withStarted(session, [...asked.map((message) => questionOf(message, at)), freshAnswerOf(at)]);
+}
+
+export function heardMidTurn(session: AssistantSession, heard: readonly AskedMessage[], at: number): AssistantSession {
 	const paused = intoLastTurn(session, (turn) => (turn.role === "agent" ? { ...turn, endedAt: at } : turn));
 	return {
 		...paused,
-		turns: [...paused.turns, ...heard.map((text) => questionOf(text, at)), freshAnswerOf(at)],
+		turns: [...paused.turns, ...heard.map((message) => questionOf(message, at)), freshAnswerOf(at)],
 	};
 }
 
@@ -40,14 +54,19 @@ export function endedTurn(session: AssistantSession, outcome: TurnOutcome, at: n
 	return { ...ended, busy: false, tool: null, phase: null };
 }
 
-export function withoutLastQuestion(session: AssistantSession): { session: AssistantSession; asked: string } | null {
+export function withoutLastQuestion(
+	session: AssistantSession,
+): { session: AssistantSession; asked: AskedMessage } | null {
 	const lastAsked = session.turns.map((turn) => turn.role).lastIndexOf("user");
 	const question = session.turns[lastAsked];
 	if (question === undefined) {
 		return null;
 	}
 
-	return { session: { ...session, turns: session.turns.slice(0, lastAsked), failure: null }, asked: question.text };
+	return {
+		session: { ...session, turns: session.turns.slice(0, lastAsked), failure: null },
+		asked: askedMessageOf(question.text, question.pictures),
+	};
 }
 
 export function withoutLastCompact(session: AssistantSession): AssistantSession | null {
@@ -120,8 +139,9 @@ function intoTurnCalling(
 	return { ...session, turns: session.turns.map((turn, index) => (index === at ? step(turn) : turn)) };
 }
 
-function questionOf(text: string, at: number): AssistantTurn {
-	return { role: "user", text, calls: [], startedAt: at };
+function questionOf({ text, pictures }: AskedMessage, at: number): AssistantTurn {
+	const question: AssistantTurn = { role: "user", text, calls: [], startedAt: at };
+	return pictures === undefined ? question : { ...question, pictures };
 }
 
 function freshAnswerOf(at: number): AssistantTurn {

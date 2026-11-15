@@ -33,7 +33,7 @@ pub fn bridge_of(args: &[String]) -> Bridge {
         return Bridge { socket, token };
     }
 
-    let default_socket = std::env::var("HOME").map(|home| std::path::Path::new(&home).join(crate::store::place::APP_FOLDER).join(super::SOCKET_FILE)).unwrap_or_default();
+    let default_socket = std::env::var("HOME").map(|home| std::path::Path::new(&home).join(crate::store::place::home_app_folder()).join(super::SOCKET_FILE)).unwrap_or_default();
     let token = std::fs::read_to_string(default_socket.with_extension(super::socket::TOKEN_EXTENSION)).unwrap_or_default();
     Bridge { socket: default_socket.to_string_lossy().into_owned(), token: token.trim().to_string() }
 }

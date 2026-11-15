@@ -1,9 +1,15 @@
-import type { AssistantSession, QueueChange, QueuedMessage } from "@widgetarium/core/engine/assistant-port.js";
+import type {
+	AssistantSession,
+	QueueChange,
+	QueuedMessage,
+	SentPictures,
+} from "@widgetarium/core/engine/assistant-port.js";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import type { Emit, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
 import type { TurnEnded, TurnStarter } from "@widgetarium/tasks/contract";
 import {
 	EMPTY_SESSION,
+	askedMessageOf,
 	endedTurn,
 	heardMidTurn,
 	startedCompact,
@@ -12,6 +18,7 @@ import {
 	withoutLastQuestion,
 	withPart,
 } from "./session-steps.js";
+import type { AskedMessage } from "./session-steps.js";
 import type { RunAnswer, RunFailureKind, TurnRun } from "./turn-run.js";
 
 export interface StartedTurn {
@@ -27,7 +34,7 @@ export type StartTurn = (asked: string, resumeOf: ResumeOf, emit: Emit) => Promi
 export interface TurnSession {
 	now(): AssistantSession;
 	watch(changed: () => void): () => void;
-	send(said: string): Promise<void>;
+	send(said: string, pictures?: SentPictures): Promise<void>;
 	sendFromHost(said: string): Promise<void>;
 	retry(): void;
 	stop(): void;
@@ -154,7 +161,7 @@ export function createTurnSession(startTurn: StartTurn, options: TurnSessionOpti
 			store.watchers.add(changed);
 			return () => void store.watchers.delete(changed);
 		},
-		send: (said) => send(store, startTurn, { said, startedBy: "person" }),
+		send: (said, pictures) => send(store, startTurn, { said, startedBy: "person", pictures }),
 		sendFromHost: (said) => send(store, startTurn, { said, startedBy: "host" }),
 		retry: () => retry(store, startTurn),
 		stop: () => stop(store),
@@ -338,23 +345,24 @@ function refusalOf(session: AssistantSession, asked: string): string | null {
 interface Sent {
 	readonly said: string;
 	readonly startedBy: TurnStarter;
+	readonly pictures?: SentPictures | undefined;
 }
 
-function send(store: SessionStore, startTurn: StartTurn, { said, startedBy }: Sent): Promise<void> {
-	const asked = said.trim();
+function send(store: SessionStore, startTurn: StartTurn, { said, startedBy, pictures }: Sent): Promise<void> {
+	const asked = askedMessageOf(said.trim(), pictures);
 
-	if (asked !== "" && store.session.busy && startedBy === "person") {
+	if (asked.text !== "" && store.session.busy && startedBy === "person") {
 		enqueue(store, asked);
 		return Promise.resolve();
 	}
 
-	const refusal = refusalOf(store.session, asked);
+	const refusal = refusalOf(store.session, asked.text);
 	if (refusal !== null) {
 		return Promise.reject(new Error(refusal));
 	}
 
 	store.session = startedTurn(store.session, [asked], store.clock());
-	return answer(store, startTurn, { asked, startedBy });
+	return answer(store, startTurn, { asked: asked.text, startedBy });
 }
 
 function writeQueued(store: SessionStore, queued: readonly QueuedMessage[], why: string): void {
@@ -367,10 +375,10 @@ function writeQueued(store: SessionStore, queued: readonly QueuedMessage[], why:
 	notify(store);
 }
 
-function enqueue(store: SessionStore, text: string): void {
+function enqueue(store: SessionStore, asked: AskedMessage): void {
 	store.queuedIdSequence += 1;
 	const id = `${store.clock()}-${store.queuedIdSequence}`;
-	writeQueued(store, [...store.session.queued, { id, text, isHeld: false }], `queued ${id} while the agent works`);
+	writeQueued(store, [...store.session.queued, { id, ...asked, isHeld: false }], `queued ${id} while the agent works`);
 }
 
 function changeQueue(store: SessionStore, startTurn: StartTurn, change: QueueChange): string | null {
@@ -407,7 +415,7 @@ function changeQueue(store: SessionStore, startTurn: StartTurn, change: QueueCha
 		return null;
 	}
 
-	writeQueued(store, patched(queued, change.id, { text: edited, isHeld: false }), `edited ${change.id}`);
+	writeQueued(store, withEdit(queued, change.id, { text: edited, pictures: change.pictures }), `edited ${change.id}`);
 	sendQueueIfIdle(store, startTurn);
 	return null;
 }
@@ -419,22 +427,36 @@ function without(queued: readonly QueuedMessage[], id: string): readonly QueuedM
 function patched(
 	queued: readonly QueuedMessage[],
 	id: string,
-	patch: Partial<Pick<QueuedMessage, "text" | "isHeld">>,
+	patch: Partial<Pick<QueuedMessage, "isHeld">>,
 ): readonly QueuedMessage[] {
 	return queued.map((message) => (message.id === id ? { ...message, ...patch } : message));
+}
+
+function withEdit(queued: readonly QueuedMessage[], id: string, replacement: AskedMessage): readonly QueuedMessage[] {
+	return queued.map((message) => {
+		if (message.id !== id) {
+			return message;
+		}
+
+		return {
+			id,
+			...askedMessageOf(replacement.text, { ...message.pictures, ...replacement.pictures }),
+			isHeld: false,
+		};
+	});
 }
 
 function readyIn(queued: readonly QueuedMessage[]): readonly QueuedMessage[] {
 	return queued.filter(({ isHeld }) => !isHeld);
 }
 
-function takeReadyTexts(store: SessionStore): readonly string[] {
+function takeReadyMessages(store: SessionStore): readonly QueuedMessage[] {
 	const ready = readyIn(store.session.queued);
 	store.session = {
 		...store.session,
 		queued: store.session.queued.filter(({ isHeld }) => isHeld),
 	};
-	return ready.map(({ text }) => text);
+	return ready;
 }
 
 function sendQueueIfIdle(store: SessionStore, startTurn: StartTurn): void {
@@ -450,10 +472,10 @@ function sendQueue(store: SessionStore, startTurn: StartTurn): void {
 		return;
 	}
 
-	const texts = takeReadyTexts(store);
-	store.session = startedTurn(store.session, texts, store.clock());
-	console.info(`[queue] ${texts.length} → 0 ready (sent as the next turn)`);
-	void answer(store, startTurn, { asked: texts.join("\n\n"), startedBy: "person" });
+	const ready = takeReadyMessages(store);
+	store.session = startedTurn(store.session, ready, store.clock());
+	console.info(`[queue] ${ready.length} → 0 ready (sent as the next turn)`);
+	void answer(store, startTurn, { asked: ready.map(({ text }) => text).join("\n\n"), startedBy: "person" });
 }
 
 function sendQueueNow(store: SessionStore, startTurn: StartTurn): string | null {
@@ -472,12 +494,12 @@ function handQueueToAgent(store: SessionStore): string | null {
 		return null;
 	}
 
-	const texts = takeReadyTexts(store);
-	store.session = heardMidTurn(store.session, texts, store.clock());
-	console.info(`[queue] ${texts.length} → 0 ready (handed to the agent between steps)`);
+	const ready = takeReadyMessages(store);
+	store.session = heardMidTurn(store.session, ready, store.clock());
+	console.info(`[queue] ${ready.length} → 0 ready (handed to the agent between steps)`);
 	notify(store);
-	const messages = texts.map(
-		(text, messageIndex) => `${MESSAGE_HEAD.replace("{n}", String(messageIndex + 1))}\n${text}`,
+	const messages = ready.map(
+		({ text }, messageIndex) => `${MESSAGE_HEAD.replace("{n}", String(messageIndex + 1))}\n${text}`,
 	);
 	return [HEARD_MID_TURN, ...messages].join("\n\n");
 }
@@ -536,7 +558,7 @@ function retry(store: SessionStore, startTurn: StartTurn): void {
 	}
 
 	store.session = retried.session;
-	void send(store, startTurn, { said: retried.asked, startedBy: "person" });
+	void send(store, startTurn, { said: retried.asked.text, startedBy: "person", pictures: retried.asked.pictures });
 }
 
 function stop(store: SessionStore): void {

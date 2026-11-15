@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { SentPicturesSchema } from "@widgetarium/core/engine/assistant-port.js";
 import type { QueuedMessage } from "@widgetarium/core/engine/assistant-port.js";
+import { picturesAtMovedPaths, picturesOfKeptFiles } from "./queued-pictures.js";
 import { HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind, WorkspaceRoot } from "@widgetarium/behaviors/tauri-store";
 import type { ChatsLink } from "../assistant/chat-sessions.js";
@@ -35,6 +37,8 @@ const KeptQueuedSchema = z.object({
 	text: z.string().min(1),
 	isHeld: z.boolean().catch(false),
 	files: z.array(KeptFileSchema).catch([]),
+	// TRADE-OFF: previews ride in the queue doc, rewritten whole on each change; a file beside the .bin is better, a queue is short-lived
+	pictures: SentPicturesSchema.optional().catch(undefined),
 });
 
 type KeptQueued = z.infer<typeof KeptQueuedSchema>;
@@ -59,6 +63,12 @@ const NOT_COPIED = "[queue] chat {chat}: {path} is not in memory, its message is
 const NOT_WRITTEN = "[queue] chat {chat}: {path} could not be stored after {tries} tries";
 const NOT_REMOVED = "[queue] chat {chat}: {path} could not be removed from the store";
 const NOT_READ = "[queue] chat {chat}: {path} could not be read back, the message keeps naming it";
+
+interface MovedFile {
+	readonly from: string;
+	readonly to: string;
+	readonly file: string;
+}
 
 interface Restored {
 	readonly message: QueuedMessage;
@@ -206,7 +216,7 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 
 	private keptOf(
 		chatId: string,
-		{ id, text, isHeld }: QueuedMessage,
+		{ id, text, isHeld, pictures }: QueuedMessage,
 		{ files, keptFiles }: { readonly files: QueuedFiles; readonly keptFiles: ReadonlyMap<string, KeptFile> },
 	): KeptQueued {
 		const named = pathsIn(text, files.folder).flatMap((path): KeptFile[] => {
@@ -237,6 +247,7 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 			text,
 			isHeld,
 			files: named,
+			pictures: picturesOfKeptFiles(pictures, named),
 		};
 	}
 
@@ -261,15 +272,18 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 	private async restoredOf(chatId: string, kept: KeptQueued, files: QueuedFiles): Promise<Restored> {
 		const moved = await Promise.all(kept.files.map((file) => this.movedBack(chatId, file, files)));
 		const text = moved.reduce((said, { from, to }) => said.replaceAll(from, to), kept.text);
+		const pictures = picturesAtMovedPaths(kept.pictures, moved);
 		return {
 			message: {
 				id: kept.id,
 				text,
 				isHeld: kept.isHeld,
+				pictures,
 			},
 			keptAs: {
 				...kept,
 				text,
+				pictures,
 				files: moved.map(({ to, file }) => ({
 					path: to,
 					file,
@@ -278,11 +292,7 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 		};
 	}
 
-	private async movedBack(
-		chatId: string,
-		kept: KeptFile,
-		files: QueuedFiles,
-	): Promise<{ readonly from: string; readonly to: string; readonly file: string }> {
+	private async movedBack(chatId: string, kept: KeptFile, files: QueuedFiles): Promise<MovedFile> {
 		try {
 			const bytes = await this.at.files.read(this.root(), kept.file);
 			const to = freshPathOf(kept.path, files.folder);

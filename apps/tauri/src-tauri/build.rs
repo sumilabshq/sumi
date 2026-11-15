@@ -55,6 +55,7 @@ const BROWSER_COMMANDS: &[&str] = &[
     "focus_own_window",
     "open_studio_window",
     "open_chat_window",
+    "open_profile_window",
     "focus_window",
     "own_windows",
     "standing_pages",

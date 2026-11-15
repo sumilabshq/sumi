@@ -6,6 +6,7 @@ import { CommitTimes } from "./commit-times.js";
 import { DomChurn } from "./dom-churn.js";
 import { FrameGaps } from "./frame-gaps.js";
 import { IpcCounts } from "./ipc-counts.js";
+import { SidebarTimes } from "./sidebar-times.js";
 
 const REPORT_EVERY_MS = 5000;
 const REPORT_ROWS_LIMIT = 8;
@@ -18,6 +19,7 @@ class StudioProfiler {
 	private readonly ipc = new IpcCounts();
 	private readonly frames = new FrameGaps();
 	private readonly dom = new DomChurn();
+	private readonly sidebar = new SidebarTimes();
 	private readonly startedAt = performance.now();
 
 	constructor(private readonly windowLabel: string) {}
@@ -29,6 +31,7 @@ class StudioProfiler {
 
 		this.frames.listen(page);
 		this.dom.observe(page.document.documentElement);
+		this.sidebar.observe();
 		page.setInterval(() => this.report(), REPORT_EVERY_MS);
 	}
 
@@ -41,6 +44,7 @@ class StudioProfiler {
 			frames,
 			commits: this.commits.drain(),
 			dom: this.dom.drain(),
+			sidebar: this.sidebar.drain(),
 			...this.ipc.drain(REPORT_ROWS_LIMIT),
 		};
 		console.info(`${STUDIO_MARK} perf ${JSON.stringify(report)}`);

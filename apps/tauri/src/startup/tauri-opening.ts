@@ -2,6 +2,7 @@ import type { HeldSettings } from "../settings/settings-doc.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
 import type { WorkspaceEntry } from "../workspace/workspace-docs.js";
+import { studioWindowOf } from "@widgetarium/behaviors";
 import { readOpening } from "./read-opening.js";
 
 export type OpeningState<Started> =
@@ -47,7 +48,11 @@ export class TauriOpening<Started> {
 
 	start = async (): Promise<void> => {
 		try {
-			const { settings, workspace } = await readOpening(this.parts.store, this.parts.workspaces);
+			const { settings, workspace } = await readOpening(
+				this.parts.store,
+				this.parts.workspaces,
+				studioWindowOf(location.search).profile,
+			);
 			this.become(
 				{
 					kind: "opened",

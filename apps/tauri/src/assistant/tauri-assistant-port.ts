@@ -115,7 +115,7 @@ function chatDoorsOf(sessions: ChatSessions, chatId: string, { doors, held }: Co
 	return {
 		session: () => sessions.nowOf(chatId),
 		onSession: (changed) => sessions.watchChat(chatId, changed),
-		send: async (said) => (await sessions.sessionOf(chatId)).send(said),
+		send: async (said, pictures) => (await sessions.sessionOf(chatId)).send(said, pictures),
 		sendFromHost: async (said) => (await sessions.sessionOf(chatId)).sendFromHost(said),
 		retry: () => sessions.readyOf(chatId)?.retry(),
 		stop: () => sessions.readyOf(chatId)?.stop(),
@@ -141,7 +141,7 @@ function sessionDoorsOf(sessions: ChatSessions, doors: TauriAssistantDoors, held
 		shownRead: () => sessions.readShown(),
 		session: sessions.now,
 		onSession: sessions.watch,
-		send: async (said) => (await sessions.shownSession()).send(said),
+		send: async (said, pictures) => (await sessions.shownSession()).send(said, pictures),
 		retry: () => sessions.shownIfReady()?.retry(),
 		stop: () => sessions.shownIfReady()?.stop(),
 		changeQueue: (change) => changeQueueIn(sessions.shownIfReady(), change),

@@ -12,12 +12,16 @@ export interface Opening {
 	readonly workspace: WorkspaceEntry;
 }
 
-export async function readOpening(store: StoreClient, workspaces: WorkspaceClient): Promise<Opening> {
+export async function readOpening(
+	store: StoreClient,
+	workspaces: WorkspaceClient,
+	profileId: string | null,
+): Promise<Opening> {
 	const [settings, registry] = await Promise.all([
 		timedRead(SETTINGS.file, () => readSettings(store)),
 		timedRead(WORKSPACES.file, () => store.readDoc(GLOBAL_ROOT, WORKSPACES)),
 	]);
-	const lastId = registry.doc?.lastOpenedId ?? null;
+	const lastId = profileId ?? registry.doc?.lastOpenedId ?? null;
 	const workspace = await timedRead(WORKSPACE_FILE, () => workspaceToOpen(workspaces, lastId));
 	if (workspace.folder !== null && !workspace.folderFound) {
 		console.warn(`[ink] workspace ${workspace.name}: folder not found at ${workspace.folder}`);

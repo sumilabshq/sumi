@@ -4,6 +4,12 @@ use std::path::{Path, PathBuf};
 
 pub const APP_FOLDER: &str = ".sumi";
 
+const APP_FOLDER_OVERRIDE: &str = "SUMI_APP_FOLDER";
+
+pub fn home_app_folder() -> String {
+    std::env::var(APP_FOLDER_OVERRIDE).unwrap_or_else(|_| APP_FOLDER.to_owned())
+}
+
 const GLOBAL_ROOT: &str = "global";
 const WORKSPACE_ROOT_PREFIX: &str = "workspace:";
 const FOLDER_ROOT_PREFIX: &str = "folder:";
