@@ -109,8 +109,8 @@ export const showTab = command()
 export const syncChat = command()
 	.public()
 	.idempotencyKey(Repeatable)
-	.handle(async (_input, { send, emit }) => {
-		await sendKeepChatTabs(send);
+	.handle(async (_input, { send, emit, studioWindow }) => {
+		await sendKeepChatTabs(send, studioWindow.placesWindow());
 		emit(tabsSettled);
 	});
 
@@ -148,8 +148,8 @@ export const rememberPages = subscriber(browser.browserPages.pagesChanged).handl
 	},
 );
 
-export const forwardChatsToTabs = subscriber(workspaces.chats.chatsChanged).handle(async (_input, { send, emit }) => {
-	await sendKeepChatTabs(send);
+export const forwardChatsToTabs = subscriber(workspaces.chats.chatsChanged).handle(async (_input, { send, emit, studioWindow }) => {
+	await sendKeepChatTabs(send, studioWindow.placesWindow());
 	emit(tabsSettled);
 });
 
@@ -199,10 +199,10 @@ async function dropGoneTabPanes(send: Send, window: string): Promise<void> {
 
 async function readyToRestore(send: Send, injects: Pick<TabParts, "essentials" | "studioWindow">): Promise<void> {
 	await injects.essentials.essentialsLoaded();
-	await sendLogged("keep a tab for every chat", () => sendKeepChatTabs(send));
+	await sendLogged("keep a tab for every chat", () => sendKeepChatTabs(send, injects.studioWindow.placesWindow()));
 
 	if (!injects.studioWindow.opensBesideAnother()) {
-		await dropGoneTabPanes(send, injects.studioWindow.windowLabel());
+		await dropGoneTabPanes(send, injects.studioWindow.placesWindow());
 	}
 }
 

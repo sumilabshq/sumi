@@ -33,6 +33,9 @@ const LAYOUT = "Layout";
 const TABS_IN_SIDEBAR = "Tabs in sidebar";
 const TABS_IN_HEADER = "Tabs in header";
 const LAYOUT_WORDS = "layout sidebar header tabs mode";
+const NEW_WINDOW = "New window";
+const WINDOW = "Window";
+const NEW_WINDOW_WORDS = "new window empty no workspace";
 
 export function tabsFoundOf(sidebar: TabsSidebar): readonly Found[] {
 	const listed = listedTabsOf(sidebar).map(({ tab, listTitle }) => tabFoundOf(tab, listTitle));
@@ -347,6 +350,25 @@ function appFoundOf(face: AppFace, haystack: string): Found {
 		host: "",
 		isOnScreen: false,
 	};
+}
+
+export function windowFoundOf(): readonly Found[] {
+	return [
+		{
+			key: "window:new",
+			kind: "app",
+			title: NEW_WINDOW,
+			meta: WINDOW,
+			haystack: NEW_WINDOW_WORDS,
+			icon: { kind: "glyph", glyph: "window" },
+			intent: { do: "run", command: "new-window" },
+			shortcut: null,
+			renames: null,
+			actions: [],
+			host: "",
+			isOnScreen: false,
+		},
+	];
 }
 
 export function layoutFoundOf(tabs: "header" | "sidebar"): readonly Found[] {

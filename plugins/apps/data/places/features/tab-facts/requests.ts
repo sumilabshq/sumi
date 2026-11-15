@@ -32,8 +32,9 @@ export const keepChatTabs = command()
 	.public()
 	.input(KeepChatTabsAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ chats }, { tabs, placedApps }) => {
-		answered(await tabs.movePlacedTabs(moving(null, placedApps.placedApps(), keepChatTabsPlan(chats))));
+	.handle(async ({ window, chats }, { tabs, placedApps, home }) => {
+		const plan = keepChatTabsPlan(chats, window ?? home.mainWindow());
+		answered(await tabs.movePlacedTabs(moving(null, placedApps.placedApps(), plan)));
 	});
 
 export const recordTurn = command()

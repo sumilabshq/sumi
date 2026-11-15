@@ -26,6 +26,7 @@ pub const PLUGIN_NAME: &str = "store";
 const WORKSPACES_FOLDER: &str = "workspaces";
 const FOLDER_SETTINGS_FILE: &str = "settings.json";
 const STORE_LOCK_FILE: &str = ".store.lock";
+pub const NO_WORKSPACE_ID: &str = "00000000-0000-0000-0000-000000000000";
 
 pub type Fields = Map<String, Value>;
 
@@ -137,6 +138,11 @@ impl Store {
     fn existing_workspace_folder(&self, id: &str) -> Result<PathBuf, Refusal> {
         let folder = self.workspace_folder(id)?;
         if folder.is_dir() {
+            return Ok(folder);
+        }
+
+        if id == NO_WORKSPACE_ID {
+            fs::create_dir_all(&folder)?;
             return Ok(folder);
         }
 

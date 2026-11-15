@@ -1,4 +1,3 @@
-import { MAIN_STUDIO_WINDOW } from "@widgetarium/behaviors";
 import { SectionListSchema } from "../../schema/tabs.schema.js";
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
 import { flatTabIdsOf, sectionNameOf, windowListOf, windowOfList } from "./tab-lists.js";
@@ -94,11 +93,11 @@ export function mergedById<Item extends { readonly id: string }>(
 }
 
 export function essentialWindowOf(tab: PlacedTabs["tabs"][number]): string | null {
-	return tab.essentialId === null ? null : (tab.essentialWindow ?? MAIN_STUDIO_WINDOW);
+	return tab.essentialId === null ? null : tab.essentialWindow;
 }
 
 function essentialCopiesOutside(placed: PlacedTabs, window: string): readonly string[] {
-	return placed.tabs.filter((tab) => (essentialWindowOf(tab) ?? window) !== window).map((tab) => tab.id);
+	return placed.tabs.filter((tab) => tab.essentialId !== null && tab.essentialWindow !== window).map((tab) => tab.id);
 }
 
 function listsHeldUnder(layout: TabLayout, listIds: readonly string[]): ReadonlySet<string> {

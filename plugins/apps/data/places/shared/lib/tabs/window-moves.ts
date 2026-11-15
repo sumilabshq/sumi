@@ -1,4 +1,4 @@
-import { MAIN_STUDIO_WINDOW } from "@widgetarium/behaviors";
+import { MAIN_STUDIO_WINDOW, labelOfPlacesWindow } from "@widgetarium/behaviors";
 import { PlacedTabsSchema } from "../../schema/tabs.schema.js";
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
 import type { TabsAsk } from "../../schema/screen.schema.js";
@@ -44,7 +44,10 @@ export function adoptedBy(placed: PlacedTabs, { window, screen }: TabsAsk): Wind
 
 export function windowsForgotten(isGone: (window: string) => boolean, apps: PlacedApps): MovePlacedTabs<null> {
 	return (placed) => {
-		const gone = knownWindowsOf(placed).filter((window) => window !== MAIN_STUDIO_WINDOW && isGone(window));
+		const gone = knownWindowsOf(placed).filter((window) => {
+			const label = labelOfPlacesWindow(window);
+			return label !== MAIN_STUDIO_WINDOW && isGone(label);
+		});
 
 		if (gone.length === 0) {
 			return { next: null, reason: "no closed window holds tabs", answer: null };

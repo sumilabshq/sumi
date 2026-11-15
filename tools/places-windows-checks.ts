@@ -1,4 +1,4 @@
-import { builtInPlacedApps } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "@widgetarium/data-framework";
 import { places } from "../plugins/apps/data/places/generated/contract.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
@@ -11,7 +11,7 @@ const core = localTransport();
 core.serve(
 	runtime()
 		.modules(
-			RunnablePlacesModule({ injects: { windows, tabs: new MemoryTabsGateway(), placedApps: builtInPlacedApps() } }),
+			RunnablePlacesModule({ injects: { windows, tabs: new MemoryTabsGateway(), placedApps: builtInPlacedApps(), home: mainHome() } }),
 		)
 		.start({ platform: "server", env: {} }),
 );

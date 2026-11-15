@@ -68,6 +68,10 @@ export type { PointerCarryAsk } from "./src/carry/pointer-carry.js";
 export type { CarriedItem, CarriedKind, CarryMoment, CarryPhase, PointBox } from "./src/carry/carry.js";
 export {
 	MAIN_STUDIO_WINDOW,
+	NO_WORKSPACE_ID,
+	isPlacesWindowOfWorkspace,
+	labelOfPlacesWindow,
+	placesWindowOf,
 	isCorePage,
 	isTearOffGhostPage,
 	studioWindowOf,

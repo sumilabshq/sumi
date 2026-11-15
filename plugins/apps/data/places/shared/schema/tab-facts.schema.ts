@@ -60,7 +60,7 @@ export const NamedRecordSchema = z.object({
 
 export type NamedRecord = z.infer<typeof NamedRecordSchema>;
 
-export const KeepChatTabsAskSchema = z.object({ chats: z.array(NamedRecordSchema) });
+export const KeepChatTabsAskSchema = z.object({ window: z.string().min(1).nullable().default(null), chats: z.array(NamedRecordSchema) });
 
 export const AppAddressSchema = z.object({
 	id: z.string().min(1),

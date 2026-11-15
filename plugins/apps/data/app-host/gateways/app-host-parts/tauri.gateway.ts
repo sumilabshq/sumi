@@ -15,10 +15,10 @@ const ESSENTIALS: DocKind<EssentialsDoc> = {
 	schema: EssentialsDocSchema,
 };
 
-export function tauriAppHostParts(store: StoreClient, coreChanges: CoreChanges): AppHostParts {
+export function tauriAppHostParts(store: StoreClient, coreChanges: CoreChanges, workspaceId: string): AppHostParts {
 	const studioWindow = studioWindowOf(location.search);
 	return {
-		studioWindow: new TauriStudioWindowGateway(studioWindow),
+		studioWindow: new TauriStudioWindowGateway(studioWindow, workspaceId),
 		essentials: new TauriEssentialsGateway(
 			HeldDoc.read({ store, root: GLOBAL_ROOT, kind: ESSENTIALS, empty: EssentialsDocSchema.parse({}) }),
 		),

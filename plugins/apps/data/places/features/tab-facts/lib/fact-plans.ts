@@ -1,4 +1,3 @@
-import { MAIN_STUDIO_WINDOW } from "@widgetarium/behaviors";
 import { keepChatTabs } from "../../../shared/lib/tabs/chat-tabs.js";
 import { WORKSPACE_LIST, windowListOf } from "../../../shared/lib/tabs/tab-lists.js";
 import { heldTabOf } from "../../../shared/lib/tabs/host-tabs.js";
@@ -25,9 +24,8 @@ const NOT_KEPT: TurnMarks = {
 	mark: null,
 };
 
-export function keepChatTabsPlan(chats: readonly NamedRecord[]): MomentPlan<null> {
-	return (moment) =>
-		movedPlan(moment, keepChatTabs(moment, chats, windowListOf(MAIN_STUDIO_WINDOW, WORKSPACE_LIST)), null);
+export function keepChatTabsPlan(chats: readonly NamedRecord[], window: string): MomentPlan<null> {
+	return (moment) => movedPlan(moment, keepChatTabs(moment, chats, windowListOf(window, WORKSPACE_LIST)), null);
 }
 
 export function recordTurnPlan(turn: TabTurn): MomentPlan<TurnMarks> {

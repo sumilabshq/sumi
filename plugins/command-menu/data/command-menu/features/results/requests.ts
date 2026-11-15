@@ -16,6 +16,7 @@ import {
 	chatsFoundOf,
 	closedFoundOf,
 	layoutFoundOf,
+	windowFoundOf,
 	sitesFoundOf,
 	tabsFoundOf,
 	workspacesFoundOf,
@@ -105,7 +106,10 @@ const chatRowsOf: RowsOf = async (send) => {
 	return chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.apps);
 };
 
-const layoutRowsOf: RowsOf = async (send) => layoutFoundOf((await send(layout.frameSides.frameSides)).tabs);
+const layoutRowsOf: RowsOf = async (send) => [
+	...layoutFoundOf((await send(layout.frameSides.frameSides)).tabs),
+	...windowFoundOf(),
+];
 
 const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(appsContract.apps.all)).apps);
 

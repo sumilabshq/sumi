@@ -9,14 +9,14 @@ import { ViewToShowSchema } from "../../shared/schema/view-to-show.schema.js";
 export const current = query()
 	.public()
 	.output(StudioViewSchema)
-	.handle((_input, { send, studioWindow }) => send(places.tabs.shownView, { window: studioWindow.windowLabel() }));
+	.handle((_input, { send, studioWindow }) => send(places.tabs.shownView, { window: studioWindow.placesWindow() }));
 
 export const showView = command()
 	.public()
 	.input(ViewToShowSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ view }, { send, emit, studioWindow }) => {
-		await send(places.tabShowing.showView, { window: studioWindow.windowLabel(), view });
+		await send(places.tabShowing.showView, { window: studioWindow.placesWindow(), view });
 		emit(tabsSettled);
 	});
 

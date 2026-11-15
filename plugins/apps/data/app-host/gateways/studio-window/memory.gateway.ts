@@ -1,4 +1,4 @@
-import { MAIN_STUDIO_WINDOW } from "@widgetarium/behaviors";
+import { MAIN_STUDIO_WINDOW, placesWindowOf } from "@widgetarium/behaviors";
 import { StudioWindowGateway } from "./studio-window.gateway.js";
 
 export interface StudioWindowSeat {
@@ -14,12 +14,15 @@ const MAIN_SEAT: StudioWindowSeat = {
 };
 
 export class MemoryStudioWindowGateway extends StudioWindowGateway {
-	constructor(private readonly seat: StudioWindowSeat = MAIN_SEAT) {
+	constructor(
+		private readonly workspaceId: string,
+		private readonly seat: StudioWindowSeat = MAIN_SEAT,
+	) {
 		super();
 	}
 
-	override windowLabel(): string {
-		return this.seat.label;
+	override placesWindow(): string {
+		return placesWindowOf(this.seat.label, this.workspaceId);
 	}
 
 	override opensBesideAnother(): boolean {

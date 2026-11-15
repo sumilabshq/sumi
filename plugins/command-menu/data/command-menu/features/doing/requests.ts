@@ -213,6 +213,9 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 		case "tabs-in-header":
 			await send(layout.frameSides.placeTabs, { tabs: "header" });
 			return;
+		case "new-window":
+			await send(workspaces.workspaces.openWithoutWorkspace);
+			return;
 	}
 }
 

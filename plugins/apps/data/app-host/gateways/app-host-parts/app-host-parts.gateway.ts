@@ -15,16 +15,16 @@ export interface AppHostParts {
 	readonly coreChanges: CoreChangesGateway;
 }
 
-const UNHOSTED_PARTS_ON: Readonly<Record<Platform, () => AppHostParts>> = {
+const UNHOSTED_PARTS_ON: Readonly<Record<Platform, (workspaceId: string) => AppHostParts>> = {
 	browser: webAppHostParts,
 	tauri: webAppHostParts,
 	server: memoryAppHostParts,
 };
 
-export function appHostPartsOn({ platform, config }: ConfigFacts<AppHostConfig>): AppHostParts {
+export function appHostPartsOn({ platform, config, scope }: ConfigFacts<AppHostConfig>): AppHostParts {
 	if (config.tauri !== undefined) {
-		return tauriAppHostParts(config.tauri.store, config.tauri.coreChanges);
+		return tauriAppHostParts(config.tauri.store, config.tauri.coreChanges, scope.workspaceId);
 	}
 
-	return UNHOSTED_PARTS_ON[platform]();
+	return UNHOSTED_PARTS_ON[platform](scope.workspaceId);
 }

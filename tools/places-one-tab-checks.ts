@@ -1,5 +1,5 @@
 import { BARE_SCREEN } from "./places-fixture.ts";
-import { builtInPlacedApps } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { places as placesContract } from "../plugins/apps/data/places/generated/contract.ts";
@@ -22,7 +22,7 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 		runtime()
 			.modules(
 				RunnablePlacesModule({
-					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
+					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
 				}),
 			)
 			.start({ platform: "server", env: {} }),

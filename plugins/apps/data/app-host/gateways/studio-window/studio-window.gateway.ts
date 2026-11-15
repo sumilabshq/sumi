@@ -1,5 +1,5 @@
 export abstract class StudioWindowGateway {
-	abstract windowLabel(): string;
+	abstract placesWindow(): string;
 	abstract opensBesideAnother(): boolean;
 	abstract keepsPagesAcrossStarts(): boolean;
 }

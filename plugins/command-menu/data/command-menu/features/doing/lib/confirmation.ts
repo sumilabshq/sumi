@@ -6,6 +6,7 @@ const RAN: Readonly<Record<MenuCommand, string>> = {
 	"new-tab": "New tab",
 	"tabs-in-sidebar": "Tabs in the sidebar",
 	"tabs-in-header": "Tabs in the header",
+	"new-window": "Opened a window without a workspace",
 };
 const PLACE_SAID: Readonly<Record<Where, string>> = {
 	"new-tab": "in a new tab",

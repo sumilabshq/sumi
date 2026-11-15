@@ -1,5 +1,6 @@
 import { SETTINGS, readSettings } from "../settings/settings-doc.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
+import { NO_WORKSPACE_ID } from "@widgetarium/behaviors";
 import { GLOBAL_ROOT } from "@widgetarium/behaviors/tauri-store";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { StoreRefusedError } from "@widgetarium/behaviors/tauri-store";
@@ -33,7 +34,20 @@ export async function readOpening(
 	};
 }
 
+const NO_WORKSPACE: WorkspaceEntry = {
+	id: NO_WORKSPACE_ID,
+	name: "No workspace",
+	folder: null,
+	folderFound: false,
+	lastOpenedAt: 0,
+	recentFolders: [],
+};
+
 async function workspaceToOpen(workspaces: WorkspaceClient, lastId: string | null): Promise<WorkspaceEntry> {
+	if (lastId === NO_WORKSPACE_ID) {
+		return NO_WORKSPACE;
+	}
+
 	if (lastId === null) {
 		return workspaces.openFirst();
 	}

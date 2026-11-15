@@ -61,7 +61,7 @@ export const renameTab = command()
 	.input(z.object({ id: z.string(), label: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, label }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.rename, { window: studioWindow.windowLabel(), id, label });
+		await send(places.tabPlacing.rename, { window: studioWindow.placesWindow(), id, label });
 		emit(tabsSettled);
 	});
 
@@ -140,6 +140,6 @@ export const pin = command()
 	.input(TabPinSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, isPinned }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.pin, { window: studioWindow.windowLabel(), id, isPinned });
+		await send(places.tabPlacing.pin, { window: studioWindow.placesWindow(), id, isPinned });
 		emit(tabsSettled);
 	});

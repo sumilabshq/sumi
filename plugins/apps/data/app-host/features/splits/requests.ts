@@ -13,7 +13,7 @@ const LAST_PANE = 'pane "{id}" stays: closing it would leave the board empty';
 export const shown = query()
 	.public()
 	.output(ShownSplitSchema)
-	.handle(async (_input, { send, studioWindow }) => send(places.splits.shown, { window: studioWindow.windowLabel() }));
+	.handle(async (_input, { send, studioWindow }) => send(places.splits.shown, { window: studioWindow.placesWindow() }));
 
 export const placeInView = command()
 	.public()

@@ -1,5 +1,6 @@
+import { placesWindowOf } from "@widgetarium/behaviors";
 import { BARE_SCREEN } from "./places-fixture.ts";
-import { BUILT_IN_APPS, BUILT_IN_PLACED_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
+import { BUILT_IN_APPS, BUILT_IN_PLACED_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { ListedPlacedAppsGateway } from "../plugins/apps/data/places/gateways/placed-apps/listed.gateway.ts";
 import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app-of.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
@@ -38,7 +39,7 @@ function placesCoreOver(tabs: MemoryTabsGateway | TauriTabsGateway): Runtime {
 	return runtime()
 		.modules(
 			RunnablePlacesModule({
-				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
+				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
 			}),
 		)
 		.start({ platform: "server", env: {} });
@@ -86,7 +87,7 @@ async function migrationChecks(): Promise<void> {
 	const tabsIn = (): TauriTabsGateway =>
 		new TauriTabsGateway({
 			store,
-			root,
+			workspaceId: DEFAULT.id,
 			kept: HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) }),
 			apps: BUILT_IN_APPS,
 		});
@@ -116,7 +117,7 @@ async function migrationChecks(): Promise<void> {
 
 	fake.put(`${root}:chats.json`, { v: 1, rev: 2, chats: [] });
 	const [again] = windowsOver(tabsIn());
-	const placed = await again.send(places.tabs.placedTabs, { window: "main" });
+	const placed = await again.send(places.tabs.placedTabs, { window: placesWindowOf("main", DEFAULT.id) });
 	check(
 		"a second start reads places.json and never migrates again",
 		placed.ok ? placed.output.tabs.filter((tab) => tab.app === "chat").map((tab) => tab.id) : placed.reason,
@@ -131,7 +132,7 @@ async function unreadableChecks(): Promise<void> {
 	fake.put(`${root}:places.json`, { v: 1, rev: 1, tabs: { broken: true } });
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
-	const [main] = windowsOver(new TauriTabsGateway({ store, root, kept, apps: BUILT_IN_APPS }));
+	const [main] = windowsOver(new TauriTabsGateway({ store, workspaceId: DEFAULT.id, kept, apps: BUILT_IN_APPS }));
 	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
 	check(
 		"unreadable tabs start empty and are kept aside, never read again from the older files",
@@ -300,6 +301,7 @@ async function handoffChecks(): Promise<void> {
 						windows: new MemoryWindowsGateway({ windows: [] }),
 						tabs: new MemoryTabsGateway(),
 						placedApps: new ListedPlacedAppsGateway([...BUILT_IN_PLACED_APPS, MARKDOWN_TO_CANVAS_PLACED_APP]),
+						home: mainHome(),
 					},
 				}),
 			)
@@ -440,12 +442,12 @@ async function workspaceListsMigrationChecks(): Promise<void> {
 	});
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
-	const [main, side] = windowsOver(new TauriTabsGateway({ store, root, kept, apps: BUILT_IN_APPS }));
+	const [main, side] = windowsOver(new TauriTabsGateway({ store, workspaceId: DEFAULT.id, kept, apps: BUILT_IN_APPS }));
 	check(
 		"workspace-wide lists of an older places.json move into the main window on first read",
 		[
-			await sidebarTabIdsIn(main, askAt("main")),
-			await sidebarTabIdsIn(side, askAt("studio-2")),
+			await sidebarTabIdsIn(main, askAt(placesWindowOf("main", DEFAULT.id))),
+			await sidebarTabIdsIn(side, askAt(placesWindowOf("studio-2", DEFAULT.id))),
 			Object.keys(KeptPlacesSchema.parse(fake.files.get(`${root}:places.json`)).tabs ?? {}).length > 0,
 		],
 		[
@@ -464,7 +466,7 @@ async function workspaceListsMigrationChecks(): Promise<void> {
 	check(
 		"and the file keeps them under the main window's list ids",
 		typeof stored === "object" && stored !== null && "lists" in stored ? Object.keys(stored.lists ?? {}) : stored,
-		["window:main", "window:main:pinned"],
+		[`window:main@${DEFAULT.id}`, `window:main@${DEFAULT.id}:pinned`],
 	);
 }
 

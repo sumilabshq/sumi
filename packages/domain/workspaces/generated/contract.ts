@@ -170,6 +170,9 @@ export const workspaces = moduleContract("workspaces", Device, {
 			.public()
 			.input(WorkspaceIdSchema)
 			.idempotencyKey(PerCall)),
+		openWithoutWorkspace: named("workspaces.open-without-workspace", command()
+			.public()
+			.idempotencyKey(PerCall)),
 		chatsElsewhere: named("workspaces.chats-elsewhere", query()
 			.public()
 			.output(ChatsElsewhereSchema)),

@@ -1,4 +1,5 @@
-import type { DocKind, HeldDoc, StoreClient, StoreRoot } from "@widgetarium/behaviors/tauri-store";
+import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, HeldDoc, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { PlacedTabsSchema } from "../../../shared/schema/tabs.schema.js";
 import type { PlacedTabs } from "../../../shared/schema/tabs.schema.js";
 import { emptyPlacedTabs } from "../../../shared/lib/tabs/kept-tabs.js";
@@ -13,13 +14,14 @@ import {
 	migratedTabsOf,
 	migrationSaid,
 	windowedTabsOf,
+	workspacedTabsOf,
 } from "./kept-session.js";
 import type { KeptChatsRead, KeptSessionDoc, ReshapedTabs } from "./kept-session.js";
 import { TabsGateway } from "../tabs.gateway.js";
 
 export interface TabsStore {
 	readonly store: StoreClient;
-	readonly root: StoreRoot;
+	readonly workspaceId: string;
 	readonly kept: Promise<HeldDoc<KeptPlaces>>;
 	readonly apps: PlacedApps;
 }
@@ -92,7 +94,7 @@ async function readyTabsIn(at: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<He
 	const readable = PlacedTabsSchema.safeParse(tabs);
 
 	if (readable.success) {
-		return movedBy(kept, windowedTabsOf);
+		return movedBy(await movedBy(kept, windowedTabsOf), workspacedTabsOf(at.workspaceId));
 	}
 
 	const reason = "tabs unreadable → none, the unreadable ones kept aside as unreadableTabs";
@@ -118,7 +120,8 @@ async function movedBy(
 	return kept;
 }
 
-async function migrated({ store, root, apps }: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<HeldDoc<KeptPlaces>> {
+async function migrated({ store, workspaceId, apps }: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<HeldDoc<KeptPlaces>> {
+	const root = workspaceRootOf(workspaceId);
 	const [session, chats] = await Promise.all([store.readDoc(root, OLD_SESSION), store.readDoc(root, OLD_CHATS)]);
 	const sessionTabs = session.doc?.tabs ?? null;
 	const chatEntries = chatEntriesOf(chats.doc ?? KeptChatsReadSchema.parse({}));

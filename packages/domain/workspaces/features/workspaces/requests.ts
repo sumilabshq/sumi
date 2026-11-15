@@ -1,3 +1,4 @@
+import { NO_WORKSPACE_ID } from "@widgetarium/behaviors";
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { workspacesChanged } from "../../gateways/workspaces/workspaces.events.js";
@@ -66,6 +67,13 @@ export const openWindow = command()
 	.input(WorkspaceIdSchema)
 	.idempotencyKey(PerCall)
 	.handle(({ id }, opening) => openProfileWindow(id, opening, "asked for a new window"));
+
+export const openWithoutWorkspace = command()
+	.public()
+	.idempotencyKey(PerCall)
+	.handle((_input, { profileWindows }) =>
+		profileWindows.openWindow(NO_WORKSPACE_ID, "window none → new window without a workspace (asked)"),
+	);
 
 export const chatsElsewhere = query()
 	.public()

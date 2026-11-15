@@ -41,7 +41,7 @@ export const HomePlaceSchema = z.enum(["here", "new-tab", "new-window"]);
 
 export type HomePlace = z.infer<typeof HomePlaceSchema>;
 
-export const MenuCommandSchema = z.enum(["new-chat", "new-tab", "tabs-in-sidebar", "tabs-in-header"]);
+export const MenuCommandSchema = z.enum(["new-chat", "new-tab", "tabs-in-sidebar", "tabs-in-header", "new-window"]);
 
 export type MenuCommand = z.infer<typeof MenuCommandSchema>;
 
@@ -140,7 +140,7 @@ export const RenameAskSchema = z.object({
 	name: z.string(),
 });
 
-export const RowGlyphSchema = z.enum(["search", "globe", "plus", "ink", "pencil", "unsplit", "layout"]);
+export const RowGlyphSchema = z.enum(["search", "globe", "plus", "ink", "pencil", "unsplit", "layout", "window"]);
 
 export const RowIconSchema = z.discriminatedUnion("kind", [
 	z.object({

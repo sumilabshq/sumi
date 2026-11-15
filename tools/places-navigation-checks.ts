@@ -1,4 +1,4 @@
-import { builtInPlacedApps } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
@@ -25,7 +25,7 @@ const served = dataFrameworkMiddleware(
 	runtime()
 		.modules(
 			RunnablePlacesModule({
-				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
+				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
 			}),
 		)
 		.start({ platform: "server", env: {} }),

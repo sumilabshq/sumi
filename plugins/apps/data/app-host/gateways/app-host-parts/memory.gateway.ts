@@ -4,9 +4,9 @@ import { NoPaneFlashGateway } from "../pane-flash/none.gateway.js";
 import { MemoryStudioWindowGateway } from "../studio-window/memory.gateway.js";
 import type { AppHostParts } from "./app-host-parts.gateway.js";
 
-export function memoryAppHostParts(): AppHostParts {
+export function memoryAppHostParts(workspaceId: string): AppHostParts {
 	return {
-		studioWindow: new MemoryStudioWindowGateway(),
+		studioWindow: new MemoryStudioWindowGateway(workspaceId),
 		essentials: new MemoryEssentialsGateway(null),
 		paneFlash: new NoPaneFlashGateway(),
 		coreChanges: new NoCoreChangesGateway(),

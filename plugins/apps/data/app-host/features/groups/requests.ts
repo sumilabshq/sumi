@@ -14,7 +14,7 @@ export const create = command()
 		const from =
 			"list" in asked ? { kind: "list" as const, list: asked.list } : { kind: "tab" as const, tabId: asked.withTabId };
 		const created = await send(places.tabPlacing.createGroup, {
-			window: studioWindow.windowLabel(),
+			window: studioWindow.placesWindow(),
 			from,
 			...(asked.name === undefined ? {} : { name: asked.name }),
 			...(asked.hue === undefined ? {} : { hue: asked.hue }),
@@ -28,7 +28,7 @@ export const renameGroup = command()
 	.input(z.object({ id: z.string(), name: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, name }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.renameGroup, { window: studioWindow.windowLabel(), id, name });
+		await send(places.tabPlacing.renameGroup, { window: studioWindow.placesWindow(), id, name });
 		emit(tabsSettled);
 	});
 
@@ -37,7 +37,7 @@ export const setHue = command()
 	.input(z.object({ id: z.string(), hue: GroupHueSchema.nullable() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, hue }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.setGroupHue, { window: studioWindow.windowLabel(), id, hue });
+		await send(places.tabPlacing.setGroupHue, { window: studioWindow.placesWindow(), id, hue });
 		emit(tabsSettled);
 	});
 
@@ -46,7 +46,7 @@ export const fold = command()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.foldGroup, { window: studioWindow.windowLabel(), id });
+		await send(places.tabPlacing.foldGroup, { window: studioWindow.placesWindow(), id });
 		emit(tabsSettled);
 	});
 
@@ -63,7 +63,7 @@ export const placeGroup = command()
 	)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, to }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.placeGroup, { window: studioWindow.windowLabel(), id, place: to });
+		await send(places.tabPlacing.placeGroup, { window: studioWindow.placesWindow(), id, place: to });
 		emit(tabsSettled);
 	});
 
@@ -72,7 +72,7 @@ export const foldTab = command()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.fold, { window: studioWindow.windowLabel(), id });
+		await send(places.tabPlacing.fold, { window: studioWindow.placesWindow(), id });
 		emit(tabsSettled);
 	});
 
@@ -81,6 +81,6 @@ export const ungroup = command()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.ungroup, { window: studioWindow.windowLabel(), id });
+		await send(places.tabPlacing.ungroup, { window: studioWindow.placesWindow(), id });
 		emit(tabsSettled);
 	});

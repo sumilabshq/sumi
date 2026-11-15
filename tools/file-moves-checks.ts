@@ -13,7 +13,7 @@ import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateway
 import { filePage } from "../plugins/files/data/file-page/generated/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
-import { builtInPlacedApps } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 
 const VIEWER = "code-viewer";
@@ -34,6 +34,7 @@ const served = dataFrameworkMiddleware(
 				injects: {
 					windows: new MemoryWindowsGateway({ windows: [] }),
 					placedApps: builtInPlacedApps(),
+					home: mainHome(),
 					tabs: new MemoryTabsGateway(
 						placedTabsOf({
 							tabs: [

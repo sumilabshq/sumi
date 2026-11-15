@@ -14,6 +14,7 @@ const GLYPH_ICONS: Readonly<Record<Exclude<Glyph, "ink">, string>> = {
 	pencil: "pencil",
 	unsplit: "panel-right-close",
 	layout: "panel-left",
+	window: "app-window",
 };
 const ICON_PX = 16;
 

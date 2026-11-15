@@ -8,6 +8,22 @@ export interface StudioWindow {
 
 export const MAIN_STUDIO_WINDOW = "main";
 
+export const NO_WORKSPACE_ID = "00000000-0000-0000-0000-000000000000";
+
+const PLACES_WINDOW_JOIN = "@";
+
+export function placesWindowOf(label: string, workspaceId: string): string {
+	return `${label}${PLACES_WINDOW_JOIN}${workspaceId}`;
+}
+
+export function labelOfPlacesWindow(placesWindow: string): string {
+	return placesWindow.split(PLACES_WINDOW_JOIN)[0] ?? placesWindow;
+}
+
+export function isPlacesWindowOfWorkspace(placesWindow: string): boolean {
+	return placesWindow.includes(PLACES_WINDOW_JOIN);
+}
+
 const WINDOW_PARAM = "window";
 const TAB_PARAM = "tab";
 const CHAT_PARAM = "chat";

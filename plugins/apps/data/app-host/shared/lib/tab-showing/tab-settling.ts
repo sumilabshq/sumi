@@ -33,7 +33,7 @@ type PaneEffect = Extract<TabEffect, { readonly kind: (typeof PANE_EFFECTS)[numb
 type ViewEffect = Exclude<TabEffect, PageEffect | WindowEffect | PaneEffect>;
 
 interface StudioWindowSeat {
-	windowLabel(): string;
+	placesWindow(): string;
 }
 
 interface PaneFlasher {
@@ -62,7 +62,7 @@ export async function tabsAskOf({ injects, send }: Pick<TabsReach, "injects" | "
 		send(layout.panes.paneTree),
 	]);
 	return {
-		window: injects.studioWindow.windowLabel(),
+		window: injects.studioWindow.placesWindow(),
 		screen: screenOf({ browserTabs, asks, board }),
 	};
 }
@@ -90,7 +90,7 @@ export function saveEssentials(was: KeptEssentials, moved: MovedEssentials | nul
 	console.info(`[widgetarium] essentials ${was.essentials.length} → ${moved.kept.essentials.length} (${moved.reason})`);
 }
 
-export async function sendKeepChatTabs(send: Send): Promise<void> {
+export async function sendKeepChatTabs(send: Send, window: string): Promise<void> {
 	const records = await send(workspaces.chats.chatRecords);
 
 	if (!records.isRead) {
@@ -98,7 +98,7 @@ export async function sendKeepChatTabs(send: Send): Promise<void> {
 		return;
 	}
 
-	await send(places.tabFacts.keepChatTabs, { chats: records.chats.map(({ id, title }) => ({ id, title })) });
+	await send(places.tabFacts.keepChatTabs, { window, chats: records.chats.map(({ id, title }) => ({ id, title })) });
 }
 
 export async function sendLogged(what: string, sending: () => Promise<unknown> | void): Promise<void> {
