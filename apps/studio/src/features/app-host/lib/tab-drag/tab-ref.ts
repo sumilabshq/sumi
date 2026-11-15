@@ -5,5 +5,4 @@ export interface TabRef {
 	readonly list: string;
 	readonly isHolder: boolean;
 	readonly isNestable: boolean;
-	readonly isTearable: boolean;
 }

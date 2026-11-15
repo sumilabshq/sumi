@@ -7,7 +7,6 @@ export interface RowFace {
 	readonly label: string | null;
 	readonly isShown: boolean;
 	readonly isNestable: boolean;
-	readonly isTearable: boolean;
 	readonly isInOwnWindow: boolean;
 	readonly isUnread: boolean;
 }
@@ -20,7 +19,6 @@ export function rowFaceOf({ tab }: SidebarTab): RowFace {
 		label: tab.label,
 		isShown: tab.isShown,
 		isNestable: tab.isNestable,
-		isTearable: tab.isTearable,
 		isInOwnWindow: tab.isInOwnWindow,
 		isUnread: tab.mark === "unread",
 	};

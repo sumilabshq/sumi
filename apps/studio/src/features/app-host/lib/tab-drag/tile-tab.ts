@@ -9,7 +9,6 @@ const TAB_OF_TILE = {
 	isInOwnWindow: false,
 	mark: "none",
 	isNestable: true,
-	isTearable: true,
 } as const satisfies Partial<AppTabState>;
 
 export function tileOfTab(tab: AppTabState): EssentialTile {

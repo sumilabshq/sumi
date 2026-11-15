@@ -70,7 +70,6 @@ export type AppTab = z.infer<typeof AppTabSchema>;
 export const AppTabStateSchema = AppTabSchema.extend({
 	isShown: z.boolean(),
 	isNestable: z.boolean(),
-	isTearable: z.boolean(),
 });
 
 export type AppTabState = z.infer<typeof AppTabStateSchema>;

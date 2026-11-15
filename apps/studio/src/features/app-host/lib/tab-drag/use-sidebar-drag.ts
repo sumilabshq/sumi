@@ -111,7 +111,7 @@ function pickedOf(element: HTMLElement, source: DragSource, opensOwnWindows: boo
 	return {
 		element,
 		source,
-		opensOwnWindow: opensOwnWindows && source.kind === "tab" && isTearableApp(element),
+		opensOwnWindow: opensOwnWindows && source.kind === "tab",
 	};
 }
 
@@ -161,8 +161,4 @@ function essentialSourceOf(holder: HTMLElement, element: HTMLElement, id: string
 		id,
 		at: [...holder.querySelectorAll('[data-tabs-item="essential"]')].indexOf(element),
 	};
-}
-
-function isTearableApp(element: HTMLElement): boolean {
-	return element.dataset["tabsTearable"] !== undefined;
 }

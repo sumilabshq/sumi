@@ -68,7 +68,6 @@ export const TabRow = memo(function TabRow({
 			data-tabs-group={groupId ?? undefined}
 			data-tabs-chat={isHolder ? face.id : undefined}
 			data-tabs-nestable={face.isNestable ? "" : undefined}
-			data-tabs-tearable={face.isTearable ? "" : undefined}
 			data-tabs-place={place}
 			data-host-list-tab={face.id}
 			data-host-tab-app={face.app}

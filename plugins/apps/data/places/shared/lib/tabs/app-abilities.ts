@@ -26,11 +26,6 @@ export function abilitiesOf(apps: PlacedApps, app: AppKind): AppAbilities {
 	return apps.byId.get(app)?.abilities ?? PAGE_APP;
 }
 
-export function isTearable(apps: PlacedApps, tab: { readonly app: AppKind }): boolean {
-	const abilities = abilitiesOf(apps, tab.app);
-	return abilities.holdsTabs || abilities.navigates;
-}
-
 export function holdsTabs(apps: PlacedApps, { app }: { readonly app: AppKind }): boolean {
 	return abilitiesOf(apps, app).holdsTabs;
 }

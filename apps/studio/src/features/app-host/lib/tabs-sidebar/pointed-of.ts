@@ -58,7 +58,6 @@ export function tabRefOf(item: HTMLElement, id: string): TabRef {
 		list: listIdOf(item),
 		isHolder: item.dataset["tabsChat"] !== undefined,
 		isNestable: item.dataset["tabsNestable"] !== undefined,
-		isTearable: item.dataset["tabsTearable"] !== undefined,
 	};
 }
 

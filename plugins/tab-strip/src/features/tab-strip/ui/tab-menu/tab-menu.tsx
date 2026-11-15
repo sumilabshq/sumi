@@ -95,7 +95,7 @@ function TabMenuItems({ at: { item }, acts, hasOthers, chose, onDone }: TabMenuI
 				<Icon name="link" size={ITEM_ICON_PX} />
 				Copy link
 			</PopoverItem>
-			<PopoverItem role="menuitem" disabled={!tab.isTearable} onClick={chose(() => acts.tearOff(tab))}>
+			<PopoverItem role="menuitem" onClick={chose(() => acts.tearOff(tab))}>
 				<Icon name="app-window" size={ITEM_ICON_PX} />
 				Move to a new window
 			</PopoverItem>

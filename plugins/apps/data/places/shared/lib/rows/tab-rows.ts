@@ -8,7 +8,6 @@ import type { TabFacts } from "../showing/tab-facts.js";
 import { pagesOfTabs } from "../showing/tab-pages.js";
 import type { AppTab, AppTabState, Essential, EssentialTile, TabStatus } from "../../schema/tab-rows.schema.js";
 import type { PageFacts } from "../../schema/screen.schema.js";
-import { isTearable } from "../tabs/app-abilities.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 
 export interface RowLooks {
@@ -76,7 +75,6 @@ export class TabRows {
 				isShown: this.looks.highlightedIds.has(tab.id),
 				// TODO: drop isNestable, tabs no longer nest
 				isNestable: false,
-				isTearable: isTearable(this.moment.apps, tab),
 			},
 		];
 	}

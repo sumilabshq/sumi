@@ -34,11 +34,7 @@ export function useTabActs({ items, newTabList, essentialsCount }: StripFacts): 
 	const closeOthers = useCommand(appHost.tabActions.closeOthers);
 	const tearOff = useCommand(appHost.tabActions.tearOff);
 	const placeInView = useCommand(appHost.splits.placeInView);
-	const tearOffTab = (tab: AppTabState): void => {
-		if (tab.isTearable) {
-			void tearOff.run({ id: tab.id });
-		}
-	};
+	const tearOffTab = (tab: AppTabState): void => void tearOff.run({ id: tab.id });
 	return {
 		show: (item) => void showTab.run({ id: tabOf(item).id }),
 		close: (item) => void closeTabs.run({ ids: memberIdsOf(item) }),
