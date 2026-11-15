@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { places as definition } from "../module.js";
 import { placeInView, remove, reorderMember, rereadShown, resize, shown } from "../features/splits/requests.js";
-import { closeEssential, closeGroup, closeOthers, closeShown, closeTab } from "../features/tab-closing/requests.js";
+import { closeEssential, closeEssentialCopies, closeGroup, closeOthers, closeShown, closeTab } from "../features/tab-closing/requests.js";
 import { askedLinks, forgetRunningTurns, keepChatTabs, markSeen, openLink, ownAppTab, recordAppAddress, recordTurn, rereadAskedLinks, rereadOwnAppTab, takeAskedLink } from "../features/tab-facts/requests.js";
 import { goBack, goForward } from "../features/tab-history/requests.js";
 import { duplicate, openBelow, openTab, releaseEssential, reopenClosed, showEssential } from "../features/tab-opening/requests.js";
@@ -27,6 +27,7 @@ export const places = handledModule(definition, [
 	named("splits.resize", resize),
 	named("splits.shown", shown),
 	named("tab-closing.close-essential", closeEssential),
+	named("tab-closing.close-essential-copies", closeEssentialCopies),
 	named("tab-closing.close-group", closeGroup),
 	named("tab-closing.close-others", closeOthers),
 	named("tab-closing.close-shown", closeShown),

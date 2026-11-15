@@ -43,6 +43,7 @@ export const remove = command()
 		const kept = await keptOf(injects.essentials);
 		const essential = findEssential(kept, id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
 		await releaseEssential({ injects, send, told: () => emit(tabsSettled) }, { kept, essential, place: WORKSPACE_END });
+		await send(places.tabClosing.closeEssentialCopies, { essentialId: id });
 	});
 
 export const closeEssential = command()

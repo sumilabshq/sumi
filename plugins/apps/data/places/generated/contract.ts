@@ -692,6 +692,7 @@ export const KeptTabSchema = z.object({
 	pageId: z.string().nullable(),
 	label: z.string().nullable(),
 	essentialId: z.string().nullable().default(null),
+	essentialWindow: z.string().nullable().default(null),
 	lastAddress: z.string().nullable().default(null),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),
@@ -820,6 +821,10 @@ export const places = moduleContract("places", Server, {
 			.public()
 			.input(CloseEssentialAskSchema)
 			.output(TabsSettledSchema)
+			.idempotencyKey(Repeatable)),
+		closeEssentialCopies: named("tab-closing.close-essential-copies", command()
+			.public()
+			.input(z.object({ essentialId: z.string().min(1) }))
 			.idempotencyKey(Repeatable)),
 	},
 	tabFacts: {

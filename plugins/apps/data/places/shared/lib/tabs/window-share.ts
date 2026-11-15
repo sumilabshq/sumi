@@ -1,3 +1,4 @@
+import { MAIN_STUDIO_WINDOW } from "@widgetarium/behaviors";
 import { SectionListSchema } from "../../schema/tabs.schema.js";
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
 import { flatTabIdsOf, sectionNameOf, windowListOf, windowOfList } from "./tab-lists.js";
@@ -26,7 +27,10 @@ export function elsewhereOf(placed: PlacedTabs, window: string | null): Elsewher
 		(listId) => windowOfList(listId) !== null && windowOfList(listId) !== window,
 	);
 	const listIds = listsHeldUnder(placed, roots);
-	const tabIds = new Set([...listIds].flatMap((listId) => flatTabIdsOf(placed, listId)));
+	const tabIds = new Set([
+		...[...listIds].flatMap((listId) => flatTabIdsOf(placed, listId)),
+		...essentialCopiesOutside(placed, window),
+	]);
 	return {
 		listIds,
 		tabIds,
@@ -87,6 +91,14 @@ export function mergedById<Item extends { readonly id: string }>(
 		return moved === undefined ? [] : [moved];
 	});
 	return [...kept, ...next.filter((item) => !storedIds.has(item.id))];
+}
+
+export function essentialWindowOf(tab: PlacedTabs["tabs"][number]): string | null {
+	return tab.essentialId === null ? null : (tab.essentialWindow ?? MAIN_STUDIO_WINDOW);
+}
+
+function essentialCopiesOutside(placed: PlacedTabs, window: string): readonly string[] {
+	return placed.tabs.filter((tab) => (essentialWindowOf(tab) ?? window) !== window).map((tab) => tab.id);
 }
 
 function listsHeldUnder(layout: TabLayout, listIds: readonly string[]): ReadonlySet<string> {

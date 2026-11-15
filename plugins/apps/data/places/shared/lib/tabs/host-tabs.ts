@@ -298,6 +298,7 @@ function mintTab(moment: HostTabsMoment, opened: OpenedTab, essentialId: string 
 		id: `tab-${moment.minted + 1}`,
 		label: null,
 		essentialId,
+		essentialWindow: null,
 		lastAddress: null,
 		title: null,
 		mark: "none",

@@ -127,6 +127,7 @@ function chatTabOf(app: string, { id, title }: NamedRecord): HostTab {
 		pageId: null,
 		label: null,
 		essentialId: null,
+		essentialWindow: null,
 		lastAddress: null,
 		title,
 		mark: "none",

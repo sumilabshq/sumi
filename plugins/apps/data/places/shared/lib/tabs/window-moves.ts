@@ -17,7 +17,7 @@ import {
 	withTabAt,
 	withoutTab,
 } from "./tab-lists.js";
-import { elsewhereOf } from "./window-share.js";
+import { elsewhereOf, essentialWindowOf } from "./window-share.js";
 
 export interface WindowsMove {
 	readonly placed: PlacedTabs;
@@ -55,6 +55,46 @@ export function windowsForgotten(isGone: (window: string) => boolean, apps: Plac
 	};
 }
 
+export function essentialCopiesClosed(essentialId: string, apps: PlacedApps): MovePlacedTabs<null> {
+	return (placed) => {
+		const windows = [
+			...new Set(
+				placed.tabs
+					.filter((tab) => tab.essentialId === essentialId)
+					.flatMap((tab) => {
+						const window = essentialWindowOf(tab);
+						return window === null ? [] : [window];
+					}),
+			),
+		];
+
+		if (windows.length === 0) {
+			return { next: null, reason: `no window holds a copy of essential ${essentialId}`, answer: null };
+		}
+
+		const moved = windows.reduce<WindowsMove>((was, window) => copyClosed(was, { window, essentialId }, apps), {
+			placed,
+			reasons: [],
+		});
+		return { next: moved.placed, reason: moved.reasons.join("; "), answer: null };
+	};
+}
+
+interface EssentialCopy {
+	readonly window: string;
+	readonly essentialId: string;
+}
+
+function copyClosed({ placed, reasons }: WindowsMove, { window, essentialId }: EssentialCopy, apps: PlacedApps): WindowsMove {
+	const moment = momentOfWindow(placed, window, apps);
+	const ids = moment.tabs.filter((tab) => tab.essentialId === essentialId).map((tab) => tab.id);
+	const closed = closeTabs(moment, new Map(), { ids, reason: `essential ${essentialId} removed` });
+	return {
+		placed: placedWith(placed, window, splitsPruned(closed.moment)),
+		reasons: [...reasons, `window ${window} essential ${essentialId} copy ${ids.join(", ")} → closed (the essential was removed)`],
+	};
+}
+
 function windowListHolding(placed: PlacedTabs, tabId: string): string | null {
 	const list = locationOf(placed, tabId)?.chatId ?? null;
 	return list === null || windowOfList(list) === null ? null : list;
@@ -86,7 +126,11 @@ function knownWindowsOf(placed: PlacedTabs): readonly string[] {
 
 function forgotten({ placed, reasons }: WindowsMove, window: string, apps: PlacedApps): WindowsMove {
 	const moment = momentOfWindow(placed, window, apps);
-	const ids = [...flatTabIdsOf(moment, PINNED_LIST), ...flatTabIdsOf(moment, WORKSPACE_LIST)];
+	const ids = [
+		...flatTabIdsOf(moment, PINNED_LIST),
+		...flatTabIdsOf(moment, WORKSPACE_LIST),
+		...moment.tabs.filter((tab) => tab.essentialId !== null).map((tab) => tab.id),
+	];
 	const closed = closeTabs(moment, new Map(), { ids, reason: `close window ${window}` });
 	return {
 		placed: withoutWindow(placedWith(placed, window, splitsPruned(closed.moment)), window),

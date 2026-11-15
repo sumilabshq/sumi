@@ -63,6 +63,7 @@ export const KeptTabSchema = z.object({
 	pageId: z.string().nullable(),
 	label: z.string().nullable(),
 	essentialId: z.string().nullable().default(null),
+	essentialWindow: z.string().nullable().default(null),
 	lastAddress: z.string().nullable().default(null),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),

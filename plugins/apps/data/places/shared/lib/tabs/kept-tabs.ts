@@ -1,7 +1,7 @@
 import { PlacedTabsSchema } from "../../schema/tabs.schema.js";
 import type { PlacedTabs, WindowTabs, WindowView } from "../../schema/tabs.schema.js";
 import { emptyMoment, momentSaid } from "./host-tabs.js";
-import type { HostTabsMoment } from "./host-tabs.js";
+import type { HostTab, HostTabsMoment } from "./host-tabs.js";
 import { placedAppsOf } from "./app-abilities.js";
 import type { PlacedApps } from "./app-abilities.js";
 import { elsewhereOf, keptElsewhere, mergedById, shownListsOf, storedListsOf } from "./window-share.js";
@@ -62,7 +62,7 @@ export function placedWith(placed: PlacedTabs, window: string | null, moment: Ho
 	const elsewhere = elsewhereOf(placed, window);
 	return PlacedTabsSchema.parse({
 		...shared,
-		tabs: mergedById(placed.tabs, elsewhere.tabIds, shared.tabs),
+		tabs: mergedById(placed.tabs, elsewhere.tabIds, shared.tabs.map((tab) => withEssentialWindow(tab, window))),
 		lists: { ...keptElsewhere(placed.lists, elsewhere), ...storedListsOf(shared.lists, window) },
 		groups: mergedById(placed.groups, elsewhere.groupIds, shared.groups),
 		splits: mergedById(placed.splits, elsewhere.splitIds, splits),
@@ -74,6 +74,14 @@ export function placedWith(placed: PlacedTabs, window: string | null, moment: Ho
 				? placed.views
 				: { ...placed.views, [window]: { shownId, selectedId, view, lastShown, shownSplitId } },
 	});
+}
+
+function withEssentialWindow(tab: HostTab, window: string | null): HostTab {
+	if (window === null) {
+		return tab;
+	}
+
+	return { ...tab, essentialWindow: tab.essentialId === null ? null : window };
 }
 
 export function tabsTransitionSaid(was: HostTabsMoment, next: HostTabsMoment, reason: string): string {
