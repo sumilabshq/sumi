@@ -18,6 +18,7 @@ import type { ComposerPrefillGateway } from "../composer-prefill/composer-prefil
 import type { DraftAttachmentsGateway } from "../draft-attachments/draft-attachments.gateway.js";
 import type { FileDragGateway } from "../file-drag/file-drag.gateway.js";
 import type { FileDropGateway } from "../file-drop/file-drop.gateway.js";
+import type { PicturePreviewsGateway } from "../picture-previews/picture-previews.gateway.js";
 import type { SentAttachmentsGateway } from "../sent-attachments/sent-attachments.gateway.js";
 import type { WorkingFoldersGateway } from "../working-folders/working-folders.gateway.js";
 import { obsidianAssistantParts } from "./obsidian.gateway.js";
@@ -36,6 +37,7 @@ export type AssistantParts = {
 	readonly clock: ClockGateway;
 	readonly draftAttachments: DraftAttachmentsGateway;
 	readonly sentAttachments: SentAttachmentsGateway;
+	readonly picturePreviews: PicturePreviewsGateway;
 	readonly composerPrefill: ComposerPrefillGateway;
 	readonly chatDrafts: ChatDraftsGateway;
 	readonly fileDrag: FileDragGateway;

@@ -5,6 +5,7 @@ import type {
 	AssistantSession,
 	CallFace,
 	QueueChange,
+	SentPictures,
 } from "@widgetarium/core/engine/assistant-port.js";
 import { AssistantSessionGateway } from "./assistant-session.gateway.js";
 
@@ -35,8 +36,8 @@ export class PortAssistantSessionGateway extends AssistantSessionGateway {
 		return this.port.describeCall(call);
 	}
 
-	send(said: string): Promise<void> {
-		return this.port.send(said);
+	send(said: string, pictures?: SentPictures): Promise<void> {
+		return this.port.send(said, pictures);
 	}
 
 	changeQueue(change: QueueChange): string | null {

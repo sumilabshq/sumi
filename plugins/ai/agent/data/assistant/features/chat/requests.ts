@@ -1,7 +1,6 @@
 import { PerCall, Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { sessionChanged } from "../../gateways/chat-parts/chat-parts.events.js";
-import { sentAttachmentsChanged } from "../../shared/events/sent-attachments.events.js";
 import { ChatSchema, QueueChangeInChatSchema } from "../../shared/schema/chat.schema.js";
 import { TextAskedSchema } from "../../shared/schema/attachment.schema.js";
 import { chatOf } from "./lib/chat-of.js";
@@ -57,7 +56,7 @@ export const one = query()
 	.output(ChatSchema)
 	.settlesNow()
 	.handle(
-		inChat((_input, { assistantSession, sentAttachments, toolLabels }) => {
+		inChat((_input, { assistantSession, toolLabels }) => {
 			const session = assistantSession.session();
 			const labelOf = (callName: string): ToolLabel | null => {
 				const named = servedToolNameOf(callName);
@@ -70,7 +69,6 @@ export const one = query()
 				faces: session.turns.map((turn) =>
 					turn.calls.map((call) => labelledFaceOf(call, assistantSession.faceOf(call), labelOf(call.name))),
 				),
-				previews: sentAttachments.sentAttachments().previews,
 			});
 		}),
 	);
@@ -106,8 +104,4 @@ export const sendText = command()
 
 export const rereadChat = subscriber(sessionChanged).handle(({ chat: chatId }, { invalidate }) => {
 	invalidate(one, { chat: chatId });
-});
-
-export const rereadForAttachments = subscriber(sentAttachmentsChanged).handle((_input, { invalidate }) => {
-	invalidate(one);
 });

@@ -39,7 +39,7 @@ export function safeNameOf(name: string): string {
 }
 
 export function attachmentsIn(text: string): SaidWithAttachments {
-	const openAt = text.lastIndexOf(`\n\n${OPEN}\n`);
+	const openAt = openAtIn(text);
 
 	if (openAt === -1 || !text.endsWith(`\n${CLOSE}`)) {
 		return {
@@ -52,6 +52,16 @@ export function attachmentsIn(text: string): SaidWithAttachments {
 		said: text.slice(0, openAt),
 		entries: entriesIn(text.slice(openAt).split("\n")),
 	};
+}
+
+function openAtIn(text: string): number {
+	const openAfterSaid = text.lastIndexOf(`\n\n${OPEN}\n`);
+
+	if (openAfterSaid !== -1) {
+		return openAfterSaid;
+	}
+
+	return text.startsWith(`${OPEN}\n`) ? 0 : -1;
 }
 
 function linesOf(entry: TrailerEntry): string[] {

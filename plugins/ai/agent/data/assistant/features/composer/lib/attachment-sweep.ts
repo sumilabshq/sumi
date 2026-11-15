@@ -16,6 +16,5 @@ export function sweptPaths(sent: SentAttachments, { isBusy, now }: SweepMoment):
 export function withoutSwept(sent: SentAttachments, swept: ReadonlySet<string>): SentAttachments {
 	return {
 		onDisk: sent.onDisk.filter(({ path }) => !swept.has(path)),
-		previews: sent.previews,
 	};
 }

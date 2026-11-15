@@ -5,7 +5,6 @@ export interface WrittenFile {
 
 export interface SentAttachments {
 	readonly onDisk: readonly WrittenFile[];
-	readonly previews: ReadonlyMap<string, string>;
 }
 
 export abstract class SentAttachmentsGateway {

@@ -2,13 +2,12 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { assistant as definition } from "../module.js";
 import { chooseClaudeModel, chooseClaudeOption, chooseProvider, chooseWorkingFolder, claudeOptions, getSetup, openProviders, pickWorkingFolder, rereadClaudeOptions, rereadSetup, rereadWorkingFolders, setHelpers, workingFolders } from "../features/agent/requests.js";
-import { changeQueue, one, rereadChat, rereadForAttachments, retryTurn, sendText, stopTurn } from "../features/chat/requests.js";
+import { changeQueue, one, rereadChat, retryTurn, sendText, stopTurn } from "../features/chat/requests.js";
 import { adoptDraft, attachDropped, attachFiles, attachFolder, attachReach, clearChat, draftAttachments, fileDrag, hearHostDrag, hearPageDrag, holdDraftText, openChatDraft, removeAttachment, sendMessage, sweepAttachments, takeDraft } from "../features/composer/requests.js";
 import { composer, prefillDraft, take } from "../features/prefill/requests.js";
 import { chooseModel, chooseOption, getMeters, getOptions, getRunners, rereadRunnersForOptions, rereadRunnersForSetup } from "../features/runners/requests.js";
 import { all, compactChat, rereadSlashCommands } from "../features/slash-commands/requests.js";
 import { claudeOptionsChanged, fileDragged, sessionChanged, setupChanged, workingFolderChanged } from "../gateways/chat-parts/chat-parts.events.js";
-import { sentAttachmentsChanged } from "../shared/events/sent-attachments.events.js";
 
 export type { AgentHosts, AssistantHosts, PromptPart, Runner, RunnerCatalog } from "../module.js";
 
@@ -16,7 +15,6 @@ export const assistant = handledModule(definition, [
 	hearHostDrag,
 	rereadChat,
 	rereadClaudeOptions,
-	rereadForAttachments,
 	rereadRunnersForOptions,
 	rereadRunnersForSetup,
 	rereadSetup,
@@ -65,7 +63,6 @@ export const assistant = handledModule(definition, [
 	named("runners.get-meters", getMeters),
 	named("runners.get-options", getOptions),
 	named("runners.get-runners", getRunners),
-	named("sent-attachments.sent-attachments-changed", sentAttachmentsChanged),
 	named("slash-commands.all", all),
 	named("slash-commands.compact-chat", compactChat),
 ]);

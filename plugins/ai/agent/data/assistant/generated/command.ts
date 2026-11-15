@@ -2,6 +2,5 @@
 import { buildersOf } from "@widgetarium/data-framework";
 import type { assistant } from "../module.js";
 import type { claudeOptionsChanged, fileDragged, sessionChanged, setupChanged, workingFolderChanged } from "../gateways/chat-parts/chat-parts.events.js";
-import type { sentAttachmentsChanged } from "../shared/events/sent-attachments.events.js";
 
-export const { command, query, subscriber } = buildersOf<typeof assistant, typeof claudeOptionsChanged | typeof fileDragged | typeof sentAttachmentsChanged | typeof sessionChanged | typeof setupChanged | typeof workingFolderChanged>();
+export const { command, query, subscriber } = buildersOf<typeof assistant, typeof claudeOptionsChanged | typeof fileDragged | typeof sessionChanged | typeof setupChanged | typeof workingFolderChanged>();

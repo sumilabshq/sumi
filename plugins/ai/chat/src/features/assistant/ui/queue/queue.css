@@ -4,7 +4,7 @@
 	flex-direction: column;
 	min-height: 0;
 	position: relative;
-	max-height: 45%;
+	max-height: 45vh;
 	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 }
 

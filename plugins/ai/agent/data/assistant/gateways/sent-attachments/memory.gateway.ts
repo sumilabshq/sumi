@@ -3,7 +3,6 @@ import type { SentAttachments } from "./sent-attachments.gateway.js";
 
 const NOTHING_SENT: SentAttachments = {
 	onDisk: [],
-	previews: new Map(),
 };
 
 export class MemorySentAttachmentsGateway extends SentAttachmentsGateway {

@@ -1,20 +1,18 @@
 import { refuse } from "@widgetarium/data-framework";
-import type { Emitter } from "@widgetarium/data-framework";
 import type { AssistantSetupGateway } from "../../../gateways/assistant-setup/assistant-setup.gateway.js";
 import type { AttachmentFolderGateway } from "../../../gateways/attachment-folder/attachment-folder.gateway.js";
 import type { DraftAttachment } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import type { DraftAttachmentsGateway } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
-import { sentAttachmentsChanged } from "../../../shared/events/sent-attachments.events.js";
 import { attachmentsIn, withAttachments } from "../../../shared/lib/attachment-trailer.js";
 import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
 import { chosenOf } from "../../../shared/lib/chosen-provider.js";
 import { refusalOfReach } from "./attachment-rules.js";
 import { SENT, recordSent, sendOrRemoveWritten, writeDrafts } from "./attachments-on-disk.js";
-import type { SendingParts } from "./attachments-on-disk.js";
+import type { Delivery, SendingParts } from "./attachments-on-disk.js";
 import { saveDrafts } from "./held-drafts.js";
 import { lentFoldersOf } from "./written.js";
 
-export interface MessageParts extends SendingParts, Emitter<typeof sentAttachmentsChanged> {
+export interface MessageParts extends SendingParts {
 	readonly assistantSetup: AssistantSetupGateway;
 	readonly attachmentFolder: AttachmentFolderGateway;
 	readonly draftAttachments: DraftAttachmentsGateway;
@@ -36,7 +34,7 @@ export async function sendWithDrafts(
 	const deliver = deliveryOf(injects, replaces);
 
 	if (drafts.length === 0) {
-		await deliver(withAttachments(said, kept));
+		await deliver(withAttachments(said, kept), {});
 		return;
 	}
 
@@ -57,7 +55,6 @@ export async function sendWithDrafts(
 
 	if (written.files.length > 0) {
 		recordSent(injects, written.files);
-		injects.emit(sentAttachmentsChanged);
 	}
 
 	saveDrafts(injects.draftAttachments, [], SENT);
@@ -73,16 +70,17 @@ function keptEntriesOf(injects: MessageParts, replaces: string): readonly Traile
 	return attachmentsIn(queued.text).entries;
 }
 
-function deliveryOf(injects: MessageParts, replaces: string | undefined): (said: string) => Promise<void> {
+function deliveryOf(injects: MessageParts, replaces: string | undefined): Delivery {
 	if (replaces === undefined) {
-		return (said) => injects.assistantSession.send(said);
+		return (said, pictures) => injects.assistantSession.send(said, pictures);
 	}
 
-	return (said) => {
+	return (said, pictures) => {
 		const refusal = injects.assistantSession.changeQueue({
 			kind: "edit",
 			id: replaces,
 			said,
+			pictures,
 		});
 		return refusal === null ? Promise.resolve() : Promise.reject(new Error(refusal));
 	};

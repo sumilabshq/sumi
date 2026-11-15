@@ -13,6 +13,9 @@ import { MemoryComposerPrefillGateway } from "../composer-prefill/memory.gateway
 import { MemoryDraftAttachmentsGateway } from "../draft-attachments/memory.gateway.js";
 import { MemoryFileDragGateway } from "../file-drag/memory.gateway.js";
 import { NoFileDropGateway } from "../file-drop/none.gateway.js";
+import { CanvasPicturePreviewsGateway } from "../picture-previews/canvas.gateway.js";
+import type { PicturePreviewsGateway } from "../picture-previews/picture-previews.gateway.js";
+import { NonePicturePreviewsGateway } from "../picture-previews/none.gateway.js";
 import { MemorySentAttachmentsGateway } from "../sent-attachments/memory.gateway.js";
 import { NoWorkingFoldersGateway } from "../working-folders/none.gateway.js";
 import type { AssistantParts } from "./assistant-parts.gateway.js";
@@ -29,6 +32,7 @@ export function portAssistantParts(port: AssistantPort, attachmentFiles: Attachm
 		clock: new SystemClockGateway(),
 		draftAttachments: new MemoryDraftAttachmentsGateway(),
 		sentAttachments: new MemorySentAttachmentsGateway(),
+		picturePreviews: picturePreviewsHere(),
 		composerPrefill: new MemoryComposerPrefillGateway(),
 		chatDrafts: new PortChatDraftsGateway(port),
 		fileDrag: new MemoryFileDragGateway(),
@@ -41,4 +45,13 @@ export function attachmentFilesIn({ folder, files }: AttachmentsFolder): Attachm
 	}
 
 	return new PrivateFolderAttachmentFilesGateway(files, folder);
+}
+
+// TRADE-OFF: picked by what the runtime has, not by platform: every host and the node tests build these parts here
+function picturePreviewsHere(): PicturePreviewsGateway {
+	if (typeof OffscreenCanvas === "undefined") {
+		return new NonePicturePreviewsGateway();
+	}
+
+	return new CanvasPicturePreviewsGateway();
 }

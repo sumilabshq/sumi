@@ -29,6 +29,6 @@
 
 .wg-chat-app-none {
 	margin: 0;
-	padding: 24px;
+	padding: calc(24px + var(--sumi-corner-top, 0px)) 24px 24px;
 	color: var(--sumi-text-muted);
 }

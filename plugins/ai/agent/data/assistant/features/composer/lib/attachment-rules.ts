@@ -20,6 +20,7 @@ export const TEXT_EXTENSIONS: readonly string[] = ["md", "txt", "json", "ts", "t
 
 export const LARGEST_IMAGE_BYTES = 10 * 1024 * 1024;
 export const LARGEST_TEXT_BYTES = 1024 * 1024;
+export const LARGEST_PICTURE_EDGE_PX = 2048;
 
 const NOT_ACCEPTED =
 	"{name} can't be attached: only images (png, jpg, gif, webp) and text files (md, txt, json, ts, tsx, js, css, html, csv) can";

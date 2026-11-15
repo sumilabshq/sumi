@@ -157,6 +157,8 @@ export const AssistantCallSchema = z.object({
 	outputCounts: CallOutputCountsSchema.optional(),
 });
 
+const SentPicturesSchema = z.record(z.string(), z.string());
+
 export const AssistantTurnSchema = z.object({
 	role: z.enum(["user", "agent", "compact"]),
 	text: z.string(),
@@ -164,12 +166,14 @@ export const AssistantTurnSchema = z.object({
 	startedAt: z.number().optional(),
 	endedAt: z.number().optional(),
 	outcome: z.enum(["done", "stopped", "failed"]).optional(),
+	pictures: SentPicturesSchema.optional(),
 });
 
 export const QueuedMessageSchema = z.object({
 	id: z.string(),
 	text: z.string(),
 	isHeld: z.boolean(),
+	pictures: SentPicturesSchema.optional(),
 });
 
 export const QueueChangeAskedSchema = z.discriminatedUnion("kind", [

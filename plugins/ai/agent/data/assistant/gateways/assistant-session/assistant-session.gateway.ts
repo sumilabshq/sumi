@@ -4,6 +4,7 @@ import type {
 	AssistantSession,
 	CallFace,
 	QueueChange,
+	SentPictures,
 } from "@widgetarium/core/engine/assistant-port.js";
 
 export abstract class AssistantSessionGateway {
@@ -12,7 +13,7 @@ export abstract class AssistantSessionGateway {
 	abstract sessionChanged(listener: () => void): () => void;
 	abstract cardsOf(session: AssistantSession): ChatCards;
 	abstract faceOf(call: AssistantCall): CallFace;
-	abstract send(said: string): Promise<void>;
+	abstract send(said: string, pictures?: SentPictures): Promise<void>;
 	abstract changeQueue(change: QueueChange): string | null;
 	abstract retry(): void;
 	abstract stop(): void;

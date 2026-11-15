@@ -5,6 +5,7 @@ import type {
 	AssistantTurn,
 	CallFace,
 	QueuedMessage,
+	SentPictures,
 } from "@widgetarium/core/engine/assistant-port.js";
 import { attachmentsIn } from "../../../shared/lib/attachment-trailer.js";
 import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
@@ -18,16 +19,15 @@ export interface ChatSeen {
 	readonly session: AssistantSession;
 	readonly cards: ChatCards;
 	readonly faces: readonly (readonly CallFace[])[];
-	readonly previews: ReadonlyMap<string, string>;
 }
 
-export function chatOf({ isAvailable, session, cards, faces, previews }: ChatSeen): Chat {
+export function chatOf({ isAvailable, session, cards, faces }: ChatSeen): Chat {
 	const runningCall = runningCallOf(session);
 	return {
 		isAvailable,
 		session,
-		turns: session.turns.map((turn, at) => shownTurnOf(turn, faces[at] ?? [], { at, previews })),
-		queued: session.queued.map((message) => queuedShownOf(message, previews)),
+		turns: session.turns.map((turn, at) => shownTurnOf(turn, faces[at] ?? [], at)),
+		queued: session.queued.map(queuedShownOf),
 		runningCall,
 		runningFace: runningCall === null ? null : (faces.at(-1)?.at(-1) ?? null),
 		isAsking: isAskingOf(session, cards),
@@ -48,12 +48,7 @@ function isAskingOf(session: AssistantSession, cards: ChatCards): boolean {
 	return !session.busy && Boolean(lastCards?.specApp ?? lastCards?.designApp);
 }
 
-interface TurnPlace {
-	readonly at: number;
-	readonly previews: ReadonlyMap<string, string>;
-}
-
-function shownTurnOf(turn: AssistantTurn, faces: readonly CallFace[], place: TurnPlace): ShownTurn {
+function shownTurnOf(turn: AssistantTurn, faces: readonly CallFace[], at: number): ShownTurn {
 	if (turn.role !== "user") {
 		return agentTurnOf(turn, faces);
 	}
@@ -62,17 +57,17 @@ function shownTurnOf(turn: AssistantTurn, faces: readonly CallFace[], place: Tur
 	return {
 		turn,
 		steps: turnStepsOf(said, []),
-		attached: entries.map((entry, entryAt) => chipOf(entry, `${place.at}-${entryAt}`, place.previews)),
+		attached: entries.map((entry, entryAt) => chipOf(entry, `${at}-${entryAt}`, turn.pictures)),
 	};
 }
 
-function queuedShownOf(message: QueuedMessage, previews: ReadonlyMap<string, string>): QueuedShown {
+function queuedShownOf(message: QueuedMessage): QueuedShown {
 	const { said, entries } = attachmentsIn(message.text);
 	return {
 		id: message.id,
 		isHeld: message.isHeld,
 		said,
-		attached: entries.map((entry, entryAt) => chipOf(entry, `${message.id}-${entryAt}`, previews)),
+		attached: entries.map((entry, entryAt) => chipOf(entry, `${message.id}-${entryAt}`, message.pictures)),
 	};
 }
 
@@ -88,14 +83,14 @@ function agentTurnOf(turn: AssistantTurn, faces: readonly CallFace[]): ShownTurn
 	};
 }
 
-function chipOf(entry: TrailerEntry, id: string, previews: ReadonlyMap<string, string>): AttachmentChip {
+function chipOf(entry: TrailerEntry, id: string, pictures: SentPictures | undefined): AttachmentChip {
 	return {
 		id,
 		name: entry.name,
 		kind: entry.kind,
 		size: entry.size,
 		bytes: 0,
-		preview: entry.path === null ? null : (previews.get(entry.path) ?? null),
+		preview: entry.path === null ? null : (pictures?.[entry.path] ?? null),
 		where: entry.kind === "folder" ? shortPathOf(entry.path ?? "") : null,
 	};
 }

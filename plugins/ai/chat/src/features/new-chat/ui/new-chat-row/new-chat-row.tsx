@@ -4,15 +4,15 @@ import { useCommand } from "@widgetarium/data-framework";
 import { Icon } from "@widgetarium/kit";
 import { chatTabs } from "@sumi/chat-tabs/contract";
 
-const NEW_CHAT_LABEL = "New chat";
+const NEW_SESSION = "New session";
 const ICON_PX = 16;
 
-export function NewChatRow(): ReactElement {
+export function NewSessionRow(): ReactElement {
 	const openNew = useCommand(chatTabs.chatOpening.openNew);
 	return (
 		<button type="button" className="sumi-new-chat-row" onClick={() => void openNew.run({ title: null })}>
-			<Icon name="message-square-plus" size={ICON_PX} />
-			<span>{NEW_CHAT_LABEL}</span>
+			<Icon name="plus" size={ICON_PX} />
+			<span>{NEW_SESSION}</span>
 		</button>
 	);
 }

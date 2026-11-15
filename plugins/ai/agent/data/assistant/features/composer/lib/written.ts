@@ -1,3 +1,4 @@
+import type { SentPictures } from "@widgetarium/core/engine/assistant-port.js";
 import type { DraftAttachment } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import type { SentAttachments } from "../../../gateways/sent-attachments/sent-attachments.gateway.js";
 import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
@@ -43,18 +44,15 @@ export function sentRecordOf(
 	written: readonly WrittenAttachment[],
 	now: number,
 ): SentAttachments {
-	const previews = new Map(sent.previews);
-
-	for (const { path, preview } of written) {
-		if (preview !== null) {
-			previews.set(path, preview);
-		}
-	}
-
 	return {
 		onDisk: [...sent.onDisk, ...written.map(({ path }) => ({ path, writtenAt: now }))],
-		previews,
 	};
+}
+
+export function picturesOf(written: readonly WrittenAttachment[]): SentPictures {
+	return Object.fromEntries(
+		written.flatMap(({ path, preview }) => (preview === null ? [] : [[path, preview] as const])),
+	);
 }
 
 export function pathsOf({ onDisk }: SentAttachments): string {

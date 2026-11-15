@@ -10,7 +10,7 @@ export function ChatRoot({ tabId }: TabPageProps): ReactElement {
 		id: tabId,
 	});
 	return (
-		<div className="wg-chat-app">
+		<div className="wg-chat-app" data-sumi-corner="fade">
 			<ChatOfTab tab={tab} />
 		</div>
 	);
