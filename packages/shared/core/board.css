@@ -11716,6 +11716,17 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-kit-btn-group.is-vertical {
 	flex-direction: column;
 }
+:is(.wg-root, .wg-portal) .wg-kit-control-space {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 2px;
+	box-sizing: content-box;
+	min-height: 28px;
+}
+:is(.wg-root, .wg-portal) .wg-kit-control-space:empty {
+	min-width: 0;
+}
 :is(.wg-root, .wg-portal) .wg-kit-btn-group > :is(.wg-kit-btn, .wg-kit-icon)::before,
 :is(.wg-root, .wg-portal) .wg-kit-btn-group > :is(.wg-kit-field, .wg-kit-input-group, .wg-kit-btn-group-text) {
 	border-radius: var(--wg-kit-control-radius);
@@ -21716,7 +21727,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	gap: var(--sumi-sp-2);
 	box-sizing: border-box;
 	height: var(--sumi-header-h);
-	padding: 0 var(--sumi-sp-3) 0 calc(var(--wg-shell-chrome-left, 0px) + var(--sumi-sp-3) + var(--sumi-sp-4));
+	padding: 0 var(--sumi-sp-3);
 	background: var(--sumi-frame);
 }
 .sumi-title-bar-tabs {
@@ -21726,10 +21737,10 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	min-width: 0;
 	height: 100%;
 }
+.sumi-title-bar-start {
+	margin-inline-end: calc(var(--sumi-sp-3) + var(--sumi-sp-4) - var(--sumi-sp-2));
+}
 .sumi-title-bar-end {
-	display: flex;
-	flex: none;
-	align-items: center;
 	gap: var(--sumi-sp-1);
 }
 :is(.wg-root, .wg-portal) .sumi-control-menu-button {

@@ -5,7 +5,7 @@
 	gap: var(--sumi-sp-2);
 	box-sizing: border-box;
 	height: var(--sumi-header-h);
-	padding: 0 var(--sumi-sp-3) 0 calc(var(--wg-shell-chrome-left, 0px) + var(--sumi-sp-3) + var(--sumi-sp-4));
+	padding: 0 var(--sumi-sp-3);
 	background: var(--sumi-frame);
 }
 
@@ -17,9 +17,10 @@
 	height: 100%;
 }
 
+.sumi-title-bar-start {
+	margin-inline-end: calc(var(--sumi-sp-3) + var(--sumi-sp-4) - var(--sumi-sp-2));
+}
+
 .sumi-title-bar-end {
-	display: flex;
-	flex: none;
-	align-items: center;
 	gap: var(--sumi-sp-1);
 }
