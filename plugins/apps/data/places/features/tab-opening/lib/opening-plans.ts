@@ -197,7 +197,7 @@ function askedPlaceOf(moment: HostTabsMoment, { list, groupId }: AskedPlace): Ta
 		return groupPlaceOf(moment, groupId, list);
 	}
 
-	if (list !== null && !isKnownList(moment, list)) {
+	if (list !== null && !isKnownList(list)) {
 		return refusal(NO_LIST.replace("{list}", list));
 	}
 

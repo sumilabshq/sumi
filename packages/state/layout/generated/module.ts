@@ -3,7 +3,7 @@ import { handledModule, named } from "@widgetarium/data-framework";
 import { layout as definition } from "../module.js";
 import { conceal, frameSides, peek, placeTabs, rereadSides, toggle } from "../features/frame-sides/requests.js";
 import { frameWidths, rereadFrameWidths, resetEdge, resizeEdge } from "../features/frame-widths/requests.js";
-import { closeShowingPanes, closeShown, dropGoneTabs, openShown, showChat, showInChatGroup, showInTarget } from "../features/pane-tabs/requests.js";
+import { closeShowingPanes, closeShown, dropGoneTabs, openShown, showChat, showInTarget } from "../features/pane-tabs/requests.js";
 import { aim, close, paneTree, place, placementPreview, rereadPanes, resizeSplit } from "../features/panes/requests.js";
 import { focus, leave, show } from "../features/split-board/requests.js";
 import { sidesChanged } from "../gateways/frame-sides/frame-sides.events.js";
@@ -31,7 +31,6 @@ export const layout = handledModule(definition, [
 	named("pane-tabs.drop-gone-tabs", dropGoneTabs),
 	named("pane-tabs.open-shown", openShown),
 	named("pane-tabs.show-chat", showChat),
-	named("pane-tabs.show-in-chat-group", showInChatGroup),
 	named("pane-tabs.show-in-target", showInTarget),
 	named("pane-tree.panes-changed", panesChanged),
 	named("panes.aim", aim),

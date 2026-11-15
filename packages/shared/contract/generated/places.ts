@@ -26,7 +26,6 @@ export const ScreenSchema = z.object({
 	tabTargetId: z.string().nullable(),
 	chatGroups: z.array(z.object({ chatId: z.string(), paneIds: z.array(z.string()) })),
 	elsewhere: z.array(z.object({ window: z.string(), tabIds: z.array(z.string()) })),
-	focusedChatId: z.string().nullable(),
 });
 
 export type Screen = z.infer<typeof ScreenSchema>;
@@ -68,12 +67,6 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("close-shown-tab-pane") }),
 	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
 	z.object({ kind: z.literal("show-chat"), chatId: z.string(), paneId: z.string().nullable() }),
-	z.object({
-		kind: z.literal("show-in-chat-group"),
-		chatId: z.string(),
-		tabId: z.string(),
-		isOnlyWhenBare: z.boolean(),
-	}),
 	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
 	z.object({
 		kind: z.literal("show-split"),
@@ -299,11 +292,6 @@ export const CreateGroupAskSchema = z.object({
 
 export type CreateGroupAsk = z.infer<typeof CreateGroupAskSchema>;
 
-export const FoldTabAskSchema = z.object({
-	window: z.string().min(1),
-	id: z.string().min(1),
-});
-
 export const GroupAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),
@@ -486,7 +474,6 @@ export type AppTab = z.infer<typeof AppTabSchema>;
 
 export const AppTabStateSchema = AppTabSchema.extend({
 	isShown: z.boolean(),
-	isNestable: z.boolean(),
 });
 
 export type AppTabState = z.infer<typeof AppTabStateSchema>;
@@ -518,36 +505,11 @@ export const EssentialTileSchema = z.object({
 
 export type EssentialTile = z.infer<typeof EssentialTileSchema>;
 
-export const GroupStateSchema = z.object({
-	id: z.string(),
-	name: z.string(),
-	hue: GroupHueSchema.nullable(),
-	isOpen: z.boolean(),
-	tabs: z.array(AppTabStateSchema).readonly(),
-});
-
-export type GroupState = z.infer<typeof GroupStateSchema>;
-
-export const ChildTabSchema = z.object({
-	kind: z.literal("tab"),
-	tab: AppTabStateSchema,
-});
-
-export const ChildGroupSchema = z.object({
-	kind: z.literal("group"),
-	group: GroupStateSchema,
-});
-
-export const TabChildSchema = z.discriminatedUnion("kind", [ChildTabSchema, ChildGroupSchema]);
-
-export type TabChild = z.infer<typeof TabChildSchema>;
-
 export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
-	children: z.array(TabChildSchema).readonly().optional(),
-	isFolded: z.boolean().optional(),
+	isChat: z.boolean(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
@@ -695,16 +657,7 @@ export const KeptTabSchema = z.object({
 	lastAddress: z.string().nullable().default(null),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),
-	isFolded: z.boolean().default(false),
 });
-
-export const HeldListSchema = z.object({
-	tabs: z.array(KeptTabSchema),
-	entries: z.array(ListEntrySchema),
-	groups: z.array(KeptGroupSchema),
-});
-
-export type HeldList = z.infer<typeof HeldListSchema>;
 
 export const ClosedTabSchema = z.object({
 	tab: KeptTabSchema,
@@ -712,7 +665,6 @@ export const ClosedTabSchema = z.object({
 	groupId: z.string().nullable().default(null),
 	at: z.number(),
 	address: z.string(),
-	held: HeldListSchema.nullable().default(null),
 });
 
 export const WindowTabsSchema = z.object({
@@ -720,7 +672,6 @@ export const WindowTabsSchema = z.object({
 	lists: z.record(z.string(), z.array(ListEntrySchema)),
 	groups: z.array(KeptGroupSchema),
 	shownId: z.string().nullable(),
-	lastShown: z.record(z.string(), z.string()),
 	minted: z.number().int().nonnegative(),
 	closed: z.array(ClosedTabSchema),
 });
@@ -926,10 +877,6 @@ export const places = moduleContract("places", Server, {
 		pin: named("tab-placing.pin", command()
 			.public()
 			.input(PinTabAskSchema)
-			.idempotencyKey(Repeatable)),
-		fold: named("tab-placing.fold", command()
-			.public()
-			.input(FoldTabAskSchema)
 			.idempotencyKey(Repeatable)),
 		createGroup: named("tab-placing.create-group", command()
 			.public()

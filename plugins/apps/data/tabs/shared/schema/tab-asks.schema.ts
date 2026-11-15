@@ -23,12 +23,7 @@ export type TabDuplicate = z.output<typeof TabDuplicateSchema>;
 export const TabUpdateSchema = z.strictObject({
 	tabId: z.string().min(1),
 	title: z.string().optional(),
-	place: z
-		.enum(["this-chat", "workspace"])
-		.optional()
-		.describe(
-			"this-chat or workspace (the Recents section). Other chats' lists are read and copied from, never written.",
-		),
+	place: z.enum(["workspace", "pinned"]).optional().describe("workspace (the Open list) or pinned."),
 	group: z.string().min(1).nullable().optional().describe("A group id, or null to take it out of its group."),
 	before: z.string().min(1).nullable().optional().describe("Id of the tab it should stand before; null for the end."),
 });

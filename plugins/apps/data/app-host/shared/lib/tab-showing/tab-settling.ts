@@ -174,8 +174,6 @@ function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
 	switch (effect.kind) {
 		case "show-chat":
 			return send(layout.paneTabs.showChat, { chatId: effect.chatId, paneId: effect.paneId });
-		case "show-in-chat-group":
-			return send(layout.paneTabs.showInChatGroup, chatGroupAskOf(effect));
 		case "show-split":
 			return send(layout.splitBoard.show, {
 				layout: effect.layout,
@@ -207,22 +205,6 @@ function addressAskOf({ pageId, address, isShown }: Extract<TabEffect, { readonl
 		tabId: pageId,
 		address,
 		heldTabId: isShown ? null : pageId,
-	};
-}
-
-function chatGroupAskOf({
-	chatId,
-	tabId,
-	isOnlyWhenBare,
-}: Extract<TabEffect, { readonly kind: "show-in-chat-group" }>): {
-	readonly chatId: string;
-	readonly tabId: string;
-	readonly isOnlyWhenBare: boolean;
-} {
-	return {
-		chatId,
-		tabId,
-		isOnlyWhenBare,
 	};
 }
 

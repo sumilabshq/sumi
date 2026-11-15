@@ -67,16 +67,7 @@ export const KeptTabSchema = z.object({
 	lastAddress: z.string().nullable().default(null),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),
-	isFolded: z.boolean().default(false),
 });
-
-export const HeldListSchema = z.object({
-	tabs: z.array(KeptTabSchema),
-	entries: z.array(ListEntrySchema),
-	groups: z.array(KeptGroupSchema),
-});
-
-export type HeldList = z.infer<typeof HeldListSchema>;
 
 export const ClosedTabSchema = z.object({
 	tab: KeptTabSchema,
@@ -84,12 +75,10 @@ export const ClosedTabSchema = z.object({
 	groupId: z.string().nullable().default(null),
 	at: z.number(),
 	address: z.string(),
-	held: HeldListSchema.nullable().default(null),
 });
 
 export const WindowViewSchema = z.object({
 	shownId: z.string().nullable(),
-	lastShown: z.record(z.string(), z.string()).default({}),
 	shownSplitId: z.string().nullable().default(null),
 	view: StudioViewSchema.default("app"),
 	selectedId: z.string().nullable().default(null),
@@ -117,7 +106,6 @@ export const WindowTabsSchema = z.object({
 	lists: z.record(z.string(), z.array(ListEntrySchema)),
 	groups: z.array(KeptGroupSchema),
 	shownId: z.string().nullable(),
-	lastShown: z.record(z.string(), z.string()),
 	minted: z.number().int().nonnegative(),
 	closed: z.array(ClosedTabSchema),
 });

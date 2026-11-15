@@ -67,15 +67,6 @@ export const placeGroup = command()
 		emit(tabsSettled);
 	});
 
-export const foldTab = command()
-	.public()
-	.input(z.object({ id: z.string() }))
-	.idempotencyKey(Repeatable)
-	.handle(async ({ id }, { send, emit, studioWindow }) => {
-		await send(places.tabPlacing.fold, { window: studioWindow.placesWindow(), id });
-		emit(tabsSettled);
-	});
-
 export const ungroup = command()
 	.public()
 	.input(z.object({ id: z.string() }))

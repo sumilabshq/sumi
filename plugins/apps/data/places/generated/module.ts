@@ -6,7 +6,7 @@ import { closeEssential, closeEssentialCopies, closeGroup, closeOthers, closeSho
 import { askedLinks, forgetRunningTurns, keepChatTabs, markSeen, openLink, ownAppTab, recordAppAddress, recordTurn, rereadAskedLinks, rereadOwnAppTab, takeAskedLink } from "../features/tab-facts/requests.js";
 import { goBack, goForward } from "../features/tab-history/requests.js";
 import { duplicate, openBelow, openTab, releaseEssential, reopenClosed, showEssential } from "../features/tab-opening/requests.js";
-import { createGroup, fold, foldGroup, makeEssential, pin, place, placeGroup, rename, renameGroup, setGroupHue, ungroup } from "../features/tab-placing/requests.js";
+import { createGroup, foldGroup, makeEssential, pin, place, placeGroup, rename, renameGroup, setGroupHue, ungroup } from "../features/tab-placing/requests.js";
 import { fitToPanes, openInOwnWindow, reload, rememberPages, restore, show, showView, tearOff } from "../features/tab-showing/requests.js";
 import { chatTabs, closedTabs, heldTabs, placedTabs, rereadPlaced, rows, shownView, sidebar } from "../features/tabs/requests.js";
 import { all, closeWindow, keepLiveWindows, openWindow, reread } from "../features/windows/requests.js";
@@ -50,7 +50,6 @@ export const places = handledModule(definition, [
 	named("tab-opening.reopen-closed", reopenClosed),
 	named("tab-opening.show-essential", showEssential),
 	named("tab-placing.create-group", createGroup),
-	named("tab-placing.fold", fold),
 	named("tab-placing.fold-group", foldGroup),
 	named("tab-placing.make-essential", makeEssential),
 	named("tab-placing.pin", pin),

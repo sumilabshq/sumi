@@ -18,7 +18,6 @@ export function screenOf({ browserTabs, asks, board }: ScreenSources): Screen {
 		tabTargetId: board.tabTargetId,
 		chatGroups: board.chatGroups.map(({ chatId, paneIds }) => ({ chatId, paneIds: [...paneIds] })),
 		elsewhere: board.elsewhere.map(({ window, tabIds, chatIds }) => ({ window, tabIds: [...tabIds, ...chatIds] })),
-		focusedChatId: board.focusedChatId,
 	};
 }
 

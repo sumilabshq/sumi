@@ -87,27 +87,19 @@ function titledItemOf(item: SidebarTab, titles: PageTitles): SidebarTab {
 	return {
 		...item,
 		tab: titledTabOf(item.tab, titles),
-		children: item.children?.map((child) =>
-			child.kind === "tab" ? { ...child, tab: titledTabOf(child.tab, titles) } : child,
-		),
 	};
 }
 
 function tabsOfEntry(entry: SidebarEntry): readonly AppTabState[] {
 	if (entry.kind === "tab") {
-		return tabsOfItem(entry);
+		return [entry.tab];
 	}
 
 	if (entry.kind === "group") {
-		return entry.group.items.flatMap(tabsOfItem);
+		return entry.group.items.map((item) => item.tab);
 	}
 
-	return entry.split.members.flatMap(({ item }) => tabsOfItem(item));
-}
-
-function tabsOfItem(item: SidebarTab): readonly AppTabState[] {
-	const children = (item.children ?? []).flatMap((child) => (child.kind === "tab" ? [child.tab] : []));
-	return [item.tab, ...children];
+	return entry.split.members.map(({ item }) => item.tab);
 }
 
 function pageTabOf({ id, app, address }: AppTabState): PageTab {

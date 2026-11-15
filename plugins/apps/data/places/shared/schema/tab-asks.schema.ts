@@ -91,11 +91,6 @@ export const CreateGroupAskSchema = z.object({
 
 export type CreateGroupAsk = z.infer<typeof CreateGroupAskSchema>;
 
-export const FoldTabAskSchema = z.object({
-	window: z.string().min(1),
-	id: z.string().min(1),
-});
-
 export const GroupAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),

@@ -5,11 +5,9 @@ export const GroupColourSchema = z.enum(["red", "orange", "amber", "green", "tea
 export type GroupColour = z.infer<typeof GroupColourSchema>;
 
 export const PlaceSchema = z
-	.enum(["this-chat", "workspace"])
-	.default("this-chat")
-	.describe(
-		"this-chat (default) or workspace (the Recents section). Other chats' lists are read and copied from, never written.",
-	);
+	.enum(["workspace", "pinned"])
+	.default("workspace")
+	.describe("workspace (the Open list, default) or pinned.");
 
 export const NewGroupSchema = z.strictObject({
 	name: z.string().min(1),

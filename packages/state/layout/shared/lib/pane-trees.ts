@@ -7,7 +7,7 @@ import type {
 	PlacementPreview,
 } from "../schema/pane-tree.schema.js";
 import { idsOf, isSameView, leavesOf, withNodeReplaced, withPlaced, withView, withoutPane } from "./pane-nodes.js";
-import { chatGroupsOf, chatLeafOf, groupHolding, groupOfChat, groupedChat } from "./chat-groups.js";
+import { chatGroupsOf, chatLeafOf, groupHolding, groupedChat } from "./chat-groups.js";
 import { holdsOf } from "./window-trees.js";
 import { treeLeavingSplit } from "./split-boards.js";
 import type { WindowTree } from "./window-trees.js";
@@ -53,12 +53,6 @@ export function boardOf(tree: PaneTree, others: readonly WindowTree[] = []): Pan
 		})),
 		elsewhere: holdsOf(others),
 	};
-}
-
-function closableIdsOf(tree: PaneTree): string[] {
-	return leavesOf(tree.root)
-		.filter((leaf) => treeWithoutPane(tree, leaf.id).root !== null)
-		.map((leaf) => leaf.id);
 }
 
 export function mintedLeafOf(tree: PaneTree, view: PaneView): PaneLeaf {
@@ -221,40 +215,6 @@ export function treeWithoutGoneTabs(tree: PaneTree, gonePanes: readonly TabPane[
 	return gonePanes.reduce((left, { paneId }) => treeWithoutGoneTab(left, paneId), tree);
 }
 
-export function treeShowingTabInGroup(tree: PaneTree, chatId: string, tabId: string): PaneTree | null {
-	const group = groupOfChat(tree.root, chatId);
-
-	if (group === null) {
-		return null;
-	}
-
-	const standing = paneShowingTab(tree, tabId);
-
-	if (standing !== null) {
-		return {
-			...tree,
-			targetId: standing,
-		};
-	}
-
-	const tabs = leavesOf(group).filter((leaf) => leaf.view.kind === "app");
-	const shownIn = tabs.find((leaf) => leaf.id === tree.targetId) ?? tabs.at(-1);
-
-	if (shownIn !== undefined) {
-		return {
-			...withTabShown(tree, shownIn.id, tabId),
-			targetId: shownIn.id,
-		};
-	}
-
-	const chat = chatLeafOf(group);
-	const view: PaneView = {
-		kind: "app",
-		tabId,
-	};
-	return placedTreeOf(tree, view, { targetId: chat?.id ?? null, side: "right" })?.tree ?? null;
-}
-
 export function outerIdOf(tree: PaneTree, id: string): string {
 	return groupHolding(tree.root, id)?.id ?? id;
 }
@@ -345,4 +305,10 @@ function treeHoldingChatAlone(tree: PaneTree, chatId: string, waitingChatLeaf: P
 		minted: isMinted ? tree.minted + 1 : tree.minted,
 	};
 	return withChatTarget(alone, chatLeafOf(arriving)?.id ?? null);
+}
+
+function closableIdsOf(tree: PaneTree): string[] {
+	return leavesOf(tree.root)
+		.filter((leaf) => treeWithoutPane(tree, leaf.id).root !== null)
+		.map((leaf) => leaf.id);
 }

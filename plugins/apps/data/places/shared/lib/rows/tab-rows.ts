@@ -1,7 +1,6 @@
 import { flatTabIdsOf, isPageTab } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, PageTab } from "../tabs/host-tabs.js";
 import { hostOf, tabArtOf, titleOf, titleOfTab } from "./tab-face.js";
-import { chatHomeOf } from "../showing/chat-home.js";
 import { shownAppOf, shownTabIdOf } from "../showing/showing.js";
 import { tabIdsInPanesOf } from "../showing/tab-facts.js";
 import type { TabFacts } from "../showing/tab-facts.js";
@@ -41,8 +40,7 @@ export function selectedIdsOf(moment: HostTabsMoment, facts: TabFacts): Readonly
 		return new Set();
 	}
 
-	const holderId = chatHomeOf(moment, selectedId);
-	return new Set(holderId === null ? [selectedId] : [selectedId, holderId]);
+	return new Set([selectedId]);
 }
 
 export class TabRows {
@@ -73,8 +71,6 @@ export class TabRows {
 				...paged,
 				isInOwnWindow: paged.isInOwnWindow || this.looks.elsewhereIds.has(tab.id),
 				isShown: this.looks.highlightedIds.has(tab.id),
-				// TODO: drop isNestable, tabs no longer nest
-				isNestable: false,
 			},
 		];
 	}

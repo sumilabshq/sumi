@@ -13,7 +13,6 @@ const BOARD_EFFECTS: ReadonlySet<TabEffect["kind"]> = new Set([
 	"close-shown-tab-pane",
 	"show-in-target-pane",
 	"show-chat",
-	"show-in-chat-group",
 	"flash-pane",
 ]);
 
@@ -27,8 +26,6 @@ export function boardlessOf(facts: TabFacts): TabFacts {
 		hasTabTarget: false,
 		tabTargetId: null,
 		chatGroupIds: [],
-		groupOfPane: new Map(),
-		focusedChatId: null,
 	};
 }
 

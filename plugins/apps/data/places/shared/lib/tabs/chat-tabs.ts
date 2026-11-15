@@ -1,7 +1,7 @@
 import type { NamedRecord } from "../../schema/tab-facts.schema.js";
 import type { SectionList, TabMark } from "../../schema/tabs.schema.js";
 import { titleOfTab } from "../rows/tab-face.js";
-import { holderAppOf, holdsTabs } from "./app-abilities.js";
+import { chatAppOf, isChatTab } from "./app-abilities.js";
 import type { PlacedApps } from "./app-abilities.js";
 import type { HostTab, HostTabsMoment, MovedTabs } from "./host-tabs.js";
 import { placeTab } from "./host-tabs.js";
@@ -28,7 +28,7 @@ export interface ChatTabRows {
 }
 
 export function chatTabRowsOf(moment: Pick<HostTabsMoment, "tabs" | "lists" | "groups" | "apps">): ChatTabRows {
-	const holderOf = new Map(moment.tabs.filter((tab) => holdsTabs(moment.apps, tab)).map((tab) => [tab.id, tab]));
+	const holderOf = new Map(moment.tabs.filter((tab) => isChatTab(moment.apps, tab)).map((tab) => [tab.id, tab]));
 	const rowsIn = (section: SectionList): readonly ChatTabRow[] =>
 		Object.keys(moment.lists)
 			.filter((listId) => windowSectionOf(listId) === section)
@@ -60,7 +60,7 @@ export function pinTab(moment: HostTabsMoment, id: string, isPinned: boolean): M
 }
 
 export function keepChatTabs(moment: HostTabsMoment, chats: readonly NamedRecord[], listId: string): MovedTabs | null {
-	const holderApp = holderAppOf(moment.apps);
+	const holderApp = chatAppOf(moment.apps);
 	const missing = holderApp === null ? [] : chatsWithNoTab(moment, chats);
 	const renamed = chats.filter((chat) => isRenamed(moment, chat));
 
@@ -131,6 +131,5 @@ function chatTabOf(app: string, { id, title }: NamedRecord): HostTab {
 		lastAddress: null,
 		title,
 		mark: "none",
-		isFolded: false,
 	};
 }

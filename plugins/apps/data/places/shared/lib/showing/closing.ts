@@ -1,4 +1,4 @@
-import { holdsTabs } from "../tabs/app-abilities.js";
+import { isChatTab } from "../tabs/app-abilities.js";
 import { closeGroup, closeTabs } from "../tabs/tab-closing.js";
 import type { HostTab, MovedTabs, TabGroup, TabPage } from "../tabs/host-tabs.js";
 import type { TabsClosing } from "../tabs/tab-closing.js";
@@ -34,7 +34,7 @@ function withClosing(showing: Showing, facts: TabFacts, closing: (pages: TabPage
 
 function withPanesOfGoneClosed(showing: Showing, gone: readonly HostTab[]): Showing {
 	const panesClosed = withEffect(showing, { kind: "close-panes", tabIds: gone.map((tab) => tab.id) });
-	const chatIds = gone.filter((tab) => holdsTabs(showing.moment.apps, tab)).map((tab) => tab.id);
+	const chatIds = gone.filter((tab) => isChatTab(showing.moment.apps, tab)).map((tab) => tab.id);
 	if (chatIds.length === 0) {
 		return panesClosed;
 	}

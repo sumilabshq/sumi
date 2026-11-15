@@ -6,7 +6,7 @@ export interface PlacedApps {
 }
 
 const PAGE_APP: AppAbilities = {
-	holdsTabs: false,
+	isChat: false,
 	navigates: false,
 	splits: false,
 	runsInPage: true,
@@ -26,15 +26,15 @@ export function abilitiesOf(apps: PlacedApps, app: AppKind): AppAbilities {
 	return apps.byId.get(app)?.abilities ?? PAGE_APP;
 }
 
-export function holdsTabs(apps: PlacedApps, { app }: { readonly app: AppKind }): boolean {
-	return abilitiesOf(apps, app).holdsTabs;
+export function isChatTab(apps: PlacedApps, { app }: { readonly app: AppKind }): boolean {
+	return abilitiesOf(apps, app).isChat;
 }
 
-export function holderIdsOf(
+export function chatIdsOf(
 	apps: PlacedApps,
 	tabs: readonly { readonly id: string; readonly app: AppKind }[],
 ): ReadonlySet<string> {
-	return new Set(tabs.filter((tab) => holdsTabs(apps, tab)).map((tab) => tab.id));
+	return new Set(tabs.filter((tab) => isChatTab(apps, tab)).map((tab) => tab.id));
 }
 
 export function isPageApp(apps: PlacedApps, app: AppKind): boolean {
@@ -45,8 +45,8 @@ export function navigates(apps: PlacedApps, app: AppKind): boolean {
 	return abilitiesOf(apps, app).navigates;
 }
 
-export function holderAppOf(apps: PlacedApps): AppKind | null {
-	return [...apps.byId.values()].find(({ abilities }) => abilities.holdsTabs)?.id ?? null;
+export function chatAppOf(apps: PlacedApps): AppKind | null {
+	return [...apps.byId.values()].find(({ abilities }) => abilities.isChat)?.id ?? null;
 }
 
 export function navigatingAppOf(apps: PlacedApps): AppKind | null {

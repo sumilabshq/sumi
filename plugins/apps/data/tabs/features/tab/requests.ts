@@ -11,15 +11,8 @@ import {
 	TabOpenSchema,
 	TabUpdateSchema,
 } from "../../shared/schema/tab-asks.schema.js";
-import { listOfPlace, ownTabOf, refuseMissingTab, refusePlace, refuseTab } from "../../shared/lib/tab-places.js";
-import {
-	duplicatedTabIn,
-	openedTabIn,
-	placedTabOf,
-	refuseApp,
-	refuseNewPlace,
-	refuseTwoGroups,
-} from "./lib/tab-placing.js";
+import { missingTabSaid, refuseMissingTab, spotOfTab } from "../../shared/lib/tab-places.js";
+import { duplicatedTabIn, openedTabIn, placedTabOf, refuseApp, refuseTwoGroups } from "./lib/tab-placing.js";
 import { moveTab, renameTab, tabNowOf } from "./lib/tab-change.js";
 import { openableAppsOf } from "../../shared/lib/openable-apps.js";
 
@@ -27,7 +20,7 @@ export const open = command()
 	.public()
 	.metadata({
 		description:
-			"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden in this chat unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
+			"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden in Open unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
 	})
 	.input(TabOpenSchema)
 	.output(PlacedTabSchema)
@@ -35,13 +28,13 @@ export const open = command()
 	.guard(AuthenticatedGuard)
 	.handle(async (asked, { send, user }) => {
 		const known = openableAppsOf((await send(apps.apps.all)).apps).map(({ id }) => id);
-		const refusal = refuseApp(asked.app, known) ?? refuseTwoGroups(asked) ?? refusePlace(asked.place, user.id);
+		const refusal = refuseApp(asked.app, known) ?? refuseTwoGroups(asked);
 
 		if (refusal !== null) {
 			return refuse(refusal);
 		}
 
-		const list = listOfPlace(asked.place, user.id);
+		const list = asked.place;
 		const openedId = await openedTabIn(send, list, asked);
 		console.info(`[widgetarium] tab none → ${openedId} (${asked.app} opened in ${list} by chat ${user.id})`);
 		return placedTabOf(openedId, asked);
@@ -50,7 +43,7 @@ export const open = command()
 export const duplicate = command()
 	.public()
 	.metadata({
-		description: "Copy any tab, another chat's included, into a place and group.",
+		description: "Copy a tab into a place and group.",
 	})
 	.input(TabDuplicateSchema)
 	.output(PlacedTabSchema)
@@ -58,14 +51,13 @@ export const duplicate = command()
 	.guard(AuthenticatedGuard)
 	.handle(async (asked, { send, user }) => {
 		const sidebar = await send(appHost.tabs.tabsSidebar);
-		const refusal =
-			refuseMissingTab(sidebar, asked.tabId) ?? refuseTwoGroups(asked) ?? refusePlace(asked.place, user.id);
+		const refusal = refuseMissingTab(sidebar, asked.tabId) ?? refuseTwoGroups(asked);
 
 		if (refusal !== null) {
 			return refuse(refusal);
 		}
 
-		const list = listOfPlace(asked.place, user.id);
+		const list = asked.place;
 		const copyId = await duplicatedTabIn(send, list, asked);
 		console.info(`[widgetarium] tab ${asked.tabId} → copy ${copyId} in ${list} (chat ${user.id})`);
 		return placedTabOf(copyId, asked);
@@ -74,23 +66,17 @@ export const duplicate = command()
 export const update = command()
 	.public()
 	.metadata({
-		description: "Rename a tab or move it to another place, group or position. Only this chat's and Recents' tabs.",
+		description: "Rename a tab or move it to another place, group or position.",
 	})
 	.input(TabUpdateSchema)
 	.output(TabNowSchema)
 	.idempotencyKey(PerCall)
 	.guard(AuthenticatedGuard)
 	.handle(async (asked, { send, user }) => {
-		const spot = ownTabOf(await send(appHost.tabs.tabsSidebar), asked.tabId, user.id);
+		const spot = spotOfTab(await send(appHost.tabs.tabsSidebar), asked.tabId);
 
-		if (typeof spot === "string") {
-			return refuse(spot);
-		}
-
-		const placeRefusal = refuseNewPlace(asked.place, user.id);
-
-		if (placeRefusal !== null) {
-			return refuse(placeRefusal);
+		if (spot === null) {
+			return refuse(missingTabSaid(asked.tabId));
 		}
 
 		const change = { send, chatId: user.id, spot };
@@ -102,14 +88,14 @@ export const update = command()
 export const close = command()
 	.public()
 	.metadata({
-		description: "Close a tab. Only this chat's and Recents' tabs.",
+		description: "Close a tab.",
 	})
 	.input(TabIdSchema)
 	.output(ClosedTabSchema)
 	.idempotencyKey(PerCall)
 	.guard(AuthenticatedGuard)
 	.handle(async ({ tabId }, { send, user }) => {
-		const refusal = refuseTab(await send(appHost.tabs.tabsSidebar), tabId, user.id);
+		const refusal = refuseMissingTab(await send(appHost.tabs.tabsSidebar), tabId);
 
 		if (refusal !== null) {
 			return refuse(refusal);

@@ -10,7 +10,6 @@ const NO_VIEW: WindowView = {
 	shownId: null,
 	selectedId: null,
 	view: "app",
-	lastShown: {},
 	shownSplitId: null,
 };
 
@@ -19,7 +18,6 @@ export function emptyPlacedTabs(): PlacedTabs {
 		shownId: _shown,
 		selectedId: _selected,
 		view: _view,
-		lastShown: _last,
 		shownSplitId: _split,
 		apps: _apps,
 		...shared
@@ -50,30 +48,34 @@ export function windowTabsOf(moment: HostTabsMoment): WindowTabs {
 		lists: Object.fromEntries(Object.entries(moment.lists).map(([list, entries]) => [list, [...entries]])),
 		groups: moment.groups.map((group) => ({ ...group, tabIds: [...group.tabIds] })),
 		shownId: moment.shownId,
-		lastShown: { ...moment.lastShown },
 		minted: moment.minted,
 		closed: [...moment.closed],
 	};
 }
 
 export function placedWith(placed: PlacedTabs, window: string | null, moment: HostTabsMoment): PlacedTabs {
-	const { shownId, lastShown, ...shared } = windowTabsOf(moment);
+	const { shownId, ...shared } = windowTabsOf(moment);
 	const { splits, mintedSplits, shownSplitId, selectedId, view } = moment;
 	const elsewhere = elsewhereOf(placed, window);
 	return PlacedTabsSchema.parse({
 		...shared,
-		tabs: mergedById(placed.tabs, elsewhere.tabIds, shared.tabs.map((tab) => withEssentialWindow(tab, window))),
+		tabs: mergedById(
+			placed.tabs,
+			elsewhere.tabIds,
+			shared.tabs.map((tab) => withEssentialWindow(tab, window)),
+		),
 		lists: { ...keptElsewhere(placed.lists, elsewhere), ...storedListsOf(shared.lists, window) },
 		groups: mergedById(placed.groups, elsewhere.groupIds, shared.groups),
 		splits: mergedById(placed.splits, elsewhere.splitIds, splits),
 		mintedSplits,
 		askedLinks: placed.askedLinks,
 		mintedLinks: placed.mintedLinks,
-		views:
-			window === null
-				? placed.views
-				: { ...placed.views, [window]: { shownId, selectedId, view, lastShown, shownSplitId } },
+		views: window === null ? placed.views : { ...placed.views, [window]: { shownId, selectedId, view, shownSplitId } },
 	});
+}
+
+export function tabsTransitionSaid(was: HostTabsMoment, next: HostTabsMoment, reason: string): string {
+	return `tabs ${momentSaid(was)} → ${momentSaid(next)} (${reason})`;
 }
 
 function withEssentialWindow(tab: HostTab, window: string | null): HostTab {
@@ -82,8 +84,4 @@ function withEssentialWindow(tab: HostTab, window: string | null): HostTab {
 	}
 
 	return { ...tab, essentialWindow: tab.essentialId === null ? null : window };
-}
-
-export function tabsTransitionSaid(was: HostTabsMoment, next: HostTabsMoment, reason: string): string {
-	return `tabs ${momentSaid(was)} → ${momentSaid(next)} (${reason})`;
 }

@@ -22,7 +22,7 @@ export const chat = plugin("chat")
 			title: "New chat",
 			art: "chat",
 			isListed: false,
-			tabs: { holdsTabs: true, splits: true, runsInPage: false, keepsRecord: true },
+			tabs: { isChat: true, splits: true, runsInPage: false, keepsRecord: true },
 		});
 		app.use(shell).tabPage(chatTabPageOf(pageImports));
 		app.use(windows).module(chatTabs);

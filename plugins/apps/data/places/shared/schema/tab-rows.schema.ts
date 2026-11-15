@@ -47,7 +47,6 @@ export type AppTab = z.infer<typeof AppTabSchema>;
 
 export const AppTabStateSchema = AppTabSchema.extend({
 	isShown: z.boolean(),
-	isNestable: z.boolean(),
 });
 
 export type AppTabState = z.infer<typeof AppTabStateSchema>;
@@ -87,36 +86,11 @@ export const EssentialTileSchema = z.object({
 
 export type EssentialTile = z.infer<typeof EssentialTileSchema>;
 
-export const GroupStateSchema = z.object({
-	id: z.string(),
-	name: z.string(),
-	hue: GroupHueSchema.nullable(),
-	isOpen: z.boolean(),
-	tabs: z.array(AppTabStateSchema).readonly(),
-});
-
-export type GroupState = z.infer<typeof GroupStateSchema>;
-
-export const ChildTabSchema = z.object({
-	kind: z.literal("tab"),
-	tab: AppTabStateSchema,
-});
-
-export const ChildGroupSchema = z.object({
-	kind: z.literal("group"),
-	group: GroupStateSchema,
-});
-
-export const TabChildSchema = z.discriminatedUnion("kind", [ChildTabSchema, ChildGroupSchema]);
-
-export type TabChild = z.infer<typeof TabChildSchema>;
-
 export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
-	children: z.array(TabChildSchema).readonly().optional(),
-	isFolded: z.boolean().optional(),
+	isChat: z.boolean(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;

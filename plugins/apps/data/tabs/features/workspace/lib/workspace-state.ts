@@ -1,10 +1,9 @@
 import type { appHost } from "@widgetarium/app-host/contract";
 import type { chatTabs } from "@sumi/chat-tabs/contract";
 import type { OutputOf } from "@widgetarium/data-framework";
-import { placeOfList } from "../../../shared/lib/tab-places.js";
 import { tabListsOf } from "../../../shared/lib/tab-lists.js";
 import type { ListedEntry, Sidebar, SidebarTab } from "../../../shared/lib/tab-lists.js";
-import type { StateScope, WorkspaceState } from "../../../shared/schema/workspace.schema.js";
+import type { WorkspaceState } from "../../../shared/schema/workspace.schema.js";
 
 type ChatList = OutputOf<typeof chatTabs.chatList.all>;
 type AppTabs = OutputOf<typeof appHost.tabs.appTabs>;
@@ -18,25 +17,14 @@ export interface StateSources {
 	readonly tabs: AppTabs;
 }
 
-export function workspaceStateOf(
-	{ sidebar, chats, tabs }: StateSources,
-	chatId: string,
-	{ scope }: StateScope,
-): WorkspaceState {
-	const isWorkspace = scope === "workspace";
+export function workspaceStateOf({ sidebar, chats, tabs }: StateSources, chatId: string): WorkspaceState {
 	return {
 		thisChat: chatId,
 		chats: chatsOf(chats, chatId),
 		shownTab: tabs.tabs.find((tab) => tab.isShown)?.id ?? null,
-		essentials: isWorkspace ? sidebar.essentials.map(({ id, title, isShown }) => ({ id, title, isShown })) : [],
-		sections: sectionsOf(sidebar, chatId, isWorkspace),
+		essentials: sidebar.essentials.map(({ id, title, isShown }) => ({ id, title, isShown })),
+		sections: tabListsOf(sidebar).map(sectionOf),
 	};
-}
-
-function sectionsOf(sidebar: Sidebar, chatId: string, isWorkspace: boolean): WorkspaceState["sections"] {
-	return tabListsOf(sidebar)
-		.filter((section) => isWorkspace || section.list === chatId)
-		.map((section) => sectionOf(section, chatId));
 }
 
 function chatsOf(chats: ChatList, chatId: string): WorkspaceState["chats"] {
@@ -48,9 +36,8 @@ function chatsOf(chats: ChatList, chatId: string): WorkspaceState["chats"] {
 	}));
 }
 
-function sectionOf(section: TabList, chatId: string): WorkspaceState["sections"][number] {
+function sectionOf(section: TabList): WorkspaceState["sections"][number] {
 	return {
-		place: placeOf(section, chatId),
 		list: section.list,
 		title: section.title,
 		entries: section.entries.map(entryOf),
@@ -78,14 +65,6 @@ function groupOf(group: ListedGroup): StateEntry {
 		tabs: group.tabs.map(tabOf),
 		chats: [...group.chats],
 	};
-}
-
-function placeOf(section: TabList, chatId: string): string {
-	if (!section.isChat || section.list === chatId) {
-		return placeOfList(section.list, chatId);
-	}
-
-	return `chat:${section.list}`;
 }
 
 function tabOf(tab: SidebarTab) {

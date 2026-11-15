@@ -13,9 +13,9 @@ import {
 	withoutTab,
 } from "./tab-lists.js";
 import type { TabPlace } from "./tab-lists.js";
-import { labelSaid, lastShownWith } from "./host-tabs-moment.js";
+import { labelSaid } from "./host-tabs-moment.js";
 import type { HostTab, HostTabsMoment, OpenedTab } from "./host-tabs-moment.js";
-import { abilitiesOf, holdsTabs } from "./app-abilities.js";
+import { abilitiesOf } from "./app-abilities.js";
 import type { PlacedApps } from "./app-abilities.js";
 
 export type { TabGroup, TabPlace } from "./tab-lists.js";
@@ -72,7 +72,6 @@ export function openTab(moment: HostTabsMoment, opened: OpenedTab, place: TabPla
 			tabs: [...moment.tabs, tab],
 			shownId: tab.id,
 			selectedId: tab.id,
-			lastShown: lastShownWith(moment.lastShown, place.chatId, tab.id),
 			minted: moment.minted + 1,
 		},
 		reason: `open ${tab.id} (${tab.app}) in ${place.chatId}${place.groupId === null ? "" : `/${place.groupId}`}`,
@@ -87,7 +86,6 @@ export function openTabUnshown(moment: HostTabsMoment, opened: OpenedTab, place:
 			...shown.moment,
 			shownId: moment.shownId,
 			selectedId: moment.selectedId,
-			lastShown: moment.lastShown,
 		},
 	};
 }
@@ -96,12 +94,8 @@ export function isPageTab(apps: PlacedApps, tab: HostTab): boolean {
 	return abilitiesOf(apps, tab.app).runsInPage;
 }
 
-export function isHolderTabId(moment: HostTabsMoment, id: string): boolean {
-	return moment.tabs.some((tab) => tab.id === id && holdsTabs(moment.apps, tab));
-}
-
-export function isKnownList(moment: HostTabsMoment, listId: string): boolean {
-	return sectionNameOf(listId) !== null || isHolderTabId(moment, listId);
+export function isKnownList(listId: string): boolean {
+	return sectionNameOf(listId) !== null;
 }
 
 export function pageTabIdsOf(moment: HostTabsMoment, listId: string): readonly string[] {
@@ -148,13 +142,11 @@ export function markShown(moment: HostTabsMoment, id: string): MovedTabs | null 
 		return null;
 	}
 
-	const chatId = chatOfTab(moment, id);
 	return {
 		moment: {
 			...moment,
 			shownId: id,
 			selectedId: id,
-			lastShown: chatId === null ? moment.lastShown : lastShownWith(moment.lastShown, chatId, id),
 		},
 		reason: `show ${id}`,
 	};
@@ -173,20 +165,6 @@ export function markSelected(moment: HostTabsMoment, id: string): MovedTabs | nu
 			selectedId: id,
 		},
 		reason: `select ${id} (was ${moment.selectedId ?? "nothing"})`,
-	};
-}
-
-export function markChatTabShown(moment: HostTabsMoment, id: string, chatId: string): MovedTabs | null {
-	if (moment.lastShown[chatId] === id) {
-		return null;
-	}
-
-	return {
-		moment: {
-			...moment,
-			lastShown: lastShownWith(moment.lastShown, chatId, id),
-		},
-		reason: `show ${id} in chat ${chatId}`,
 	};
 }
 
@@ -250,16 +228,6 @@ export function givePage(moment: HostTabsMoment, { id, pageId, why }: PageGiving
 	};
 }
 
-export function foldTab(moment: HostTabsMoment, tab: HostTab): MovedTabs {
-	return {
-		moment: {
-			...moment,
-			tabs: tabsWith(moment, tab.id, { isFolded: !tab.isFolded }),
-		},
-		reason: `${tab.id} children ${foldSaid(tab.isFolded)} → ${foldSaid(!tab.isFolded)}`,
-	};
-}
-
 export function makeEssential(moment: HostTabsMoment, id: string, essentialId: string): MovedTabs {
 	tabOf(moment, id);
 	return {
@@ -288,10 +256,6 @@ export function tabsWith(moment: HostTabsMoment, id: string, change: Partial<Hos
 	);
 }
 
-function foldSaid(isFolded: boolean): string {
-	return isFolded ? "folded" : "shown";
-}
-
 function mintTab(moment: HostTabsMoment, opened: OpenedTab, essentialId: string | null): HostTab {
 	return {
 		...opened,
@@ -302,7 +266,6 @@ function mintTab(moment: HostTabsMoment, opened: OpenedTab, essentialId: string 
 		lastAddress: null,
 		title: null,
 		mark: "none",
-		isFolded: false,
 	};
 }
 

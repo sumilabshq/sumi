@@ -282,16 +282,6 @@ export const layout = moduleContract("layout", Device, {
 			.public()
 			.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
 			.idempotencyKey(Repeatable)),
-		showInChatGroup: named("pane-tabs.show-in-chat-group", command()
-			.public()
-			.input(
-				z.object({
-					chatId: z.string().min(1),
-					tabId: z.string(),
-					isOnlyWhenBare: z.boolean(),
-				}),
-			)
-			.idempotencyKey(Repeatable)),
 	},
 	panes: {
 		paneTree: named("panes.pane-tree", query()

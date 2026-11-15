@@ -3,7 +3,7 @@ import { handledModule, named } from "@widgetarium/data-framework";
 import { appHost as definition } from "../module.js";
 import { closedTabs, reopenById, rereadClosedTabs, rereadClosedTabsForCore } from "../features/closed-tabs/requests.js";
 import { closeEssential, placeEssential, remove, showEssential } from "../features/essentials/requests.js";
-import { create, fold, foldTab, placeGroup, renameGroup, setHue, ungroup } from "../features/groups/requests.js";
+import { create, fold, placeGroup, renameGroup, setHue, ungroup } from "../features/groups/requests.js";
 import { openLink } from "../features/links/requests.js";
 import { current, rereadShownView, rereadShownViewForCore, showView } from "../features/shown-view/requests.js";
 import { closeViewPane, placeInView, rereadShown, rereadShownForCore, resize, shown, unsplit } from "../features/splits/requests.js";
@@ -42,7 +42,6 @@ export const appHost = handledModule(definition, [
 	named("essentials.show-essential", showEssential),
 	named("groups.create", create),
 	named("groups.fold", fold),
-	named("groups.fold-tab", foldTab),
 	named("groups.place-group", placeGroup),
 	named("groups.rename-group", renameGroup),
 	named("groups.set-hue", setHue),

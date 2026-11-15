@@ -90,7 +90,7 @@ function groupChanging(id: string, changeOf: (group: TabGroup) => GroupChange | 
 
 function birthOf(moment: HostTabsMoment, from: CreateGroupAsk["from"]): GroupBirth | Refusal {
 	if (from.kind === "list") {
-		return isKnownList(moment, from.list)
+		return isKnownList(from.list)
 			? { listId: from.list, withTabId: null }
 			: refusal(UNKNOWN_LIST.replace("{list}", from.list));
 	}
@@ -115,7 +115,7 @@ function withGroupFaced(added: AddedGroup, face: GroupChange): AddedGroup {
 }
 
 function groupPlaceRefusalOf(moment: HostTabsMoment, group: TabGroup, { list }: GroupPlaceAsked): string | null {
-	if (!isKnownList(moment, list)) {
+	if (!isKnownList(list)) {
 		return UNKNOWN_LIST.replace("{list}", list);
 	}
 

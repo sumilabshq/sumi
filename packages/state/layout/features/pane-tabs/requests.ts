@@ -3,7 +3,6 @@ import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
 import { layout } from "../../generated/contract.js";
 import {
-	boardOf,
 	goneTabPanesOf,
 	paneShowingTab,
 	shownTabPaneOf,
@@ -13,13 +12,11 @@ import {
 	treeWithoutPane,
 	treeShowingChat,
 	treeShowingShownTabAlone,
-	treeShowingTabInGroup,
 	treeWithoutPanes,
 	withTabShown,
 } from "../../shared/lib/pane-trees.js";
 import { goneTabsWords, paneTransitionOf } from "../../shared/lib/pane-words.js";
 import { holdsOf } from "../../shared/lib/window-trees.js";
-import type { PaneBoard, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 
 const NO_TAB_TARGET = "the target pane is not an app pane showing a tab";
 
@@ -166,43 +163,3 @@ export const dropGoneTabs = command()
 		paneTree.saveTree(next, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
-
-export const showInChatGroup = command()
-	.public()
-	.input(
-		z.object({
-			chatId: z.string().min(1),
-			tabId: z.string(),
-			isOnlyWhenBare: z.boolean(),
-		}),
-	)
-	.idempotencyKey(Repeatable)
-	.handle(({ chatId, tabId, isOnlyWhenBare }, { paneTree, invalidate }) => {
-		invalidate(layout.panes.paneTree);
-		invalidate(layout.panes.placementPreview);
-		const tree = paneTree.tree();
-		const group = boardGroupOf(tree, chatId);
-
-		if (group === null) {
-			return refuse(`chat ${chatId} has no group on the board`);
-		}
-
-		if (isOnlyWhenBare && group.paneIds.length > 1) {
-			console.info(`[widgetarium] show tab ${tabId} in chat ${chatId} skipped: its group holds tabs already`);
-			return;
-		}
-
-		const next = treeShowingTabInGroup(tree, chatId, tabId);
-
-		if (next === null) {
-			return refuse(`tab ${tabId} found no place in the group of chat ${chatId}`);
-		}
-
-		const reason = paneTransitionOf(tree, next, `show tab ${tabId} in the group of chat ${chatId}`);
-		paneTree.saveTree(next, reason);
-		console.info(`[widgetarium] ${reason}`);
-	});
-
-function boardGroupOf(tree: PaneTree, chatId: string): PaneBoard["chatGroups"][number] | null {
-	return boardOf(tree).chatGroups.find((group) => group.chatId === chatId) ?? null;
-}

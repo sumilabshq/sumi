@@ -3,14 +3,13 @@ import type { HostTabsMoment, TabGroup } from "../tabs/host-tabs.js";
 import { PINNED_LIST, SECTION_TITLES, WORKSPACE_LIST, findGroup } from "../tabs/tab-lists.js";
 import { TabRows } from "./tab-rows.js";
 import { SplitRows } from "./split-rows.js";
-import { holderIdsOf } from "../tabs/app-abilities.js";
+import { chatIdsOf } from "../tabs/app-abilities.js";
 import type {
 	Essential,
 	PlacedSidebar,
 	SidebarEntry,
 	SidebarSection,
 	SidebarTab,
-	TabChild,
 } from "../../schema/tab-rows.schema.js";
 import type { PageFacts } from "../../schema/screen.schema.js";
 import type { ListEntry, SectionList } from "../../schema/tabs.schema.js";
@@ -39,16 +38,14 @@ export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
 }
 
 class SidebarEntries {
-	private readonly holderIds: ReadonlySet<string>;
-	private readonly foldedIds: ReadonlySet<string>;
+	private readonly chatIds: ReadonlySet<string>;
 	private readonly splitRows: SplitRows;
 
 	constructor(
 		private readonly moment: HostTabsMoment,
 		private readonly rows: TabRows,
 	) {
-		this.holderIds = holderIdsOf(moment.apps, moment.tabs);
-		this.foldedIds = new Set(moment.tabs.filter((tab) => tab.isFolded).map((tab) => tab.id));
+		this.chatIds = chatIdsOf(moment.apps, moment.tabs);
 		this.splitRows = new SplitRows(moment, (id) => this.tabsOf(id));
 	}
 
@@ -73,36 +70,11 @@ class SidebarEntries {
 	}
 
 	private sidebarTabOf(tab: SidebarTab["tab"]): SidebarTab {
-		if (!this.holderIds.has(tab.id)) {
-			return {
-				kind: "tab",
-				tab,
-			};
-		}
-
 		return {
 			kind: "tab",
 			tab,
-			children: this.listOf(tab.id).flatMap((child) => this.childrenOf(child)),
-			isFolded: this.foldedIds.has(tab.id),
+			isChat: this.chatIds.has(tab.id),
 		};
-	}
-
-	private childrenOf(entry: ListEntry): readonly TabChild[] {
-		if (entry.kind === "tab") {
-			return this.rows.rowsOf(entry.id).map((tab) => ({
-				kind: "tab",
-				tab,
-			}));
-		}
-
-		return this.groupsOf(entry.id).map((group) => ({
-			kind: "group",
-			group: {
-				...groupWithoutTabsOf(group),
-				tabs: group.tabIds.flatMap((id) => this.rows.rowsOf(id)),
-			},
-		}));
 	}
 
 	private topGroupOf(group: TabGroup): SidebarEntry {

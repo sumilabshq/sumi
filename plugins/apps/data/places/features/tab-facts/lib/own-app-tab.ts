@@ -1,4 +1,4 @@
-import { holdsTabs } from "../../../shared/lib/tabs/app-abilities.js";
+import { isChatTab } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import { canStep } from "../../../shared/lib/tabs/tab-history.js";
 import type { PlacedTabs } from "../../../shared/schema/tabs.schema.js";
@@ -12,7 +12,7 @@ export function ownAppTabOf(apps: PlacedApps, tab: KeptTab): OwnAppTab {
 		app: tab.app,
 		address: tab.lastAddress,
 		title: tab.title,
-		chatId: holdsTabs(apps, tab) ? tab.id : null,
+		chatId: isChatTab(apps, tab) ? tab.id : null,
 		canGoBack: canStep(tab, "back"),
 		canGoForward: canStep(tab, "forward"),
 	};

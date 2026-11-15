@@ -4,15 +4,7 @@ import type { OutputOf } from "@widgetarium/data-framework";
 export type Sidebar = OutputOf<typeof appHost.tabs.tabsSidebar>;
 type SidebarEntry = Sidebar["sections"][number]["entries"][number];
 type SidebarItem = Extract<SidebarEntry, { kind: "tab" }>;
-type ChatChild = NonNullable<SidebarItem["children"]>[number];
 export type SidebarTab = SidebarItem["tab"];
-
-interface ChatState {
-	readonly id: string;
-	readonly title: string;
-	readonly mark: SidebarTab["mark"];
-	readonly children: readonly ChatChild[];
-}
 
 export interface ListedChat {
 	readonly kind: "chat";
@@ -36,36 +28,20 @@ export type ListedEntry = { readonly kind: "tab"; readonly tab: SidebarTab } | L
 interface TabList {
 	readonly list: string;
 	readonly title: string;
-	readonly isChat: boolean;
 	readonly entries: readonly ListedEntry[];
 }
 
 export function tabListsOf(sidebar: Sidebar): readonly TabList[] {
-	const sections = sidebar.sections.map((section) => ({
+	return sidebar.sections.map((section) => ({
 		list: section.list,
 		title: section.title,
-		isChat: false,
 		entries: section.entries.flatMap(listedOf),
 	}));
-	return [...sections, ...chatsIn(sidebar).map(chatListOf)];
-}
-
-function chatsIn(sidebar: Sidebar): readonly ChatState[] {
-	return sidebar.sections.flatMap((section) => section.entries.flatMap(itemsOfEntry)).flatMap((item) => holderOf(item));
-}
-
-function chatListOf(chat: ChatState): TabList {
-	return {
-		list: chat.id,
-		title: chat.title,
-		isChat: true,
-		entries: chat.children.map(childOf),
-	};
 }
 
 function listedOf(entry: SidebarEntry | SidebarItem): readonly ListedEntry[] {
 	if (entry.kind === "tab") {
-		return entry.children === undefined ? [entry] : holderOf(entry).map(chatOf);
+		return [entry.isChat ? chatOf(entry.tab) : entry];
 	}
 
 	if (entry.kind === "split") {
@@ -79,47 +55,12 @@ function groupListedOf({ items, ...face }: Extract<SidebarEntry, { kind: "group"
 	return {
 		kind: "group",
 		...face,
-		tabs: items.flatMap((item) => (item.children === undefined ? [item.tab] : [])),
-		chats: items.flatMap((item) => holderOf(item).map(chatOf)),
+		tabs: items.flatMap((item) => (item.isChat ? [] : [item.tab])),
+		chats: items.flatMap((item) => (item.isChat ? [chatOf(item.tab)] : [])),
 	};
 }
 
-function itemsOfEntry(entry: SidebarEntry): readonly SidebarItem[] {
-	if (entry.kind === "group") {
-		return entry.group.items;
-	}
-
-	return entry.kind === "split" ? entry.split.members.map((member) => member.item) : [entry];
-}
-
-function childOf(child: ChatChild): ListedEntry {
-	if (child.kind === "tab") {
-		return child;
-	}
-
-	return {
-		kind: "group",
-		...child.group,
-		chats: [],
-	};
-}
-
-function holderOf({ tab, children }: SidebarItem): readonly ChatState[] {
-	if (children === undefined) {
-		return [];
-	}
-
-	return [
-		{
-			id: tab.id,
-			title: tab.title,
-			mark: tab.mark,
-			children,
-		},
-	];
-}
-
-function chatOf(chat: ChatState): ListedChat {
+function chatOf(chat: SidebarTab): ListedChat {
 	return {
 		kind: "chat",
 		id: chat.id,

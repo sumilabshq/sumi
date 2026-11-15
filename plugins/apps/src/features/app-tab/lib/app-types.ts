@@ -20,7 +20,7 @@ export type ArtOf = (address: string) => string | null;
 export type HandoffAppOf = (address: string) => string | null;
 
 export interface TabRules {
-	readonly holdsTabs?: boolean | undefined;
+	readonly isChat?: boolean | undefined;
 	readonly navigates?: boolean | undefined;
 	readonly splits?: boolean | undefined;
 	readonly runsInPage?: boolean | undefined;

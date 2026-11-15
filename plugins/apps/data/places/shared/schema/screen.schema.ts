@@ -25,7 +25,6 @@ export const ScreenSchema = z.object({
 	tabTargetId: z.string().nullable(),
 	chatGroups: z.array(z.object({ chatId: z.string(), paneIds: z.array(z.string()) })),
 	elsewhere: z.array(z.object({ window: z.string(), tabIds: z.array(z.string()) })),
-	focusedChatId: z.string().nullable(),
 });
 
 export type Screen = z.infer<typeof ScreenSchema>;
@@ -54,12 +53,6 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("close-shown-tab-pane") }),
 	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
 	z.object({ kind: z.literal("show-chat"), chatId: z.string(), paneId: z.string().nullable() }),
-	z.object({
-		kind: z.literal("show-in-chat-group"),
-		chatId: z.string(),
-		tabId: z.string(),
-		isOnlyWhenBare: z.boolean(),
-	}),
 	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
 	z.object({
 		kind: z.literal("show-split"),

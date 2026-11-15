@@ -1,6 +1,5 @@
 import type { Send } from "@widgetarium/data-framework";
 import { appHost } from "@widgetarium/app-host/contract";
-import { refusePlace } from "../../../shared/lib/tab-places.js";
 import type { Grouping } from "../../../shared/schema/place.schema.js";
 import type { PlacedTab, TabDuplicate, TabOpen } from "../../../shared/schema/tab-asks.schema.js";
 
@@ -17,10 +16,6 @@ export function refuseApp(app: string, knownIds: readonly string[]): string | nu
 
 export function refuseTwoGroups({ group, newGroup }: Grouping): string | null {
 	return group !== undefined && newGroup !== undefined ? ONE_GROUP : null;
-}
-
-export function refuseNewPlace(place: string | undefined, chatId: string): string | null {
-	return place === undefined ? null : refusePlace(place, chatId);
 }
 
 export async function openedTabIn(send: Send, list: string, asked: TabOpen): Promise<string> {

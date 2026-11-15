@@ -1,42 +1,17 @@
-import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
-import type { DocKind, HeldDoc, StoreClient } from "@widgetarium/behaviors/tauri-store";
+import type { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { PlacedTabsSchema } from "../../../shared/schema/tabs.schema.js";
 import type { PlacedTabs } from "../../../shared/schema/tabs.schema.js";
 import { emptyPlacedTabs } from "../../../shared/lib/tabs/kept-tabs.js";
-import { tabBreaksOf } from "../../../shared/lib/tabs/tab-invariants.js";
-import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import type { MovePlacedTabs } from "../../../shared/lib/settling/settling.js";
 import type { KeptPlaces } from "../../windows/tauri.gateway.js";
-import {
-	KeptChatsReadSchema,
-	KeptSessionDocSchema,
-	chatEntriesOf,
-	migratedTabsOf,
-	migrationSaid,
-	windowedTabsOf,
-	workspacedTabsOf,
-} from "./kept-session.js";
-import type { KeptChatsRead, KeptSessionDoc, ReshapedTabs } from "./kept-session.js";
+import { windowedTabsOf, workspacedTabsOf } from "./kept-session.js";
+import type { ReshapedTabs } from "./kept-session.js";
 import { TabsGateway } from "../tabs.gateway.js";
 
 export interface TabsStore {
-	readonly store: StoreClient;
 	readonly workspaceId: string;
 	readonly kept: Promise<HeldDoc<KeptPlaces>>;
-	readonly apps: PlacedApps;
 }
-
-const OLD_SESSION: DocKind<KeptSessionDoc> = {
-	file: "session.json",
-	v: 1,
-	schema: KeptSessionDocSchema,
-};
-
-const OLD_CHATS: DocKind<KeptChatsRead> = {
-	file: "chats.json",
-	v: 1,
-	schema: KeptChatsReadSchema,
-};
 
 export class TauriTabsGateway extends TabsGateway {
 	private readonly ready: Promise<HeldDoc<KeptPlaces>>;
@@ -84,17 +59,19 @@ function placedIn(kept: HeldDoc<KeptPlaces>): PlacedTabs {
 	return PlacedTabsSchema.parse(kept.now().tabs);
 }
 
-async function readyTabsIn(at: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<HeldDoc<KeptPlaces>> {
+async function readyTabsIn({ workspaceId }: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<HeldDoc<KeptPlaces>> {
 	const { tabs } = kept.now();
 
 	if (tabs === undefined || tabs === null) {
-		return migrated(at, kept);
+		kept.change({ tabs: emptyPlacedTabs() }, "places tabs none → empty (no tabs kept yet)");
+		await kept.flush();
+		return kept;
 	}
 
 	const readable = PlacedTabsSchema.safeParse(tabs);
 
 	if (readable.success) {
-		return movedBy(await movedBy(kept, windowedTabsOf), workspacedTabsOf(at.workspaceId));
+		return movedBy(await movedBy(kept, windowedTabsOf), workspacedTabsOf(workspaceId));
 	}
 
 	const reason = "tabs unreadable → none, the unreadable ones kept aside as unreadableTabs";
@@ -117,23 +94,5 @@ async function movedBy(
 	kept.change({ tabs: moved.placed }, `places ${moved.reason}`);
 	await kept.flush();
 	console.info(`[widgetarium] ${moved.reason}`);
-	return kept;
-}
-
-async function migrated({ store, workspaceId, apps }: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<HeldDoc<KeptPlaces>> {
-	const root = workspaceRootOf(workspaceId);
-	const [session, chats] = await Promise.all([store.readDoc(root, OLD_SESSION), store.readDoc(root, OLD_CHATS)]);
-	const sessionTabs = session.doc?.tabs ?? null;
-	const chatEntries = chatEntriesOf(chats.doc ?? KeptChatsReadSchema.parse({}));
-	const placed = migratedTabsOf(sessionTabs, chatEntries);
-	const breaks = tabBreaksOf({ ...placed, apps });
-	const reason = migrationSaid(sessionTabs, chatEntries);
-	kept.change({ tabs: placed }, `places ${reason}`);
-	await kept.flush();
-	console.info(`[widgetarium] ${reason}`);
-
-	if (breaks.length > 0) {
-		console.warn(`[widgetarium] migrated tabs break ${breaks.length} laws: ${breaks.join("; ")}`);
-	}
 	return kept;
 }

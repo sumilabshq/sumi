@@ -31,7 +31,7 @@ export function keptPlacesParts({ store, apps }: PlacesConfig, workspaceId: stri
 	const placedApps = new ListedPlacedAppsGateway(apps);
 	return {
 		windows: new TauriWindowsGateway(kept),
-		tabs: new TauriTabsGateway({ store, workspaceId, kept, apps: placedApps.placedApps() }),
+		tabs: new TauriTabsGateway({ workspaceId, kept }),
 		placedApps,
 		home: new WorkspaceHomeGateway(workspaceId),
 	};

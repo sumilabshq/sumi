@@ -15,10 +15,6 @@ export function chatGroupsOf(node: PaneNode | null): readonly ChatGroup[] {
 	return isChatGroup(node) ? [node] : node.children.flatMap((child) => chatGroupsOf(child));
 }
 
-export function groupOfChat(node: PaneNode | null, chatId: string): ChatGroup | null {
-	return chatGroupsOf(node).find((group) => group.chatId === chatId) ?? null;
-}
-
 export function groupHolding(node: PaneNode | null, id: string): ChatGroup | null {
 	return chatGroupsOf(node).find((group) => group.id !== id && idsOf(group).includes(id)) ?? null;
 }
@@ -100,4 +96,8 @@ function looseChatsGrouped(node: PaneNode): PaneNode {
 		...node,
 		children: node.children.map(looseChatsGrouped),
 	};
+}
+
+function groupOfChat(node: PaneNode | null, chatId: string): ChatGroup | null {
+	return chatGroupsOf(node).find((group) => group.chatId === chatId) ?? null;
 }

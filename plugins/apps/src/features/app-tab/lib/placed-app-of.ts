@@ -5,7 +5,7 @@ import type { FilledApp } from "../ui/app-tab/app-tab.js";
 type AppAbilities = PlacedApp["abilities"];
 
 const PAGE_APP_ABILITIES: AppAbilities = {
-	holdsTabs: false,
+	isChat: false,
 	navigates: false,
 	splits: false,
 	runsInPage: true,

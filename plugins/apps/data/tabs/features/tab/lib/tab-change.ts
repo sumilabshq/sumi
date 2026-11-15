@@ -1,6 +1,6 @@
 import type { Send } from "@widgetarium/data-framework";
 import { appHost } from "@widgetarium/app-host/contract";
-import { listOfPlace, placeOfList, placeTabs, spotOfTab } from "../../../shared/lib/tab-places.js";
+import { placeTabs, spotOfTab } from "../../../shared/lib/tab-places.js";
 import type { Sidebar } from "../../../shared/lib/tab-lists.js";
 import type { TabNow, TabUpdate } from "../../../shared/schema/tab-asks.schema.js";
 
@@ -23,7 +23,7 @@ export async function renameTab({ send, chatId, spot }: TabChange, title: string
 }
 
 export async function moveTab({ send, chatId, spot }: TabChange, asked: TabUpdate): Promise<void> {
-	const move = placementOf(spot, asked, asked.place === undefined ? null : listOfPlace(asked.place, chatId));
+	const move = placementOf(spot, asked, asked.place ?? null);
 
 	if (move === null) {
 		return;
@@ -35,13 +35,13 @@ export async function moveTab({ send, chatId, spot }: TabChange, asked: TabUpdat
 	);
 }
 
-export function tabNowOf(sidebar: Sidebar, { chatId, spot }: TabChange): TabNow {
+export function tabNowOf(sidebar: Sidebar, { spot }: TabChange): TabNow {
 	const now = spotOfTab(sidebar, spot.id) ?? spot;
 	return {
 		id: spot.id,
 		title: now.title,
 		address: now.address,
-		place: placeOfList(now.list, chatId),
+		place: now.list,
 		groupId: now.groupId,
 	};
 }

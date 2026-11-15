@@ -4,31 +4,21 @@ import type { EssentialFace } from "../../../shared/schema/tab-rows.schema.js";
 import { essentialFaceOf } from "../../../shared/lib/rows/essential-face.js";
 import { movedPlan, plannedWith, refusal } from "../../../shared/lib/settling/settling.js";
 import type { ExtraPlan, MomentPlan, ShowingPlan } from "../../../shared/lib/settling/settling.js";
-import { withHomeFollowed } from "../../../shared/lib/showing/rehoming.js";
 import { withMoved } from "../../../shared/lib/showing/showing.js";
-import {
-	heldTabOf,
-	isKnownList,
-	foldTab,
-	makeEssential,
-	placeTab,
-	renameTab,
-} from "../../../shared/lib/tabs/host-tabs.js";
+import { heldTabOf, isKnownList, makeEssential, placeTab, renameTab } from "../../../shared/lib/tabs/host-tabs.js";
 import type { HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
 import { refuseStanding } from "../../../shared/lib/tabs/tab-invariants.js";
 import { carryOutOfSplit, isSplitRefusal } from "../../../shared/lib/splits/split-moves.js";
 import type { SplitMove } from "../../../shared/lib/splits/split-moves.js";
 import { blockListOf, firstListedMember, splitOfTab } from "../../../shared/lib/splits/split-members.js";
-import { holdsTabs } from "../../../shared/lib/tabs/app-abilities.js";
 import { chatOfGroup, locationOf } from "../../../shared/lib/tabs/tab-lists.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
-const UNKNOWN_LIST = 'no tab list "{list}" is here: a tab stands in Open, Pinned or a chat';
+const UNKNOWN_LIST = 'no tab list "{list}" is here: a tab stands in Open or Pinned';
 const GROUP_NOT_IN_LIST = 'no group "{group}" stands in the tab list "{list}"';
-const HOLDS_NOTHING = 'the tab "{id}" holds no tabs: there is nothing under it to fold';
 
 export function placeTabPlan(id: string, asked: TabPlaceAsked): ShowingPlan {
-	return (showing, facts) => {
+	return (showing) => {
 		const refused = placeRefusalOf(showing.moment, id, asked);
 
 		if (refused !== null) {
@@ -44,7 +34,7 @@ export function placeTabPlan(id: string, asked: TabPlaceAsked): ShowingPlan {
 		const moment = freed?.moment ?? showing.moment;
 		const before = beforeIdOfBlock(showing.moment, id, asked);
 		const place = { chatId: asked.list, groupId: asked.groupId, before };
-		return withHomeFollowed(showing, withMoved(withMoved(showing, freed), placeTab(moment, id, place)), facts);
+		return withMoved(withMoved(showing, freed), placeTab(moment, id, place));
 	};
 }
 
@@ -79,22 +69,6 @@ export function renamePlan(id: string, label: string): MomentPlan<null> {
 			: refusal(NOT_HELD.replace("{id}", id));
 }
 
-export function foldTabPlan(id: string): MomentPlan<null> {
-	return (moment) => {
-		const tab = heldTabOf(moment, id);
-
-		if (!tab) {
-			return refusal(NOT_HELD.replace("{id}", id));
-		}
-
-		if (!holdsTabs(moment.apps, tab)) {
-			return refusal(HOLDS_NOTHING.replace("{id}", id));
-		}
-
-		return movedPlan(moment, foldTab(moment, tab), null);
-	};
-}
-
 export function pinPlan(id: string, isPinned: boolean): MomentPlan<null> {
 	return (moment) =>
 		heldTabOf(moment, id)
@@ -123,7 +97,7 @@ function placeRefusalOf(moment: HostTabsMoment, id: string, asked: TabPlaceAsked
 }
 
 function listRefusalOf(moment: HostTabsMoment, asked: TabPlaceAsked): string | null {
-	if (!isKnownList(moment, asked.list)) {
+	if (!isKnownList(asked.list)) {
 		return UNKNOWN_LIST.replace("{list}", asked.list);
 	}
 

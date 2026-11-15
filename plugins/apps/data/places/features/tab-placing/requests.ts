@@ -5,7 +5,6 @@ import { answered, moving, settledOf, settling, settlingWith } from "../../share
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import {
 	CreateGroupAskSchema,
-	FoldTabAskSchema,
 	GroupAskSchema,
 	GroupHueAskSchema,
 	MakeEssentialAskSchema,
@@ -24,7 +23,7 @@ import {
 	renameGroupPlan,
 	ungroupPlan,
 } from "./lib/group-plans.js";
-import { foldTabPlan, makeEssentialPlan, pinPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
+import { makeEssentialPlan, pinPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
 
 export const place = command()
 	.public()
@@ -60,14 +59,6 @@ export const pin = command()
 	.idempotencyKey(Repeatable)
 	.handle(async ({ window, id, isPinned }, { tabs, placedApps }) => {
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), pinPlan(id, isPinned))));
-	});
-
-export const fold = command()
-	.public()
-	.input(FoldTabAskSchema)
-	.idempotencyKey(Repeatable)
-	.handle(async ({ window, id }, { tabs, placedApps }) => {
-		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), foldTabPlan(id))));
 	});
 
 export const createGroup = command()

@@ -5,17 +5,15 @@ import { z } from "zod";
 export const GroupColourSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
 
 export const PlaceSchema = z
-	.enum(["this-chat", "workspace"])
-	.default("this-chat")
-	.describe(
-		"this-chat (default) or workspace (the Recents section). Other chats' lists are read and copied from, never written.",
-	);
+	.enum(["workspace", "pinned"])
+	.default("workspace")
+	.describe("workspace (the Open list, default) or pinned.");
 
 export const GroupCreateSchema = z.strictObject({
 	name: z.string().min(1),
 	colour: GroupColourSchema.optional(),
 	place: PlaceSchema,
-	tabIds: z.array(z.string().min(1)).default([]).describe("Tabs of this chat or Recents to move into the group."),
+	tabIds: z.array(z.string().min(1)).default([]).describe("Tabs to move into the group."),
 });
 
 export type GroupCreate = z.output<typeof GroupCreateSchema>;
@@ -86,12 +84,7 @@ export type TabDuplicate = z.output<typeof TabDuplicateSchema>;
 export const TabUpdateSchema = z.strictObject({
 	tabId: z.string().min(1),
 	title: z.string().optional(),
-	place: z
-		.enum(["this-chat", "workspace"])
-		.optional()
-		.describe(
-			"this-chat or workspace (the Recents section). Other chats' lists are read and copied from, never written.",
-		),
+	place: z.enum(["workspace", "pinned"]).optional().describe("workspace (the Open list) or pinned."),
 	group: z.string().min(1).nullable().optional().describe("A group id, or null to take it out of its group."),
 	before: z.string().min(1).nullable().optional().describe("Id of the tab it should stand before; null for the end."),
 });
@@ -124,14 +117,7 @@ export const ClosedTabSchema = z.object({
 	closed: z.string(),
 });
 
-export const StateScopeSchema = z.strictObject({
-	scope: z
-		.enum(["workspace", "this-chat"])
-		.default("workspace")
-		.describe("workspace (default) lists every chat's tabs; this-chat lists only this chat's."),
-});
-
-export type StateScope = z.output<typeof StateScopeSchema>;
+export const NoInputSchema = z.strictObject({});
 
 export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
 
@@ -188,7 +174,6 @@ export const WorkspaceStateSchema = z.object({
 	),
 	sections: z.array(
 		z.object({
-			place: z.string(),
 			list: z.string(),
 			title: z.string(),
 			entries: z.array(StateEntrySchema),
@@ -220,7 +205,7 @@ export const tabs = moduleContract("tabs", Device, {
 		create: named("group.create", command()
 			.public()
 			.metadata({
-				description: "Create a tab group in this chat or Recents, optionally moving tabs into it.",
+				description: "Create a tab group in Open or Pinned, optionally moving tabs into it.",
 			})
 			.input(GroupCreateSchema)
 			.output(CreatedGroupSchema)
@@ -228,7 +213,7 @@ export const tabs = moduleContract("tabs", Device, {
 		edit: named("group.edit", command()
 			.public()
 			.metadata({
-				description: "Rename or recolour a group of this chat or Recents.",
+				description: "Rename or recolour a tab group.",
 			})
 			.input(GroupEditSchema)
 			.output(EditedGroupSchema)
@@ -236,8 +221,7 @@ export const tabs = moduleContract("tabs", Device, {
 		remove: named("group.remove", command()
 			.public()
 			.metadata({
-				description:
-					"Delete a group of this chat or Recents. keepTabs (default true) leaves its tabs in the list; false closes them too.",
+				description: "Delete a tab group. keepTabs (default true) leaves its tabs in the list; false closes them too.",
 			})
 			.input(GroupRemoveSchema)
 			.output(RemovedGroupSchema)
@@ -248,7 +232,7 @@ export const tabs = moduleContract("tabs", Device, {
 			.public()
 			.metadata({
 				description:
-					"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden in this chat unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
+					"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden in Open unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
 			})
 			.input(TabOpenSchema)
 			.output(PlacedTabSchema)
@@ -256,7 +240,7 @@ export const tabs = moduleContract("tabs", Device, {
 		duplicate: named("tab.duplicate", command()
 			.public()
 			.metadata({
-				description: "Copy any tab, another chat's included, into a place and group.",
+				description: "Copy a tab into a place and group.",
 			})
 			.input(TabDuplicateSchema)
 			.output(PlacedTabSchema)
@@ -264,7 +248,7 @@ export const tabs = moduleContract("tabs", Device, {
 		update: named("tab.update", command()
 			.public()
 			.metadata({
-				description: "Rename a tab or move it to another place, group or position. Only this chat's and Recents' tabs.",
+				description: "Rename a tab or move it to another place, group or position.",
 			})
 			.input(TabUpdateSchema)
 			.output(TabNowSchema)
@@ -272,7 +256,7 @@ export const tabs = moduleContract("tabs", Device, {
 		close: named("tab.close", command()
 			.public()
 			.metadata({
-				description: "Close a tab. Only this chat's and Recents' tabs.",
+				description: "Close a tab.",
 			})
 			.input(TabIdSchema)
 			.output(ClosedTabSchema)
@@ -283,9 +267,9 @@ export const tabs = moduleContract("tabs", Device, {
 			.public()
 			.metadata({
 				description:
-					"Read Sumi's state: every chat, which chat is asking, the tab the person sees, the essentials, and every tab list (Pinned, Recents, this chat, other chats) with its tabs and groups. Read it before acting on tabs.",
+					"Read Sumi's state: every chat, which chat is asking, the tab the person sees, the essentials, and both tab lists (Pinned, Open) with their tabs, chats and groups. Read it before acting on tabs.",
 			})
-			.input(StateScopeSchema)
+			.input(NoInputSchema)
 			.output(WorkspaceStateSchema)),
 	},
 });

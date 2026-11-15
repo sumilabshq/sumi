@@ -9,26 +9,26 @@ import {
 	GroupRemoveSchema,
 	RemovedGroupSchema,
 } from "../../shared/schema/group-asks.schema.js";
-import { listOfPlace, placeTabs, refuseGroup } from "../../shared/lib/tab-places.js";
+import { placeTabs, refuseGroup } from "../../shared/lib/tab-places.js";
 import { refuseNewGroup } from "./lib/new-group.js";
 
 export const create = command()
 	.public()
 	.metadata({
-		description: "Create a tab group in this chat or Recents, optionally moving tabs into it.",
+		description: "Create a tab group in Open or Pinned, optionally moving tabs into it.",
 	})
 	.input(GroupCreateSchema)
 	.output(CreatedGroupSchema)
 	.idempotencyKey(PerCall)
 	.guard(AuthenticatedGuard)
 	.handle(async (asked, { send, user }) => {
-		const refusal = refuseNewGroup(await send(appHost.tabs.tabsSidebar), asked, user.id);
+		const refusal = refuseNewGroup(await send(appHost.tabs.tabsSidebar), asked);
 
 		if (refusal !== null) {
 			return refuse(refusal);
 		}
 
-		const list = listOfPlace(asked.place, user.id);
+		const list = asked.place;
 		const created = await send(appHost.groups.create, { list, name: asked.name, hue: asked.colour ?? null });
 		await placeTabs(send, asked.tabIds, { list, groupId: created.id, before: null });
 		console.info(
@@ -40,14 +40,14 @@ export const create = command()
 export const edit = command()
 	.public()
 	.metadata({
-		description: "Rename or recolour a group of this chat or Recents.",
+		description: "Rename or recolour a tab group.",
 	})
 	.input(GroupEditSchema)
 	.output(EditedGroupSchema)
 	.idempotencyKey(PerCall)
 	.guard(AuthenticatedGuard)
 	.handle(async ({ groupId, name, colour }, { send, user }) => {
-		const refusal = refuseGroup(await send(appHost.tabs.tabsSidebar), groupId, user.id);
+		const refusal = refuseGroup(await send(appHost.tabs.tabsSidebar), groupId);
 
 		if (refusal !== null) {
 			return refuse(refusal);
@@ -69,15 +69,14 @@ export const edit = command()
 export const remove = command()
 	.public()
 	.metadata({
-		description:
-			"Delete a group of this chat or Recents. keepTabs (default true) leaves its tabs in the list; false closes them too.",
+		description: "Delete a tab group. keepTabs (default true) leaves its tabs in the list; false closes them too.",
 	})
 	.input(GroupRemoveSchema)
 	.output(RemovedGroupSchema)
 	.idempotencyKey(PerCall)
 	.guard(AuthenticatedGuard)
 	.handle(async ({ groupId, keepTabs }, { send, user }) => {
-		const refusal = refuseGroup(await send(appHost.tabs.tabsSidebar), groupId, user.id);
+		const refusal = refuseGroup(await send(appHost.tabs.tabsSidebar), groupId);
 
 		if (refusal !== null) {
 			return refuse(refusal);

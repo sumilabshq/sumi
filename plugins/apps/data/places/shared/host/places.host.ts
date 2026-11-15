@@ -1,7 +1,7 @@
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 
 export interface AppAbilities {
-	readonly holdsTabs: boolean;
+	readonly isChat: boolean;
 	readonly navigates: boolean;
 	readonly splits: boolean;
 	readonly runsInPage: boolean;

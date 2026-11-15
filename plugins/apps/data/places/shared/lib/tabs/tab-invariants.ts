@@ -1,9 +1,8 @@
 import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "./host-tabs-moment.js";
-import { holderIdsOf } from "./app-abilities.js";
 import { findGroup, isSectionList } from "./tab-lists.js";
 
-const LIST_OF_NO_HOLDER = 'the list "{list}" belongs to no tab that holds tabs: only such an app owns a list';
+const LIST_OF_NO_WINDOW = 'the list "{list}" belongs to no window: only a window owns a list';
 const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands only in Open or Pinned';
 const NOT_ONE_PLACE = 'the tab "{id}" stands in {count} places: a tab stands in exactly one list';
 const UNKNOWN_ENTRY = 'the list "{list}" names "{id}", which is no tab or group here';
@@ -14,7 +13,7 @@ interface Standing {
 	readonly tabId: string;
 }
 
-type TabLaws = Pick<HostTabsMoment, "tabs" | "lists" | "groups" | "apps">;
+type TabLaws = Pick<HostTabsMoment, "tabs" | "lists" | "groups">;
 
 export function refuseStanding(tab: { readonly id: string }, list: string): string | null {
 	return isSectionList(list) ? null : REFUSED_STANDING.replace("{id}", tab.id).replace("{list}", list);
@@ -22,7 +21,7 @@ export function refuseStanding(tab: { readonly id: string }, list: string): stri
 
 export function tabBreaksOf(moment: TabLaws): readonly string[] {
 	return [
-		...listsOfNoHolder(moment),
+		...listsOfNoWindow(moment),
 		...unknownEntries(moment),
 		...groupsNotInOneList(moment),
 		...tabsStandingRefused(moment),
@@ -30,11 +29,10 @@ export function tabBreaksOf(moment: TabLaws): readonly string[] {
 	];
 }
 
-function listsOfNoHolder(moment: TabLaws): readonly string[] {
-	const holderIds = holderIdsOf(moment.apps, moment.tabs);
+function listsOfNoWindow(moment: TabLaws): readonly string[] {
 	return Object.keys(moment.lists)
-		.filter((list) => !isSectionList(list) && !holderIds.has(list))
-		.map((list) => LIST_OF_NO_HOLDER.replace("{list}", list));
+		.filter((list) => !isSectionList(list))
+		.map((list) => LIST_OF_NO_WINDOW.replace("{list}", list));
 }
 
 function unknownEntries(moment: TabLaws): readonly string[] {

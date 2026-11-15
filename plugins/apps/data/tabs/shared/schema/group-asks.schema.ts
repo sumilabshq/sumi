@@ -5,7 +5,7 @@ export const GroupCreateSchema = z.strictObject({
 	name: z.string().min(1),
 	colour: GroupColourSchema.optional(),
 	place: PlaceSchema,
-	tabIds: z.array(z.string().min(1)).default([]).describe("Tabs of this chat or Recents to move into the group."),
+	tabIds: z.array(z.string().min(1)).default([]).describe("Tabs to move into the group."),
 });
 
 export type GroupCreate = z.output<typeof GroupCreateSchema>;

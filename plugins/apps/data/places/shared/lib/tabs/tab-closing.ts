@@ -1,8 +1,6 @@
-import type { HeldList } from "../../schema/tabs.schema.js";
-import { holdsTabs } from "./app-abilities.js";
 import { closedPlaceOf, keptClosed, reopenPlaceOf, withoutGroup } from "./host-tabs-moment.js";
 import type { ClosedTab, HostTab, HostTabsMoment, TabPage } from "./host-tabs-moment.js";
-import { flatTabIdsOf, pageTabIdsOf, tabOf } from "./host-tabs.js";
+import { pageTabIdsOf, tabOf } from "./host-tabs.js";
 import type { MovedTabs } from "./host-tabs.js";
 import { locationOf, withTabAt, withoutTab } from "./tab-lists.js";
 import type { TabGroup, TabLayout } from "./tab-lists.js";
@@ -38,7 +36,7 @@ export function closeGroup(moment: HostTabsMoment, group: TabGroup, pages: Reado
 	};
 }
 
-export function reopenClosed(moment: HostTabsMoment, chatId: string, tabId: string): ReopenedHostTab | null {
+export function reopenClosed(moment: HostTabsMoment, tabId: string): ReopenedHostTab | null {
 	const index = moment.closed.findIndex(({ tab }) => tab.id === tabId);
 	const reopened = moment.closed[index];
 
@@ -50,40 +48,26 @@ export function reopenClosed(moment: HostTabsMoment, chatId: string, tabId: stri
 		closed: reopened,
 		moment: {
 			...moment,
-			...withHeldRestored(reopenedLayoutOf(moment, reopened, chatId), reopened),
-			tabs: [...moment.tabs, reopened.tab, ...(reopened.held?.tabs ?? [])],
+			...reopenedLayoutOf(moment, reopened),
+			tabs: [...moment.tabs, reopened.tab],
 			shownId: reopened.tab.id,
 			selectedId: reopened.tab.id,
 			closed: moment.closed.filter((_closed, at) => at !== index),
 		},
-		reason: reopenSaid(reopened, chatId),
+		reason: reopenSaid(reopened),
 	};
 }
 
-function reopenSaid({ tab }: ClosedTab, chatId: string): string {
-	return `reopen ${tab.id} in ${tab.essentialId === null ? chatId : "essentials"}`;
+function reopenSaid({ tab, chatId }: ClosedTab): string {
+	return `reopen ${tab.id} in ${tab.essentialId === null ? (chatId ?? "the open list") : "essentials"}`;
 }
 
-function reopenedLayoutOf(moment: HostTabsMoment, last: ClosedTab, chatId: string): TabLayout {
+function reopenedLayoutOf(moment: HostTabsMoment, last: ClosedTab): TabLayout {
 	if (last.tab.essentialId !== null) {
 		return moment;
 	}
 
-	return withTabAt(moment, last.tab.id, reopenPlaceOf(moment, last, chatId));
-}
-
-function withHeldRestored(layout: TabLayout, { tab, held }: ClosedTab): TabLayout {
-	if (held === null) {
-		return layout;
-	}
-
-	return {
-		lists: {
-			...layout.lists,
-			[tab.id]: held.entries,
-		},
-		groups: [...layout.groups, ...held.groups],
-	};
+	return withTabAt(moment, last.tab.id, reopenPlaceOf(moment, last));
 }
 
 function closedOf(moment: HostTabsMoment, tab: HostTab, pages: ReadonlyMap<string, TabPage>): ClosedTab {
@@ -96,27 +80,6 @@ function closedOf(moment: HostTabsMoment, tab: HostTab, pages: ReadonlyMap<strin
 		},
 		...closedPlaceOf(locationOf(moment, tab.id)),
 		address: page?.address ?? "",
-		held: holdsTabs(moment.apps, tab) ? heldListOf(moment, tab.id, pages) : null,
-	};
-}
-
-function heldListOf(moment: HostTabsMoment, holderId: string, pages: ReadonlyMap<string, TabPage>): HeldList {
-	const entries = moment.lists[holderId] ?? [];
-	const groupIds = new Set(entries.filter((entry) => entry.kind === "group").map((entry) => entry.id));
-	return {
-		tabs: flatTabIdsOf(moment, holderId).map((id) => restingTabOf(tabOf(moment, id), pages.get(id) ?? null)),
-		entries: [...entries],
-		groups: moment.groups
-			.filter((group) => groupIds.has(group.id))
-			.map((group) => ({ ...group, tabIds: [...group.tabIds] })),
-	};
-}
-
-function restingTabOf(tab: HostTab, page: TabPage | null): HostTab {
-	return {
-		...tab,
-		pageId: null,
-		lastAddress: page?.address || tab.lastAddress,
 	};
 }
 
@@ -126,38 +89,14 @@ function closedMoment(
 	pages: ReadonlyMap<string, TabPage>,
 ): HostTabsMoment {
 	const closed = ids.map((id) => closedOf(moment, tabOf(moment, id), pages));
-	const leaving = leavingOf(closed);
+	const leaving = new Set(closed.map(({ tab }) => tab.id));
 	return {
 		...moment,
-		...layoutLeftBy(moment, closed, leaving),
-		tabs: moment.tabs.filter((tab) => !leaving.tabs.has(tab.id)),
-		shownId: survivingIdOf(moment, moment.shownId, leaving.tabs),
-		selectedId: survivingIdOf(moment, moment.selectedId, leaving.tabs),
+		...closed.reduce<TabLayout>((kept, { tab }) => withoutTab(kept, tab.id), moment),
+		tabs: moment.tabs.filter((tab) => !leaving.has(tab.id)),
+		shownId: survivingIdOf(moment, moment.shownId, leaving),
+		selectedId: survivingIdOf(moment, moment.selectedId, leaving),
 		closed: keptClosed(moment.apps, moment.closed, closed),
-	};
-}
-
-function layoutLeftBy(moment: HostTabsMoment, closed: readonly ClosedTab[], leaving: Leaving): TabLayout {
-	const layout = closed.reduce<TabLayout>((kept, { tab }) => withoutTab(kept, tab.id), moment);
-	return {
-		lists: Object.fromEntries(Object.entries(layout.lists).filter(([list]) => !leaving.lists.has(list))),
-		groups: layout.groups.filter((group) => !leaving.groups.has(group.id)),
-	};
-}
-
-interface Leaving {
-	readonly tabs: ReadonlySet<string>;
-	readonly lists: ReadonlySet<string>;
-	readonly groups: ReadonlySet<string>;
-}
-
-function leavingOf(closed: readonly ClosedTab[]): Leaving {
-	const heldLists = closed.flatMap(({ held }) => (held === null ? [] : [held]));
-	const heldTabIds = heldLists.flatMap((held) => held.tabs.map((tab) => tab.id));
-	return {
-		tabs: new Set([...closed.map(({ tab }) => tab.id), ...heldTabIds]),
-		lists: new Set(closed.filter(({ held }) => held !== null).map(({ tab }) => tab.id)),
-		groups: new Set(heldLists.flatMap((held) => held.groups.map((group) => group.id))),
 	};
 }
 

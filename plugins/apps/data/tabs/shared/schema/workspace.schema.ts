@@ -1,14 +1,7 @@
 import { z } from "zod";
 import { GroupColourSchema } from "./place.schema.js";
 
-export const StateScopeSchema = z.strictObject({
-	scope: z
-		.enum(["workspace", "this-chat"])
-		.default("workspace")
-		.describe("workspace (default) lists every chat's tabs; this-chat lists only this chat's."),
-});
-
-export type StateScope = z.output<typeof StateScopeSchema>;
+export const NoInputSchema = z.strictObject({});
 
 export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
 
@@ -65,7 +58,6 @@ export const WorkspaceStateSchema = z.object({
 	),
 	sections: z.array(
 		z.object({
-			place: z.string(),
 			list: z.string(),
 			title: z.string(),
 			entries: z.array(StateEntrySchema),

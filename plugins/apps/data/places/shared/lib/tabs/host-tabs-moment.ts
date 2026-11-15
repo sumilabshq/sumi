@@ -1,12 +1,4 @@
-import type {
-	AppKind,
-	GroupHue,
-	HeldList,
-	ListEntry,
-	StudioView,
-	TabHistory,
-	TabMark,
-} from "../../schema/tabs.schema.js";
+import type { AppKind, GroupHue, ListEntry, StudioView, TabHistory, TabMark } from "../../schema/tabs.schema.js";
 import type { KeptSplit } from "../../schema/splits.schema.js";
 import {
 	WORKSPACE_LIST,
@@ -38,7 +30,6 @@ export interface HostTab extends OpenedTab {
 	readonly history?: TabHistory | undefined;
 	readonly title: string | null;
 	readonly mark: TabMark;
-	readonly isFolded: boolean;
 }
 
 export interface TabPage {
@@ -52,7 +43,6 @@ export interface ClosedTab {
 	readonly groupId: string | null;
 	readonly at: number;
 	readonly address: string;
-	readonly held: HeldList | null;
 }
 
 export interface HostTabsMoment extends TabLayout {
@@ -60,7 +50,6 @@ export interface HostTabsMoment extends TabLayout {
 	readonly shownId: string | null;
 	readonly selectedId: string | null;
 	readonly view: StudioView;
-	readonly lastShown: Readonly<Record<string, string>>;
 	readonly minted: number;
 	readonly closed: readonly ClosedTab[];
 	readonly splits: readonly KeptSplit[];
@@ -85,7 +74,6 @@ export function emptyMoment(apps: PlacedApps): HostTabsMoment {
 		shownId: null,
 		selectedId: null,
 		view: "app",
-		lastShown: {},
 		minted: 0,
 		closed: [],
 		splits: [],
@@ -113,8 +101,8 @@ export function withoutGroup(layout: TabLayout, groupId: string, spilled: readon
 	};
 }
 
-export function reopenPlaceOf(layout: TabLayout, closed: ClosedTab, chatId: string): TabPlace {
-	if (closed.chatId === null || (closed.chatId !== chatId && !isSectionList(closed.chatId))) {
+export function reopenPlaceOf(layout: TabLayout, closed: ClosedTab): TabPlace {
+	if (closed.chatId === null || !isSectionList(closed.chatId)) {
 		return {
 			chatId: WORKSPACE_LIST,
 			groupId: null,
@@ -128,17 +116,6 @@ export function reopenPlaceOf(layout: TabLayout, closed: ClosedTab, chatId: stri
 		groupId: isGroupKept ? closed.groupId : null,
 		at: closed.at,
 	});
-}
-
-export function lastShownWith(
-	lastShown: Readonly<Record<string, string>>,
-	chatId: string,
-	id: string,
-): Readonly<Record<string, string>> {
-	return {
-		...lastShown,
-		[chatId]: id,
-	};
 }
 
 export function keptClosed(

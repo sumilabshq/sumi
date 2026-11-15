@@ -3,26 +3,23 @@ import type { RestoreTabsAsk, ShowTabAsk } from "../../../shared/schema/tab-asks
 import { movedPlan, refusal } from "../../../shared/lib/settling/settling.js";
 import type { MomentPlan, ShowingPlan } from "../../../shared/lib/settling/settling.js";
 import type { StudioView } from "../../../shared/schema/tabs.schema.js";
-import { withTabsAtHome } from "../../../shared/lib/showing/rehoming.js";
-import { chatHomeOf } from "../../../shared/lib/showing/chat-home.js";
 import { boardlessOf, withSplitLeftFor } from "../../../shared/lib/showing/split-showing.js";
 import { focusedInSplit } from "../../../shared/lib/splits/split-moves.js";
 import { shownSplitOf, splitOfTab } from "../../../shared/lib/splits/split-members.js";
 import type { Showing } from "../../../shared/lib/showing/showing.js";
 import {
-	withChatTabShown,
 	withEffect,
 	withFirstTabShown,
 	withFreeTabBesidePanes,
 	withMoved,
 	withPageEnsured,
 	withPanePagesEnsured,
-	withTabPressed,
+	withTabShown,
 	withTabTornOff,
 } from "../../../shared/lib/showing/showing.js";
 import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
 import { tabPageOf } from "../../../shared/lib/showing/tab-pages.js";
-import { abilitiesOf, holdsTabs, isPageApp } from "../../../shared/lib/tabs/app-abilities.js";
+import { abilitiesOf, isChatTab, isPageApp } from "../../../shared/lib/tabs/app-abilities.js";
 import { heldTabOf, markSelected } from "../../../shared/lib/tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
 import { forgetPages, rememberPages } from "../../../shared/lib/tabs/page-memory.js";
@@ -61,12 +58,12 @@ export function showTabPlan({ id, paneId, isFollowingFocus }: Omit<ShowTabAsk, "
 		}
 
 		if (isFollowingFocus) {
-			return withFocusFollowed(showing, facts, tab);
+			return withSelectionOn(showing, id);
 		}
 
 		const selected = withMoved(showing, markSelected(showing.moment, id));
 
-		if (holdsTabs(showing.moment.apps, tab)) {
+		if (isChatTab(showing.moment.apps, tab)) {
 			return withHolderShown(selected, facts, { tab, paneId });
 		}
 
@@ -84,8 +81,7 @@ export function fitTabsPlan(): ShowingPlan {
 			return withPanePagesEnsured(showing, facts);
 		}
 
-		const atHome = withTabsAtHome(showing, facts);
-		return atHome === showing ? withFreeTabBesidePanes(withPanePagesEnsured(showing, facts), facts) : atHome;
+		return withFreeTabBesidePanes(withPanePagesEnsured(showing, facts), facts);
 	};
 }
 
@@ -140,7 +136,7 @@ export function tearOffPlan(id: string): ShowingPlan {
 			return refusal(NO_OWN_WINDOWS);
 		}
 
-		return holdsTabs(showing.moment.apps, tab)
+		return isChatTab(showing.moment.apps, tab)
 			? withChatTornOff(showing, id)
 			: withPagelessTabTornOff(showing, facts, id);
 	};
@@ -175,27 +171,14 @@ function splitShowingOf(showing: Showing, facts: TabFacts, tab: HostTab): Showin
 		return withMoved(showing, focusedInSplit(showing.moment, tab.id));
 	}
 
-	const shown = shownSplitOf(showing.moment);
-
-	if (shown === null) {
-		return null;
-	}
-
-	const chatId = chatHomeOf(showing.moment, tab.id);
-
-	if (chatId === null || !shown.memberIds.includes(chatId)) {
-		return withSplitLeftAlone(showing, facts, tab);
-	}
-
-	console.info(`[widgetarium] show ${tab.id} inside chat ${chatId}, which stands in ${shown.id}`);
-	return withTabPressed(withMoved(showing, focusedInSplit(showing.moment, chatId)), facts, tab);
+	return shownSplitOf(showing.moment) === null ? null : withSplitLeftAlone(showing, facts, tab);
 }
 
 function withLoneTabShown(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
 	const apart = shownApartEffectOf(tab, showing.moment, facts);
 
 	if (apart === null) {
-		return withTabPressed(showing, facts, tab);
+		return withTabShown(showing, facts, tab);
 	}
 
 	console.info(
@@ -206,7 +189,7 @@ function withLoneTabShown(showing: Showing, facts: TabFacts, tab: HostTab): Show
 
 function withSplitLeftAlone(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
 	const left = withSplitLeftFor(withMoved(showing, focusedInSplit(showing.moment, tab.id)));
-	return withTabPressed(left, boardlessOf(facts), tab);
+	return withTabShown(left, boardlessOf(facts), tab);
 }
 
 function shownApartEffectOf(tab: HostTab, moment: HostTabsMoment, facts: TabFacts): TabEffect | null {
@@ -237,20 +220,10 @@ function withPagelessTabTornOff(showing: Showing, facts: TabFacts, id: string): 
 	return withTabTornOff(tornOff, facts, id);
 }
 
-function withFocusFollowed(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
-	const selected = withSelectionOn(showing, tab.id);
-
-	if (!holdsTabs(showing.moment.apps, tab)) {
-		return selected;
-	}
-
-	return withChatTabShown(selected, facts, tab.id);
-}
-
 function withSelectionOn(showing: Showing, id: string): Showing {
 	const { selectedId } = showing.moment;
 
-	if (selectedId === id || (selectedId !== null && chatHomeOf(showing.moment, selectedId) === id)) {
+	if (selectedId === id) {
 		console.info(`[widgetarium] ${id} focused: selection stays on ${selectedId}`);
 		return showing;
 	}
