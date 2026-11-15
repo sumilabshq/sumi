@@ -1,6 +1,6 @@
-import { MAIN_STUDIO_WINDOW, labelOfPlacesWindow } from "@widgetarium/behaviors";
+import { labelOfPlacesWindow } from "@widgetarium/behaviors";
 import { PlacedTabsSchema } from "../../schema/tabs.schema.js";
-import type { PlacedTabs } from "../../schema/tabs.schema.js";
+import type { PlacedTabs, WindowSession } from "../../schema/tabs.schema.js";
 import type { TabsAsk } from "../../schema/screen.schema.js";
 import type { MovePlacedTabs } from "../settling/settling.js";
 import { splitWithout, splitsPruned } from "../splits/split-members.js";
@@ -10,7 +10,6 @@ import { closeTabs } from "./tab-closing.js";
 import {
 	PINNED_LIST,
 	WORKSPACE_LIST,
-	flatTabIdsOf,
 	locationOf,
 	windowListOf,
 	windowOfList,
@@ -44,10 +43,7 @@ export function adoptedBy(placed: PlacedTabs, { window, screen }: TabsAsk): Wind
 
 export function windowsForgotten(isGone: (window: string) => boolean, apps: PlacedApps): MovePlacedTabs<null> {
 	return (placed) => {
-		const gone = knownWindowsOf(placed).filter((window) => {
-			const label = labelOfPlacesWindow(window);
-			return label !== MAIN_STUDIO_WINDOW && isGone(label);
-		});
+		const gone = knownWindowsOf(placed).filter((window) => isGone(labelOfPlacesWindow(window)));
 
 		if (gone.length === 0) {
 			return { next: null, reason: "no closed window holds tabs", answer: null };
@@ -129,15 +125,27 @@ function knownWindowsOf(placed: PlacedTabs): readonly string[] {
 
 function forgotten({ placed, reasons }: WindowsMove, window: string, apps: PlacedApps): WindowsMove {
 	const moment = momentOfWindow(placed, window, apps);
-	const ids = [
-		...flatTabIdsOf(moment, PINNED_LIST),
-		...flatTabIdsOf(moment, WORKSPACE_LIST),
-		...moment.tabs.filter((tab) => tab.essentialId !== null).map((tab) => tab.id),
-	];
-	const closed = closeTabs(moment, new Map(), { ids, reason: `close window ${window}` });
+	const session: WindowSession = {
+		id: placed.views[window]?.sessionId ?? crypto.randomUUID(),
+		window,
+		closedAt: Date.now(),
+		tabs: moment.tabs.filter((tab) => tab.essentialId === null),
+		lists: Object.fromEntries(Object.entries(moment.lists).map(([listId, entries]) => [listId, [...entries]])),
+		groups: moment.groups.map((group) => ({ ...group, tabIds: [...group.tabIds] })),
+		splits: [...moment.splits],
+		view: placed.views[window] ?? null,
+	};
+	const goneTabIds = new Set(moment.tabs.map((tab) => tab.id));
+	const goneSplitIds = new Set(moment.splits.map((split) => split.id));
+	const without = withoutWindow(placed, window);
 	return {
-		placed: withoutWindow(placedWith(placed, window, splitsPruned(closed.moment)), window),
-		reasons: [...reasons, `window ${window} ${ids.length} tabs → closed history, its lists → none (the window closed)`],
+		placed: {
+			...without,
+			tabs: without.tabs.filter((tab) => !goneTabIds.has(tab.id)),
+			splits: without.splits.filter((split) => !goneSplitIds.has(split.id)),
+			sessions: [...without.sessions, session],
+		},
+		reasons: [...reasons, `window ${window} ${session.tabs.length} tabs → session ${session.id} (the window closed)`],
 	};
 }
 

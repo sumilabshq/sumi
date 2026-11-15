@@ -10,6 +10,9 @@ import { WorkspaceHomeGateway } from "../home/workspace.gateway.js";
 import { ListedPlacedAppsGateway } from "../placed-apps/listed.gateway.js";
 import type { PlacedAppsGateway } from "../placed-apps/placed-apps.gateway.js";
 import type { PlacesConfig } from "../../shared/host/places.host.js";
+import { PlacedTabsSchema } from "../../shared/schema/tabs.schema.js";
+import { windowsForgotten } from "../../shared/lib/tabs/window-moves.js";
+import type { PlacedApps } from "../../shared/lib/tabs/app-abilities.js";
 
 export type PlacesParts = {
 	readonly windows: WindowsGateway;
@@ -27,14 +30,41 @@ const PLACES: DocKind<KeptPlaces> = {
 const SEEDED = "places global none → workspace {workspace} places (tabs belong to windows, not workspaces)";
 
 export function keptPlacesParts({ store, apps }: PlacesConfig, workspaceId: string): PlacesParts {
-	const kept = store.heldOnce(GLOBAL_ROOT, PLACES.file, () => seededPlaces(store, workspaceId));
 	const placedApps = new ListedPlacedAppsGateway(apps);
+	const kept = store.heldOnce(GLOBAL_ROOT, PLACES.file, async () =>
+		startedFresh(await seededPlaces(store, workspaceId), placedApps.placedApps()),
+	);
 	return {
 		windows: new TauriWindowsGateway(kept),
 		tabs: new TauriTabsGateway({ workspaceId, kept }),
 		placedApps,
 		home: new WorkspaceHomeGateway(workspaceId),
 	};
+}
+
+async function startedFresh(kept: HeldDoc<KeptPlaces>, apps: PlacedApps): Promise<HeldDoc<KeptPlaces>> {
+	const readable = PlacedTabsSchema.safeParse(kept.now().tabs);
+
+	if (isAppReloaded() || !readable.success) {
+		return kept;
+	}
+
+	const moved = windowsForgotten(() => true, apps)(readable.data);
+
+	if (moved.next === null) {
+		return kept;
+	}
+
+	kept.change({ tabs: moved.next }, `places ${moved.reason} (the app started)`);
+	await kept.flush();
+	console.info(`[widgetarium] ${moved.reason} (the app started)`);
+	return kept;
+}
+
+function isAppReloaded(): boolean {
+	return performance
+		.getEntriesByType("navigation")
+		.some((entry) => entry instanceof PerformanceNavigationTiming && entry.type === "reload");
 }
 
 async function seededPlaces(store: StoreClient, workspaceId: string): Promise<HeldDoc<KeptPlaces>> {

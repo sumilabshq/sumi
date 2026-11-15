@@ -337,29 +337,30 @@ async function windowTabsChecks(): Promise<void> {
 	await side.send(places.windows.closeWindow, { window: "studio-2" });
 	const placed = await tabs.placedTabs();
 	check(
-		"closing a window forgets its tabs into the closed history",
+		"closing a window stores it as a session: its tabs leave the window lists, the closed history stays as it was",
 		[
 			placed.tabs.map((tab) => tab.id),
 			placed.closed.map(({ tab }) => tab.id),
+			placed.sessions.map((session) => [session.window, session.tabs.map((tab) => tab.id)]),
 			Object.keys(placed.lists),
 			Object.keys(placed.views).includes("studio-2"),
 		],
-		[["tab-2"], ["tab-3", "tab-1"], ["window:main", "window:main:pinned"], false],
+		[["tab-2"], [], [["studio-2", ["tab-1", "tab-3"]]], ["window:main", "window:main:pinned"], false],
 	);
 
 	await main.send(places.windows.closeWindow, { window: "main" });
 	check(
-		"the main window keeps its tabs when it closes",
-		(await tabs.placedTabs()).tabs.map((tab) => tab.id),
-		["tab-2"],
+		"the main window is a window like any other: closing it stores its session too",
+		[(await tabs.placedTabs()).tabs.map((tab) => tab.id), (await tabs.placedTabs()).sessions.length],
+		[[], 2],
 	);
 
 	await side.send(places.tabOpening.openTab, { at: askAt("studio-3"), app: "canvas" });
 	await main.send(places.windows.keepLiveWindows, { windows: ["main"] });
 	check(
-		"a window no longer open forgets its tabs when the core checks what is open",
-		(await tabs.placedTabs()).tabs.map((tab) => tab.id),
-		["tab-2"],
+		"a window no longer open becomes a session when the core checks what is open",
+		[(await tabs.placedTabs()).tabs.map((tab) => tab.id), (await tabs.placedTabs()).sessions.length],
+		[[], 3],
 	);
 }
 

@@ -1,5 +1,6 @@
 import type { AppKind, GroupHue, ListEntry, StudioView, TabHistory, TabMark } from "../../schema/tabs.schema.js";
 import type { KeptSplit } from "../../schema/splits.schema.js";
+import type { WindowSession } from "../../schema/tabs.schema.js";
 import {
 	WORKSPACE_LIST,
 	chatOfGroup,
@@ -55,6 +56,7 @@ export interface HostTabsMoment extends TabLayout {
 	readonly splits: readonly KeptSplit[];
 	readonly mintedSplits: number;
 	readonly shownSplitId: string | null;
+	readonly sessions: readonly WindowSession[];
 	readonly apps: PlacedApps;
 }
 
@@ -76,6 +78,7 @@ export function emptyMoment(apps: PlacedApps): HostTabsMoment {
 		view: "app",
 		minted: 0,
 		closed: [],
+		sessions: [],
 		splits: [],
 		mintedSplits: 0,
 		shownSplitId: null,

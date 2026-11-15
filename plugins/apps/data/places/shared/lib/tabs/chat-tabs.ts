@@ -79,7 +79,11 @@ export function keepChatTabs(moment: HostTabsMoment, chats: readonly NamedRecord
 }
 
 function chatsWithNoTab(moment: HostTabsMoment, chats: readonly NamedRecord[]): readonly NamedRecord[] {
-	const known = new Set([...moment.tabs, ...moment.closed.map((closed) => closed.tab)].map((tab) => tab.id));
+	const known = new Set(
+		[...moment.tabs, ...moment.closed.map((closed) => closed.tab), ...moment.sessions.flatMap((session) => session.tabs)].map(
+			(tab) => tab.id,
+		),
+	);
 	return chats.filter((chat) => !known.has(chat.id));
 }
 

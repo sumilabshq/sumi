@@ -11,6 +11,7 @@ const NO_VIEW: WindowView = {
 	selectedId: null,
 	view: "app",
 	shownSplitId: null,
+	sessionId: null,
 };
 
 export function emptyPlacedTabs(): PlacedTabs {
@@ -70,7 +71,20 @@ export function placedWith(placed: PlacedTabs, window: string | null, moment: Ho
 		mintedSplits,
 		askedLinks: placed.askedLinks,
 		mintedLinks: placed.mintedLinks,
-		views: window === null ? placed.views : { ...placed.views, [window]: { shownId, selectedId, view, shownSplitId } },
+		sessions: placed.sessions,
+		views:
+			window === null
+				? placed.views
+				: {
+						...placed.views,
+						[window]: {
+							shownId,
+							selectedId,
+							view,
+							shownSplitId,
+							sessionId: placed.views[window]?.sessionId ?? crypto.randomUUID(),
+						},
+					},
 	});
 }
 

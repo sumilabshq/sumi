@@ -82,15 +82,30 @@ export const WindowViewSchema = z.object({
 	shownSplitId: z.string().nullable().default(null),
 	view: StudioViewSchema.default("app"),
 	selectedId: z.string().nullable().default(null),
+	sessionId: z.string().nullable().default(null),
 });
 
 export type WindowView = z.infer<typeof WindowViewSchema>;
+
+export const WindowSessionSchema = z.object({
+	id: z.string().min(1),
+	window: z.string().min(1),
+	closedAt: z.number().int().nonnegative(),
+	tabs: z.array(KeptTabSchema),
+	lists: z.record(z.string(), z.array(ListEntrySchema)),
+	groups: z.array(KeptGroupSchema),
+	splits: z.array(KeptSplitSchema),
+	view: WindowViewSchema.nullable(),
+});
+
+export type WindowSession = z.infer<typeof WindowSessionSchema>;
 
 export const PlacedTabsSchema = z.object({
 	tabs: z.array(KeptTabSchema),
 	lists: z.record(z.string(), z.array(ListEntrySchema)),
 	groups: z.array(KeptGroupSchema).default([]),
 	views: z.record(z.string(), WindowViewSchema).default({}),
+	sessions: z.array(WindowSessionSchema).default([]),
 	minted: z.number().int().nonnegative(),
 	closed: z.array(ClosedTabSchema),
 	splits: z.array(KeptSplitSchema).default([]),
