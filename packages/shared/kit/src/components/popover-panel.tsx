@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { KeyboardEvent, ReactElement, ReactNode } from "react";
 import { POPOVER_ITEM } from "../constants/popover";
+import { usePopGlide } from "../hooks/use-pop-glide";
 import { cn } from "../utils/cn";
 import { focusStepped } from "../utils/focus-step";
 import { COLUMN_STEP_OF_KEY } from "../utils/roving";
@@ -14,6 +15,7 @@ export interface PopoverPanelProps {
 }
 
 export function PopoverPanel({ popover, className, children }: PopoverPanelProps): ReactElement {
+	usePopGlide(popover.panelRef, popover.shown);
 	return (
 		<div
 			id={popover.id}

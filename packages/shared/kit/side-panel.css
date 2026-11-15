@@ -1,6 +1,6 @@
 .wg-kit-side-panel {
 	position: absolute;
-	top: 0;
+	top: var(--wg-kit-side-panel-top, 0px);
 	bottom: var(--wg-kit-side-panel-inset, 0px);
 	left: var(--wg-kit-side-panel-inset, 0px);
 	z-index: 2;

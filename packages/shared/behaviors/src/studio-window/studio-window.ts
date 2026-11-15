@@ -3,6 +3,7 @@ export interface StudioWindow {
 	readonly bootTab: string | null;
 	readonly bootChat: string | null;
 	readonly isMain: boolean;
+	readonly profile: string | null;
 }
 
 export const MAIN_STUDIO_WINDOW = "main";
@@ -10,6 +11,7 @@ export const MAIN_STUDIO_WINDOW = "main";
 const WINDOW_PARAM = "window";
 const TAB_PARAM = "tab";
 const CHAT_PARAM = "chat";
+const PROFILE_PARAM = "profile";
 const GHOST_PARAM = "ghost";
 const CORE_PARAM = "core";
 const SHARED_VIEW_FILE = "session.json";
@@ -22,6 +24,7 @@ export function studioWindowOf(search: string): StudioWindow {
 		bootTab: asked.get(TAB_PARAM),
 		bootChat: asked.get(CHAT_PARAM),
 		isMain: label === MAIN_STUDIO_WINDOW,
+		profile: asked.get(PROFILE_PARAM),
 	};
 }
 

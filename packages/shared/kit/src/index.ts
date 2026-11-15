@@ -213,6 +213,8 @@ export { cn, cn as cx, variants } from "./utils/cn";
 export { markOf } from "./utils/marks";
 export { progressState } from "./utils/progress";
 export { prefersReducedMotion } from "./utils/reduced-motion";
+export { CORNER_TENSION, restingSpring, springToward } from "./utils/spring";
+export type { Point, Spring, Tension } from "./utils/spring";
 export { barGeometry, circleGeometry } from "./utils/progress-geometry";
 export { inkedClass, toneClass, toneOf } from "./utils/tones";
 export { Ceiling, COUNTED_CEILING, countedFirstLine } from "./components/ceiling";

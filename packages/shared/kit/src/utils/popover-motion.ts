@@ -1,6 +1,7 @@
 import { CONTENT_DELAY_MS, CONTENT_MS, EXIT_GUARD_MS, GROW_MS, LAND_MARGIN_MS } from "../constants/popover";
 import type { Placement } from "../constants/popover";
 import { viewportSize } from "./floating-placement";
+import { foldJelly, liveJelly, wantsJelly } from "./jelly-throw";
 import { laidFrameOf, wearAnchorWidth, wearSpot } from "./wear-spot";
 import { prefersReducedMotion } from "./reduced-motion";
 
@@ -43,6 +44,7 @@ export function enterPanel(panel: HTMLElement, anchor: HTMLElement, placement: P
 	const placed = placePopoverPanel(panel, anchor.getBoundingClientRect(), placement);
 	anchor.style.visibility = placement.hidesTrigger ? "hidden" : "";
 	if (prefersReducedMotion()) return undefined;
+	if (wantsJelly(panel)) return liveJelly(panel, anchor.getBoundingClientRect());
 	const seat = seatOnAnchor(anchor, placed);
 	const rest = panelPaint(panel);
 	sitOnAnchor(panel, seat, anchorPaint(anchor), placed.origin);
@@ -60,6 +62,7 @@ export function enterPanel(panel: HTMLElement, anchor: HTMLElement, placement: P
 }
 
 export function exitPanel(panel: HTMLElement, anchor: HTMLElement, done: () => void): StopMotion {
+	if (wantsJelly(panel)) return foldJelly(panel, anchor.getBoundingClientRect(), done) ?? fadePanel(panel, done);
 	holdForFold(panel);
 	const inner = styledChildOf(panel);
 	if (inner) {
@@ -71,9 +74,18 @@ export function exitPanel(panel: HTMLElement, anchor: HTMLElement, done: () => v
 		"transform var(--wg-quick) var(--wg-ease), border-radius var(--wg-quick) var(--wg-ease), opacity var(--wg-press) var(--wg-ease) 80ms";
 	panel.style.opacity = "0";
 	fold(panel, anchor);
+	return whenTransitionEnds(panel, "transform", done);
+}
 
+function fadePanel(panel: HTMLElement, done: () => void): StopMotion {
+	panel.style.transition = "opacity var(--wg-quick) var(--wg-ease)";
+	panel.style.opacity = "0";
+	return whenTransitionEnds(panel, "opacity", done);
+}
+
+function whenTransitionEnds(panel: HTMLElement, property: string, done: () => void): StopMotion {
 	const finish = (event?: TransitionEvent): void => {
-		if (event && (event.target !== panel || event.propertyName !== "transform")) return;
+		if (event && (event.target !== panel || event.propertyName !== property)) return;
 		stop();
 		done();
 	};

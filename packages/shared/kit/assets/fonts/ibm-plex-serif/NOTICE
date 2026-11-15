@@ -1,0 +1,8 @@
+The ibm-plex-serif-{latin,cyrillic}-{400-normal,400-italic,500-normal}.woff2 files
+are IBM Plex Serif (https://github.com/IBM/plex), Copyright 2019 IBM Corp., licensed under
+the SIL Open Font License, Version 1.1, a copy of which sits beside this file.
+
+Taken unmodified from the npm package @fontsource/ibm-plex-serif@5.2.7 (files/).
+
+The plugin build inlines them into the studio's sheet as @font-face rules
+(tools/system-sheet.mts); they set Sumi's voice: greetings, empty pages and document titles.

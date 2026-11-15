@@ -51,6 +51,10 @@ export const TurnRoleSchema = z.enum(["user", "agent", "compact"]);
 
 export type TurnRole = z.infer<typeof TurnRoleSchema>;
 
+export const SentPicturesSchema = z.record(z.string(), z.string());
+
+export type SentPictures = z.infer<typeof SentPicturesSchema>;
+
 export const AssistantTurnSchema = z.object({
 	role: TurnRoleSchema,
 	text: z.string(),
@@ -58,6 +62,7 @@ export const AssistantTurnSchema = z.object({
 	startedAt: z.number().optional(),
 	endedAt: z.number().optional(),
 	outcome: TurnOutcomeSchema.optional(),
+	pictures: SentPicturesSchema.optional().catch(undefined),
 });
 
 export type AssistantTurn = z.infer<typeof AssistantTurnSchema>;
@@ -66,12 +71,13 @@ export interface QueuedMessage {
 	readonly id: string;
 	readonly text: string;
 	readonly isHeld: boolean;
+	readonly pictures?: SentPictures | undefined;
 }
 
 export type QueueChange =
 	| { readonly kind: "remove"; readonly id: string }
 	| { readonly kind: "hold"; readonly id: string; readonly isHeld: boolean }
-	| { readonly kind: "edit"; readonly id: string; readonly said: string }
+	| { readonly kind: "edit"; readonly id: string; readonly said: string; readonly pictures?: SentPictures | undefined }
 	| { readonly kind: "send-now" };
 
 export interface AssistantSession {
@@ -165,7 +171,7 @@ export interface AssistantPort {
 	onSession(changed: () => void): () => void;
 	setup(): Promise<AssistantSetup>;
 	onSetup(changed: () => void): () => void;
-	send(said: string): Promise<void>;
+	send(said: string, pictures?: SentPictures): Promise<void>;
 	retry(): void;
 	stop(): void;
 	clear(): Promise<void>;

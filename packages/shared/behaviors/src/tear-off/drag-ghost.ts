@@ -40,26 +40,24 @@ export const CARD_SIZE: GhostSize = {
 
 const CARD_BAR_PX = 26;
 const CARD_FOOTER_PX = 30;
-const CARD_RADIUS_PX = 10;
 const CARD_GRAB: readonly [number, number] = [CARD_SIZE.width / 2, CARD_BAR_PX / 2];
 const PAD_PX = 8;
 const ROW_GAP_PX = 10;
 const CARD_GAP_PX = 6;
-const ROW_RADIUS_PX = 10;
-const TILE_RADIUS_PX = 14;
-const CONTENT_RADIUS_PX = 6;
+const PAINT_PROPERTIES = ["fill", "stroke", "color", "opacity", "background-color"] as const;
+const ID_REFERRING_ATTRIBUTES = ["mask", "clip-path", "fill", "stroke", "filter", "href"] as const;
+const LIFTED_FILL = "color-mix(in srgb, var(--sumi-text) 9%, var(--sumi-frame))";
+const GHOST_ID_SUFFIX = "-ghost";
 const CARD_ART_SCALE = 0.75;
 const PART = "ghostPart";
 const FADE_MS = 200;
 const SHAPE_MOTION = [
 	"width",
 	"height",
-	"border-radius",
 	"padding",
 	"gap",
 	"margin",
 	"background-color",
-	"box-shadow",
 	"font-size",
 	"color",
 	"opacity",
@@ -87,7 +85,6 @@ const HEAD_STYLE: Partial<CSSStyleDeclaration> = {
 const CONTENT_STYLE: Partial<CSSStyleDeclaration> = {
 	flex: "1 1 0",
 	minHeight: "0",
-	borderRadius: `${CONTENT_RADIUS_PX}px`,
 	background: "color-mix(in srgb, var(--sumi-text) 4%, transparent)",
 	transition: SHAPE_MOTION,
 };
@@ -168,7 +165,6 @@ export class DragGhost {
 		this.element.style.transition = `${SHAPE_MOTION}, ${GRAB_MOTION}`;
 		this.element.style.width = `${rect.width}px`;
 		this.element.style.height = `${rect.height}px`;
-		this.element.style.boxShadow = "none";
 		this.following.landAt(rect.left, rect.top);
 	}
 
@@ -272,47 +268,65 @@ function grabOf(shape: GhostShape, { width, height }: GhostSize): readonly [numb
 }
 
 function artCopyOf(art: Element | null): HTMLElement | SVGElement | null {
-	const copy = art?.cloneNode(true);
+	if (art === null) {
+		return null;
+	}
+
+	const copy = art.cloneNode(true);
 
 	if (!(copy instanceof HTMLElement) && !(copy instanceof SVGElement)) {
 		return null;
 	}
 
+	copyPaint(art, copy);
+	renameIds(copy);
 	copy.dataset[PART] = "art";
 	copy.style.flex = "none";
 	copy.style.transition = `${SHAPE_MOTION}, ${GRAB_MOTION}`;
 	return copy;
 }
 
+function copyPaint(drawn: Element, copy: Element): void {
+	const look = getComputedStyle(drawn);
+
+	if (copy instanceof HTMLElement || copy instanceof SVGElement) {
+		PAINT_PROPERTIES.forEach((property) => copy.style.setProperty(property, look.getPropertyValue(property)));
+	}
+
+	[...drawn.children].forEach((child, at) => {
+		const twin = copy.children[at];
+
+		if (twin !== undefined) {
+			copyPaint(child, twin);
+		}
+	});
+}
+
+function renameIds(copy: Element): void {
+	const named = [...copy.querySelectorAll("[id]")];
+	const ids = named.map((element) => element.id);
+	named.forEach((element) => {
+		element.id = `${element.id}${GHOST_ID_SUFFIX}`;
+	});
+	[copy, ...copy.querySelectorAll("*")].forEach((element) => renameIdReferences(element, ids));
+}
+
+function renameIdReferences(element: Element, ids: readonly string[]): void {
+	for (const attribute of ID_REFERRING_ATTRIBUTES) {
+		const value = element.getAttribute(attribute);
+		const referred = value === null ? undefined : ids.find((id) => value.includes(`#${id}`));
+
+		if (value !== null && referred !== undefined) {
+			element.setAttribute(attribute, value.replace(`#${referred}`, `#${referred}${GHOST_ID_SUFFIX}`));
+		}
+	}
+}
+
 function rootStyleOf(shape: GhostShape, { width, height }: GhostSize): Partial<CSSStyleDeclaration> {
-	const size = {
+	return {
 		width: `${width}px`,
 		height: `${height}px`,
-	};
-
-	if (shape === "card") {
-		return {
-			...size,
-			borderRadius: `${CARD_RADIUS_PX}px`,
-			background: "var(--sumi-plate)",
-			boxShadow: "var(--sumi-shadow-lift)",
-		};
-	}
-
-	if (shape === "tile") {
-		return {
-			...size,
-			borderRadius: `${TILE_RADIUS_PX}px`,
-			background: "color-mix(in srgb, var(--sumi-text) 9%, var(--sumi-frame))",
-			boxShadow: "var(--sumi-shadow-pop)",
-		};
-	}
-
-	return {
-		...size,
-		borderRadius: `${ROW_RADIUS_PX}px`,
-		background: "var(--sumi-selected)",
-		boxShadow: "var(--sumi-shadow-pop)",
+		background: shape === "card" ? "var(--sumi-plate)" : LIFTED_FILL,
 	};
 }
 
