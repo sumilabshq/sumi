@@ -74,10 +74,15 @@ export const WorkspaceIconSchema = z.discriminatedUnion("kind", [
 
 export type WorkspaceIcon = z.infer<typeof WorkspaceIconSchema>;
 
+export const WorkspaceInkSchema = z.enum(["yellow", "ember", "moss", "tide", "iris", "rose"]);
+
+export type WorkspaceInk = z.infer<typeof WorkspaceInkSchema>;
+
 export const WorkspaceSchema = z.object({
 	id: z.string().min(1),
 	name: z.string().min(1),
 	icon: WorkspaceIconSchema.nullable(),
+	ink: WorkspaceInkSchema,
 });
 
 export type Workspace = z.infer<typeof WorkspaceSchema>;
@@ -98,6 +103,11 @@ export const WorkspaceNameSchema = z.object({
 export const WorkspaceIconChoiceSchema = z.object({
 	id: z.string().min(1),
 	icon: WorkspaceIconSchema.nullable(),
+});
+
+export const WorkspaceInkChoiceSchema = z.object({
+	id: z.string().min(1),
+	ink: WorkspaceInkSchema,
 });
 
 export const WorkspaceRowSchema = WorkspaceSchema.extend({
@@ -156,6 +166,10 @@ export const workspaces = moduleContract("workspaces", Device, {
 			.public()
 			.input(WorkspaceIdSchema)
 			.idempotencyKey(Repeatable)),
+		openWindow: named("workspaces.open-window", command()
+			.public()
+			.input(WorkspaceIdSchema)
+			.idempotencyKey(PerCall)),
 		chatsElsewhere: named("workspaces.chats-elsewhere", query()
 			.public()
 			.output(ChatsElsewhereSchema)),
@@ -178,6 +192,10 @@ export const workspaces = moduleContract("workspaces", Device, {
 		setIcon: named("workspaces.set-icon", command()
 			.public()
 			.input(WorkspaceIconChoiceSchema)
+			.idempotencyKey(Repeatable)),
+		setInk: named("workspaces.set-ink", command()
+			.public()
+			.input(WorkspaceInkChoiceSchema)
 			.idempotencyKey(Repeatable)),
 	},
 });

@@ -8,6 +8,7 @@ export function currentWorkspaceOf(workspaces: readonly Workspace[], currentId: 
 			id: currentId,
 			name: NAME_UNREAD,
 			icon: null,
+			ink: "yellow",
 		}
 	);
 }

@@ -4,6 +4,7 @@ import { MemoryChatsGateway } from "../chats/memory.gateway.js";
 import { MemoryCurrentWorkspaceGateway } from "../current-workspace/memory.gateway.js";
 import { MemoryWorkspaceChatsGateway } from "../workspace-chats/memory.gateway.js";
 import { MemoryWorkspacesGateway } from "../workspaces/memory.gateway.js";
+import { MemoryProfileWindowsGateway } from "../profile-windows/memory.gateway.js";
 import type { WorkspacesParts } from "./workspaces-parts.gateway.js";
 
 export interface WorkspacesSeed {
@@ -27,6 +28,7 @@ export function memoryWorkspacesParts({
 			openingId: null,
 		}),
 		chats: new MemoryChatsGateway(chats),
+		profileWindows: new MemoryProfileWindowsGateway(),
 	};
 }
 

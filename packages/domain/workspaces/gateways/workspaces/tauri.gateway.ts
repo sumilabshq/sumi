@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { GLOBAL_ROOT, HeldDoc, validEntriesOf, validValuesOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
-import { WorkspaceIconSchema } from "../../shared/schema/workspace.schema.js";
-import type { Workspace, WorkspaceFolder, WorkspaceIcon } from "../../shared/schema/workspace.schema.js";
+import { WorkspaceIconSchema, WorkspaceInkSchema } from "../../shared/schema/workspace.schema.js";
+import type { Workspace, WorkspaceFolder, WorkspaceIcon, WorkspaceInk } from "../../shared/schema/workspace.schema.js";
 import { WorkspacesGateway } from "./workspaces.gateway.js";
 
 // TODO: one entry schema; apps/tauri keeps its own WorkspaceEntrySchema
@@ -19,7 +19,10 @@ type KeptWorkspaceEntry = z.infer<typeof KeptWorkspaceEntrySchema>;
 export const KeptLooksSchema = z.looseObject({
 	order: z.array(z.string()).default([]),
 	icons: z.record(z.string(), WorkspaceIconSchema).default({}),
+	inks: z.record(z.string(), WorkspaceInkSchema).default({}),
 });
+
+const DEFAULT_INK: WorkspaceInk = "yellow";
 
 type KeptLooks = z.infer<typeof KeptLooksSchema>;
 
@@ -30,6 +33,7 @@ const KEPT_LOOKS: DocKind<KeptLooks> = {
 	salvage: KeptLooksSchema.extend({
 		order: validEntriesOf(z.string()),
 		icons: validValuesOf(WorkspaceIconSchema),
+		inks: validValuesOf(WorkspaceInkSchema),
 	}),
 };
 
@@ -78,6 +82,13 @@ export class TauriWorkspacesGateway extends WorkspacesGateway {
 		const looks = await this.landed;
 		const others = Object.entries(looks.now().icons).filter(([kept]) => kept !== id);
 		looks.change({ icons: Object.fromEntries(icon === null ? others : [...others, [id, icon]]) }, reason);
+		await looks.flush();
+	}
+
+	async saveWorkspaceInk(id: string, ink: WorkspaceInk, reason: string): Promise<void> {
+		const looks = await this.landed;
+		const others = Object.entries(looks.now().inks).filter(([kept]) => kept !== id);
+		looks.change({ inks: Object.fromEntries(ink === DEFAULT_INK ? others : [...others, [id, ink]]) }, reason);
 		await looks.flush();
 	}
 
@@ -143,6 +154,7 @@ function workspaceOf(entry: KeptWorkspaceEntry, looks: KeptLooks): Workspace {
 		id: entry.id,
 		name: entry.name,
 		icon: looks.icons[entry.id] ?? null,
+		ink: looks.inks[entry.id] ?? DEFAULT_INK,
 	};
 }
 

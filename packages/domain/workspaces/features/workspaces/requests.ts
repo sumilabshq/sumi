@@ -4,12 +4,14 @@ import { workspacesChanged } from "../../gateways/workspaces/workspaces.events.j
 import { currentWorkspaceChanged } from "../../gateways/current-workspace/current-workspace.events.js";
 import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
 import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
+import { ProfileWindowsGateway } from "../../gateways/profile-windows/profile-windows.gateway.js";
 import { titleOf } from "../../shared/lib/chat-title.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
 import { ChatElsewhereSchema, ChatsElsewhereSchema } from "../../shared/schema/chat.schema.js";
 import {
 	WorkspaceIconChoiceSchema,
 	WorkspaceIdSchema,
+	WorkspaceInkChoiceSchema,
 	WorkspaceNameSchema,
 	WorkspacePositionSchema,
 	WorkspacesSchema,
@@ -17,7 +19,6 @@ import {
 import type {
 	CurrentWorkspace,
 	Workspace,
-	WorkspaceFolder,
 	WorkspaceRow,
 	WorkspacesView,
 } from "../../shared/schema/workspace.schema.js";
@@ -34,6 +35,7 @@ const UNTITLED_NAME = /^Untitled (\d+)$/;
 interface OpeningParts {
 	readonly workspaces: WorkspacesGateway;
 	readonly currentWorkspace: CurrentWorkspaceGateway;
+	readonly profileWindows: ProfileWindowsGateway;
 }
 
 export const all = query()
@@ -48,10 +50,22 @@ export const open = command()
 	.public()
 	.input(WorkspaceIdSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ id }, opening) => {
+	.handle(async ({ id }, opening) => {
 		opening.invalidate(all);
-		return switchToWorkspace(id, opening);
+
+		if (id === opening.currentWorkspace.currentWorkspace().currentId) {
+			console.info(`[widgetarium] open profile ${id} skipped: this window already shows it`);
+			return;
+		}
+
+		await openProfileWindow(id, opening, "opened from this window");
 	});
+
+export const openWindow = command()
+	.public()
+	.input(WorkspaceIdSchema)
+	.idempotencyKey(PerCall)
+	.handle(({ id }, opening) => openProfileWindow(id, opening, "asked for a new window"));
 
 export const chatsElsewhere = query()
 	.public()
@@ -93,7 +107,7 @@ export const openChatElsewhere = command()
 		const reason = `workspace ${workspace.id} chat to open on start ${kept.openOnStartId ?? "none"} → ${chatId} (opened from elsewhere)`;
 		await workspaceChats.saveChatToOpenIn(workspace.id, chatId, reason);
 		console.info(`[widgetarium] ${reason}`);
-		await switchToWorkspace(workspace.id, opening);
+		await openProfileWindow(workspace.id, opening, `chat ${chatId} opened from elsewhere`);
 	});
 
 export const openByPosition = command()
@@ -109,7 +123,7 @@ export const openByPosition = command()
 			return;
 		}
 
-		await switchToWorkspace(workspace.id, opening);
+		await openProfileWindow(workspace.id, opening, `⌘${position + 1}`);
 	});
 
 export const createWorkspace = command()
@@ -121,7 +135,7 @@ export const createWorkspace = command()
 		const name = untitledNameAfter(opening.workspaces.workspaces().map((workspace) => workspace.name));
 		const created = await opening.workspaces.createWorkspace(name);
 		console.info(`[widgetarium] workspaces: created ${created.name} (${created.id})`);
-		await switchToWorkspace(created.id, opening);
+		await openProfileWindow(created.id, opening, "created");
 		return { id: created.id };
 	});
 
@@ -161,6 +175,24 @@ export const setIcon = command()
 		console.info(`[widgetarium] ${reason}`);
 	});
 
+export const setInk = command()
+	.public()
+	.input(WorkspaceInkChoiceSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ id, ink }, { workspaces: workspacesGateway, invalidate }) => {
+		invalidate(all);
+		const was = workspaceIn(workspacesGateway.workspaces(), id);
+
+		if (was.ink === ink) {
+			console.info(`[widgetarium] workspace ${id} ink skipped: already ${ink}`);
+			return;
+		}
+
+		const reason = `workspace ${id} ink ${was.ink} → ${ink}`;
+		await workspacesGateway.saveWorkspaceInk(id, ink, reason);
+		console.info(`[widgetarium] ${reason}`);
+	});
+
 export const rereadWorkspaces = subscriber(workspacesChanged).handle((_input, { invalidate }) => {
 	invalidate(all);
 });
@@ -169,41 +201,9 @@ export const rereadForCurrent = subscriber(currentWorkspaceChanged).handle((_inp
 	invalidate(all);
 });
 
-async function switchToWorkspace(
-	id: string,
-	{ workspaces: workspacesGateway, currentWorkspace }: OpeningParts,
-): Promise<void> {
-	const current = currentWorkspace.currentWorkspace();
-
-	if (id === current.currentId) {
-		console.info(`[widgetarium] switch to workspace ${id} skipped: it is the current one`);
-		return;
-	}
-
-	workspaceIn(workspacesGateway.workspaces(), id);
-	currentWorkspace.saveCurrentWorkspace(
-		{
-			...current,
-			openingId: id,
-		},
-		`workspace opening ${current.openingId ?? "none"} → ${id}`,
-	);
-	const folder = await workspacesGateway.markWorkspaceOpened(id);
-
-	if (isFolderMissing(folder)) {
-		console.info(`[widgetarium] workspace ${id} lost its folder ${folder.folder ?? ""}: asking for it`);
-		await workspacesGateway.attachWorkspaceFolder(id);
-	}
-
-	const reason = `workspace current ${current.currentId} → ${id} (opened)`;
-	currentWorkspace.saveCurrentWorkspace(
-		{
-			currentId: id,
-			openingId: null,
-		},
-		reason,
-	);
-	console.info(`[widgetarium] ${reason}`);
+async function openProfileWindow(id: string, { workspaces, profileWindows }: OpeningParts, asked: string): Promise<void> {
+	const profile = workspaceIn(workspaces.workspaces(), id);
+	await profileWindows.openWindow(profile.id, `window none → new window in profile ${profile.name} (${asked})`);
 }
 
 function workspaceIn(workspaces: readonly Workspace[], id: string): Workspace {
@@ -211,9 +211,6 @@ function workspaceIn(workspaces: readonly Workspace[], id: string): Workspace {
 	return found ?? refuse(UNKNOWN.replace("{id}", id));
 }
 
-function isFolderMissing({ folder, isFolderFound }: WorkspaceFolder): boolean {
-	return folder !== null && !isFolderFound;
-}
 
 function untitledNameAfter(names: readonly string[]): string {
 	const taken = new Set(names.flatMap((name) => untitledNumberIn(name)));

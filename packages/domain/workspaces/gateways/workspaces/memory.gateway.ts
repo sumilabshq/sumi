@@ -1,4 +1,4 @@
-import type { Workspace, WorkspaceFolder, WorkspaceIcon } from "../../shared/schema/workspace.schema.js";
+import type { Workspace, WorkspaceFolder, WorkspaceIcon, WorkspaceInk } from "../../shared/schema/workspace.schema.js";
 import { WorkspacesGateway } from "./workspaces.gateway.js";
 
 const NO_FOLDER: WorkspaceFolder = {
@@ -32,11 +32,17 @@ export class MemoryWorkspacesGateway extends WorkspacesGateway {
 		return Promise.resolve();
 	}
 
+	saveWorkspaceInk(id: string, ink: WorkspaceInk): Promise<void> {
+		this.keep(this.held.map((workspace) => (workspace.id === id ? { ...workspace, ink } : workspace)));
+		return Promise.resolve();
+	}
+
 	createWorkspace(name: string): Promise<Workspace> {
 		const created: Workspace = {
 			id: crypto.randomUUID(),
 			name,
 			icon: null,
+			ink: "yellow",
 		};
 		this.keep([...this.held, created]);
 		return Promise.resolve(created);

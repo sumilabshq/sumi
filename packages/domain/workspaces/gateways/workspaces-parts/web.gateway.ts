@@ -8,6 +8,7 @@ export function webWorkspacesParts(workspaceId: string): WorkspacesParts {
 				id: workspaceId,
 				name: workspaceId,
 				icon: null,
+				ink: "yellow",
 			},
 		],
 		currentId: workspaceId,

@@ -4,6 +4,7 @@ import type { ChatsGateway } from "../chats/chats.gateway.js";
 import type { CurrentWorkspaceGateway } from "../current-workspace/current-workspace.gateway.js";
 import type { WorkspaceChatsGateway } from "../workspace-chats/workspace-chats.gateway.js";
 import type { WorkspacesGateway } from "../workspaces/workspaces.gateway.js";
+import type { ProfileWindowsGateway } from "../profile-windows/profile-windows.gateway.js";
 import { tauriWorkspacesParts } from "./tauri.gateway.js";
 import { webWorkspacesParts } from "./web.gateway.js";
 
@@ -12,6 +13,7 @@ export type WorkspacesParts = {
 	readonly workspaces: WorkspacesGateway;
 	readonly currentWorkspace: CurrentWorkspaceGateway;
 	readonly chats: ChatsGateway;
+	readonly profileWindows: ProfileWindowsGateway;
 };
 
 const UNHOSTED_PARTS_ON: Readonly<Record<Platform, (workspaceId: string) => WorkspacesParts>> = {
@@ -22,7 +24,7 @@ const UNHOSTED_PARTS_ON: Readonly<Record<Platform, (workspaceId: string) => Work
 
 export function workspacesPartsOn({ platform, scope, config }: ConfigFacts<WorkspacesConfig>): WorkspacesParts {
 	if (config.tauri !== undefined) {
-		return tauriWorkspacesParts(scope.workspaceId, config.tauri.store);
+		return tauriWorkspacesParts(scope.workspaceId, config.tauri);
 	}
 
 	return UNHOSTED_PARTS_ON[platform](scope.workspaceId);

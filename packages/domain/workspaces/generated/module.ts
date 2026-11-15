@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { workspaces as definition } from "../module.js";
 import { chatRecords, chatToOpen, createChat, forgetToOpen, recordTurn, rereadChats, rereadCrumbForCurrent, rereadCrumbForWorkspaces, workspaceCrumb } from "../features/chats/requests.js";
-import { all, chatsElsewhere, createWorkspace, open, openByPosition, openChatElsewhere, rename, rereadForCurrent, rereadWorkspaces, setIcon } from "../features/workspaces/requests.js";
+import { all, chatsElsewhere, createWorkspace, open, openByPosition, openChatElsewhere, openWindow, rename, rereadForCurrent, rereadWorkspaces, setIcon, setInk } from "../features/workspaces/requests.js";
 import { chatsChanged } from "../gateways/chats/chats.events.js";
 import { currentWorkspaceChanged } from "../gateways/current-workspace/current-workspace.events.js";
 import { workspacesChanged } from "../gateways/workspaces/workspaces.events.js";
@@ -27,7 +27,9 @@ export const workspaces = handledModule(definition, [
 	named("workspaces.open", open),
 	named("workspaces.open-by-position", openByPosition),
 	named("workspaces.open-chat-elsewhere", openChatElsewhere),
+	named("workspaces.open-window", openWindow),
 	named("workspaces.rename", rename),
 	named("workspaces.set-icon", setIcon),
+	named("workspaces.set-ink", setInk),
 	named("workspaces.workspaces-changed", workspacesChanged),
 ]);
