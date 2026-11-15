@@ -5,7 +5,7 @@ import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memo
 import { aimTargetIdsOf } from "../apps/studio/src/features/panes/lib/aim-targets.ts";
 import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
 import { place, close, placementPreview } from "../packages/state/layout/features/panes/requests.ts";
-import { openShown, showChat, showInChatGroup } from "../packages/state/layout/features/pane-tabs/requests.ts";
+import { openShown, showChat } from "../packages/state/layout/features/pane-tabs/requests.ts";
 import { KeptPaneTreeSchema } from "../packages/state/layout/gateways/pane-tree/pane-tree.gateway.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
 import type { PaneNode, PanePlacement } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
@@ -69,27 +69,6 @@ show(parts, "chat-a");
 check(
 	"the chat on screen stands in a group of its own, alone on the board",
 	boardShape(parts) === "group:chat-a[chat:chat-a]",
-	boardShape(parts),
-);
-
-showInChatGroup.handle({ chatId: "chat-a", tabId: "spec", isOnlyWhenBare: false }, parts);
-check(
-	"a chat tab shown with nothing of its chat on screen opens beside the chat, inside its group",
-	boardShape(parts) === "group:chat-a[chat:chat-a spec]",
-	boardShape(parts),
-);
-
-showInChatGroup.handle({ chatId: "chat-a", tabId: "plan", isOnlyWhenBare: false }, parts);
-check(
-	"another chat tab replaces the chat tile shown last, no new tile",
-	boardShape(parts) === "group:chat-a[chat:chat-a plan]",
-	boardShape(parts),
-);
-
-showInChatGroup.handle({ chatId: "chat-a", tabId: "spec", isOnlyWhenBare: true }, parts);
-check(
-	"following a chat leaves a group that holds tabs alone",
-	boardShape(parts) === "group:chat-a[chat:chat-a plan]",
 	boardShape(parts),
 );
 

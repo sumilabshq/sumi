@@ -30,7 +30,7 @@ const ToolReplySchema = z.object({
 const StateSectionsSchema = z.object({
 	sections: z.array(
 		z.object({
-			place: z.string(),
+			list: z.string(),
 			entries: z.array(z.object({ id: z.string(), app: z.string().optional() })),
 		}),
 	),
@@ -111,7 +111,7 @@ function textOf(reply: unknown): string {
 }
 
 function recentsOf(answer: unknown): unknown {
-	const recents = StateSectionsSchema.parse(answer).sections.find(({ place }) => place === "workspace");
+	const recents = StateSectionsSchema.parse(answer).sections.find(({ list }) => list === "workspace");
 	return recents?.entries.map(({ id, app }) => ({ id, app }));
 }
 
@@ -174,7 +174,7 @@ check(
 
 check(
 	"the state names the asking chat from the header",
-	toolAnswerOf(await called(served, "tabs_workspace_state", { scope: "this-chat" }, ASKING_CHAT)),
+	toolAnswerOf(await called(served, "tabs_workspace_state", {}, ASKING_CHAT)),
 	{
 		thisChat: ASKING_CHAT,
 		chats: [],
@@ -207,8 +207,8 @@ const foreign = textOf(
 	await called(served, "tabs_group_create", { name: "Elsewhere", place: "chat-other" }, ASKING_CHAT),
 );
 check(
-	"another chat's list is never written: its id is not a place the agent may name",
-	foreign.includes('"isError":true') && foreign.includes("this-chat"),
+	"a chat's id is not a place the agent may name: tabs stand only in Open or Pinned",
+	foreign.includes('"isError":true') && foreign.includes("pinned"),
 	true,
 );
 

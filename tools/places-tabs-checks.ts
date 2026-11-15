@@ -1,6 +1,6 @@
 import { placesWindowOf } from "@widgetarium/behaviors";
 import { BARE_SCREEN } from "./places-fixture.ts";
-import { BUILT_IN_APPS, BUILT_IN_PLACED_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
+import { BUILT_IN_PLACED_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { ListedPlacedAppsGateway } from "../plugins/apps/data/places/gateways/placed-apps/listed.gateway.ts";
 import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app-of.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
@@ -39,7 +39,12 @@ function placesCoreOver(tabs: MemoryTabsGateway | TauriTabsGateway): Runtime {
 	return runtime()
 		.modules(
 			RunnablePlacesModule({
-				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
+				injects: {
+					windows: new MemoryWindowsGateway({ windows: [] }),
+					tabs,
+					placedApps: builtInPlacedApps(),
+					home: mainHome(),
+				},
 			}),
 		)
 		.start({ platform: "server", env: {} });
@@ -56,75 +61,6 @@ async function listsIn(windowApp: Runtime, window: string): Promise<unknown> {
 	return placed.ok ? [placed.output.lists, placed.output.shownId] : placed.reason;
 }
 
-async function migrationChecks(): Promise<void> {
-	const fake = new FakeStore();
-	const root = workspaceRootOf(DEFAULT.id);
-	fake.put(`${root}:session.json`, {
-		v: 1,
-		rev: 1,
-		tabs: {
-			tabs: ["tab-1", "tab-2", "tab-3"].map((id) => ({ id, app: "browser", pageId: null, label: null })),
-			lists: {
-				workspace: [{ kind: "tab", id: "tab-1" }],
-				"chat-a": [{ kind: "tab", id: "tab-2" }],
-				"chat-gone": [{ kind: "tab", id: "tab-3" }],
-			},
-			shownId: "tab-2",
-			minted: 3,
-			closed: [],
-		},
-	});
-	fake.put(`${root}:chats.json`, {
-		v: 1,
-		rev: 1,
-		chats: [
-			{ id: "chat-a", isPinned: true, pinRank: 0, lastAt: 1, title: null, createdAt: 1 },
-			{ id: "chat-b", isPinned: false, lastAt: 5, title: null, createdAt: 1 },
-			{ id: "chat-c", isPinned: false, lastAt: 9, title: null, createdAt: 1 },
-		],
-	});
-	const store = new StoreClient(fake.invoke);
-	const tabsIn = (): TauriTabsGateway =>
-		new TauriTabsGateway({
-			store,
-			workspaceId: DEFAULT.id,
-			kept: HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) }),
-			apps: BUILT_IN_APPS,
-		});
-	const [main] = windowsOver(tabsIn());
-	check(
-		"the first read moves the tabs, their chat lists and the chats' pin order into places",
-		await listsIn(main, "main"),
-		[
-			{
-				"chat-a": [{ kind: "tab", id: "tab-2" }],
-				pinned: [{ kind: "tab", id: "chat-a" }],
-				workspace: [
-					{ kind: "tab", id: "chat-c" },
-					{ kind: "tab", id: "chat-b" },
-					{ kind: "tab", id: "tab-1" },
-					{ kind: "tab", id: "tab-3" },
-				],
-			},
-			"tab-2",
-		],
-	);
-	check(
-		"and writes only the new shape, into places.json",
-		fake.files.get(`${root}:places.json`)?.["tabs"] !== undefined,
-		true,
-	);
-
-	fake.put(`${root}:chats.json`, { v: 1, rev: 2, chats: [] });
-	const [again] = windowsOver(tabsIn());
-	const placed = await again.send(places.tabs.placedTabs, { window: placesWindowOf("main", DEFAULT.id) });
-	check(
-		"a second start reads places.json and never migrates again",
-		placed.ok ? placed.output.tabs.filter((tab) => tab.app === "chat").map((tab) => tab.id) : placed.reason,
-		["chat-a", "chat-b", "chat-c"],
-	);
-}
-
 async function unreadableChecks(): Promise<void> {
 	const fake = new FakeStore();
 	const root = workspaceRootOf(DEFAULT.id);
@@ -132,7 +68,7 @@ async function unreadableChecks(): Promise<void> {
 	fake.put(`${root}:places.json`, { v: 1, rev: 1, tabs: { broken: true } });
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
-	const [main] = windowsOver(new TauriTabsGateway({ store, workspaceId: DEFAULT.id, kept, apps: BUILT_IN_APPS }));
+	const [main] = windowsOver(new TauriTabsGateway({ workspaceId: DEFAULT.id, kept }));
 	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
 	check(
 		"unreadable tabs start empty and are kept aside, never read again from the older files",
@@ -206,7 +142,7 @@ async function lawChecks(): Promise<void> {
 			{ id: "chat-b", title: null },
 		],
 	});
-	const tab = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas", list: "chat-a" });
+	const tab = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
 	const tabId = tab.ok ? tab.output.id : "";
 	const chatInChat = await main.send(places.tabPlacing.place, {
 		at: askAt("main"),
@@ -219,7 +155,7 @@ async function lawChecks(): Promise<void> {
 		place: { list: "tab-1", groupId: null, before: null },
 	});
 	check(
-		"a chat is kept once, a chat holds no chat, and only a chat holds a list",
+		"a chat is kept once, and no tab, a chat included, holds a list",
 		[
 			(await tabs.placedTabs()).tabs.filter((one) => one.app === "chat").length,
 			chatInChat.ok ? "placed" : chatInChat.reason,
@@ -227,18 +163,18 @@ async function lawChecks(): Promise<void> {
 		],
 		[
 			2,
-			'the tab "chat-b" cannot stand inside "chat-a": its app does not let it',
-			'no tab list "tab-1" is here: a tab stands in Open, Pinned or a chat',
+			'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in Open or Pinned',
+			'the tab "tab-1" cannot stand inside "tab-1": a tab stands only in Open or Pinned',
 		],
 	);
 
 	await main.send(places.tabPlacing.pin, { window: "main", id: tabId, isPinned: true });
 	const grouped = await main.send(places.tabPlacing.createGroup, { window: "main", from: { kind: "tab", tabId } });
-	const placed = await tabs.placedTabs();
+	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
 	check(
-		"pinning moves the tab out of its chat into Pinned, and a group born around it stands there",
-		[placed.lists["chat-a"], placed.lists["pinned"]?.at(-1)?.kind, grouped.ok],
-		[[], "group", true],
+		"pinning moves the tab into Pinned, and a group born around it stands there",
+		[placed.ok ? placed.output.lists["pinned"]?.at(-1)?.kind : placed.reason, grouped.ok],
+		["group", true],
 	);
 	await groupPlacingChecks(main, grouped.ok ? grouped.output.id : "");
 }
@@ -269,7 +205,7 @@ async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void>
 	check(
 		"a group holding a chat cannot stand inside another chat",
 		intoChat.ok ? "placed" : intoChat.reason,
-		`the group "${groupId}" holds a tab whose app does not let it stand inside "chat-a"`,
+		'no tab list "chat-a" is here',
 	);
 }
 
@@ -442,7 +378,7 @@ async function workspaceListsMigrationChecks(): Promise<void> {
 	});
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
-	const [main, side] = windowsOver(new TauriTabsGateway({ store, workspaceId: DEFAULT.id, kept, apps: BUILT_IN_APPS }));
+	const [main, side] = windowsOver(new TauriTabsGateway({ workspaceId: DEFAULT.id, kept }));
 	check(
 		"workspace-wide lists of an older places.json move into the main window on first read",
 		[
@@ -473,7 +409,6 @@ async function workspaceListsMigrationChecks(): Promise<void> {
 const quiet = console.info;
 console.info = () => undefined;
 await handoffChecks();
-await migrationChecks();
 await unreadableChecks();
 await oneWriterChecks();
 await lawChecks();

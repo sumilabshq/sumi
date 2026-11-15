@@ -4,8 +4,6 @@ import type { McpServer } from "../packages/shared/data-framework/src/index.ts";
 import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
 import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { apps as appsContract } from "../plugins/apps/data/apps/generated/contract.ts";
-import { layout } from "../packages/state/layout/generated/contract.ts";
-import { refusePlace } from "../plugins/apps/data/tabs/shared/lib/tab-places.ts";
 import type { WorkspaceState } from "../plugins/apps/data/tabs/shared/schema/workspace.schema.ts";
 import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { regionOnPage } from "../packages/domain/browser/shared/lib/region-within.ts";
@@ -120,9 +118,9 @@ async function opened(args: unknown): Promise<string> {
 	return PlacedSchema.parse(await tabTool("tabs_tab_open", args)).id;
 }
 
-async function sectionOf(place: string): Promise<Section | undefined> {
+async function sectionOf(list: string): Promise<Section | undefined> {
 	const state = z.custom<WorkspaceState>().parse(await tabTool("tabs_workspace_state", {}));
-	return state.sections.find((section) => section.place === place);
+	return state.sections.find((section) => section.list === list);
 }
 
 function tabsIn(section: Section | undefined) {
@@ -144,7 +142,7 @@ function firstGroupOf(section: Section | undefined) {
 }
 
 async function isShown(tabId: string): Promise<boolean> {
-	return tabsIn(await sectionOf("this-chat")).some((tab) => tab.id === tabId && tab.isShown);
+	return tabsIn(await sectionOf("workspace")).some((tab) => tab.id === tabId && tab.isShown);
 }
 
 async function pageWasShown(tabId: string): Promise<boolean> {
@@ -163,7 +161,7 @@ const shownBefore = await shownTabId();
 
 const hidden = await opened({ app: "browser", target: "https://jira.example.com" });
 check("a tab opened without show leaves the person's tab on screen", await shownTabId(), shownBefore);
-check("it opens in this chat by default", idsIn(await sectionOf("this-chat")).includes(hidden), true);
+check("it opens in Open by default", idsIn(await sectionOf("workspace")).includes(hidden), true);
 check("it is not shown", await isShown(hidden), false);
 check("its page loads the address without ever being shown", await pageWasShown(hidden), false);
 
@@ -172,18 +170,15 @@ check("a workspace tab opened with show is the one on screen", await shownTabId(
 await opened({ app: "browser", target: "https://mail.example.com", place: "workspace" });
 check("a workspace tab opened without show leaves it there", await shownTabId(), workspaceShown);
 
-const offBoard = await opened({ app: "browser", show: true });
-check("show: true leaves a tab of a chat off the board off screen", await isShown(offBoard), false);
-await fakes.studioApp.send(layout.paneTabs.showChat, { chatId: HOST_CHAT, paneId: null });
 const shown = await opened({ app: "browser", show: true });
-check("show: true shows the new tab of a chat on the board", await isShown(shown), true);
+check("show: true shows the new tab", await isShown(shown), true);
 
 const grouped = await opened({
 	app: "browser",
 	target: "https://slack.example.com",
 	newGroup: { name: "Work", colour: "blue" },
 });
-const work = firstGroupOf(await sectionOf("this-chat"));
+const work = firstGroupOf(await sectionOf("workspace"));
 check(
 	"newGroup creates the named, coloured group and opens the tab in it",
 	work?.kind === "group" ? [work.name, work.colour, work.tabs.map((tab) => tab.id)] : null,
@@ -197,15 +192,16 @@ const renamed = TabNowSchema.parse(await tabTool("tabs_tab_update", { tabId: hid
 check(
 	"tabs_tab_update renames and answers the tab as it is now",
 	[renamed.title, renamed.place],
-	["Board", "this-chat"],
+	["Board", "workspace"],
 );
 
+const pinned = TabNowSchema.parse(await tabTool("tabs_tab_update", { tabId: hidden, place: "pinned" }));
 const moved = TabNowSchema.parse(await tabTool("tabs_tab_update", { tabId: hidden, place: "workspace" }));
-check("tabs_tab_update moves a tab to the workspace", moved.place, "workspace");
+check("tabs_tab_update moves a tab to Pinned and back to Open", [pinned.place, moved.place], ["pinned", "workspace"]);
 
 const groupId = work?.kind === "group" ? work.id : "";
 await tabTool("tabs_group_edit", { groupId, name: "Client", colour: "green" });
-const recoloured = firstGroupOf(await sectionOf("this-chat"));
+const recoloured = firstGroupOf(await sectionOf("workspace"));
 check(
 	"tabs_group_edit renames and recolours",
 	recoloured?.kind === "group" ? [recoloured.name, recoloured.colour] : null,
@@ -213,7 +209,7 @@ check(
 );
 
 await tabTool("tabs_group_remove", { groupId });
-const afterUngroup = await sectionOf("this-chat");
+const afterUngroup = await sectionOf("workspace");
 check(
 	"tabs_group_remove keeps the tabs by default",
 	[firstGroupOf(afterUngroup) === undefined, idsIn(afterUngroup).includes(grouped)],
@@ -221,9 +217,9 @@ check(
 );
 
 const made = PlacedSchema.parse(
-	await tabTool("tabs_group_create", { name: "Docs", place: "this-chat", tabIds: [grouped] }),
+	await tabTool("tabs_group_create", { name: "Docs", place: "workspace", tabIds: [grouped] }),
 ).id;
-const docs = firstGroupOf(await sectionOf("this-chat"));
+const docs = firstGroupOf(await sectionOf("workspace"));
 check(
 	"tabs_group_create makes the group and moves the tabs asked into it",
 	docs?.kind === "group" ? [docs.id, docs.name, docs.tabs.map((tab) => tab.id)] : null,
@@ -233,7 +229,7 @@ check(
 await tabTool("tabs_group_remove", { groupId: made, keepTabs: false });
 check(
 	"tabs_group_remove with keepTabs false closes its tabs",
-	idsIn(await sectionOf("this-chat")).includes(grouped),
+	idsIn(await sectionOf("workspace")).includes(grouped),
 	false,
 );
 
@@ -241,7 +237,7 @@ await tabTool("tabs_tab_close", { tabId: copy });
 check("tabs_tab_close closes the tab", idsIn(await sectionOf("workspace")).includes(copy), false);
 
 check(
-	"a tab is never opened into another chat's list",
+	"a tab opens only into Open or Pinned",
 	(await refusalOf("tabs_tab_open", { app: "browser", place: "chat-other" })).includes("place"),
 	true,
 );
@@ -282,7 +278,7 @@ check(
 );
 
 const openedTask = await opened({ app: "tasks", target: "T-12" });
-const taskTab = tabsIn(await sectionOf("this-chat")).find((tab) => tab.id === openedTask);
+const taskTab = tabsIn(await sectionOf("workspace")).find((tab) => tab.id === openedTask);
 check(
 	"tabs_tab_open with app tasks opens that task, not a web address",
 	[taskTab?.app, taskTab?.address],
@@ -294,7 +290,7 @@ check(
 	true,
 );
 const openedBoard = await opened({ app: "tasks" });
-const boardTab = tabsIn(await sectionOf("this-chat")).find((tab) => tab.id === openedBoard);
+const boardTab = tabsIn(await sectionOf("workspace")).find((tab) => tab.id === openedBoard);
 check(
 	"tabs_tab_open with app tasks and no target opens the board",
 	[boardTab?.app, boardTab?.address ?? null],
@@ -324,17 +320,6 @@ check(
 	(await refusalOf("pages_tab_read", { tabId: "tab-404" })).includes("No tab tab-404 is open"),
 	true,
 );
-check(
-	"another chat's list may not be changed",
-	(refusePlace("chat-other", HOST_CHAT) ?? "").includes("another chat"),
-	true,
-);
-check(
-	"this chat's list may be changed",
-	[refusePlace(HOST_CHAT, HOST_CHAT), refusePlace("this-chat", HOST_CHAT)],
-	[null, null],
-);
-check("the workspace list may be changed", refusePlace("workspace", HOST_CHAT), null);
 
 const page = {
 	width: 1200,

@@ -103,7 +103,7 @@ function entryShapeOf(entry: SidebarEntry): unknown {
 	}
 
 	const marked = entry.splitMark ? "~" : "";
-	return entry.children === undefined ? `${entry.tab.id}${marked}` : { [entry.tab.id]: entry.children.length };
+	return `${entry.tab.id}${marked}`;
 }
 
 function splitIdIn(sidebar: TabsSidebar): string | null {
@@ -118,9 +118,7 @@ function sourceOf(sidebar: TabsSidebar, { id, isFromBlock, pinned }: Drag): Drag
 		groupId: null,
 		splitId: isFromBlock ? splitIdIn(sidebar) : null,
 		list: pinned.includes(id) && !isFromBlock ? "pinned" : "workspace",
-		isHolder: false,
-		isNestable: true,
-		isTearable: true,
+		isChat: false,
 	};
 }
 
@@ -175,18 +173,6 @@ const DRAGS: readonly Drag[] = [
 			list: "pinned",
 			groupId: null,
 			before: "tab-4",
-		},
-	},
-	{
-		what: "a pinned member of a mixed split dragged from its Pinned copy into a chat",
-		pinned: ["tab-1"],
-		id: "tab-1",
-		isFromBlock: false,
-		drop: {
-			kind: "list",
-			list: "chat",
-			groupId: null,
-			before: null,
 		},
 	},
 	{

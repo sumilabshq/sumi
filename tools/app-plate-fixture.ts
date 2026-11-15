@@ -54,14 +54,13 @@ const KEPT_TABS: SeededTabs = {
 		},
 	],
 	lists: {
-		[CHAT_ID]: [
+		workspace: [
 			{ kind: "group", id: "group-9" },
 			{ kind: "tab", id: "tab-10" },
 		],
 	},
 	groups: [{ id: "group-9", name: "Test group", hue: null, isOpen: true, tabIds: ["tab-8"] }],
 	shownId: "tab-8",
-	lastShown: { [CHAT_ID]: "tab-8" },
 	minted: 10,
 	closed: [],
 };

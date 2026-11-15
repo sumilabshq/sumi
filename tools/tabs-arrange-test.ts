@@ -2,7 +2,6 @@ import type {
 	AppTabState,
 	SidebarEntry,
 	SidebarTab,
-	TabChild,
 	TabDrop,
 	TabsSidebar,
 } from "../plugins/apps/data/app-host/generated/contract.ts";
@@ -26,13 +25,11 @@ function tabOf(id: string): AppTabState {
 		isInOwnWindow: false,
 		mark: "none",
 		isShown: false,
-		isNestable: true,
-		isTearable: true,
 	};
 }
 
-function rowOf(id: string, children?: readonly TabChild[]): SidebarTab {
-	return children === undefined ? { kind: "tab", tab: tabOf(id) } : { kind: "tab", tab: tabOf(id), children };
+function rowOf(id: string, isChat = false): SidebarTab {
+	return { kind: "tab", tab: tabOf(id), isChat };
 }
 
 function splitOf(id: string, members: readonly string[]): SidebarEntry {
@@ -62,10 +59,7 @@ const SIDEBAR: TabsSidebar = {
 				rowOf("t1"),
 				{ kind: "group", group: { id: "g1", name: "G", hue: null, isOpen: true, items: [rowOf("t2"), rowOf("t3")] } },
 				splitOf("s3", ["m1", "m2", "m3"]),
-				rowOf("chat", [
-					{ kind: "tab", tab: tabOf("c1") },
-					{ kind: "group", group: { id: "cg", name: "CG", hue: null, isOpen: true, tabs: [tabOf("c2")] } },
-				]),
+				rowOf("chat", true),
 				splitOf("s2", ["n1", "n2"]),
 				rowOf("t4"),
 			],
@@ -80,9 +74,7 @@ function tab(id: string, more: Partial<Extract<DragSource, { kind: "tab" }>> = {
 		groupId: null,
 		splitId: null,
 		list: "workspace",
-		isHolder: false,
-		isNestable: true,
-		isTearable: true,
+		isChat: false,
 		...more,
 	};
 }
@@ -103,15 +95,7 @@ function entryShapeOf(entry: SidebarEntry): unknown {
 		return { [entry.split.id]: entry.split.members.map((member) => member.item.tab.id) };
 	}
 
-	if (entry.children === undefined) {
-		return entry.tab.id;
-	}
-
-	return {
-		[entry.tab.id]: entry.children.map((child) =>
-			child.kind === "tab" ? child.tab.id : { [child.group.id]: child.group.tabs.map((one) => one.id) },
-		),
-	};
+	return entry.tab.id;
 }
 
 function sectionsOf(sidebar: TabsSidebar): unknown {
@@ -122,7 +106,7 @@ function workspaceOf(sidebar: TabsSidebar): unknown {
 	return Reflect.get(Object(Reflect.get(Object(shapeOf(sidebar)), "sections")), "workspace");
 }
 
-const CHAT = { chat: ["c1", { cg: ["c2"] }] };
+const CHAT = "chat";
 
 function arranged(source: DragSource, drop: TabDrop, isLanding = false): TabsSidebar {
 	return arrangedSidebar(SIDEBAR, { source, drop, isLanding });
@@ -149,37 +133,6 @@ check(
 	"a row carried out of a group lands at the list's end",
 	workspaceOf(arranged(tab("t2", { groupId: "g1" }), { kind: "list", list: "workspace", groupId: null, before: null })),
 	["t1", { g1: ["t3"] }, { s3: ["m1", "m2", "m3"] }, CHAT, { s2: ["n1", "n2"] }, "t4", "t2"],
-);
-check(
-	"a tab dropped into a chat becomes its first child",
-	workspaceOf(arranged(tab("t4"), { kind: "list", list: "chat", groupId: null, before: "c1" })),
-	[
-		"t1",
-		{ g1: ["t2", "t3"] },
-		{ s3: ["m1", "m2", "m3"] },
-		{ chat: ["t4", "c1", { cg: ["c2"] }] },
-		{ s2: ["n1", "n2"] },
-	],
-);
-check(
-	"a chat's grouped child carried before the split leaves its chat group",
-	workspaceOf(
-		arranged(tab("c2", { list: "chat", groupId: "cg" }), {
-			kind: "list",
-			list: "workspace",
-			groupId: null,
-			before: "m2",
-		}),
-	),
-	[
-		"t1",
-		{ g1: ["t2", "t3"] },
-		"c2",
-		{ s3: ["m1", "m2", "m3"] },
-		{ chat: ["c1", { cg: [] }] },
-		{ s2: ["n1", "n2"] },
-		"t4",
-	],
 );
 check(
 	"a member carried out of a split of three leaves a split of two",

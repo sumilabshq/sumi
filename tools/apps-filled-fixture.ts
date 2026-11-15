@@ -2,7 +2,8 @@ import { MemoryPluginStateStore, plugin, runtime } from "../packages/shared/plug
 import type { Plugin } from "../packages/shared/plugin-framework/src/index.ts";
 import type { FilledApp } from "../plugins/apps/src/index.ts";
 import { commandMenu } from "../plugins/command-menu/src/index.ts";
-import { agents, backend, shell, windows } from "../plugins/sumi-host/src/index.ts";
+import { controlMenu } from "../plugins/control-menu/src/index.ts";
+import { agents, backend, shell, sumiHost, windows } from "../plugins/sumi-host/src/index.ts";
 
 function ignored(): void {
 	return undefined;
@@ -26,6 +27,6 @@ export function appsFilledBy(fillers: readonly Plugin[]): readonly FilledApp[] {
 			filled.push(entry);
 		},
 	}));
-	startWithIgnoredServices([appsStub, commandMenu, ...fillers]);
+	startWithIgnoredServices([appsStub, sumiHost, commandMenu, controlMenu, ...fillers]);
 	return filled;
 }

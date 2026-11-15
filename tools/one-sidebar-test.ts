@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { z } from "zod";
 import { paged, waited } from "./chrome-ask.ts";
-import type { AskedPage, PagePoint } from "./chrome-ask.ts";
+import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
@@ -74,8 +74,6 @@ const ANATOMY = `(() => {
 
 const CHAT_ROWS = `(() => {
 	const chat = document.querySelector('[data-tabs-chat="release"]');
-	const nested = chat?.nextElementSibling?.querySelector("[data-tabs-list]") ?? null;
-	const child = nested?.querySelector('[data-tabs-place="child"]') ?? null;
 	const unread = document.querySelector('[data-tabs-chat="checks"] [data-tabs-unread]');
 	const dot = unread === null ? null : unread.getBoundingClientRect();
 	const rowBox = document.querySelector('[data-tabs-chat="checks"]').getBoundingClientRect();
@@ -83,10 +81,6 @@ const CHAT_ROWS = `(() => {
 		hasMascot: chat?.querySelector(".wg-chat-tab-icon") !== null,
 		isGlanceHost: chat?.classList.contains("wg-chat-tab-icon-host") === true,
 		working: document.querySelector('[data-tabs-chat="deepl"] .wg-chat-tab-icon')?.dataset.motion ?? null,
-		nestedList: nested?.dataset.tabsList ?? null,
-		children: [...(nested?.querySelectorAll('[data-tabs-place="child"]') ?? [])].map((row) => row.dataset.tabsId),
-		childShift: child === null || chat === null ? null : Math.round(child.getBoundingClientRect().left - chat.getBoundingClientRect().left),
-		cardFill: chat?.parentElement?.hasAttribute("data-tabs-card") === true ? getComputedStyle(chat.parentElement).backgroundColor : null,
 		dot: dot === null ? null : [Math.round(dot.width), Math.round(dot.height), getComputedStyle(unread).backgroundColor, Math.round(rowBox.right - dot.right)],
 		dotsOnReadChats: document.querySelectorAll('[data-tabs-chat]:not([data-tabs-chat="checks"]) [data-tabs-unread]').length,
 		tabIcons: document.querySelectorAll('[data-tabs-id="tab-1"] .wg-chat-tab-icon').length,
@@ -97,24 +91,10 @@ const ChatRowsSchema = z.object({
 	hasMascot: z.boolean(),
 	isGlanceHost: z.boolean(),
 	working: z.string().nullable(),
-	nestedList: z.string().nullable(),
-	children: z.array(z.string()),
-	childShift: z.number().nullable(),
-	cardFill: z.string().nullable(),
 	dot: z.tuple([z.number(), z.number(), z.string(), z.number()]).nullable(),
 	dotsOnReadChats: z.number(),
 	tabIcons: z.number(),
 });
-
-const centreOf = (selector: string): string => `(() => {
-	const box = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();
-	return [Math.round(box.left + box.width / 2), Math.round(box.top + box.height / 2)];
-})()`;
-
-const lowerHalfOf = (selector: string): string => `(() => {
-	const box = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();
-	return [Math.round(box.left + box.width / 2), Math.round(box.top + box.height * 0.8)];
-})()`;
 
 const MENU_ITEMS = `[...document.querySelectorAll("[data-tabs-pointer-menu] [data-tabs-menu-item]")].map((item) => item.dataset.tabsMenuItem)`;
 
@@ -127,12 +107,6 @@ const contextMenuAt = (selector: string): string => `(() => {
 
 const ESCAPE = `document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); true`;
 
-const PointSchema = z.tuple([z.number(), z.number()]);
-
-async function pointOf(page: AskedPage, expression: string): Promise<PagePoint> {
-	return PointSchema.parse(await page.ask(expression));
-}
-
 async function menuOf(page: AskedPage, selector: string): Promise<readonly string[]> {
 	await page.ask(contextMenuAt(selector));
 	await waited(250);
@@ -141,16 +115,6 @@ async function menuOf(page: AskedPage, selector: string): Promise<readonly strin
 	await waited(250);
 	return items;
 }
-
-async function dragged(page: AskedPage, from: PagePoint, to: PagePoint): Promise<void> {
-	const held = await page.lift({ from, to, steps: 16, stepMs: 16 });
-	await waited(260);
-	await held.drop(to);
-	await waited(500);
-}
-
-const listOfRow = (id: string): string =>
-	`document.querySelector('[data-tabs-id="${id}"]')?.closest("[data-tabs-list]")?.dataset.tabsList ?? null`;
 
 const AnatomySchema = z.object({
 	rightSides: z.number(),
@@ -197,10 +161,6 @@ function checksSections(seen: z.infer<typeof AnatomySchema>, theme: Theme): void
 
 type ChatRows = z.infer<typeof ChatRowsSchema>;
 
-function isNested({ cardFill, childShift }: ChatRows): boolean {
-	return cardFill === "rgba(0, 0, 0, 0)" && childShift !== null && childShift > 0;
-}
-
 function isBlueDot({ dot, dotsOnReadChats }: ChatRows): boolean {
 	if (dot === null) {
 		return false;
@@ -210,24 +170,11 @@ function isBlueDot({ dot, dotsOnReadChats }: ChatRows): boolean {
 	return width === 8 && height === 8 && colour === ACCENT && fromEnd <= 12 && dotsOnReadChats === 0;
 }
 
-function checksNesting(seen: ChatRows, theme: Theme): void {
-	check(
-		`${theme}: a chat's sub-tabs stand nested under it`,
-		seen.nestedList === "release" && JSON.stringify(seen.children) === '["tab-2","tab-3"]',
-		seen,
-	);
-	check(`${theme}: a chat with sub-tabs wears no plate, its sub-tabs stand indented under it`, isNested(seen), [
-		seen.cardFill,
-		seen.childShift,
-	]);
-}
-
 async function checksChatRows(page: AskedPage, theme: Theme): Promise<void> {
 	const seen = ChatRowsSchema.parse(await page.ask(CHAT_ROWS));
 	check(`${theme}: a chat row wears the mascot and answers the glance`, seen.hasMascot && seen.isGlanceHost, seen);
 	check(`${theme}: a running chat's mascot bobs`, seen.working === "bob", seen.working);
 	check(`${theme}: other tabs keep their own icons`, seen.tabIcons === 0, seen.tabIcons);
-	checksNesting(seen, theme);
 	check(`${theme}: an unread chat shows an 8px blue dot at the row's right end, read chats none`, isBlueDot(seen), [
 		seen.dot,
 		seen.dotsOnReadChats,
@@ -248,17 +195,6 @@ async function checksOneMenu(page: AskedPage): Promise<void> {
 			JSON.stringify(["Add to Essentials", "Pin", "New group with this tab", "Move to group", "Rename", "Close"]),
 		tabMenu,
 	);
-}
-
-async function checksSubTabDrag(page: AskedPage): Promise<void> {
-	const below = await pointOf(page, centreOf('[data-tabs-id="tab-1"]'));
-	await dragged(page, await pointOf(page, centreOf('[data-tabs-id="tab-3"]')), [below[0], below[1] + 12]);
-	const out = await page.ask(listOfRow("tab-3"));
-	check("a sub-tab dragged out of its chat lands in Recents", out === "workspace", out);
-	const onto = await pointOf(page, lowerHalfOf('[data-tabs-chat="release"]'));
-	await dragged(page, await pointOf(page, centreOf('[data-tabs-id="tab-3"]')), onto);
-	const inside = await page.ask(listOfRow("tab-3"));
-	check("dropped on a chat's lower half, it goes back into the chat", inside === "release", inside);
 }
 
 async function walk(theme: Theme): Promise<void> {
@@ -282,7 +218,6 @@ async function checksActions(page: AskedPage, theme: Theme): Promise<void> {
 	}
 
 	await checksOneMenu(page);
-	await checksSubTabDrag(page);
 }
 
 async function checksQuiet(page: AskedPage, theme: Theme): Promise<void> {

@@ -41,7 +41,7 @@ function tabOf(id: string, app: HostTab["app"]): HostTab {
 		lastAddress: null,
 		title: null,
 		mark: "none",
-		isFolded: false,
+		essentialWindow: null,
 	};
 }
 
@@ -61,8 +61,6 @@ const MOMENT: HostTabsMoment = {
 			{ kind: "tab", id: "chat-1" },
 			{ kind: "group", id: "g1" },
 			{ kind: "tab", id: "apart" },
-		],
-		"chat-1": [
 			{ kind: "tab", id: "sub" },
 			{ kind: "group", id: "g2" },
 		],
@@ -104,22 +102,18 @@ function shapeOf(entry: SidebarEntry): string {
 	return `group:${entry.group.id}[${entry.group.items.map(itemShapeOf).join(",")}]`;
 }
 
-function itemShapeOf({ tab, children }: Extract<SidebarEntry, { kind: "tab" }>): string {
-	if (children === undefined) {
-		return `tab:${tab.id}`;
-	}
-
-	return `chat:${tab.id}[${children.map((child) => (child.kind === "tab" ? child.tab.id : `group:${child.group.id}`)).join(",")}]`;
+function itemShapeOf({ tab, isChat }: Extract<SidebarEntry, { kind: "tab" }>): string {
+	return `${isChat ? "chat" : "tab"}:${tab.id}`;
 }
 
 const sidebar = sidebarWith(MOMENT, "chat-1");
 const shapes = sidebar.sections.map((section) => [section.list, section.entries.map(shapeOf)]);
 check(
-	"the sidebar is Pinned then Open, and a chat carries its own tabs and groups nested under it",
+	"the sidebar is Pinned then Open, and a chat is a plain row that holds no tabs",
 	JSON.stringify(shapes) ===
 		JSON.stringify([
-			["pinned", ["chat:chat-2[]"]],
-			["workspace", ["chat:chat-1[sub,group:g2]", "group:g1[chat:chat-3[]]", "tab:apart"]],
+			["pinned", ["chat:chat-2"]],
+			["workspace", ["chat:chat-1", "group:g1[chat:chat-3]", "tab:apart", "tab:sub", "group:g2[tab:loose]"]],
 		]),
 	shapes,
 );
@@ -128,7 +122,7 @@ const openChat = sidebar.sections[1]?.entries[0];
 check(
 	"the chat on screen is shown, another chat is not",
 	openChat?.kind === "tab" &&
-		openChat.children !== undefined &&
+		openChat.isChat &&
 		openChat.tab.isShown &&
 		sidebar.sections[0]?.entries[0]?.kind === "tab" &&
 		!sidebar.sections[0].entries[0].tab.isShown,

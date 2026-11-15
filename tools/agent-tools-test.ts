@@ -1,6 +1,5 @@
 import { workspaceStateOf } from "../plugins/apps/data/tabs/features/workspace/lib/workspace-state.ts";
 import type { StateSources } from "../plugins/apps/data/tabs/features/workspace/lib/workspace-state.ts";
-import type { TabChild } from "../plugins/apps/data/app-host/generated/contract.ts";
 
 let failed = 0;
 
@@ -28,14 +27,17 @@ function tab(id: string, title: string, isShown = false) {
 		isInOwnWindow: false,
 		mark: "none" as const,
 		isShown,
-		isNestable: true,
 		isTearable: true,
 	};
 }
 
-function chat(id: string, title: string, children: readonly TabChild[]) {
+function row(id: string, title: string, isShown = false) {
+	return { kind: "tab" as const, tab: tab(id, title, isShown), isChat: false };
+}
+
+function chat(id: string, title: string) {
 	const face = { ...tab(id, title), app: "chat" as const, icon: "chat" as const, address: null };
-	return { kind: "tab" as const, tab: face, children };
+	return { kind: "tab" as const, tab: face, isChat: true };
 }
 
 const sidebar: StateSources["sidebar"] = {
@@ -44,24 +46,23 @@ const sidebar: StateSources["sidebar"] = {
 		{
 			list: "pinned",
 			title: "Pinned",
-			entries: [chat("chat-b", "Billing", [{ kind: "tab", tab: tab("t4", "BILL board") }])],
+			entries: [chat("chat-b", "Billing"), row("t4", "BILL board")],
 		},
 		{
 			list: "workspace",
-			title: "Recents",
+			title: "Open",
 			entries: [
-				{ kind: "tab", tab: tab("t1", "Linear") },
-				chat("chat-a", "Pane bugs", [
-					{ kind: "tab", tab: tab("t2", "localhost", true) },
-					{
-						kind: "group",
-						group: { id: "g1", name: "Docs", hue: "blue", isOpen: false, tabs: [tab("t3", "Tauri docs")] },
-					},
-				]),
+				row("t1", "Linear"),
+				chat("chat-a", "Pane bugs"),
+				row("t2", "localhost", true),
+				{
+					kind: "group",
+					group: { id: "g1", name: "Docs", hue: "blue", isOpen: false, items: [row("t3", "Tauri docs")] },
+				},
 			],
 		},
 	],
-	newTabList: "chat-a",
+	newTabList: "workspace",
 };
 
 const chats: StateSources["chats"] = {
@@ -71,7 +72,7 @@ const chats: StateSources["chats"] = {
 
 const tabs: StateSources["tabs"] = { tabs: [tab("t1", "Linear"), tab("t2", "localhost", true)], canReopen: false };
 
-const whole = workspaceStateOf({ sidebar, chats, tabs }, "chat-a", { scope: "workspace" });
+const whole = workspaceStateOf({ sidebar, chats, tabs }, "chat-a");
 check("the asking chat is named", whole.thisChat, "chat-a");
 check(
 	"every chat is listed, pinned first, this chat marked",
@@ -82,11 +83,14 @@ check(
 	],
 );
 check(
-	"each section says whose it is",
-	whole.sections.map((section) => section.place),
-	["pinned", "workspace", "chat:chat-b", "this-chat"],
+	"the state lists Pinned then Open, chats as plain entries",
+	whole.sections.map((section) => [section.list, section.entries.map((entry) => `${entry.kind}:${entry.id}`)]),
+	[
+		["pinned", ["chat:chat-b", "tab:t4"]],
+		["workspace", ["tab:t1", "chat:chat-a", "tab:t2", "group:g1"]],
+	],
 );
-check("groups keep their tabs and colour", whole.sections[3]?.entries[1], {
+check("groups keep their tabs and colour", whole.sections[1]?.entries[3], {
 	kind: "group",
 	id: "g1",
 	name: "Docs",
@@ -106,22 +110,7 @@ check("groups keep their tabs and colour", whole.sections[3]?.entries[1], {
 	chats: [],
 });
 check("the tab the person sees is named", whole.shownTab, "t2");
-check("essentials come with the workspace scope", whole.essentials, [{ id: "e1", title: "Mail", isShown: false }]);
-
-const own = workspaceStateOf({ sidebar, chats, tabs }, "chat-a", { scope: "this-chat" });
-check(
-	"this-chat scope keeps only this chat's section",
-	own.sections.map((section) => section.list),
-	["chat-a"],
-);
-check("this-chat scope drops the essentials", own.essentials, []);
-
-const other = workspaceStateOf({ sidebar, chats, tabs }, "chat-b", { scope: "workspace" });
-check(
-	"the same tabs read from another chat swap places",
-	other.sections.map((section) => section.place),
-	["pinned", "workspace", "this-chat", "chat:chat-a"],
-);
+check("essentials are listed", whole.essentials, [{ id: "e1", title: "Mail", isShown: false }]);
 
 if (failed > 0) {
 	console.log(`${failed} agent tool check(s) failed`);

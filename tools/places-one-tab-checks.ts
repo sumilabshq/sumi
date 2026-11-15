@@ -3,7 +3,7 @@ import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { places as placesContract } from "../plugins/apps/data/places/generated/contract.ts";
-import type { AppTabState, PlacedSidebar, TabChild, TabsAsk } from "../plugins/apps/data/places/generated/contract.ts";
+import type { PlacedSidebar, TabsAsk } from "../plugins/apps/data/places/generated/contract.ts";
 import { places as RunnablePlacesModule } from "../plugins/apps/data/places/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
@@ -22,7 +22,12 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 		runtime()
 			.modules(
 				RunnablePlacesModule({
-					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
+					injects: {
+						windows: new MemoryWindowsGateway({ windows: [] }),
+						tabs,
+						placedApps: builtInPlacedApps(),
+						home: mainHome(),
+					},
 				}),
 			)
 			.start({ platform: "server", env: {} }),
@@ -44,26 +49,23 @@ function openRowsOf(sidebar: PlacedSidebar | string): unknown {
 
 	return sidebar.sections
 		.flatMap((section) => section.entries)
-		.map((entry) =>
-			entry.kind === "tab" ? [entry.tab.title, entry.tab.mark, entry.children?.length ?? null] : entry.kind,
-		);
+		.map((entry) => (entry.kind === "tab" ? [entry.tab.title, entry.tab.mark, entry.isChat] : entry.kind));
 }
 
 async function wholeChatChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
 	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
-	await places.send(placesContract.tabOpening.openTab, { at: AT, app: "canvas", list: "chat-a" });
 	await places.send(placesContract.tabFacts.recordTurn, { id: "chat-a", title: null, isBusy: true, isSeen: false });
 	check(
-		"places alone answers a chat row: its title, its running mark and its artifacts, with no chat record anywhere",
+		"places alone answers a chat row: its title and its running mark, with no chat record anywhere",
 		openRowsOf(await sidebarOf(places)),
-		[["Release plan", "running", 1]],
+		[["Release plan", "running", true]],
 	);
 
 	await chatIdChecks(places);
 	await turnEndingChecks(places);
-	await archiveChecks(places, tabs);
+	await archiveChecks(places);
 }
 
 async function chatIdOf(places: Runtime): Promise<string | null> {
@@ -88,31 +90,28 @@ async function turnEndingChecks(places: Runtime): Promise<void> {
 	check(
 		"a turn ending unseen marks the tab unread, and seeing it clears the mark",
 		[unread, openRowsOf(await sidebarOf(places))],
-		[[["Release plan", "unread", 1]], [["Release plan", "none", 1]]],
+		[[["Release plan", "unread", true]], [["Release plan", "none", true]]],
 	);
 }
 
-async function archiveChecks(places: Runtime, tabs: MemoryTabsGateway): Promise<void> {
+async function archiveChecks(places: Runtime): Promise<void> {
 	const closed = await places.send(placesContract.tabClosing.closeTab, { at: AT, id: "chat-a" });
 	const closedRows = await places.send(placesContract.tabs.closedTabs);
 	check(
-		"closing a chat tab archives it with its artifacts: it leaves the list and stands among the closed tabs",
+		"closing a chat tab archives it: it leaves the list and stands among the closed tabs",
 		[
 			closed.ok,
 			openRowsOf(await sidebarOf(places)),
 			closedRows.ok ? closedRows.output.tabs.map((row) => [row.tabId, row.title]) : closedRows.reason,
-			(await tabs.placedTabs()).closed[0]?.held?.tabs.length,
 		],
-		[true, [], [["chat-a", "Release plan"]], 1],
+		[true, [], [["chat-a", "Release plan"]]],
 	);
 
 	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
 	check("a closed chat is not brought back by its record", openRowsOf(await sidebarOf(places)), []);
 
 	await places.send(placesContract.tabOpening.reopenClosed, { at: AT, tabId: "chat-a" });
-	check("reopening brings the chat back with its artifacts", openRowsOf(await sidebarOf(places)), [
-		["Release plan", "none", 1],
-	]);
+	check("reopening brings the chat back", openRowsOf(await sidebarOf(places)), [["Release plan", "none", true]]);
 }
 
 async function sameForEveryTabChecks(): Promise<void> {
@@ -137,29 +136,7 @@ async function sameForEveryTabChecks(): Promise<void> {
 	check(
 		"a chat dropped onto a chat is refused, and a chat becomes an essential like any tab",
 		[inChat.ok ? "placed" : inChat.reason, essential.ok ? essential.output.title : essential.reason],
-		['the tab "chat-b" cannot stand inside "chat-a": its app does not let it', "Two"],
-	);
-}
-
-async function foldChecks(): Promise<void> {
-	const tabs = new MemoryTabsGateway();
-	const places = placesApp(tabs);
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "One" }] });
-	const opened = await places.send(placesContract.tabOpening.openTab, { at: AT, app: "canvas", list: null });
-	const tabId = opened.ok ? opened.output.id : "";
-	await places.send(placesContract.tabPlacing.fold, { window: WINDOW, id: "chat-a" });
-	const folded = await sidebarOf(places);
-	const plain = await places.send(placesContract.tabPlacing.fold, { window: WINDOW, id: tabId });
-	const foldedOf = (sidebar: PlacedSidebar | string): unknown =>
-		typeof sidebar === "string"
-			? sidebar
-			: sidebar.sections
-					.flatMap((section) => section.entries)
-					.map((entry) => (entry.kind === "tab" ? (entry.isFolded ?? null) : null));
-	check(
-		"a tab that holds tabs folds as a fact of places, and a tab holding none is refused",
-		[foldedOf(folded), plain.ok ? "folded" : plain.reason],
-		[[true, null], `the tab "${tabId}" holds no tabs: there is nothing under it to fold`],
+		['the tab "chat-b" cannot stand inside "chat-a": a tab stands only in Open or Pinned', "Two"],
 	);
 }
 
@@ -215,10 +192,6 @@ async function oneWindowOwnerChecks(): Promise<void> {
 	);
 }
 
-function childTabsOf(children: readonly TabChild[]): readonly AppTabState[] {
-	return children.flatMap((child) => (child.kind === "tab" ? [child.tab] : child.group.tabs));
-}
-
 async function selectionChecks(): Promise<void> {
 	const places = placesApp(new MemoryTabsGateway());
 	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-b", title: "Draft" }] });
@@ -239,7 +212,7 @@ async function selectionChecks(): Promise<void> {
 		return answer.ok
 			? answer.output.sections
 					.flatMap((section) => section.entries)
-					.flatMap((entry) => (entry.kind === "tab" ? [entry.tab, ...childTabsOf(entry.children ?? [])] : []))
+					.flatMap((entry) => (entry.kind === "tab" ? [entry.tab] : []))
 					.flatMap((tab) => (tab.isShown ? [tab.id] : []))
 			: [answer.reason];
 	};
@@ -256,29 +229,6 @@ async function selectionChecks(): Promise<void> {
 		],
 		[[tasksId], [canvasId], ["chat-b"]],
 	);
-	const inChat = await places.send(placesContract.tabOpening.openTab, { at: onScreen, app: "canvas", list: "chat-b" });
-	const inChatId = inChat.ok ? inChat.output.id : inChat.reason;
-	const withInChatPane: TabsAsk = {
-		...onScreen,
-		screen: {
-			...onScreen.screen,
-			tabPanes: [{ paneId: "pane-beside", tabId: inChatId }],
-			chatGroups: [{ chatId: "chat-b", paneIds: ["pane-chat", "pane-beside"] }],
-		},
-	};
-	check(
-		"a tab inside a chat is highlighted together with its chat",
-		await showTabThenReadHighlightedIds(inChatId, withInChatPane),
-		["chat-b", inChatId],
-	);
-	await places.send(placesContract.tabShowing.show, { at: withInChatPane, id: "chat-b", isFollowingFocus: true });
-	const afterFocus = await readHighlightedIds(withInChatPane);
-	await places.send(placesContract.tabShowing.show, { at: withInChatPane, id: "chat-b" });
-	check(
-		"focus moving into a chat keeps the selection on its tab, a press on the chat selects the chat",
-		[afterFocus, await readHighlightedIds(withInChatPane)],
-		[["chat-b", inChatId], ["chat-b"]],
-	);
 	const chatView = await places.send(placesContract.tabShowing.showView, { window: onScreen.window, view: "chat" });
 	check(
 		"the shown view names an app whose tabs run in a page, never a chat",
@@ -292,7 +242,6 @@ console.info = () => undefined;
 await selectionChecks();
 await wholeChatChecks();
 await sameForEveryTabChecks();
-await foldChecks();
 await reuseChecks();
 await oneWindowOwnerChecks();
 console.info = quiet;

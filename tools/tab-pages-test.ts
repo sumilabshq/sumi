@@ -34,7 +34,6 @@ function restoredTabs(): SeededTabs {
 		},
 		groups: [],
 		shownId: "tab-10",
-		lastShown: {},
 		minted: 15,
 		closed: [],
 	};

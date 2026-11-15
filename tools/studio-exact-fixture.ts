@@ -119,13 +119,11 @@ const KEPT_TABS: SeededTabs = {
 		browserTab("tab-11", "page-11"),
 	],
 	lists: {
-		"chat-release": [
+		workspace: [
 			{ kind: "group", id: "group-12" },
 			{ kind: "group", id: "group-13" },
 			{ kind: "tab", id: "tab-7" },
 			{ kind: "tab", id: "tab-8" },
-		],
-		"chat-translator": [
 			{ kind: "tab", id: "tab-9" },
 			{ kind: "tab", id: "tab-10" },
 			{ kind: "tab", id: "tab-11" },
@@ -136,7 +134,6 @@ const KEPT_TABS: SeededTabs = {
 		{ id: "group-13", name: "Research", hue: "blue", isOpen: true, tabIds: ["tab-5", "tab-6"] },
 	],
 	shownId: "tab-2",
-	lastShown: { "chat-release": "tab-2" },
 	minted: 13,
 	closed: [],
 };
@@ -168,7 +165,7 @@ export function exactStudio({
 	const titles = Object.fromEntries(kept.map((chat) => [chat.id, { title: chat.title ?? "New chat" }]));
 	const chatIds = kept.map((chat) => chat.id);
 	const places = new MemoryTabsGateway(
-		withWindowView(placedTabsOf(keptTabsIn(releaseChatId), chatIds, pinnedChatIds, titles), "browser"),
+		withWindowView(placedTabsOf(KEPT_TABS, chatIds, pinnedChatIds, titles), "browser"),
 	);
 	const keptEssentials = new MemoryEssentialsGateway(essentials);
 	const boardPages = new BoardPagesGateway();
@@ -197,18 +194,6 @@ export function exactStudio({
 		essentials: keptEssentials,
 		switchChat: (id) => void studioApp.send(appHost.tabs.showTab, { id }),
 		holdElsewhere: (pageId) => boardPages.holdElsewhere(pageId),
-	};
-}
-
-function keptTabsIn(releaseChatId: string): SeededTabs {
-	const { [RELEASE_CHAT]: release = [], ...otherLists } = KEPT_TABS.lists ?? {};
-	return {
-		...KEPT_TABS,
-		lists: {
-			...otherLists,
-			[releaseChatId]: release,
-		},
-		lastShown: { [releaseChatId]: "tab-2" },
 	};
 }
 

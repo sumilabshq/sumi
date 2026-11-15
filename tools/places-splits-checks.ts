@@ -17,7 +17,7 @@ import { check, tally } from "./check-helpers.ts";
 const AT: TabsAsk = { window: MAIN_WINDOW, screen: BARE_SCREEN };
 
 const SEED = {
-	tabs: ["tab-1", "tab-2", "tab-3", "tab-4", "tab-5", "tab-6"].map((id) => ({
+	tabs: ["tab-1", "tab-2", "tab-3", "tab-4", "tab-5"].map((id) => ({
 		id,
 		app: "canvas" as const,
 		pageId: null,
@@ -25,7 +25,6 @@ const SEED = {
 	})),
 	lists: {
 		workspace: ["tab-1", "tab-2", "tab-3", "tab-4", "tab-5"].map((id) => ({ kind: "tab" as const, id })),
-		chat: [{ kind: "tab" as const, id: "tab-6" }],
 	},
 	shownId: "tab-1",
 	minted: 6,
@@ -145,21 +144,6 @@ async function fullChecks(window: Runtime): Promise<void> {
 		"a tab places does not hold is not placed, so the board places it itself",
 		typeof unknown === "string" ? unknown : unknown.isPlaced,
 		false,
-	);
-}
-
-async function liftingChecks(): Promise<void> {
-	const lifted = started();
-	await lifted.window.send(places.splits.placeInView, { at: AT, tabId: "tab-6", targetTabId: "tab-1", side: "right" });
-	const listed = momentOfWindow(await lifted.tabs.placedTabs(), MAIN_WINDOW, BUILT_IN_APPS).lists;
-	check(
-		"a chat's own tab dropped in the view is lifted out of the chat into Open first",
-		[
-			((await splitOf(lifted.window)) as { members?: unknown }).members,
-			listed["chat"]?.length,
-			listed["workspace"]?.at(-1)?.id,
-		],
-		[["tab-1", "tab-6"], 0, "tab-6"],
 	);
 }
 
@@ -364,11 +348,9 @@ async function allPinnedChecks(window: Runtime): Promise<void> {
 		typeof allPinned === "string"
 			? allPinned
 			: allPinned.sections.map((section) =>
-					section.entries.map((entry) =>
-						entry.kind === "tab" && entry.children !== undefined ? "holder" : entry.kind,
-					),
+					section.entries.map((entry) => (entry.kind === "tab" && entry.isChat ? "chat" : entry.kind)),
 				),
-		[["split"], ["holder", "tab", "tab", "tab"]],
+		[["split"], ["chat", "tab", "tab", "tab"]],
 	);
 }
 
@@ -404,7 +386,6 @@ async function lawChecks(): Promise<void> {
 }
 
 await placingChecks();
-await liftingChecks();
 await swappingChecks();
 await dissolvingChecks();
 await draggingOutChecks();

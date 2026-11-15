@@ -1,15 +1,22 @@
 import { BUILT_IN_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
-import type { z } from "zod";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport, ServerSideModule } from "../packages/shared/data-framework/src/index.ts";
 import { places } from "../plugins/apps/data/places/generated/contract.ts";
 import { places as placesModule } from "../plugins/apps/data/places/generated/module.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
-import { KeptSessionTabsSchema, migratedTabsOf } from "../plugins/apps/data/places/gateways/tabs/tauri/kept-session.ts";
+import { z } from "zod";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { momentOfWindow, windowTabsOf } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
-import { WindowViewSchema } from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
+import {
+	ClosedTabSchema,
+	KeptGroupSchema,
+	KeptTabSchema,
+	ListEntrySchema,
+	PlacedTabsSchema,
+	WindowViewSchema,
+} from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
+import type { ListEntry } from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
 import type { Screen } from "../plugins/apps/data/places/shared/schema/screen.schema.ts";
 import type {
 	PlacedTabs,
@@ -29,10 +36,18 @@ export const BARE_SCREEN: Screen = {
 	tabTargetId: null,
 	chatGroups: [],
 	elsewhere: [],
-	focusedChatId: null,
 };
 
-export type SeededTabs = z.input<typeof KeptSessionTabsSchema>;
+const SeededTabsSchema = z.object({
+	tabs: z.array(KeptTabSchema),
+	lists: z.record(z.string(), z.array(ListEntrySchema)).nullable().default(null),
+	groups: z.array(KeptGroupSchema).default([]),
+	shownId: z.string().nullable(),
+	minted: z.number().int().nonnegative(),
+	closed: z.array(ClosedTabSchema),
+});
+
+export type SeededTabs = z.input<typeof SeededTabsSchema>;
 
 export interface SeededFacts {
 	readonly title?: string;
@@ -45,14 +60,34 @@ export function placedTabsOf(
 	pinnedIds: readonly string[] = [],
 	factsOf: Readonly<Record<string, SeededFacts>> = {},
 ): PlacedTabs {
-	const placed = migratedTabsOf(
-		KeptSessionTabsSchema.parse(seed),
-		chatIds.map((id) => ({ id, isPinned: pinnedIds.includes(id), pinRank: pinnedIds.indexOf(id), lastAt: 0 })),
-	);
+	const session = SeededTabsSchema.parse(seed);
+	const heldIds = new Set(session.tabs.map((tab) => tab.id));
+	const chatTabs = chatIds
+		.filter((id) => !heldIds.has(id))
+		.map((id) => ({ id, app: "chat", pageId: null, label: null }));
+	const lists = session.lists ?? {
+		workspace: session.tabs.filter((tab) => tab.essentialId === null).map((tab) => tabEntryOf(tab.id)),
+	};
+	const listed = Object.entries(lists).flatMap(([list, entries]) => (list === "pinned" ? [] : entries));
+	const placed = PlacedTabsSchema.parse({
+		tabs: [...session.tabs, ...chatTabs],
+		lists: {
+			"window:main:pinned": [...pinnedIds.map(tabEntryOf), ...(lists["pinned"] ?? [])],
+			"window:main": [...chatIds.filter((id) => !pinnedIds.includes(id)).map(tabEntryOf), ...listed],
+		},
+		groups: session.groups,
+		views: { [MAIN_WINDOW]: { shownId: session.shownId } },
+		minted: session.minted,
+		closed: session.closed,
+	});
 	return {
 		...placed,
 		tabs: placed.tabs.map((tab) => ({ ...tab, ...factsOf[tab.id] })),
 	};
+}
+
+function tabEntryOf(id: string): ListEntry {
+	return { kind: "tab", id };
 }
 
 export function withWindowView(placed: PlacedTabs, view: StudioView, windowLabel = MAIN_WINDOW): PlacedTabs {
@@ -75,7 +110,12 @@ export function placesLinkOf(tabs: MemoryTabsGateway, besidePlaces: readonly Ser
 		runtime()
 			.modules(
 				placesModule({
-					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
+					injects: {
+						windows: new MemoryWindowsGateway({ windows: [] }),
+						tabs,
+						placedApps: builtInPlacedApps(),
+						home: mainHome(),
+					},
 				}),
 				...besidePlaces,
 			)

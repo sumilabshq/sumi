@@ -165,15 +165,14 @@ const SEEDED_TABS: SeededTabs = {
 		{ id: "tab-3", app: "terminal", pageId: null, label: "Release terminal", essentialId: null },
 	],
 	lists: {
-		workspace: [{ kind: "tab", id: "tab-1" }],
-		release: [
+		workspace: [
+			{ kind: "tab", id: "tab-1" },
 			{ kind: "tab", id: "tab-2" },
 			{ kind: "tab", id: "tab-3" },
 		],
 	},
 	groups: [],
 	shownId: "tab-1",
-	lastShown: {},
 	minted: 3,
 	closed: [],
 };
