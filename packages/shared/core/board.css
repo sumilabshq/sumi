@@ -14936,6 +14936,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:-mx-\[calc\(\(var\(--wg-studio-edge\,6px\)_-_1px\)_\/_2\)\] {
 		margin-inline: calc(calc((var(--wg-studio-edge, 6px) - 1px) / 2) * -1) !important;
 	}
+	.cv\:mx-\(--sumi-side-pad\) {
+		margin-inline: var(--sumi-side-pad) !important;
+	}
 	.cv\:mx-0 {
 		margin-inline: 0px !important;
 	}
@@ -14965,6 +14968,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:mt-2 {
 		margin-top: calc(var(--cv-spacing) * 2) !important;
+	}
+	.cv\:mb-2 {
+		margin-bottom: calc(var(--cv-spacing) * 2) !important;
 	}
 	.cv\:box-border {
 		box-sizing: border-box !important;
@@ -15043,6 +15049,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:h-\[30px\] {
 		height: 30px !important;
+	}
+	.cv\:h-\[46px\] {
+		height: 46px !important;
 	}
 	.cv\:h-\[540px\] {
 		height: 540px !important;
@@ -15171,6 +15180,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:grid-cols-\[280px_auto_280px\] {
 		grid-template-columns: 280px auto 280px !important;
+	}
+	.cv\:grid-cols-\[repeat\(auto-fit\,minmax\(calc\(\(100\%_-_18px\)\/4\)\,1fr\)\)\] {
+		grid-template-columns: repeat(auto-fit, minmax(calc((100% - 18px) / 4), 1fr)) !important;
 	}
 	.cv\:grid-rows-\[0fr\] {
 		grid-template-rows: 0fr !important;
@@ -15314,6 +15326,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:bg-\(--sumi-active\) {
 		background-color: var(--sumi-active) !important;
+	}
+	.cv\:bg-\(--sumi-essential\) {
+		background-color: var(--sumi-essential) !important;
 	}
 	.cv\:bg-\(--sumi-line\) {
 		background-color: var(--sumi-line) !important;
@@ -15733,6 +15748,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-\[var\(--wg-kit-error-ink\)\] {
 		color: var(--wg-kit-error-ink) !important;
 	}
+	.cv\:text-inherit {
+		color: inherit !important;
+	}
 	.cv\:text-ink {
 		color: var(--foreground) !important;
 	}
@@ -16110,9 +16128,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:even\:rotate-1:nth-child(even) {
 		rotate: 1deg !important;
 	}
+	.cv\:empty\:m-0:empty {
+		margin: 0px !important;
+	}
 	@media (hover: hover) {
-		.cv\:hover\:bg-\(--sumi-active\):hover {
-			background-color: var(--sumi-active) !important;
+		.cv\:hover\:bg-\(--sumi-essential-hover\):hover {
+			background-color: var(--sumi-essential-hover) !important;
 		}
 		.cv\:hover\:bg-\(--sumi-hover\):hover {
 			background-color: var(--sumi-hover) !important;
@@ -16321,6 +16342,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:data-\[quiet\]\:text-muted-foreground[data-quiet] {
 		color: var(--muted-foreground) !important;
 	}
+	.cv\:data-\[shown\]\:bg-\(--sumi-essential-on\)[data-shown] {
+		background-color: var(--sumi-essential-on) !important;
+	}
 	.cv\:data-\[shown\]\:font-medium[data-shown] {
 		--tw-font-weight: var(--font-medium, 500) !important;
 		font-weight: var(--font-medium, 500) !important;
@@ -16457,12 +16481,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	:is(.cv\:\[\&\,\&_\*\]\:box-border),
 	.cv\:\[\&\,\&_\*\]\:box-border * {
 		box-sizing: border-box !important;
-	}
-	.cv\:\[\&\:not\(\[data-shown\]\)\:has\(\[data-tabs-fold\]\:hover\)\]\:before\:bg-transparent:not([data-shown]):has(
-			[data-tabs-fold]:hover
-		)::before {
-		content: var(--tw-content);
-		background-color: transparent !important;
 	}
 	.cv\:\[\&\>\*\+\*\]\:-ms-1 > * + * {
 		margin-inline-start: calc(var(--cv-spacing) * -1) !important;
@@ -18234,6 +18252,15 @@ body:has([data-browser-pages-live]),
 }
 .wg-cm-matched {
 	font-weight: var(--sumi-fw-semi);
+}
+.wg-cm-place {
+	flex: none;
+	max-width: 40%;
+	overflow: hidden;
+	font-size: var(--sumi-fs-13);
+	color: var(--sumi-text-3);
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 .wg-cm-end {
 	flex: none;
