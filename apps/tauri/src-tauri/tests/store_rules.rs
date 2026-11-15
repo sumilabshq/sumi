@@ -255,12 +255,23 @@ fn workspace_life(checks: &mut Checks) {
     let store = home.store();
     let first = workspaces::open_first(&store).unwrap();
     let again = workspaces::open_first(&store).unwrap();
-    checks.check("the first workspace is Default and keeps its id", (again.id.clone(), again.name.clone(), again.folder.clone()), (first.id.clone(), "Default".to_owned(), None));
-    let made = workspaces::create_new(&store, "Research").unwrap();
+    let first_home = home.path.join("Sumi").canonicalize().unwrap();
+    checks.check("the first workspace is Default in ~/Sumi and keeps its id", (again.id.clone(), again.name.clone(), again.folder.clone()), (first.id.clone(), "Default".to_owned(), Some(first_home.to_string_lossy().into_owned())));
+    checks.check("its data lives in the folder's .sumi", first_home.join(APP_FOLDER).join("workspace.json").is_file(), true);
+    checks.check("its .sumi keeps itself out of git", fs::read_to_string(first_home.join(APP_FOLDER).join(".gitignore")).unwrap(), "*\n".to_owned());
+    let research = home.path.join("Research");
+    fs::create_dir_all(&research).unwrap();
+    let made = workspaces::open_folder(&store, &research).unwrap();
+    checks.check("a new folder's workspace is named after it", made.name.clone(), "Research".to_owned());
     workspaces::rename(&store, &made.id, "Notes").unwrap();
     let listed: Vec<(String, String)> = workspaces::list(&store).unwrap().into_iter().map(|entry| (entry.id, entry.name)).collect();
     checks.check("the list holds both, the last opened first, renamed", listed, vec![(made.id.clone(), "Notes".to_owned()), (first.id.clone(), "Default".to_owned())]);
-    checks.check("a blank name is refused", code_of(workspaces::create_new(&store, "  ")), "bad-doc");
+    checks.check("opening the folder again finds the same workspace", workspaces::open_folder(&store, &research).unwrap().id, made.id.clone());
+    let copied = home.path.join("Research copy");
+    fs::create_dir_all(copied.join(APP_FOLDER)).unwrap();
+    fs::copy(research.join(APP_FOLDER).join("workspace.json"), copied.join(APP_FOLDER).join("workspace.json")).unwrap();
+    checks.check("a copy of an open workspace's folder is refused", code_of(workspaces::open_folder(&store, &copied)), "bad-path");
+    checks.check("the home folder itself is refused", code_of(workspaces::open_folder(&store, &home.path)), "bad-path");
 
     let folder = home.path.join("project");
     fs::create_dir_all(&folder).unwrap();
@@ -305,7 +316,9 @@ fn crash_child(home: &str) -> ExitCode {
 fn recent_folders(checks: &mut Checks) {
     let home = TempHome::new("recent");
     let store = home.store();
-    let entry = workspaces::create_new(&store, "Personal").expect("a workspace");
+    let personal = home.path.join("Personal");
+    fs::create_dir_all(&personal).expect("a workspace folder");
+    let entry = workspaces::open_folder(&store, &personal).expect("a workspace");
     let picked = home.path.join("habits");
     let other = home.path.join("recipes");
     fs::create_dir_all(&picked).expect("a folder");
@@ -313,7 +326,7 @@ fn recent_folders(checks: &mut Checks) {
     workspaces::attach_folder(&store, &entry.id, &picked).expect("attached");
     let attached = workspaces::attach_folder(&store, &entry.id, &other).expect("attached again");
     let shown = |path: &Path| path.to_string_lossy().into_owned();
-    checks.check("a picked folder joins the recent ones, newest first", attached.recent_folders.clone(), vec![shown(&other), shown(&picked)]);
+    checks.check("a picked folder joins the recent ones, newest first, the workspace folder last", attached.recent_folders.clone(), vec![shown(&other), shown(&picked), shown(&personal.canonicalize().unwrap())]);
     let chosen = workspaces::choose_folder(&store, &entry.id, &shown(&picked)).expect("a recent folder is chosen");
     checks.check("a recent folder is chosen without a dialog", (chosen.folder.clone(), chosen.recent_folders[0].clone()), (Some(shown(&picked)), shown(&picked)));
     let never = home.path.join("never-picked");

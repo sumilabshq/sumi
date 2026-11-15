@@ -35,7 +35,7 @@ const nobody = appOver(null);
 
 const user = (id: string) => ({ id, permissions: [] });
 check("a relative path lands in the app's own data folder", placedPathOf(ROOT, user("notes"), "a/b.txt"), {
-	path: "/data/app-data/ws-1/notes/a/b.txt",
+	path: "/data/app-data/notes/a/b.txt",
 });
 check("an absolute path is taken as given", placedPathOf(ROOT, user("notes"), "/tmp/x"), { path: "/tmp/x" });
 check("a path climbing out is refused", "refusal" in placedPathOf(ROOT, user("notes"), "a/../../b"), true);
@@ -51,7 +51,7 @@ const written = await notes.send(fileSystem.files.write, { path: "todo.txt", con
 await notes.send(fileSystem.files.append, { path: "todo.txt", content: " two" });
 const read = await notes.send(fileSystem.files.read, { path: "todo.txt" });
 check("write then append then read answers both", [written.ok, read.ok ? read.output : read.reason], [true, "one two"]);
-check("the write landed in that app's folder", await files.readFile("/data/app-data/ws-1/notes/todo.txt"), "one two");
+check("the write landed in that app's folder", await files.readFile("/data/app-data/notes/todo.txt"), "one two");
 
 const othersRead = await other.send(fileSystem.files.read, { path: "todo.txt" });
 check(

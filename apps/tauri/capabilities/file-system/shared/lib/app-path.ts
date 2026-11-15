@@ -48,9 +48,9 @@ export function placedPathOf(root: AppDataRoot, user: User | null, path: string)
 	};
 }
 
-function inAppFolder({ appDataFolder, workspaceId }: AppDataRoot, user: User, path: string): string {
+function inAppFolder({ appDataFolder }: AppDataRoot, user: User, path: string): string {
 	const parts = path.split("/").filter((part) => part !== "" && part !== ".");
-	return [appDataFolder.replace(/\/+$/, ""), APP_DATA_FOLDER, workspaceId, user.id, ...parts].join("/");
+	return [appDataFolder.replace(/\/+$/, ""), APP_DATA_FOLDER, user.id, ...parts].join("/");
 }
 
 export async function placedIn(holder: AppDataHolder, user: User | null, path: string): Promise<string> {

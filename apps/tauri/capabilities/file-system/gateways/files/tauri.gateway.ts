@@ -11,7 +11,7 @@ const LocatedSchema = z.string().nullable();
 
 export class TauriFilesGateway extends FilesGateway {
 	override async appDataFolder(): Promise<string> {
-		return z.string().parse(await invoke(`${FILES}global_folder`));
+		return z.string().parse(await invoke(`${FILES}workspace_data_folder`, { id: this.workspaceId }));
 	}
 
 	override async readFile(path: string): Promise<string> {

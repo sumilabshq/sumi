@@ -67,6 +67,11 @@ pub fn handle<R: Runtime>(invoke: Invoke<R>) -> bool {
         return true;
     }
 
+    if call.command == "create_workspace" {
+        respond_off_main_thread(resolver, move || open_picked_folder(&app));
+        return true;
+    }
+
     let Some(store) = app.try_state::<Store>() else {
         resolver.reject(NO_STORE);
         return true;
@@ -101,7 +106,6 @@ pub fn answer_of(store: &Store, call: &Call) -> Option<Answer> {
         "take_entry" => take_entry(store, call),
         "list_workspaces" => list_workspaces(store),
         "open_first_workspace" => workspaces::open_first(store).map(|entry| entry.to_json()),
-        "create_workspace" => create_workspace(store, call),
         "rename_workspace" => rename_workspace(store, call),
         "mark_workspace_opened" => mark_workspace_opened(store, call),
         "choose_workspace_folder" => choose_workspace_folder(store, call),
@@ -181,8 +185,17 @@ fn list_workspaces(store: &Store) -> Answer {
     Ok(Value::Array(entries))
 }
 
-fn create_workspace(store: &Store, call: &Call) -> Answer {
-    Ok(workspaces::create_new(store, call.text("name")?)?.to_json())
+fn open_picked_folder<R: Runtime>(app: &AppHandle<R>) -> Answer {
+    let Some(picked) = app.dialog().file().blocking_pick_folder() else {
+        return Ok(Value::Null);
+    };
+    let folder = picked.into_path().map_err(|failure| Refusal::BadPath {
+        detail: failure.to_string(),
+    })?;
+    let store = app.try_state::<Store>().ok_or_else(|| Refusal::Io {
+        detail: NO_STORE.to_owned(),
+    })?;
+    Ok(workspaces::open_folder(&store, &folder)?.to_json())
 }
 
 fn mark_workspace_opened(store: &Store, call: &Call) -> Answer {

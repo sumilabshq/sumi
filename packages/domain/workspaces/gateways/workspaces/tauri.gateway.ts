@@ -92,11 +92,17 @@ export class TauriWorkspacesGateway extends WorkspacesGateway {
 		await looks.flush();
 	}
 
-	async createWorkspace(name: string): Promise<Workspace> {
+	async createWorkspace(): Promise<Workspace | null> {
 		const looks = await this.landed;
-		const entry = KeptWorkspaceEntrySchema.parse(await this.store.call("create_workspace", { name }));
-		this.entries = [...this.entries, entry];
-		looks.change({ order: [...looks.now().order, entry.id] }, `new workspace ${entry.id}`);
+		const entry = KeptWorkspaceEntrySchema.nullable().parse(await this.store.call("create_workspace", {}));
+
+		if (entry === null) {
+			return null;
+		}
+
+		this.entries = [...this.entries.filter((kept) => kept.id !== entry.id), entry];
+		const order = looks.now().order.filter((id) => id !== entry.id);
+		looks.change({ order: [...order, entry.id] }, `opened workspace folder ${entry.id}`);
 		await looks.flush();
 		return workspaceOf(entry, looks.now());
 	}

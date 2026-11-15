@@ -10,10 +10,6 @@ export class WorkspaceClient {
 		return WorkspaceEntrySchema.parse(await callStore(this.invoke, "open_first_workspace", {}));
 	}
 
-	async create(name: string): Promise<WorkspaceEntry> {
-		return WorkspaceEntrySchema.parse(await callStore(this.invoke, "create_workspace", { name }));
-	}
-
 	async attachFolder(id: string): Promise<WorkspaceEntry | null> {
 		return WorkspaceEntrySchema.nullable().parse(await callStore(this.invoke, "attach_workspace_folder", { id }));
 	}

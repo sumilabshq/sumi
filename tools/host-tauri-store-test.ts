@@ -251,12 +251,11 @@ async function lastWorkspaceChecks(): Promise<void> {
 async function workspaceCommandChecks(): Promise<void> {
 	const fake = new FakeStore();
 	const workspaces = new WorkspaceClient(fake.invoke);
-	await workspaces.create("Research");
 	await workspaces.attachFolder(RESEARCH.id);
 	check(
-		"create and attach send only a name and an id, never a path",
+		"attach sends only an id, never a path",
 		fake.calls.map((call) => call.args),
-		[{ name: "Research" }, { id: RESEARCH.id }],
+		[{ id: RESEARCH.id }],
 	);
 	check("a folder root names the workspace, not the folder", folderRootOf(RESEARCH.id), `folder:${RESEARCH.id}`);
 }

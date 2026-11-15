@@ -2,7 +2,7 @@
 
 ## Owner
 
-- `app-data/<workspace>/tasks/tasks.json` is written only by the tasks module (`plugins/tasks/data/tasks`) served in the core window; every other window reads and asks through it.
+- `<workspace folder>/.sumi/app-data/tasks/tasks.json` is written only by the tasks module (`plugins/tasks/data/tasks`) served in the core window; every other window reads and asks through it.
 - Every change is one command with a reason, logged as `from → to` with who made it.
 
 ## Who creates

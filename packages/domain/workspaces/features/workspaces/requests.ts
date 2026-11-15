@@ -30,8 +30,6 @@ const NO_WORKSPACE_AT = "There is no workspace at ⌘{n}.";
 const STRIP_FROM = 2;
 const NO_NAME = "A workspace needs a name.";
 const UNKNOWN = "There is no workspace {id}.";
-const UNTITLED = "Untitled {n}";
-const UNTITLED_NAME = /^Untitled (\d+)$/;
 
 interface OpeningParts {
 	readonly workspaces: WorkspacesGateway;
@@ -136,13 +134,18 @@ export const openByPosition = command()
 
 export const createWorkspace = command()
 	.public()
-	.output(WorkspaceIdSchema)
+	.output(WorkspaceIdSchema.nullable())
 	.idempotencyKey(PerCall)
 	.handle(async (_input, opening) => {
 		opening.invalidate(all);
-		const name = untitledNameAfter(opening.workspaces.workspaces().map((workspace) => workspace.name));
-		const created = await opening.workspaces.createWorkspace(name);
-		console.info(`[widgetarium] workspaces: created ${created.name} (${created.id})`);
+		const created = await opening.workspaces.createWorkspace();
+
+		if (created === null) {
+			console.info("[widgetarium] workspaces: no folder picked, nothing created");
+			return null;
+		}
+
+		console.info(`[widgetarium] workspaces: opened folder ${created.name} (${created.id})`);
 		await openProfileWindow(created.id, opening, "created");
 		return { id: created.id };
 	});
@@ -220,16 +223,6 @@ function workspaceIn(workspaces: readonly Workspace[], id: string): Workspace {
 }
 
 
-function untitledNameAfter(names: readonly string[]): string {
-	const taken = new Set(names.flatMap((name) => untitledNumberIn(name)));
-	const free = Array.from({ length: taken.size + 1 }, (_, at) => at + 1).find((n) => !taken.has(n)) ?? 1;
-	return UNTITLED.replace("{n}", String(free));
-}
-
-function untitledNumberIn(name: string): number[] {
-	const found = UNTITLED_NAME.exec(name.trim());
-	return found?.[1] === undefined ? [] : [Number(found[1])];
-}
 
 function workspacesViewOf(workspaces: readonly Workspace[], current: CurrentWorkspace): WorkspacesView {
 	const rows = workspaceRowsOf(workspaces, current);

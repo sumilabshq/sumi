@@ -1,6 +1,8 @@
+use super::place::{self, APP_FOLDER};
 use super::refusal::Refusal;
 use super::{now_ms, Fields, Store};
 use serde_json::{json, Value};
+use std::fs;
 use std::path::{Path, PathBuf};
 
 pub const WORKSPACES_FILE: &str = "workspaces.json";
@@ -8,6 +10,8 @@ pub const WORKSPACE_FILE: &str = "workspace.json";
 
 const FIRST_WORKSPACE_NAME: &str = "Default";
 const FIRST_WORKSPACE_SEED: &[u8] = b"ink-first-workspace";
+const FIRST_WORKSPACE_FOLDER: &str = "Sumi";
+const KEEP_OUT_OF_GIT: &str = ".gitignore";
 const DOC_V: u64 = 1;
 const MOST_RECENT_FOLDERS: usize = 8;
 
@@ -36,6 +40,7 @@ impl WorkspaceEntry {
 struct OpenedWorkspace {
     id: String,
     last_opened_at: u64,
+    home: String,
 }
 
 struct Identity {
@@ -46,12 +51,97 @@ struct Identity {
 }
 
 pub fn open_first(store: &Store) -> Result<WorkspaceEntry, Refusal> {
-    let id = uuid::Uuid::new_v5(&uuid::Uuid::NAMESPACE_OID, FIRST_WORKSPACE_SEED);
-    create(store, &id.to_string(), FIRST_WORKSPACE_NAME)
+    let id = uuid::Uuid::new_v5(&uuid::Uuid::NAMESPACE_OID, FIRST_WORKSPACE_SEED).to_string();
+    if let Ok(home) = home_of(store, &id) {
+        return open_folder(store, &home);
+    }
+
+    let home = store.home().join(FIRST_WORKSPACE_FOLDER);
+    fs::create_dir_all(&home)?;
+    create(store, &id, FIRST_WORKSPACE_NAME, &home.canonicalize()?)
 }
 
-pub fn create_new(store: &Store, name: &str) -> Result<WorkspaceEntry, Refusal> {
-    create(store, &uuid::Uuid::new_v4().to_string(), name)
+pub fn open_folder(store: &Store, folder: &Path) -> Result<WorkspaceEntry, Refusal> {
+    let home = checked_home(store, folder)?;
+    let Some(kept) = kept_identity_in(store, &home)? else {
+        return create(store, &uuid::Uuid::new_v4().to_string(), &name_of_folder(&home), &home);
+    };
+
+    refuse_open_elsewhere(store, &kept.id, &home)?;
+    let opened_at = register(store, &kept.id, &home)?;
+    keep_out_of_git(&home)?;
+    Ok(entry_of(kept, opened_at))
+}
+
+pub fn home_of(store: &Store, id: &str) -> Result<PathBuf, Refusal> {
+    let registry = store.read_doc(&store.global_place(WORKSPACES_FILE)?)?.doc;
+    let home = opened_in(registry.as_ref().and_then(Value::as_object))
+        .into_iter()
+        .find(|row| row.id == id)
+        .map(|row| PathBuf::from(row.home))
+        .ok_or_else(|| Refusal::NoWorkspace { detail: id.to_owned() })?;
+    if home.is_dir() {
+        return Ok(home);
+    }
+
+    Err(Refusal::FolderNotFound {
+        detail: home.display().to_string(),
+    })
+}
+
+fn checked_home(store: &Store, folder: &Path) -> Result<PathBuf, Refusal> {
+    let home = folder.canonicalize().map_err(|_| Refusal::FolderNotFound {
+        detail: folder.display().to_string(),
+    })?;
+    let user_home = store.home().canonicalize().unwrap_or_else(|_| store.home().to_path_buf());
+    let is_refused = !home.is_dir() || home == user_home || home.starts_with(store.global_folder()) || home.parent().is_none();
+    if !is_refused {
+        return Ok(home);
+    }
+
+    Err(Refusal::BadPath {
+        detail: format!("{} cannot hold a workspace", home.display()),
+    })
+}
+
+fn kept_identity_in(store: &Store, home: &Path) -> Result<Option<Identity>, Refusal> {
+    let place = place::place_in(&home.join(APP_FOLDER), "folder", WORKSPACE_FILE)?;
+    if !place.file.is_file() {
+        return Ok(None);
+    }
+
+    Ok(store.read_doc(&place)?.doc.as_ref().and_then(identity_in))
+}
+
+fn refuse_open_elsewhere(store: &Store, id: &str, home: &Path) -> Result<(), Refusal> {
+    let Ok(registered) = home_of(store, id) else {
+        return Ok(());
+    };
+    if registered == home {
+        return Ok(());
+    }
+
+    Err(Refusal::BadPath {
+        detail: format!("this workspace is already open from {}", registered.display()),
+    })
+}
+
+fn name_of_folder(home: &Path) -> String {
+    home.file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .filter(|name| !name.trim().is_empty())
+        .unwrap_or_else(|| FIRST_WORKSPACE_NAME.to_owned())
+}
+
+fn keep_out_of_git(home: &Path) -> Result<(), Refusal> {
+    let ignore = home.join(APP_FOLDER).join(KEEP_OUT_OF_GIT);
+    if ignore.exists() {
+        return Ok(());
+    }
+
+    fs::create_dir_all(home.join(APP_FOLDER))?;
+    fs::write(ignore, "*\n")?;
+    Ok(())
 }
 
 pub fn list(store: &Store) -> Result<Vec<WorkspaceEntry>, Refusal> {
@@ -146,19 +236,22 @@ pub fn opened_working_folder(store: &Store) -> Result<PathBuf, Refusal> {
     let attached = identity_of(store, id)?.folder.map(PathBuf::from);
     let working = match attached.filter(|folder| folder.is_dir()) {
         Some(folder) => folder,
-        None => store.workspace_folder(id)?,
+        None => home_of(store, id)?,
     };
     Ok(working.canonicalize()?)
 }
 
-fn create(store: &Store, id: &str, name: &str) -> Result<WorkspaceEntry, Refusal> {
+fn create(store: &Store, id: &str, name: &str, home: &Path) -> Result<WorkspaceEntry, Refusal> {
     let trimmed = checked_name(name)?;
+    let opened_at = register(store, id, home)?;
+    keep_out_of_git(home)?;
     let place = store.workspace_place(id, WORKSPACE_FILE)?;
     let written = store.update_doc(&place, "open workspace identity", |current| {
         let kept = current.filter(|fields| identity_in(&Value::Object((*fields).clone())).is_some());
-        Ok(kept.cloned().unwrap_or_else(|| fresh_identity(id, trimmed)))
+        Ok(kept.cloned().unwrap_or_else(|| with_folder(fresh_identity(id, trimmed), &home.to_string_lossy())))
     })?;
-    entry_of_written(store, id, written)
+    let identity = identity_in(&Value::Object(written)).ok_or_else(|| Refusal::NoWorkspace { detail: id.to_owned() })?;
+    Ok(entry_of(identity, opened_at))
 }
 
 fn checked_name(name: &str) -> Result<&str, Refusal> {
@@ -170,11 +263,6 @@ fn checked_name(name: &str) -> Result<&str, Refusal> {
     }
 
     Ok(trimmed)
-}
-
-fn entry_of_written(store: &Store, id: &str, written: Fields) -> Result<WorkspaceEntry, Refusal> {
-    let identity = identity_in(&Value::Object(written)).ok_or_else(|| Refusal::NoWorkspace { detail: id.to_owned() })?;
-    Ok(entry_of(identity, remember(store, id)?))
 }
 
 fn fresh_identity(id: &str, name: &str) -> Fields {
@@ -195,19 +283,34 @@ fn identity_of(store: &Store, id: &str) -> Result<Identity, Refusal> {
 }
 
 fn remember(store: &Store, id: &str) -> Result<u64, Refusal> {
+    opened_from(store, id, None)
+}
+
+fn register(store: &Store, id: &str, home: &Path) -> Result<u64, Refusal> {
+    opened_from(store, id, Some(home))
+}
+
+fn opened_from(store: &Store, id: &str, home: Option<&Path>) -> Result<u64, Refusal> {
     let opened_at = now_ms();
     store.update_doc(&store.global_place(WORKSPACES_FILE)?, "open workspace", |current| {
-        let mut opened: Vec<OpenedWorkspace> = opened_in(current).into_iter().filter(|kept| kept.id != id).collect();
+        let all = opened_in(current);
+        let kept_home = all.iter().find(|kept| kept.id == id).map(|kept| kept.home.clone());
+        let home = home
+            .map(|path| path.to_string_lossy().into_owned())
+            .or(kept_home)
+            .ok_or_else(|| Refusal::NoWorkspace { detail: id.to_owned() })?;
+        let mut opened: Vec<OpenedWorkspace> = all.into_iter().filter(|kept| kept.id != id).collect();
         opened.insert(
             0,
             OpenedWorkspace {
                 id: id.to_owned(),
                 last_opened_at: opened_at,
+                home,
             },
         );
         let rows: Vec<Value> = opened
             .iter()
-            .map(|row| json!({ "id": row.id, "lastOpenedAt": row.last_opened_at }))
+            .map(|row| json!({ "id": row.id, "lastOpenedAt": row.last_opened_at, "home": row.home }))
             .collect();
         let mut fields = current.cloned().unwrap_or_default();
         fields.insert("v".to_owned(), Value::from(DOC_V));
@@ -230,13 +333,15 @@ fn opened_in(current: Option<&Fields>) -> Vec<OpenedWorkspace> {
 fn opened_row(row: &Value) -> Option<OpenedWorkspace> {
     let id = row.get("id").and_then(Value::as_str).filter(|id| uuid::Uuid::parse_str(id).is_ok());
     let last_opened_at = row.get("lastOpenedAt").and_then(Value::as_u64);
-    let (Some(id), Some(last_opened_at)) = (id, last_opened_at) else {
+    let home = row.get("home").and_then(Value::as_str).filter(|home| !home.is_empty());
+    let (Some(id), Some(last_opened_at), Some(home)) = (id, last_opened_at, home) else {
         eprintln!("[ink-store] global:{WORKSPACES_FILE} skipped an unreadable row {row}");
         return None;
     };
     Some(OpenedWorkspace {
         id: id.to_owned(),
         last_opened_at,
+        home: home.to_owned(),
     })
 }
 

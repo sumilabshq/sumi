@@ -29,7 +29,7 @@ function startCore(workspaceId: string): LocalTransport {
 	coreTransport.serve(
 		runtime()
 			.modules(
-				RunnableFileSystemModule({ injects: { files: new NodeFilesGateway(appData, workspaceId) } }),
+				RunnableFileSystemModule({ injects: { files: new NodeFilesGateway(path.join(appData, workspaceId), workspaceId) } }),
 				RunnableTasksModule({
 					file: tasksBoardFileOver(coreTransport),
 				}),
@@ -47,7 +47,7 @@ function startCore(workspaceId: string): LocalTransport {
 }
 
 function boardFileOf(workspaceId: string): string {
-	return path.join(appData, "app-data", workspaceId, "tasks", "tasks.json");
+	return path.join(appData, workspaceId, "app-data", "tasks", "tasks.json");
 }
 
 const coreTransport = startCore(WORKSPACE);
@@ -94,7 +94,7 @@ check(
 	true,
 );
 check(
-	"that file sits under app-data/<workspace>/tasks",
+	"that file sits under <workspace>/app-data/tasks",
 	existsSync(boardFileOf(WORKSPACE)) && readFileSync(boardFileOf(WORKSPACE), "utf8").includes(TITLE),
 	true,
 );

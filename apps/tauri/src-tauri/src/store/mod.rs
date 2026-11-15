@@ -16,7 +16,7 @@ pub use workspaces::opened_working_folder;
 use serde_json::{Map, Value};
 use std::fs::{self, File, OpenOptions};
 use std::os::fd::AsRawFd;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{Manager, Runtime};
@@ -114,11 +114,20 @@ impl Store {
         self.home.join(place::home_app_folder())
     }
 
+    pub fn home(&self) -> &Path {
+        &self.home
+    }
+
     fn workspace_folder(&self, id: &str) -> Result<PathBuf, Refusal> {
+        let checked = place::checked_id(id, id)?;
+        if checked != NO_WORKSPACE_ID {
+            return Ok(workspaces::home_of(self, &checked)?.join(APP_FOLDER));
+        }
+
         let all = self.global_folder().join(WORKSPACES_FOLDER);
         place::refuse_symlink(&self.global_folder())?;
         place::refuse_symlink(&all)?;
-        Ok(all.join(place::checked_id(id, id)?))
+        Ok(all.join(checked))
     }
 
     fn root_folder(&self, kind: &RootKind, relative: &str) -> Result<PathBuf, Refusal> {
@@ -135,18 +144,17 @@ impl Store {
         }
     }
 
+    pub fn workspace_data_folder(&self, id: &str) -> Result<PathBuf, Refusal> {
+        self.existing_workspace_folder(id)
+    }
+
     fn existing_workspace_folder(&self, id: &str) -> Result<PathBuf, Refusal> {
         let folder = self.workspace_folder(id)?;
-        if folder.is_dir() {
-            return Ok(folder);
-        }
-
-        if id == NO_WORKSPACE_ID {
+        if !folder.is_dir() {
             fs::create_dir_all(&folder)?;
-            return Ok(folder);
         }
 
-        Err(Refusal::NoWorkspace { detail: id.to_owned() })
+        Ok(folder)
     }
 
     fn lock(&self) -> Result<HeldLock, Refusal> {

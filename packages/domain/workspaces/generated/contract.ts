@@ -186,7 +186,7 @@ export const workspaces = moduleContract("workspaces", Device, {
 			.idempotencyKey(Repeatable)),
 		createWorkspace: named("workspaces.create-workspace", command()
 			.public()
-			.output(WorkspaceIdSchema)
+			.output(WorkspaceIdSchema.nullable())
 			.idempotencyKey(PerCall)),
 		rename: named("workspaces.rename", command()
 			.public()

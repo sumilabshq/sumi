@@ -21,6 +21,7 @@ pub const PLUGIN_NAME: &str = "files";
 
 const PICK_FOLDER: &str = "pick_folder";
 const GLOBAL_FOLDER: &str = "global_folder";
+const WORKSPACE_DATA_FOLDER: &str = "workspace_data_folder";
 
 pub const MAX_PATH_BYTES: usize = 4096;
 
@@ -362,6 +363,17 @@ fn handle(invoke: Invoke<Wry>) -> bool {
     if message.command() == GLOBAL_FOLDER {
         let folder = message.webview().app_handle().state::<Store>().global_folder();
         resolver.respond(answered(Ok(folder.display().to_string())).map_err(InvokeError::from));
+        return true;
+    }
+
+    if message.command() == WORKSPACE_DATA_FOLDER {
+        let id = match message.payload() {
+            InvokeBody::Json(args) => args.get("id").and_then(Value::as_str).unwrap_or_default().to_owned(),
+            InvokeBody::Raw(_) => String::new(),
+        };
+        let folder = message.webview().app_handle().state::<Store>().workspace_data_folder(&id);
+        let shown = folder.map(|path| path.display().to_string()).map_err(|refused| refused.to_string());
+        resolver.respond(answered(shown).map_err(InvokeError::from));
         return true;
     }
 
