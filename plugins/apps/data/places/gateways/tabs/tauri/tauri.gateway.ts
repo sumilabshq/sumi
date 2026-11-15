@@ -12,7 +12,6 @@ import {
 	chatEntriesOf,
 	migratedTabsOf,
 	migrationSaid,
-	unheldTabsOf,
 	windowedTabsOf,
 } from "./kept-session.js";
 import type { KeptChatsRead, KeptSessionDoc, ReshapedTabs } from "./kept-session.js";
@@ -87,13 +86,13 @@ async function readyTabsIn(at: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<He
 	const { tabs } = kept.now();
 
 	if (tabs === undefined || tabs === null) {
-		return movedBy(await migrated(at, kept), unheldTabsOf);
+		return migrated(at, kept);
 	}
 
 	const readable = PlacedTabsSchema.safeParse(tabs);
 
 	if (readable.success) {
-		return movedBy(await movedBy(kept, windowedTabsOf), unheldTabsOf);
+		return movedBy(kept, windowedTabsOf);
 	}
 
 	const reason = "tabs unreadable → none, the unreadable ones kept aside as unreadableTabs";

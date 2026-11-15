@@ -87,27 +87,6 @@ export function windowedTabsOf(placed: PlacedTabs): ReshapedTabs | null {
 	};
 }
 
-export function unheldTabsOf(placed: PlacedTabs): ReshapedTabs | null {
-	const held = Object.entries(placed.lists).filter(([list]) => !isSectionList(list));
-
-	if (held.length === 0) {
-		return null;
-	}
-
-	const sections = Object.entries(placed.lists).filter(([list]) => isSectionList(list));
-	const besideChat = sections.map(([list, entries]): [string, ListEntry[]] => [
-		list,
-		entries.flatMap((entry) => (entry.kind === "tab" ? [entry, ...(placed.lists[entry.id] ?? [])] : [entry])),
-	]);
-	const standingIds = new Set(besideChat.flatMap(([, entries]) => entries.map((entry) => entry.id)));
-	const strays = held.flatMap(([, entries]) => entries).filter((entry) => !standingIds.has(entry.id));
-	const lists = Object.fromEntries(besideChat);
-	return {
-		placed: { ...placed, lists: { ...lists, [MAIN_OPEN]: [...(lists[MAIN_OPEN] ?? []), ...strays] } },
-		reason: `tabs held in ${held.length} chats → beside their chat (${strays.length} strays to the end of Open; a chat holds no tabs now)`,
-	};
-}
-
 const NO_SESSION: KeptSessionTabs = {
 	tabs: [],
 	lists: null,
