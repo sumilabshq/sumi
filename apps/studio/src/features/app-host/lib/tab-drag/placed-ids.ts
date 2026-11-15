@@ -1,4 +1,4 @@
-import type { SidebarEntry, SidebarTab, TabChild, TabDrop, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { SidebarEntry, TabDrop, TabsSidebar } from "@widgetarium/app-host/contract";
 import { entryKeysOf } from "./sidebar-put-in.js";
 
 type Container = readonly [string, readonly string[]];
@@ -22,17 +22,17 @@ export function hasId(sidebar: TabsSidebar, id: string): boolean {
 }
 
 function listedIdOf(sidebar: TabsSidebar, drop: ListDrop): string | null {
-	const ids = containersOf(sidebar).find(([name]) => name === containerNameOf(sidebar, drop))?.[1] ?? [];
+	const ids = containersOf(sidebar).find(([name]) => name === containerNameOf(drop))?.[1] ?? [];
 	const before = drop.before === null ? -1 : ids.indexOf(drop.before);
 	return (before === -1 ? ids.at(-1) : ids[before - 1]) ?? null;
 }
 
-function containerNameOf(sidebar: TabsSidebar, drop: ListDrop): string {
+function containerNameOf(drop: ListDrop): string {
 	if (drop.groupId !== null) {
 		return `group:${drop.groupId}`;
 	}
 
-	return sidebar.sections.some((section) => section.list === drop.list) ? `list:${drop.list}` : `chat:${drop.list}`;
+	return `list:${drop.list}`;
 }
 
 function containersOf(sidebar: TabsSidebar): readonly Container[] {
@@ -51,32 +51,9 @@ function entryIdOf(entry: SidebarEntry): string {
 }
 
 function entryContainersOf(entry: SidebarEntry): readonly Container[] {
-	if (entry.kind === "group") {
-		return [
-			[`group:${entry.group.id}`, entry.group.items.map((item) => item.tab.id)],
-			...entry.group.items.flatMap(childContainersOf),
-		];
-	}
-
-	if (entry.kind === "split") {
-		return entry.split.members.flatMap((member) => childContainersOf(member.item));
-	}
-
-	return childContainersOf(entry);
-}
-
-function childContainersOf(item: SidebarTab): readonly Container[] {
-	if (item.children === undefined) {
+	if (entry.kind !== "group") {
 		return [];
 	}
 
-	const groups = item.children.flatMap((child) => (child.kind === "group" ? [child.group] : []));
-	return [
-		[`chat:${item.tab.id}`, item.children.map(childIdOf)],
-		...groups.map((group): Container => [`group:${group.id}`, group.tabs.map((tab) => tab.id)]),
-	];
-}
-
-function childIdOf(child: TabChild): string {
-	return child.kind === "tab" ? child.tab.id : child.group.id;
+	return [[`group:${entry.group.id}`, entry.group.items.map((item) => item.tab.id)]];
 }

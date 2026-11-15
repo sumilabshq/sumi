@@ -56,18 +56,7 @@ function entryWithGroupFolded(entry: SidebarEntry, groupId: string): SidebarEntr
 		return entry.group.id === groupId ? { kind: "group", group: { ...entry.group, isOpen: false } } : entry;
 	}
 
-	if (entry.kind !== "tab" || entry.children === undefined) {
-		return entry;
-	}
-
-	return {
-		...entry,
-		children: entry.children.map((child) =>
-			child.kind === "group" && child.group.id === groupId
-				? { kind: "group", group: { ...child.group, isOpen: false } }
-				: child,
-		),
-	};
+	return entry;
 }
 
 function withMemberMoved(sidebar: TabsSidebar, id: string, drop: SplitDrop): TabsSidebar {

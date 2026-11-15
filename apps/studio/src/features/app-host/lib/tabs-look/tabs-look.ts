@@ -6,8 +6,6 @@ export const SIDEBAR_ROW = `cv:group/row cv:relative cv:flex cv:h-[30px] cv:w-fu
 export const SIDEBAR_ROW_SHOWN =
 	"cv:data-[shown]:font-medium cv:data-[shown]:text-(--sumi-text) cv:data-[shown]:before:bg-(--sumi-selected) cv:data-[shown]:hover:before:bg-(--sumi-selected)";
 
-export const FOLD_HOST_ROW = "cv:[&:not([data-shown]):has([data-tabs-fold]:hover)]:before:bg-transparent";
-
 const HUES =
 	"cv:data-[hue=red]:[--group-hue:var(--sumi-hue-red)] cv:data-[hue=orange]:[--group-hue:var(--sumi-hue-orange)] cv:data-[hue=amber]:[--group-hue:var(--sumi-hue-amber)] cv:data-[hue=green]:[--group-hue:var(--sumi-hue-green)] cv:data-[hue=teal]:[--group-hue:var(--sumi-hue-teal)] cv:data-[hue=blue]:[--group-hue:var(--sumi-hue-blue)] cv:data-[hue=purple]:[--group-hue:var(--sumi-hue-purple)] cv:data-[hue=pink]:[--group-hue:var(--sumi-hue-pink)]";
 

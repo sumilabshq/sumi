@@ -45,15 +45,6 @@ export function useLiftedMark(id: string, splitId: string | null): LiftedMark | 
 	return look.isMarked ? MARKED : UNMARKED;
 }
 
-export function liftedWithout(look: LiftedLook, id: string): LiftedLook {
-	return look.ids.has(id)
-		? {
-				...look,
-				ids: new Set([...look.ids].filter((one) => one !== id)),
-			}
-		: look;
-}
-
 export function useLiftedLook(preview: DragPreviewState | null, sidebar: TabsSidebar): LiftedLook {
 	const atLift = useTilesAtLift(preview, sidebar);
 	const sourceId = preview?.source.id ?? null;

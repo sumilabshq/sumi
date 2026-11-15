@@ -1,5 +1,5 @@
 const MOVED =
-	"[data-tabs-item=tab], [data-tabs-item=essential], [data-tabs-box], [data-tabs-split], [data-tabs-section], [data-host-column-add], [data-tabs-card]";
+	"[data-tabs-item=tab], [data-tabs-item=essential], [data-tabs-box], [data-tabs-split], [data-tabs-section], [data-host-column-add]";
 
 export interface Seen {
 	readonly element: HTMLElement;
@@ -59,16 +59,8 @@ function placeOf(element: HTMLElement): string {
 }
 
 function keyOf(element: HTMLElement): string {
-	if (element.hasAttribute("data-tabs-card")) {
-		return cardKeyOf(element);
-	}
-
 	const { tabsId, tabsBox, tabsSplit, tabsSection, hostColumnAdd } = element.dataset;
 	return `${tabsId ?? ""}|${tabsBox ?? ""}|${tabsSplit ?? ""}|${tabsSection ?? ""}|${hostColumnAdd ?? ""}`;
-}
-
-function cardKeyOf(card: HTMLElement): string {
-	return `card:${card.querySelector<HTMLElement>("[data-tabs-chat]")?.dataset["tabsId"] ?? ""}`;
 }
 
 function freeKeyOf(seen: ReadonlyMap<string, Seen>, key: string): string {

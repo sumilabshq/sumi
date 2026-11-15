@@ -4,7 +4,6 @@ import type {
 	MeasuredHead,
 	MeasuredList,
 	MeasuredPart,
-	MeasuredRow,
 	MeasuredSplit,
 	MeasuredUnit,
 	Rect,
@@ -13,11 +12,8 @@ import type {
 
 type SplitFound = Pick<MeasuredSplit, "anchorId" | "parts" | "members">;
 
-const LIFTED_HOLDER = "data-tabs-lifted-holder";
-export const ROW_WRAPPER = "[data-tabs-lifted-holder], [data-tabs-card]";
-const GROUP_ROWS_AT = ":scope > [data-fold-box] > * > [data-tabs-rows]";
-const GROUP_ROWS = `${GROUP_ROWS_AT} > [data-tabs-item="tab"], ${GROUP_ROWS_AT} > :is(${ROW_WRAPPER}) > [data-tabs-item="tab"]`;
-const SPLIT_PARTS = `[data-split-members] > :not(${ROW_WRAPPER}), [data-split-members] > :is(${ROW_WRAPPER}) > *`;
+const GROUP_ROWS = ':scope > [data-fold-box] > * > [data-tabs-rows] > [data-tabs-item="tab"]';
+const SPLIT_PARTS = "[data-split-members] > *";
 const SHUT_FOLD = "[data-fold-box]:not([data-open])";
 
 const NOWHERE: Rect = {
@@ -64,16 +60,6 @@ export function contentStartOf(element: HTMLElement): number {
 	return parseFloat(getComputedStyle(element).paddingInlineStart) || 0;
 }
 
-export function cardOrRowOf(row: HTMLElement): HTMLElement {
-	const card = row.parentElement;
-
-	if (card === null || !card.hasAttribute("data-tabs-card")) {
-		return row;
-	}
-
-	return card;
-}
-
 function measuredOf(found: Iterable<HTMLElement>): readonly Measured[] {
 	return [...found].flatMap((element) => {
 		const id = element.dataset["tabsId"];
@@ -87,15 +73,6 @@ function measuredOf(found: Iterable<HTMLElement>): readonly Measured[] {
 					},
 				];
 	});
-}
-
-function measuredRowsOf(found: Iterable<HTMLElement>): readonly MeasuredRow[] {
-	return measuredOf(found).map((row) => ({
-		...row,
-		isHolder: row.element.dataset["tabsChat"] !== undefined,
-		isFolded: row.element.querySelector("[data-tabs-fold][data-folded]") !== null,
-		cardRect: rectOf(cardOrRowOf(row.element)),
-	}));
 }
 
 function measuredGridOf(element: HTMLElement | null): MeasuredGrid {
@@ -121,7 +98,6 @@ function measuredListsOf(holder: HTMLElement, element: HTMLElement): readonly Me
 	return [
 		{
 			id,
-			isNested: element.dataset["tabsNested"] !== undefined,
 			rect: rectOf(element),
 			head: measuredHeadOf(holder, id),
 			units: [...element.children].flatMap((child) => unitsOf(child)),
@@ -151,10 +127,6 @@ function unitsOf(child: Element): readonly MeasuredUnit[] {
 		return [];
 	}
 
-	if (child.dataset["tabsCard"] !== undefined || child.hasAttribute(LIFTED_HOLDER)) {
-		return [...child.children].flatMap((inner) => unitsOf(inner));
-	}
-
 	return elementUnitsOf(child);
 }
 
@@ -167,7 +139,7 @@ function elementUnitsOf(child: HTMLElement): readonly MeasuredUnit[] {
 	}
 
 	if (boxId === undefined) {
-		return measuredRowsOf([child]).map((row) => ({
+		return measuredOf([child]).map((row) => ({
 			...row,
 			kind: "tab",
 		}));
@@ -185,9 +157,8 @@ function measuredGroupOf(box: HTMLElement, id: string): MeasuredUnit {
 		element: box,
 		rect: rectOf(box),
 		head: rectOf(head ?? box),
-		rows: isOpen ? measuredRowsOf(box.querySelectorAll<HTMLElement>(GROUP_ROWS)) : [],
+		rows: isOpen ? measuredOf(box.querySelectorAll<HTMLElement>(GROUP_ROWS)) : [],
 		isOpen,
-		holdsChat: box.hasAttribute("data-tabs-holds-chat"),
 	};
 }
 

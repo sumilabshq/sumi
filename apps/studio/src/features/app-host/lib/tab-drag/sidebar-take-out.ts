@@ -1,16 +1,14 @@
 import type {
 	EssentialTile,
-	GroupState,
 	SidebarEntry,
 	SidebarGroupState,
 	SidebarSection,
 	SidebarSplitState,
 	SidebarTab,
-	TabChild,
 	TabsSidebar,
 } from "@widgetarium/app-host/contract";
 import type { DragSource } from "./drag-source.js";
-import { isSameList, keptMap } from "./kept-list.js";
+import { isSameList } from "./kept-list.js";
 
 export type Carried =
 	| {
@@ -53,8 +51,6 @@ type SplitEntry = Extract<SidebarEntry, { kind: "split" }>;
 
 type SplitMember = SidebarSplitState["members"][number];
 
-type GroupChild = Extract<TabChild, { kind: "group" }>;
-
 export function takenOut(sidebar: TabsSidebar, taking: Taking): TakenOut {
 	if (taking.source.kind === "essential") {
 		return essentialTakenOut(sidebar, taking.source.id);
@@ -68,29 +64,6 @@ export function takenOut(sidebar: TabsSidebar, taking: Taking): TakenOut {
 			sections: sectionsUnmarked(sections, found.unmarked()),
 		},
 		carried: found.carried(),
-	};
-}
-
-export function groupStateOf({ group }: { readonly group: SidebarGroupState }): GroupState {
-	return {
-		id: group.id,
-		name: group.name,
-		hue: group.hue,
-		isOpen: group.isOpen,
-		tabs: group.items.map((item) => item.tab),
-	};
-}
-
-export function sidebarGroupOf(group: GroupState): SidebarGroupState {
-	return {
-		id: group.id,
-		name: group.name,
-		hue: group.hue,
-		isOpen: group.isOpen,
-		items: group.tabs.map((tab) => ({
-			kind: "tab",
-			tab,
-		})),
 	};
 }
 
@@ -171,7 +144,7 @@ function entryWithout(entry: SidebarEntry, found: Found): readonly SidebarEntry[
 	}
 
 	if (entry.tab.id !== found.id) {
-		return [itemWithout(entry, found)];
+		return [entry];
 	}
 
 	if (found.splitId === null) {
@@ -200,7 +173,7 @@ function itemsWithout(items: readonly SidebarTab[], found: Found): readonly Side
 			return [];
 		}
 
-		return [itemWithout(item, found)];
+		return [item];
 	});
 	return isSameList(kept, items) ? items : kept;
 }
@@ -212,20 +185,11 @@ function splitWithout(entry: SplitEntry, found: Found): readonly SidebarEntry[] 
 			: undefined;
 
 	if (carried === undefined) {
-		return [splitMembersWithout(entry, found)];
+		return [entry];
 	}
 
 	found.carry({ kind: "tab", item: carried.item });
 	return splitLeftBehind(entry.split, carried, found);
-}
-
-function splitMembersWithout(entry: SplitEntry, found: Found): SidebarEntry {
-	const { split } = entry;
-	const members = keptMap(split.members, (member) => {
-		const item = itemWithout(member.item, found);
-		return item === member.item ? member : { ...member, item };
-	});
-	return members === split.members ? entry : { kind: "split", split: { ...split, members } };
 }
 
 function splitLeftBehind(split: SidebarSplitState, carried: SplitMember, found: Found): readonly SidebarEntry[] {
@@ -263,65 +227,5 @@ function splitEntryOf(split: SidebarSplitState): SplitEntry {
 	return {
 		kind: "split",
 		split,
-	};
-}
-
-function itemWithout(item: SidebarTab, found: Found): SidebarTab {
-	if (item.children === undefined) {
-		return item;
-	}
-
-	const children = childrenWithout(item.children, found);
-	return children === item.children
-		? item
-		: {
-				...item,
-				children,
-			};
-}
-
-function childrenWithout(children: readonly TabChild[], found: Found): readonly TabChild[] {
-	const kept = children.flatMap((child) => childWithout(child, found));
-	return isSameList(kept, children) ? children : kept;
-}
-
-function childWithout(child: TabChild, found: Found): readonly TabChild[] {
-	if (child.kind !== "tab") {
-		return groupChildWithout(child, found);
-	}
-
-	if (child.tab.id !== found.id) {
-		return [child];
-	}
-
-	found.carry({ kind: "tab", item: { kind: "tab", tab: child.tab } });
-	return [];
-}
-
-function groupChildWithout(child: GroupChild, found: Found): readonly TabChild[] {
-	const { group } = child;
-
-	if (group.id === found.id) {
-		found.carry({ kind: "group", group: sidebarGroupOf(group) });
-		return [];
-	}
-
-	const carried = group.tabs.find((tab) => tab.id === found.id);
-
-	if (carried === undefined) {
-		return [child];
-	}
-
-	found.carry({ kind: "tab", item: { kind: "tab", tab: carried } });
-	return [groupChildWithoutTab(group, found.id)];
-}
-
-function groupChildWithoutTab(group: GroupState, id: string): TabChild {
-	return {
-		kind: "group",
-		group: {
-			...group,
-			tabs: group.tabs.filter((tab) => tab.id !== id),
-		},
 	};
 }

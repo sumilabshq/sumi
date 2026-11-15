@@ -1,4 +1,4 @@
-import type { SidebarEntry, TabChild, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { SidebarEntry, TabsSidebar } from "@widgetarium/app-host/contract";
 
 export function arrangementKeyOf(sidebar: TabsSidebar): string {
 	const tiles = sidebar.essentials.map((tile) => tile.id).join(",");
@@ -15,9 +15,5 @@ function entryKeyOf(entry: SidebarEntry): string {
 		return `${entry.split.id}{${entry.split.members.map((member) => member.item.tab.id).join(",")}}`;
 	}
 
-	return entry.children === undefined ? entry.tab.id : `${entry.tab.id}<${entry.children.map(childKeyOf).join(",")}>`;
-}
-
-function childKeyOf(child: TabChild): string {
-	return child.kind === "tab" ? child.tab.id : `${child.group.id}(${child.group.tabs.map((tab) => tab.id).join(",")})`;
+	return entry.tab.id;
 }

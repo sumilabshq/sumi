@@ -1,4 +1,4 @@
-import type { GroupHue, SidebarEntry, SidebarTab, TabChild, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { GroupHue, SidebarEntry, SidebarTab, TabsSidebar } from "@widgetarium/app-host/contract";
 
 export interface GroupFace {
 	readonly id: string;
@@ -7,28 +7,11 @@ export interface GroupFace {
 	readonly count: number;
 }
 
-export function groupsOfList(sidebar: TabsSidebar, list: string): readonly GroupFace[] {
-	const section = sidebar.sections.find((one) => one.list === list);
-
-	if (section !== undefined) {
-		return section.entries.flatMap((entry) => (entry.kind === "group" ? [topGroupFaceOf(entry)] : []));
-	}
-
-	return holdersOf(sidebar)
-		.filter((holder) => holder.tab.id === list)
-		.flatMap(({ children = [] }) =>
-			children.flatMap((child) => (child.kind === "group" ? [nestedGroupFaceOf(child)] : [])),
-		);
-}
-
 export function groupFaceOf(sidebar: TabsSidebar, id: string | null): GroupFace | null {
-	const lists = [...sidebar.sections.map((section) => section.list), ...holdersOf(sidebar).map(({ tab }) => tab.id)];
-	return lists.flatMap((list) => groupsOfList(sidebar, list)).find((group) => group.id === id) ?? null;
-}
-
-export function holdersOf(sidebar: TabsSidebar): readonly SidebarTab[] {
-	const items = sidebar.sections.flatMap((section) => section.entries.flatMap(itemsOfEntry));
-	return items.filter((item) => item.children !== undefined);
+	const groups = sidebar.sections.flatMap((section) =>
+		section.entries.flatMap((entry) => (entry.kind === "group" ? [groupFaceOfEntry(entry)] : [])),
+	);
+	return groups.find((group) => group.id === id) ?? null;
 }
 
 export function itemsOfEntry(entry: SidebarEntry): readonly SidebarTab[] {
@@ -39,20 +22,11 @@ export function itemsOfEntry(entry: SidebarEntry): readonly SidebarTab[] {
 	return entry.kind === "split" ? entry.split.members.map((member) => member.item) : [entry];
 }
 
-function topGroupFaceOf({ group }: Extract<SidebarEntry, { readonly kind: "group" }>): GroupFace {
+function groupFaceOfEntry({ group }: Extract<SidebarEntry, { readonly kind: "group" }>): GroupFace {
 	return {
 		id: group.id,
 		name: group.name,
 		hue: group.hue,
 		count: group.items.length,
-	};
-}
-
-function nestedGroupFaceOf({ group }: Extract<TabChild, { readonly kind: "group" }>): GroupFace {
-	return {
-		id: group.id,
-		name: group.name,
-		hue: group.hue,
-		count: group.tabs.length,
 	};
 }

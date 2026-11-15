@@ -11,17 +11,10 @@ export interface Measured {
 	readonly rect: Rect;
 }
 
-export interface MeasuredRow extends Measured {
-	readonly isHolder: boolean;
-	readonly isFolded: boolean;
-	readonly cardRect: Rect;
-}
-
 export interface MeasuredGroup extends Measured {
 	readonly head: Rect;
-	readonly rows: readonly MeasuredRow[];
+	readonly rows: readonly Measured[];
 	readonly isOpen: boolean;
-	readonly holdsChat: boolean;
 }
 
 export interface MeasuredPart {
@@ -38,7 +31,7 @@ export interface MeasuredSplit extends Measured {
 }
 
 export type MeasuredUnit =
-	| (MeasuredRow & { readonly kind: "tab" })
+	| (Measured & { readonly kind: "tab" })
 	| (MeasuredGroup & { readonly kind: "group" })
 	| (MeasuredSplit & { readonly kind: "split" });
 
@@ -56,7 +49,6 @@ export interface MeasuredHead {
 
 export interface MeasuredList {
 	readonly id: string;
-	readonly isNested: boolean;
 	readonly rect: Rect;
 	readonly head: MeasuredHead | null;
 	readonly units: readonly MeasuredUnit[];
@@ -106,25 +98,6 @@ export function rowStepOf(layout: SidebarLayout): number {
 export function groupUnitOf(layout: SidebarLayout, groupId: string): MeasuredGroup | undefined {
 	const unit = layout.units.find((one) => one.kind === "group" && one.id === groupId);
 	return unit?.kind === "group" ? unit : undefined;
-}
-
-export function chatRowsOf(list: MeasuredList): readonly MeasuredRow[] {
-	const rows = list.units.flatMap((unit) => {
-		if (unit.kind === "tab") {
-			return [unit];
-		}
-
-		return unit.kind === "group" && unit.isOpen ? unit.rows : [];
-	});
-	return rows.filter((row) => row.isHolder);
-}
-
-export function allChatRowsOf(layout: SidebarLayout): readonly MeasuredRow[] {
-	return layout.lists.flatMap((list) => chatRowsOf(list));
-}
-
-export function chatRowOf(layout: SidebarLayout, id: string): MeasuredRow | undefined {
-	return allChatRowsOf(layout).find((row) => row.id === id);
 }
 
 export function bottomOf(rect: Rect): number {

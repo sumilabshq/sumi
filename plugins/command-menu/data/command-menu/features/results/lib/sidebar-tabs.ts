@@ -1,4 +1,4 @@
-import type { AppTabState, SidebarEntry, SidebarTab, TabChild, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { AppTabState, SidebarEntry, SidebarTab, TabsSidebar } from "@widgetarium/app-host/contract";
 
 export interface ListedTab {
 	readonly tab: AppTabState;
@@ -11,7 +11,7 @@ export function listedTabsOf(sidebar: TabsSidebar): readonly ListedTab[] {
 
 export function shownChatIdsOf(sidebar: TabsSidebar): ReadonlySet<string> {
 	const items = sidebar.sections.flatMap((section) => section.entries.flatMap(itemsOfEntry));
-	return new Set(items.flatMap((item) => (item.children !== undefined && item.tab.isShown ? [item.tab.id] : [])));
+	return new Set(items.flatMap((item) => (item.isChat && item.tab.isShown ? [item.tab.id] : [])));
 }
 
 export function shownSplitIdsOf(sidebar: TabsSidebar): readonly string[] {
@@ -32,15 +32,6 @@ function itemsOfEntry(entry: SidebarEntry): readonly SidebarTab[] {
 	return entry.kind === "split" ? entry.split.members.map((member) => member.item) : [entry];
 }
 
-function tabsOfItem({ tab, children }: SidebarTab, listTitle: string): readonly ListedTab[] {
-	if (children === undefined) {
-		return [{ tab, listTitle }];
-	}
-
-	return children.flatMap((child) => tabsOfChild(child, tab.title));
-}
-
-function tabsOfChild(child: TabChild, listTitle: string): readonly ListedTab[] {
-	const tabs = child.kind === "tab" ? [child.tab] : child.group.tabs;
-	return tabs.map((tab) => ({ tab, listTitle }));
+function tabsOfItem({ tab, isChat }: SidebarTab, listTitle: string): readonly ListedTab[] {
+	return isChat ? [] : [{ tab, listTitle }];
 }

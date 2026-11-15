@@ -1,12 +1,9 @@
 import type { TabDrop } from "@widgetarium/app-host/contract";
 import { isDraggedRow, placeholderRectOf } from "./drag-placeholder.js";
-import { isNestableSource } from "./drag-source.js";
 import type { DragSource } from "./drag-source.js";
 import { essentialsDropOf, isOverEssentials } from "./essentials-aim.js";
 import {
 	bottomOf,
-	chatRowOf,
-	chatRowsOf,
 	findMeasuredList,
 	groupUnitOf,
 	listTopOf,
@@ -32,10 +29,8 @@ export interface DropAim {
 	readonly current: TabDrop;
 }
 
-const NEST_REACH_PX = 2;
-
 export function dropOf(layout: SidebarLayout, source: DragSource, aim: DropAim): TabDrop {
-	if (aim.current.kind !== "own-window" && (isOnPlaceholder(layout, source, aim) || isOnNestingChat(layout, aim))) {
+	if (aim.current.kind !== "own-window" && isOnPlaceholder(layout, source, aim)) {
 		return aim.current;
 	}
 
@@ -78,8 +73,8 @@ function listedDropOf(layout: SidebarLayout, source: DragSource, aim: DropAim): 
 		return aim.current;
 	}
 
-	const list = listAtY(layout, source, listedY) ?? first;
-	return nestDropOf(layout, list, source, listedY) ?? listDropOf(list, source, listedY);
+	const list = layout.lists.filter((one) => listTopOf(one) <= listedY).at(-1) ?? first;
+	return listDropOf(list, source, listedY);
 }
 
 function isOnPlaceholder(layout: SidebarLayout, source: DragSource, { x, y, current }: DropAim): boolean {
@@ -92,60 +87,6 @@ function isOnPlaceholder(layout: SidebarLayout, source: DragSource, { x, y, curr
 	const isTile = layout.grid.tiles.some((tile) => tile.id === source.id);
 	const atY = isTile ? y : y + scrolledOf(layout);
 	return x >= rect.left && x <= rect.left + rect.width && atY >= rect.top && atY <= bottomOf(rect);
-}
-
-function isOnNestingChat(layout: SidebarLayout, { x, y, current }: DropAim): boolean {
-	if (current.kind !== "list") {
-		return false;
-	}
-
-	const chat = chatRowOf(layout, current.list);
-
-	if (chat === undefined) {
-		return false;
-	}
-
-	const atY = y + scrolledOf(layout);
-	const { rect } = chat;
-	return x >= rect.left && x <= rect.left + rect.width && atY >= rect.top && atY < bottomOf(rect) + NEST_REACH_PX;
-}
-
-function listAtY(layout: SidebarLayout, source: DragSource, y: number): MeasuredList | undefined {
-	const isNestable = isNestableIn(layout, source);
-	return layout.lists.filter((list) => listTopOf(list) <= y && isOpenTo(list, isNestable, y)).at(-1);
-}
-
-function isOpenTo(list: MeasuredList, isNestable: boolean, y: number): boolean {
-	if (!list.isNested) {
-		return true;
-	}
-
-	return isNestable && y <= bottomOf(list.rect);
-}
-
-function isNestableIn(layout: SidebarLayout, source: DragSource): boolean {
-	if (source.kind !== "group") {
-		return isNestableSource(source);
-	}
-
-	return groupUnitOf(layout, source.id)?.holdsChat === false;
-}
-
-function nestDropOf(layout: SidebarLayout, list: MeasuredList, source: DragSource, y: number): ListDrop | null {
-	if (!isNestableIn(layout, source)) {
-		return null;
-	}
-
-	const chat = chatRowsOf(list).find(
-		(row) => row.id !== source.id && !row.isFolded && y >= middleOf(row.rect) && y < bottomOf(row.rect) + NEST_REACH_PX,
-	);
-
-	if (chat === undefined) {
-		return null;
-	}
-
-	const firstChild = findMeasuredList(layout, chat.id)?.units.find((unit) => !isDraggedRow(source, unit));
-	return listDrop(chat.id, null, firstChild?.id ?? null);
 }
 
 function listDropOf(list: MeasuredList, source: DragSource, y: number): TabDrop {

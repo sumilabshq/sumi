@@ -1,23 +1,10 @@
-import type {
-	AppTabState,
-	SidebarEntry,
-	SidebarSection,
-	SidebarTab,
-	TabChild,
-	TabDrop,
-	TabsSidebar,
-} from "@widgetarium/app-host/contract";
+import type { SidebarEntry, SidebarSection, SidebarTab, TabDrop, TabsSidebar } from "@widgetarium/app-host/contract";
 import { keptMap } from "./kept-list.js";
 import { insertedBefore, keyedSpot } from "./keyed-spot.js";
-import { groupStateOf } from "./sidebar-take-out.js";
 import type { Carried } from "./sidebar-take-out.js";
 import { tabOfTile, tileOfTab } from "./tile-tab.js";
 
 type ListDrop = Extract<TabDrop, { kind: "list" }>;
-
-type GroupEntry = Extract<SidebarEntry, { kind: "group" }>;
-
-type SplitEntry = Extract<SidebarEntry, { kind: "split" }>;
 
 export function putIn(sidebar: TabsSidebar, carried: Carried, drop: TabDrop): TabsSidebar {
 	if (drop.kind === "essentials") {
@@ -42,6 +29,7 @@ export function sidebarTabOf(carried: Exclude<Carried, { kind: "group" }>): Side
 	return {
 		kind: "tab",
 		tab: tabOfTile(carried.tile),
+		isChat: false,
 	};
 }
 
@@ -67,10 +55,11 @@ function withTile(sidebar: TabsSidebar, carried: Carried, at: number): TabsSideb
 }
 
 function sectionWith(section: SidebarSection, carried: Carried, drop: ListDrop): SidebarSection {
-	const entries =
-		section.list === drop.list
-			? entriesWith(section.entries, carried, drop)
-			: keptMap(section.entries, (entry) => entryWithHeld(entry, carried, drop));
+	if (section.list !== drop.list) {
+		return section;
+	}
+
+	const entries = entriesWith(section.entries, carried, drop);
 	return entries === section.entries
 		? section
 		: {
@@ -110,93 +99,6 @@ function entryWithGroupItem(entry: SidebarEntry, item: SidebarTab, drop: ListDro
 	};
 }
 
-function entryWithHeld(entry: SidebarEntry, carried: Carried, drop: ListDrop): SidebarEntry {
-	if (entry.kind === "tab") {
-		return itemWithHeld(entry, carried, drop);
-	}
-
-	if (entry.kind === "group") {
-		return groupEntryWithHeld(entry, carried, drop);
-	}
-
-	return splitEntryWithHeld(entry, carried, drop);
-}
-
-function groupEntryWithHeld(entry: GroupEntry, carried: Carried, drop: ListDrop): SidebarEntry {
-	const items = keptMap(entry.group.items, (item) => itemWithHeld(item, carried, drop));
-	return items === entry.group.items
-		? entry
-		: {
-				kind: "group",
-				group: {
-					...entry.group,
-					items,
-				},
-			};
-}
-
-function splitEntryWithHeld(entry: SplitEntry, carried: Carried, drop: ListDrop): SidebarEntry {
-	const members = keptMap(entry.split.members, (member) => {
-		const item = itemWithHeld(member.item, carried, drop);
-		return item === member.item ? member : { ...member, item };
-	});
-	return members === entry.split.members
-		? entry
-		: {
-				kind: "split",
-				split: {
-					...entry.split,
-					members,
-				},
-			};
-}
-
-function itemWithHeld(item: SidebarTab, carried: Carried, drop: ListDrop): SidebarTab {
-	if (item.tab.id !== drop.list || item.children === undefined) {
-		return item;
-	}
-
-	return {
-		...item,
-		children: childrenWith(item.children, carried, drop),
-	};
-}
-
-function childrenWith(children: readonly TabChild[], carried: Carried, drop: ListDrop): readonly TabChild[] {
-	if (drop.groupId === null) {
-		return insertedBefore(
-			children,
-			childOf(carried),
-			keyedSpot(drop.before, (child) => [childIdOf(child)]),
-		);
-	}
-
-	if (carried.kind === "group") {
-		return children;
-	}
-
-	const { tab } = sidebarTabOf(carried);
-	return keptMap(children, (child) => childWithGroupTab(child, tab, drop));
-}
-
-function childWithGroupTab(child: TabChild, tab: AppTabState, drop: ListDrop): TabChild {
-	if (child.kind !== "group" || child.group.id !== drop.groupId) {
-		return child;
-	}
-
-	return {
-		kind: "group",
-		group: {
-			...child.group,
-			tabs: insertedBefore(
-				child.group.tabs,
-				tab,
-				keyedSpot(drop.before, (one) => [one.id]),
-			),
-		},
-	};
-}
-
 function entryOf(carried: Carried): SidebarEntry {
 	if (carried.kind === "group") {
 		return {
@@ -206,22 +108,4 @@ function entryOf(carried: Carried): SidebarEntry {
 	}
 
 	return sidebarTabOf(carried);
-}
-
-function childOf(carried: Carried): TabChild {
-	if (carried.kind === "group") {
-		return {
-			kind: "group",
-			group: groupStateOf(carried),
-		};
-	}
-
-	return {
-		kind: "tab",
-		tab: sidebarTabOf(carried).tab,
-	};
-}
-
-function childIdOf(child: TabChild): string {
-	return child.kind === "tab" ? child.tab.id : child.group.id;
 }

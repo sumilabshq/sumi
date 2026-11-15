@@ -1,7 +1,7 @@
 import { seenPlacedAs } from "./layout-sight.js";
 import type { Seen, Sight } from "./layout-sight.js";
 
-const GROWN = "[data-tabs-box], [data-tabs-split], [data-tabs-card]";
+const GROWN = "[data-tabs-box], [data-tabs-split]";
 const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const SHORTEST_MS = 100;
 const ROW_LONGEST_MS = 180;

@@ -27,7 +27,6 @@ export function SidebarEntries({ entries, renaming }: SidebarEntriesProps): Reac
 					<GroupBox
 						key={entry.group.id}
 						group={entry.group}
-						holdsChat={entry.group.items.some((item) => item.children !== undefined)}
 						isRenaming={renaming.id === entry.group.id}
 						onRenamed={renaming.onRenamed}
 					>

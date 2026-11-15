@@ -95,7 +95,6 @@ export class TabDragSession {
 		}
 
 		this.landing.putAway();
-		this.aim.remove();
 	}
 
 	private stop(): void {
@@ -111,7 +110,6 @@ export class TabDragSession {
 		this.unmuteSelection();
 		this.edgeScroll.stop();
 		this.deaf.hearAgain();
-		this.aim.remove();
 	}
 
 	private readonly onKeyDown = (event: KeyboardEvent): void => {

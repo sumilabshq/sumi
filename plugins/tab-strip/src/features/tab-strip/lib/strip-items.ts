@@ -1,10 +1,4 @@
-import type {
-	AppTabState,
-	SidebarEntry,
-	SidebarSplitState,
-	SidebarTab,
-	TabsSidebar,
-} from "@widgetarium/app-host/contract";
+import type { AppTabState, SidebarEntry, SidebarSplitState, TabsSidebar } from "@widgetarium/app-host/contract";
 
 export interface StripGroup {
 	readonly id: string;
@@ -77,18 +71,20 @@ function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripItem[] {
 	const isPinned = list === PINNED_LIST;
 
 	if (entry.kind === "tab") {
-		return [entry.tab, ...childTabsOf(entry)].map((tab) => ({
-			kind: "tab",
-			tab,
-			list,
-			groupId: null,
-			group: null,
-			isPinned,
-		}));
+		return [
+			{
+				kind: "tab",
+				tab: entry.tab,
+				list,
+				groupId: null,
+				group: null,
+				isPinned,
+			},
+		];
 	}
 
 	if (entry.kind === "group") {
-		return entry.group.items.flatMap((member) => [member.tab, ...childTabsOf(member)]).map((tab) => ({
+		return entry.group.items.map(({ tab }) => ({
 			kind: "tab",
 			tab,
 			list,
@@ -120,8 +116,4 @@ function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripItem[] {
 function focusedOf(split: SidebarSplitState): AppTabState | null {
 	const member = split.members.find(({ isFocused }) => isFocused) ?? split.members[0];
 	return member === undefined ? null : member.item.tab;
-}
-
-function childTabsOf({ children }: SidebarTab): readonly AppTabState[] {
-	return (children ?? []).flatMap((child) => (child.kind === "tab" ? [child.tab] : child.group.tabs));
 }
