@@ -5,7 +5,7 @@ import { GLOBAL_ROOT, HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/ta
 import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { StudioWindows } from "../../shared/host/layout.host.js";
 import { USUAL_WIDTHS } from "../../shared/lib/frame-bounds.js";
-import { KeptSidesSchema, TauriFrameSidesGateway } from "../frame-sides/tauri.gateway.js";
+import { KeptSidesSchema, KeptTabsPlaceSchema, TauriFrameSidesGateway } from "../frame-sides/tauri.gateway.js";
 import { KeptWidthsSchema, TauriFrameWidthsGateway } from "../frame-widths/tauri.gateway.js";
 import { KeptPanesSchema, TauriPaneTreeGateway } from "../pane-tree/tauri.gateway.js";
 import { groupedChat } from "../../shared/lib/chat-groups.js";
@@ -13,7 +13,7 @@ import type { PaneTree, PaneView } from "../../shared/schema/pane-tree.schema.js
 import type { LayoutParts } from "./layout-parts.gateway.js";
 import { FIRST_PANES, FIRST_SIDES } from "./memory.gateway.js";
 
-const SettingsSchema = z.looseObject(KeptWidthsSchema.shape);
+const SettingsSchema = z.looseObject({ ...KeptWidthsSchema.shape, ...KeptTabsPlaceSchema.shape });
 
 const SessionSchema = z.looseObject({
 	...KeptPanesSchema.shape,
@@ -53,7 +53,7 @@ export function tauriLayoutParts(workspaceId: string, store: StoreClient, window
 	forgetsOnClose(paneTree, studioWindow.label, windows);
 	forgetsDeadWindows(paneTree, studioWindow.label, windows);
 	return {
-		frameSides: new TauriFrameSidesGateway(windowView, FIRST_SIDES),
+		frameSides: new TauriFrameSidesGateway(windowView, settings, FIRST_SIDES),
 		frameWidths: new TauriFrameWidthsGateway(settings, USUAL_WIDTHS),
 		paneTree,
 	};

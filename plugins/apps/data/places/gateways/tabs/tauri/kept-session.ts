@@ -93,7 +93,7 @@ export function workspacedTabsOf(workspaceId: string): (placed: PlacedTabs) => R
 		return {
 			placed: {
 				...placed,
-				lists: Object.entries(placed.lists).reduce<KeptLists>((merged, [listId, entries]) => {
+				lists: Object.entries(placed.lists).reduce<Record<string, ListEntry[]>>((merged, [listId, entries]) => {
 					const to = listOf(listId);
 					const held = merged[to] ?? [];
 					const heldIds = new Set(held.map((entry) => entry.id));
