@@ -1,4 +1,4 @@
-import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
+import { BUILT_IN_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import type { z } from "zod";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport, ServerSideModule } from "../packages/shared/data-framework/src/index.ts";
@@ -75,7 +75,7 @@ export function placesLinkOf(tabs: MemoryTabsGateway, besidePlaces: readonly Ser
 		runtime()
 			.modules(
 				placesModule({
-					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
+					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
 				}),
 				...besidePlaces,
 			)
