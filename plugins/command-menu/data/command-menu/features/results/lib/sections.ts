@@ -22,6 +22,9 @@ const DO_LABEL: Readonly<Record<RowKind, string>> = {
 	ask: "Ask",
 };
 const OPENS_HERE = "Open here";
+const HOME_DOOR = "home";
+const ASK_KEYS = "⌘↵";
+const FALLBACK_KEYS = "⇧↵";
 const MATCHED_KINDS: ReadonlySet<RowKind> = new Set(["tab", "chat", "app", "site", "workspace"]);
 
 export function sectionsOf(drafts: readonly Draft[], matched: string, door: Door): readonly Section[] {
@@ -54,12 +57,24 @@ function rowOf(found: Found, matched: string, isFallback: boolean, door: Door): 
 		match: isFallback ? null : matchOf(found, matched),
 		kindLabel: KIND_LABEL[found.kind] ?? "",
 		doLabel: doLabelOf(found, door),
-		shortcut: found.shortcut,
+		shortcut: found.shortcut ?? keysOf(found.kind, isFallback, door),
 		isFallback,
 		intent: found.intent,
 		renames: found.renames,
 		actions: [...found.actions],
 	};
+}
+
+function keysOf(kind: RowKind, isFallback: boolean, door: Door): string | null {
+	if (door === HOME_DOOR) {
+		return null;
+	}
+
+	if (kind === "ask") {
+		return ASK_KEYS;
+	}
+
+	return isFallback ? FALLBACK_KEYS : null;
 }
 
 function doLabelOf(found: Found, door: Door): string {

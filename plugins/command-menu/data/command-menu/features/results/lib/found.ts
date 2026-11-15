@@ -29,6 +29,10 @@ const INSTALLED_ART = "built-app";
 const CHAT_APP = "chat";
 const SUMI_CHAT = "Sumi Chat";
 const SUMI_CHAT_WORDS = "sumi chat new chat ask assistant";
+const LAYOUT = "Layout";
+const TABS_IN_SIDEBAR = "Tabs in sidebar";
+const TABS_IN_HEADER = "Tabs in header";
+const LAYOUT_WORDS = "layout sidebar header tabs mode";
 
 export function tabsFoundOf(sidebar: TabsSidebar): readonly Found[] {
 	const listed = listedTabsOf(sidebar).map(({ tab, listTitle }) => tabFoundOf(tab, listTitle));
@@ -343,4 +347,24 @@ function appFoundOf(face: AppFace, haystack: string): Found {
 		host: "",
 		isOnScreen: false,
 	};
+}
+
+export function layoutFoundOf(tabs: "header" | "sidebar"): readonly Found[] {
+	const isSidebar = tabs === "sidebar";
+	return [
+		{
+			key: "layout:tabs",
+			kind: "app",
+			title: isSidebar ? TABS_IN_HEADER : TABS_IN_SIDEBAR,
+			meta: LAYOUT,
+			haystack: LAYOUT_WORDS,
+			icon: { kind: "glyph", glyph: "layout" },
+			intent: { do: "run", command: isSidebar ? "tabs-in-header" : "tabs-in-sidebar" },
+			shortcut: null,
+			renames: null,
+			actions: [],
+			host: "",
+			isOnScreen: false,
+		},
+	];
 }

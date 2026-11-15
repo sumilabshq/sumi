@@ -5,6 +5,7 @@ import { chatTabs } from "@sumi/chat-tabs/contract";
 import { apps as appsContract } from "@sumi/apps/contract";
 import { browser as browserContract } from "@widgetarium/browser/contract";
 import { workspaces as workspacesContract } from "@widgetarium/workspaces/contract";
+import { layout } from "@widgetarium/layout/contract";
 import { commandMenuChanged } from "../../gateways/command-menu/command-menu.events.js";
 import type { FilledRowSource, Pools, RowsOf } from "../../shared/host/command-menu.host.js";
 import { FoundSchema, ResultsAskSchema, ResultsSchema } from "../../shared/schema/command-menu.schema.js";
@@ -14,11 +15,12 @@ import {
 	chatsElsewhereFoundOf,
 	chatsFoundOf,
 	closedFoundOf,
+	layoutFoundOf,
 	sitesFoundOf,
 	tabsFoundOf,
 	workspacesFoundOf,
 } from "./lib/found.js";
-import { shownChatIdsOf } from "./lib/sidebar-tabs.js";
+import { shownChatIdsOf, shownSplitIdsOf } from "./lib/sidebar-tabs.js";
 import { ghostOf, sectionsOf } from "./lib/sections.js";
 import { BUILT_IN_PAGES } from "./lib/drafts.js";
 import { heldTabOfPage } from "../../shared/lib/held-tab.js";
@@ -38,11 +40,12 @@ export const all = query()
 	.output(ResultsSchema)
 	.handle(async ({ text, door, pageId }, { menuFills, send }): Promise<Results> => {
 		const page = [...menuFills.pages(), ...BUILT_IN_PAGES].find(({ id }) => id === door);
-		const [sourced, appTabs, workspaces, browser] = await Promise.all([
+		const [sourced, appTabs, workspaces, browser, sidebar] = await Promise.all([
 			Promise.all([...builtInSourcesOf(), ...menuFills.sources()].map((source) => sourcedRowsOf(source, send))),
 			send(appHost.tabs.appTabs),
 			send(workspacesContract.workspaces.all),
 			send(browserContract.tabs.all, ALL_PAGES),
+			send(appHost.tabs.tabsSidebar),
 		]);
 		const heldId = await heldTabOfPage(pageId, send);
 		const typed = typedOf(text);
@@ -56,6 +59,7 @@ export const all = query()
 						around: {
 							workspaceName: workspaces.current.name,
 							shownTitle: appTabs.tabs.find((tab) => (heldId === null ? tab.isShown : tab.id === heldId))?.title ?? "",
+							splitTabIds: heldId === null ? shownSplitIdsOf(sidebar) : [],
 						},
 					});
 		return {
@@ -67,6 +71,7 @@ export const all = query()
 				door,
 				browser.recentSites.map((site) => site.host.toLowerCase()),
 			),
+			isLink: typed.isAddress || typed.isSumiLink,
 			fallbackIntent: fallbackIntentOf(typed, door),
 			fallbackLabel: fallbackLabelOf(typed, door),
 			askInk: askInkOf(typed),
@@ -100,6 +105,8 @@ const chatRowsOf: RowsOf = async (send) => {
 	return chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.apps);
 };
 
+const layoutRowsOf: RowsOf = async (send) => layoutFoundOf((await send(layout.frameSides.frameSides)).tabs);
+
 const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(appsContract.apps.all)).apps);
 
 const siteRowsOf: RowsOf = async (send) => sitesFoundOf((await send(browserContract.tabs.all, ALL_PAGES)).recentSites);
@@ -128,6 +135,7 @@ function builtInSourcesOf(): readonly FilledRowSource[] {
 			isFindable: false,
 		},
 		builtInSourceOf("elsewhere", chatElsewhereRowsOf),
+		builtInSourceOf("layout", layoutRowsOf),
 	];
 }
 

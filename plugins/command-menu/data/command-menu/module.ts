@@ -4,6 +4,7 @@ import { apps } from "@sumi/apps/contract";
 import { chatTabs } from "@sumi/chat-tabs/contract";
 import { browser } from "@widgetarium/browser/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
+import { layout } from "@widgetarium/layout/contract";
 import type { CommandMenuConfig } from "./shared/host/command-menu.host.js";
 import { commandMenuPartsOn } from "./gateways/command-menu-parts/command-menu-parts.gateway.js";
 
@@ -22,6 +23,6 @@ export type {
 
 export const commandMenu = module("command-menu")
 	.on(Device)
-	.imports(appHost, apps, browser, chatTabs, workspaces)
+	.imports(appHost, apps, browser, chatTabs, workspaces, layout)
 	.config<CommandMenuConfig>()
 	.provide((facts) => commandMenuPartsOn(facts));

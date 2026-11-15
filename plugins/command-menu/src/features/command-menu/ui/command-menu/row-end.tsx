@@ -1,29 +1,19 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Row } from "@sumi/command-menu/contract";
-import { RowEndKeys } from "./row-end-keys.js";
 
 export interface RowEndProps {
-	readonly row: Row;
+	readonly shortcut: string | null;
 	readonly isPicked: boolean;
 }
 
 const ENTER = "↵";
-const ASK_KEYS = "⌘↵";
-const FALLBACK_KEYS = "⇧↵";
 
-export function RowEnd({ row, isPicked }: RowEndProps): ReactElement {
-	if (isPicked) {
-		return <RowEndKeys said={row.kindLabel} keys={ENTER} />;
+export function RowEnd({ shortcut, isPicked }: RowEndProps): ReactElement | null {
+	const keys = shortcut ?? (isPicked ? ENTER : null);
+
+	if (keys === null) {
+		return null;
 	}
 
-	if (row.kind === "ask") {
-		return <RowEndKeys said="" keys={row.shortcut ?? ASK_KEYS} />;
-	}
-
-	if (row.isFallback) {
-		return <RowEndKeys said="" keys={FALLBACK_KEYS} />;
-	}
-
-	return <RowEndKeys said={row.kindLabel} keys={row.shortcut} />;
+	return <span className="wg-cm-end">{keys}</span>;
 }

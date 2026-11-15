@@ -1,5 +1,6 @@
 import { bareAddressOf } from "../../../shared/lib/address.js";
-import type { Found } from "../../../shared/schema/command-menu.schema.js";
+import type { Typed } from "../../../shared/host/command-menu.host.js";
+import type { Found, Where } from "../../../shared/schema/command-menu.schema.js";
 
 const NEW_TAB = "New tab";
 const IN_THIS_TAB = "In this tab";
@@ -78,6 +79,68 @@ export function askFallbackFound(typed: string): Found {
 			sends: true,
 		},
 	});
+}
+
+export function askAboutFound(typed: string): Found {
+	return madeOf({
+		key: "or:ask",
+		kind: "ask",
+		title: `Ask Sumi “${typed}”`,
+		meta: "",
+		glyph: "ink",
+		intent: {
+			do: "ask-ink",
+			text: typed,
+			sends: true,
+		},
+	});
+}
+
+export function searchForFound(typed: string, where: Where): Found {
+	return madeOf({
+		key: `or:search:${where}`,
+		kind: "search",
+		title: `Search the web for “${typed}”`,
+		meta: "",
+		glyph: "search",
+		intent: {
+			do: "open-address",
+			address: typed,
+			where,
+		},
+	});
+}
+
+export interface LinkWay {
+	readonly typed: Typed;
+	readonly where: Where;
+	readonly title: string;
+	readonly shortcut: string;
+}
+
+export function linkWayFound({ typed, where, title, shortcut }: LinkWay): Found {
+	const found = madeOf({
+		key: `link-way:${where}`,
+		kind: "address",
+		title,
+		meta: "",
+		glyph: where === "this-tab" ? "globe" : "plus",
+		intent: typed.isSumiLink
+			? {
+					do: "open-link",
+					href: typed.text,
+					where,
+				}
+			: {
+					do: "open-address",
+					address: typed.text,
+					where,
+				},
+	});
+	return {
+		...found,
+		shortcut,
+	};
 }
 
 interface Made {

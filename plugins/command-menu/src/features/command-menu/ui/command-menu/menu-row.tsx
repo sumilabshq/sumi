@@ -30,11 +30,8 @@ export function MenuRow({ row, at, moves }: MenuRowProps): ReactElement {
 			onClick={() => moves.run(row.intent)}
 		>
 			<RowIcon icon={row.icon} />
-			<span className="wg-cm-texts">
-				<RowTitle title={row.title} match={row.match} />
-				{row.meta === "" ? null : <span className="wg-cm-meta">{row.meta}</span>}
-			</span>
-			<RowEnd row={row} isPicked={isPicked} />
+			<RowTitle title={row.title} match={row.match} />
+			<RowEnd shortcut={row.shortcut} isPicked={isPicked} />
 		</button>
 	);
 }

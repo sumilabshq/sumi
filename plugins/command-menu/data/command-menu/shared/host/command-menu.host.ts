@@ -17,6 +17,7 @@ export interface Typed {
 export interface Around {
 	readonly workspaceName: string;
 	readonly shownTitle: string;
+	readonly splitTabIds: readonly string[];
 }
 
 export interface PageAsk {

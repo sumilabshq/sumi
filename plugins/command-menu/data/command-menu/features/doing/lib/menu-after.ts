@@ -25,6 +25,17 @@ export function menuAfter(intent: Intent, was: KeptMenu): MenuAfter {
 		};
 	}
 
+	if (intent.do === "open-door") {
+		return {
+			next: {
+				...was,
+				door: intent.door,
+			},
+			isMenuKept: true,
+			reason: `command menu door ${was.door} → ${intent.door} (${intent.title})`,
+		};
+	}
+
 	if (KEEPS_MENU.has(intent.do)) {
 		return {
 			next: null,

@@ -1,21 +1,24 @@
-import type {
-	Around,
-	Draft,
-	DraftedMenu,
-	FilledPage,
-	PageAsk,
-	Pools,
-	Typed,
-} from "../../../shared/host/command-menu.host.js";
+import type { Around, Draft, DraftedMenu, FilledPage, PageAsk, Pools, Typed } from "../../../shared/host/command-menu.host.js";
 import type { Found } from "../../../shared/schema/command-menu.schema.js";
+import { fallbackDraftOf, gridOf, jumpBackOf, listOf, poolOf, uncountedMenuOf } from "./draft-parts.js";
+import { HOME_PAGE } from "./home-drafts.js";
 import { addressFound, askFallbackFound, askFound, linkFound, searchFound } from "./made.js";
 import { rankedOf } from "./match.js";
 
 const FOUND_SHOWN = 8;
-const RECENT_SHOWN = 8;
 const OPENS_NEW = 2;
 const ALREADY_OPEN = 3;
 const RECENTLY_CLOSED = 5;
+const SESSIONS_SHOWN = 4;
+const SUGGESTED_BESIDE_SESSIONS = 3;
+const SUMI_CHAT_KEY = "app:sumi-chat";
+const SESSIONS_DOOR = "sessions";
+const SESSIONS_LABEL = "Sessions";
+const SUGGESTED_LABEL = "Suggested";
+const SPLIT_LABEL = "Split";
+const UNSPLIT = "Unsplit";
+const NEW_SESSION = "New session";
+const ALL_SESSIONS = "All {count} sessions";
 const UNLABELLED = "";
 const NEW_LABEL = "New";
 
@@ -32,11 +35,16 @@ export const BUILT_IN_PAGES: readonly FilledPage[] = [
 		id: "this-tab",
 		draftsOf: thisTabPageOf,
 	},
+	HOME_PAGE,
+	{
+		id: SESSIONS_DOOR,
+		draftsOf: sessionsPageOf,
+	},
 ];
 
 function anywherePageOf({ pools, findable, typed, around }: PageAsk): DraftedMenu {
 	if (typed.lower === "") {
-		return suggestedMenuOf(pools);
+		return sessionsMenuOf(pools, around.splitTabIds);
 	}
 
 	return foundMenuOf({
@@ -55,9 +63,6 @@ function thisTabPageOf({ pools, typed, around }: PageAsk): DraftedMenu {
 	return thisTabMenuOf(pools, typed, around);
 }
 
-function poolOf(pools: Pools, source: string): readonly Found[] {
-	return pools[source] ?? [];
-}
 
 function foundMenuOf({ pools, findable, typed, around }: PageAsk): DraftedMenu {
 	const found = foundOf(pools, findable, typed);
@@ -93,8 +98,61 @@ function newRowsOf(typed: Typed, around: Around): readonly Found[] {
 	return [opensTypedFound(typed, "new-tab", ""), askFound(typed.text, around.workspaceName)];
 }
 
-function suggestedMenuOf(pools: Pools): DraftedMenu {
-	return uncountedMenuOf([listOf(UNLABELLED, jumpBackOf(pools))]);
+function sessionsMenuOf(pools: Pools, splitTabIds: readonly string[]): DraftedMenu {
+	const sessions = poolOf(pools, "chats");
+	const others = jumpBackOf(pools).filter(({ kind }) => kind !== "chat");
+	const more = sessions.length > SESSIONS_SHOWN ? allSessionsOf(pools, sessions.length) : [];
+	return uncountedMenuOf([
+		listOf(SPLIT_LABEL, splitRowsOf(pools, splitTabIds)),
+		listOf(SESSIONS_LABEL, [...newSessionOf(pools), ...sessions.slice(0, SESSIONS_SHOWN), ...more]),
+		listOf(SUGGESTED_LABEL, others.slice(0, SUGGESTED_BESIDE_SESSIONS)),
+	]);
+}
+
+function splitRowsOf(pools: Pools, splitTabIds: readonly string[]): readonly Found[] {
+	const rows = [...poolOf(pools, "tabs"), ...poolOf(pools, "chats")];
+	const members = splitTabIds.flatMap((id) => rows.filter(({ key }) => key === `tab:${id}` || key === `chat:${id}`));
+	const first = members[0];
+	return first === undefined ? [] : [...members, unsplitOf(first, splitTabIds)];
+}
+
+function unsplitOf(member: Found, tabIds: readonly string[]): Found {
+	return {
+		...member,
+		key: "unsplit",
+		title: UNSPLIT,
+		meta: "",
+		icon: { kind: "glyph", glyph: "unsplit" },
+		intent: { do: "unsplit", tabIds, title: UNSPLIT },
+		renames: null,
+		actions: [],
+		isOnScreen: false,
+	};
+}
+
+function sessionsPageOf({ pools, typed }: PageAsk): DraftedMenu {
+	const sessions = poolOf(pools, "chats");
+	return uncountedMenuOf([
+		listOf(UNLABELLED, [...newSessionOf(pools), ...(typed.lower === "" ? sessions : rankedOf(sessions, typed.matched))]),
+	]);
+}
+
+function newSessionOf(pools: Pools): readonly Found[] {
+	const sumiChat = poolOf(pools, "apps").find(({ key }) => key === SUMI_CHAT_KEY);
+	return sumiChat === undefined
+		? []
+		: [{ ...sumiChat, key: "new-session", title: NEW_SESSION, meta: "", icon: { kind: "glyph", glyph: "plus" } }];
+}
+
+function allSessionsOf(pools: Pools, count: number): readonly Found[] {
+	const title = ALL_SESSIONS.replace("{count}", String(count));
+	return newSessionOf(pools).map((sumiChat) => ({
+		...sumiChat,
+		key: "all-sessions",
+		title,
+		icon: { kind: "glyph", glyph: "search" },
+		intent: { do: "open-door", door: SESSIONS_DOOR, title },
+	}));
 }
 
 function newTabMenuOf(pools: Pools, typed: Typed, around: Around): DraftedMenu {
@@ -142,12 +200,6 @@ function thisTabTypedDraftsOf(pools: Pools, typed: Typed, around: Around): reado
 	];
 }
 
-function jumpBackOf(pools: Pools): readonly Found[] {
-	const tabs = poolOf(pools, "tabs").filter((tab) => !tab.isOnScreen);
-	const chats = poolOf(pools, "chats").filter((chat) => !chat.isOnScreen);
-	const mixed = tabs.flatMap((tab, at) => [tab, ...(chats[at] === undefined ? [] : [chats[at]])]);
-	return [...mixed, ...chats.slice(tabs.length)].slice(0, RECENT_SHOWN);
-}
 
 function opensTypedFound(typed: Typed, where: "new-tab" | "this-tab", shownTitle: string): Found {
 	if (typed.isSumiLink) {
@@ -173,36 +225,6 @@ function inThisTab(site: Found): Found {
 	};
 }
 
-function uncountedMenuOf(drafts: readonly Draft[]): DraftedMenu {
-	return {
-		foundCount: null,
-		drafts,
-	};
-}
 
-function listOf(label: string, rows: readonly Found[]): Draft {
-	return {
-		label,
-		layout: "list",
-		rows,
-		isFallback: false,
-	};
-}
 
-function gridOf(label: string, rows: readonly Found[]): Draft {
-	return {
-		label,
-		layout: "grid",
-		rows,
-		isFallback: false,
-	};
-}
 
-function fallbackDraftOf(label: string, rows: readonly Found[]): Draft {
-	return {
-		label,
-		layout: "list",
-		rows,
-		isFallback: true,
-	};
-}

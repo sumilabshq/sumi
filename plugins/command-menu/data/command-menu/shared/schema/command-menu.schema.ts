@@ -31,9 +31,15 @@ export const ResultsAskSchema = z.object({
 
 export type ResultsAsk = z.infer<typeof ResultsAskSchema>;
 
-export const WhereSchema = z.enum(["new-tab", "this-tab"]);
+export const WhereSchema = z.enum(["new-tab", "this-tab", "new-window"]);
 
-export const MenuCommandSchema = z.enum(["new-chat", "new-tab"]);
+export type Where = z.infer<typeof WhereSchema>;
+
+export const HomePlaceSchema = z.enum(["here", "new-tab", "new-window"]);
+
+export type HomePlace = z.infer<typeof HomePlaceSchema>;
+
+export const MenuCommandSchema = z.enum(["new-chat", "new-tab", "tabs-in-sidebar", "tabs-in-header"]);
 
 export type MenuCommand = z.infer<typeof MenuCommandSchema>;
 
@@ -100,6 +106,16 @@ export const IntentSchema = z.discriminatedUnion("do", [
 		title: z.string(),
 	}),
 	z.object({
+		do: z.literal("unsplit"),
+		tabIds: z.array(z.string()).readonly(),
+		title: z.string(),
+	}),
+	z.object({
+		do: z.literal("open-door"),
+		door: DoorSchema,
+		title: z.string(),
+	}),
+	z.object({
 		do: z.literal("pin-chat"),
 		id: z.string(),
 		isPinned: z.boolean(),
@@ -107,6 +123,12 @@ export const IntentSchema = z.discriminatedUnion("do", [
 ]);
 
 export type Intent = z.infer<typeof IntentSchema>;
+
+export const HomeIntentSchema = z.object({
+	intent: IntentSchema,
+	homeTabId: z.string().min(1),
+	place: HomePlaceSchema,
+});
 
 export const RenamedSchema = z.enum(["tab", "chat", "workspace"]);
 
@@ -116,7 +138,7 @@ export const RenameAskSchema = z.object({
 	name: z.string(),
 });
 
-export const RowGlyphSchema = z.enum(["search", "globe", "plus", "ink", "pencil"]);
+export const RowGlyphSchema = z.enum(["search", "globe", "plus", "ink", "pencil", "unsplit", "layout"]);
 
 export const RowIconSchema = z.discriminatedUnion("kind", [
 	z.object({
@@ -205,6 +227,7 @@ export const ResultsSchema = z.object({
 	foundCount: z.number().int().nonnegative().nullable(),
 	sections: z.array(SectionSchema),
 	ghost: z.string(),
+	isLink: z.boolean(),
 	fallbackIntent: IntentSchema.nullable(),
 	fallbackLabel: z.string(),
 	askInk: IntentSchema.nullable(),

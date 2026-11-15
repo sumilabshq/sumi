@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { useCommand } from "@widgetarium/data-framework";
-import { commandMenu } from "@sumi/command-menu/contract";
-import type { Intent, Results, Row } from "@sumi/command-menu/contract";
+import type { Done, HomePlace, Intent, Results, Row } from "@sumi/command-menu/contract";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
 import { useRowRename } from "./use-row-rename.js";
 import type { RowRename } from "./use-row-rename.js";
@@ -18,25 +16,54 @@ export interface MenuMoves {
 	pickAt(at: number): void;
 	typed(change: () => void): void;
 	run(intent: Intent): void;
+	runAt(intent: Intent, place: HomePlace): void;
 	setActing(isActing: boolean): void;
 }
+
+export type IntentSender = (intent: Intent, place: HomePlace) => Promise<SentAnswer>;
+
+type SentAnswer =
+	| {
+			readonly ok: true;
+			readonly output: Done;
+	  }
+	| {
+			readonly ok: false;
+			readonly reason: string;
+	  };
 
 export interface Toast {
 	readonly message: string;
 	readonly isWarning: boolean;
 }
 
-export function useMenuMoves(results: Results): MenuMoves {
+export function useMenuMoves(results: Results, sendIntent: IntentSender): MenuMoves {
 	const [pickedAt, setPickedAt] = useState(0);
 	const [isActing, setActing] = useState(false);
 	const [toast, setToast] = useState<Toast>({ message: "", isWarning: false });
-	const runIntent = useCommand(commandMenu.doing.runIntent);
 	// TRADE-OFF: the assistant runs in its own app, so the view hands the text over once the chat is made
 	const askComposer = useAskComposer();
 	const rows = results.sections.flatMap((section) => section.rows);
 	const at = rows.length === 0 ? 0 : Math.min(pickedAt, rows.length - 1);
 	const picked = rows[at] ?? null;
 	const rename = useRowRename(picked, setToast);
+	const runAt = (intent: Intent, place: HomePlace): void => {
+		setActing(false);
+		void sendIntent(intent, place).then((answer) => {
+			if (!answer.ok) {
+				setToast({ message: answer.reason, isWarning: true });
+				return;
+			}
+
+			if (intent.do === "ask-ink") {
+				askComposer.ask(intent.text, intent.sends, answer.output.chatId);
+			}
+
+			if (answer.output.isMenuKept) {
+				setToast({ message: answer.output.said, isWarning: false });
+			}
+		});
+	};
 	return {
 		pickedAt: at,
 		picked,
@@ -62,23 +89,8 @@ export function useMenuMoves(results: Results): MenuMoves {
 			setToast({ message: "", isWarning: false });
 			change();
 		},
-		run: (intent) => {
-			setActing(false);
-			void runIntent.run({ intent }).then((answer) => {
-				if (!answer.ok) {
-					setToast({ message: answer.reason, isWarning: true });
-					return;
-				}
-
-				if (intent.do === "ask-ink") {
-					askComposer.ask(intent.text, intent.sends, answer.output.chatId);
-				}
-
-				if (answer.output.isMenuKept) {
-					setToast({ message: answer.output.said, isWarning: false });
-				}
-			});
-		},
+		run: (intent) => runAt(intent, "here"),
+		runAt,
 		setActing,
 	};
 }

@@ -315,11 +315,13 @@ await check("a chat in another workspace is found and opened there", async () =>
 							id: "untitled",
 							name: "Untitled",
 							icon: null,
+							ink: "yellow",
 						},
 						{
 							id: "default",
 							name: "Default",
 							icon: null,
+							ink: "yellow",
 						},
 					],
 					currentId: "untitled",

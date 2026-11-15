@@ -1,41 +1,29 @@
 import { createElement as h } from "react";
 import type { ClipboardEvent, DragEvent, ReactElement, ReactNode } from "react";
-import { Icon } from "@widgetarium/kit";
-import type { Door } from "@sumi/command-menu/contract";
 import { useSelectsFieldOnMount } from "../../lib/use-selects-field-on-mount.js";
-import { FieldIcon } from "./field-icon.js";
-import type { FieldGlyph } from "./field-icon.js";
 
 export interface MenuFieldAsk {
-	readonly door: Door;
 	readonly placeholder: string;
 	readonly text: string;
 	readonly ghost: string;
+	readonly isLink: boolean;
 	readonly onText: (text: string) => void;
-	readonly onDoor: (door: Door) => void;
 }
 
 export interface MenuFieldProps {
 	readonly ask: MenuFieldAsk;
+	readonly start: ReactNode;
 	readonly end: ReactNode;
 	readonly onFiles: FilesTaker | null;
 }
 
 type FilesTaker = (files: readonly File[]) => void;
 
-const FIND_GLYPH = "find";
-const IN_THIS_TAB = "In this tab";
-const SEARCH_EVERYTHING = "Remove, search everything";
 const FIELD_LABEL = "Find tabs, chats, apps or make something new";
-const FIELD_GLYPH_BY_DOOR: Readonly<Partial<Record<Door, FieldGlyph>>> = {
-	anywhere: "find",
-	"new-tab": "new",
-	ask: "ask",
-	"this-tab": "find",
-};
 
 export function MenuField({
-	ask: { door, placeholder, text, ghost, onText, onDoor },
+	ask: { placeholder, text, ghost, isLink, onText },
+	start,
 	end,
 	onFiles,
 }: MenuFieldProps): ReactElement {
@@ -43,27 +31,11 @@ export function MenuField({
 	return (
 		<div
 			className="wg-cm-field"
+			data-cm-link={isLink ? "" : undefined}
 			onDragOver={(event) => acceptFileDrag(event, onFiles)}
 			onDrop={(event) => takeDroppedFiles(event, onFiles)}
 		>
-			<FieldIcon shown={FIELD_GLYPH_BY_DOOR[door] ?? FIND_GLYPH} />
-			{door === "this-tab" ? (
-				<span className="wg-cm-token">
-					<Icon name="arrow-right-left" size={12} />
-					{IN_THIS_TAB}
-					<button
-						type="button"
-						className="wg-cm-token-drop"
-						aria-label={SEARCH_EVERYTHING}
-						onClick={() => {
-							onDoor("anywhere");
-							field.current?.focus();
-						}}
-					>
-						<Icon name="x" size={10} />
-					</button>
-				</span>
-			) : null}
+			{start}
 			<span className="wg-cm-input-wrap">
 				<span className="wg-cm-ghost" aria-hidden="true">
 					<span className="wg-cm-ghost-typed">{text}</span>

@@ -14,6 +14,12 @@ export function shownChatIdsOf(sidebar: TabsSidebar): ReadonlySet<string> {
 	return new Set(items.flatMap((item) => (item.children !== undefined && item.tab.isShown ? [item.tab.id] : [])));
 }
 
+export function shownSplitIdsOf(sidebar: TabsSidebar): readonly string[] {
+	const entries = sidebar.sections.flatMap((section) => section.entries);
+	const shown = entries.find((entry) => entry.kind === "split" && entry.split.isShown);
+	return shown?.kind === "split" ? shown.split.members.map((member) => member.item.tab.id) : [];
+}
+
 function tabsOfEntry(entry: SidebarEntry, listTitle: string): readonly ListedTab[] {
 	return itemsOfEntry(entry).flatMap((item) => tabsOfItem(item, listTitle));
 }

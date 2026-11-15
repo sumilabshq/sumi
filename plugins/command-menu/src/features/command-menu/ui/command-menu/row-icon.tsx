@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ComponentType, ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import type { RowIcon as RowIconData } from "@sumi/command-menu/contract";
-import { useTabFace } from "@sumi/sumi-host-plugin";
+import { SumiFigure, useTabFace } from "@sumi/sumi-host-plugin";
 import type { TabFaceProps } from "@sumi/sumi-host-plugin";
 
 type Glyph = Extract<RowIconData, { kind: "glyph" }>["glyph"];
@@ -12,6 +12,8 @@ const GLYPH_ICONS: Readonly<Record<Exclude<Glyph, "ink">, string>> = {
 	globe: "globe",
 	plus: "plus",
 	pencil: "pencil",
+	unsplit: "panel-right-close",
+	layout: "panel-left",
 };
 const ICON_PX = 16;
 
@@ -34,7 +36,7 @@ function iconDrawingOf(icon: RowIconData, TabFace: ComponentType<TabFaceProps>):
 			);
 		case "glyph":
 			return icon.glyph === "ink" ? (
-				<span className="wg-cm-ink" />
+				<SumiFigure state="rest" size={ICON_PX} />
 			) : (
 				<Icon name={GLYPH_ICONS[icon.glyph]} size={ICON_PX} />
 			);

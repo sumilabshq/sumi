@@ -1,3 +1,4 @@
+import { layout } from "@widgetarium/layout/contract";
 import { z } from "zod";
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
@@ -7,12 +8,19 @@ import { chatTabs } from "@sumi/chat-tabs/contract";
 import type { HeldTabs } from "@widgetarium/app-host/contract";
 import { browser } from "@widgetarium/browser/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
-import { DoneSchema, IntentSchema, RenameAskSchema } from "../../shared/schema/command-menu.schema.js";
-import type { Done, Intent, KeptMenu, MenuCommand } from "../../shared/schema/command-menu.schema.js";
+import { DoneSchema, HomeIntentSchema, IntentSchema, RenameAskSchema } from "../../shared/schema/command-menu.schema.js";
+import type { Done, HomePlace, Intent, KeptMenu, MenuCommand } from "../../shared/schema/command-menu.schema.js";
 import { confirmationOf } from "./lib/confirmation.js";
+import { homePlaceOf, openedInNewTab, whereOf } from "./lib/home-place.js";
 import { menuAfter } from "./lib/menu-after.js";
 
+type OpenedOver = Pick<KeptMenu, "newTabList" | "pageId">;
+
 const NO_NAME = "A new name cannot be empty.";
+const OVER_NO_PAGE: OpenedOver = {
+	newTabList: null,
+	pageId: null,
+};
 
 export const runIntent = command()
 	.public()
@@ -21,6 +29,11 @@ export const runIntent = command()
 	.idempotencyKey(PerCall)
 	.handle(async ({ intent }, { commandMenu, send }): Promise<Done> => {
 		const chatId = await performIntent(intent, send, commandMenu.menu());
+
+		if (whereOf(intent) === "new-window") {
+			await settlePlace("new-window", null, send);
+		}
+
 		const after = menuAfter(intent, commandMenu.menu());
 
 		if (after.next !== null) {
@@ -32,6 +45,24 @@ export const runIntent = command()
 		return {
 			said,
 			isMenuKept: after.isMenuKept,
+			chatId,
+		};
+	});
+
+export const runHomeIntent = command()
+	.public()
+	.input(HomeIntentSchema)
+	.output(DoneSchema)
+	.idempotencyKey(PerCall)
+	.handle(async ({ intent, homeTabId, place }, { send }): Promise<Done> => {
+		const placed = homePlaceOf(intent, place);
+		const chatId = await performIntent(openedInNewTab(intent), send, OVER_NO_PAGE);
+		await settlePlace(placed, homeTabId, send);
+		const said = confirmationOf(intent);
+		console.info(`[widgetarium] home ${homeTabId} did ${intent.do} (${placed}): ${said}`);
+		return {
+			said,
+			isMenuKept: false,
 			chatId,
 		};
 	});
@@ -68,19 +99,45 @@ export const renameRow = command()
 		};
 	});
 
-async function performIntent(intent: Intent, send: Send, menu: KeptMenu): Promise<string | null> {
+async function performIntent(intent: Intent, send: Send, over: OpenedOver): Promise<string | null> {
 	if (intent.do === "ask-ink") {
 		return newChatIdOf(intent.text, send);
 	}
 
-	await performOpening(intent, send, menu);
+	await performOpening(intent, send, over);
 	return null;
+}
+
+async function settlePlace(place: HomePlace, homeTabId: string | null, send: Send): Promise<void> {
+	if (place === "new-tab") {
+		return;
+	}
+
+	const { shownTabId } = await send(appHost.tabs.heldTabs);
+
+	if (shownTabId === null || shownTabId === homeTabId) {
+		console.info(`[widgetarium] ${place} skipped: no tab was opened beside home ${homeTabId ?? "(none)"}`);
+		return;
+	}
+
+	if (place === "new-window") {
+		await send(appHost.tabActions.tearOff, { id: shownTabId });
+		console.info(`[widgetarium] tab ${shownTabId} in this window → in its own window (opened in a new window)`);
+		return;
+	}
+
+	if (homeTabId === null) {
+		return;
+	}
+
+	await send(appHost.tabActions.closeTab, { id: homeTabId });
+	console.info(`[widgetarium] home tab ${homeTabId} open → closed (${shownTabId} opened in its place)`);
 }
 
 async function performOpening(
 	intent: Exclude<Intent, { do: "ask-ink" }>,
 	send: Send,
-	{ newTabList, pageId }: KeptMenu,
+	{ newTabList, pageId }: OpenedOver,
 ): Promise<void> {
 	switch (intent.do) {
 		case "show-tab":
@@ -100,7 +157,7 @@ async function performOpening(
 		case "open-address":
 			return openAddress(intent, send, { newTabList, pageId });
 		case "open-link":
-			await send(appHost.links.openLink, { href: intent.href, opensNew: intent.where === "new-tab" });
+			await send(appHost.links.openLink, { href: intent.href, opensNew: intent.where !== "this-tab" });
 			return;
 		case "run":
 			return runMenuCommand(intent.command, send);
@@ -108,6 +165,10 @@ async function performOpening(
 			return send(appHost.tabActions.closeTab, { id: intent.id });
 		case "pin-chat":
 			return send(appHost.tabActions.pin, { id: intent.id, isPinned: intent.isPinned });
+		case "unsplit":
+			return send(appHost.splits.unsplit, { tabIds: intent.tabIds });
+		case "open-door":
+			return;
 		default:
 			return unknownIntent(intent);
 	}
@@ -116,7 +177,7 @@ async function performOpening(
 async function openAddress(
 	{ address, where }: Extract<Intent, { do: "open-address" }>,
 	send: Send,
-	{ newTabList, pageId }: Pick<KeptMenu, "newTabList" | "pageId">,
+	{ newTabList, pageId }: OpenedOver,
 ): Promise<void> {
 	const shown = pageId ?? shownPageOf(await send(appHost.tabs.heldTabs));
 
@@ -145,6 +206,12 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 			await send(chatTabs.chatOpening.openNew, { title: null });
 			return;
 		case "new-tab":
+			return;
+		case "tabs-in-sidebar":
+			await send(layout.frameSides.placeTabs, { tabs: "sidebar" });
+			return;
+		case "tabs-in-header":
+			await send(layout.frameSides.placeTabs, { tabs: "header" });
 			return;
 	}
 }

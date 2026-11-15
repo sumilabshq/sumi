@@ -109,11 +109,13 @@ const studio = runtime()
 						id: "default",
 						name: "Default",
 						icon: null,
+						ink: "yellow",
 					},
 					{
 						id: "untitled",
 						name: "Untitled 1",
 						icon: null,
+						ink: "yellow",
 					},
 				],
 				currentId: "default",
