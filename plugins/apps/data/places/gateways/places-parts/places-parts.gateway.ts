@@ -23,22 +23,8 @@ const PLACES: DocKind<KeptPlaces> = {
 
 const SEEDED = "places global none → workspace {workspace} places (tabs belong to windows, not workspaces)";
 
-const partsOfStore = new WeakMap<StoreClient, PlacesParts>();
-
-export function keptPlacesParts(config: PlacesConfig, workspaceId: string): PlacesParts {
-	const known = partsOfStore.get(config.store);
-
-	if (known !== undefined) {
-		return known;
-	}
-
-	const parts = globalPlacesParts(config, workspaceId);
-	partsOfStore.set(config.store, parts);
-	return parts;
-}
-
-function globalPlacesParts({ store, apps }: PlacesConfig, workspaceId: string): PlacesParts {
-	const kept = seededPlaces(store, workspaceId);
+export function keptPlacesParts({ store, apps }: PlacesConfig, workspaceId: string): PlacesParts {
+	const kept = store.heldOnce(GLOBAL_ROOT, PLACES.file, () => seededPlaces(store, workspaceId));
 	const placedApps = new ListedPlacedAppsGateway(apps);
 	return {
 		windows: new TauriWindowsGateway(kept),

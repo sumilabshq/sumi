@@ -117,6 +117,7 @@ export function hearStoreChangesWith(hearing: StoreHearing): void {
 
 export class StoreClient {
 	private readonly foreignWrites = new Map<string, Set<ForeignWriteHeard>>();
+	private readonly heldDocs = new Map<string, Promise<unknown>>();
 
 	constructor(
 		private readonly invoke: Invoke,
@@ -128,6 +129,20 @@ export class StoreClient {
 	watchForeignWrites(root: StoreRoot, file: string, heard: ForeignWriteHeard): void {
 		const key = `${root}:${file}`;
 		this.foreignWrites.set(key, new Set([...(this.foreignWrites.get(key) ?? []), heard]));
+	}
+
+	heldOnce<Held>(root: StoreRoot, file: string, read: () => Promise<Held>): Promise<Held> {
+		const key = `${root}:${file}`;
+		const known = this.heldDocs.get(key);
+
+		if (known !== undefined) {
+			// TRADE-OFF: one reader per root and file, so the held value is always this reader's type
+			return known as Promise<Held>;
+		}
+
+		const reading = read();
+		this.heldDocs.set(key, reading);
+		return reading;
 	}
 
 	private hearChange(payload: unknown, ownLabel: string): void {
