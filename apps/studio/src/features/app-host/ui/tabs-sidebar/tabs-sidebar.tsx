@@ -7,6 +7,7 @@ import { useQuery } from "@widgetarium/data-framework";
 import { ContextMenu, ContextMenuTrigger } from "@widgetarium/kit";
 import { SidebarActions } from "@sumi/sumi-host-plugin";
 import { SectionListSchema, appHost } from "@widgetarium/app-host/contract";
+import { EssentialsGrid } from "../essentials-grid/essentials-grid.js";
 import { FlipLayout } from "../flip-layout/flip-layout.js";
 import { NewTabRow } from "./new-tab-row.js";
 import { PointerMenu } from "./pointer-menu.js";
@@ -67,6 +68,7 @@ export function TabsSidebar(): ReactElement {
 						data-tabs-arranging={preview === null ? undefined : ""}
 					>
 						<LiftedContext.Provider value={lifted}>
+							<EssentialsGrid tiles={shown.essentials} isHeld={preview?.source.kind === "essential"} />
 							<SidebarActions />
 							<div className={SCROLLER} data-host-column-scroll="">
 								{shown.sections.map((section) => (

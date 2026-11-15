@@ -15,15 +15,17 @@ export interface TabActs {
 	readonly closeOthers: (item: StripItem) => void;
 	readonly tearOff: (tab: AppTabState) => void;
 	readonly copyLink: (tab: AppTabState) => void;
+	readonly addToEssentials: (tab: AppTabState) => void;
 	readonly drop: (item: StripItem, aim: DragAim) => void;
 }
 
 export interface StripFacts {
 	readonly items: readonly StripItem[];
 	readonly newTabList: string;
+	readonly essentialsCount: number;
 }
 
-export function useTabActs({ items, newTabList }: StripFacts): TabActs {
+export function useTabActs({ items, newTabList, essentialsCount }: StripFacts): TabActs {
 	const showTab = useCommand(appHost.tabs.showTab);
 	const placeTab = useCommand(appHost.tabs.placeTab);
 	const closeTabs = useCommand(appHost.tabActions.closeTabs);
@@ -48,6 +50,7 @@ export function useTabActs({ items, newTabList }: StripFacts): TabActs {
 		duplicate: (item) => void duplicate.run({ id: tabOf(item).id }),
 		closeOthers: (item) => void closeOthers.run({ id: tabOf(item).id }),
 		tearOff: tearOffTab,
+		addToEssentials: ({ id }) => void placeTab.run({ id, to: { kind: "essentials", at: essentialsCount } }),
 		copyLink: ({ address }) => {
 			if (address !== null) {
 				copyLink(address);

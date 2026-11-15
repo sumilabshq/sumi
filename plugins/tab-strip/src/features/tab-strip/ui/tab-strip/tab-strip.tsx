@@ -23,6 +23,7 @@ export function TabStrip(): ReactElement {
 	const acts = useTabActs({
 		items,
 		newTabList: sidebar.newTabList,
+		essentialsCount: sidebar.essentials.length,
 	});
 	const drag = useTabDrag(strip, acts.drop);
 	const newTabs = useNewTabs();

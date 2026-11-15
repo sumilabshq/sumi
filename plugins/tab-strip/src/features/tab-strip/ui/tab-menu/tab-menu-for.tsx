@@ -21,7 +21,7 @@ export interface TabMenuForProps {
 export function TabMenuFor({ ask, onClose }: TabMenuForProps): ReactElement {
 	const sidebar = useQuery(appHost.tabs.tabsSidebar).data;
 	const items = stripItemsOf(sidebar);
-	const acts = useTabActs({ items, newTabList: sidebar.newTabList });
+	const acts = useTabActs({ items, newTabList: sidebar.newTabList, essentialsCount: sidebar.essentials.length });
 	const item = ask === null ? undefined : items.find((one) => holdsId(one, ask.id));
 	const at = ask === null || item === undefined ? null : { item, x: ask.x, y: ask.y };
 	return <TabMenu at={at} acts={acts} hasOthers={items.length > 1} onClose={onClose} />;
