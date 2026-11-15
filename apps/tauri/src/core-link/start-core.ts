@@ -9,7 +9,7 @@ import { tasks } from "@widgetarium/tasks/contract";
 import { AppCallerAuthenticate, startBackendServers, startSumiPlugins } from "@widgetarium/studio";
 import type { ResolvedPlugins } from "@widgetarium/studio";
 import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
-import { workspacePluginStateOf } from "../plugins/workspace-plugin-state.js";
+import { pluginStateOf } from "../plugins/plugin-state.js";
 import { serveCore } from "./core-calls.js";
 import type { CoreListener } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
@@ -76,7 +76,7 @@ async function pluginsOrFailed(
 	listener: CoreListener,
 ): Promise<ResolvedPlugins | null> {
 	try {
-		const plugins = startSumiPlugins(await workspacePluginStateOf(store, workspace), new TauriSecretVault(store));
+		const plugins = startSumiPlugins(await pluginStateOf(store, workspace), new TauriSecretVault(store));
 
 		for (const refusal of plugins.refusals) {
 			console.error(PLUGIN_REFUSED.replace("{workspace}", workspace).replace("{refusal}", refusal));

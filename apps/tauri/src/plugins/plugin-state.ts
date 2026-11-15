@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import { GLOBAL_ROOT, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind, DocState, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { PLUGIN_STATE_FILE, PROFILE_FILE, PluginIdSchema } from "@widgetarium/plugin-framework";
 import type { PluginState, PluginStateStore } from "@widgetarium/plugin-framework";
@@ -19,7 +19,7 @@ const WORKSPACE_PROFILE: DocKind<z.infer<typeof KeptProfileSchema>> = {
 	schema: KeptProfileSchema,
 };
 
-const WORKSPACE_PLUGIN_STATE: DocKind<KeptState> = {
+const PLUGIN_STATE: DocKind<KeptState> = {
 	file: PLUGIN_STATE_FILE,
 	v: 1,
 	schema: KeptStateSchema,
@@ -49,22 +49,21 @@ const KEPT: InitialPlugins = {
 
 const OF_ANOTHER_SHAPE = "{file} is not an object of the shape this build reads";
 const QUARANTINED_RESET =
-	"[studio] workspace {workspace}: {file} unparseable → kept aside as {aside} beside it; plugin choices reset to {source}";
+	"[studio] plugins: {file} unparseable → kept aside as {aside} beside it; plugin choices reset to {source}";
 const PROFILE_UNUSED = "[studio] workspace {workspace}: {profile} {why} → {builtIn} seeds the plugins";
 const PROFILE_QUARANTINED = "unparseable, kept aside as {aside}";
 const PROFILE_ODD = "of another shape";
 const PROFILE_UNREAD = "unreadable";
-const SAVED = "[studio] workspace {workspace}: {file} rev {was} → {now} ({reason})";
+const SAVED = "[studio] plugins: {file} rev {was} → {now} ({reason})";
 const SUPERSEDED = "[studio] workspace {workspace}: {profile} in use → superseded by {file}";
-const NEWER_KEPT = "[studio] workspace {workspace}: {file} newer state kept, not written ({reason})";
-const LOST_RACE = "[studio] workspace {workspace}: {file} was written by another window first, rev {now} stays ({reason})";
+const NEWER_KEPT = "[studio] plugins: {file} newer state kept, not written ({reason})";
+const LOST_RACE = "[studio] plugins: {file} was written by another window first, rev {now} stays ({reason})";
 const LOST_RACE_DIFFERS =
-	"[studio] workspace {workspace}: {file} was written by another window first at rev {now}, plugins of this start {was} → stored {stored}, read on the next start ({reason})";
-const NOT_SAVED = "[studio] workspace {workspace}: {file} not saved ({reason})";
+	"[studio] plugins: {file} was written by another window first at rev {now}, plugins of this start {was} → stored {stored}, read on the next start ({reason})";
+const NOT_SAVED = "[studio] plugins: {file} not saved ({reason})";
 
-export async function workspacePluginStateOf(store: StoreClient, workspace: string): Promise<PluginStateStore> {
-	const root = workspaceRootOf(workspace);
-	const kept = await store.readDoc(root, WORKSPACE_PLUGIN_STATE);
+export async function pluginStateOf(store: StoreClient, workspace: string): Promise<PluginStateStore> {
+	const kept = await store.readDoc(GLOBAL_ROOT, PLUGIN_STATE);
 	const initial = kept.doc === null && !kept.isReadOnly ? await initialPluginsOf(store, workspace) : KEPT;
 
 	if (kept.quarantined !== null) {
@@ -124,7 +123,7 @@ async function saveState(saving: StateSaving, state: PluginState, reason: string
 	}
 
 	try {
-		const replaced = await store.replaceDoc(workspaceRootOf(workspace), WORKSPACE_PLUGIN_STATE, {
+		const replaced = await store.replaceDoc(GLOBAL_ROOT, PLUGIN_STATE, {
 			doc: state,
 			baseRev: kept.rev,
 			reason,
@@ -146,7 +145,7 @@ async function saveState(saving: StateSaving, state: PluginState, reason: string
 }
 
 async function reportLostRace({ store, workspace }: StateSaving, state: PluginState, reason: string): Promise<void> {
-	const now = await store.readDoc(workspaceRootOf(workspace), WORKSPACE_PLUGIN_STATE);
+	const now = await store.readDoc(GLOBAL_ROOT, PLUGIN_STATE);
 	const was = sortedJsonOf(state.plugins);
 	const stored = sortedJsonOf(now.doc?.["plugins"] ?? null);
 

@@ -23,7 +23,7 @@ import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { tauriStudioHost } from "../tauri-studio-host.js";
-import { workspacePluginStateOf } from "../plugins/workspace-plugin-state.js";
+import { pluginStateOf } from "../plugins/plugin-state.js";
 import { ipcTransport } from "../core-link/ipc-transport.js";
 import { joinPlaces } from "../core-link/window-places.js";
 import { tauriWorkspaceApps } from "../workspace/tauri-workspace-apps.js";
@@ -127,7 +127,7 @@ function startTauriStudioApp(
 }
 
 async function pluginsOf({ store, workspace }: StudioOpening): Promise<ResolvedPlugins> {
-	const plugins = startSumiPlugins(await workspacePluginStateOf(store, workspace.id), new TauriSecretVault(store));
+	const plugins = startSumiPlugins(await pluginStateOf(store, workspace.id), new TauriSecretVault(store));
 
 	for (const refusal of plugins.refusals) {
 		console.warn(PLUGIN_REFUSED.replace("{workspace}", workspace.id).replace("{refusal}", refusal));
