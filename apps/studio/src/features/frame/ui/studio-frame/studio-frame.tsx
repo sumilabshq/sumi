@@ -79,8 +79,7 @@ export function StudioFrame({ frame, chromeLeftPx, left, panes, panel }: StudioF
 					/>
 					{panel === null ? null : <div className="wg-shell-panel">{panel}</div>}
 				</div>
-				{isTitled ? null : <div className="wg-shell-corner-plate is-start" />}
-				{isTitled ? null : <div className="wg-shell-corner-plate is-end" />}
+				{isTitled ? null : <div className="wg-shell-corner-plate" />}
 				{isTitled ? null : <FrameSideToggle side="left" />}
 				{isTitled ? null : (
 					<div className="wg-root wg-shell-end">

@@ -359,6 +359,7 @@
 		--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
 		--sumi-shadow-float: none;
 		--sumi-blur-pop: none;
+		--sumi-blur-corner: blur(10px);
 		--sumi-viewer-ground: rgba(15, 15, 14, 0.94);
 		--sumi-viewer-ink: #e9e6de;
 		--sumi-viewer-ink-2: rgba(233, 230, 222, 0.7);
@@ -17528,34 +17529,22 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-shell-corner-plate {
 	position: absolute;
-	top: calc((var(--sumi-header-h) - var(--sumi-h-sm)) / 2 - var(--sumi-sp-1));
+	top: 0;
+	left: 0;
 	z-index: 3;
 	display: none;
-	height: calc(var(--sumi-h-sm) + 2 * var(--sumi-sp-1));
-	border: 1px solid var(--sumi-line);
+	width: var(--sumi-corner-start-w);
+	height: var(--sumi-corner-h);
 	background: var(--sumi-plate);
 	@supports (color: color-mix(in lab, red, red)) {
-		background: color-mix(in oklch, var(--sumi-plate) 88%, transparent);
+		background: color-mix(in oklch, var(--sumi-plate) 70%, transparent);
 	}
-	-webkit-backdrop-filter: var(--sumi-blur-pop);
-	backdrop-filter: var(--sumi-blur-pop);
+	-webkit-backdrop-filter: var(--sumi-blur-corner);
+	backdrop-filter: var(--sumi-blur-corner);
 	pointer-events: none;
 }
-.wg-shell-corner-plate.is-start {
-	left: var(--sumi-sp-2);
-	width: calc(var(--sumi-corner-start-w) - var(--sumi-sp-3));
-}
-.wg-shell-corner-plate.is-end {
-	right: var(--sumi-sp-2);
-	width: calc(var(--sumi-corner-end-w) - 2 * var(--sumi-sp-2));
-}
-.wg-shell.is-side-hidden:has(.wg-pane[data-corner-start] [data-sumi-corner="float"]) .wg-shell-corner-plate.is-start,
-.wg-shell.is-flat:not(.is-titled):has(.wg-pane[data-corner-end] [data-sumi-corner="float"])
-	.wg-shell-corner-plate.is-end {
+.wg-shell.is-side-hidden:has(.wg-pane[data-corner-start] [data-sumi-corner="float"]) .wg-shell-corner-plate {
 	display: block;
-}
-.wg-shell.is-titled .sumi-title-bar {
-	padding-left: calc(var(--wg-shell-toggle-left) + var(--sumi-h-sm) + var(--sumi-sp-3));
 }
 .wg-shell.is-flat .wg-plate-head {
 	display: none;
@@ -22961,15 +22950,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	width: 100%;
 	height: 100%;
 	border: 0;
-	pointer-events: none;
-}
-.sumi-canvas-empty {
-	position: absolute;
-	top: 24px;
-	left: 24px;
-	margin: 0;
-	color: var(--sumi-text-3);
-	font-size: var(--sumi-fs-14);
 	pointer-events: none;
 }
 .sumi-canvas-zoom {

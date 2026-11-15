@@ -13,7 +13,6 @@ const GRIPS = {
 	pressable: "[data-artboard-name]",
 	ownScroll: null,
 };
-const EMPTY = "Ask Sumi to draw on this canvas";
 const ZOOM_VAR = "--sumi-canvas-zoom";
 const FIELD_MARGIN_PX = 240;
 
@@ -74,7 +73,6 @@ export function ArtboardField(): ReactElement {
 					))}
 				</div>
 			</div>
-			{boards.length === 0 ? <p className="sumi-canvas-empty">{EMPTY}</p> : null}
 			<FieldMenu spot={menuSpot} onClose={() => setMenuSpot(null)} />
 		</div>
 	);

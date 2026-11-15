@@ -37,6 +37,7 @@
 	--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
 	--sumi-shadow-float: none;
 	--sumi-blur-pop: none;
+	--sumi-blur-corner: blur(10px);
 	--sumi-viewer-ground: rgba(15, 15, 14, 0.94);
 	--sumi-viewer-ink: #e9e6de;
 	--sumi-viewer-ink-2: rgba(233, 230, 222, 0.7);

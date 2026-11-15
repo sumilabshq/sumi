@@ -107,16 +107,6 @@
 	pointer-events: none;
 }
 
-.sumi-canvas-empty {
-	position: absolute;
-	top: 24px;
-	left: 24px;
-	margin: 0;
-	color: var(--sumi-text-3);
-	font-size: var(--sumi-fs-14);
-	pointer-events: none;
-}
-
 .sumi-canvas-zoom {
 	display: inline-flex;
 	align-items: center;

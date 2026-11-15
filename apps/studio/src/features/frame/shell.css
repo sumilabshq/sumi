@@ -213,34 +213,20 @@
 
 .wg-shell-corner-plate {
 	position: absolute;
-	top: calc((var(--sumi-header-h) - var(--sumi-h-sm)) / 2 - var(--sumi-sp-1));
+	top: 0;
+	left: 0;
 	z-index: 3;
 	display: none;
-	height: calc(var(--sumi-h-sm) + 2 * var(--sumi-sp-1));
-	border: 1px solid var(--sumi-line);
-	background: color-mix(in oklch, var(--sumi-plate) 88%, transparent);
-	-webkit-backdrop-filter: var(--sumi-blur-pop);
-	backdrop-filter: var(--sumi-blur-pop);
+	width: var(--sumi-corner-start-w);
+	height: var(--sumi-corner-h);
+	background: color-mix(in oklch, var(--sumi-plate) 70%, transparent);
+	-webkit-backdrop-filter: var(--sumi-blur-corner);
+	backdrop-filter: var(--sumi-blur-corner);
 	pointer-events: none;
 }
 
-.wg-shell-corner-plate.is-start {
-	left: var(--sumi-sp-2);
-	width: calc(var(--sumi-corner-start-w) - var(--sumi-sp-3));
-}
-
-.wg-shell-corner-plate.is-end {
-	right: var(--sumi-sp-2);
-	width: calc(var(--sumi-corner-end-w) - 2 * var(--sumi-sp-2));
-}
-
-.wg-shell.is-side-hidden:has(.wg-pane[data-corner-start] [data-sumi-corner="float"]) .wg-shell-corner-plate.is-start,
-.wg-shell.is-flat:not(.is-titled):has(.wg-pane[data-corner-end] [data-sumi-corner="float"]) .wg-shell-corner-plate.is-end {
+.wg-shell.is-side-hidden:has(.wg-pane[data-corner-start] [data-sumi-corner="float"]) .wg-shell-corner-plate {
 	display: block;
-}
-
-.wg-shell.is-titled .sumi-title-bar {
-	padding-left: calc(var(--wg-shell-toggle-left) + var(--sumi-h-sm) + var(--sumi-sp-3));
 }
 
 .wg-shell.is-flat .wg-plate-head {
