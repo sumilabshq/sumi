@@ -21,8 +21,8 @@ export const getTweaks = query()
 	.public()
 	.input(TweaksAskSchema)
 	.output(TweakSchema.array())
-	.handle(({ tabId, page }, { canvases }) => {
-		const canvas = canvases.canvas(tabId);
+	.handle(({ canvasId, page }, { canvases }) => {
+		const canvas = canvases.canvas(canvasId);
 		return [...tweaksOnPage(canvas, page ?? canvas.shownPage)];
 	});
 
@@ -30,8 +30,8 @@ export const getBoardTweaks = query()
 	.public()
 	.input(TweaksAskSchema)
 	.output(BoardTweaksSchema.array())
-	.handle(({ tabId, page }, { canvases }) => {
-		const canvas = canvases.canvas(tabId);
+	.handle(({ canvasId, page }, { canvases }) => {
+		const canvas = canvases.canvas(canvasId);
 		return boardTweaksOnPage(canvas, page ?? canvas.shownPage);
 	});
 
@@ -39,8 +39,8 @@ export const writeTweaks = command()
 	.public()
 	.input(WriteTweaksAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, page, board, tweaks }, { canvases }) => {
-		const canvas = canvases.canvas(tabId);
+	.handle(({ canvasId, page, board, tweaks }, { canvases }) => {
+		const canvas = canvases.canvas(canvasId);
 		const scope = scopeOf(canvas, { page, board });
 
 		if (typeof scope === "string") {
@@ -53,33 +53,33 @@ export const writeTweaks = command()
 			return refuse(written);
 		}
 
-		canvases.saveCanvas(tabId, written.canvas, written.reason);
-		console.info(`[artboards] ${tabId}: ${written.reason}`);
+		canvases.saveCanvas(canvasId, written.canvas, written.reason);
+		console.info(`[artboards] ${canvasId}: ${written.reason}`);
 	});
 
 export const setTweakValue = command()
 	.public()
 	.input(SetTweakValueAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, value, ...target }, { canvases }) => {
-		const set = withTweakValue(canvases.canvas(tabId), target, value);
+	.handle(({ canvasId, value, ...target }, { canvases }) => {
+		const set = withTweakValue(canvases.canvas(canvasId), target, value);
 
 		if (typeof set === "string") {
 			return refuse(set);
 		}
 
-		canvases.saveCanvas(tabId, set.canvas, set.reason);
-		console.info(`[artboards] ${tabId}: ${set.reason}`);
+		canvases.saveCanvas(canvasId, set.canvas, set.reason);
+		console.info(`[artboards] ${canvasId}: ${set.reason}`);
 	});
 
 export const resetTweaks = command()
 	.public()
 	.input(PageAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, page }, { canvases }) => {
-		const reset = withResetTweaks(canvases.canvas(tabId), page);
-		canvases.saveCanvas(tabId, reset.canvas, reset.reason);
-		console.info(`[artboards] ${tabId}: ${reset.reason}`);
+	.handle(({ canvasId, page }, { canvases }) => {
+		const reset = withResetTweaks(canvases.canvas(canvasId), page);
+		canvases.saveCanvas(canvasId, reset.canvas, reset.reason);
+		console.info(`[artboards] ${canvasId}: ${reset.reason}`);
 	});
 
 export const rereadTweaks = subscriber(canvasesChanged).handle((_input, { invalidate }) => {

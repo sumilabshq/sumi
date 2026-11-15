@@ -13,10 +13,10 @@ export const createPage = command()
 	.input(NewPageAskSchema)
 	.output(CreatedPageSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, name }, { canvases }) => {
-		const added = withAddedPage(canvases.canvas(tabId), name);
-		canvases.saveCanvas(tabId, added.canvas, added.reason);
-		console.info(`[artboards] ${tabId}: ${added.reason}`);
+	.handle(({ canvasId, name }, { canvases }) => {
+		const added = withAddedPage(canvases.canvas(canvasId), name);
+		canvases.saveCanvas(canvasId, added.canvas, added.reason);
+		console.info(`[artboards] ${canvasId}: ${added.reason}`);
 		return { page: added.id };
 	});
 
@@ -24,43 +24,43 @@ export const renamePage = command()
 	.public()
 	.input(RenamePageAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, page, name }, { canvases }) => {
-		const renamed = withRenamedPage(canvases.canvas(tabId), page, name);
+	.handle(({ canvasId, page, name }, { canvases }) => {
+		const renamed = withRenamedPage(canvases.canvas(canvasId), page, name);
 
 		if (typeof renamed === "string") {
 			return refuse(renamed);
 		}
 
-		canvases.saveCanvas(tabId, renamed.canvas, renamed.reason);
-		console.info(`[artboards] ${tabId}: ${renamed.reason}`);
+		canvases.saveCanvas(canvasId, renamed.canvas, renamed.reason);
+		console.info(`[artboards] ${canvasId}: ${renamed.reason}`);
 	});
 
 export const removePage = command()
 	.public()
 	.input(PageAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, page }, { canvases }) => {
-		const removed = withoutPage(canvases.canvas(tabId), page);
+	.handle(({ canvasId, page }, { canvases }) => {
+		const removed = withoutPage(canvases.canvas(canvasId), page);
 
 		if (typeof removed === "string") {
 			return refuse(removed);
 		}
 
-		canvases.saveCanvas(tabId, removed.canvas, removed.reason);
-		console.info(`[artboards] ${tabId}: ${removed.reason}`);
+		canvases.saveCanvas(canvasId, removed.canvas, removed.reason);
+		console.info(`[artboards] ${canvasId}: ${removed.reason}`);
 	});
 
 export const showPage = command()
 	.public()
 	.input(PageAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, page }, { canvases }) => {
-		const shown = withShownPage(canvases.canvas(tabId), page);
+	.handle(({ canvasId, page }, { canvases }) => {
+		const shown = withShownPage(canvases.canvas(canvasId), page);
 
 		if (typeof shown === "string") {
 			return refuse(shown);
 		}
 
-		canvases.saveCanvas(tabId, shown.canvas, shown.reason);
-		console.info(`[artboards] ${tabId}: ${shown.reason}`);
+		canvases.saveCanvas(canvasId, shown.canvas, shown.reason);
+		console.info(`[artboards] ${canvasId}: ${shown.reason}`);
 	});

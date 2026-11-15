@@ -8,14 +8,14 @@ export const getCanvas = query()
 	.public()
 	.input(CanvasAskSchema)
 	.output(CanvasViewSchema)
-	.handle(({ tabId }, { canvases }) => canvasViewOf(tabId, canvases.canvas(tabId)));
+	.handle(({ canvasId }, { canvases }) => canvasViewOf(canvasId, canvases.canvas(canvasId)));
 
 export const getCanvases = query()
 	.public()
 	.input(NoAskSchema)
 	.output(CanvasRowSchema.array())
 	.handle((_input, { canvases }) =>
-		Object.entries(canvases.canvases()).map(([tabId, canvas]) => canvasRowOf(tabId, canvas)),
+		Object.entries(canvases.canvases()).map(([canvasId, canvas]) => canvasRowOf(canvasId, canvas)),
 	);
 
 export const rereadCanvases = subscriber(canvasesChanged).handle((_input, { invalidate }) => {

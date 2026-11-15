@@ -71,15 +71,15 @@ export const renameLayer = command()
 	})
 	.input(RenameLayerAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ tabId, board, path, name }, { send, rendering }) => {
-		const read = await send(artboards.boards.getBoard, { tabId, board });
+	.handle(async ({ canvasId, board, path, name }, { send, rendering }) => {
+		const read = await send(artboards.boards.getBoard, { canvasId, board });
 		const html = rendering.withLayerName(read.html, path, name);
 
 		if (html === null) {
 			return refuse(`artboard ${board} has no layer at ${path}; read its layers with getBoard`);
 		}
 
-		await send(artboards.boards.writeBoard, { tabId, board, html });
+		await send(artboards.boards.writeBoard, { canvasId, board, html });
 	});
 
 export const getBoardsMatching = query()

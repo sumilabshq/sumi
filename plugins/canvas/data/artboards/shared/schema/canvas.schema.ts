@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const TabIdSchema = z.string().min(1).max(200);
+export const CanvasIdSchema = z.string().min(1).max(200);
 
 export const PageIdSchema = z.string().min(1).max(80);
 
@@ -92,7 +92,7 @@ export const BoardPlaceSchema = BoardSchema.omit({ html: true });
 export const PageRowSchema = PageSchema.extend({ boardCount: z.number().int().nonnegative() });
 
 export const CanvasViewSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	title: NameSchema,
 	pages: z.array(PageRowSchema),
 	shownPage: PageIdSchema,
@@ -103,14 +103,14 @@ export const CanvasViewSchema = z.object({
 });
 
 export const CanvasRowSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	title: NameSchema,
 	pageCount: z.number().int().nonnegative(),
 	boardCount: z.number().int().nonnegative(),
 });
 
 export const BoardHitSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema,
 	name: NameSchema,
 	page: PageIdSchema,

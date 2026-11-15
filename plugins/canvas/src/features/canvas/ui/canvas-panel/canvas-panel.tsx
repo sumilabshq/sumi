@@ -15,12 +15,12 @@ export interface CanvasPanelProps {
 const DEFAULT_WIDTH = 240;
 
 export function CanvasPanel({ width }: CanvasPanelProps): ReactElement {
-	const { tabId } = useCanvasView();
+	const { canvasId } = useCanvasView();
 	const resize = useCommand(artboards.view.resizePanel);
 	const [held, setHeld] = useState<number | null>(null);
 	const keep = (px: number): void => {
 		setHeld(null);
-		void resize.run({ tabId, width: px });
+		void resize.run({ canvasId, width: px });
 	};
 	const edge = useEdgeResize({
 		widthOf: () => held ?? width,

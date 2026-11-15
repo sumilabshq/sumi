@@ -7,7 +7,7 @@ export const getCanvases = query()
 	.public()
 	.metadata({
 		description:
-			"List the workspace's canvases: each is a canvas tab, named by its tabId, with its pageCount and boardCount. A canvas never written to is not listed. To start a new canvas, open a tab with tabs_tab_open app canvas and use the tab id it answers.",
+			"List the workspace's canvases: each is a document named by its canvasId, with its pageCount and boardCount, shown by any canvas tab whose link is sumi://canvas/<canvasId>. A canvas never written to is not listed. To start a new canvas, open a tab with tabs_tab_open app canvas: a new canvas tab takes its own tab id as its canvasId.",
 	})
 	.input(NoAskSchema)
 	.output(CanvasRowSchema.array())
@@ -21,13 +21,13 @@ export const getCanvas = query()
 	})
 	.input(CanvasAskSchema)
 	.output(CanvasSchema)
-	.handle(async ({ tabId }, { send }) => {
-		const canvas = await send(artboards.canvases.getCanvas, { tabId });
+	.handle(async ({ canvasId }, { send }) => {
+		const canvas = await send(artboards.canvases.getCanvas, { canvasId });
 		const boards = await Promise.all(
-			canvas.pages.map(({ id }) => send(artboards.boards.getBoards, { tabId, page: id })),
+			canvas.pages.map(({ id }) => send(artboards.boards.getBoards, { canvasId, page: id })),
 		);
 		return {
-			tabId,
+			canvasId,
 			title: canvas.title,
 			pages: canvasPagesOf(canvas, boards),
 		};

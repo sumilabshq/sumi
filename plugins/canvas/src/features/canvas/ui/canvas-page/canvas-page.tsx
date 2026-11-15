@@ -4,28 +4,39 @@ import type { TabPageProps } from "@sumi/sumi-host-plugin";
 import { artboards } from "@sumi/artboards/contract";
 import { useQuery } from "@widgetarium/data-framework";
 import { CanvasViewStateContext } from "../../lib/canvas-view-context.js";
+import { useCanvasId } from "../../lib/use-canvas-id.js";
 import { ZoomStore } from "../../lib/zoom-store.js";
 import { ArtboardField } from "../artboard-field/artboard-field.js";
 import { CanvasActions } from "../canvas-actions/canvas-actions.js";
 import { CanvasPanel } from "../canvas-panel/canvas-panel.js";
 
-export function CanvasPage({ tabId }: TabPageProps): ReactElement {
+export function CanvasPage({ tabId }: TabPageProps): ReactElement | null {
+	const canvasId = useCanvasId(tabId);
+
+	if (canvasId === null) {
+		return null;
+	}
+
+	return <CanvasOf canvasId={canvasId} />;
+}
+
+function CanvasOf({ canvasId }: { readonly canvasId: string }): ReactElement {
 	const [pickedBoardId, pickBoard] = useState<string | null>(null);
 	const [zoom] = useState(() => new ZoomStore());
-	const canvas = useQuery(artboards.canvases.getCanvas, { tabId }).data;
+	const canvas = useQuery(artboards.canvases.getCanvas, { canvasId }).data;
 	const view = useMemo(
 		() => ({
-			tabId,
+			canvasId,
 			pickedBoardId,
 			zoom,
 			pickBoard,
 		}),
-		[tabId, pickedBoardId, zoom],
+		[canvasId, pickedBoardId, zoom],
 	);
 	return (
 		<CanvasViewStateContext.Provider value={view}>
 			<CanvasActions />
-			<div className="sumi-canvas" data-canvas-tab={tabId} data-sumi-corner="float">
+			<div className="sumi-canvas" data-canvas-id={canvasId} data-sumi-corner="float">
 				{canvas.isPanelOpen ? <CanvasPanel width={canvas.panelWidth} /> : null}
 				<ArtboardField key={canvas.shownPage} />
 			</div>

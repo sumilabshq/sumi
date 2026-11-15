@@ -20,11 +20,11 @@ export interface ArtboardFrameProps {
 }
 
 export function ArtboardFrame({ board, scaleNow }: ArtboardFrameProps): ReactElement {
-	const { tabId, pickedBoardId, pickBoard } = useCanvasView();
+	const { canvasId, pickedBoardId, pickBoard } = useCanvasView();
 	const [isRenaming, setRenaming] = useState(false);
 	const move = useCommand(artboards.boards.moveBoard);
 	const rename = useCommand(artboards.boards.renameBoard);
-	const drag = useBoardDrag(board, scaleNow, (to) => void move.run({ tabId, board: board.id, ...to }));
+	const drag = useBoardDrag(board, scaleNow, (to) => void move.run({ canvasId, board: board.id, ...to }));
 	const isPicked = board.id === pickedBoardId;
 	return (
 		<div
@@ -41,7 +41,7 @@ export function ArtboardFrame({ board, scaleNow }: ArtboardFrameProps): ReactEle
 						setRenaming(false);
 
 						if (name !== null) {
-							void rename.run({ tabId, board: board.id, name });
+							void rename.run({ canvasId, board: board.id, name });
 						}
 					}}
 				/>

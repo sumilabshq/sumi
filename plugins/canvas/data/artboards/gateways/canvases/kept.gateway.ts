@@ -25,25 +25,25 @@ export class KeptCanvasesGateway extends CanvasesGateway {
 		super();
 	}
 
-	override canvas(tabId: string): Canvas {
-		const kept = this.kept.now().canvases[tabId];
-		return kept === undefined ? createEmptyCanvas() : (readCanvas(tabId, kept) ?? createEmptyCanvas());
+	override canvas(canvasId: string): Canvas {
+		const kept = this.kept.now().canvases[canvasId];
+		return kept === undefined ? createEmptyCanvas() : (readCanvas(canvasId, kept) ?? createEmptyCanvas());
 	}
 
 	override canvases(): Readonly<Record<string, Canvas>> {
-		const read = Object.entries(this.kept.now().canvases).flatMap(([tabId, kept]) => {
-			const canvas = readCanvas(tabId, kept);
-			return canvas === null ? [] : [[tabId, canvas] as const];
+		const read = Object.entries(this.kept.now().canvases).flatMap(([canvasId, kept]) => {
+			const canvas = readCanvas(canvasId, kept);
+			return canvas === null ? [] : [[canvasId, canvas] as const];
 		});
 		return Object.fromEntries(read);
 	}
 
-	override saveCanvas(tabId: string, canvas: Canvas, reason: string): void {
+	override saveCanvas(canvasId: string, canvas: Canvas, reason: string): void {
 		const canvases = {
 			...this.kept.now().canvases,
-			[tabId]: canvas,
+			[canvasId]: canvas,
 		};
-		this.kept.change({ canvases }, `artboards ${tabId}: ${reason}`);
+		this.kept.change({ canvases }, `artboards ${canvasId}: ${reason}`);
 	}
 
 	override canvasesChanged(listener: () => void): () => void {
@@ -51,11 +51,11 @@ export class KeptCanvasesGateway extends CanvasesGateway {
 	}
 }
 
-function readCanvas(tabId: string, kept: unknown): Canvas | null {
+function readCanvas(canvasId: string, kept: unknown): Canvas | null {
 	const read = CanvasSchema.safeParse(kept);
 
 	if (!read.success) {
-		console.warn(UNREADABLE.replace("{tab}", tabId), read.error.issues);
+		console.warn(UNREADABLE.replace("{tab}", canvasId), read.error.issues);
 		return null;
 	}
 

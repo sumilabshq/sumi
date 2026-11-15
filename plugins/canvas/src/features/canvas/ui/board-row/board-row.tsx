@@ -15,7 +15,7 @@ export interface BoardRowProps {
 }
 
 export function BoardRow({ board, isPicked }: BoardRowProps): ReactElement {
-	const { tabId, pickBoard } = useCanvasView();
+	const { canvasId, pickBoard } = useCanvasView();
 	const rename = useCommand(artboards.boards.renameBoard);
 	const remove = useCommand(artboards.boards.removeBoard);
 	return (
@@ -26,8 +26,8 @@ export function BoardRow({ board, isPicked }: BoardRowProps): ReactElement {
 			icon={<Icon name="hash" size={16} />}
 			end={<Icon name={isPicked ? "chevron-down" : "chevron-right"} size={16} />}
 			onPick={() => pickBoard(isPicked ? null : board.id)}
-			onRename={(name) => void rename.run({ tabId, board: board.id, name })}
-			onDelete={() => void remove.run({ tabId, board: board.id })}
+			onRename={(name) => void rename.run({ canvasId, board: board.id, name })}
+			onDelete={() => void remove.run({ canvasId, board: board.id })}
 		/>
 	);
 }

@@ -5,40 +5,40 @@ import {
 	CameraSchema,
 	NameSchema,
 	PageIdSchema,
-	TabIdSchema,
+	CanvasIdSchema,
 	TweakControlSchema,
 	TweakIdSchema,
 	TweakValueSchema,
 } from "./canvas.schema.js";
 
-export const CanvasAskSchema = z.object({ tabId: TabIdSchema });
+export const CanvasAskSchema = z.object({ canvasId: CanvasIdSchema });
 
 export const NoAskSchema = z.object({});
 
 export const NewPageAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	name: NameSchema.nullable().default(null),
 });
 
 export const PageAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema,
 });
 
 export const RenamePageAskSchema = PageAskSchema.extend({ name: NameSchema });
 
 export const BoardsAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null),
 });
 
 export const BoardAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema,
 });
 
 export const WriteBoardAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema.nullable().default(null),
 	page: PageIdSchema.nullable().default(null),
 	name: NameSchema.nullable().default(null),
@@ -59,22 +59,22 @@ export const RenameBoardAskSchema = BoardAskSchema.extend({ name: NameSchema });
 export const SearchAskSchema = z.object({ words: z.string().trim().min(1).max(200) });
 
 export const ResizePanelAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	width: z.number(),
 });
 
 export const SetBackgroundAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	background: BackgroundSchema,
 });
 
 export const KeepCameraAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	camera: CameraSchema,
 });
 
 export const TweaksAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null),
 });
 
@@ -86,14 +86,14 @@ export const TweakAskSchema = z.object({
 });
 
 export const WriteTweaksAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null),
 	board: BoardIdSchema.nullable().default(null),
 	tweaks: z.array(TweakAskSchema).max(24),
 });
 
 export const SetTweakValueAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema,
 	board: BoardIdSchema.nullable(),
 	tweak: TweakIdSchema,

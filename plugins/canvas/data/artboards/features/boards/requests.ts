@@ -26,8 +26,8 @@ export const getBoards = query()
 	.public()
 	.input(BoardsAskSchema)
 	.output(BoardPlaceSchema.array())
-	.handle(({ tabId, page }, { canvases }) => {
-		const canvas = canvases.canvas(tabId);
+	.handle(({ canvasId, page }, { canvases }) => {
+		const canvas = canvases.canvas(canvasId);
 		return boardsOnPage(canvas, page ?? canvas.shownPage).map(placeOf);
 	});
 
@@ -35,8 +35,8 @@ export const getShownPageBoards = query()
 	.public()
 	.input(CanvasAskSchema)
 	.output(BoardSchema.array())
-	.handle(({ tabId }, { canvases }) => {
-		const canvas = canvases.canvas(tabId);
+	.handle(({ canvasId }, { canvases }) => {
+		const canvas = canvases.canvas(canvasId);
 		return [...boardsOnPage(canvas, canvas.shownPage)];
 	});
 
@@ -44,8 +44,8 @@ export const getBoard = query()
 	.public()
 	.input(BoardAskSchema)
 	.output(BoardSchema)
-	.handle(({ tabId, board }, { canvases }) => {
-		const found = boardOf(canvases.canvas(tabId), board);
+	.handle(({ canvasId, board }, { canvases }) => {
+		const found = boardOf(canvases.canvas(canvasId), board);
 		return found ?? refuse(`the canvas has no artboard ${board}; list them with getBoards`);
 	});
 
@@ -61,14 +61,14 @@ export const writeBoard = command()
 	.output(WrittenBoardSchema)
 	.idempotencyKey(Repeatable)
 	.handle((ask, { canvases }) => {
-		const written = withWrittenBoard(canvases.canvas(ask.tabId), ask);
+		const written = withWrittenBoard(canvases.canvas(ask.canvasId), ask);
 
 		if (typeof written === "string") {
 			return refuse(written);
 		}
 
-		canvases.saveCanvas(ask.tabId, written.canvas, written.reason);
-		console.info(`[artboards] ${ask.tabId}: ${written.reason}`);
+		canvases.saveCanvas(ask.canvasId, written.canvas, written.reason);
+		console.info(`[artboards] ${ask.canvasId}: ${written.reason}`);
 		return {
 			board: written.id.id,
 			page: written.id.page,
@@ -79,45 +79,45 @@ export const moveBoard = command()
 	.public()
 	.input(MoveBoardAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, board, x, y }, { canvases }) => {
-		const moved = withMovedBoard(canvases.canvas(tabId), board, { x, y });
+	.handle(({ canvasId, board, x, y }, { canvases }) => {
+		const moved = withMovedBoard(canvases.canvas(canvasId), board, { x, y });
 
 		if (typeof moved === "string") {
 			return refuse(moved);
 		}
 
-		canvases.saveCanvas(tabId, moved.canvas, moved.reason);
-		console.info(`[artboards] ${tabId}: ${moved.reason}`);
+		canvases.saveCanvas(canvasId, moved.canvas, moved.reason);
+		console.info(`[artboards] ${canvasId}: ${moved.reason}`);
 	});
 
 export const renameBoard = command()
 	.public()
 	.input(RenameBoardAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, board, name }, { canvases }) => {
-		const renamed = withRenamedBoard(canvases.canvas(tabId), board, name);
+	.handle(({ canvasId, board, name }, { canvases }) => {
+		const renamed = withRenamedBoard(canvases.canvas(canvasId), board, name);
 
 		if (typeof renamed === "string") {
 			return refuse(renamed);
 		}
 
-		canvases.saveCanvas(tabId, renamed.canvas, renamed.reason);
-		console.info(`[artboards] ${tabId}: ${renamed.reason}`);
+		canvases.saveCanvas(canvasId, renamed.canvas, renamed.reason);
+		console.info(`[artboards] ${canvasId}: ${renamed.reason}`);
 	});
 
 export const removeBoard = command()
 	.public()
 	.input(BoardAskSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ tabId, board }, { canvases }) => {
-		const removed = withoutBoard(canvases.canvas(tabId), board);
+	.handle(({ canvasId, board }, { canvases }) => {
+		const removed = withoutBoard(canvases.canvas(canvasId), board);
 
 		if (typeof removed === "string") {
 			return refuse(removed);
 		}
 
-		canvases.saveCanvas(tabId, removed.canvas, removed.reason);
-		console.info(`[artboards] ${tabId}: ${removed.reason}`);
+		canvases.saveCanvas(canvasId, removed.canvas, removed.reason);
+		console.info(`[artboards] ${canvasId}: ${removed.reason}`);
 	});
 
 export const rereadBoards = subscriber(canvasesChanged).handle((_input, { invalidate }) => {

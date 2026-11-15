@@ -10,6 +10,7 @@
 		}
 	},
 	"dependencies": {
+		"@sumi/contract": "0.6.0",
 		"@sumi/agent-plugin": "0.1.0",
 		"@sumi/apps-plugin": "0.1.0",
 		"@sumi/artboards": "0.1.0",

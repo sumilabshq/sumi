@@ -10,8 +10,8 @@ import { BackgroundSwatch } from "../background-swatch/background-swatch.js";
 const MENU_GAP_PX = 4;
 
 export function BackgroundAction(): ReactElement {
-	const { tabId } = useCanvasView();
-	const current = useQuery(artboards.canvases.getCanvas, { tabId }).data.background;
+	const { canvasId } = useCanvasView();
+	const current = useQuery(artboards.canvases.getCanvas, { canvasId }).data.background;
 	const [isOpen, setOpen] = useState(false);
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>

@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { LayerSchema } from "./layer.schema.js";
 
-export const TabIdSchema = z
+export const CanvasIdSchema = z
 	.string()
 	.min(1)
 	.max(200)
-	.describe("The canvas tab's id, from getCanvases or tabs_tab_open");
+	.describe("The canvas document's id, from getCanvases, or the id of a new canvas tab from tabs_tab_open");
 
 export const PageIdSchema = z.string().min(1).max(80).describe("A page id from getCanvas, such as page-1");
 
@@ -13,29 +13,29 @@ export const BoardIdSchema = z.string().min(1).max(80).describe("An artboard id 
 
 export const NameSchema = z.string().trim().min(1).max(120);
 
-export const CanvasAskSchema = z.object({ tabId: TabIdSchema });
+export const CanvasAskSchema = z.object({ canvasId: CanvasIdSchema });
 
 export const NoAskSchema = z.object({});
 
 export const NewPageAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	name: NameSchema.nullable().default(null),
 });
 
 export const PageAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema,
 });
 
 export const RenamePageAskSchema = PageAskSchema.extend({ name: NameSchema });
 
 export const BoardAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema,
 });
 
 export const WriteBoardAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema.nullable().default(null).describe("An existing artboard to rewrite; null adds a new one"),
 	page: PageIdSchema.nullable().default(null).describe("The page a new artboard goes on; null is the shown page"),
 	name: NameSchema.nullable().default(null),
@@ -65,7 +65,7 @@ export const RenameLayerAskSchema = BoardAskSchema.extend({
 export const SearchAskSchema = z.object({ words: z.string().trim().min(1).max(200) });
 
 export const PageShotAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null).describe("null shoots the shown page"),
 });
 
@@ -86,13 +86,13 @@ export const CanvasPageSchema = z.object({
 });
 
 export const CanvasSchema = z.object({
-	tabId: z.string(),
+	canvasId: z.string(),
 	title: z.string(),
 	pages: z.array(CanvasPageSchema),
 });
 
 export const CanvasRowSchema = z.object({
-	tabId: z.string(),
+	canvasId: z.string(),
 	title: z.string(),
 	pageCount: z.number().int().nonnegative(),
 	boardCount: z.number().int().nonnegative(),
@@ -118,7 +118,7 @@ export const WrittenBoardSchema = z.object({
 export const CreatedPageSchema = z.object({ page: z.string() });
 
 export const BoardHitSchema = z.object({
-	tabId: z.string(),
+	canvasId: z.string(),
 	board: z.string(),
 	name: z.string(),
 	page: z.string(),

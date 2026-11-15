@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BoardIdSchema, NameSchema, PageIdSchema, TabIdSchema } from "./canvas-work.schema.js";
+import { BoardIdSchema, NameSchema, PageIdSchema, CanvasIdSchema } from "./canvas-work.schema.js";
 
 export const TweakIdSchema = z
 	.string()
@@ -35,7 +35,7 @@ export const TweakAskSchema = z.object({
 });
 
 export const WriteTweaksAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema.nullable()
 		.default(null)
 		.describe("An artboard whose own tweaks these are; null writes the page's tweaks, which reach every artboard on it"),
@@ -47,7 +47,7 @@ export const WriteTweaksAskSchema = z.object({
 });
 
 export const TweaksAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null).describe("null reads the shown page"),
 });
 

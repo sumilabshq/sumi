@@ -8,8 +8,8 @@ import { BoardRow } from "../board-row/board-row.js";
 import { LayerRows } from "../layer-rows/layer-rows.js";
 
 export function LayersList(): ReactElement {
-	const { tabId, pickedBoardId } = useCanvasView();
-	const boards = useQuery(artboards.boards.getShownPageBoards, { tabId }).data;
+	const { canvasId, pickedBoardId } = useCanvasView();
+	const boards = useQuery(artboards.boards.getShownPageBoards, { canvasId }).data;
 	return (
 		<SidePanelSection label="Layers" isGrowing>
 			{boards.map((board) => (

@@ -19,9 +19,9 @@ const SHOW_PANEL = {
 export function CanvasActions(): ReactElement {
 	const { Actions, Tint } = useTabHeader();
 	const view = useCanvasView();
-	const { tabId } = view;
+	const { canvasId } = view;
 	const zoom = useZoom(view.zoom);
-	const canvas = useQuery(artboards.canvases.getCanvas, { tabId }).data;
+	const canvas = useQuery(artboards.canvases.getCanvas, { canvasId }).data;
 	const toggle = useCommand(artboards.view.togglePanel);
 	return (
 		<Actions>
@@ -34,7 +34,7 @@ export function CanvasActions(): ReactElement {
 				isOn={canvas.isPanelOpen}
 				whenOn={HIDE_PANEL}
 				whenOff={SHOW_PANEL}
-				onToggle={() => void toggle.run({ tabId })}
+				onToggle={() => void toggle.run({ canvasId })}
 			/>
 		</Actions>
 	);

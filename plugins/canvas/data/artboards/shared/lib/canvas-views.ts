@@ -3,9 +3,9 @@ import { boardsOnPage } from "./canvas-edits.js";
 
 const TAG = /<[^>]*>/g;
 
-export function canvasViewOf(tabId: string, canvas: Canvas): CanvasView {
+export function canvasViewOf(canvasId: string, canvas: Canvas): CanvasView {
 	return {
-		tabId,
+		canvasId,
 		title: canvas.title,
 		pages: canvas.pages.map((page) => ({
 			...page,
@@ -19,9 +19,9 @@ export function canvasViewOf(tabId: string, canvas: Canvas): CanvasView {
 	};
 }
 
-export function canvasRowOf(tabId: string, canvas: Canvas): CanvasRow {
+export function canvasRowOf(canvasId: string, canvas: Canvas): CanvasRow {
 	return {
-		tabId,
+		canvasId,
 		title: canvas.title,
 		pageCount: canvas.pages.length,
 		boardCount: canvas.boards.length,
@@ -34,11 +34,11 @@ export function placeOf({ html: _html, ...place }: Board): BoardPlace {
 
 export function hitsOf(canvases: Readonly<Record<string, Canvas>>, words: string): readonly BoardHit[] {
 	const wanted = words.toLowerCase();
-	return Object.entries(canvases).flatMap(([tabId, canvas]) =>
+	return Object.entries(canvases).flatMap(([canvasId, canvas]) =>
 		canvas.boards
 			.filter((board) => isMatching(board, wanted))
 			.map((board) => ({
-				tabId,
+				canvasId,
 				board: board.id,
 				name: board.name,
 				page: board.page,

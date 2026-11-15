@@ -7,14 +7,14 @@ import { useCanvasView } from "../../lib/canvas-view-context.js";
 import { PageRow } from "../page-row/page-row.js";
 
 export function PagesList(): ReactElement {
-	const { tabId } = useCanvasView();
-	const canvas = useQuery(artboards.canvases.getCanvas, { tabId }).data;
+	const { canvasId } = useCanvasView();
+	const canvas = useQuery(artboards.canvases.getCanvas, { canvasId }).data;
 	const create = useCommand(artboards.pages.createPage);
 	return (
 		<SidePanelSection
 			label="Pages"
 			action={
-				<SidePanelAction aria-label="New page" onClick={() => void create.run({ tabId, name: null })}>
+				<SidePanelAction aria-label="New page" onClick={() => void create.run({ canvasId, name: null })}>
 					<Icon name="plus" size={16} />
 				</SidePanelAction>
 			}

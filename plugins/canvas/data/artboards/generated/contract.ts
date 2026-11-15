@@ -2,42 +2,42 @@
 import { Repeatable, Server, command, moduleContract, named, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
-export const TabIdSchema = z.string().min(1).max(200);
+export const CanvasIdSchema = z.string().min(1).max(200);
 
-export const CanvasAskSchema = z.object({ tabId: TabIdSchema });
+export const CanvasAskSchema = z.object({ canvasId: CanvasIdSchema });
 
 export const NoAskSchema = z.object({});
 
 export const NameSchema = z.string().trim().min(1).max(120);
 
 export const NewPageAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	name: NameSchema.nullable().default(null),
 });
 
 export const PageIdSchema = z.string().min(1).max(80);
 
 export const PageAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema,
 });
 
 export const RenamePageAskSchema = PageAskSchema.extend({ name: NameSchema });
 
 export const BoardsAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null),
 });
 
 export const BoardIdSchema = z.string().min(1).max(80);
 
 export const BoardAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema,
 });
 
 export const WriteBoardAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema.nullable().default(null),
 	page: PageIdSchema.nullable().default(null),
 	name: NameSchema.nullable().default(null),
@@ -58,7 +58,7 @@ export const RenameBoardAskSchema = BoardAskSchema.extend({ name: NameSchema });
 export const SearchAskSchema = z.object({ words: z.string().trim().min(1).max(200) });
 
 export const ResizePanelAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	width: z.number(),
 });
 
@@ -68,7 +68,7 @@ export const BackgroundSchema = z
 	.nullable();
 
 export const SetBackgroundAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	background: BackgroundSchema,
 });
 
@@ -79,12 +79,12 @@ export const CameraSchema = z.object({
 });
 
 export const KeepCameraAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	camera: CameraSchema,
 });
 
 export const TweaksAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null),
 });
 
@@ -115,14 +115,14 @@ export const TweakAskSchema = z.object({
 });
 
 export const WriteTweaksAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null),
 	board: BoardIdSchema.nullable().default(null),
 	tweaks: z.array(TweakAskSchema).max(24),
 });
 
 export const SetTweakValueAskSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	page: PageIdSchema,
 	board: BoardIdSchema.nullable(),
 	tweak: TweakIdSchema,
@@ -182,7 +182,7 @@ export const BoardPlaceSchema = BoardSchema.omit({ html: true });
 export const PageRowSchema = PageSchema.extend({ boardCount: z.number().int().nonnegative() });
 
 export const CanvasViewSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	title: NameSchema,
 	pages: z.array(PageRowSchema),
 	shownPage: PageIdSchema,
@@ -193,14 +193,14 @@ export const CanvasViewSchema = z.object({
 });
 
 export const CanvasRowSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	title: NameSchema,
 	pageCount: z.number().int().nonnegative(),
 	boardCount: z.number().int().nonnegative(),
 });
 
 export const BoardHitSchema = z.object({
-	tabId: TabIdSchema,
+	canvasId: CanvasIdSchema,
 	board: BoardIdSchema,
 	name: NameSchema,
 	page: PageIdSchema,

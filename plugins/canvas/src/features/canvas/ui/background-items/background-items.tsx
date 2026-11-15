@@ -10,8 +10,8 @@ import { BackgroundSwatch } from "../background-swatch/background-swatch.js";
 const MENU_LABEL = "Canvas background";
 
 export function BackgroundItems({ onChosen }: { readonly onChosen: () => void }): ReactElement {
-	const { tabId } = useCanvasView();
-	const current = useQuery(artboards.canvases.getCanvas, { tabId }).data.background;
+	const { canvasId } = useCanvasView();
+	const current = useQuery(artboards.canvases.getCanvas, { canvasId }).data.background;
 	const choose = useCommand(artboards.view.setBackground);
 	const isPreset = BACKGROUND_CHOICES.some(({ value }) => value === current);
 	return (
@@ -23,7 +23,7 @@ export function BackgroundItems({ onChosen }: { readonly onChosen: () => void })
 					checked={choice.value === current}
 					onClick={() => {
 						onChosen();
-						void choose.run({ tabId, background: choice.value });
+						void choose.run({ canvasId, background: choice.value });
 					}}
 				>
 					<BackgroundSwatch value={choice.value} />
@@ -38,7 +38,7 @@ export function BackgroundItems({ onChosen }: { readonly onChosen: () => void })
 					onChosen();
 					void pickColor(current).then((picked) => {
 						if (picked !== null) {
-							void choose.run({ tabId, background: picked });
+							void choose.run({ canvasId, background: picked });
 						}
 					});
 				}}

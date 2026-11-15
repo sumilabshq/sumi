@@ -15,7 +15,7 @@ export interface PageRowProps {
 }
 
 export function PageRow({ page, isShown }: PageRowProps): ReactElement {
-	const { tabId } = useCanvasView();
+	const { canvasId } = useCanvasView();
 	const show = useCommand(artboards.pages.showPage);
 	const rename = useCommand(artboards.pages.renamePage);
 	const remove = useCommand(artboards.pages.removePage);
@@ -26,9 +26,9 @@ export function PageRow({ page, isShown }: PageRowProps): ReactElement {
 			depth={0}
 			icon={null}
 			end={page.boardCount}
-			onPick={() => void show.run({ tabId, page: page.id })}
-			onRename={(name) => void rename.run({ tabId, page: page.id, name })}
-			onDelete={() => void remove.run({ tabId, page: page.id })}
+			onPick={() => void show.run({ canvasId, page: page.id })}
+			onRename={(name) => void rename.run({ canvasId, page: page.id, name })}
+			onDelete={() => void remove.run({ canvasId, page: page.id })}
 		/>
 	);
 }

@@ -17,16 +17,16 @@ const ZOOM_VAR = "--sumi-canvas-zoom";
 const FIELD_MARGIN_PX = 240;
 
 export function ArtboardField(): ReactElement {
-	const { tabId, pickBoard, zoom } = useCanvasView();
-	const canvas = useQuery(artboards.canvases.getCanvas, { tabId }).data;
-	const boards = useQuery(artboards.boards.getShownPageBoards, { tabId }).data;
+	const { canvasId, pickBoard, zoom } = useCanvasView();
+	const canvas = useQuery(artboards.canvases.getCanvas, { canvasId }).data;
+	const boards = useQuery(artboards.boards.getShownPageBoards, { canvasId }).data;
 	const keep = useCommand(artboards.view.keepCamera);
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const fieldRef = useRef<HTMLDivElement | null>(null);
 	const [menuSpot, setMenuSpot] = useState<MenuSpot | null>(null);
 	const pan = usePanZoom({ layerRef, fieldRef }, GRIPS, {
 		camera: canvas.camera,
-		onKept: (camera) => void keep.run({ tabId, camera }),
+		onKept: (camera) => void keep.run({ canvasId, camera }),
 	});
 	useEffect(() => {
 		const show = (scale: number): void => {

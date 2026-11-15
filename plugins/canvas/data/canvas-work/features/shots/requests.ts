@@ -16,7 +16,7 @@ export const getBoardShot = query()
 	.output(ShotSchema)
 	.handle(async (ask, { send, rendering }) => {
 		const board = await send(artboards.boards.getBoard, ask);
-		const tweaked = await send(artboards.tweaks.getBoardTweaks, { tabId: ask.tabId, page: board.page });
+		const tweaked = await send(artboards.tweaks.getBoardTweaks, { canvasId: ask.canvasId, page: board.page });
 		return rendering.shotOf([{ ...board, tweaks: tweaked.find((one) => one.board === board.id)?.applied ?? [] }], MOST_BOARD_SIDE);
 	});
 
@@ -28,18 +28,18 @@ export const getPageShot = query()
 	})
 	.input(PageShotAskSchema)
 	.output(ShotSchema)
-	.handle(async ({ tabId, page }, { send, rendering }) => {
-		const canvas = await send(artboards.canvases.getCanvas, { tabId });
+	.handle(async ({ canvasId, page }, { send, rendering }) => {
+		const canvas = await send(artboards.canvases.getCanvas, { canvasId });
 		const shown = page ?? canvas.shownPage;
-		const placed = await send(artboards.boards.getBoards, { tabId, page: shown });
+		const placed = await send(artboards.boards.getBoards, { canvasId, page: shown });
 
 		if (placed.length === 0) {
 			return refuse(`page ${shown} has no artboards yet`);
 		}
 
-		const tweaked = await send(artboards.tweaks.getBoardTweaks, { tabId, page: shown });
+		const tweaked = await send(artboards.tweaks.getBoardTweaks, { canvasId, page: shown });
 		const boards = await Promise.all(
-			placed.map((place) => send(artboards.boards.getBoard, { tabId, board: place.id })),
+			placed.map((place) => send(artboards.boards.getBoard, { canvasId, board: place.id })),
 		);
 		return rendering.shotOf(
 			boards.map((board) => ({ ...board, tweaks: tweaked.find((one) => one.board === board.id)?.applied ?? [] })),
