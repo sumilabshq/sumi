@@ -25,24 +25,7 @@ export function tabActionsOf(id: string, title: string): readonly RowAction[] {
 	];
 }
 
-export function chatActionsOf(id: string, isPinned: boolean): readonly RowAction[] {
-	return [
-		RENAME,
-		{
-			label: isPinned ? "Unpin" : "Pin",
-			shortcut: null,
-			isDanger: false,
-			intent: {
-				do: "pin-chat",
-				id,
-				isPinned: !isPinned,
-			},
-			isRename: false,
-		},
-	];
-}
-
-export function workspaceActionsOf(): readonly RowAction[] {
+export function renameActionsOf(): readonly RowAction[] {
 	return [RENAME];
 }
 

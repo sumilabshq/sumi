@@ -45,17 +45,9 @@ export const WorkspaceStateSchema = z.object({
 			id: z.string(),
 			title: z.string(),
 			isThisChat: z.boolean(),
-			isPinned: z.boolean(),
 		}),
 	),
 	shownTab: z.string().nullable(),
-	essentials: z.array(
-		z.object({
-			id: z.string(),
-			title: z.string(),
-			isShown: z.boolean(),
-		}),
-	),
 	sections: z.array(
 		z.object({
 			list: z.string(),

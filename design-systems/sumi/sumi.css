@@ -15,9 +15,6 @@
 	--sumi-tree: #bdbdbd;
 	--sumi-group-plain: rgba(21, 21, 19, 0.08);
 	--sumi-group-glass: transparent;
-	--sumi-essential: var(--sumi-soft);
-	--sumi-essential-hover: rgba(21, 21, 19, 0.12);
-	--sumi-essential-on: rgba(21, 21, 19, 0.16);
 	--sumi-accent: #a84a06;
 	--sumi-on-accent: #ffffff;
 	--sumi-accent-soft: rgba(168, 74, 6, 0.12);
@@ -166,9 +163,6 @@
 	--sumi-line-strong: #434240;
 	--sumi-tree: #484644;
 	--sumi-group-plain: rgba(233, 230, 222, 0.09);
-	--sumi-essential: var(--sumi-soft);
-	--sumi-essential-hover: rgba(233, 230, 222, 0.13);
-	--sumi-essential-on: rgba(233, 230, 222, 0.18);
 	--sumi-accent: #e6c36f;
 	--sumi-on-accent: #000000;
 	--sumi-accent-soft: rgba(230, 195, 111, 0.14);

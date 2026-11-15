@@ -25,10 +25,10 @@ import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 import type { StudioAppParts } from "./studio-app-fixture.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
-import { BOARD_CHAT_FACTS, BOARD_CHAT_IDS, BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
+import { BOARD_CHAT_FACTS, BOARD_CHAT_IDS, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryChatsGateway } from "../packages/domain/workspaces/gateways/chats/memory.gateway.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
@@ -160,9 +160,9 @@ const IS_SEEDED = new URLSearchParams(location.search).has("seeded");
 
 const SEEDED_TABS: SeededTabs = {
 	tabs: [
-		{ id: "tab-1", app: "browser", pageId: null, label: "Linear", essentialId: null },
-		{ id: "tab-2", app: "canvas", pageId: null, label: "Release canvas", essentialId: null },
-		{ id: "tab-3", app: "terminal", pageId: null, label: "Release terminal", essentialId: null },
+		{ id: "tab-1", app: "browser", pageId: null, label: "Linear" },
+		{ id: "tab-2", app: "canvas", pageId: null, label: "Release canvas" },
+		{ id: "tab-3", app: "terminal", pageId: null, label: "Release terminal" },
 	],
 	lists: {
 		workspace: [
@@ -192,7 +192,7 @@ function seededParts(): Pick<StudioAppParts, "workspaces" | "places"> {
 	const workspaces = IS_RECORDS_PENDING
 		? { ...board, chats: new PendingChatsGateway({ chats: [], openOnStartId: null }) }
 		: board;
-	const places = new MemoryTabsGateway(placedTabsOf(SEEDED_TABS, BOARD_CHAT_IDS, BOARD_PINNED, BOARD_CHAT_FACTS));
+	const places = new MemoryTabsGateway(placedTabsOf(SEEDED_TABS, BOARD_CHAT_IDS, BOARD_CHAT_FACTS));
 	Object.assign(window, { __PLACES__: places, __WORKSPACES__: workspaces });
 	return {
 		workspaces,

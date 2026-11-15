@@ -1,0 +1,206 @@
+import type { Send } from "@widgetarium/data-framework";
+import { browser } from "@widgetarium/browser/contract";
+import { layout } from "@widgetarium/layout/contract";
+import { places } from "@widgetarium/places/contract";
+import type { TabEffect, TabsAsk, TabsSettled } from "@widgetarium/places/contract";
+import { workspaces } from "@widgetarium/workspaces/contract";
+import { screenOf } from "./screen-of.js";
+
+const ALL_PAGES = { heldTabId: null };
+
+const PAGE_EFFECTS = ["open-page", "close-page", "show-page", "open-address", "reload-page"] as const;
+const WINDOW_EFFECTS = [
+	"open-own-window",
+	"focus-window",
+	"focus-own-window",
+	"tear-off-page",
+	"tear-off-tab",
+] as const;
+const PANE_EFFECTS = [
+	"close-panes",
+	"close-chat-panes",
+	"open-shown-tab-pane",
+	"close-shown-tab-pane",
+	"show-in-target-pane",
+	"flash-pane",
+] as const;
+
+type PageEffect = Extract<TabEffect, { readonly kind: (typeof PAGE_EFFECTS)[number] }>;
+type WindowEffect = Extract<TabEffect, { readonly kind: (typeof WINDOW_EFFECTS)[number] }>;
+type PaneEffect = Extract<TabEffect, { readonly kind: (typeof PANE_EFFECTS)[number] }>;
+type ViewEffect = Exclude<TabEffect, PageEffect | WindowEffect | PaneEffect>;
+
+interface StudioWindowSeat {
+	placesWindow(): string;
+}
+
+interface PaneFlasher {
+	flashPane(paneId: string): void;
+}
+
+export interface TabStores {
+	readonly studioWindow: StudioWindowSeat;
+	readonly paneFlash: PaneFlasher;
+}
+
+export interface TabsReach {
+	readonly injects: TabStores;
+	readonly send: Send;
+	readonly told: () => void;
+}
+
+export async function tabsAskOf({ injects, send }: Pick<TabsReach, "injects" | "send">): Promise<TabsAsk> {
+	const [browserTabs, asks, board] = await Promise.all([
+		send(browser.tabs.all, ALL_PAGES),
+		send(browser.asks.pending),
+		send(layout.panes.paneTree),
+	]);
+	return {
+		window: injects.studioWindow.placesWindow(),
+		screen: screenOf({ browserTabs, asks, board }),
+	};
+}
+
+export async function settleAsked<S extends TabsSettled>(
+	reach: TabsReach,
+	ask: (at: TabsAsk) => Promise<S>,
+): Promise<S> {
+	const settled = await ask(await tabsAskOf(reach));
+
+	for (const effect of settled.effects) {
+		await sendLogged(effect.kind, () => sendEffect(effect, reach));
+	}
+
+	reach.told();
+	return settled;
+}
+
+export async function sendKeepChatTabs(send: Send, window: string): Promise<void> {
+	const records = await send(workspaces.chats.chatRecords);
+
+	if (!records.isRead) {
+		console.info("[widgetarium] keep chat tabs skipped: the chats are not read yet");
+		return;
+	}
+
+	await send(places.tabFacts.keepChatTabs, { window, chats: records.chats.map(({ id, title }) => ({ id, title })) });
+}
+
+export async function sendLogged(what: string, sending: () => Promise<unknown> | void): Promise<void> {
+	try {
+		await sending();
+	} catch (failure: unknown) {
+		console.error(`[widgetarium] the host tabs could not ${what}`, failure);
+	}
+}
+
+async function sendEffect(effect: TabEffect, reach: TabsReach): Promise<unknown> {
+	if (isPageEffect(effect)) {
+		return sendPageEffect(effect, reach.send);
+	}
+
+	if (isWindowEffect(effect)) {
+		return sendWindowEffect(effect, reach.send);
+	}
+
+	return isPaneEffect(effect) ? sendPaneEffect(effect, reach) : sendViewEffect(effect, reach.send);
+}
+
+async function sendPageEffect(effect: PageEffect, send: Send): Promise<unknown> {
+	switch (effect.kind) {
+		case "open-page":
+			return send(browser.tabs.openPage, { tabId: effect.pageId });
+		case "close-page":
+			return send(browser.tabs.closePage, { tabId: effect.pageId });
+		case "show-page":
+			await send(browser.tabs.openPage, { tabId: effect.pageId });
+			return send(browser.tabs.show, { tabId: effect.pageId });
+		case "open-address":
+			return send(browser.tabs.openAddress, addressAskOf(effect));
+		case "reload-page":
+			return send(browser.tabs.reloadPage, { tabId: effect.pageId });
+	}
+}
+
+function sendWindowEffect(effect: WindowEffect, send: Send): Promise<unknown> {
+	switch (effect.kind) {
+		case "open-own-window":
+			return send(browser.tabs.openInOwnWindow, { tabId: effect.pageId });
+		case "focus-window":
+			return send(browser.tabs.focusStudioWindow, { window: effect.window });
+		case "focus-own-window":
+			return send(browser.tabs.focusOwnWindow, { tabId: effect.pageId });
+		case "tear-off-page":
+			return send(browser.tabs.tearOff, { tabId: effect.pageId, openWith: effect.tabId });
+		case "tear-off-tab":
+			return send(browser.tabs.openWindow, { tabId: effect.tabId, view: effect.view });
+	}
+}
+
+async function sendPaneEffect(effect: PaneEffect, { injects, send }: TabsReach): Promise<unknown> {
+	switch (effect.kind) {
+		case "close-panes":
+			return send(layout.paneTabs.closeShowingPanes, { tabIds: effect.tabIds });
+		case "close-chat-panes":
+			return closeChatPanes(send, effect.chatIds);
+		case "open-shown-tab-pane":
+			return send(layout.paneTabs.openShown);
+		case "close-shown-tab-pane":
+			return send(layout.paneTabs.closeShown);
+		case "show-in-target-pane":
+			return send(layout.paneTabs.showInTarget, { tabId: effect.tabId });
+		case "flash-pane":
+			await send(layout.panes.aim, { id: effect.paneId });
+			return injects.paneFlash.flashPane(effect.paneId);
+	}
+}
+
+function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
+	switch (effect.kind) {
+		case "show-chat":
+			return send(layout.paneTabs.showChat, { chatId: effect.chatId, paneId: effect.paneId });
+		case "show-split":
+			return send(layout.splitBoard.show, {
+				layout: effect.layout,
+				chatIds: effect.chatIds,
+				focusedId: effect.focusedId,
+			});
+		case "focus-split":
+			return send(layout.splitBoard.focus, { focusedId: effect.focusedId });
+		case "leave-split":
+			return send(layout.splitBoard.leave);
+	}
+}
+
+async function closeChatPanes(send: Send, chatIds: readonly string[]): Promise<void> {
+	const board = await send(layout.panes.paneTree);
+	const standing = board.leaves.filter((leaf) => leaf.view.kind === "chat" && chatIds.includes(leaf.view.chatId ?? ""));
+
+	for (const leaf of standing) {
+		await send(layout.panes.close, { id: leaf.id });
+	}
+}
+
+function addressAskOf({ pageId, address, isShown }: Extract<TabEffect, { readonly kind: "open-address" }>): {
+	readonly tabId: string;
+	readonly address: string;
+	readonly heldTabId: string | null;
+} {
+	return {
+		tabId: pageId,
+		address,
+		heldTabId: isShown ? null : pageId,
+	};
+}
+
+function isPageEffect(effect: TabEffect): effect is PageEffect {
+	return PAGE_EFFECTS.some((kind) => kind === effect.kind);
+}
+
+function isWindowEffect(effect: TabEffect): effect is WindowEffect {
+	return WINDOW_EFFECTS.some((kind) => kind === effect.kind);
+}
+
+function isPaneEffect(effect: TabEffect): effect is PaneEffect {
+	return PANE_EFFECTS.some((kind) => kind === effect.kind);
+}

@@ -51,7 +51,6 @@ export function StripTab({ item, acts, drag, isLifted, onMenu, onClose }: StripT
 			className="sumi-strip-tab"
 			data-strip-item={itemIdOf(item)}
 			data-own-drag=""
-			data-pinned={item.isPinned ? "" : undefined}
 			data-shown={isShown ? "" : undefined}
 			data-lifted={isLifted ? "" : undefined}
 			onPointerDown={pressed}
@@ -77,21 +76,19 @@ export function StripTab({ item, acts, drag, isLifted, onMenu, onClose }: StripT
 			}}
 		>
 			<TabIcons item={item} />
-			{item.isPinned ? null : <span className="sumi-strip-tab-title">{titleOf(item)}</span>}
-			{item.isPinned ? null : (
-				<button
-					type="button"
-					className="sumi-strip-tab-close"
-					aria-label={CLOSE_LABEL}
-					onPointerDown={(event) => event.stopPropagation()}
-					onClick={(event) => {
-						event.stopPropagation();
-						close();
-					}}
-				>
-					<Icon name="x" size={CLOSE_PX} />
-				</button>
-			)}
+			<span className="sumi-strip-tab-title">{titleOf(item)}</span>
+			<button
+				type="button"
+				className="sumi-strip-tab-close"
+				aria-label={CLOSE_LABEL}
+				onPointerDown={(event) => event.stopPropagation()}
+				onClick={(event) => {
+					event.stopPropagation();
+					close();
+				}}
+			>
+				<Icon name="x" size={CLOSE_PX} />
+			</button>
 		</div>
 	);
 }

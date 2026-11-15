@@ -11,7 +11,7 @@ import {
 	TabOpenSchema,
 	TabUpdateSchema,
 } from "../../shared/schema/tab-asks.schema.js";
-import { missingTabSaid, refuseMissingTab, spotOfTab } from "../../shared/lib/tab-places.js";
+import { OPEN_LIST, missingTabSaid, refuseMissingTab, spotOfTab } from "../../shared/lib/tab-places.js";
 import { duplicatedTabIn, openedTabIn, placedTabOf, refuseApp, refuseTwoGroups } from "./lib/tab-placing.js";
 import { moveTab, renameTab, tabNowOf } from "./lib/tab-change.js";
 import { openableAppsOf } from "../../shared/lib/openable-apps.js";
@@ -20,7 +20,7 @@ export const open = command()
 	.public()
 	.metadata({
 		description:
-			"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden in Open unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
+			"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
 	})
 	.input(TabOpenSchema)
 	.output(PlacedTabSchema)
@@ -34,7 +34,7 @@ export const open = command()
 			return refuse(refusal);
 		}
 
-		const list = asked.place;
+		const list = OPEN_LIST;
 		const openedId = await openedTabIn(send, list, asked);
 		console.info(`[widgetarium] tab none → ${openedId} (${asked.app} opened in ${list} by chat ${user.id})`);
 		return placedTabOf(openedId, asked);
@@ -43,7 +43,7 @@ export const open = command()
 export const duplicate = command()
 	.public()
 	.metadata({
-		description: "Copy a tab into a place and group.",
+		description: "Copy a tab, optionally into a group.",
 	})
 	.input(TabDuplicateSchema)
 	.output(PlacedTabSchema)
@@ -57,7 +57,7 @@ export const duplicate = command()
 			return refuse(refusal);
 		}
 
-		const list = asked.place;
+		const list = OPEN_LIST;
 		const copyId = await duplicatedTabIn(send, list, asked);
 		console.info(`[widgetarium] tab ${asked.tabId} → copy ${copyId} in ${list} (chat ${user.id})`);
 		return placedTabOf(copyId, asked);
@@ -66,7 +66,7 @@ export const duplicate = command()
 export const update = command()
 	.public()
 	.metadata({
-		description: "Rename a tab or move it to another place, group or position.",
+		description: "Rename a tab or move it to another group or position.",
 	})
 	.input(TabUpdateSchema)
 	.output(TabNowSchema)

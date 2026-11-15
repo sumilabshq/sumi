@@ -4,15 +4,9 @@ import { z } from "zod";
 
 export const GroupColourSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
 
-export const PlaceSchema = z
-	.enum(["workspace", "pinned"])
-	.default("workspace")
-	.describe("workspace (the Open list, default) or pinned.");
-
 export const GroupCreateSchema = z.strictObject({
 	name: z.string().min(1),
 	colour: GroupColourSchema.optional(),
-	place: PlaceSchema,
 	tabIds: z.array(z.string().min(1)).default([]).describe("Tabs to move into the group."),
 });
 
@@ -22,7 +16,6 @@ export const CreatedGroupSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	colour: GroupColourSchema.optional(),
-	place: z.string(),
 	tabIds: z.array(z.string()),
 });
 
@@ -54,9 +47,8 @@ export const NewGroupSchema = z.strictObject({
 });
 
 export const GroupingSchema = z.strictObject({
-	place: PlaceSchema,
-	group: z.string().min(1).optional().describe("Id of a group in that place to put the tab in."),
-	newGroup: NewGroupSchema.optional().describe("A group to create in that place and put the tab in."),
+	group: z.string().min(1).optional().describe("Id of a group to put the tab in."),
+	newGroup: NewGroupSchema.optional().describe("A group to create and put the tab in."),
 	show: z.boolean().default(false).describe("Show the tab to the person. Default false."),
 });
 
@@ -84,7 +76,6 @@ export type TabDuplicate = z.output<typeof TabDuplicateSchema>;
 export const TabUpdateSchema = z.strictObject({
 	tabId: z.string().min(1),
 	title: z.string().optional(),
-	place: z.enum(["workspace", "pinned"]).optional().describe("workspace (the Open list) or pinned."),
 	group: z.string().min(1).nullable().optional().describe("A group id, or null to take it out of its group."),
 	before: z.string().min(1).nullable().optional().describe("Id of the tab it should stand before; null for the end."),
 });
@@ -97,7 +88,6 @@ export const TabIdSchema = z.strictObject({
 
 export const PlacedTabSchema = z.object({
 	id: z.string(),
-	place: z.string(),
 	isShown: z.boolean(),
 });
 
@@ -107,7 +97,6 @@ export const TabNowSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	address: z.string().nullable(),
-	place: z.string(),
 	groupId: z.string().nullable(),
 });
 
@@ -161,17 +150,9 @@ export const WorkspaceStateSchema = z.object({
 			id: z.string(),
 			title: z.string(),
 			isThisChat: z.boolean(),
-			isPinned: z.boolean(),
 		}),
 	),
 	shownTab: z.string().nullable(),
-	essentials: z.array(
-		z.object({
-			id: z.string(),
-			title: z.string(),
-			isShown: z.boolean(),
-		}),
-	),
 	sections: z.array(
 		z.object({
 			list: z.string(),
@@ -205,7 +186,7 @@ export const tabs = moduleContract("tabs", Device, {
 		create: named("group.create", command()
 			.public()
 			.metadata({
-				description: "Create a tab group in Open or Pinned, optionally moving tabs into it.",
+				description: "Create a tab group, optionally moving tabs into it.",
 			})
 			.input(GroupCreateSchema)
 			.output(CreatedGroupSchema)
@@ -232,7 +213,7 @@ export const tabs = moduleContract("tabs", Device, {
 			.public()
 			.metadata({
 				description:
-					"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden in Open unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
+					"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
 			})
 			.input(TabOpenSchema)
 			.output(PlacedTabSchema)
@@ -240,7 +221,7 @@ export const tabs = moduleContract("tabs", Device, {
 		duplicate: named("tab.duplicate", command()
 			.public()
 			.metadata({
-				description: "Copy a tab into a place and group.",
+				description: "Copy a tab, optionally into a group.",
 			})
 			.input(TabDuplicateSchema)
 			.output(PlacedTabSchema)
@@ -248,7 +229,7 @@ export const tabs = moduleContract("tabs", Device, {
 		update: named("tab.update", command()
 			.public()
 			.metadata({
-				description: "Rename a tab or move it to another place, group or position.",
+				description: "Rename a tab or move it to another group or position.",
 			})
 			.input(TabUpdateSchema)
 			.output(TabNowSchema)
@@ -267,7 +248,7 @@ export const tabs = moduleContract("tabs", Device, {
 			.public()
 			.metadata({
 				description:
-					"Read Sumi's state: every chat, which chat is asking, the tab the person sees, the essentials, and both tab lists (Pinned, Open) with their tabs, chats and groups. Read it before acting on tabs.",
+					"Read Sumi's state: every chat, which chat is asking, the tab the person sees, and the tab list with its tabs, chats and groups. Read it before acting on tabs.",
 			})
 			.input(NoInputSchema)
 			.output(WorkspaceStateSchema)),

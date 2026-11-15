@@ -4,8 +4,6 @@ import type { Intent, MenuCommand, Where } from "../../../shared/schema/command-
 const RAN: Readonly<Record<MenuCommand, string>> = {
 	"new-chat": "Ran “New chat”",
 	"new-tab": "New tab",
-	"tabs-in-sidebar": "Tabs in the sidebar",
-	"tabs-in-header": "Tabs in the header",
 	"new-window": "Opened a window without a workspace",
 };
 const PLACE_SAID: Readonly<Record<Where, string>> = {
@@ -19,7 +17,6 @@ export function confirmationOf(intent: Intent): string {
 		case "reopen-closed":
 			return `Reopened “${intent.title}”`;
 		case "show-tab":
-		case "show-essential":
 			return `Switched to “${intent.title}”`;
 		case "open-chat":
 			return `Opened chat “${intent.title}”`;
@@ -43,8 +40,6 @@ export function confirmationOf(intent: Intent): string {
 			return intent.title;
 		case "open-door":
 			return "";
-		case "pin-chat":
-			return intent.isPinned ? "Pinned" : "Unpinned";
 	}
 }
 

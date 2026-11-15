@@ -62,7 +62,7 @@
 	color: var(--sumi-text);
 }
 
-[data-count="1"] .sumi-strip-tab:not([data-pinned]) {
+[data-count="1"] .sumi-strip-tab {
 	background: none;
 	color: var(--sumi-text-3);
 }
@@ -70,13 +70,6 @@
 .sumi-strip-tab:focus-visible {
 	outline: 1px solid var(--sumi-line-strong);
 	outline-offset: -1px;
-}
-
-.sumi-strip-tab[data-pinned],
-.sumi-strip-lifted[data-pinned] {
-	justify-content: center;
-	width: var(--sumi-h-sm);
-	padding: 0;
 }
 
 .sumi-strip-tab[data-lifted] {

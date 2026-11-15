@@ -10,20 +10,13 @@ export const SideLookSchema = z.enum(["docked", "hidden", "peeking"]);
 
 export type SideLook = z.infer<typeof SideLookSchema>;
 
-export const TabsPlaceSchema = z.enum(["header", "sidebar"]);
-
-export type TabsPlace = z.infer<typeof TabsPlaceSchema>;
-
 export const FrameSidesSchema = z.object({
 	left: SideLookSchema,
-	tabs: TabsPlaceSchema,
 });
 
 export type FrameSides = z.infer<typeof FrameSidesSchema>;
 
 export const FrameSideInputSchema = z.object({ side: FrameSideSchema });
-
-export const TabsPlaceInputSchema = z.object({ tabs: TabsPlaceSchema });
 
 export const FrameEdgeSchema = z.enum(["left", "chat"]);
 
@@ -215,10 +208,6 @@ export const layout = moduleContract("layout", Device, {
 		toggle: named("frame-sides.toggle", command()
 			.public()
 			.input(FrameSideInputSchema)
-			.idempotencyKey(Repeatable)),
-		placeTabs: named("frame-sides.place-tabs", command()
-			.public()
-			.input(TabsPlaceInputSchema)
 			.idempotencyKey(Repeatable)),
 		peek: named("frame-sides.peek", command()
 			.public()

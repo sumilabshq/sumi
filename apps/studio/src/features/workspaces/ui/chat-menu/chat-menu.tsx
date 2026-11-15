@@ -1,9 +1,7 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { Icon, Popover, PopoverAnchor, PopoverAnchorAt, PopoverContent, PopoverItem } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/data-framework";
 import type { ChatRowData } from "@sumi/chat-tabs/contract";
-import { appHost } from "@widgetarium/app-host/contract";
 
 export type ChatMenuAt =
 	| {
@@ -24,13 +22,10 @@ export interface ChatMenuProps {
 }
 
 const MENU_LABEL = "Chat";
-const PIN = "Pin";
-const UNPIN = "Unpin";
 const RENAME = "Rename";
 const ITEM_ICON_PX = 18;
 
 export function ChatMenu({ at, row, onClose, onRename }: ChatMenuProps): ReactElement {
-	const pinChat = useCommand(appHost.tabActions.pin);
 	const lastAt = useRef(at);
 	const lastRow = useRef(row);
 	if (at !== null && row !== null) {
@@ -59,13 +54,6 @@ export function ChatMenu({ at, row, onClose, onRename }: ChatMenuProps): ReactEl
 			<PopoverContent>
 				{shown === null ? null : (
 					<div role="menu" aria-label={MENU_LABEL} data-ws-chat-menu={shown.id}>
-						<PopoverItem
-							role="menuitem"
-							onClick={chose(() => void pinChat.run({ id: shown.id, isPinned: !shown.isPinned }))}
-						>
-							<Icon name="pin" size={ITEM_ICON_PX} />
-							{shown.isPinned ? UNPIN : PIN}
-						</PopoverItem>
 						<PopoverItem role="menuitem" onClick={chose(() => onRename(shown.id))}>
 							<Icon name="pencil" size={ITEM_ICON_PX} />
 							{RENAME}

@@ -13,7 +13,6 @@ export interface StripTab {
 	readonly list: string;
 	readonly groupId: string | null;
 	readonly group: StripGroup | null;
-	readonly isPinned: boolean;
 }
 
 export interface StripSplit {
@@ -21,17 +20,12 @@ export interface StripSplit {
 	readonly split: SidebarSplitState;
 	readonly focused: AppTabState;
 	readonly list: string;
-	readonly isPinned: boolean;
 }
 
 export type StripItem = StripTab | StripSplit;
 
-export const PINNED_LIST = "pinned";
-
 export function stripItemsOf(sidebar: TabsSidebar): readonly StripItem[] {
-	const pinned = sidebar.sections.filter(({ list }) => list === PINNED_LIST);
-	const others = sidebar.sections.filter(({ list }) => list !== PINNED_LIST);
-	return [...pinned, ...others].flatMap(({ list, entries }) => entries.flatMap((entry) => itemsOfEntry(entry, list)));
+	return sidebar.sections.flatMap(({ list, entries }) => entries.flatMap((entry) => itemsOfEntry(entry, list)));
 }
 
 export function itemIdOf(item: StripItem): string {
@@ -68,8 +62,6 @@ export function shownTabOf(items: readonly StripItem[]): AppTabState | null {
 }
 
 function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripItem[] {
-	const isPinned = list === PINNED_LIST;
-
 	if (entry.kind === "tab") {
 		return [
 			{
@@ -78,7 +70,6 @@ function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripItem[] {
 				list,
 				groupId: null,
 				group: null,
-				isPinned,
 			},
 		];
 	}
@@ -95,7 +86,6 @@ function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripItem[] {
 				hue: entry.group.hue,
 				isOpen: entry.group.isOpen,
 			},
-			isPinned,
 		}));
 	}
 
@@ -108,7 +98,6 @@ function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripItem[] {
 					split: entry.split,
 					focused,
 					list,
-					isPinned,
 				},
 			];
 }

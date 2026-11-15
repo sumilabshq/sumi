@@ -1,9 +1,9 @@
 import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "@widgetarium/data-framework";
-import { places } from "../plugins/apps/data/places/generated/contract.ts";
-import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { places as RunnablePlacesModule } from "../plugins/apps/data/places/generated/module.ts";
+import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
 const windows = new MemoryWindowsGateway({ windows: [] });

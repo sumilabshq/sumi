@@ -1,22 +1,20 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { appHost as appHostModule } from "../plugins/apps/data/app-host/generated/module.ts";
+import { appHost as appHostModule } from "../plugins/tab-strip/data/app-host/generated/module.ts";
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
-import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
-import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryStudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesOver, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { NoPaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-flash/none.gateway.ts";
-import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
-import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
+import { NoPaneFlashGateway } from "../plugins/tab-strip/data/app-host/gateways/pane-flash/none.gateway.ts";
+import { NoCoreChangesGateway } from "../plugins/tab-strip/data/app-host/gateways/core-changes/none.gateway.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
-import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -59,30 +57,6 @@ const PAGES: readonly BoardPage[] = [
 	{ id: "page-11", title: "DeepL API docs", url: "https://developers.deepl.com/" },
 ];
 
-const SITE_ESSENTIALS: readonly (readonly [string, string])[] = [
-	["GitHub", "https://github.com/"],
-	["Files", "https://files.local/"],
-	["Routines", "https://routines.local/"],
-	["Mail", "https://mail.google.com/"],
-	["Calendar", "https://calendar.google.com/"],
-	["Figma", "https://figma.com/"],
-	["Jira", "https://jira.local/"],
-];
-
-const KEPT_ESSENTIALS: KeptEssentials = {
-	essentials: [
-		{ id: "essential-1", app: "canvas", address: null, title: "Canvas", favicon: null },
-		...SITE_ESSENTIALS.map(([title, address], at) => ({
-			id: `essential-${at + 2}`,
-			app: "browser" as const,
-			address,
-			title,
-			favicon: null,
-		})),
-	],
-	minted: 8,
-};
-
 const KEPT_TABS: SeededTabs = {
 	tabs: [
 		{
@@ -90,7 +64,6 @@ const KEPT_TABS: SeededTabs = {
 			app: "canvas",
 			pageId: null,
 			label: null,
-			essentialId: "essential-1",
 			lastAddress: null,
 		},
 		browserTab("tab-2", "page-2"),
@@ -102,7 +75,6 @@ const KEPT_TABS: SeededTabs = {
 			app: "canvas",
 			pageId: null,
 			label: "Canvas · Release board",
-			essentialId: null,
 			lastAddress: null,
 		},
 		browserTab("tab-7", "page-7"),
@@ -112,7 +84,6 @@ const KEPT_TABS: SeededTabs = {
 			app: "canvas",
 			pageId: null,
 			label: "Translator",
-			essentialId: null,
 			lastAddress: null,
 		},
 		browserTab("tab-10", "page-10"),
@@ -138,36 +109,28 @@ const KEPT_TABS: SeededTabs = {
 	closed: [],
 };
 
-export const NO_ESSENTIALS: KeptEssentials = { essentials: [], minted: 0 };
-
 export interface ExactStudioAsk {
-	readonly essentials?: KeptEssentials;
 	readonly workspaces?: WorkspacesParts;
 	readonly releaseChatId?: string;
-	readonly pinnedChatIds?: readonly string[];
 }
 
 export interface ExactStudio {
 	readonly studioApp: Runtime;
 	readonly places: MemoryTabsGateway;
-	readonly essentials: MemoryEssentialsGateway;
 	readonly switchChat: (id: string) => void;
 	readonly holdElsewhere: (pageId: string) => void;
 }
 
 export function exactStudio({
-	essentials = KEPT_ESSENTIALS,
 	workspaces = boardChats(),
 	releaseChatId = RELEASE_CHAT,
-	pinnedChatIds = [],
 }: ExactStudioAsk = {}): ExactStudio {
 	const kept = workspaces.chats.chats().chats;
 	const titles = Object.fromEntries(kept.map((chat) => [chat.id, { title: chat.title ?? "New chat" }]));
 	const chatIds = kept.map((chat) => chat.id);
 	const places = new MemoryTabsGateway(
-		withWindowView(placedTabsOf(KEPT_TABS, chatIds, pinnedChatIds, titles), "browser"),
+		withWindowView(placedTabsOf(KEPT_TABS, chatIds, titles), "browser"),
 	);
-	const keptEssentials = new MemoryEssentialsGateway(essentials);
 	const boardPages = new BoardPagesGateway();
 	const studioApp = runtime()
 		.modules(
@@ -175,7 +138,6 @@ export function exactStudio({
 			appHostModule({
 				injects: {
 					studioWindow: new MemoryStudioWindowGateway(),
-					essentials: keptEssentials,
 					paneFlash: new NoPaneFlashGateway(),
 					coreChanges: new NoCoreChangesGateway(),
 				},
@@ -191,7 +153,6 @@ export function exactStudio({
 	return {
 		studioApp,
 		places,
-		essentials: keptEssentials,
 		switchChat: (id) => void studioApp.send(appHost.tabs.showTab, { id }),
 		holdElsewhere: (pageId) => boardPages.holdElsewhere(pageId),
 	};
@@ -291,7 +252,6 @@ function browserTab(id: string, pageId: string): SeededTabs["tabs"][number] {
 		app: "browser",
 		pageId,
 		label: null,
-		essentialId: null,
 		lastAddress: null,
 	};
 }

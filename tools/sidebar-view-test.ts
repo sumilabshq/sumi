@@ -1,12 +1,12 @@
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
-import { emptyMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
-import type { HostTab, HostTabsMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
-import { sidebarOf } from "../plugins/apps/data/places/shared/lib/rows/sidebar-rows.ts";
-import type { PageFacts, Screen } from "../plugins/apps/data/places/shared/schema/screen.schema.ts";
-import { selectedIdsOf } from "../plugins/apps/data/places/shared/lib/rows/tab-rows.ts";
-import { tabFactsOf } from "../plugins/apps/data/places/shared/lib/showing/tab-facts.ts";
-import type { PlacedSidebar, SidebarEntry } from "../plugins/apps/data/places/shared/schema/tab-rows.schema.ts";
+import { emptyMoment } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
+import type { HostTab, HostTabsMoment } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
+import { sidebarOf } from "../plugins/tab-strip/data/places/shared/lib/rows/sidebar-rows.ts";
+import type { PageFacts, Screen } from "../plugins/tab-strip/data/places/shared/schema/screen.schema.ts";
+import { selectedIdsOf } from "../plugins/tab-strip/data/places/shared/lib/rows/tab-rows.ts";
+import { tabFactsOf } from "../plugins/tab-strip/data/places/shared/lib/showing/tab-facts.ts";
+import type { PlacedSidebar, SidebarEntry } from "../plugins/tab-strip/data/places/shared/schema/tab-rows.schema.ts";
 
 let failed = 0;
 
@@ -37,11 +37,9 @@ function tabOf(id: string, app: HostTab["app"]): HostTab {
 		app,
 		pageId: app === "browser" ? id : null,
 		label: null,
-		essentialId: null,
 		lastAddress: null,
 		title: null,
 		mark: "none",
-		essentialWindow: null,
 	};
 }
 
@@ -83,7 +81,6 @@ function sidebarWith(moment: HostTabsMoment, selectedId: string | null): PlacedS
 	const selected = { ...moment, selectedId };
 	return sidebarOf({
 		moment: selected,
-		essentials: [],
 		pages: [pageOf("apart", true), pageOf("sub", false)],
 		highlightedIds: selectedIdsOf(selected, tabFactsOf(createScreenWithChats(selectedId === null ? [] : [selectedId]))),
 		elsewhere: [],

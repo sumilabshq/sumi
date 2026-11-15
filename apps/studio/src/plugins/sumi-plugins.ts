@@ -147,7 +147,7 @@ const INSTALLED_PLUGINS = [
 	controlMenu,
 	tabStrip,
 ];
-const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, agent, questions, tasks];
+const ALWAYS_ON_PLUGINS = [sumiHost, controlMenu, tabStrip, apps, commandMenu, chat, main, agent, questions, tasks];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [

@@ -36,6 +36,8 @@ export function spotOfTab(sidebar: Sidebar, tabId: string): TabSpot | null {
 	return placedTabsOf(sidebar).find((placed) => placed.id === tabId) ?? null;
 }
 
+export const OPEN_LIST = "workspace";
+
 export async function placeTabs(send: Send, tabIds: readonly string[], place: ListPlace): Promise<void> {
 	for (const id of tabIds) {
 		await send(appHost.tabs.placeTab, {

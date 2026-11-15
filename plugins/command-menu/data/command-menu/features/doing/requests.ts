@@ -1,4 +1,3 @@
-import { layout } from "@widgetarium/layout/contract";
 import { z } from "zod";
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
@@ -145,8 +144,6 @@ async function performOpening(
 			return send(appHost.tabs.showTab, { id: intent.id });
 		case "reopen-closed":
 			return send(appHost.closedTabs.reopenById, { tabId: intent.tabId });
-		case "show-essential":
-			return send(appHost.essentials.showEssential, { id: intent.id });
 		case "open-chat-elsewhere":
 			return send(workspaces.workspaces.openChatElsewhere, { workspaceId: intent.workspaceId, chatId: intent.chatId });
 		case "open-workspace":
@@ -163,8 +160,6 @@ async function performOpening(
 			return runMenuCommand(intent.command, send);
 		case "close-tab":
 			return send(appHost.tabActions.closeTab, { id: intent.id });
-		case "pin-chat":
-			return send(appHost.tabActions.pin, { id: intent.id, isPinned: intent.isPinned });
 		case "unsplit":
 			return send(appHost.splits.unsplit, { tabIds: intent.tabIds });
 		case "open-door":
@@ -206,12 +201,6 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 			await send(chatTabs.chatOpening.openNew, { title: null });
 			return;
 		case "new-tab":
-			return;
-		case "tabs-in-sidebar":
-			await send(layout.frameSides.placeTabs, { tabs: "sidebar" });
-			return;
-		case "tabs-in-header":
-			await send(layout.frameSides.placeTabs, { tabs: "header" });
 			return;
 		case "new-window":
 			await send(workspaces.workspaces.openWithoutWorkspace);

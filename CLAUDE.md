@@ -43,7 +43,7 @@ right, no other quality of the change counts. `docs/architecture/plugins.md#layo
 
 **CRITICAL — two kinds of session, never mixed.**
 
-- **Window session:** one studio window and what it holds: its tabs, lists, groups, splits and view. A window is a session from the moment it opens and gets an id then (`views[<window>].sessionId` in `places.json`). Closing the window, quitting or a crash stores it in `places.json` `sessions`, and its tabs leave the window. A start, and every new window, opens a new empty session. No window is special: `main` follows the same rule. Restoring a stored session has no UI yet. Owner: the places module (`plugins/apps/data/places`).
+- **Window session:** one studio window and what it holds: its tabs, lists, groups, splits and view. A window is a session from the moment it opens and gets an id then (`views[<window>].sessionId` in `places.json`). Closing the window, quitting or a crash stores it in `places.json` `sessions`, and its tabs leave the window. A start, and every new window, opens a new empty session. No window is special: `main` follows the same rule. Restoring a stored session has no UI yet. Owner: the places module (`plugins/tab-strip/data/places`).
 - **Chat session:** one conversation with an AI agent: turns, model, the agent's own session id. Owner: the assistant module (`plugins/ai/agent`). A chat is a record, not a tab: closing its tab or its window does not end the chat.
 
 In code and text, never write a bare "session": write "window session" or "chat session".
@@ -94,7 +94,8 @@ apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
 plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's services (backend, windows, shell, agents), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
-plugins/apps             FSL  @sumi/apps-plugin: API app(entry), its modules (plugins/apps/data/apps, @sumi/apps; plugins/apps/data/places, @widgetarium/places: tabs, windows and history, configured with each app's declared tab rules; plugins/apps/data/app-host, @widgetarium/app-host: a window's tabs, essentials, groups and splits, run in each window through windows.moduleOf) and the app tab page
+plugins/apps             FSL  @sumi/apps-plugin: API app(entry), its module (plugins/apps/data/apps, @sumi/apps), the app tab page, the tabs MCP tools (plugins/apps/data/tabs); hands each app's tab rules to tab-strip through tabStrip.app(placed)
+plugins/tab-strip        FSL  @sumi/tab-strip-plugin: API app(placed), the window's tabs, each a deep link, drawn in the title row; owns places (plugins/tab-strip/data/places, @widgetarium/places: tabs, windows and history, configured with the tab rules apps hands it) and app-host (plugins/tab-strip/data/app-host, @widgetarium/app-host: a window's tabs, groups and splits, run in each window through windows.moduleOf)
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, added through apps
 plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, added through apps, and its module (plugins/browser-page/data/web-page, @widgetarium/web-page) served to every frame through shell.frameModule
 plugins/command-menu     FSL  @sumi/command-menu-plugin: API door, page, rowSource; its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer

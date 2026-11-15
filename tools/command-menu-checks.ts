@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { filledWithShown } from "../plugins/command-menu/data/command-menu/features/opening/lib/shown-text.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer } from "../packages/shared/data-framework/src/index.ts";
-import { appHost as appHostModule } from "../plugins/apps/data/app-host/generated/module.ts";
-import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { appHost as appHostModule } from "../plugins/tab-strip/data/app-host/generated/module.ts";
+import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
@@ -21,8 +21,8 @@ import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
 import { placesOver, withWindowView } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { emptyPlacedTabs } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { emptyPlacedTabs } from "../plugins/tab-strip/data/places/shared/lib/tabs/kept-tabs.ts";
 
 const studio = runtime()
 	.modules(browser, layout, workspacesModule, appHostModule, PluginAppsModule, ...PLUGIN_WINDOW_MODULES)
@@ -363,7 +363,7 @@ async function results(ask: Omit<ResultsAsk, "pageId">): Promise<Results> {
 
 async function chatCount(): Promise<number> {
 	const list = ok(await studio.send(chatTabs.chatList.all));
-	return list.pinned.length + list.recents.length;
+	return list.recents.length;
 }
 
 function ok<T>(answer: Answer<T>): T {

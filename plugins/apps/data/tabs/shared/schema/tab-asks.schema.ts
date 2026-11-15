@@ -23,7 +23,6 @@ export type TabDuplicate = z.output<typeof TabDuplicateSchema>;
 export const TabUpdateSchema = z.strictObject({
 	tabId: z.string().min(1),
 	title: z.string().optional(),
-	place: z.enum(["workspace", "pinned"]).optional().describe("workspace (the Open list) or pinned."),
 	group: z.string().min(1).nullable().optional().describe("A group id, or null to take it out of its group."),
 	before: z.string().min(1).nullable().optional().describe("Id of the tab it should stand before; null for the end."),
 });
@@ -36,7 +35,6 @@ export const TabIdSchema = z.strictObject({
 
 export const PlacedTabSchema = z.object({
 	id: z.string(),
-	place: z.string(),
 	isShown: z.boolean(),
 });
 
@@ -46,7 +44,6 @@ export const TabNowSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	address: z.string().nullable(),
-	place: z.string(),
 	groupId: z.string().nullable(),
 });
 

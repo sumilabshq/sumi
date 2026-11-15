@@ -11,7 +11,7 @@ export type MenuAfter =
 			readonly isMenuKept: true;
 	  };
 
-const KEEPS_MENU: ReadonlySet<Intent["do"]> = new Set(["close-tab", "pin-chat"]);
+const KEEPS_MENU: ReadonlySet<Intent["do"]> = new Set(["close-tab"]);
 
 export function menuAfter(intent: Intent, was: KeptMenu): MenuAfter {
 	if (intent.do === "run" && intent.command === "new-tab") {

@@ -49,7 +49,6 @@ function workspacesOf(count: WorkspacesCount): readonly Workspace[] {
 	return count === "many" ? [...BOARD_WORKSPACES, ...MORE_WORKSPACES] : BOARD_WORKSPACES;
 }
 
-export const BOARD_PINNED: readonly string[] = ["weekly", "release"];
 
 export const BOARD_CHAT_IDS: readonly string[] = BOARD_CHATS.map((chat) => chat.id);
 

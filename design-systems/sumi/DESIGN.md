@@ -43,7 +43,7 @@ Everything else is fixed. The delight layers are drawn on the canvas's "Delight"
 | Role                                        | Step                                                                                                                                                                               |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `background`, `sidebar`                     | paper: the one surface; sidebars and panes are the same paper                                                                                                                      |
-| `card`, `group`, `muted`, `fill`, `field`   | soft: the one fill: code blocks, inline code, a selected row, a user's message, an essential tile                                                                                  |
+| `card`, `group`, `muted`, `fill`, `field`   | soft: the one fill: code blocks, inline code, a selected row, a user's message                                                                                                    |
 | `popover`, `raise`                          | paper with a 1px `border`, no shadow: the only floating thing                                                                                                                      |
 | `sidebar-accent`                            | selected: the shown tab, the chosen option                                                                                                                                         |
 | `accent`, `secondary`, `fill-hover`         | active: pressed                                                                                                                                                                    |
@@ -78,7 +78,6 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 ## Component Stylings
 
 - **Row** (sidebar, menu, list): 30px, no corner, a 16px solid icon, 10px gap. Hover and keyboard focus: one light fill. Pressed: a stronger fill. Selected: the soft fill and 500.
-- **Essentials**: a grid of filled square tiles, 46px, the app's solid icon in ink.
 - **Icons**: Sumi's own apps use solid drawn icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
 - **Code block**: filled with the soft step, no border, mono 13px, syntax in muted colours, copy and wrap icons at the right.
 - **Inline code**: the soft fill, mono 13px, square, padding 2px 5px.
@@ -103,7 +102,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 - A pane header has no line under it. The exception is an app with an inner divider that must meet one (the Git app).
 - A chat pane keeps one divider: above the input.
 - Spacing groups first, a hairline second, never a box around a pane's whole content; content that fills a pane goes edge to edge.
-- The shell is one left sidebar (essentials, Pinned, Recents with each chat's tabs nested under it, New tab, workspace switcher) and one or more panes.
+- The shell is one strip of tabs in the header (each a deep link, no pinned tabs, no essentials) over one or more panes; every app draws its own sidebar.
 
 ## Depth & Elevation
 
@@ -164,7 +163,7 @@ Imagery is domain content only: favicons, app icons, the user's own pictures. Fa
 ## Behaviour
 
 - The first response to any press or key is under 100ms.
-- One motion scale, one easing (`cubic-bezier(.2,.8,.2,1)`): hover 0ms in, 80ms out; press 80ms, a fill and a dip to 0.97 (Send to 0.9, an essential tile to 0.95); release 180ms; a tick or a new row 220ms.
+- One motion scale, one easing (`cubic-bezier(.2,.8,.2,1)`): hover 0ms in, 80ms out; press 80ms, a fill and a dip to 0.97 (Send to 0.9); release 180ms; a tick or a new row 220ms.
 - Clicking anywhere in the chat puts the caret in the composer, like a terminal.
 - Arrow keys and the mouse move one shared highlight in lists and menus; the last one used wins.
 - Menus grow out of their trigger and fold back into it (Cube grammar); a sidebar slides out over 180ms; nothing scales.

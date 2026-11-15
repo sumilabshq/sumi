@@ -24,7 +24,6 @@ export interface StudioLayoutProps {
 	readonly windowProviders: readonly ComponentType<WindowProviderProps>[];
 	readonly windowLayers: readonly WindowLayer[];
 	readonly studio: StudioHostPort;
-	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
 	readonly panel: ReactNode;
 }
@@ -39,7 +38,6 @@ export function StudioLayout({
 	windowProviders,
 	windowLayers,
 	studio,
-	left,
 	panes,
 	panel,
 }: StudioLayoutProps): ReactElement {
@@ -53,7 +51,6 @@ export function StudioLayout({
 							<StudioFrame
 								frame={frame}
 								chromeLeftPx={chromeLeftPx}
-								left={left}
 								panes={panes}
 								panel={panel}
 							/>

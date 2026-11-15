@@ -337,9 +337,6 @@
 		--sumi-tree: #bdbdbd;
 		--sumi-group-plain: rgba(21, 21, 19, 0.08);
 		--sumi-group-glass: transparent;
-		--sumi-essential: var(--sumi-soft);
-		--sumi-essential-hover: rgba(21, 21, 19, 0.12);
-		--sumi-essential-on: rgba(21, 21, 19, 0.16);
 		--sumi-accent: #a84a06;
 		--sumi-on-accent: #ffffff;
 		--sumi-accent-soft: rgba(168, 74, 6, 0.12);
@@ -488,9 +485,6 @@
 		--sumi-line-strong: #434240;
 		--sumi-tree: #484644;
 		--sumi-group-plain: rgba(233, 230, 222, 0.09);
-		--sumi-essential: var(--sumi-soft);
-		--sumi-essential-hover: rgba(233, 230, 222, 0.13);
-		--sumi-essential-on: rgba(233, 230, 222, 0.18);
 		--sumi-accent: #e6c36f;
 		--sumi-on-accent: #000000;
 		--sumi-accent-soft: rgba(230, 195, 111, 0.14);
@@ -14912,9 +14906,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:left-\[-100000px\] {
 		left: -100000px !important;
 	}
-	.cv\:isolate {
-		isolation: isolate !important;
-	}
 	.cv\:z-\[1\] {
 		z-index: 1 !important;
 	}
@@ -14936,15 +14927,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:-mx-\[calc\(\(var\(--wg-studio-edge\,6px\)_-_1px\)_\/_2\)\] {
 		margin-inline: calc(calc((var(--wg-studio-edge, 6px) - 1px) / 2) * -1) !important;
 	}
-	.cv\:mx-\(--sumi-side-pad\) {
-		margin-inline: var(--sumi-side-pad) !important;
-	}
-	.cv\:mx-0 {
-		margin-inline: 0px !important;
-	}
-	.cv\:mx-0\.5 {
-		margin-inline: calc(var(--cv-spacing) * 0.5) !important;
-	}
 	.cv\:mx-1\.5 {
 		margin-inline: calc(var(--cv-spacing) * 1.5) !important;
 	}
@@ -14957,9 +14939,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:my-1 {
 		margin-block: var(--cv-spacing) !important;
 	}
-	.cv\:ms-auto {
-		margin-inline-start: auto !important;
-	}
 	.cv\:-me-1\.5 {
 		margin-inline-end: calc(var(--cv-spacing) * -1.5) !important;
 	}
@@ -14968,9 +14947,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:mt-2 {
 		margin-top: calc(var(--cv-spacing) * 2) !important;
-	}
-	.cv\:mb-2 {
-		margin-bottom: calc(var(--cv-spacing) * 2) !important;
 	}
 	.cv\:box-border {
 		box-sizing: border-box !important;
@@ -14998,10 +14974,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		width: calc(var(--cv-spacing) * 1.5) !important;
 		height: calc(var(--cv-spacing) * 1.5) !important;
 	}
-	.cv\:size-2 {
-		width: calc(var(--cv-spacing) * 2) !important;
-		height: calc(var(--cv-spacing) * 2) !important;
-	}
 	.cv\:size-2\.5 {
 		width: calc(var(--cv-spacing) * 2.5) !important;
 		height: calc(var(--cv-spacing) * 2.5) !important;
@@ -15009,14 +14981,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:size-3 {
 		width: calc(var(--cv-spacing) * 3) !important;
 		height: calc(var(--cv-spacing) * 3) !important;
-	}
-	.cv\:size-4 {
-		width: calc(var(--cv-spacing) * 4) !important;
-		height: calc(var(--cv-spacing) * 4) !important;
-	}
-	.cv\:size-5 {
-		width: calc(var(--cv-spacing) * 5) !important;
-		height: calc(var(--cv-spacing) * 5) !important;
 	}
 	.cv\:size-6 {
 		width: calc(var(--cv-spacing) * 6) !important;
@@ -15029,10 +14993,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:size-9 {
 		width: calc(var(--cv-spacing) * 9) !important;
 		height: calc(var(--cv-spacing) * 9) !important;
-	}
-	.cv\:size-\[18px\] {
-		width: 18px !important;
-		height: 18px !important;
 	}
 	.cv\:size-full {
 		width: 100% !important;
@@ -15050,9 +15010,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:h-\[30px\] {
 		height: 30px !important;
 	}
-	.cv\:h-\[46px\] {
-		height: 46px !important;
-	}
 	.cv\:h-\[540px\] {
 		height: 540px !important;
 	}
@@ -15067,9 +15024,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:max-h-\[40\%\] {
 		max-height: 40% !important;
-	}
-	.cv\:min-h-\(--sumi-h-row\) {
-		min-height: var(--sumi-h-row) !important;
 	}
 	.cv\:min-h-0 {
 		min-height: 0px !important;
@@ -15088,9 +15042,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:w-\[248px\] {
 		width: 248px !important;
-	}
-	.cv\:w-\[250px\] {
-		width: 250px !important;
 	}
 	.cv\:w-\[960px\] {
 		width: 960px !important;
@@ -15130,9 +15081,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:min-w-0 {
 		min-width: 0px !important;
-	}
-	.cv\:min-w-\[180px\] {
-		min-width: 180px !important;
 	}
 	.cv\:flex-1 {
 		flex: 1 !important;
@@ -15180,12 +15128,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:grid-cols-\[280px_auto_280px\] {
 		grid-template-columns: 280px auto 280px !important;
-	}
-	.cv\:grid-cols-\[repeat\(auto-fit\,minmax\(calc\(\(100\%_-_18px\)\/4\)\,1fr\)\)\] {
-		grid-template-columns: repeat(auto-fit, minmax(calc((100% - 18px) / 4), 1fr)) !important;
-	}
-	.cv\:grid-rows-\[0fr\] {
-		grid-template-rows: 0fr !important;
 	}
 	.cv\:flex-col {
 		flex-direction: column !important;
@@ -15256,9 +15198,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:gap-14 {
 		gap: calc(var(--cv-spacing) * 14) !important;
 	}
-	.cv\:gap-\[10px\] {
-		gap: 10px !important;
-	}
 	.cv\:gap-\[13px\] {
 		gap: 13px !important;
 	}
@@ -15270,9 +15209,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:gap-\[var\(--wg-kit-plate-pad\,6px\)\] {
 		gap: var(--wg-kit-plate-pad, 6px) !important;
-	}
-	.cv\:gap-px {
-		gap: 1px !important;
 	}
 	.cv\:self-start {
 		align-self: flex-start !important;
@@ -15294,14 +15230,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:overflow-x-hidden {
 		overflow-x: hidden !important;
 	}
-	.cv\:overflow-x-visible {
-		overflow-x: visible !important;
-	}
 	.cv\:overflow-y-auto {
 		overflow-y: auto !important;
-	}
-	.cv\:overflow-y-clip {
-		overflow-y: clip !important;
 	}
 	.cv\:rounded-none {
 		border-radius: 0 !important;
@@ -15321,29 +15251,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:border-\[var\(--wg-kit-error-ink\)\] {
 		border-color: var(--wg-kit-error-ink) !important;
 	}
-	.cv\:bg-\(--sumi-accent\) {
-		background-color: var(--sumi-accent) !important;
-	}
-	.cv\:bg-\(--sumi-active\) {
-		background-color: var(--sumi-active) !important;
-	}
-	.cv\:bg-\(--sumi-essential\) {
-		background-color: var(--sumi-essential) !important;
-	}
-	.cv\:bg-\(--sumi-line\) {
-		background-color: var(--sumi-line) !important;
-	}
-	.cv\:bg-\(--sumi-overlay\) {
-		background-color: var(--sumi-overlay) !important;
-	}
 	.cv\:bg-\(--sumi-soft\) {
 		background-color: var(--sumi-soft) !important;
 	}
 	.cv\:bg-\(--sumi-text-2\) {
 		background-color: var(--sumi-text-2) !important;
-	}
-	.cv\:bg-\(--swatch\,var\(--sumi-active\)\) {
-		background-color: var(--swatch, var(--sumi-active)) !important;
 	}
 	.cv\:bg-\[color-mix\(in_srgb\,var\(--success\)_14\%\,var\(--background\)\)\] {
 		background-color: var(--success) !important;
@@ -15473,9 +15385,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\[mask-repeat\:no-repeat\] {
 		mask-repeat: no-repeat !important;
 	}
-	.cv\:fill-\(--sumi-line-strong\) {
-		fill: var(--sumi-line-strong) !important;
-	}
 	.cv\:stroke-\[var\(--wg-kit-text-muted\)\] {
 		stroke: var(--wg-kit-text-muted) !important;
 	}
@@ -15518,15 +15427,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:p-\[var\(--wg-kit-plate-pad\,6px\)\] {
 		padding: var(--wg-kit-plate-pad, 6px) !important;
 	}
-	.cv\:px-\(--sumi-side-pad\) {
-		padding-inline: var(--sumi-side-pad) !important;
-	}
-	.cv\:px-0 {
-		padding-inline: 0px !important;
-	}
-	.cv\:px-1 {
-		padding-inline: var(--cv-spacing) !important;
-	}
 	.cv\:px-1\.5 {
 		padding-inline: calc(var(--cv-spacing) * 1.5) !important;
 	}
@@ -15550,9 +15450,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:px-\[var\(--sumi-sp-3\)\] {
 		padding-inline: var(--sumi-sp-3) !important;
-	}
-	.cv\:py-0 {
-		padding-block: 0px !important;
 	}
 	.cv\:py-0\.5 {
 		padding-block: calc(var(--cv-spacing) * 0.5) !important;
@@ -15581,9 +15478,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:ps-4 {
 		padding-inline-start: calc(var(--cv-spacing) * 4) !important;
 	}
-	.cv\:ps-\[26px\] {
-		padding-inline-start: 26px !important;
-	}
 	.cv\:ps-\[31px\] {
 		padding-inline-start: 31px !important;
 	}
@@ -15605,17 +15499,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:pb-1 {
 		padding-bottom: var(--cv-spacing) !important;
 	}
-	.cv\:pb-2 {
-		padding-bottom: calc(var(--cv-spacing) * 2) !important;
-	}
 	.cv\:text-center {
 		text-align: center !important;
-	}
-	.cv\:text-start {
-		text-align: start !important;
-	}
-	.cv\:font-\[family-name\:var\(--sumi-font-ui\)\] {
-		font-family: var(--sumi-font-ui) !important;
 	}
 	.cv\:font-\[inherit\] {
 		font-family: inherit !important;
@@ -15625,9 +15510,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:text-\[11px\] {
 		font-size: 11px !important;
-	}
-	.cv\:text-\[12px\] {
-		font-size: 12px !important;
 	}
 	.cv\:text-\[13px\] {
 		font-size: 13px !important;
@@ -15665,17 +15547,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-xs {
 		font-size: var(--type-xs) !important;
 	}
-	.cv\:leading-4 {
-		--tw-leading: calc(var(--cv-spacing) * 4) !important;
-		line-height: calc(var(--cv-spacing) * 4) !important;
-	}
 	.cv\:leading-\[1\.4\] {
 		--tw-leading: 1.4 !important;
 		line-height: 1.4 !important;
-	}
-	.cv\:leading-\[1\.5\] {
-		--tw-leading: 1.5 !important;
-		line-height: 1.5 !important;
 	}
 	.cv\:leading-\[1\.35\] {
 		--tw-leading: 1.35 !important;
@@ -15709,35 +15583,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-font-weight: var(--font-semibold, 600) !important;
 		font-weight: var(--font-semibold, 600) !important;
 	}
-	.cv\:text-ellipsis {
-		text-overflow: ellipsis !important;
-	}
 	.cv\:whitespace-nowrap {
 		white-space: nowrap !important;
 	}
 	.cv\:whitespace-pre-wrap {
 		white-space: pre-wrap !important;
 	}
-	.cv\:\[color\:var\(--group-hue\,var\(--sumi-text-2\)\)\] {
-		color: var(--group-hue, var(--sumi-text-2)) !important;
-	}
 	.cv\:text-\(--sumi-plate\) {
 		color: var(--sumi-plate) !important;
 	}
 	.cv\:text-\(--sumi-text\) {
 		color: var(--sumi-text) !important;
-	}
-	.cv\:text-\(--sumi-text-2\) {
-		color: var(--sumi-text-2) !important;
-	}
-	.cv\:text-\(--sumi-text-3\) {
-		color: var(--sumi-text-3) !important;
-	}
-	.cv\:text-\[color-mix\(in_srgb\,var\(--sumi-text\)_38\%\,var\(--sumi-frame\)\)\] {
-		color: var(--sumi-text) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			color: color-mix(in srgb, var(--sumi-text) 38%, var(--sumi-frame)) !important;
-		}
 	}
 	.cv\:text-\[var\(--sumi-text\)\] {
 		color: var(--sumi-text) !important;
@@ -15747,9 +15603,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:text-\[var\(--wg-kit-error-ink\)\] {
 		color: var(--wg-kit-error-ink) !important;
-	}
-	.cv\:text-inherit {
-		color: inherit !important;
 	}
 	.cv\:text-ink {
 		color: var(--foreground) !important;
@@ -15766,17 +15619,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-success {
 		color: var(--success) !important;
 	}
-	.cv\:not-italic {
-		font-style: normal !important;
-	}
 	.cv\:tabular-nums {
 		--tw-numeric-spacing: tabular-nums !important;
 		font-variant-numeric: var(--tw-ordinal,) var(--tw-slashed-zero,) var(--tw-numeric-figure,)
 			var(--tw-numeric-spacing,) var(--tw-numeric-fraction,) !important;
-	}
-	.cv\:antialiased {
-		-webkit-font-smoothing: antialiased !important;
-		-moz-osx-font-smoothing: grayscale !important;
 	}
 	.cv\:caret-\(--sumi-accent\) {
 		caret-color: var(--sumi-accent) !important;
@@ -15827,12 +15673,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
-	.cv\:\[box-shadow\:none\] {
-		box-shadow: none !important;
-	}
-	.cv\:\[box-shadow\:var\(--sumi-shadow-pop\)\] {
-		box-shadow: var(--sumi-shadow-pop) !important;
-	}
 	.cv\:ring-brand {
 		--tw-ring-color: var(--brand) !important;
 	}
@@ -15860,16 +15700,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,)
 			var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,) !important;
 	}
-	.cv\:\[backdrop-filter\:var\(--sumi-blur-pop\)\] {
-		backdrop-filter: var(--sumi-blur-pop) !important;
-	}
 	.cv\:transition-\[background-color\,color\] {
 		transition-property: background-color, color !important;
-		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
-		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
-	}
-	.cv\:transition-\[background-color\,opacity\] {
-		transition-property: background-color, opacity !important;
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
@@ -15910,19 +15742,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
-	.cv\:transition-transform {
-		transition-property: transform, translate, scale, rotate !important;
-		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
-		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
-	}
-	.cv\:duration-\(--sumi-dur-base\) {
-		--tw-duration: var(--sumi-dur-base) !important;
-		transition-duration: var(--sumi-dur-base) !important;
-	}
-	.cv\:duration-\(--sumi-dur-hover\) {
-		--tw-duration: var(--sumi-dur-hover) !important;
-		transition-duration: var(--sumi-dur-hover) !important;
-	}
 	.cv\:duration-150 {
 		--tw-duration: 150ms !important;
 		transition-duration: 150ms !important;
@@ -15934,14 +15753,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:duration-\[var\(--sumi-dur-fast\)\] {
 		--tw-duration: var(--sumi-dur-fast) !important;
 		transition-duration: var(--sumi-dur-fast) !important;
-	}
-	.cv\:ease-\(--sumi-ease\) {
-		--tw-ease: var(--sumi-ease) !important;
-		transition-timing-function: var(--sumi-ease) !important;
-	}
-	.cv\:ease-\(--sumi-ease-out\) {
-		--tw-ease: var(--sumi-ease-out) !important;
-		transition-timing-function: var(--sumi-ease-out) !important;
 	}
 	.cv\:ease-spring {
 		--tw-ease: var(--wg-spring) !important;
@@ -15958,43 +15769,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-outline-style: none !important;
 		outline-style: none !important;
 	}
-	.cv\:select-none {
-		-webkit-user-select: none !important;
-		user-select: none !important;
-	}
 	.cv\:select-text {
 		-webkit-user-select: text !important;
 		user-select: text !important;
 	}
 	.cv\:\[--no-tooltip\:true\] {
 		--no-tooltip: true !important;
-	}
-	.cv\:\[--split-ring\:var\(--sumi-plate\)\] {
-		--split-ring: var(--sumi-plate) !important;
-	}
-	.cv\:\[--swatch\:var\(--sumi-hue-amber\)\] {
-		--swatch: var(--sumi-hue-amber) !important;
-	}
-	.cv\:\[--swatch\:var\(--sumi-hue-blue\)\] {
-		--swatch: var(--sumi-hue-blue) !important;
-	}
-	.cv\:\[--swatch\:var\(--sumi-hue-green\)\] {
-		--swatch: var(--sumi-hue-green) !important;
-	}
-	.cv\:\[--swatch\:var\(--sumi-hue-orange\)\] {
-		--swatch: var(--sumi-hue-orange) !important;
-	}
-	.cv\:\[--swatch\:var\(--sumi-hue-pink\)\] {
-		--swatch: var(--sumi-hue-pink) !important;
-	}
-	.cv\:\[--swatch\:var\(--sumi-hue-purple\)\] {
-		--swatch: var(--sumi-hue-purple) !important;
-	}
-	.cv\:\[--swatch\:var\(--sumi-hue-red\)\] {
-		--swatch: var(--sumi-hue-red) !important;
-	}
-	.cv\:\[--swatch\:var\(--sumi-hue-teal\)\] {
-		--swatch: var(--sumi-hue-teal) !important;
 	}
 	.cv\:\[--wg-board-pad\:0px\] {
 		--wg-board-pad: 0px !important;
@@ -16011,52 +15791,13 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\[--wg-root-head\:0px\] {
 		--wg-root-head: 0px !important;
 	}
-	.cv\:\[-webkit-backdrop-filter\:var\(--sumi-blur-pop\)\] {
-		-webkit-backdrop-filter: var(--sumi-blur-pop) !important;
-	}
-	.cv\:\[font\:inherit\] {
-		font: inherit !important;
-	}
-	.cv\:\[grid-area\:1\/1\] {
-		grid-area: 1/1 !important;
-	}
 	.cv\:\[stroke-dasharray\:4_4\] {
 		stroke-dasharray: 4 4 !important;
 	}
-	.cv\:\[transition\:grid-template-rows_var\(--sumi-dur-slow\)_var\(--sumi-ease\)\] {
-		transition: grid-template-rows var(--sumi-dur-slow) var(--sumi-ease) !important;
-	}
-	.cv\:\[transition\:opacity_var\(--sumi-dur-hover\)_var\(--sumi-ease\)\,transform_var\(--wg-press\)_var\(--wg-ease\)\] {
-		transition:
-			opacity var(--sumi-dur-hover) var(--sumi-ease),
-			transform var(--wg-press) var(--wg-ease) !important;
-	}
-	.cv\:not-data-\[hue\]\:\[--group-hue\:initial\]:not([data-hue]) {
-		--group-hue: initial !important;
-	}
 	@media (hover: hover) {
-		.cv\:group-hover\/row\:hidden:is(:where(.cv\:group\/row):hover *) {
-			display: none !important;
-		}
-		.cv\:group-hover\/row\:inline-flex:is(:where(.cv\:group\/row):hover *) {
-			display: inline-flex !important;
-		}
-		.cv\:group-hover\/row\:opacity-45:is(:where(.cv\:group\/row):hover *) {
-			opacity: 45% !important;
-		}
 		.cv\:group-hover\/row\:opacity-100:is(:where(.cv\:group\/row):hover *) {
 			opacity: 100% !important;
 		}
-		.cv\:group-hover\/row\:\[transition\:opacity_0ms\,transform_var\(--wg-press\)_var\(--wg-ease\)\]:is(
-			:where(.cv\:group\/row):hover *
-		) {
-			transition:
-				opacity 0ms,
-				transform var(--wg-press) var(--wg-ease) !important;
-		}
-	}
-	.cv\:group-focus-visible\/row\:opacity-100:is(:where(.cv\:group\/row):focus-visible *) {
-		opacity: 100% !important;
 	}
 	.cv\:group-data-\[dragging\]\/tree\:overflow-visible:is(:where(.cv\:group\/tree)[data-dragging] *) {
 		overflow: visible !important;
@@ -16066,15 +15807,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
-	.cv\:group-data-\[hue\]\/card\:text-\(--group-hue\):is(:where(.cv\:group\/card)[data-hue] *) {
-		color: var(--group-hue) !important;
-	}
-	.cv\:group-data-\[shown\]\/row\:inline-flex:is(:where(.cv\:group\/row)[data-shown] *) {
-		display: inline-flex !important;
-	}
-	.cv\:group-data-\[shown\]\/row\:opacity-45:is(:where(.cv\:group\/row)[data-shown] *) {
-		opacity: 45% !important;
-	}
 	.cv\:before\:absolute::before {
 		content: var(--tw-content);
 		position: absolute !important;
@@ -16083,25 +15815,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		content: var(--tw-content);
 		inset-block: 0px !important;
 	}
-	.cv\:before\:right-0::before {
-		content: var(--tw-content);
-		right: 0px !important;
-	}
-	.cv\:before\:left-\[-100vw\]::before {
-		content: var(--tw-content);
-		left: -100vw !important;
-	}
 	.cv\:before\:left-\[calc\(\(var\(--wg-studio-edge\,6px\)_-_1px\)_\/_2\)\]::before {
 		content: var(--tw-content);
 		left: calc((var(--wg-studio-edge, 6px) - 1px) / 2) !important;
-	}
-	.cv\:before\:-z-10::before {
-		content: var(--tw-content);
-		z-index: calc(10 * -1) !important;
-	}
-	.cv\:before\:hidden::before {
-		content: var(--tw-content);
-		display: none !important;
 	}
 	.cv\:before\:w-px::before {
 		content: var(--tw-content);
@@ -16111,33 +15827,13 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		content: var(--tw-content);
 		background-color: var(--group-line) !important;
 	}
-	.cv\:before\:transition-\[background-color\]::before {
-		content: var(--tw-content);
-		transition-property: background-color !important;
-		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
-		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
-	}
-	.cv\:before\:duration-\(--sumi-dur-hover\)::before {
-		content: var(--tw-content);
-		--tw-duration: var(--sumi-dur-hover) !important;
-		transition-duration: var(--sumi-dur-hover) !important;
-	}
 	.cv\:odd\:-rotate-1:nth-child(odd) {
 		rotate: calc(1deg * -1) !important;
 	}
 	.cv\:even\:rotate-1:nth-child(even) {
 		rotate: 1deg !important;
 	}
-	.cv\:empty\:m-0:empty {
-		margin: 0px !important;
-	}
 	@media (hover: hover) {
-		.cv\:hover\:bg-\(--sumi-essential-hover\):hover {
-			background-color: var(--sumi-essential-hover) !important;
-		}
-		.cv\:hover\:bg-\(--sumi-hover\):hover {
-			background-color: var(--sumi-hover) !important;
-		}
 		.cv\:hover\:bg-\[var\(--sumi-hover\)\]:hover {
 			background-color: var(--sumi-hover) !important;
 		}
@@ -16171,54 +15867,19 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 				background-color: color-mix(in oklab, var(--raise) 70%, transparent) !important;
 			}
 		}
-		.cv\:hover\:text-\(--sumi-text\):hover {
-			color: var(--sumi-text) !important;
-		}
 		.cv\:hover\:text-ink:hover {
 			color: var(--foreground) !important;
-		}
-		.cv\:hover\:\!opacity-100:hover {
-			opacity: 100% !important;
 		}
 		.cv\:hover\:duration-0:hover {
 			--tw-duration: 0ms !important;
 			transition-duration: 0ms !important;
 		}
-		.cv\:hover\:\[--split-ring\:color-mix\(in_srgb\,var\(--sumi-plate\)\,var\(--sumi-text\)_5\%\)\]:hover {
-			--split-ring: var(--sumi-plate) !important;
-		}
-		@supports (color: color-mix(in lab, red, red)) {
-			.cv\:hover\:\[--split-ring\:color-mix\(in_srgb\,var\(--sumi-plate\)\,var\(--sumi-text\)_5\%\)\]:hover {
-				--split-ring: color-mix(in srgb, var(--sumi-plate), var(--sumi-text) 5%) !important;
-			}
-		}
-		.cv\:hover\:before\:bg-\(--sumi-hover\):hover::before {
-			content: var(--tw-content);
-			background-color: var(--sumi-hover) !important;
-		}
-		.cv\:hover\:before\:duration-0:hover::before {
-			content: var(--tw-content);
-			--tw-duration: 0ms !important;
-			transition-duration: 0ms !important;
-		}
-	}
-	.cv\:focus\:bg-\(--sumi-hover\):focus {
-		background-color: var(--sumi-hover) !important;
-	}
-	.cv\:focus-visible\:inline-flex:focus-visible {
-		display: inline-flex !important;
 	}
 	.cv\:focus-visible\:bg-fill:focus-visible {
 		background-color: var(--fill) !important;
 	}
-	.cv\:focus-visible\:text-\(--sumi-text\):focus-visible {
-		color: var(--sumi-text) !important;
-	}
 	.cv\:focus-visible\:opacity-100:focus-visible {
 		opacity: 100% !important;
-	}
-	.cv\:focus-visible\:\[box-shadow\:inset_0_0_0_1\.5px_var\(--sumi-focus-ring\)\]:focus-visible {
-		box-shadow: inset 0 0 0 1.5px var(--sumi-focus-ring) !important;
 	}
 	.cv\:focus-visible\:outline-2:focus-visible {
 		outline-style: var(--tw-outline-style) !important;
@@ -16234,16 +15895,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-outline-style: none !important;
 		outline-style: none !important;
 	}
-	.cv\:focus-visible\:before\:bg-\(--sumi-hover\):focus-visible::before {
-		content: var(--tw-content);
-		background-color: var(--sumi-hover) !important;
-	}
 	.cv\:active\:scale-\[0\.96\]:active {
 		scale: 0.96 !important;
-	}
-	.cv\:active\:before\:bg-\(--sumi-active\):active::before {
-		content: var(--tw-content);
-		background-color: var(--sumi-active) !important;
 	}
 	.cv\:disabled\:cursor-default:disabled {
 		cursor: default !important;
@@ -16251,56 +15904,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:disabled\:opacity-50:disabled {
 		opacity: 50% !important;
 	}
-	:where([data-tabs-arranging]) .cv\:in-data-\[tabs-arranging\]\:transition-none {
-		transition-property: none !important;
-	}
 	.cv\:aria-disabled\:cursor-default[aria-disabled="true"] {
 		cursor: default !important;
 	}
 	.cv\:aria-disabled\:opacity-50[aria-disabled="true"] {
 		opacity: 50% !important;
 	}
-	.cv\:data-\[disabled\]\:cursor-default[data-disabled] {
-		cursor: default !important;
-	}
-	.cv\:data-\[disabled\]\:bg-transparent[data-disabled] {
-		background-color: transparent !important;
-	}
-	.cv\:data-\[disabled\]\:text-\(--sumi-text-3\)[data-disabled] {
-		color: var(--sumi-text-3) !important;
-	}
 	.cv\:data-\[dragging\]\:cursor-grabbing[data-dragging] {
 		cursor: grabbing !important;
-	}
-	.cv\:data-\[folded\]\:-rotate-90[data-folded] {
-		rotate: calc(90deg * -1) !important;
-	}
-	.cv\:data-\[folded\]\:opacity-100[data-folded] {
-		opacity: 100% !important;
-	}
-	.cv\:data-\[hue\=amber\]\:\[--group-hue\:var\(--sumi-hue-amber\)\][data-hue="amber"] {
-		--group-hue: var(--sumi-hue-amber) !important;
-	}
-	.cv\:data-\[hue\=blue\]\:\[--group-hue\:var\(--sumi-hue-blue\)\][data-hue="blue"] {
-		--group-hue: var(--sumi-hue-blue) !important;
-	}
-	.cv\:data-\[hue\=green\]\:\[--group-hue\:var\(--sumi-hue-green\)\][data-hue="green"] {
-		--group-hue: var(--sumi-hue-green) !important;
-	}
-	.cv\:data-\[hue\=orange\]\:\[--group-hue\:var\(--sumi-hue-orange\)\][data-hue="orange"] {
-		--group-hue: var(--sumi-hue-orange) !important;
-	}
-	.cv\:data-\[hue\=pink\]\:\[--group-hue\:var\(--sumi-hue-pink\)\][data-hue="pink"] {
-		--group-hue: var(--sumi-hue-pink) !important;
-	}
-	.cv\:data-\[hue\=purple\]\:\[--group-hue\:var\(--sumi-hue-purple\)\][data-hue="purple"] {
-		--group-hue: var(--sumi-hue-purple) !important;
-	}
-	.cv\:data-\[hue\=red\]\:\[--group-hue\:var\(--sumi-hue-red\)\][data-hue="red"] {
-		--group-hue: var(--sumi-hue-red) !important;
-	}
-	.cv\:data-\[hue\=teal\]\:\[--group-hue\:var\(--sumi-hue-teal\)\][data-hue="teal"] {
-		--group-hue: var(--sumi-hue-teal) !important;
 	}
 	.cv\:data-\[kind\=widget\]\:cursor-grab[data-kind="widget"] {
 		cursor: grab !important;
@@ -16323,15 +15934,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:data-\[lifted\]\:transition-none[data-lifted] {
 		transition-property: none !important;
 	}
-	.cv\:data-\[marked\]\:fill-\(--sumi-text\)[data-marked] {
-		fill: var(--sumi-text) !important;
-	}
-	.cv\:data-\[open\]\:grid-rows-\[1fr\][data-open] {
-		grid-template-rows: 1fr !important;
-	}
-	.cv\:data-\[open\]\:opacity-100[data-open] {
-		opacity: 100% !important;
-	}
 	.cv\:data-\[picked\]\:bg-group[data-picked] {
 		background-color: var(--group) !important;
 	}
@@ -16342,26 +15944,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:data-\[quiet\]\:text-muted-foreground[data-quiet] {
 		color: var(--muted-foreground) !important;
 	}
-	.cv\:data-\[shown\]\:bg-\(--sumi-essential-on\)[data-shown] {
-		background-color: var(--sumi-essential-on) !important;
-	}
-	.cv\:data-\[shown\]\:font-medium[data-shown] {
-		--tw-font-weight: var(--font-medium, 500) !important;
-		font-weight: var(--font-medium, 500) !important;
-	}
-	.cv\:data-\[shown\]\:text-\(--sumi-text\)[data-shown] {
-		color: var(--sumi-text) !important;
-	}
-	.cv\:data-\[shown\]\:before\:bg-\(--sumi-selected\)[data-shown]::before {
-		content: var(--tw-content);
-		background-color: var(--sumi-selected) !important;
-	}
-	@media (hover: hover) {
-		.cv\:data-\[shown\]\:hover\:before\:bg-\(--sumi-selected\)[data-shown]:hover::before {
-			content: var(--tw-content);
-			background-color: var(--sumi-selected) !important;
-		}
-	}
 	.cv\:data-\[state\=closed\]\:animate-canvas-fold-shut[data-state="closed"] {
 		animation: var(--cv-animate-canvas-fold-shut) !important;
 	}
@@ -16370,9 +15952,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:data-\[state\=open\]\:animate-canvas-fold-open[data-state="open"] {
 		animation: var(--cv-animate-canvas-fold-open) !important;
-	}
-	.cv\:data-\[state\=open\]\:bg-\(--sumi-hover\)[data-state="open"] {
-		background-color: var(--sumi-hover) !important;
 	}
 	@media (prefers-reduced-motion: no-preference) {
 		.cv\:motion-safe\:animate-canvas-fade-in {
@@ -16474,24 +16053,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\[\&_svg\]\:text-\[var\(--sumi-text-3\)\] svg {
 		color: var(--sumi-text-3) !important;
 	}
-	.cv\:\[\&\+\&\]\:\[filter\:drop-shadow\(-1\.5px_0_0_var\(--split-ring\)\)\]
-		+ .cv\:\[\&\+\&\]\:\[filter\:drop-shadow\(-1\.5px_0_0_var\(--split-ring\)\)\] {
-		filter: drop-shadow(-1.5px 0 0 var(--split-ring)) !important;
-	}
-	:is(.cv\:\[\&\,\&_\*\]\:box-border),
-	.cv\:\[\&\,\&_\*\]\:box-border * {
-		box-sizing: border-box !important;
-	}
-	.cv\:\[\&\>\*\+\*\]\:-ms-1 > * + * {
-		margin-inline-start: calc(var(--cv-spacing) * -1) !important;
-	}
-	.cv\:\[\&\>\.wg-kit-menu-chevron\]\:size-3 > .wg-kit-menu-chevron {
-		width: calc(var(--cv-spacing) * 3) !important;
-		height: calc(var(--cv-spacing) * 3) !important;
-	}
-	.cv\:\[\&\>\.wg-kit-pop-inner\]\:p-0 > .wg-kit-pop-inner {
-		padding: 0px !important;
-	}
 	.cv\:\[\&\>\.wg-page\]\:relative > .wg-page {
 		position: relative !important;
 	}
@@ -16512,15 +16073,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:\[\&\>\.wg-page\>\.wg-root\]\:flex-\[1_0_auto\] > .wg-page > .wg-root {
 		flex: 1 0 auto !important;
-	}
-	.cv\:\[\&\>svg\]\:mx-px > svg {
-		margin-inline: 1px !important;
-	}
-	.cv\:\[\&\>svg\]\:text-\(--sumi-text-2\) > svg {
-		color: var(--sumi-text-2) !important;
-	}
-	.cv\:data-\[disabled\]\:\[\&\>svg\]\:text-\(--sumi-text-3\)[data-disabled] > svg {
-		color: var(--sumi-text-3) !important;
 	}
 }
 @property --scroll-fade-t {
@@ -17364,25 +16916,15 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-ws-drop-line[hidden] {
 	display: none;
 }
-@property --wg-shell-left-dragged {
-	syntax: "*";
-	inherits: false;
-}
 @property --wg-shell-chat-dragged {
 	syntax: "*";
 	inherits: false;
 }
 .wg-studio.wg-shell {
-	--wg-shell-left-w: max(var(--sumi-sidebar-min), var(--wg-shell-left, var(--sumi-chats-w)));
-	--wg-shell-float-pad: var(--sumi-sp-4);
 	--wg-shell-slide: var(--sumi-dur-slow) var(--sumi-ease-out);
-	--wg-shell-toggle-left: max(
-		calc(var(--sumi-gap) + var(--sumi-sp-4)),
-		calc(var(--wg-shell-chrome-left, 0px) + var(--sumi-sp-3) + var(--sumi-sp-4))
-	);
 	position: relative;
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	align-items: stretch;
 	box-sizing: border-box;
 	padding: var(--sumi-gap);
@@ -17400,130 +16942,13 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 :is(.wg-studio, .wg-kit-portal-layer.is-studio) ::selection {
 	background: var(--sumi-accent-soft);
 }
-.wg-shell-left {
-	position: relative;
-	z-index: 4;
-	flex: 0 1 auto;
-	box-sizing: border-box;
-	width: var(--wg-shell-left-dragged, var(--wg-shell-left-w));
-	min-width: var(--sumi-sidebar-min);
-	min-height: 0;
-}
-.wg-shell-left:not([data-state="docked"]) {
-	width: 0;
-	min-width: 0;
-}
-.wg-shell-side {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	z-index: 3;
-	display: flex;
-	flex-direction: column;
-	box-sizing: border-box;
-	min-height: 0;
-	overflow: hidden;
-	border-radius: 0;
-	transition:
-		transform var(--wg-shell-slide),
-		box-shadow var(--sumi-dur-base) var(--sumi-ease),
-		background-color var(--sumi-dur-base) var(--sumi-ease);
-}
-.wg-shell-side[data-shell-side="left"] {
-	left: 0;
-	width: max(var(--sumi-sidebar-min), var(--wg-shell-left-dragged, var(--wg-shell-left-w)));
-}
-.wg-shell-left[data-state="docked"] > .wg-shell-side {
-	min-width: 100%;
-}
-[data-state="docked"] > .wg-shell-side {
-	background-color: var(--sumi-frame);
-}
-[data-state="peeking"] > .wg-shell-side {
-	padding: 0 var(--wg-shell-float-pad) var(--wg-shell-float-pad);
-	background-color: var(--sumi-frame);
-	box-shadow: var(--sumi-shadow-pop);
-	transition:
-		transform var(--sumi-dur-fast) var(--sumi-ease-out),
-		box-shadow var(--sumi-dur-fast) var(--sumi-ease),
-		background-color var(--sumi-dur-fast) var(--sumi-ease);
-}
-.wg-shell-left[data-state="peeking"] > .wg-shell-side {
-	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
-}
-[data-state="hidden"] > .wg-shell-side {
-	visibility: hidden;
-	transition:
-		transform var(--wg-shell-slide),
-		box-shadow var(--sumi-dur-base) var(--sumi-ease),
-		visibility 0s linear var(--sumi-dur-slow);
-}
-.wg-shell-left[data-state="hidden"] > .wg-shell-side {
-	transform: translateX(calc(-100% - 2 * var(--sumi-gap)));
-}
-.wg-shell-left:not([data-state="docked"]) + .wg-shell-edge {
-	width: 0;
-	pointer-events: none;
-}
-.wg-shell:has(> .wg-shell-edge:active) > :is(.wg-shell-left, .wg-shell-edge) {
-	transition: none;
-}
-.wg-shell .wg-shell-toggle {
-	position: absolute;
-	top: calc(var(--sumi-gap) + (var(--sumi-header-h) - var(--sumi-h-sm)) / 2);
-	z-index: 4;
-	display: flex;
-	width: auto;
-}
-.wg-shell .wg-shell-toggle[data-side="left"] {
-	left: var(--wg-shell-toggle-left);
-}
-.wg-shell-side-footprint {
-	position: absolute;
-	top: var(--sumi-gap);
-	bottom: var(--sumi-gap);
-	pointer-events: none;
-}
-.wg-shell-side-footprint[data-side="left"] {
-	left: var(--sumi-gap);
-	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
-}
 .wg-studio.wg-shell.is-flat {
 	padding: 0;
-}
-.wg-studio.wg-shell.is-titled {
-	flex-direction: column;
-}
-.wg-shell.is-flat .wg-shell-toggle {
-	top: calc((var(--sumi-header-h) - var(--sumi-h-sm)) / 2);
-}
-.wg-shell-end {
-	position: absolute;
-	top: 0;
-	right: var(--sumi-sp-3);
-	z-index: 4;
-	display: flex;
-	align-items: center;
-	width: auto;
-	height: var(--sumi-header-h);
-}
-.wg-shell.is-flat {
-	--sumi-corner-h: var(--sumi-header-h);
-	--sumi-corner-start-w: calc(var(--wg-shell-toggle-left) + var(--sumi-h-sm) + var(--sumi-sp-3));
-	--sumi-corner-end-w: calc(var(--sumi-h-sm) + 2 * var(--sumi-sp-3));
 }
 .wg-pane {
 	--sumi-corner-start: 0px;
 	--sumi-corner-end: 0px;
 	--sumi-corner-top: 0px;
-}
-.wg-shell.is-side-hidden .wg-pane[data-corner-start] {
-	--sumi-corner-start: var(--sumi-corner-start-w);
-	--sumi-corner-top: var(--sumi-corner-h);
-}
-.wg-shell.is-flat:not(.is-titled) .wg-pane[data-corner-end] {
-	--sumi-corner-end: var(--sumi-corner-end-w);
-	--sumi-corner-top: var(--sumi-corner-h);
 }
 .wg-pane .wg-shell-plate-body {
 	transition: padding-top var(--sumi-dur-base) var(--sumi-ease);
@@ -17544,25 +16969,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	height: var(--sumi-corner-top);
 	background: linear-gradient(var(--wg-plate-fill, var(--sumi-plate)) 55%, transparent);
 	pointer-events: none;
-}
-.wg-shell-corner-plate {
-	position: absolute;
-	top: 0;
-	left: 0;
-	z-index: 3;
-	display: none;
-	width: var(--sumi-corner-start-w);
-	height: var(--sumi-corner-h);
-	background: var(--sumi-plate);
-	@supports (color: color-mix(in lab, red, red)) {
-		background: color-mix(in oklch, var(--sumi-plate) 70%, transparent);
-	}
-	-webkit-backdrop-filter: var(--sumi-blur-corner);
-	backdrop-filter: var(--sumi-blur-corner);
-	pointer-events: none;
-}
-.wg-shell.is-side-hidden:has(.wg-pane[data-corner-start] [data-sumi-corner="float"]) .wg-shell-corner-plate {
-	display: block;
 }
 .wg-shell.is-flat .wg-plate-head {
 	display: none;
@@ -17596,25 +17002,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-shell-panel > .wg-studio-sidebar {
 	padding: 0;
-}
-.wg-shell-edge {
-	position: relative;
-	z-index: 5;
-	flex: none;
-	--sumi-edge-ink: var(--sumi-line);
-	width: 1px;
-	background: linear-gradient(transparent, var(--sumi-edge-ink) calc(2 * var(--sumi-sp-9)));
-	cursor: col-resize;
-	touch-action: none;
-	outline: none;
-}
-.wg-shell-edge::after {
-	content: "";
-	position: absolute;
-	inset: 0 calc(-1 * var(--sumi-sp-2));
-}
-.wg-shell-edge:is(:hover, :active, :focus-visible) {
-	--sumi-edge-ink: var(--sumi-text-3);
 }
 .wg-shell-plate {
 	position: relative;
@@ -17724,9 +17111,6 @@ body:has([data-browser-pages-live]),
 .wg-plate-head.is-app .wg-plate-head-row {
 	padding-left: var(--sumi-sp-5);
 }
-.wg-shell-left:not([data-state="docked"]) ~ .wg-shell-app-zone .wg-plate-head[data-at-top-left] .wg-plate-head-row {
-	padding-left: calc(var(--wg-shell-toggle-left) - var(--sumi-gap) + var(--sumi-h-sm) + var(--sumi-sp-3));
-}
 .wg-plate-head-row.wg-root {
 	container-type: inline-size;
 	width: auto;
@@ -17749,7 +17133,7 @@ body:has([data-browser-pages-live]),
 	flex: 1;
 	min-width: 0;
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon {
+.wg-plate-head .wg-plate-button.wg-kit-icon {
 	width: var(--sumi-h-sm);
 	height: var(--sumi-h-sm);
 	margin: 0;
@@ -17757,27 +17141,27 @@ body:has([data-browser-pages-live]),
 	color: var(--sumi-text-3);
 	font: inherit;
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible) {
+.wg-plate-head .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible) {
 	color: var(--sumi-text);
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon::before {
+.wg-plate-head .wg-plate-button.wg-kit-icon::before {
 	border-radius: 0;
 	background: transparent;
 	transition: background-color var(--sumi-dur-fast) var(--sumi-ease);
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible)::before {
+.wg-plate-head .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible)::before {
 	background: var(--sumi-hover);
 	transition-duration: 0ms;
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon svg {
+.wg-plate-head .wg-plate-button.wg-kit-icon svg {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[data-off] {
+.wg-plate-head .wg-plate-button.wg-kit-icon[data-off] {
 	color: var(--sumi-text-3);
 	cursor: default;
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[data-off]:active {
+.wg-plate-head .wg-plate-button.wg-kit-icon[data-off]:active {
 	transform: none;
 }
 .wg-plate-button:focus-visible,
@@ -17787,16 +17171,16 @@ body:has([data-browser-pages-live]),
 .wg-plate-crumb:focus-visible {
 	background: var(--sumi-hover);
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-icon-glyph.is-lucide {
+.wg-plate-head .wg-plate-button .wg-kit-icon-glyph.is-lucide {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
 	stroke-width: 1.3;
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner {
+.wg-plate-head .wg-plate-button .wg-kit-spinner {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
 }
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner circle {
+.wg-plate-head .wg-plate-button .wg-kit-spinner circle {
 	stroke-width: 1.6;
 }
 .wg-plate-crumb {
@@ -22463,19 +21847,13 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	background: var(--sumi-selected);
 	color: var(--sumi-text);
 }
-[data-count="1"] .sumi-strip-tab:not([data-pinned]) {
+[data-count="1"] .sumi-strip-tab {
 	background: none;
 	color: var(--sumi-text-3);
 }
 .sumi-strip-tab:focus-visible {
 	outline: 1px solid var(--sumi-line-strong);
 	outline-offset: -1px;
-}
-.sumi-strip-tab[data-pinned],
-.sumi-strip-lifted[data-pinned] {
-	justify-content: center;
-	width: var(--sumi-h-sm);
-	padding: 0;
 }
 .sumi-strip-tab[data-lifted] {
 	opacity: 0.4;
@@ -23309,7 +22687,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 			--scroll-fade-mask: initial;
 			--shimmer-image: initial;
 			--shimmer-text-fill: initial;
-			--wg-shell-left-dragged: initial;
 			--wg-shell-chat-dragged: initial;
 		}
 	}

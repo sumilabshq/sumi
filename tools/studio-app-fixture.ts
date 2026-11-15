@@ -1,14 +1,14 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { appHost as appHostModule } from "../plugins/apps/data/app-host/generated/module.ts";
-import type { AppHostParts } from "../plugins/apps/data/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
+import { appHost as appHostModule } from "../plugins/tab-strip/data/app-host/generated/module.ts";
+import type { AppHostParts } from "../plugins/tab-strip/data/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
 import { browser as browserModule } from "../packages/domain/browser/generated/module.ts";
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
 import type { BrowserParts } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
-import type { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import type { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
 import { placesOver } from "./places-fixture.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 

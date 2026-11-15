@@ -1,20 +1,18 @@
 import type { ChatTabs } from "@widgetarium/places/contract";
 import type { ChatListData, ChatRowData } from "../../../shared/schema/chat-list.schema.js";
 
-type ChatTabRow = ChatTabs["pinned"][number];
+type ChatTabRow = ChatTabs["open"][number];
 
 export function chatListOf(tabs: ChatTabs): ChatListData {
 	return {
-		pinned: tabs.pinned.map((row) => rowOf(row, true)),
-		recents: tabs.open.map((row) => rowOf(row, false)),
+		recents: tabs.open.map(rowOf),
 	};
 }
 
-function rowOf({ id, title, mark }: ChatTabRow, isPinned: boolean): ChatRowData {
+function rowOf({ id, title, mark }: ChatTabRow): ChatRowData {
 	return {
 		id,
 		title,
-		isPinned,
 		mark,
 	};
 }

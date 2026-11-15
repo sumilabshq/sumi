@@ -22,17 +22,15 @@ export function workspaceStateOf({ sidebar, chats, tabs }: StateSources, chatId:
 		thisChat: chatId,
 		chats: chatsOf(chats, chatId),
 		shownTab: tabs.tabs.find((tab) => tab.isShown)?.id ?? null,
-		essentials: sidebar.essentials.map(({ id, title, isShown }) => ({ id, title, isShown })),
 		sections: tabListsOf(sidebar).map(sectionOf),
 	};
 }
 
 function chatsOf(chats: ChatList, chatId: string): WorkspaceState["chats"] {
-	return [...chats.pinned, ...chats.recents].map((chat) => ({
+	return chats.recents.map((chat) => ({
 		id: chat.id,
 		title: chat.title,
 		isThisChat: chat.id === chatId,
-		isPinned: chat.isPinned,
 	}));
 }
 

@@ -41,7 +41,7 @@ export const HomePlaceSchema = z.enum(["here", "new-tab", "new-window"]);
 
 export type HomePlace = z.infer<typeof HomePlaceSchema>;
 
-export const MenuCommandSchema = z.enum(["new-chat", "new-tab", "tabs-in-sidebar", "tabs-in-header", "new-window"]);
+export const MenuCommandSchema = z.enum(["new-chat", "new-tab", "new-window"]);
 
 export type MenuCommand = z.infer<typeof MenuCommandSchema>;
 
@@ -54,11 +54,6 @@ export const IntentSchema = z.discriminatedUnion("do", [
 	z.object({
 		do: z.literal("reopen-closed"),
 		tabId: z.string().min(1),
-		title: z.string(),
-	}),
-	z.object({
-		do: z.literal("show-essential"),
-		id: z.string(),
 		title: z.string(),
 	}),
 	z.object({
@@ -116,11 +111,6 @@ export const IntentSchema = z.discriminatedUnion("do", [
 		do: z.literal("open-door"),
 		door: DoorSchema,
 		title: z.string(),
-	}),
-	z.object({
-		do: z.literal("pin-chat"),
-		id: z.string(),
-		isPinned: z.boolean(),
 	}),
 ]);
 

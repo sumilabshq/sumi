@@ -9,13 +9,13 @@ import {
 	GroupRemoveSchema,
 	RemovedGroupSchema,
 } from "../../shared/schema/group-asks.schema.js";
-import { placeTabs, refuseGroup } from "../../shared/lib/tab-places.js";
+import { OPEN_LIST, placeTabs, refuseGroup } from "../../shared/lib/tab-places.js";
 import { refuseNewGroup } from "./lib/new-group.js";
 
 export const create = command()
 	.public()
 	.metadata({
-		description: "Create a tab group in Open or Pinned, optionally moving tabs into it.",
+		description: "Create a tab group, optionally moving tabs into it.",
 	})
 	.input(GroupCreateSchema)
 	.output(CreatedGroupSchema)
@@ -28,7 +28,7 @@ export const create = command()
 			return refuse(refusal);
 		}
 
-		const list = asked.place;
+		const list = OPEN_LIST;
 		const created = await send(appHost.groups.create, { list, name: asked.name, hue: asked.colour ?? null });
 		await placeTabs(send, asked.tabIds, { list, groupId: created.id, before: null });
 		console.info(

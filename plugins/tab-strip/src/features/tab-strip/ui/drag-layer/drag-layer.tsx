@@ -18,14 +18,13 @@ export function DragLayer({ lifted }: { readonly lifted: Lifted }): ReactElement
 			{aim.kind === "strip" ? <div className="sumi-strip-landing" style={styleOf(aim.line)} /> : null}
 			<div
 				className="sumi-strip-lifted"
-				data-pinned={item.isPinned ? "" : undefined}
 				style={{
 					left: lifted.x,
 					top: lifted.y,
 				}}
 			>
 				<TabIcons item={item} />
-				{item.isPinned ? null : <span className="sumi-strip-tab-title">{tabOf(item).title}</span>}
+				<span className="sumi-strip-tab-title">{tabOf(item).title}</span>
 			</div>
 		</>
 	);

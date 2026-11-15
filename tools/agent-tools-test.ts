@@ -41,13 +41,7 @@ function chat(id: string, title: string) {
 }
 
 const sidebar: StateSources["sidebar"] = {
-	essentials: [{ id: "e1", title: "Mail", icon: "site", favicon: null, isShown: false, isLive: true }],
 	sections: [
-		{
-			list: "pinned",
-			title: "Pinned",
-			entries: [chat("chat-b", "Billing"), row("t4", "BILL board")],
-		},
 		{
 			list: "workspace",
 			title: "Open",
@@ -66,8 +60,7 @@ const sidebar: StateSources["sidebar"] = {
 };
 
 const chats: StateSources["chats"] = {
-	pinned: [{ id: "chat-b", title: "Billing", isPinned: true, mark: "none" }],
-	recents: [{ id: "chat-a", title: "Pane bugs", isPinned: false, mark: "running" }],
+	recents: [{ id: "chat-a", title: "Pane bugs", mark: "running" }],
 };
 
 const tabs: StateSources["tabs"] = { tabs: [tab("t1", "Linear"), tab("t2", "localhost", true)], canReopen: false };
@@ -75,22 +68,16 @@ const tabs: StateSources["tabs"] = { tabs: [tab("t1", "Linear"), tab("t2", "loca
 const whole = workspaceStateOf({ sidebar, chats, tabs }, "chat-a");
 check("the asking chat is named", whole.thisChat, "chat-a");
 check(
-	"every chat is listed, pinned first, this chat marked",
+	"every chat is listed, this chat marked",
 	whole.chats.map((chat) => [chat.id, chat.isThisChat]),
-	[
-		["chat-b", false],
-		["chat-a", true],
-	],
+	[["chat-a", true]],
 );
 check(
-	"the state lists Pinned then Open, chats as plain entries",
+	"the state lists the one tab list, chats as plain entries",
 	whole.sections.map((section) => [section.list, section.entries.map((entry) => `${entry.kind}:${entry.id}`)]),
-	[
-		["pinned", ["chat:chat-b", "tab:t4"]],
-		["workspace", ["tab:t1", "chat:chat-a", "tab:t2", "group:g1"]],
-	],
+	[["workspace", ["tab:t1", "chat:chat-a", "tab:t2", "group:g1"]]],
 );
-check("groups keep their tabs and colour", whole.sections[1]?.entries[3], {
+check("groups keep their tabs and colour", whole.sections[0]?.entries[3], {
 	kind: "group",
 	id: "g1",
 	name: "Docs",
@@ -110,7 +97,6 @@ check("groups keep their tabs and colour", whole.sections[1]?.entries[3], {
 	chats: [],
 });
 check("the tab the person sees is named", whole.shownTab, "t2");
-check("essentials are listed", whole.essentials, [{ id: "e1", title: "Mail", isShown: false }]);
 
 if (failed > 0) {
 	console.log(`${failed} agent tool check(s) failed`);

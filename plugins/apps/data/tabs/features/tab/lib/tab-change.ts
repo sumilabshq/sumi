@@ -23,7 +23,7 @@ export async function renameTab({ send, chatId, spot }: TabChange, title: string
 }
 
 export async function moveTab({ send, chatId, spot }: TabChange, asked: TabUpdate): Promise<void> {
-	const move = placementOf(spot, asked, asked.place ?? null);
+	const move = placementOf(spot, asked);
 
 	if (move === null) {
 		return;
@@ -41,24 +41,18 @@ export function tabNowOf(sidebar: Sidebar, { spot }: TabChange): TabNow {
 		id: spot.id,
 		title: now.title,
 		address: now.address,
-		place: now.list,
 		groupId: now.groupId,
 	};
 }
 
-function placementOf(spot: TabSpot, { group, before }: TabUpdate, list: string | null): ListPlace | null {
-	if (list === null && group === undefined && before === undefined) {
+function placementOf(spot: TabSpot, { group, before }: TabUpdate): ListPlace | null {
+	if (group === undefined && before === undefined) {
 		return null;
 	}
 
-	const placedList = list ?? spot.list;
 	return {
-		list: placedList,
-		groupId: group === undefined ? keptGroupOf(spot, placedList) : group,
+		list: spot.list,
+		groupId: group === undefined ? spot.groupId : group,
 		before: before ?? null,
 	};
-}
-
-function keptGroupOf(spot: TabSpot, list: string): string | null {
-	return list === spot.list ? spot.groupId : null;
 }

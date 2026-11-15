@@ -1,4 +1,6 @@
 import { apps } from "@sumi/apps-plugin";
+import { controlMenu } from "@sumi/control-menu-plugin";
+import { tabStrip } from "@sumi/tab-strip-plugin";
 import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { chat } from "@sumi/chat-plugin";
@@ -7,7 +9,7 @@ import { agent } from "@sumi/agent-plugin";
 import type { DeviceModule } from "@widgetarium/data-framework";
 import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { appHost } from "../plugins/apps/data/app-host/generated/module.ts";
+import { appHost } from "../plugins/tab-strip/data/app-host/generated/module.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/module.ts";
@@ -70,9 +72,9 @@ const probe = plugin("probe")
 	});
 
 const windowModules = new Map<string, DeviceModule>();
-const ENABLED = [sumiHost.id, agent.id, apps.id, commandMenu.id, chat.id, probe.id];
+const ENABLED = [sumiHost.id, controlMenu.id, tabStrip.id, agent.id, apps.id, commandMenu.id, chat.id, probe.id];
 const started = pluginRuntime()
-	.builtInPlugins(sumiHost, agent, apps, commandMenu, chat, probe)
+	.builtInPlugins(sumiHost, controlMenu, tabStrip, agent, apps, commandMenu, chat, probe)
 	.state(new MemoryPluginStateStore(ENABLED))
 	.provide(backend, () => ({
 		module: () => undefined,

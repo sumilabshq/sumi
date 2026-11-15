@@ -27,7 +27,7 @@ export function SessionRows(): ReactNode {
 	const showTab = useCommand(appHost.tabs.showTab);
 	const openMenu = useCommand(commandMenu.opening.toggle);
 	const doors = useOptionalQuery(commandMenu.opening.doors).data?.doors ?? [];
-	const rows = [...(list?.pinned ?? []), ...(list?.recents ?? [])].slice(0, SESSIONS_SHOWN);
+	const rows = (list?.recents ?? []).slice(0, SESSIONS_SHOWN);
 	return (
 		<>
 			<div className="wg-kit-menu-label">{SESSIONS}</div>

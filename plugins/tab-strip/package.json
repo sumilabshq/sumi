@@ -19,7 +19,9 @@
 		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/layout": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",
-		"@sumi/control-menu-plugin": "0.1.0"
+		"@sumi/control-menu-plugin": "0.1.0",
+		"@widgetarium/places": "0.1.0",
+		"@widgetarium/behaviors": "0.1.0"
 	},
 	"peerDependencies": {
 		"react": "^19.2.8",

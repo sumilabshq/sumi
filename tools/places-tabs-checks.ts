@@ -1,21 +1,21 @@
 import { placesWindowOf } from "@widgetarium/behaviors";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { BUILT_IN_PLACED_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
-import { ListedPlacedAppsGateway } from "../plugins/apps/data/places/gateways/placed-apps/listed.gateway.ts";
+import { ListedPlacedAppsGateway } from "../plugins/tab-strip/data/places/gateways/placed-apps/listed.gateway.ts";
 import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app-of.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { places } from "../plugins/apps/data/places/generated/contract.ts";
-import type { TabsAsk } from "../plugins/apps/data/places/generated/contract.ts";
-import { places as RunnablePlacesModule } from "../plugins/apps/data/places/generated/module.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { TauriTabsGateway } from "../plugins/apps/data/places/gateways/tabs/tauri/tauri.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
-import { KeptPlacesSchema } from "../plugins/apps/data/places/gateways/windows/tauri.gateway.ts";
-import type { KeptPlaces } from "../plugins/apps/data/places/gateways/windows/tauri.gateway.ts";
+import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import type { TabsAsk } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { TauriTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/tauri/tauri.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
+import { KeptPlacesSchema } from "../plugins/tab-strip/data/places/gateways/windows/tauri.gateway.ts";
+import type { KeptPlaces } from "../plugins/tab-strip/data/places/gateways/windows/tauri.gateway.ts";
 import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
@@ -163,18 +163,17 @@ async function lawChecks(): Promise<void> {
 		],
 		[
 			2,
-			'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in Open or Pinned',
-			'the tab "tab-1" cannot stand inside "tab-1": a tab stands only in Open or Pinned',
+			'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in the list of a window',
+			'the tab "tab-1" cannot stand inside "tab-1": a tab stands only in the list of a window',
 		],
 	);
 
-	await main.send(places.tabPlacing.pin, { window: "main", id: tabId, isPinned: true });
 	const grouped = await main.send(places.tabPlacing.createGroup, { window: "main", from: { kind: "tab", tabId } });
 	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
 	check(
-		"pinning moves the tab into Pinned, and a group born around it stands there",
-		[placed.ok ? placed.output.lists["pinned"]?.at(-1)?.kind : placed.reason, grouped.ok],
-		["group", true],
+		"a group born around a tab stands in its list",
+		[placed.ok ? placed.output.lists["workspace"]?.some((entry) => entry.kind === "group") : placed.reason, grouped.ok],
+		[true, true],
 	);
 	await groupPlacingChecks(main, grouped.ok ? grouped.output.id : "");
 }
@@ -188,9 +187,9 @@ async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void>
 	const afterOpen = await main.send(places.tabs.placedTabs, { window: "main" });
 	const lists = afterOpen.ok ? afterOpen.output.lists : {};
 	check(
-		"a group carried to Open leaves Pinned whole and stands last in Open",
-		[toOpen.ok, lists["pinned"]?.some((entry) => entry.id === groupId), lists["workspace"]?.at(-1)?.id],
-		[true, false, groupId],
+		"a group carried to the end of the list stands last there",
+		[toOpen.ok, lists["workspace"]?.at(-1)?.id],
+		[true, groupId],
 	);
 	await main.send(places.tabPlacing.place, {
 		at: askAt("main"),
@@ -261,7 +260,7 @@ async function handoffChecks(): Promise<void> {
 }
 
 async function sidebarTabIdsIn(windowApp: Runtime, at: TabsAsk): Promise<unknown> {
-	const sidebar = await windowApp.send(places.tabs.sidebar, { at, essentials: [] });
+	const sidebar = await windowApp.send(places.tabs.sidebar, { at });
 	return sidebar.ok
 		? sidebar.output.sections.map((section) => [
 				section.list,
@@ -280,14 +279,8 @@ async function windowTabsChecks(): Promise<void> {
 		"two windows each see only their own tabs in the sidebar",
 		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
 		[
-			[
-				["pinned", []],
-				["workspace", ["tab-1", "tab-2"]],
-			],
-			[
-				["pinned", []],
-				["workspace", ["tab-3"]],
-			],
+			[["workspace", ["tab-1", "tab-2"]]],
+			[["workspace", ["tab-3"]]],
 		],
 	);
 
@@ -296,22 +289,6 @@ async function windowTabsChecks(): Promise<void> {
 		"a window cannot show a tab another window holds",
 		foreign.ok ? "shown" : foreign.reason,
 		'the host holds no tab "tab-1"',
-	);
-
-	await main.send(places.tabPlacing.pin, { window: "main", id: "tab-2", isPinned: true });
-	check(
-		"pinning stays in the window that pinned",
-		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
-		[
-			[
-				["pinned", ["tab-2"]],
-				["workspace", ["tab-1"]],
-			],
-			[
-				["pinned", []],
-				["workspace", ["tab-3"]],
-			],
-		],
 	);
 
 	const torn: TabsAsk = {
@@ -323,14 +300,8 @@ async function windowTabsChecks(): Promise<void> {
 		"a torn-off tab moves into the list of the window that shows it",
 		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
 		[
-			[
-				["pinned", ["tab-2"]],
-				["workspace", []],
-			],
-			[
-				["pinned", []],
-				["workspace", ["tab-3", "tab-1"]],
-			],
+			[["workspace", ["tab-2"]]],
+			[["workspace", ["tab-3", "tab-1"]]],
 		],
 	);
 
@@ -345,7 +316,7 @@ async function windowTabsChecks(): Promise<void> {
 			Object.keys(placed.lists),
 			Object.keys(placed.views).includes("studio-2"),
 		],
-		[["tab-2"], [], [["studio-2", ["tab-1", "tab-3"]]], ["window:main", "window:main:pinned"], false],
+		[["tab-2"], [], [["studio-2", ["tab-1", "tab-3"]]], ["window:main"], false],
 	);
 
 	await main.send(places.windows.closeWindow, { window: "main" });
@@ -372,7 +343,7 @@ async function workspaceListsMigrationChecks(): Promise<void> {
 		rev: 1,
 		tabs: {
 			tabs: ["tab-1", "tab-2"].map((id) => ({ id, app: "canvas", pageId: null, label: null })),
-			lists: { workspace: [{ kind: "tab", id: "tab-1" }], pinned: [{ kind: "tab", id: "tab-2" }] },
+			lists: { workspace: [{ kind: "tab", id: "tab-1" }, { kind: "tab", id: "tab-2" }] },
 			minted: 2,
 			closed: [],
 		},
@@ -381,29 +352,23 @@ async function workspaceListsMigrationChecks(): Promise<void> {
 	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
 	const [main, side] = windowsOver(new TauriTabsGateway({ workspaceId: DEFAULT.id, kept }));
 	check(
-		"workspace-wide lists of an older places.json move into the main window on first read",
+		"the workspace-wide list of an older places.json moves into the main window on first read",
 		[
 			await sidebarTabIdsIn(main, askAt(placesWindowOf("main", DEFAULT.id))),
 			await sidebarTabIdsIn(side, askAt(placesWindowOf("studio-2", DEFAULT.id))),
 			Object.keys(KeptPlacesSchema.parse(fake.files.get(`${root}:places.json`)).tabs ?? {}).length > 0,
 		],
 		[
-			[
-				["pinned", ["tab-2"]],
-				["workspace", ["tab-1"]],
-			],
-			[
-				["pinned", []],
-				["workspace", []],
-			],
+			[["workspace", ["tab-1", "tab-2"]]],
+			[["workspace", []]],
 			true,
 		],
 	);
 	const stored = fake.files.get(`${root}:places.json`)?.["tabs"];
 	check(
-		"and the file keeps them under the main window's list ids",
+		"and the file keeps it under the main window's list id",
 		typeof stored === "object" && stored !== null && "lists" in stored ? Object.keys(stored.lists ?? {}) : stored,
-		[`window:main@${DEFAULT.id}`, `window:main@${DEFAULT.id}:pinned`],
+		[`window:main@${DEFAULT.id}`],
 	);
 }
 

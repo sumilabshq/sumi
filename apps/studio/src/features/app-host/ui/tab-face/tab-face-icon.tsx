@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { ChatMark, TabArt as TabArtName } from "@widgetarium/app-host/contract";
 import { ChatTabIcon } from "../../../mascot/ui/chat-tab-icon/chat-tab-icon.js";
-import { chatIconStateOf } from "../../lib/tabs-sidebar/chat-icon-state.js";
+import { chatIconStateOf } from "../../lib/tab-face/chat-icon-state.js";
 import { TabArt } from "./tab-art.js";
 import type { TabArtSize } from "./tab-art.js";
 

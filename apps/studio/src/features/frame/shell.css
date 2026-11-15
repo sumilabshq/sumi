@@ -1,24 +1,13 @@
-@property --wg-shell-left-dragged {
-	syntax: "*";
-	inherits: false;
-}
-
 @property --wg-shell-chat-dragged {
 	syntax: "*";
 	inherits: false;
 }
 
 .wg-studio.wg-shell {
-	--wg-shell-left-w: max(var(--sumi-sidebar-min), var(--wg-shell-left, var(--sumi-chats-w)));
-	--wg-shell-float-pad: var(--sumi-sp-4);
 	--wg-shell-slide: var(--sumi-dur-slow) var(--sumi-ease-out);
-	--wg-shell-toggle-left: max(
-		calc(var(--sumi-gap) + var(--sumi-sp-4)),
-		calc(var(--wg-shell-chrome-left, 0px) + var(--sumi-sp-3) + var(--sumi-sp-4))
-	);
 	position: relative;
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	align-items: stretch;
 	box-sizing: border-box;
 	padding: var(--sumi-gap);
@@ -38,153 +27,14 @@
 	background: var(--sumi-accent-soft);
 }
 
-.wg-shell-left {
-	position: relative;
-	z-index: 4;
-	flex: 0 1 auto;
-	box-sizing: border-box;
-	width: var(--wg-shell-left-dragged, var(--wg-shell-left-w));
-	min-width: var(--sumi-sidebar-min);
-	min-height: 0;
-}
-
-.wg-shell-left:not([data-state="docked"]) {
-	width: 0;
-	min-width: 0;
-}
-
-.wg-shell-side {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	z-index: 3;
-	display: flex;
-	flex-direction: column;
-	box-sizing: border-box;
-	min-height: 0;
-	overflow: hidden;
-	border-radius: 0;
-	transition:
-		transform var(--wg-shell-slide),
-		box-shadow var(--sumi-dur-base) var(--sumi-ease),
-		background-color var(--sumi-dur-base) var(--sumi-ease);
-}
-
-.wg-shell-side[data-shell-side="left"] {
-	left: 0;
-	width: max(var(--sumi-sidebar-min), var(--wg-shell-left-dragged, var(--wg-shell-left-w)));
-}
-
-.wg-shell-left[data-state="docked"] > .wg-shell-side {
-	min-width: 100%;
-}
-
-[data-state="docked"] > .wg-shell-side {
-	background-color: var(--sumi-frame);
-}
-
-[data-state="peeking"] > .wg-shell-side {
-	padding: 0 var(--wg-shell-float-pad) var(--wg-shell-float-pad);
-	background-color: var(--sumi-frame);
-	box-shadow: var(--sumi-shadow-pop);
-	transition:
-		transform var(--sumi-dur-fast) var(--sumi-ease-out),
-		box-shadow var(--sumi-dur-fast) var(--sumi-ease),
-		background-color var(--sumi-dur-fast) var(--sumi-ease);
-}
-
-.wg-shell-left[data-state="peeking"] > .wg-shell-side {
-	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
-}
-
-[data-state="hidden"] > .wg-shell-side {
-	visibility: hidden;
-	transition:
-		transform var(--wg-shell-slide),
-		box-shadow var(--sumi-dur-base) var(--sumi-ease),
-		visibility 0s linear var(--sumi-dur-slow);
-}
-
-.wg-shell-left[data-state="hidden"] > .wg-shell-side {
-	transform: translateX(calc(-100% - 2 * var(--sumi-gap)));
-}
-
-.wg-shell-left:not([data-state="docked"]) + .wg-shell-edge {
-	width: 0;
-	pointer-events: none;
-}
-
-.wg-shell:has(> .wg-shell-edge:active) > :is(.wg-shell-left, .wg-shell-edge) {
-	transition: none;
-}
-
-.wg-shell .wg-shell-toggle {
-	position: absolute;
-	top: calc(var(--sumi-gap) + (var(--sumi-header-h) - var(--sumi-h-sm)) / 2);
-	z-index: 4;
-	display: flex;
-	width: auto;
-}
-
-.wg-shell .wg-shell-toggle[data-side="left"] {
-	left: var(--wg-shell-toggle-left);
-}
-
-.wg-shell-side-footprint {
-	position: absolute;
-	top: var(--sumi-gap);
-	bottom: var(--sumi-gap);
-	pointer-events: none;
-}
-
-.wg-shell-side-footprint[data-side="left"] {
-	left: var(--sumi-gap);
-	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
-}
-
 .wg-studio.wg-shell.is-flat {
 	padding: 0;
-}
-
-.wg-studio.wg-shell.is-titled {
-	flex-direction: column;
-}
-
-.wg-shell.is-flat .wg-shell-toggle {
-	top: calc((var(--sumi-header-h) - var(--sumi-h-sm)) / 2);
-}
-
-.wg-shell-end {
-	position: absolute;
-	top: 0;
-	right: var(--sumi-sp-3);
-	z-index: 4;
-	display: flex;
-	align-items: center;
-	width: auto;
-	height: var(--sumi-header-h);
-}
-
-.wg-shell.is-flat {
-	--sumi-corner-h: var(--sumi-header-h);
-	--sumi-corner-start-w: calc(var(--wg-shell-toggle-left) + var(--sumi-h-sm) + var(--sumi-sp-3));
-	--sumi-corner-end-w: calc(var(--sumi-h-sm) + 2 * var(--sumi-sp-3));
 }
 
 .wg-pane {
 	--sumi-corner-start: 0px;
 	--sumi-corner-end: 0px;
 	--sumi-corner-top: 0px;
-}
-
-.wg-shell.is-side-hidden .wg-pane[data-corner-start] {
-	--sumi-corner-start: var(--sumi-corner-start-w);
-	--sumi-corner-top: var(--sumi-corner-h);
-}
-
-.wg-shell.is-flat:not(.is-titled) .wg-pane[data-corner-end] {
-	--sumi-corner-end: var(--sumi-corner-end-w);
-	--sumi-corner-top: var(--sumi-corner-h);
 }
 
 .wg-pane .wg-shell-plate-body {
@@ -209,24 +59,6 @@
 	height: var(--sumi-corner-top);
 	background: linear-gradient(var(--wg-plate-fill, var(--sumi-plate)) 55%, transparent);
 	pointer-events: none;
-}
-
-.wg-shell-corner-plate {
-	position: absolute;
-	top: 0;
-	left: 0;
-	z-index: 3;
-	display: none;
-	width: var(--sumi-corner-start-w);
-	height: var(--sumi-corner-h);
-	background: color-mix(in oklch, var(--sumi-plate) 70%, transparent);
-	-webkit-backdrop-filter: var(--sumi-blur-corner);
-	backdrop-filter: var(--sumi-blur-corner);
-	pointer-events: none;
-}
-
-.wg-shell.is-side-hidden:has(.wg-pane[data-corner-start] [data-sumi-corner="float"]) .wg-shell-corner-plate {
-	display: block;
 }
 
 .wg-shell.is-flat .wg-plate-head {
@@ -266,28 +98,6 @@
 
 .wg-shell-panel > .wg-studio-sidebar {
 	padding: 0;
-}
-
-.wg-shell-edge {
-	position: relative;
-	z-index: 5;
-	flex: none;
-	--sumi-edge-ink: var(--sumi-line);
-	width: 1px;
-	background: linear-gradient(transparent, var(--sumi-edge-ink) calc(2 * var(--sumi-sp-9)));
-	cursor: col-resize;
-	touch-action: none;
-	outline: none;
-}
-
-.wg-shell-edge::after {
-	content: "";
-	position: absolute;
-	inset: 0 calc(-1 * var(--sumi-sp-2));
-}
-
-.wg-shell-edge:is(:hover, :active, :focus-visible) {
-	--sumi-edge-ink: var(--sumi-text-3);
 }
 
 .wg-shell-plate {
@@ -411,10 +221,6 @@ body:has([data-browser-pages-live]),
 	padding-left: var(--sumi-sp-5);
 }
 
-.wg-shell-left:not([data-state="docked"]) ~ .wg-shell-app-zone .wg-plate-head[data-at-top-left] .wg-plate-head-row {
-	padding-left: calc(var(--wg-shell-toggle-left) - var(--sumi-gap) + var(--sumi-h-sm) + var(--sumi-sp-3));
-}
-
 .wg-plate-head-row.wg-root {
 	container-type: inline-size;
 	width: auto;
@@ -442,7 +248,7 @@ body:has([data-browser-pages-live]),
 	min-width: 0;
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon {
+.wg-plate-head .wg-plate-button.wg-kit-icon {
 	width: var(--sumi-h-sm);
 	height: var(--sumi-h-sm);
 	margin: 0;
@@ -451,32 +257,32 @@ body:has([data-browser-pages-live]),
 	font: inherit;
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible) {
+.wg-plate-head .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible) {
 	color: var(--sumi-text);
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon::before {
+.wg-plate-head .wg-plate-button.wg-kit-icon::before {
 	border-radius: 0;
 	background: transparent;
 	transition: background-color var(--sumi-dur-fast) var(--sumi-ease);
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible)::before {
+.wg-plate-head .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible)::before {
 	background: var(--sumi-hover);
 	transition-duration: 0ms;
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon svg {
+.wg-plate-head .wg-plate-button.wg-kit-icon svg {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[data-off] {
+.wg-plate-head .wg-plate-button.wg-kit-icon[data-off] {
 	color: var(--sumi-text-3);
 	cursor: default;
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[data-off]:active {
+.wg-plate-head .wg-plate-button.wg-kit-icon[data-off]:active {
 	transform: none;
 }
 
@@ -489,18 +295,18 @@ body:has([data-browser-pages-live]),
 	background: var(--sumi-hover);
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-icon-glyph.is-lucide {
+.wg-plate-head .wg-plate-button .wg-kit-icon-glyph.is-lucide {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
 	stroke-width: 1.3;
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner {
+.wg-plate-head .wg-plate-button .wg-kit-spinner {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
 }
 
-:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-spinner circle {
+.wg-plate-head .wg-plate-button .wg-kit-spinner circle {
 	stroke-width: 1.6;
 }
 

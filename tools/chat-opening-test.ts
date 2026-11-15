@@ -1,4 +1,4 @@
-import { appHost as appHostContract } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { appHost as appHostContract } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
 import { chatTabs } from "../plugins/ai/chat/data/chat-tabs/generated/contract.ts";
@@ -14,7 +14,7 @@ async function boardChatsOf(studioApp: Runtime): Promise<readonly string[]> {
 
 async function chatCountOf(studioApp: Runtime): Promise<number> {
 	const list = await studioApp.send(chatTabs.chatList.all);
-	return list.ok ? list.output.pinned.length + list.output.recents.length : -1;
+	return list.ok ? list.output.recents.length : -1;
 }
 
 async function namingChecks(): Promise<void> {
@@ -57,22 +57,19 @@ async function tearOffChecks(): Promise<void> {
 }
 
 async function chatTabChecks(): Promise<void> {
-	const { studioApp, places, appHost } = studioFakesOf();
+	const { studioApp, places } = studioFakesOf();
 	const opened = await studioApp.send(chatTabs.chatOpening.openNew, { title: "Plan" });
 	const newId = opened.ok ? opened.output.id : "";
-	await studioApp.send(appHostContract.tabActions.pin, { id: newId, isPinned: true });
 	await studioApp.send(appHostContract.tabActions.renameTab, { id: HOST_CHAT, label: "Renamed" });
 	const list = await studioApp.send(chatTabs.chatList.all);
 	const placed = await places.placedTabs();
 	check(
-		"a new chat is a tab, a pin moves it into Pinned in places, and a tab label names the chat",
+		"a new chat is a tab in the open list of its window, and a tab label names the chat",
 		[
-			list.ok ? list.output.pinned.map((row) => [row.id, row.title]) : list.reason,
-			list.ok ? list.output.recents.map((row) => [row.id, row.title]) : list.reason,
-			placed.lists["pinned"]?.map((entry) => entry.id),
-			appHost.studioWindow.windowLabel(),
+			list.ok ? list.output.recents.map((row) => [row.id, row.title]).sort() : list.reason,
+			placed.lists["window:main"]?.some((entry) => entry.id === newId),
 		],
-		[[[newId, "Plan"]], [[HOST_CHAT, "Renamed"]], [newId], "main"],
+		[[[HOST_CHAT, "Renamed"], [newId, "Plan"]].sort(), true],
 	);
 }
 

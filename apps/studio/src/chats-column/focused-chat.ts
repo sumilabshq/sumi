@@ -27,8 +27,8 @@ function focusedChatIn(studioApp: Runtime): FocusedChat | null {
 		return null;
 	}
 
-	const { pinned, recents } = chatTabs.chatList.all.outputSchema.parse(read.output);
-	const row = [...pinned, ...recents].find((chat) => chat.id === focusedId);
+	const { recents } = chatTabs.chatList.all.outputSchema.parse(read.output);
+	const row = recents.find((chat) => chat.id === focusedId);
 	return row === undefined ? null : { id: row.id, title: row.title };
 }
 

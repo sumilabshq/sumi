@@ -199,7 +199,6 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 		windowProviders: started.windowProviders,
 		windowLayers: started.windowLayers,
 		studio: started.studio,
-		left: started.chatsColumn.column,
 		panes: {
 			drawn: (view: PaneView) => paneOf(started, screen, view),
 			empty: h(EmptyPanes),

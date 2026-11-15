@@ -9,4 +9,3 @@ export { BUILT_IN_PROFILE, builtInPluginState, startSumiPlugins } from "./plugin
 export type { ResolvedPlugins, BackgroundModule, HostServer } from "./plugins/sumi-plugins.js";
 export type { SecretVault } from "./plugins/secret-vault.js";
 export { startBackendServers } from "./tabs/backend-servers.js";
-export { SIDEBAR_MEASURE_PREFIX } from "./features/app-host/lib/tab-drag/drag-timing.js";

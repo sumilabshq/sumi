@@ -17,7 +17,6 @@ export interface LayoutMemories {
 
 export const FIRST_SIDES: FrameSides = {
 	left: "docked",
-	tabs: "header",
 };
 
 export const FIRST_PANES: PaneTree = {

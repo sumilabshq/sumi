@@ -1,6 +1,6 @@
-import { ListedPlacedAppsGateway } from "../plugins/apps/data/places/gateways/placed-apps/listed.gateway.ts";
-import { MainHomeGateway } from "../plugins/apps/data/places/gateways/home/main.gateway.ts";
-import { placedAppsOf } from "../plugins/apps/data/places/shared/lib/tabs/app-abilities.ts";
+import { ListedPlacedAppsGateway } from "../plugins/tab-strip/data/places/gateways/placed-apps/listed.gateway.ts";
+import { MainHomeGateway } from "../plugins/tab-strip/data/places/gateways/home/main.gateway.ts";
+import { placedAppsOf } from "../plugins/tab-strip/data/places/shared/lib/tabs/app-abilities.ts";
 import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app-of.ts";
 import { appsFilledBy } from "./apps-filled-fixture.ts";
 import { chat } from "../plugins/ai/chat/src/index.ts";

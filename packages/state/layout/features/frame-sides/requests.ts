@@ -1,7 +1,7 @@
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { sidesChanged } from "../../gateways/frame-sides/frame-sides.events.js";
-import { FrameSideInputSchema, FrameSidesSchema, TabsPlaceInputSchema } from "../../shared/schema/frame-sides.schema.js";
+import { FrameSideInputSchema, FrameSidesSchema } from "../../shared/schema/frame-sides.schema.js";
 import { concealedLook, peekedLook, refuseTurn, toggledLook } from "./lib/side-looks.js";
 
 export const frameSides = query()
@@ -33,24 +33,6 @@ export const toggle = command()
 			},
 			reason,
 		);
-		console.info(`[widgetarium] ${reason}`);
-	});
-
-export const placeTabs = command()
-	.public()
-	.input(TabsPlaceInputSchema)
-	.idempotencyKey(Repeatable)
-	.handle(({ tabs }, { frameSides: frameSidesGateway, invalidate }) => {
-		invalidate(frameSides);
-		const sides = frameSidesGateway.sides();
-
-		if (sides.tabs === tabs) {
-			console.info(`[widgetarium] tabs place skipped: already in the ${tabs}`);
-			return;
-		}
-
-		const reason = `tabs ${sides.tabs} → ${tabs} (asked)`;
-		frameSidesGateway.saveSides({ ...sides, tabs }, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 

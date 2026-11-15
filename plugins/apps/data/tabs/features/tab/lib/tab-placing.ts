@@ -39,8 +39,8 @@ export async function duplicatedTabIn(send: Send, list: string, asked: TabDuplic
 	return opened.id;
 }
 
-export function placedTabOf(id: string, { place, show }: TabOpen | TabDuplicate): PlacedTab {
-	return { id, place, isShown: show };
+export function placedTabOf(id: string, { show }: TabOpen | TabDuplicate): PlacedTab {
+	return { id, isShown: show };
 }
 
 export async function groupIdFor(send: Send, list: string, { group, newGroup }: Grouping): Promise<string | null> {

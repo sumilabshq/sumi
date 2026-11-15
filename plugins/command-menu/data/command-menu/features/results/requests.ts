@@ -5,7 +5,6 @@ import { chatTabs } from "@sumi/chat-tabs/contract";
 import { apps as appsContract } from "@sumi/apps/contract";
 import { browser as browserContract } from "@widgetarium/browser/contract";
 import { workspaces as workspacesContract } from "@widgetarium/workspaces/contract";
-import { layout } from "@widgetarium/layout/contract";
 import { commandMenuChanged } from "../../gateways/command-menu/command-menu.events.js";
 import type { FilledRowSource, Pools, RowsOf } from "../../shared/host/command-menu.host.js";
 import { FoundSchema, ResultsAskSchema, ResultsSchema } from "../../shared/schema/command-menu.schema.js";
@@ -15,7 +14,6 @@ import {
 	chatsElsewhereFoundOf,
 	chatsFoundOf,
 	closedFoundOf,
-	layoutFoundOf,
 	windowFoundOf,
 	sitesFoundOf,
 	tabsFoundOf,
@@ -106,10 +104,7 @@ const chatRowsOf: RowsOf = async (send) => {
 	return chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.apps);
 };
 
-const layoutRowsOf: RowsOf = async (send) => [
-	...layoutFoundOf((await send(layout.frameSides.frameSides)).tabs),
-	...windowFoundOf(),
-];
+const layoutRowsOf: RowsOf = async () => windowFoundOf();
 
 const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(appsContract.apps.all)).apps);
 

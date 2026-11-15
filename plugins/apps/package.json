@@ -15,11 +15,11 @@
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@sumi/apps": "0.1.0",
 		"@widgetarium/behaviors": "0.1.0",
-		"@widgetarium/app-host": "0.1.0",
 		"@widgetarium/places": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",
 		"@sumi/agent-plugin": "0.1.0",
-		"@sumi/tabs": "0.1.0"
+		"@sumi/tabs": "0.1.0",
+		"@sumi/tab-strip-plugin": "0.1.0"
 	},
 	"peerDependencies": {
 		"react": "^19.2.8",

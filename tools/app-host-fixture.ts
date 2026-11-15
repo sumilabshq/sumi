@@ -1,17 +1,15 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { appHost as appHostModule } from "../plugins/apps/data/app-host/generated/module.ts";
-import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
-import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
-import type { StudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/studio-window.gateway.ts";
-import { PaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-flash/pane-flash.gateway.ts";
-import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
-import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
-import type { StudioView } from "../plugins/apps/data/app-host/shared/schema/studio-view.schema.ts";
-import { places as placesContract } from "../plugins/apps/data/places/generated/contract.ts";
+import { appHost as appHostModule } from "../plugins/tab-strip/data/app-host/generated/module.ts";
+import { MemoryStudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/memory.gateway.ts";
+import type { StudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/studio-window.gateway.ts";
+import { PaneFlashGateway } from "../plugins/tab-strip/data/app-host/gateways/pane-flash/pane-flash.gateway.ts";
+import { NoCoreChangesGateway } from "../plugins/tab-strip/data/app-host/gateways/core-changes/none.gateway.ts";
+import type { StudioView } from "../plugins/tab-strip/data/app-host/shared/schema/studio-view.schema.ts";
+import { places as placesContract } from "../plugins/tab-strip/data/places/generated/contract.ts";
 import { apps as appsContract } from "../plugins/apps/data/apps/generated/contract.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesLinkOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
@@ -103,7 +101,6 @@ export class RecordedPaneFlash extends PaneFlashGateway {
 
 export interface AppHostFakes {
 	readonly studioWindow: StudioWindowGateway;
-	readonly essentials: MemoryEssentialsGateway;
 	readonly paneFlash: RecordedPaneFlash;
 	readonly coreChanges: NoCoreChangesGateway;
 }
@@ -120,7 +117,6 @@ export interface StudioSeed {
 	readonly tabs?: SeededTabs | null;
 	readonly places?: MemoryTabsGateway;
 	readonly studioWindow?: StudioWindowGateway;
-	readonly essentials?: KeptEssentials | null;
 	readonly view?: StudioView;
 	readonly pages?: readonly string[];
 	readonly isBrowserAvailable?: boolean;
@@ -129,10 +125,9 @@ export interface StudioSeed {
 	readonly isAppsInCore?: boolean;
 }
 
-export function appHostFakesOf({ studioWindow, essentials = null }: StudioSeed): AppHostFakes {
+export function appHostFakesOf({ studioWindow }: StudioSeed): AppHostFakes {
 	return {
 		studioWindow: studioWindow ?? new MemoryStudioWindowGateway(),
-		essentials: new MemoryEssentialsGateway(essentials),
 		paneFlash: new RecordedPaneFlash(),
 		coreChanges: new NoCoreChangesGateway(),
 	};

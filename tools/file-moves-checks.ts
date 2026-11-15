@@ -5,9 +5,9 @@ import { runtime, orpcTransport } from "../packages/shared/data-framework/src/in
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { places, fileSystem } from "@sumi/contract";
-import { places as RunnablePlacesModule } from "../plugins/apps/data/places/generated/module.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
+import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
 import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
 import { filePage } from "../plugins/files/data/file-page/generated/module.ts";

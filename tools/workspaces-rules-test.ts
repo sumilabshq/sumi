@@ -10,8 +10,8 @@ import type { WorkspaceFolder } from "../packages/domain/workspaces/shared/schem
 import { check, tally } from "./check-helpers.ts";
 import { quietly } from "./host-tauri-fake-store.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { places } from "../plugins/apps/data/places/generated/contract.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
 
 const SEEDED_CHATS = ["old", "pinned", "new"];
 

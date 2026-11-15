@@ -1,15 +1,15 @@
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
-import { appHost } from "../plugins/apps/data/app-host/generated/contract.ts";
-import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
+import { MemoryStudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
-import { WORKSPACE_LIST } from "../plugins/apps/data/places/shared/lib/tabs/tab-lists.ts";
-import { givePage } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
-import { momentOfWindow } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
+import { WORKSPACE_LIST } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-lists.ts";
+import { givePage } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
+import { momentOfWindow } from "../plugins/tab-strip/data/places/shared/lib/tabs/kept-tabs.ts";
 import { check, tally, thrownBy, waitFor } from "./check-helpers.ts";
 
 const BROWSER_FIRST_PAGE = "tab-1";
@@ -23,7 +23,6 @@ function restoredTabs(): SeededTabs {
 			app: "browser",
 			pageId: null,
 			label: null,
-			essentialId: null,
 			lastAddress: null,
 		})),
 		lists: {
@@ -86,7 +85,6 @@ function terminalTabs(): SeededTabs {
 				app: "terminal",
 				pageId: null,
 				label: null,
-				essentialId: null,
 				lastAddress: null,
 			},
 		],

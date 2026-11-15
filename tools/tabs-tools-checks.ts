@@ -179,7 +179,6 @@ check(
 		thisChat: ASKING_CHAT,
 		chats: [],
 		shownTab: null,
-		essentials: [],
 		sections: [],
 	},
 );
@@ -207,8 +206,8 @@ const foreign = textOf(
 	await called(served, "tabs_group_create", { name: "Elsewhere", place: "chat-other" }, ASKING_CHAT),
 );
 check(
-	"a chat's id is not a place the agent may name: tabs stand only in Open or Pinned",
-	foreign.includes('"isError":true') && foreign.includes("pinned"),
+	"a group names no place: a window has one list",
+	foreign.includes('"isError":true') && foreign.includes("place"),
 	true,
 );
 

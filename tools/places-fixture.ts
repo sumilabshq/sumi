@@ -1,13 +1,13 @@
 import { BUILT_IN_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport, ServerSideModule } from "../packages/shared/data-framework/src/index.ts";
-import { places } from "../plugins/apps/data/places/generated/contract.ts";
-import { places as placesModule } from "../plugins/apps/data/places/generated/module.ts";
+import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import { places as placesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { z } from "zod";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
-import { momentOfWindow, windowTabsOf } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
+import { momentOfWindow, windowTabsOf } from "../plugins/tab-strip/data/places/shared/lib/tabs/kept-tabs.ts";
 import {
 	ClosedTabSchema,
 	KeptGroupSchema,
@@ -15,15 +15,15 @@ import {
 	ListEntrySchema,
 	PlacedTabsSchema,
 	WindowViewSchema,
-} from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
-import type { ListEntry } from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
-import type { Screen } from "../plugins/apps/data/places/shared/schema/screen.schema.ts";
+} from "../plugins/tab-strip/data/places/shared/schema/tabs.schema.ts";
+import type { ListEntry } from "../plugins/tab-strip/data/places/shared/schema/tabs.schema.ts";
+import type { Screen } from "../plugins/tab-strip/data/places/shared/schema/screen.schema.ts";
 import type {
 	PlacedTabs,
 	StudioView,
 	TabMark,
 	WindowTabs,
-} from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
+} from "../plugins/tab-strip/data/places/shared/schema/tabs.schema.ts";
 
 export const MAIN_WINDOW = "main";
 
@@ -57,7 +57,6 @@ export interface SeededFacts {
 export function placedTabsOf(
 	seed: SeededTabs,
 	chatIds: readonly string[] = [],
-	pinnedIds: readonly string[] = [],
 	factsOf: Readonly<Record<string, SeededFacts>> = {},
 ): PlacedTabs {
 	const session = SeededTabsSchema.parse(seed);
@@ -66,14 +65,13 @@ export function placedTabsOf(
 		.filter((id) => !heldIds.has(id))
 		.map((id) => ({ id, app: "chat", pageId: null, label: null }));
 	const lists = session.lists ?? {
-		workspace: session.tabs.filter((tab) => tab.essentialId === null).map((tab) => tabEntryOf(tab.id)),
+		workspace: session.tabs.map((tab) => tabEntryOf(tab.id)),
 	};
-	const listed = Object.entries(lists).flatMap(([list, entries]) => (list === "pinned" ? [] : entries));
+	const listed = Object.values(lists).flat();
 	const placed = PlacedTabsSchema.parse({
 		tabs: [...session.tabs, ...chatTabs],
 		lists: {
-			"window:main:pinned": [...pinnedIds.map(tabEntryOf), ...(lists["pinned"] ?? [])],
-			"window:main": [...chatIds.filter((id) => !pinnedIds.includes(id)).map(tabEntryOf), ...listed],
+			"window:main": [...chatIds.map(tabEntryOf), ...listed],
 		},
 		groups: session.groups,
 		views: { [MAIN_WINDOW]: { shownId: session.shownId } },

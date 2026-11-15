@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { GroupColourSchema, PlaceSchema } from "./place.schema.js";
+import { GroupColourSchema } from "./place.schema.js";
 
 export const GroupCreateSchema = z.strictObject({
 	name: z.string().min(1),
 	colour: GroupColourSchema.optional(),
-	place: PlaceSchema,
 	tabIds: z.array(z.string().min(1)).default([]).describe("Tabs to move into the group."),
 });
 
@@ -14,7 +13,6 @@ export const CreatedGroupSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	colour: GroupColourSchema.optional(),
-	place: z.string(),
 	tabIds: z.array(z.string()),
 });
 

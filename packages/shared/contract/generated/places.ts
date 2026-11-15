@@ -212,19 +212,8 @@ export const ShowTabAskSchema = TabAskSchema.extend({
 
 export type ShowTabAsk = z.infer<typeof ShowTabAskSchema>;
 
-export const AppKindSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
-
-export const EssentialSchema = z.object({
-	id: z.string(),
-	app: AppKindSchema,
-	address: z.string().nullable(),
-	title: z.string(),
-	favicon: z.string().nullable(),
-});
-
 export const RestoreTabsAskSchema = z.object({
 	at: TabsAskSchema,
-	essentials: z.array(EssentialSchema),
 	isBeside: z.boolean(),
 	keepsPages: z.boolean(),
 });
@@ -236,6 +225,8 @@ export const PlaceTabAskSchema = z.object({
 	id: z.string().min(1),
 	place: TabPlaceSchema,
 });
+
+export const AppKindSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
 
 export const PageAppSchema = AppKindSchema;
 
@@ -270,12 +261,6 @@ export const RenameTabAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),
 	label: z.string(),
-});
-
-export const PinTabAskSchema = z.object({
-	window: z.string().min(1),
-	id: z.string().min(1),
-	isPinned: z.boolean(),
 });
 
 export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
@@ -313,36 +298,6 @@ export const GroupHueAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),
 	hue: GroupHueSchema.nullable(),
-});
-
-export const EssentialRefSchema = z.object({
-	id: z.string().min(1),
-	app: AppKindSchema,
-	address: z.string().nullable(),
-});
-
-export type EssentialRef = z.infer<typeof EssentialRefSchema>;
-
-export const ShowEssentialAskSchema = z.object({
-	at: TabsAskSchema,
-	essential: EssentialRefSchema,
-});
-
-export const ReleaseEssentialAskSchema = z.object({
-	at: TabsAskSchema,
-	essential: EssentialRefSchema,
-	place: TabPlaceSchema,
-});
-
-export const CloseEssentialAskSchema = z.object({
-	at: TabsAskSchema,
-	essentialId: z.string().min(1),
-});
-
-export const MakeEssentialAskSchema = z.object({
-	at: TabsAskSchema,
-	id: z.string().min(1),
-	essentialId: z.string().min(1),
 });
 
 export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
@@ -483,28 +438,6 @@ export const AppTabsSchema = z.object({
 	canReopen: z.boolean(),
 });
 
-export type Essential = z.infer<typeof EssentialSchema>;
-
-export const EssentialFaceSchema = z.object({
-	app: AppKindSchema,
-	address: z.string().nullable(),
-	title: z.string(),
-	favicon: z.string().nullable(),
-});
-
-export type EssentialFace = z.infer<typeof EssentialFaceSchema>;
-
-export const EssentialTileSchema = z.object({
-	id: z.string(),
-	title: z.string(),
-	icon: TabArtSchema,
-	favicon: z.string().nullable(),
-	isShown: z.boolean(),
-	isLive: z.boolean(),
-});
-
-export type EssentialTile = z.infer<typeof EssentialTileSchema>;
-
 export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
@@ -529,7 +462,6 @@ export type SidebarGroup = z.infer<typeof SidebarGroupSchema>;
 
 export const SplitMemberSchema = z.object({
 	item: SidebarTabSchema,
-	isPinned: z.boolean(),
 	isFocused: z.boolean(),
 });
 
@@ -555,7 +487,7 @@ export const SidebarEntrySchema = z.discriminatedUnion("kind", [
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
-export const SectionListSchema = z.enum(["workspace", "pinned"]);
+export const SectionListSchema = z.enum(["workspace"]);
 
 export const SidebarSectionSchema = z.object({
 	list: SectionListSchema,
@@ -566,7 +498,6 @@ export const SidebarSectionSchema = z.object({
 export type SidebarSection = z.infer<typeof SidebarSectionSchema>;
 
 export const PlacedSidebarSchema = z.object({
-	essentials: z.array(EssentialTileSchema).readonly(),
 	sections: z.array(SidebarSectionSchema).readonly(),
 	newTabList: z.string(),
 });
@@ -575,7 +506,6 @@ export type PlacedSidebar = z.infer<typeof PlacedSidebarSchema>;
 
 export const SidebarAskSchema = z.object({
 	at: TabsAskSchema,
-	essentials: z.array(EssentialSchema),
 });
 
 export type SidebarAsk = z.infer<typeof SidebarAskSchema>;
@@ -652,8 +582,6 @@ export const KeptTabSchema = z.object({
 	history: TabHistorySchema.optional(),
 	pageId: z.string().nullable(),
 	label: z.string().nullable(),
-	essentialId: z.string().nullable().default(null),
-	essentialWindow: z.string().nullable().default(null),
 	lastAddress: z.string().nullable().default(null),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),
@@ -685,7 +613,6 @@ export const ChatTabRowSchema = z.object({
 });
 
 export const ChatTabsSchema = z.object({
-	pinned: z.array(ChatTabRowSchema),
 	open: z.array(ChatTabRowSchema),
 });
 
@@ -767,15 +694,6 @@ export const places = moduleContract("places", Server, {
 			.input(TabAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		closeEssential: named("tab-closing.close-essential", command()
-			.public()
-			.input(CloseEssentialAskSchema)
-			.output(TabsSettledSchema)
-			.idempotencyKey(Repeatable)),
-		closeEssentialCopies: named("tab-closing.close-essential-copies", command()
-			.public()
-			.input(z.object({ essentialId: z.string().min(1) }))
-			.idempotencyKey(Repeatable)),
 	},
 	tabFacts: {
 		keepChatTabs: named("tab-facts.keep-chat-tabs", command()
@@ -848,16 +766,6 @@ export const places = moduleContract("places", Server, {
 			.input(ReopenClosedAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		showEssential: named("tab-opening.show-essential", command()
-			.public()
-			.input(ShowEssentialAskSchema)
-			.output(TabsSettledSchema)
-			.idempotencyKey(Repeatable)),
-		releaseEssential: named("tab-opening.release-essential", command()
-			.public()
-			.input(ReleaseEssentialAskSchema)
-			.output(TabsSettledSchema)
-			.idempotencyKey(Repeatable)),
 	},
 	tabPlacing: {
 		place: named("tab-placing.place", command()
@@ -865,18 +773,9 @@ export const places = moduleContract("places", Server, {
 			.input(PlaceTabAskSchema)
 			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
-		makeEssential: named("tab-placing.make-essential", command()
-			.public()
-			.input(MakeEssentialAskSchema)
-			.output(EssentialFaceSchema)
-			.idempotencyKey(Repeatable)),
 		rename: named("tab-placing.rename", command()
 			.public()
 			.input(RenameTabAskSchema)
-			.idempotencyKey(Repeatable)),
-		pin: named("tab-placing.pin", command()
-			.public()
-			.input(PinTabAskSchema)
 			.idempotencyKey(Repeatable)),
 		createGroup: named("tab-placing.create-group", command()
 			.public()

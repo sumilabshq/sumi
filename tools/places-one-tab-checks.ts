@@ -2,11 +2,11 @@ import { BARE_SCREEN } from "./places-fixture.ts";
 import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { places as placesContract } from "../plugins/apps/data/places/generated/contract.ts";
-import type { PlacedSidebar, TabsAsk } from "../plugins/apps/data/places/generated/contract.ts";
-import { places as RunnablePlacesModule } from "../plugins/apps/data/places/generated/module.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
+import { places as placesContract } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import type { PlacedSidebar, TabsAsk } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const WINDOW = "main";
@@ -38,7 +38,7 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 }
 
 async function sidebarOf(places: Runtime): Promise<PlacedSidebar | string> {
-	const answer = await places.send(placesContract.tabs.sidebar, { at: AT, essentials: [] });
+	const answer = await places.send(placesContract.tabs.sidebar, { at: AT });
 	return answer.ok ? answer.output : answer.reason;
 }
 
@@ -128,15 +128,10 @@ async function sameForEveryTabChecks(): Promise<void> {
 		id: "chat-b",
 		place: { list: "chat-a", groupId: null, before: null },
 	});
-	const essential = await places.send(placesContract.tabPlacing.makeEssential, {
-		at: AT,
-		id: "chat-b",
-		essentialId: "essential-1",
-	});
 	check(
-		"a chat dropped onto a chat is refused, and a chat becomes an essential like any tab",
-		[inChat.ok ? "placed" : inChat.reason, essential.ok ? essential.output.title : essential.reason],
-		['the tab "chat-b" cannot stand inside "chat-a": a tab stands only in Open or Pinned', "Two"],
+		"a chat dropped onto a chat is refused",
+		inChat.ok ? "placed" : inChat.reason,
+		'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in the list of a window',
 	);
 }
 
@@ -208,7 +203,7 @@ async function selectionChecks(): Promise<void> {
 	const canvasId = canvas.ok ? canvas.output.id : canvas.reason;
 	const tasksId = tasks.ok ? tasks.output.id : tasks.reason;
 	const readHighlightedIds = async (at: TabsAsk): Promise<readonly string[]> => {
-		const answer = await places.send(placesContract.tabs.sidebar, { at, essentials: [] });
+		const answer = await places.send(placesContract.tabs.sidebar, { at });
 		return answer.ok
 			? answer.output.sections
 					.flatMap((section) => section.entries)

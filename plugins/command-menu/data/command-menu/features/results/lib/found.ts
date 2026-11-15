@@ -1,11 +1,11 @@
-import type { AppTabState, ChatMark, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { AppTabState, ChatMark, ClosedTabRow, TabsSidebar } from "@widgetarium/app-host/contract";
 import type { AppFace } from "@sumi/apps/contract";
 import type { RecentSite } from "@widgetarium/browser/contract";
 import type { ChatListData, ChatRowData } from "@sumi/chat-tabs/contract";
 import type { ChatElsewhereRow, WorkspacesView } from "@widgetarium/workspaces/contract";
 import { hostOf } from "../../../shared/lib/address.js";
 import type { Found, Intent, RowIcon } from "../../../shared/schema/command-menu.schema.js";
-import { chatActionsOf, openActionsOf, tabActionsOf, workspaceActionsOf } from "./row-actions.js";
+import { openActionsOf, renameActionsOf, tabActionsOf } from "./row-actions.js";
 import { listedTabsOf } from "./sidebar-tabs.js";
 
 interface ShownFace {
@@ -17,8 +17,6 @@ interface ShownFace {
 }
 
 const ON_SCREEN = "on screen";
-const ESSENTIALS = "Essentials";
-const PINNED = "Pinned";
 const WORKING = "Working";
 const UNREAD = "Done, not read";
 const WORKSPACE = "Workspace";
@@ -29,26 +27,21 @@ const INSTALLED_ART = "built-app";
 const CHAT_APP = "chat";
 const SUMI_CHAT = "Sumi Chat";
 const SUMI_CHAT_WORDS = "sumi chat new chat ask assistant";
-const LAYOUT = "Layout";
-const TABS_IN_SIDEBAR = "Tabs in sidebar";
-const TABS_IN_HEADER = "Tabs in header";
-const LAYOUT_WORDS = "layout sidebar header tabs mode";
 const NEW_WINDOW = "New window";
 const WINDOW = "Window";
 const NEW_WINDOW_WORDS = "new window empty no workspace";
 
 export function tabsFoundOf(sidebar: TabsSidebar): readonly Found[] {
-	const listed = listedTabsOf(sidebar).map(({ tab, listTitle }) => tabFoundOf(tab, listTitle));
-	return [...sidebar.essentials.map(essentialFoundOf), ...listed];
+	return listedTabsOf(sidebar).map(({ tab, listTitle }) => tabFoundOf(tab, listTitle));
 }
 
 export function chatsFoundOf(
-	{ pinned, recents }: ChatListData,
+	{ recents }: ChatListData,
 	onScreenIds: ReadonlySet<string>,
 	faces: readonly AppFace[],
 ): readonly Found[] {
 	const art = artOf(faces, CHAT_APP);
-	return [...recents, ...pinned].map((row) => chatFoundOf(row, onScreenIds.has(row.id), art));
+	return recents.map((row) => chatFoundOf(row, onScreenIds.has(row.id), art));
 }
 
 export function workspacesFoundOf({ rows }: WorkspacesView): readonly Found[] {
@@ -73,7 +66,7 @@ export function workspacesFoundOf({ rows }: WorkspacesView): readonly Found[] {
 			kind: "workspace",
 			id: row.id,
 		},
-		actions: workspaceActionsOf(),
+		actions: renameActionsOf(),
 		host: "",
 		isOnScreen: row.isCurrent,
 	}));
@@ -239,33 +232,6 @@ function tabFoundOf(tab: AppTabState, listTitle: string): Found {
 	};
 }
 
-function essentialFoundOf(tile: EssentialTile): Found {
-	return {
-		key: `essential:${tile.id}`,
-		kind: "tab",
-		title: tile.title,
-		meta: tile.isShown ? `${ESSENTIALS} · ${ON_SCREEN}` : ESSENTIALS,
-		haystack: ESSENTIALS,
-		icon: iconOf({
-			art: tile.icon,
-			favicon: tile.favicon,
-			title: tile.title,
-			address: null,
-			mark: NO_MARK,
-		}),
-		intent: {
-			do: "show-essential",
-			id: tile.id,
-			title: tile.title,
-		},
-		shortcut: null,
-		renames: null,
-		actions: [],
-		host: "",
-		isOnScreen: tile.isShown,
-	};
-}
-
 function chatFoundOf(row: ChatRowData, isOnScreen: boolean, art: string): Found {
 	return {
 		key: `chat:${row.id}`,
@@ -290,7 +256,7 @@ function chatFoundOf(row: ChatRowData, isOnScreen: boolean, art: string): Found 
 			kind: "chat",
 			id: row.id,
 		},
-		actions: chatActionsOf(row.id, row.isPinned),
+		actions: renameActionsOf(),
 		host: "",
 		isOnScreen,
 	};
@@ -298,7 +264,6 @@ function chatFoundOf(row: ChatRowData, isOnScreen: boolean, art: string): Found 
 
 function chatMetaOf(row: ChatRowData, isOnScreen: boolean): string {
 	const said = [
-		row.isPinned ? PINNED : "",
 		row.mark === "running" ? WORKING : "",
 		row.mark === "unread" ? UNREAD : "",
 		isOnScreen ? ON_SCREEN : "",
@@ -363,26 +328,6 @@ export function windowFoundOf(): readonly Found[] {
 			haystack: NEW_WINDOW_WORDS,
 			icon: { kind: "glyph", glyph: "window" },
 			intent: { do: "run", command: "new-window" },
-			shortcut: null,
-			renames: null,
-			actions: [],
-			host: "",
-			isOnScreen: false,
-		},
-	];
-}
-
-export function layoutFoundOf(tabs: "header" | "sidebar"): readonly Found[] {
-	const isSidebar = tabs === "sidebar";
-	return [
-		{
-			key: "layout:tabs",
-			kind: "app",
-			title: isSidebar ? TABS_IN_HEADER : TABS_IN_SIDEBAR,
-			meta: LAYOUT,
-			haystack: LAYOUT_WORDS,
-			icon: { kind: "glyph", glyph: "layout" },
-			intent: { do: "run", command: isSidebar ? "tabs-in-header" : "tabs-in-sidebar" },
 			shortcut: null,
 			renames: null,
 			actions: [],

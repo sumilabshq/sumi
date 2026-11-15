@@ -10,26 +10,22 @@ import type { StripItem } from "./strip-items.js";
 export interface TabActs {
 	readonly show: (item: StripItem) => void;
 	readonly close: (item: StripItem) => void;
-	readonly togglePin: (item: StripItem) => void;
 	readonly duplicate: (item: StripItem) => void;
 	readonly closeOthers: (item: StripItem) => void;
 	readonly tearOff: (tab: AppTabState) => void;
 	readonly copyLink: (tab: AppTabState) => void;
-	readonly addToEssentials: (tab: AppTabState) => void;
 	readonly drop: (item: StripItem, aim: DragAim) => void;
 }
 
 export interface StripFacts {
 	readonly items: readonly StripItem[];
 	readonly newTabList: string;
-	readonly essentialsCount: number;
 }
 
-export function useTabActs({ items, newTabList, essentialsCount }: StripFacts): TabActs {
+export function useTabActs({ items, newTabList }: StripFacts): TabActs {
 	const showTab = useCommand(appHost.tabs.showTab);
 	const placeTab = useCommand(appHost.tabs.placeTab);
 	const closeTabs = useCommand(appHost.tabActions.closeTabs);
-	const pin = useCommand(appHost.tabActions.pin);
 	const duplicate = useCommand(appHost.tabActions.duplicate);
 	const closeOthers = useCommand(appHost.tabActions.closeOthers);
 	const tearOff = useCommand(appHost.tabActions.tearOff);
@@ -38,15 +34,9 @@ export function useTabActs({ items, newTabList, essentialsCount }: StripFacts): 
 	return {
 		show: (item) => void showTab.run({ id: tabOf(item).id }),
 		close: (item) => void closeTabs.run({ ids: memberIdsOf(item) }),
-		togglePin: (item) =>
-			void pin.run({
-				id: tabOf(item).id,
-				isPinned: !item.isPinned,
-			}),
 		duplicate: (item) => void duplicate.run({ id: tabOf(item).id }),
 		closeOthers: (item) => void closeOthers.run({ id: tabOf(item).id }),
 		tearOff: tearOffTab,
-		addToEssentials: ({ id }) => void placeTab.run({ id, to: { kind: "essentials", at: essentialsCount } }),
 		copyLink: ({ address }) => {
 			if (address !== null) {
 				copyLink(address);
@@ -60,7 +50,6 @@ export function useTabActs({ items, newTabList, essentialsCount }: StripFacts): 
 				void placeTab.run({
 					id,
 					to: stripDropOf({
-						dragged: item,
 						others,
 						index: aim.index,
 						newTabList,

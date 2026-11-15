@@ -1,30 +1,28 @@
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
-import { tabRowsOf } from "../plugins/apps/data/places/shared/lib/rows/tab-rows.ts";
+import { tabRowsOf } from "../plugins/tab-strip/data/places/shared/lib/rows/tab-rows.ts";
 import {
 	emptyMoment,
 	findGroup,
 	flatTabIdsOf,
-	makeEssential,
 	markShown,
 	openTab,
 	placeTab,
 	tabOf,
-} from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
-import { closeGroup, closeTabs, reopenClosed } from "../plugins/apps/data/places/shared/lib/tabs/tab-closing.ts";
-import { addGroup, ungroup } from "../plugins/apps/data/places/shared/lib/tabs/tab-groups.ts";
-import { rememberPages } from "../plugins/apps/data/places/shared/lib/tabs/page-memory.ts";
-import type { HostTabsMoment, MovedTabs, TabGroup } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
-import { PINNED_LIST, WORKSPACE_LIST } from "../plugins/apps/data/places/shared/lib/tabs/tab-lists.ts";
-import { addEssential, essentialsOf } from "../plugins/apps/data/app-host/shared/lib/essentials/essentials.ts";
-import { withTabsClosed } from "../plugins/apps/data/places/shared/lib/showing/closing.ts";
+} from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
+import { closeGroup, closeTabs, reopenClosed } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-closing.ts";
+import { addGroup, ungroup } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-groups.ts";
+import { rememberPages } from "../plugins/tab-strip/data/places/shared/lib/tabs/page-memory.ts";
+import type { HostTabsMoment, MovedTabs, TabGroup } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-lists.ts";
+import { withTabsClosed } from "../plugins/tab-strip/data/places/shared/lib/showing/closing.ts";
 import {
 	showingOf,
 	withFreeTabBesidePanes,
 	withPageEnsured,
 	withTabShown,
 	withTabTornOff,
-} from "../plugins/apps/data/places/shared/lib/showing/showing.ts";
-import type { TabFacts } from "../plugins/apps/data/places/shared/lib/showing/tab-facts.ts";
+} from "../plugins/tab-strip/data/places/shared/lib/showing/showing.ts";
+import type { TabFacts } from "../plugins/tab-strip/data/places/shared/lib/showing/tab-facts.ts";
 
 let failed = 0;
 const quiet = console.info;
@@ -43,7 +41,7 @@ function check(name: string, seen: unknown, wanted: unknown): void {
 }
 
 const ONE = WORKSPACE_LIST;
-const TWO = PINNED_LIST;
+const TWO = "window:other";
 const atEnd = (list: string) => ({ chatId: list, groupId: null, before: null });
 const browser = { app: "browser" as const, pageId: null };
 
@@ -145,27 +143,6 @@ check(
 	[[twoClosed.closed[0]?.tab.id ?? ""], [twoClosed.closed[1]?.tab.id ?? ""]],
 );
 check("a closed Open tab reopens in Open", flatTabIdsOf(workspaceReopened, WORKSPACE_LIST), ["tab-1"]);
-
-const added = addEssential(
-	essentialsOf(null),
-	{ app: "browser", address: "https://mail.example/", title: "Mail", favicon: null },
-	1,
-);
-const shared = makeEssential(threeTabs(), "tab-2", added.id).moment;
-check(
-	"a tab made Essential leaves its list, and Essentials start with Canvas",
-	[flatTabIdsOf(shared, ONE), added.kept.essentials.map((one) => one.title)],
-	[
-		["tab-1", "tab-3"],
-		["Canvas", "Mail"],
-	],
-);
-const released = movedTo(placeTab(shared, "tab-2", atEnd(TWO)), shared);
-check(
-	"an Essential dropped into a list is an ordinary tab of that list",
-	[tabOf(released, "tab-2").essentialId, flatTabIdsOf(released, TWO)],
-	[null, ["tab-2"]],
-);
 
 const panedClosed = withTabsClosed(showingOf({ ...threeTabs(), view: "browser" }), factsOf(["tab-3"]), {
 	ids: ["tab-3"],

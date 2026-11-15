@@ -77,16 +77,6 @@ function TabMenuItems({ at: { item }, acts, hasOthers, chose, onDone }: TabMenuI
 					<PopoverSeparator />
 				</>
 			) : null}
-			<PopoverItem role="menuitem" onClick={chose(() => acts.togglePin(item))}>
-				<Icon name={item.isPinned ? "pin-off" : "pin"} size={ITEM_ICON_PX} />
-				{item.isPinned ? "Unpin" : "Pin"}
-			</PopoverItem>
-			{item.kind === "split" ? null : (
-				<PopoverItem role="menuitem" onClick={chose(() => acts.addToEssentials(tab))}>
-					<Icon name="grid-plus" size={ITEM_ICON_PX} />
-					Add to Essentials
-				</PopoverItem>
-			)}
 			<PopoverItem role="menuitem" onClick={chose(() => acts.duplicate(item))}>
 				<Icon name="copy-plus" size={ITEM_ICON_PX} />
 				Duplicate

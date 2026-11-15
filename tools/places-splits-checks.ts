@@ -1,16 +1,16 @@
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { places } from "../plugins/apps/data/places/generated/contract.ts";
-import type { TabsAsk } from "../plugins/apps/data/places/generated/contract.ts";
-import type { SidebarEntry } from "../plugins/apps/data/places/shared/schema/tab-rows.schema.ts";
-import type { SplitDir, SplitNode } from "../plugins/apps/data/places/shared/schema/splits.schema.ts";
-import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { splitMapOf } from "../plugins/apps/data/places/shared/lib/splits/split-map.ts";
-import { splitBreaksOf } from "../plugins/apps/data/places/shared/lib/splits/split-members.ts";
-import { placeInView } from "../plugins/apps/data/places/shared/lib/splits/split-moves.ts";
-import { momentOfWindow } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
-import type { HostTabsMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
+import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import type { TabsAsk } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import type { SidebarEntry } from "../plugins/tab-strip/data/places/shared/schema/tab-rows.schema.ts";
+import type { SplitDir, SplitNode } from "../plugins/tab-strip/data/places/shared/schema/splits.schema.ts";
+import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { splitMapOf } from "../plugins/tab-strip/data/places/shared/lib/splits/split-map.ts";
+import { splitBreaksOf } from "../plugins/tab-strip/data/places/shared/lib/splits/split-members.ts";
+import { placeInView } from "../plugins/tab-strip/data/places/shared/lib/splits/split-moves.ts";
+import { momentOfWindow } from "../plugins/tab-strip/data/places/shared/lib/tabs/kept-tabs.ts";
+import type { HostTabsMoment } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
 import { BARE_SCREEN, MAIN_WINDOW, placedTabsOf, placesLinkOf } from "./places-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
 
@@ -33,10 +33,7 @@ const SEED = {
 
 const OPEN_WITH_SPLIT = [
 	"chat",
-	[
-		["tab-1", true],
-		["tab-2", false],
-	],
+	["tab-1", "tab-2"],
 	"tab-3",
 	"tab-4",
 	"tab-5",
@@ -67,7 +64,7 @@ function rowOfTwo(id: string, first: string, second: string, dir: SplitDir = "ro
 
 function entryShapeOf(entry: SidebarEntry): unknown {
 	if (entry.kind === "split") {
-		return entry.split.members.map((member) => [member.item.kind === "tab" ? member.item.tab.id : "", member.isPinned]);
+		return entry.split.members.map((member) => member.item.tab.id);
 	}
 
 	return entry.kind === "tab" ? entry.tab.id : entry.kind;
@@ -203,7 +200,7 @@ async function dissolvingChecks(): Promise<void> {
 }
 
 async function openShapesOf(window: Runtime): Promise<unknown> {
-	const sidebar = await sent(window.send(places.tabs.sidebar, { at: AT, essentials: [] }));
+	const sidebar = await sent(window.send(places.tabs.sidebar, { at: AT }));
 	const sections = typeof sidebar === "string" ? [] : sidebar.sections;
 	const open = sections.find((section) => section.list === "workspace")?.entries ?? [];
 	return open.map(entryShapeOf).filter((shape) => shape !== "chat");
@@ -223,8 +220,8 @@ async function draggingOutChecks(): Promise<void> {
 		await openShapesOf(window),
 		[
 			[
-				["tab-1", false],
-				["tab-3", false],
+				"tab-1",
+				"tab-3",
 			],
 			"tab-4",
 			"tab-2",
@@ -239,8 +236,8 @@ async function draggingOutChecks(): Promise<void> {
 	check("a tab dropped before any member of a split stands before the whole split", await openShapesOf(window), [
 		"tab-5",
 		[
-			["tab-1", false],
-			["tab-3", false],
+			"tab-1",
+			"tab-3",
 		],
 		"tab-4",
 		"tab-2",
@@ -270,8 +267,8 @@ async function carryingChecks(): Promise<void> {
 		"tab-2",
 		"tab-4",
 		[
-			["tab-1", false],
-			["tab-3", false],
+			"tab-1",
+			"tab-3",
 		],
 		"tab-5",
 	]);
@@ -280,8 +277,8 @@ async function carryingChecks(): Promise<void> {
 		"tab-2",
 		"tab-4",
 		[
-			["tab-3", false],
-			["tab-1", false],
+			"tab-3",
+			"tab-1",
 		],
 		"tab-5",
 	]);
@@ -302,56 +299,13 @@ async function dissolvedPlaceChecks(): Promise<void> {
 	);
 }
 
-async function pinnedMemberChecks(): Promise<void> {
-	const { window } = started();
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
-	await window.send(places.tabPlacing.pin, { window: MAIN_WINDOW, id: "tab-1", isPinned: true });
-	await window.send(places.tabPlacing.pin, { window: MAIN_WINDOW, id: "tab-3", isPinned: true });
-	await window.send(places.tabPlacing.place, {
-		at: AT,
-		id: "tab-1",
-		place: { list: "pinned", groupId: null, before: null },
-	});
-	check("a pinned member reordered inside Pinned keeps its split", await splitOf(window), {
-		members: ["tab-1", "tab-2"],
-		focused: "tab-2",
-		layout: rowOfTwo("split-1-b1", "tab-1", "tab-2"),
-	});
-}
-
 async function sidebarChecks(): Promise<void> {
 	const { window } = started();
 	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
-	await window.send(places.tabPlacing.pin, { window: MAIN_WINDOW, id: "tab-1", isPinned: true });
-	const sidebar = await sent(window.send(places.tabs.sidebar, { at: AT, essentials: [] }));
+	const sidebar = await sent(window.send(places.tabs.sidebar, { at: AT }));
 	const sections = typeof sidebar === "string" ? [] : sidebar.sections;
-	const pinned = sections.find((section) => section.list === "pinned")?.entries ?? [];
 	const open = sections.find((section) => section.list === "workspace")?.entries ?? [];
-	check(
-		"a pinned member stays in Pinned, marked with the map whose own cell is marked",
-		pinned.map((entry) => (entry.kind === "tab" ? [entry.tab.id, entry.splitMark?.map.markedId] : entry.kind)),
-		[["tab-1", "tab-1"]],
-	);
-	check(
-		"and the split stands in Open once, in place of its unpinned members, the pinned one marked inside",
-		open.map(entryShapeOf),
-		OPEN_WITH_SPLIT,
-	);
-	await allPinnedChecks(window);
-}
-
-async function allPinnedChecks(window: Runtime): Promise<void> {
-	await window.send(places.tabPlacing.pin, { window: MAIN_WINDOW, id: "tab-2", isPinned: true });
-	const allPinned = await sent(window.send(places.tabs.sidebar, { at: AT, essentials: [] }));
-	check(
-		"a split whose every member is pinned stands once in Pinned",
-		typeof allPinned === "string"
-			? allPinned
-			: allPinned.sections.map((section) =>
-					section.entries.map((entry) => (entry.kind === "tab" && entry.isChat ? "chat" : entry.kind)),
-				),
-		[["split"], ["chat", "tab", "tab", "tab"]],
-	);
+	check("the split stands in the list once, in place of its members", open.map(entryShapeOf), OPEN_WITH_SPLIT);
 }
 
 function mapChecks(): void {
@@ -390,7 +344,6 @@ await swappingChecks();
 await dissolvingChecks();
 await draggingOutChecks();
 await carryingChecks();
-await pinnedMemberChecks();
 await dissolvedPlaceChecks();
 await sidebarChecks();
 mapChecks();
