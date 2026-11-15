@@ -1,5 +1,15 @@
 import { z } from "zod";
-import { BackgroundSchema, BoardIdSchema, CameraSchema, NameSchema, PageIdSchema, TabIdSchema } from "./canvas.schema.js";
+import {
+	BackgroundSchema,
+	BoardIdSchema,
+	CameraSchema,
+	NameSchema,
+	PageIdSchema,
+	TabIdSchema,
+	TweakControlSchema,
+	TweakIdSchema,
+	TweakValueSchema,
+} from "./canvas.schema.js";
 
 export const CanvasAskSchema = z.object({ tabId: TabIdSchema });
 
@@ -63,6 +73,33 @@ export const KeepCameraAskSchema = z.object({
 	camera: CameraSchema,
 });
 
+export const TweaksAskSchema = z.object({
+	tabId: TabIdSchema,
+	page: PageIdSchema.nullable().default(null),
+});
+
+export const TweakAskSchema = z.object({
+	id: TweakIdSchema,
+	label: NameSchema,
+	control: TweakControlSchema,
+	value: TweakValueSchema,
+});
+
+export const WriteTweaksAskSchema = z.object({
+	tabId: TabIdSchema,
+	page: PageIdSchema.nullable().default(null),
+	board: BoardIdSchema.nullable().default(null),
+	tweaks: z.array(TweakAskSchema).max(24),
+});
+
+export const SetTweakValueAskSchema = z.object({
+	tabId: TabIdSchema,
+	page: PageIdSchema,
+	board: BoardIdSchema.nullable(),
+	tweak: TweakIdSchema,
+	value: TweakValueSchema,
+});
+
 export const WrittenBoardSchema = z.object({
 	board: BoardIdSchema,
 	page: PageIdSchema,
@@ -71,3 +108,4 @@ export const WrittenBoardSchema = z.object({
 export const CreatedPageSchema = z.object({ page: PageIdSchema });
 
 export type WriteBoardAsk = z.infer<typeof WriteBoardAskSchema>;
+export type TweakAsk = z.infer<typeof TweakAskSchema>;

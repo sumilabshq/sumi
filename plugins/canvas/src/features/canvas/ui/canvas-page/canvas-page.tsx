@@ -25,7 +25,7 @@ export function CanvasPage({ tabId }: TabPageProps): ReactElement {
 	return (
 		<CanvasViewStateContext.Provider value={view}>
 			<CanvasActions />
-			<div className="sumi-canvas" data-canvas-tab={tabId}>
+			<div className="sumi-canvas" data-canvas-tab={tabId} data-sumi-corner="float">
 				{canvas.isPanelOpen ? <CanvasPanel width={canvas.panelWidth} /> : null}
 				<ArtboardField key={canvas.shownPage} />
 			</div>

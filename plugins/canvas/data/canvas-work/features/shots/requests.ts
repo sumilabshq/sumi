@@ -10,13 +10,14 @@ export const getBoardShot = query()
 	.public()
 	.metadata({
 		description:
-			"See an artboard as a PNG, drawn from its HTML at its frame size (scaled down past 2000 px a side). Look at it after every writeBoard and fix what is off before telling the person it is done. Web fonts may fall back to system fonts in the shot.",
+			"See an artboard as a PNG, drawn from its HTML at its frame size (scaled down past 2000 px a side), with its tweaks' CSS variables and attributes as the person left them. Look at it after every writeBoard and fix what is off before telling the person it is done. Web fonts may fall back to system fonts in the shot, and scripts do not run in it.",
 	})
 	.input(BoardAskSchema)
 	.output(ShotSchema)
 	.handle(async (ask, { send, rendering }) => {
 		const board = await send(artboards.boards.getBoard, ask);
-		return rendering.shotOf([board], MOST_BOARD_SIDE);
+		const tweaked = await send(artboards.tweaks.getBoardTweaks, { tabId: ask.tabId, page: board.page });
+		return rendering.shotOf([{ ...board, tweaks: tweaked.find((one) => one.board === board.id)?.applied ?? [] }], MOST_BOARD_SIDE);
 	});
 
 export const getPageShot = query()
@@ -36,8 +37,12 @@ export const getPageShot = query()
 			return refuse(`page ${shown} has no artboards yet`);
 		}
 
+		const tweaked = await send(artboards.tweaks.getBoardTweaks, { tabId, page: shown });
 		const boards = await Promise.all(
 			placed.map((place) => send(artboards.boards.getBoard, { tabId, board: place.id })),
 		);
-		return rendering.shotOf(boards, MOST_PAGE_SIDE);
+		return rendering.shotOf(
+			boards.map((board) => ({ ...board, tweaks: tweaked.find((one) => one.board === board.id)?.applied ?? [] })),
+			MOST_PAGE_SIDE,
+		);
 	});

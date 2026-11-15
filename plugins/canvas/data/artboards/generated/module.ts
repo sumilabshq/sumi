@@ -4,6 +4,7 @@ import { artboards as definition } from "../module.js";
 import { getBoard, getBoards, getBoardsMatching, getShownPageBoards, moveBoard, removeBoard, renameBoard, rereadBoards, writeBoard } from "../features/boards/requests.js";
 import { getCanvas, getCanvases, rereadCanvases } from "../features/canvases/requests.js";
 import { createPage, removePage, renamePage, showPage } from "../features/pages/requests.js";
+import { getBoardTweaks, getTweaks, rereadTweaks, resetTweaks, setTweakValue, writeTweaks } from "../features/tweaks/requests.js";
 import { keepCamera, resizePanel, setBackground, togglePanel } from "../features/view/requests.js";
 import { canvasesChanged } from "../gateways/canvases/canvases.events.js";
 
@@ -12,6 +13,7 @@ export type { ArtboardsConfig } from "../module.js";
 export const artboards = handledModule(definition, [
 	rereadBoards,
 	rereadCanvases,
+	rereadTweaks,
 	named("boards.get-board", getBoard),
 	named("boards.get-boards", getBoards),
 	named("boards.get-boards-matching", getBoardsMatching),
@@ -27,6 +29,11 @@ export const artboards = handledModule(definition, [
 	named("pages.remove-page", removePage),
 	named("pages.rename-page", renamePage),
 	named("pages.show-page", showPage),
+	named("tweaks.get-board-tweaks", getBoardTweaks),
+	named("tweaks.get-tweaks", getTweaks),
+	named("tweaks.reset-tweaks", resetTweaks),
+	named("tweaks.set-tweak-value", setTweakValue),
+	named("tweaks.write-tweaks", writeTweaks),
 	named("view.keep-camera", keepCamera),
 	named("view.resize-panel", resizePanel),
 	named("view.set-background", setBackground),

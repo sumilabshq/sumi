@@ -35,10 +35,51 @@ export const BoardSchema = z.object({
 	html: z.string().max(2_000_000),
 });
 
+export const TweakIdSchema = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/);
+
+export const TweakValueSchema = z.union([z.number(), z.boolean(), z.string().max(80)]);
+
+export const TweakControlSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("number"),
+		min: z.number(),
+		max: z.number(),
+		step: z.number().positive(),
+		unit: z.string().max(8),
+	}),
+	z.object({ kind: z.literal("toggle") }),
+	z.object({
+		kind: z.literal("choice"),
+		options: z.array(z.string().trim().min(1).max(80)).min(2).max(8),
+	}),
+]);
+
+export const TweakSchema = z.object({
+	id: TweakIdSchema,
+	label: NameSchema,
+	page: PageIdSchema,
+	board: BoardIdSchema.nullable(),
+	control: TweakControlSchema,
+	initial: TweakValueSchema,
+	value: TweakValueSchema,
+});
+
+export const AppliedTweakSchema = z.object({
+	id: TweakIdSchema,
+	value: TweakValueSchema,
+	css: z.string(),
+});
+
+export const BoardTweaksSchema = z.object({
+	board: BoardIdSchema,
+	applied: z.array(AppliedTweakSchema),
+});
+
 export const CanvasSchema = z.object({
 	title: NameSchema,
 	pages: z.array(PageSchema).min(1),
 	boards: z.array(BoardSchema),
+	tweaks: z.array(TweakSchema).default([]),
 	shownPage: PageIdSchema,
 	isPanelOpen: z.boolean(),
 	panelWidth: z.number().min(120).max(800).default(240),
@@ -78,6 +119,11 @@ export const BoardHitSchema = z.object({
 export type Camera = z.infer<typeof CameraSchema>;
 export type Page = z.infer<typeof PageSchema>;
 export type Board = z.infer<typeof BoardSchema>;
+export type Tweak = z.infer<typeof TweakSchema>;
+export type TweakControl = z.infer<typeof TweakControlSchema>;
+export type TweakValue = z.infer<typeof TweakValueSchema>;
+export type AppliedTweak = z.infer<typeof AppliedTweakSchema>;
+export type BoardTweaks = z.infer<typeof BoardTweaksSchema>;
 export type BoardPlace = z.infer<typeof BoardPlaceSchema>;
 export type Canvas = z.infer<typeof CanvasSchema>;
 export type CanvasView = z.infer<typeof CanvasViewSchema>;

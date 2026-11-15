@@ -1,7 +1,14 @@
 import type { Layer } from "../schema/layer.schema.js";
 
+export interface AppliedTweak {
+	readonly id: string;
+	readonly value: number | boolean | string;
+	readonly css: string;
+}
+
 export interface DrawnBoard {
 	readonly html: string;
+	readonly tweaks: readonly AppliedTweak[];
 	readonly x: number;
 	readonly y: number;
 	readonly w: number;

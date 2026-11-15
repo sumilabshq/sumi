@@ -5,8 +5,9 @@ import { getBoard, getBoardsMatching, moveBoard, removeBoard, renameBoard, renam
 import { getCanvas, getCanvases } from "../features/canvases/requests.js";
 import { createPage, removePage, renamePage, showPage } from "../features/pages/requests.js";
 import { getBoardShot, getPageShot } from "../features/shots/requests.js";
+import { getTweaks, writeTweaks } from "../features/tweaks/requests.js";
 
-export type { BoardRendering, CanvasWorkConfig, DrawnBoard, Layer, Shot } from "../module.js";
+export type { AppliedTweak, BoardRendering, CanvasWorkConfig, DrawnBoard, Layer, Shot } from "../module.js";
 
 export const canvasWork = handledModule(definition, [
 	named("boards.get-board", getBoard),
@@ -24,4 +25,6 @@ export const canvasWork = handledModule(definition, [
 	named("pages.show-page", showPage),
 	named("shots.get-board-shot", getBoardShot),
 	named("shots.get-page-shot", getPageShot),
+	named("tweaks.get-tweaks", getTweaks),
+	named("tweaks.write-tweaks", writeTweaks),
 ]);

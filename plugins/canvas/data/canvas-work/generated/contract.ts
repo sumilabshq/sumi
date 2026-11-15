@@ -149,6 +149,66 @@ export interface Layer {
 	readonly children: readonly Layer[];
 }
 
+export const TweakIdSchema = z
+	.string()
+	.regex(/^[a-z][a-z0-9-]{0,39}$/)
+	.describe("Lowercase letters, digits and dashes: the artboard reads it as var(--id), data-id and tweaks[id]");
+
+export const TweakValueSchema = z.union([z.number(), z.boolean(), z.string().max(80)]);
+
+export const TweakControlSchema = z.discriminatedUnion("kind", [
+	z
+		.object({
+			kind: z.literal("number"),
+			min: z.number(),
+			max: z.number(),
+			step: z.number().positive(),
+			unit: z.string().max(8).describe("Joined to the number in CSS: px, %, ms, or empty for a bare number"),
+		})
+		.describe("A slider"),
+	z.object({ kind: z.literal("toggle") }).describe("A switch; the value is true or false, 1 or 0 in CSS"),
+	z
+		.object({
+			kind: z.literal("choice"),
+			options: z.array(z.string().trim().min(1).max(80)).min(2).max(8),
+		})
+		.describe("One of a few options, each shown as written"),
+]);
+
+export const TweakAskSchema = z.object({
+	id: TweakIdSchema,
+	label: NameSchema.describe("The name the person reads beside the control"),
+	control: TweakControlSchema,
+	value: TweakValueSchema.describe("The first value, which Reset returns to; it must fit the control"),
+});
+
+export const WriteTweaksAskSchema = z.object({
+	tabId: TabIdSchema,
+	board: BoardIdSchema.nullable()
+		.default(null)
+		.describe("An artboard whose own tweaks these are; null writes the page's tweaks, which reach every artboard on it"),
+	page: PageIdSchema.nullable().default(null).describe("The page, when board is null; null is the shown page"),
+	tweaks: z
+		.array(TweakAskSchema)
+		.max(24)
+		.describe("Every tweak of that page or artboard, in order; the list replaces the ones written before"),
+});
+
+export const TweaksAskSchema = z.object({
+	tabId: TabIdSchema,
+	page: PageIdSchema.nullable().default(null).describe("null reads the shown page"),
+});
+
+export const TweakReadSchema = z.object({
+	id: z.string(),
+	label: z.string(),
+	page: z.string(),
+	board: z.string().nullable(),
+	control: TweakControlSchema,
+	initial: TweakValueSchema,
+	value: TweakValueSchema,
+});
+
 export const canvasWork = moduleContract("canvas-work", Device, {
 	boards: {
 		getBoard: named("boards.get-board", query()
@@ -255,7 +315,7 @@ export const canvasWork = moduleContract("canvas-work", Device, {
 			.public()
 			.metadata({
 				description:
-					"See an artboard as a PNG, drawn from its HTML at its frame size (scaled down past 2000 px a side). Look at it after every writeBoard and fix what is off before telling the person it is done. Web fonts may fall back to system fonts in the shot.",
+					"See an artboard as a PNG, drawn from its HTML at its frame size (scaled down past 2000 px a side), with its tweaks' CSS variables and attributes as the person left them. Look at it after every writeBoard and fix what is off before telling the person it is done. Web fonts may fall back to system fonts in the shot, and scripts do not run in it.",
 			})
 			.input(BoardAskSchema)
 			.output(ShotSchema)),
@@ -267,5 +327,23 @@ export const canvasWork = moduleContract("canvas-work", Device, {
 			})
 			.input(PageShotAskSchema)
 			.output(ShotSchema)),
+	},
+	tweaks: {
+		writeTweaks: named("tweaks.write-tweaks", command()
+			.public()
+			.metadata({
+				description:
+					'Give the person live controls for a page or one artboard, drawn by Sumi in the canvas side panel: a slider (number), a switch (toggle) or a few options (choice). Use them instead of drawing controls inside an artboard, which takes no clicks. board null writes the page\'s tweaks, which reach every artboard on it; a board id writes that artboard\'s own, and an own tweak wins over a page tweak with the same id. The list replaces what that page or artboard had; an empty list removes them. Each value reaches the artboard at once, without a reload: as the CSS variable --id on the html element (a number with its unit, a toggle as 1 or 0), as the attribute data-id on it, and in window.tweaks[id] with a "tweaks" event on window. Most tweaks need only CSS: border-radius: var(--radius), :root[data-theme="dark"] { }. For the rest write plain JavaScript in the artboard: function paint() { } paint(); addEventListener("tweaks", paint).',
+			})
+			.input(WriteTweaksAskSchema)
+			.idempotencyKey(Repeatable)),
+		getTweaks: named("tweaks.get-tweaks", query()
+			.public()
+			.metadata({
+				description:
+					"Read a page's tweaks with the values the person left them at: the page's own (board null) and each artboard's.",
+			})
+			.input(TweaksAskSchema)
+			.output(TweakReadSchema.array())),
 	},
 });

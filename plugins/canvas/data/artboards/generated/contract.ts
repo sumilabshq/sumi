@@ -83,6 +83,52 @@ export const KeepCameraAskSchema = z.object({
 	camera: CameraSchema,
 });
 
+export const TweaksAskSchema = z.object({
+	tabId: TabIdSchema,
+	page: PageIdSchema.nullable().default(null),
+});
+
+export const TweakIdSchema = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/);
+
+export const TweakControlSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("number"),
+		min: z.number(),
+		max: z.number(),
+		step: z.number().positive(),
+		unit: z.string().max(8),
+	}),
+	z.object({ kind: z.literal("toggle") }),
+	z.object({
+		kind: z.literal("choice"),
+		options: z.array(z.string().trim().min(1).max(80)).min(2).max(8),
+	}),
+]);
+
+export const TweakValueSchema = z.union([z.number(), z.boolean(), z.string().max(80)]);
+
+export const TweakAskSchema = z.object({
+	id: TweakIdSchema,
+	label: NameSchema,
+	control: TweakControlSchema,
+	value: TweakValueSchema,
+});
+
+export const WriteTweaksAskSchema = z.object({
+	tabId: TabIdSchema,
+	page: PageIdSchema.nullable().default(null),
+	board: BoardIdSchema.nullable().default(null),
+	tweaks: z.array(TweakAskSchema).max(24),
+});
+
+export const SetTweakValueAskSchema = z.object({
+	tabId: TabIdSchema,
+	page: PageIdSchema,
+	board: BoardIdSchema.nullable(),
+	tweak: TweakIdSchema,
+	value: TweakValueSchema,
+});
+
 export const WrittenBoardSchema = z.object({
 	board: BoardIdSchema,
 	page: PageIdSchema,
@@ -91,6 +137,8 @@ export const WrittenBoardSchema = z.object({
 export const CreatedPageSchema = z.object({ page: PageIdSchema });
 
 export type WriteBoardAsk = z.infer<typeof WriteBoardAskSchema>;
+
+export type TweakAsk = z.infer<typeof TweakAskSchema>;
 
 export const PageSchema = z.object({
 	id: PageIdSchema,
@@ -106,6 +154,27 @@ export const BoardSchema = z.object({
 	w: z.number().min(40).max(8000),
 	h: z.number().min(40).max(8000),
 	html: z.string().max(2_000_000),
+});
+
+export const TweakSchema = z.object({
+	id: TweakIdSchema,
+	label: NameSchema,
+	page: PageIdSchema,
+	board: BoardIdSchema.nullable(),
+	control: TweakControlSchema,
+	initial: TweakValueSchema,
+	value: TweakValueSchema,
+});
+
+export const AppliedTweakSchema = z.object({
+	id: TweakIdSchema,
+	value: TweakValueSchema,
+	css: z.string(),
+});
+
+export const BoardTweaksSchema = z.object({
+	board: BoardIdSchema,
+	applied: z.array(AppliedTweakSchema),
 });
 
 export const BoardPlaceSchema = BoardSchema.omit({ html: true });
@@ -142,6 +211,16 @@ export type Camera = z.infer<typeof CameraSchema>;
 export type Page = z.infer<typeof PageSchema>;
 
 export type Board = z.infer<typeof BoardSchema>;
+
+export type Tweak = z.infer<typeof TweakSchema>;
+
+export type TweakControl = z.infer<typeof TweakControlSchema>;
+
+export type TweakValue = z.infer<typeof TweakValueSchema>;
+
+export type AppliedTweak = z.infer<typeof AppliedTweakSchema>;
+
+export type BoardTweaks = z.infer<typeof BoardTweaksSchema>;
 
 export type BoardPlace = z.infer<typeof BoardPlaceSchema>;
 
@@ -212,6 +291,28 @@ export const artboards = moduleContract("artboards", Server, {
 			.input(PageAskSchema)
 			.idempotencyKey(Repeatable)),
 		showPage: named("pages.show-page", command()
+			.public()
+			.input(PageAskSchema)
+			.idempotencyKey(Repeatable)),
+	},
+	tweaks: {
+		getTweaks: named("tweaks.get-tweaks", query()
+			.public()
+			.input(TweaksAskSchema)
+			.output(TweakSchema.array())),
+		getBoardTweaks: named("tweaks.get-board-tweaks", query()
+			.public()
+			.input(TweaksAskSchema)
+			.output(BoardTweaksSchema.array())),
+		writeTweaks: named("tweaks.write-tweaks", command()
+			.public()
+			.input(WriteTweaksAskSchema)
+			.idempotencyKey(Repeatable)),
+		setTweakValue: named("tweaks.set-tweak-value", command()
+			.public()
+			.input(SetTweakValueAskSchema)
+			.idempotencyKey(Repeatable)),
+		resetTweaks: named("tweaks.reset-tweaks", command()
 			.public()
 			.input(PageAskSchema)
 			.idempotencyKey(Repeatable)),

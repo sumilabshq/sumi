@@ -26,6 +26,7 @@ export function createEmptyCanvas(): Canvas {
 		title: FIRST_CANVAS_TITLE,
 		pages: [FIRST_PAGE],
 		boards: [],
+		tweaks: [],
 		shownPage: FIRST_PAGE.id,
 		isPanelOpen: true,
 		panelWidth: PANEL_WIDTH,
@@ -97,7 +98,8 @@ export function withoutPage(canvas: Canvas, page: string): EditOrRefusal<string>
 function pageRemovedFrom(canvas: Canvas, page: string, left: readonly Page[]): Canvas {
 	const shownPage = canvas.shownPage === page ? (left[0]?.id ?? FIRST_PAGE.id) : canvas.shownPage;
 	const boards = canvas.boards.filter((board) => board.page !== page);
-	return { ...canvas, pages: [...left], boards, shownPage };
+	const tweaks = canvas.tweaks.filter((tweak) => tweak.page !== page);
+	return { ...canvas, pages: [...left], boards, tweaks, shownPage };
 }
 
 export function withShownPage(canvas: Canvas, page: string): EditOrRefusal<string> {
@@ -214,8 +216,9 @@ export function withoutBoard(canvas: Canvas, board: string): EditOrRefusal<strin
 	}
 
 	const boards = canvas.boards.filter(({ id }) => id !== board);
+	const tweaks = canvas.tweaks.filter((tweak) => tweak.board !== board);
 	return {
-		canvas: { ...canvas, boards },
+		canvas: { ...canvas, boards, tweaks },
 		id: board,
 		reason: `artboard "${was.name}" removed`,
 	};
@@ -240,10 +243,10 @@ function nextXOf(boards: readonly Board[]): number {
 	return Math.max(...boards.map(({ x, w }) => x + w)) + BOARD_GAP;
 }
 
-function missingPageReason(page: string): string {
+export function missingPageReason(page: string): string {
 	return `the canvas has no page ${page}; read it with getCanvas for its page ids`;
 }
 
-function missingBoardReason(board: string): string {
+export function missingBoardReason(board: string): string {
 	return `the canvas has no artboard ${board}; list them with getBoards`;
 }
