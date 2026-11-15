@@ -41,6 +41,15 @@ another's `lib/`), and `data/<module>/` (when it owns modules: each a data modul
 `npm run test:plugin-layout`, and the `plugin-layout-reviewer` agent refuses the change; until the layout is
 right, no other quality of the change counts. `docs/architecture/plugins.md#layout`.
 
+**CRITICAL — two kinds of session, never mixed.**
+
+- **Window session:** one studio window and what it holds: its tabs, lists, groups, splits and view. A window is a session from the moment it opens and gets an id then (`views[<window>].sessionId` in `places.json`). Closing the window, quitting or a crash stores it in `places.json` `sessions`, and its tabs leave the window. A start, and every new window, opens a new empty session. No window is special: `main` follows the same rule. Restoring a stored session has no UI yet. Owner: the places module (`plugins/apps/data/places`).
+- **Chat session:** one conversation with an AI agent: turns, model, the agent's own session id. Owner: the assistant module (`plugins/ai/agent`). A chat is a record, not a tab: closing its tab or its window does not end the chat.
+
+In code and text, never write a bare "session": write "window session" or "chat session".
+
+A tab never holds tabs. A chat is a plain tab (`isChat`); tabs stand together in a split, never inside a chat.
+
 @docs/architecture/README.md
 
 @docs/architecture/layers.md
