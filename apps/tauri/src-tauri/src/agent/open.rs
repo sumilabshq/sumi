@@ -3,7 +3,7 @@ use serde_json::json;
 
 pub const OPEN_FLAG: &str = "--open";
 pub const DOM_FLAG: &str = "--dom";
-const NOT_A_PROBE: &str = "--dom takes one JSON object: action inspect, wheel, drag or pinch, and a selector.";
+const NOT_A_PROBE: &str = "--dom takes one JSON object: action inspect, click, wheel, drag, pinch, type or press, and a selector.";
 const NEW_TAB_FLAG: &str = "--new-tab";
 const OPENED: &str = "opened {href}";
 const NOT_OPENED: &str = "Sumi did not open {href}: {reason}";

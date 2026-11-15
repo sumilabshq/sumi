@@ -3,12 +3,14 @@ import { z } from "zod";
 export const DomProbeAskSchema = z.object({
 	id: z.number().int(),
 	kind: z.literal("dom"),
-	action: z.enum(["inspect", "click", "wheel", "drag", "pinch"]),
+	action: z.enum(["inspect", "click", "wheel", "drag", "pinch", "type", "press"]),
 	selector: z.string().min(1).max(300),
 	deltaX: z.number().default(0),
 	deltaY: z.number().default(0),
 	ctrlKey: z.boolean().default(false),
+	metaKey: z.boolean().default(false),
 	scale: z.number().positive().default(1),
+	text: z.string().max(2000).default(""),
 });
 
 export type DomProbeAsk = z.infer<typeof DomProbeAskSchema>;
@@ -23,6 +25,7 @@ interface Box {
 const MOST_MATCHES = 5;
 const MOST_ANCESTORS = 8;
 const NO_MATCH = "No element in this window matches {selector}.";
+const NOT_TYPABLE = "Only an input or a text area takes typed text.";
 
 export async function answerDomProbe(asked: DomProbeAsk): Promise<unknown> {
 	const element = document.querySelector(asked.selector);
@@ -33,6 +36,14 @@ export async function answerDomProbe(asked: DomProbeAsk): Promise<unknown> {
 
 	if (asked.action === "click") {
 		element.click();
+	}
+
+	if (asked.action === "type") {
+		typeInto(element, asked.text);
+	}
+
+	if (asked.action === "press") {
+		element.dispatchEvent(new KeyboardEvent("keydown", { key: asked.text, code: codeOf(asked.text), metaKey: asked.metaKey, ctrlKey: asked.ctrlKey, bubbles: true, cancelable: true }));
 	}
 
 	if (asked.action === "wheel") {
@@ -158,6 +169,21 @@ async function pinchOn(element: HTMLElement, scale: number): Promise<void> {
 	fire("gesturechange", scale);
 	await nextFrames();
 	fire("gestureend", scale);
+}
+
+function codeOf(key: string): string {
+	return /^[a-z]$/i.test(key) ? `Key${key.toUpperCase()}` : key;
+}
+
+function typeInto(element: HTMLElement, text: string): void {
+	if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
+		throw new Error(NOT_TYPABLE);
+	}
+
+	const setValue = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(element), "value")?.set;
+	element.focus();
+	setValue?.call(element, text);
+	element.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 function nextFrames(): Promise<void> {
