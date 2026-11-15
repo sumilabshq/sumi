@@ -5,6 +5,7 @@ import type { CurrentWorkspaceGateway } from "../current-workspace/current-works
 import type { WorkspaceChatsGateway } from "../workspace-chats/workspace-chats.gateway.js";
 import type { WorkspacesGateway } from "../workspaces/workspaces.gateway.js";
 import type { ProfileWindowsGateway } from "../profile-windows/profile-windows.gateway.js";
+import type { OwnWindowGateway } from "../own-window/own-window.gateway.js";
 import { tauriWorkspacesParts } from "./tauri.gateway.js";
 import { webWorkspacesParts } from "./web.gateway.js";
 
@@ -14,6 +15,7 @@ export type WorkspacesParts = {
 	readonly currentWorkspace: CurrentWorkspaceGateway;
 	readonly chats: ChatsGateway;
 	readonly profileWindows: ProfileWindowsGateway;
+	readonly ownWindow: OwnWindowGateway;
 };
 
 const UNHOSTED_PARTS_ON: Readonly<Record<Platform, (workspaceId: string) => WorkspacesParts>> = {

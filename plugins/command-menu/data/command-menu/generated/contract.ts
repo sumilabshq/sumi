@@ -198,6 +198,7 @@ export const RowSchema = z.object({
 	kind: RowKindSchema,
 	title: z.string(),
 	meta: z.string(),
+	place: z.string().nullable(),
 	icon: RowIconSchema,
 	match: MatchSchema.nullable(),
 	kindLabel: z.string(),

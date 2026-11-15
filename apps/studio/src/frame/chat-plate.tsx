@@ -1,4 +1,4 @@
-import { createElement as h, useContext, useEffect } from "react";
+import { createElement as h, useContext, useEffect, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { chatTabs } from "@sumi/chat-tabs/contract";
@@ -31,11 +31,17 @@ function useNamesUnnamedPane(chatId: string | null): void {
 	const areChatsRead = useQuery(workspaces.chats.chatToOpen).data.isRead;
 	const nameChatPane = useCommand(chatTabs.chatOpening.namePane);
 	const paneId = pane?.paneId ?? null;
+	const namedPaneId = useRef<string | null>(null);
 	useEffect(() => {
-		if (chatId !== null || paneId === null || !isBoardRead || !areChatsRead) {
+		if (chatId !== null) {
+			namedPaneId.current = null;
+		}
+
+		if (chatId !== null || paneId === null || !isBoardRead || !areChatsRead || namedPaneId.current === paneId) {
 			return;
 		}
 
+		namedPaneId.current = paneId;
 		void nameChatPane.run({ paneId }).then((answer) => {
 			if (!answer.ok) {
 				console.error(`[widgetarium] chat pane ${paneId} got no chat: ${answer.reason}`);

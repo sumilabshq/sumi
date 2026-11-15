@@ -53,6 +53,7 @@ function rowOf(found: Found, matched: string, isFallback: boolean, door: Door): 
 		kind: found.kind,
 		title: found.title,
 		meta: found.meta,
+		place: found.place ?? null,
 		icon: found.icon,
 		match: isFallback ? null : matchOf(found, matched),
 		kindLabel: KIND_LABEL[found.kind] ?? "",

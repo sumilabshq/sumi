@@ -7,7 +7,7 @@ import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/curren
 import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
 import { ProfileWindowsGateway } from "../../gateways/profile-windows/profile-windows.gateway.js";
 import { titleOf } from "../../shared/lib/chat-title.js";
-import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
+import { currentWorkspaceOf, withNoWorkspace } from "../../shared/lib/current-workspace.js";
 import { ChatElsewhereSchema, ChatsElsewhereSchema } from "../../shared/schema/chat.schema.js";
 import {
 	WorkspaceIconChoiceSchema,
@@ -80,7 +80,7 @@ export const chatsElsewhere = query()
 	.output(ChatsElsewhereSchema)
 	.handle(async (_input, { workspaces, currentWorkspace, workspaceChats }) => {
 		const currentId = currentWorkspace.currentWorkspace().currentId;
-		const others = workspaces.workspaces().filter((workspace) => workspace.id !== currentId);
+		const others = withNoWorkspace(workspaces.workspaces()).filter((workspace) => workspace.id !== currentId);
 		const rows = await Promise.all(
 			others.map(async (workspace) =>
 				(await workspaceChats.chatsIn(workspace.id)).chats.map((chat) => ({
@@ -100,7 +100,7 @@ export const openChatElsewhere = command()
 	.idempotencyKey(Repeatable)
 	.handle(async ({ workspaceId, chatId }, { workspaceChats, ...opening }) => {
 		opening.invalidate(all);
-		const workspace = workspaceIn(opening.workspaces.workspaces(), workspaceId);
+		const workspace = workspaceIn(withNoWorkspace(opening.workspaces.workspaces()), workspaceId);
 
 		if (workspace.id === opening.currentWorkspace.currentWorkspace().currentId) {
 			return refuse(`workspace ${workspace.name} is already open: pick the chat in its own list`);
@@ -210,7 +210,7 @@ export const rereadForCurrent = subscriber(currentWorkspaceChanged).handle((_inp
 });
 
 async function openProfileWindow(id: string, { workspaces, profileWindows }: OpeningParts, asked: string): Promise<void> {
-	const profile = workspaceIn(workspaces.workspaces(), id);
+	const profile = workspaceIn(withNoWorkspace(workspaces.workspaces()), id);
 	await profileWindows.openWindow(profile.id, `window none → new window in profile ${profile.name} (${asked})`);
 }
 

@@ -1,3 +1,4 @@
+import { placesWindowOf, studioWindowOf } from "@widgetarium/behaviors";
 import { HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import {
 	KEPT_CHATS,
@@ -10,6 +11,7 @@ import { MemoryCurrentWorkspaceGateway } from "../current-workspace/memory.gatew
 import { TauriWorkspaceChatsGateway } from "../workspace-chats/tauri.gateway.js";
 import { TauriWorkspacesGateway } from "../workspaces/tauri.gateway.js";
 import { TauriProfileWindowsGateway } from "../profile-windows/tauri.gateway.js";
+import { FixedOwnWindowGateway } from "../own-window/fixed.gateway.js";
 import type { WorkspacesConfig } from "../../shared/host/workspaces.host.js";
 import { firstChats } from "./memory.gateway.js";
 import type { WorkspacesParts } from "./workspaces-parts.gateway.js";
@@ -40,5 +42,6 @@ export function tauriWorkspacesParts(
 			firstChats(),
 		),
 		profileWindows: new TauriProfileWindowsGateway(ipc),
+		ownWindow: new FixedOwnWindowGateway(placesWindowOf(studioWindowOf(location.search).label, workspaceId)),
 	};
 }

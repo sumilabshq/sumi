@@ -2,13 +2,23 @@ import { NO_WORKSPACE_ID } from "@widgetarium/behaviors";
 import type { Workspace } from "../schema/workspace.schema.js";
 
 const NAME_UNREAD = "…";
-const NO_WORKSPACE_NAME = "No workspace";
+
+export const NO_WORKSPACE: Workspace = {
+	id: NO_WORKSPACE_ID,
+	name: "No workspace",
+	icon: null,
+	ink: "yellow",
+};
+
+export function withNoWorkspace(workspaces: readonly Workspace[]): readonly Workspace[] {
+	return [...workspaces, NO_WORKSPACE];
+}
 
 export function currentWorkspaceOf(workspaces: readonly Workspace[], currentId: string): Workspace {
 	return (
-		workspaces.find((workspace) => workspace.id === currentId) ?? {
+		withNoWorkspace(workspaces).find((workspace) => workspace.id === currentId) ?? {
 			id: currentId,
-			name: currentId === NO_WORKSPACE_ID ? NO_WORKSPACE_NAME : NAME_UNREAD,
+			name: NAME_UNREAD,
 			icon: null,
 			ink: "yellow",
 		}

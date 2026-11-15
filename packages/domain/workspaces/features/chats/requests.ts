@@ -46,7 +46,7 @@ export const createChat = command()
 	.input(NewChatSchema)
 	.output(ChatIdSchema)
 	.idempotencyKey(PerCall)
-	.handle(async ({ title }, { chats, invalidate, send }) => {
+	.handle(async ({ title }, { chats, invalidate, send, ownWindow }) => {
 		invalidate(chatRecords);
 		const kept = chats.chats();
 		const chat = newChatOf(title);
@@ -59,7 +59,7 @@ export const createChat = command()
 			reason,
 		);
 		console.info(`[widgetarium] ${reason}`);
-		await keepTabOf(send, chat);
+		await keepTabOf(send, chat, ownWindow.placesWindow());
 		return { id: chat.id };
 	});
 
@@ -146,9 +146,9 @@ export const rereadCrumbForCurrent = subscriber(currentWorkspaceChanged).handle(
 	invalidate(workspaceCrumb);
 });
 
-async function keepTabOf(send: Send, chat: KeptChat): Promise<void> {
+async function keepTabOf(send: Send, chat: KeptChat, window: string): Promise<void> {
 	try {
-		await send(places.tabFacts.keepChatTabs, { chats: [{ id: chat.id, title: chat.title }] });
+		await send(places.tabFacts.keepChatTabs, { window, chats: [{ id: chat.id, title: chat.title }] });
 	} catch (failure: unknown) {
 		console.error(`[widgetarium] chat ${chat.id} kept with no tab yet; the next restore gives it one`, failure);
 	}

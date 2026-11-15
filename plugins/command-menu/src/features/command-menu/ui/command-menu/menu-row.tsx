@@ -31,6 +31,7 @@ export function MenuRow({ row, at, moves }: MenuRowProps): ReactElement {
 		>
 			<RowIcon icon={row.icon} />
 			<RowTitle title={row.title} match={row.match} />
+			{row.place === null ? null : <span className="wg-cm-place">{row.place}</span>}
 			<RowEnd shortcut={row.shortcut} isPicked={isPicked} />
 		</button>
 	);

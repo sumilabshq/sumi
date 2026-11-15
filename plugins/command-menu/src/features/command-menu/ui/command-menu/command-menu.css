@@ -284,6 +284,16 @@
 	font-weight: var(--sumi-fw-semi);
 }
 
+.wg-cm-place {
+	flex: none;
+	max-width: 40%;
+	overflow: hidden;
+	font-size: var(--sumi-fs-13);
+	color: var(--sumi-text-3);
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
 .wg-cm-end {
 	flex: none;
 	font-size: var(--sumi-fs-13);

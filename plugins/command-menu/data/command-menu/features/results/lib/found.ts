@@ -101,6 +101,7 @@ export function chatsElsewhereFoundOf(rows: readonly ChatElsewhereRow[], faces: 
 		title: row.title,
 		meta: `In ${row.workspaceName}`,
 		haystack: `${row.title} ${row.workspaceName}`,
+		place: row.workspaceName,
 		icon: iconOf({
 			art,
 			favicon: null,

@@ -1,3 +1,4 @@
+import { MAIN_STUDIO_WINDOW, placesWindowOf } from "@widgetarium/behaviors";
 import type { KeptChats } from "../../shared/schema/chat.schema.js";
 import type { Workspace } from "../../shared/schema/workspace.schema.js";
 import { MemoryChatsGateway } from "../chats/memory.gateway.js";
@@ -5,6 +6,7 @@ import { MemoryCurrentWorkspaceGateway } from "../current-workspace/memory.gatew
 import { MemoryWorkspaceChatsGateway } from "../workspace-chats/memory.gateway.js";
 import { MemoryWorkspacesGateway } from "../workspaces/memory.gateway.js";
 import { MemoryProfileWindowsGateway } from "../profile-windows/memory.gateway.js";
+import { FixedOwnWindowGateway } from "../own-window/fixed.gateway.js";
 import type { WorkspacesParts } from "./workspaces-parts.gateway.js";
 
 export interface WorkspacesSeed {
@@ -29,6 +31,7 @@ export function memoryWorkspacesParts({
 		}),
 		chats: new MemoryChatsGateway(chats),
 		profileWindows: new MemoryProfileWindowsGateway(),
+		ownWindow: new FixedOwnWindowGateway(placesWindowOf(MAIN_STUDIO_WINDOW, currentId)),
 	};
 }
 
