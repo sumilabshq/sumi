@@ -1,11 +1,12 @@
 import { z } from "zod";
 import type { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { FrameSideSchema } from "../../shared/schema/frame-sides.schema.js";
-import type { FrameSide, FrameSides, SideLook } from "../../shared/schema/frame-sides.schema.js";
+import type { FrameSide, FrameSides, SideLook, TabsPlace } from "../../shared/schema/frame-sides.schema.js";
 import { FrameSidesGateway } from "./frame-sides.gateway.js";
 
 export const KeptSidesSchema = z.object({
 	leftHidden: z.boolean().nullable().catch(null),
+	tabsInSidebar: z.boolean().nullable().catch(null),
 });
 
 export type KeptSides = z.infer<typeof KeptSidesSchema>;
@@ -28,21 +29,24 @@ export class TauriFrameSidesGateway extends FrameSidesGateway {
 	sides(): FrameSides {
 		return {
 			left: this.lookOf("left"),
+			tabs: this.tabsPlace(),
 		};
 	}
 
 	saveSides(sides: FrameSides, reason: string): void {
-		const hidden = {
+		const kept = {
 			leftHidden: sides.left !== "docked",
+			tabsInSidebar: sides.tabs === "sidebar",
 		};
+		const now = this.settings.now();
 		this.peeking = new Set(FrameSideSchema.options.filter((side) => sides[side] === "peeking"));
 
-		if (FrameSideSchema.options.every((side) => this.settings.now()[HIDDEN_KEY[side]] === hidden[HIDDEN_KEY[side]])) {
+		if (now.leftHidden === kept.leftHidden && now.tabsInSidebar === kept.tabsInSidebar) {
 			this.listeners.forEach((listener) => listener());
 			return;
 		}
 
-		this.settings.change(hidden, reason);
+		this.settings.change(kept, reason);
 		void this.settings.flush();
 	}
 
@@ -53,6 +57,16 @@ export class TauriFrameSidesGateway extends FrameSidesGateway {
 			this.listeners.delete(listener);
 			stopWatching();
 		};
+	}
+
+	private tabsPlace(): TabsPlace {
+		const isInSidebar = this.settings.now().tabsInSidebar;
+
+		if (isInSidebar === null) {
+			return this.first.tabs;
+		}
+
+		return isInSidebar ? "sidebar" : "header";
 	}
 
 	private lookOf(side: FrameSide): SideLook {

@@ -76,6 +76,7 @@ export const PaneBoardSchema = z.object({
 	isLoaded: z.boolean(),
 	tabTargetId: z.string().nullable(),
 	leaves: z.array(PaneLeafSchema).readonly(),
+	closableIds: z.array(z.string()).readonly(),
 	tabPanes: z
 		.array(
 			z.object({

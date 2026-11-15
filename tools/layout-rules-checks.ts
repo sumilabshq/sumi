@@ -56,6 +56,7 @@ export function memoriesOf(panes: LayoutMemories["panes"] = memoryOf<unknown>())
 		},
 		sides: {
 			left: memoryOf<boolean>(),
+			tabsInSidebar: memoryOf<boolean>(),
 		},
 		panes,
 	};

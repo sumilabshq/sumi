@@ -12,6 +12,7 @@ import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { checksLayoutRules, infosOf, memoriesOf, memoryOf, partsOf, shapeOf } from "./layout-rules-checks.ts";
 import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
+import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
 import { paneLayoutOf, sideAt } from "../apps/studio/src/features/panes/lib/pane-layout.ts";
 import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
@@ -151,6 +152,32 @@ function checksTree(): void {
 function sharesOf(parts: LayoutParts): readonly number[] {
 	const root = parts.paneTree.tree().root;
 	return root?.kind === "split" ? root.shares.map((share) => Math.round(share * 1000) / 1000) : [];
+}
+
+function closableKindsOf(parts: LayoutParts): readonly string[] {
+	const board = boardOf(parts.paneTree.tree());
+	return board.leaves.filter((leaf) => board.closableIds.includes(leaf.id)).map((leaf) => leaf.view.kind);
+}
+
+function checksClosable(): void {
+	console.info = () => undefined;
+	const parts = partsOf();
+	closeAll(parts);
+	placeView(parts, { kind: "chat", chatId: "chat-1" }, { targetId: null, side: "right" });
+	const lone = closableKindsOf(parts);
+	const chatPaneId = leavesOf(parts.paneTree.tree().root)[0]?.id ?? null;
+	place.handle({ view: { kind: "app", tabId: "tab-1" }, targetId: chatPaneId, side: "right", home: "chat-1" }, parts);
+	const withItsArtifact = closableKindsOf(parts);
+	placeView(parts, { kind: "chat", chatId: "chat-2" }, { targetId: null, side: "right" });
+	const split = closableKindsOf(parts);
+	console.info = quiet;
+	check("a lone chat pane cannot be closed", lone.length === 0, lone);
+	check(
+		"a chat with its artifact closes only the artifact",
+		JSON.stringify(withItsArtifact) === '["app"]',
+		withItsArtifact,
+	);
+	check("in a split of two chats every pane closes", split.filter((kind) => kind === "chat").length === 2, split);
 }
 
 function checksTarget(): void {
@@ -593,6 +620,7 @@ async function checksBoard(folder: string): Promise<void> {
 const folder = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-pane-board"));
 mkdirSync(folder, { recursive: true });
 checksTree();
+checksClosable();
 checksKept();
 checksKeptRefusals();
 checksGoneTabs();

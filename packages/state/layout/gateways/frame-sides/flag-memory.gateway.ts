@@ -1,9 +1,9 @@
 import type { FlagMemory } from "@widgetarium/behaviors";
 import { FrameSideSchema } from "../../shared/schema/frame-sides.schema.js";
-import type { FrameSide, FrameSides, SideLook } from "../../shared/schema/frame-sides.schema.js";
+import type { FrameSide, FrameSides, SideLook, TabsPlace } from "../../shared/schema/frame-sides.schema.js";
 import { FrameSidesGateway } from "./frame-sides.gateway.js";
 
-export type SideMemories = Readonly<Record<FrameSide, FlagMemory>>;
+export type SideMemories = Readonly<Record<FrameSide, FlagMemory>> & { readonly tabsInSidebar: FlagMemory };
 
 export class FlagMemoryFrameSidesGateway extends FrameSidesGateway {
 	private readonly listeners = new Set<() => void>();
@@ -16,6 +16,7 @@ export class FlagMemoryFrameSidesGateway extends FrameSidesGateway {
 		super();
 		this.held = {
 			left: keptLookOf(memories.left, first.left),
+			tabs: keptTabsOf(memories.tabsInSidebar, first.tabs),
 		};
 	}
 
@@ -30,6 +31,10 @@ export class FlagMemoryFrameSidesGateway extends FrameSidesGateway {
 			if ((this.held[side] !== "docked") !== isHidden) {
 				this.memories[side].write(isHidden);
 			}
+		}
+
+		if (this.held.tabs !== sides.tabs) {
+			this.memories.tabsInSidebar.write(sides.tabs === "sidebar");
 		}
 
 		this.held = sides;
@@ -52,4 +57,14 @@ function keptLookOf(memory: FlagMemory, first: SideLook): SideLook {
 	}
 
 	return isHidden ? "hidden" : "docked";
+}
+
+function keptTabsOf(memory: FlagMemory, first: TabsPlace): TabsPlace {
+	const isInSidebar = memory.read();
+
+	if (isInSidebar === null) {
+		return first;
+	}
+
+	return isInSidebar ? "sidebar" : "header";
 }

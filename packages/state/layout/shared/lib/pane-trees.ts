@@ -44,6 +44,7 @@ export function boardOf(tree: PaneTree, others: readonly WindowTree[] = []): Pan
 		isLoaded: true,
 		tabTargetId: tabTargetOf(tree)?.paneId ?? null,
 		leaves: leavesOf(tree.root),
+		closableIds: closableIdsOf(tree),
 		tabPanes: tabPanesOf(tree),
 		chatGroups: chatGroupsOf(tree.root).map((group) => ({
 			chatId: group.chatId,
@@ -52,6 +53,12 @@ export function boardOf(tree: PaneTree, others: readonly WindowTree[] = []): Pan
 		})),
 		elsewhere: holdsOf(others),
 	};
+}
+
+function closableIdsOf(tree: PaneTree): string[] {
+	return leavesOf(tree.root)
+		.filter((leaf) => treeWithoutPane(tree, leaf.id).root !== null)
+		.map((leaf) => leaf.id);
 }
 
 export function mintedLeafOf(tree: PaneTree, view: PaneView): PaneLeaf {
