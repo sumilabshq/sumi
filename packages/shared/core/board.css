@@ -21661,40 +21661,40 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 :is(.wg-root, .wg-portal) .sumi-new-chat-row:active::before {
 	background: var(--sumi-active);
 }
-:is(.wg-root, .wg-portal) .sumi-figure {
+.sumi-figure {
 	position: relative;
 	display: inline-flex;
 	flex: none;
 	vertical-align: middle;
 }
-:is(.wg-root, .wg-portal) .sumi-figure-art {
+.sumi-figure-art {
 	display: block;
 	flex: none;
 	overflow: visible;
 	pointer-events: none;
 }
-:is(.wg-root, .wg-portal) .sumi-figure-body {
+.sumi-figure-body {
 	fill: var(--sumi-text);
 	transition: fill 420ms ease;
 }
-:is(.wg-root, .wg-portal) .sumi-figure-eye {
+.sumi-figure-eye {
 	fill: var(--sumi-plate);
 }
-:is(.wg-root, .wg-portal) .sumi-figure.is-waits .sumi-figure-body {
+.sumi-figure.is-waits .sumi-figure-body {
 	fill: var(--sumi-accent);
 }
-:is(.wg-root, .wg-portal) .sumi-figure.is-done .sumi-figure-body {
+.sumi-figure.is-done .sumi-figure-body {
 	fill: var(--sumi-success);
 	transition-duration: 120ms;
 }
-:is(.wg-root, .wg-portal) .sumi-figure.is-error .sumi-figure-body {
+.sumi-figure.is-error .sumi-figure-body {
 	fill: var(--sumi-danger);
 	transition-duration: 120ms;
 }
-:is(.wg-root, .wg-portal) .sumi-figure.is-working .sumi-figure-eye {
+.sumi-figure.is-working .sumi-figure-eye {
 	animation: sumi-eye-glow 2.4s ease-in-out infinite;
 }
-:is(.wg-root, .wg-portal) .sumi-figure.is-asleep {
+.sumi-figure.is-asleep {
 	animation: sumi-figure-breathe 3.2s ease-in-out infinite;
 }
 @keyframes sumi-eye-glow {
@@ -21709,11 +21709,11 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	}
 }
 @media (prefers-reduced-motion: reduce) {
-	:is(.wg-root, .wg-portal) .sumi-figure.is-working .sumi-figure-eye,
-	:is(.wg-root, .wg-portal) .sumi-figure.is-asleep {
+	.sumi-figure.is-working .sumi-figure-eye,
+	.sumi-figure.is-asleep {
 		animation: none;
 	}
-	:is(.wg-root, .wg-portal) .sumi-figure.is-working .sumi-figure-eye {
+	.sumi-figure.is-working .sumi-figure-eye {
 		fill: var(--sumi-accent);
 		@supports (color: color-mix(in lab, red, red)) {
 			fill: color-mix(in srgb, var(--sumi-accent) 45%, var(--sumi-plate));
