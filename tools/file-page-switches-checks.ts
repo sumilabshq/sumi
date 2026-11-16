@@ -1,5 +1,5 @@
 import { localTransport, runtime } from "@widgetarium/data-framework";
-import { fileSystem, places } from "@sumi/contract";
+import { fileSystem, navigation } from "@sumi/contract";
 import type { Runtime } from "@widgetarium/data-framework";
 import { filePage } from "../plugins/files/data/file-page/generated/contract.ts";
 import { filePage as filePageModule } from "../plugins/files/data/file-page/generated/module.ts";
@@ -11,7 +11,7 @@ Object.assign(globalThis, { window: new EventTarget() });
 function startedTab(): Runtime {
 	return runtime()
 		.modules(filePageModule({ tabId: "tab-1" }))
-		.imports(fileSystem({ over: UNUSED_CORE }), places({ over: UNUSED_CORE }))
+		.imports(fileSystem({ over: UNUSED_CORE }), navigation({ over: UNUSED_CORE }))
 		.start({ platform: "browser", scope: { workspaceId: "file-page" } });
 }
 

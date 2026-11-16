@@ -1,5 +1,5 @@
 import { runtime, orpcTransport } from "@widgetarium/data-framework";
-import { fileSystem, places, terminal } from "../packages/shared/contract/index.ts";
+import { fileSystem, navigation, terminal } from "../packages/shared/contract/index.ts";
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
 import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/use-frame-port.ts";
 import type { FrameOpened } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
@@ -32,7 +32,7 @@ const core = orpcTransport(location.origin);
 const routesFor = frameRoutesOf({
 	workspaceId: "contract-frame",
 	core,
-	coreModules: [fileSystem, terminal, places].map((module) => ({
+	coreModules: [fileSystem, terminal, navigation].map((module) => ({
 		module,
 		prefix: null,
 	})),
@@ -44,7 +44,7 @@ const routesFor = frameRoutesOf({
 			serving: webPageServingOf({
 				platform: "browser",
 				windowApp: runtime()
-					.imports(places({ over: core }))
+					.imports(navigation({ over: core }))
 					.start(),
 			}),
 		},

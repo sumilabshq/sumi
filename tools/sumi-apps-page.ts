@@ -7,7 +7,7 @@ import type { RemoteTransport } from "../packages/shared/data-framework/src/inde
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.ts";
 import type { RegisteredApp } from "../packages/shared/app-registry/index.ts";
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { appearance as appearanceContract } from "../packages/state/appearance/generated/contract.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
@@ -15,7 +15,7 @@ import { commandMenu } from "../plugins/command-menu/data/command-menu/generated
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
-import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { tasks } from "../plugins/tasks/data/tasks/generated/contract.ts";
 import { questions } from "../plugins/ai/questions/data/questions/generated/contract.ts";
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.ts";
@@ -97,7 +97,7 @@ const studioApp = runtime()
 		PluginAppsModule,
 		...PLUGINS.windowModules.map((windowModule) => windowModule.moduleOf({})),
 	)
-	.imports(places({ over: core }), tasks({ over: core }), questions({ over: core }))
+	.imports(navigation({ over: core }), tasks({ over: core }), questions({ over: core }))
 	.start({
 		platform: "browser",
 		scope: {
@@ -116,7 +116,7 @@ function servedPageUrlOf({ id, ui }: RegisteredApp): string {
 const appearance = startStudioAppearance(window);
 const driver: SumiAppsDriver = {
 	showTab: (id) => outputOf(studioApp.send(appHost.tabs.showTab, { id })),
-	tab: (id) => outputOf(studioApp.send(places.tabFacts.ownAppTab, { id })),
+	tab: (id) => outputOf(studioApp.send(navigation.tabFacts.ownAppTab, { id })),
 	tabs: () => outputOf(studioApp.send(appHost.tabs.appTabs)),
 	menuResults: (text) =>
 		outputOf(

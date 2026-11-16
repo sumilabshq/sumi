@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { places } from "@sumi/contract";
+import { navigation } from "@sumi/contract";
 import type { SumiFrame } from "./sumi-frame.js";
 
 const NO_TAB = "useSumiTab is used outside SumiTabContext";
@@ -27,7 +27,7 @@ export function useTabOf({ sumi, transport, tabId }: SumiFrame): SumiTab {
 
 	useEffect(() => {
 		const reread = (): void => {
-			void sumi.send(places.tabFacts.ownAppTab, { id: tabId }).then((tab) => {
+			void sumi.send(navigation.tabFacts.ownAppTab, { id: tabId }).then((tab) => {
 				if (!tab.ok) {
 					console.error(`[tasks] reading the tab ${tabId} was refused: ${tab.reason}`);
 					return;
@@ -43,7 +43,7 @@ export function useTabOf({ sumi, transport, tabId }: SumiFrame): SumiTab {
 	const open = useCallback(
 		(next: string) => {
 			setAddress(next);
-			void sumi.send(places.tabFacts.recordAppAddress, { id: tabId, address: next, how: "push" }).then((recorded) => {
+			void sumi.send(navigation.tabFacts.recordAppAddress, { id: tabId, address: next, how: "push" }).then((recorded) => {
 				if (!recorded.ok) {
 					console.error(`[tasks] recording the address ${next} was refused: ${recorded.reason}`);
 				}

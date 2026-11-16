@@ -9,7 +9,7 @@ export const state = query()
 	.public()
 	.metadata({
 		description:
-			"Read Sumi's state: every chat, which chat is asking, the tab the person sees, and the tab list with its tabs, chats and groups. Read it before acting on tabs.",
+			"Read Sumi's state: every chat, which chat is asking, the tab the person sees, and the tab list with its tabs and groups; a chat is a tab with app chat. Read it before acting on tabs.",
 	})
 	.input(NoInputSchema)
 	.output(WorkspaceStateSchema)

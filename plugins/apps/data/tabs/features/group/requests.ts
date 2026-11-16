@@ -11,6 +11,7 @@ import {
 } from "../../shared/schema/group-asks.schema.js";
 import { OPEN_LIST, placeTabs, refuseGroup } from "../../shared/lib/tab-places.js";
 import { refuseNewGroup } from "./lib/new-group.js";
+import { groups } from "@sumi/groups/contract";
 
 export const create = command()
 	.public()
@@ -29,7 +30,7 @@ export const create = command()
 		}
 
 		const list = OPEN_LIST;
-		const created = await send(appHost.groups.create, { list, name: asked.name, hue: asked.colour ?? null });
+		const created = await send(groups.actions.create, { list, name: asked.name, hue: asked.colour ?? null });
 		await placeTabs(send, asked.tabIds, { list, groupId: created.id, before: null });
 		console.info(
 			`[widgetarium] group none → ${created.id} "${asked.name}" in ${list} with ${asked.tabIds.length} tabs (chat ${user.id})`,
@@ -54,12 +55,12 @@ export const edit = command()
 		}
 
 		if (name !== undefined) {
-			await send(appHost.groups.renameGroup, { id: groupId, name });
+			await send(groups.actions.rename, { id: groupId, name });
 			console.info(`[widgetarium] group ${groupId} name → ${name} (chat ${user.id})`);
 		}
 
 		if (colour !== undefined) {
-			await send(appHost.groups.setHue, { id: groupId, hue: colour });
+			await send(groups.actions.setHue, { id: groupId, hue: colour });
 			console.info(`[widgetarium] group ${groupId} colour → ${colour ?? "none"} (chat ${user.id})`);
 		}
 
@@ -82,7 +83,7 @@ export const remove = command()
 			return refuse(refusal);
 		}
 
-		await send(keepTabs ? appHost.groups.ungroup : appHost.tabActions.closeGroup, { id: groupId });
+		await send(keepTabs ? groups.actions.ungroup : appHost.tabActions.closeGroup, { id: groupId });
 		console.info(`[widgetarium] group ${groupId} → gone, its tabs ${keepTabs ? "kept" : "closed"} (chat ${user.id})`);
 		return {
 			deleted: groupId,

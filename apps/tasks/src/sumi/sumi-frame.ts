@@ -1,4 +1,4 @@
-import { appearance, places } from "@sumi/contract";
+import { appearance, navigation } from "@sumi/contract";
 import { tasks } from "@widgetarium/tasks/contract";
 import { runtime, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
@@ -15,7 +15,7 @@ export async function startSumiFrame(): Promise<SumiFrame> {
 	const transport = messagePortTransport(await portFromParent());
 	return {
 		sumi: runtime()
-			.imports(places({ over: transport }), appearance({ over: transport }), tasks({ over: transport }))
+			.imports(navigation({ over: transport }), appearance({ over: transport }), tasks({ over: transport }))
 			.start(),
 		transport,
 		tabId: new URLSearchParams(location.hash.slice(1)).get(TAB_KEY) ?? "",

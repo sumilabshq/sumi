@@ -1,4 +1,4 @@
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { linkOf, linkTargetOf } from "../packages/shared/core/src/engine/sumi-link.ts";
 import type { LinkTarget } from "../packages/shared/core/src/engine/sumi-link.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";

@@ -1,5 +1,5 @@
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
-import { tabRowsOf } from "../plugins/tab-strip/data/places/shared/lib/rows/tab-rows.ts";
+import { tabRowsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/rows/tab-rows.ts";
 import {
 	emptyMoment,
 	findGroup,
@@ -8,21 +8,21 @@ import {
 	openTab,
 	placeTab,
 	tabOf,
-} from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
-import { closeGroup, closeTabs, reopenClosed } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-closing.ts";
-import { addGroup, ungroup } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-groups.ts";
-import { rememberPages } from "../plugins/tab-strip/data/places/shared/lib/tabs/page-memory.ts";
-import type { HostTabsMoment, MovedTabs, TabGroup } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-lists.ts";
-import { withTabsClosed } from "../plugins/tab-strip/data/places/shared/lib/showing/closing.ts";
+} from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
+import { closeGroup, closeTabs, reopenClosed } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-closing.ts";
+import { addGroup, ungroup } from "../plugins/tabs/tab-groups/data/tab-groups/shared/lib/tab-groups.ts";
+import { rememberPages } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/page-memory.ts";
+import type { HostTabsMoment, MovedTabs, TabGroup } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-lists.ts";
+import { withTabsClosed } from "../plugins/tabs/navigation/data/navigation/shared/lib/showing/closing.ts";
 import {
 	showingOf,
 	withFreeTabBesidePanes,
 	withPageEnsured,
 	withTabShown,
 	withTabTornOff,
-} from "../plugins/tab-strip/data/places/shared/lib/showing/showing.ts";
-import type { TabFacts } from "../plugins/tab-strip/data/places/shared/lib/showing/tab-facts.ts";
+} from "../plugins/tabs/navigation/data/navigation/shared/lib/showing/showing.ts";
+import type { TabFacts } from "../plugins/tabs/navigation/data/navigation/shared/lib/showing/tab-facts.ts";
 
 let failed = 0;
 const quiet = console.info;

@@ -3,7 +3,8 @@ import { apps as appsModule } from "@sumi/apps/implementation";
 import { backend, shell } from "@sumi/sumi-host-plugin";
 import { agent } from "@sumi/agent-plugin";
 import { tabs as tabsTools } from "@sumi/tabs/implementation";
-import { tabStrip } from "@sumi/tab-strip-plugin";
+import { navigation } from "@sumi/navigation-plugin";
+import { tabGroups } from "@sumi/tab-groups-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
 import { appsTabPageOf } from "./features/app-tab/ui/app-tab/apps-tab-page.js";
 import type { FilledApp } from "./features/app-tab/ui/app-tab/app-tab.js";
@@ -13,10 +14,10 @@ import { titlesOfApps } from "./features/app-tab/lib/titles-of-apps.js";
 import { appLinkGuidesOf } from "./features/app-tab/lib/app-link-guides.js";
 
 export const apps = plugin("apps")
-	.require(backend, shell, agent, tabStrip)
+	.require(backend, shell, agent, navigation, tabGroups)
 	.apply((app) => {
 		const filled: FilledApp[] = [];
-		const tabs = app.use(tabStrip);
+		const tabs = app.use(navigation);
 		app
 			.use(backend)
 			.moduleOf(

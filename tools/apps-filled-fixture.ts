@@ -3,6 +3,7 @@ import type { Plugin } from "../packages/shared/plugin-framework/src/index.ts";
 import type { FilledApp } from "../plugins/apps/src/index.ts";
 import { commandMenu } from "../plugins/command-menu/src/index.ts";
 import { controlMenu } from "../plugins/control-menu/src/index.ts";
+import { navigation } from "../plugins/tabs/navigation/src/index.ts";
 import { agents, backend, shell, sumiHost, windows } from "../plugins/sumi-host/src/index.ts";
 
 function ignored(): void {
@@ -27,6 +28,6 @@ export function appsFilledBy(fillers: readonly Plugin[]): readonly FilledApp[] {
 			filled.push(entry);
 		},
 	}));
-	startWithIgnoredServices([appsStub, sumiHost, commandMenu, controlMenu, ...fillers]);
+	startWithIgnoredServices([appsStub, sumiHost, navigation, commandMenu, controlMenu, ...fillers]);
 	return filled;
 }

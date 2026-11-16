@@ -1,4 +1,4 @@
-import { places } from "@sumi/contract";
+import { navigation } from "@sumi/contract";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 
 export interface FileTab {
@@ -7,7 +7,7 @@ export interface FileTab {
 }
 
 export function useFileTab(tabId: string): FileTab {
-	const tab = useOptionalQuery(places.tabFacts.ownAppTab, { id: tabId }).data;
+	const tab = useOptionalQuery(navigation.tabFacts.ownAppTab, { id: tabId }).data;
 	const address = tab?.address ?? "";
 	return {
 		path: address === "" ? null : address,

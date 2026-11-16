@@ -3,7 +3,7 @@ import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { IsTooltipHosted, TooltipHost } from "../packages/shared/kit/src/index.ts";
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/module.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/module.ts";
 import { browser as browserModule } from "../packages/domain/browser/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/module.ts";
@@ -25,7 +25,7 @@ import type { BrowserTab } from "../packages/domain/browser/shared/schema/browse
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { AskComposerContext, TabFaceContext } from "@sumi/sumi-host-plugin";
 import type { AskComposer } from "@sumi/sumi-host-plugin";
 import { assistant } from "../plugins/ai/agent/data/assistant/generated/module.ts";
@@ -134,7 +134,7 @@ const studio = runtime()
 		...PLUGIN_WINDOW_MODULES,
 	)
 	.imports(
-		placesOver(
+		...placesOver(
 			new MemoryTabsGateway(
 				placedTabsOf(
 					{ tabs: [], shownId: null, minted: 0, closed: [] },

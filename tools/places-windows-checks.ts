@@ -1,9 +1,9 @@
 import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "@widgetarium/data-framework";
-import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
+import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
 const windows = new MemoryWindowsGateway({ windows: [] });
@@ -16,33 +16,33 @@ core.serve(
 		.start({ platform: "server", env: {} }),
 );
 const main = runtime()
-	.imports(places({ over: core }))
+	.imports(navigation({ over: core }))
 	.start();
 const side = runtime()
-	.imports(places({ over: core }))
+	.imports(navigation({ over: core }))
 	.start();
 const labelsOf = async (): Promise<readonly string[]> => {
-	const answered = await side.send(places.windows.all);
+	const answered = await side.send(navigation.windows.all);
 	return answered.ok ? answered.output.windows.map((open) => open.label) : [answered.reason];
 };
 
-await main.send(places.windows.openWindow, { window: "main" });
-await side.send(places.windows.openWindow, { window: "studio-2" });
+await main.send(navigation.windows.openWindow, { window: "main" });
+await side.send(navigation.windows.openWindow, { window: "studio-2" });
 check("every window that opens is in the one registry the core keeps", await labelsOf(), ["main", "studio-2"]);
 
-await side.send(places.windows.openWindow, { window: "studio-2" });
+await side.send(navigation.windows.openWindow, { window: "studio-2" });
 check("a window opened twice is held once", await labelsOf(), ["main", "studio-2"]);
 
 const heard = { count: 0 };
-main.routes.watch(places.windows.all, undefined, () => {
+main.routes.watch(navigation.windows.all, undefined, () => {
 	heard.count += 1;
 });
-await side.send(places.windows.closeWindow, { window: "studio-2" });
+await side.send(navigation.windows.closeWindow, { window: "studio-2" });
 check("a closed window leaves the registry", await labelsOf(), ["main"]);
 check("and the other window hears it without asking", await waitFor(() => heard.count > 0), true);
 
-await main.send(places.windows.openWindow, { window: "studio-3" });
-await main.send(places.windows.keepLiveWindows, { windows: ["main"] });
+await main.send(navigation.windows.openWindow, { window: "studio-3" });
+await main.send(navigation.windows.keepLiveWindows, { windows: ["main"] });
 check("a window the app no longer has leaves when the core checks what is open", await labelsOf(), ["main"]);
 
 console.log(tally.failed ? `places windows: ${tally.failed} check(s) failed` : "places windows: all checks passed");

@@ -19,10 +19,10 @@ import { terminal as terminalModule } from "../apps/tauri/capabilities/terminal/
 import { MemoryProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/memory.gateway.ts";
 import { tasks } from "../plugins/tasks/data/tasks/generated/module.ts";
 import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
-import { places } from "../plugins/tab-strip/data/places/generated/module.ts";
+import { navigation as places } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { questions } from "../plugins/ai/questions/data/questions/generated/module.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import { seededBoard } from "./tasks-fixture.ts";
 import { REGISTERED_APPS } from "../packages/shared/app-registry/index.ts";

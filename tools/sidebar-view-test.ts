@@ -1,12 +1,12 @@
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
-import { emptyMoment } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
-import type { HostTab, HostTabsMoment } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
-import { sidebarOf } from "../plugins/tab-strip/data/places/shared/lib/rows/sidebar-rows.ts";
-import type { PageFacts, Screen } from "../plugins/tab-strip/data/places/shared/schema/screen.schema.ts";
-import { selectedIdsOf } from "../plugins/tab-strip/data/places/shared/lib/rows/tab-rows.ts";
-import { tabFactsOf } from "../plugins/tab-strip/data/places/shared/lib/showing/tab-facts.ts";
-import type { PlacedSidebar, SidebarEntry } from "../plugins/tab-strip/data/places/shared/schema/tab-rows.schema.ts";
+import { emptyMoment } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
+import type { HostTab, HostTabsMoment } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
+import { sidebarOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/rows/sidebar-rows.ts";
+import type { PageFacts, Screen } from "../plugins/tabs/navigation/data/navigation/shared/schema/screen.schema.ts";
+import { selectedIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/rows/tab-rows.ts";
+import { tabFactsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/showing/tab-facts.ts";
+import type { PlacedSidebar, SidebarEntry } from "../plugins/tabs/navigation/data/navigation/shared/schema/tab-rows.schema.ts";
 
 let failed = 0;
 
@@ -99,8 +99,8 @@ function shapeOf(entry: SidebarEntry): string {
 	return `group:${entry.group.id}[${entry.group.items.map(itemShapeOf).join(",")}]`;
 }
 
-function itemShapeOf({ tab, isChat }: Extract<SidebarEntry, { kind: "tab" }>): string {
-	return `${isChat ? "chat" : "tab"}:${tab.id}`;
+function itemShapeOf({ tab }: Extract<SidebarEntry, { kind: "tab" }>): string {
+	return `${tab.app === "chat" ? "chat" : "tab"}:${tab.id}`;
 }
 
 const sidebar = sidebarWith(MOMENT, "chat-1");
@@ -119,7 +119,7 @@ const openChat = sidebar.sections[1]?.entries[0];
 check(
 	"the chat on screen is shown, another chat is not",
 	openChat?.kind === "tab" &&
-		openChat.isChat &&
+		openChat.tab.app === "chat" &&
 		openChat.tab.isShown &&
 		sidebar.sections[0]?.entries[0]?.kind === "tab" &&
 		!sidebar.sections[0].entries[0].tab.isShown,

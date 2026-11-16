@@ -17,6 +17,7 @@
 		"start": "tauri build --debug --bundles app --no-sign --config src-tauri/tauri.dev.conf.json && open src-tauri/target/debug/bundle/macos/Widgetarium.app"
 	},
 	"dependencies": {
+		"@sumi/chat-facts": "0.1.0",
 		"@sumi/chat-tabs": "0.1.0",
 		"@sumi/main-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
@@ -27,10 +28,10 @@
 		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/browser": "0.1.0",
 		"@widgetarium/core": "0.1.0",
-		"@widgetarium/file-system": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/file-system": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
-		"@widgetarium/places": "0.1.0",
+		"@widgetarium/navigation": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",
 		"@widgetarium/questions": "0.1.0",
 		"@widgetarium/studio": "0.1.0",

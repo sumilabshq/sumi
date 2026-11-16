@@ -23,7 +23,8 @@ const SOURCES = [
 	"plugins/ai/model-picker/src",
 	"plugins/ai/effort-picker/src",
 	"plugins/control-menu/src",
-	"plugins/tab-strip/src",
+	"plugins/tabs/tab-strip/src",
+	"plugins/tabs/pinned-tabs/src",
 ];
 const INSTALLED = "node_modules/";
 const SCANNED = /\.(ts|tsx)$/;
@@ -57,7 +58,9 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/sumi-host-plugin/sumi-figure.css": "plugins/sumi-host/src/features/mascot/ui/sumi-figure/sumi-figure.css",
 	"@sumi/control-menu-plugin/control-menu.css":
 		"plugins/control-menu/src/features/control-menu/ui/control-menu/control-menu.css",
-	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
+	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
+	"@sumi/pinned-tabs-plugin/pinned-tabs.css":
+		"plugins/tabs/pinned-tabs/src/features/pinned-tabs/ui/pinned-tabs/pinned-tabs.css",
 	"@sumi/sumi-host-plugin/title-bar.css": "plugins/sumi-host/src/features/title-bar/ui/title-bar/title-bar.css",
 	"@sumi/chat-plugin/new-chat-row.css": "plugins/ai/chat/src/features/new-chat/ui/new-chat-row/new-chat-row.css",
 	"@sumi/terminal-cursor-plugin/terminal-cursor.css":
@@ -95,6 +98,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sumi-host-plugin/title-bar.css";
 @import "@sumi/control-menu-plugin/control-menu.css";
 @import "@sumi/tab-strip-plugin/tab-strip.css";
+@import "@sumi/pinned-tabs-plugin/pinned-tabs.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
 @import "@sumi/canvas-plugin/canvas-page.css";

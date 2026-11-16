@@ -6,6 +6,8 @@ import type { Plugin } from "@widgetarium/plugin-framework";
 import type { WindowOffers } from "@sumi/sumi-host-plugin";
 import { pages } from "@sumi/pages/implementation";
 import { apps } from "../plugins/apps/src/index.ts";
+import { navigation } from "../plugins/tabs/navigation/src/index.ts";
+import { tabGroups } from "../plugins/tabs/tab-groups/src/index.ts";
 import { browserPage } from "../plugins/browser-page/src/index.ts";
 import { agent } from "../plugins/ai/agent/src/index.ts";
 import { agents, backend, shell, windows } from "../plugins/sumi-host/src/index.ts";
@@ -18,7 +20,7 @@ import {
 } from "../apps/studio/src/plugins/host-services.ts";
 import { check, tally } from "./check-helpers.ts";
 
-const PLUGINS: readonly Plugin[] = [apps, agent, browserPage];
+const PLUGINS: readonly Plugin[] = [navigation, tabGroups, apps, agent, browserPage];
 const HELD_TABS = [
 	{
 		id: "tab-page",

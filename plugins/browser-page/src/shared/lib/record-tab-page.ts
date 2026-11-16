@@ -1,4 +1,4 @@
-import { places } from "@sumi/contract";
+import { navigation } from "@sumi/contract";
 import type { AppAddress } from "@sumi/contract";
 import type { Runtime } from "@widgetarium/data-framework";
 
@@ -7,7 +7,7 @@ type AppAddressChange = Omit<AppAddress, "id">;
 const RECORD_REFUSED = "[browser-page] tab {tab}: its page stays as it was ({reason})";
 
 export function recordTabPage(shell: Runtime, tabId: string, page: AppAddressChange): void {
-	void shell.send(places.tabFacts.recordAppAddress, { id: tabId, ...page }).then((answer) => {
+	void shell.send(navigation.tabFacts.recordAppAddress, { id: tabId, ...page }).then((answer) => {
 		if (!answer.ok) {
 			console.error(RECORD_REFUSED.replace("{tab}", tabId).replace("{reason}", answer.reason));
 		}

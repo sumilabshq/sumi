@@ -1,7 +1,7 @@
 import { BARE_SCREEN } from "./places-fixture.ts";
-import { selectedIdsOf } from "../plugins/tab-strip/data/places/shared/lib/rows/tab-rows.ts";
-import { tabFactsOf } from "../plugins/tab-strip/data/places/shared/lib/showing/tab-facts.ts";
-import type { Screen } from "../plugins/tab-strip/data/places/shared/schema/screen.schema.ts";
+import { selectedIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/rows/tab-rows.ts";
+import { tabFactsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/showing/tab-facts.ts";
+import type { Screen } from "../plugins/tabs/navigation/data/navigation/shared/schema/screen.schema.ts";
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -22,9 +22,9 @@ import { dropGoneTabs, showInTarget } from "../packages/state/layout/features/pa
 import { peek, toggle } from "../packages/state/layout/features/frame-sides/requests.ts";
 import { resizeEdge } from "../packages/state/layout/features/frame-widths/requests.ts";
 import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { emptyMoment, openTab } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-lists.ts";
-import { sidebarOf } from "../plugins/tab-strip/data/places/shared/lib/rows/sidebar-rows.ts";
+import { emptyMoment, openTab } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-lists.ts";
+import { sidebarOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/rows/sidebar-rows.ts";
 import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 let failed = 0;

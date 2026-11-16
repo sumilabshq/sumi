@@ -6,13 +6,6 @@ type SidebarEntry = Sidebar["sections"][number]["entries"][number];
 type SidebarItem = Extract<SidebarEntry, { kind: "tab" }>;
 export type SidebarTab = SidebarItem["tab"];
 
-export interface ListedChat {
-	readonly kind: "chat";
-	readonly id: string;
-	readonly title: string;
-	readonly mark: SidebarTab["mark"];
-}
-
 interface ListedGroup {
 	readonly kind: "group";
 	readonly id: string;
@@ -20,10 +13,9 @@ interface ListedGroup {
 	readonly hue: Extract<SidebarEntry, { kind: "group" }>["group"]["hue"];
 	readonly isOpen: boolean;
 	readonly tabs: readonly SidebarTab[];
-	readonly chats: readonly ListedChat[];
 }
 
-export type ListedEntry = { readonly kind: "tab"; readonly tab: SidebarTab } | ListedChat | ListedGroup;
+export type ListedEntry = { readonly kind: "tab"; readonly tab: SidebarTab } | ListedGroup;
 
 interface TabList {
 	readonly list: string;
@@ -41,7 +33,7 @@ export function tabListsOf(sidebar: Sidebar): readonly TabList[] {
 
 function listedOf(entry: SidebarEntry | SidebarItem): readonly ListedEntry[] {
 	if (entry.kind === "tab") {
-		return [entry.isChat ? chatOf(entry.tab) : entry];
+		return [entry];
 	}
 
 	if (entry.kind === "split") {
@@ -55,16 +47,6 @@ function groupListedOf({ items, ...face }: Extract<SidebarEntry, { kind: "group"
 	return {
 		kind: "group",
 		...face,
-		tabs: items.flatMap((item) => (item.isChat ? [] : [item.tab])),
-		chats: items.flatMap((item) => (item.isChat ? [chatOf(item.tab)] : [])),
-	};
-}
-
-function chatOf(chat: SidebarTab): ListedChat {
-	return {
-		kind: "chat",
-		id: chat.id,
-		title: chat.title,
-		mark: chat.mark,
+		tabs: items.map((item) => item.tab),
 	};
 }

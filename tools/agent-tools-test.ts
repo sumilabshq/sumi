@@ -73,9 +73,12 @@ check(
 	[["chat-a", true]],
 );
 check(
-	"the state lists the one tab list, chats as plain entries",
-	whole.sections.map((section) => [section.list, section.entries.map((entry) => `${entry.kind}:${entry.id}`)]),
-	[["workspace", ["tab:t1", "chat:chat-a", "tab:t2", "group:g1"]]],
+	"the state lists the one tab list, a chat as a tab of app chat",
+	whole.sections.map((section) => [
+		section.list,
+		section.entries.map((entry) => `${entry.kind}:${entry.id}:${entry.kind === "tab" ? entry.app : ""}`),
+	]),
+	[["workspace", ["tab:t1:browser", "tab:chat-a:chat", "tab:t2:browser", "group:g1:"]]],
 );
 check("groups keep their tabs and colour", whole.sections[0]?.entries[3], {
 	kind: "group",
@@ -94,7 +97,6 @@ check("groups keep their tabs and colour", whole.sections[0]?.entries[3], {
 			status: null,
 		},
 	],
-	chats: [],
 });
 check("the tab the person sees is named", whole.shownTab, "t2");
 

@@ -1,15 +1,17 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { appHost as appHostModule } from "../plugins/tab-strip/data/app-host/generated/module.ts";
-import { MemoryStudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/memory.gateway.ts";
-import type { StudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/studio-window.gateway.ts";
-import { PaneFlashGateway } from "../plugins/tab-strip/data/app-host/gateways/pane-flash/pane-flash.gateway.ts";
-import { NoCoreChangesGateway } from "../plugins/tab-strip/data/app-host/gateways/core-changes/none.gateway.ts";
-import type { StudioView } from "../plugins/tab-strip/data/app-host/shared/schema/studio-view.schema.ts";
-import { places as placesContract } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import { appHost as appHostModule } from "../plugins/tabs/navigation/data/app-host/generated/module.ts";
+import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/memory.gateway.ts";
+import type { StudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/studio-window.gateway.ts";
+import { PaneFlashGateway } from "../plugins/tabs/navigation/data/app-host/gateways/pane-flash/pane-flash.gateway.ts";
+import { NoCoreChangesGateway } from "../plugins/tabs/navigation/data/app-host/gateways/core-changes/none.gateway.ts";
+import type { StudioView } from "../plugins/tabs/navigation/data/app-host/shared/schema/studio-view.schema.ts";
+import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
+import { tabGroups } from "../plugins/tabs/tab-groups/data/tab-groups/generated/contract.ts";
+import { navigation as placesContract } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { apps as appsContract } from "../plugins/apps/data/apps/generated/contract.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesLinkOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
@@ -149,7 +151,7 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 			workspaces({ injects: workspacesOf(seed.chatTitle ?? null) }),
 			...PLUGIN_WINDOW_MODULES,
 		)
-		.imports(placesContract({ over: core }), ...(isAppsInCore ? [appsContract({ over: core })] : []))
+		.imports(placesContract({ over: core }), tabGroups({ over: core }), chatFacts({ over: core }), ...(isAppsInCore ? [appsContract({ over: core })] : []))
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });
 	return {
 		appHost,

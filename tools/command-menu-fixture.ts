@@ -1,7 +1,7 @@
 import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 
 const BUILT_IN_PLUGINS = startSumiPlugins(builtInPluginState());
-const FIXTURE_IMPORTED = ["places", "apps"];
+const FIXTURE_IMPORTED = ["navigation", "tab-groups", "chat-facts", "apps"];
 const UNREACHED_BACKGROUND = BUILT_IN_PLUGINS.backgroundModules
 	.map(({ contract }) => contract.name)
 	.filter((name) => !FIXTURE_IMPORTED.includes(name));

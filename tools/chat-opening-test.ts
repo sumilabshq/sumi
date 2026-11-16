@@ -1,4 +1,4 @@
-import { appHost as appHostContract } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
+import { appHost as appHostContract } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
 import { chatTabs } from "../plugins/ai/chat/data/chat-tabs/generated/contract.ts";

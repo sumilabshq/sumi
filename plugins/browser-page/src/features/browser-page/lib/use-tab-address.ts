@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { places } from "@sumi/contract";
+import { navigation } from "@sumi/contract";
 import { useRuntime, useOptionalQuery } from "@widgetarium/data-framework";
 import { NEW_TAB_ADDRESS } from "./new-tab-address.js";
 import { recordTabPage } from "../../../shared/lib/record-tab-page.js";
@@ -12,7 +12,7 @@ export interface TabAddress {
 }
 
 export function useTabAddress(tabId: string): TabAddress {
-	const read = useOptionalQuery(places.tabFacts.ownAppTab, { id: tabId });
+	const read = useOptionalQuery(navigation.tabFacts.ownAppTab, { id: tabId });
 	const [address, setAddress] = useState<string | null>(null);
 	useFollowsStoredAddress(read.data === null ? null : (read.data.address ?? NEW_TAB_ADDRESS), setAddress);
 	return {

@@ -14,7 +14,10 @@ import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { composerExpand } from "@sumi/composer-expand-plugin";
 import { controlMenu } from "@sumi/control-menu-plugin";
+import { navigation } from "@sumi/navigation-plugin";
 import { tabStrip } from "@sumi/tab-strip-plugin";
+import { tabGroups } from "@sumi/tab-groups-plugin";
+import { pinnedTabs } from "@sumi/pinned-tabs-plugin";
 import { slashCommands } from "@sumi/slash-commands-plugin";
 import { effortPicker } from "@sumi/effort-picker-plugin";
 import { modelPicker } from "@sumi/model-picker-plugin";
@@ -118,6 +121,8 @@ export interface ResolvedPlugins {
 
 const INSTALLED_PLUGINS = [
 	sumiHost,
+	navigation,
+	tabGroups,
 	apps,
 	commandMenu,
 	chat,
@@ -146,8 +151,9 @@ const INSTALLED_PLUGINS = [
 	terminalCursor,
 	controlMenu,
 	tabStrip,
+	pinnedTabs,
 ];
-const ALWAYS_ON_PLUGINS = [sumiHost, controlMenu, tabStrip, apps, commandMenu, chat, main, agent, questions, tasks];
+const ALWAYS_ON_PLUGINS = [sumiHost, navigation, tabGroups, controlMenu, tabStrip, apps, commandMenu, chat, main, agent, questions, tasks];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
@@ -172,6 +178,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		terminalCursor.id,
 		controlMenu.id,
 		tabStrip.id,
+		pinnedTabs.id,
 	],
 };
 

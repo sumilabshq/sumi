@@ -1,4 +1,4 @@
-import { places, assistant, webPage as webPageContract, fileSystem, terminal } from "@sumi/contract";
+import { navigation, assistant, webPage as webPageContract, fileSystem, terminal } from "@sumi/contract";
 import { runtime, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
 
 const NOTE_PATH = "notes/today.txt";
@@ -24,7 +24,7 @@ const sumi = runtime()
 	.imports(
 		fileSystem({ over: transport }),
 		terminal({ over: transport }),
-		places({ over: transport }),
+		navigation({ over: transport }),
 		webPageContract({ over: transport }),
 		assistant({ over: transport }),
 	)
@@ -58,9 +58,9 @@ async function filesTold(): Promise<object> {
 }
 
 async function placesTold(): Promise<object> {
-	const closedTabs = await sumi.send(places.tabs.closedTabs);
-	const otherTab = await sumi.send(places.tabFacts.ownAppTab, { id: "t9" });
-	const ownTab = await sumi.send(places.tabFacts.ownAppTab, { id: OWN_TAB });
+	const closedTabs = await sumi.send(navigation.tabs.closedTabs);
+	const otherTab = await sumi.send(navigation.tabFacts.ownAppTab, { id: "t9" });
+	const ownTab = await sumi.send(navigation.tabFacts.ownAppTab, { id: OWN_TAB });
 	return {
 		closedTabs: closedTabs.ok ? "answered" : closedTabs.code,
 		otherTab: otherTab.ok ? "answered" : otherTab.code,
@@ -97,7 +97,7 @@ async function chatTold(): Promise<object> {
 }
 
 async function foreignChatTold(): Promise<object> {
-	await sumi.send(places.tabFacts.recordAppAddress, { id: OWN_TAB, address: `/${CHAT_TAB}` });
+	await sumi.send(navigation.tabFacts.recordAppAddress, { id: OWN_TAB, address: `/${CHAT_TAB}` });
 	const foreignChat = await sumi.send(assistant.chat.one, { chat: null });
 	return {
 		foreignChat: foreignChat.ok ? "read" : foreignChat.code,

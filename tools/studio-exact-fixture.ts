@@ -1,20 +1,20 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { appHost as appHostModule } from "../plugins/tab-strip/data/app-host/generated/module.ts";
+import { appHost as appHostModule } from "../plugins/tabs/navigation/data/app-host/generated/module.ts";
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
-import { MemoryStudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/memory.gateway.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesOver, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { NoPaneFlashGateway } from "../plugins/tab-strip/data/app-host/gateways/pane-flash/none.gateway.ts";
-import { NoCoreChangesGateway } from "../plugins/tab-strip/data/app-host/gateways/core-changes/none.gateway.ts";
+import { NoPaneFlashGateway } from "../plugins/tabs/navigation/data/app-host/gateways/pane-flash/none.gateway.ts";
+import { NoCoreChangesGateway } from "../plugins/tabs/navigation/data/app-host/gateways/core-changes/none.gateway.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -147,7 +147,7 @@ export function exactStudio({
 			workspacesModule({ injects: workspaces }),
 			...PLUGIN_WINDOW_MODULES,
 		)
-		.imports(placesOver(places))
+		.imports(...placesOver(places))
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });
 	void studioApp.send(layout.paneTabs.showChat, { chatId: releaseChatId, paneId: null });
 	return {

@@ -1,5 +1,7 @@
 import type { AppTabState, SidebarEntry, SidebarTab, TabsSidebar } from "@widgetarium/app-host/contract";
 
+const CHAT_APP = "chat";
+
 export interface ListedTab {
 	readonly tab: AppTabState;
 	readonly listTitle: string;
@@ -11,7 +13,7 @@ export function listedTabsOf(sidebar: TabsSidebar): readonly ListedTab[] {
 
 export function shownChatIdsOf(sidebar: TabsSidebar): ReadonlySet<string> {
 	const items = sidebar.sections.flatMap((section) => section.entries.flatMap(itemsOfEntry));
-	return new Set(items.flatMap((item) => (item.isChat && item.tab.isShown ? [item.tab.id] : [])));
+	return new Set(items.flatMap(({ tab }) => (isChat(tab) && tab.isShown ? [tab.id] : [])));
 }
 
 export function shownSplitIdsOf(sidebar: TabsSidebar): readonly string[] {
@@ -32,6 +34,10 @@ function itemsOfEntry(entry: SidebarEntry): readonly SidebarTab[] {
 	return entry.kind === "split" ? entry.split.members.map((member) => member.item) : [entry];
 }
 
-function tabsOfItem({ tab, isChat }: SidebarTab, listTitle: string): readonly ListedTab[] {
-	return isChat ? [] : [{ tab, listTitle }];
+function tabsOfItem({ tab }: SidebarTab, listTitle: string): readonly ListedTab[] {
+	return isChat(tab) ? [] : [{ tab, listTitle }];
+}
+
+function isChat(tab: AppTabState): boolean {
+	return tab.app === CHAT_APP;
 }

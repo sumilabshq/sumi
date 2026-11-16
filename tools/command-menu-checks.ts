@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { filledWithShown } from "../plugins/command-menu/data/command-menu/features/opening/lib/shown-text.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer } from "../packages/shared/data-framework/src/index.ts";
-import { appHost as appHostModule } from "../plugins/tab-strip/data/app-host/generated/module.ts";
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
+import { appHost as appHostModule } from "../plugins/tabs/navigation/data/app-host/generated/module.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
@@ -21,12 +21,12 @@ import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
 import { placesOver, withWindowView } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { emptyPlacedTabs } from "../plugins/tab-strip/data/places/shared/lib/tabs/kept-tabs.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { emptyPlacedTabs } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
 
 const studio = runtime()
 	.modules(browser, layout, workspacesModule, appHostModule, PluginAppsModule, ...PLUGIN_WINDOW_MODULES)
-	.imports(placesOver())
+	.imports(...placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
 await studio.send(appHost.tabs.restore);
 
@@ -211,7 +211,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 			workspacesModule,
 			...PLUGIN_WINDOW_MODULES,
 		)
-		.imports(placesOver(new MemoryTabsGateway(withWindowView(emptyPlacedTabs(), "browser"))))
+		.imports(...placesOver(new MemoryTabsGateway(withWindowView(emptyPlacedTabs(), "browser"))))
 		.start({ platform: "browser", scope: { workspaceId: "studio" } });
 	const tabsBefore = ok(await withPages.send(appHost.tabs.appTabs)).tabs.length;
 	ok(
@@ -345,7 +345,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 			PluginAppsModule,
 			...PLUGIN_WINDOW_MODULES,
 		)
-		.imports(placesOver())
+		.imports(...placesOver())
 		.start({ platform: "browser", scope: { workspaceId: "untitled" } });
 	const found = ok(await elsewhere.send(commandMenu.results.all, { text: "default tab", door: "anywhere" }));
 	const row = found.sections.flatMap((section) => section.rows).find((one) => one.intent.do === "open-chat-elsewhere");

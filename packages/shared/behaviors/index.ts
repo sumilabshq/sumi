@@ -71,6 +71,7 @@ export {
 	NO_WORKSPACE_ID,
 	isPlacesWindowOfWorkspace,
 	labelOfPlacesWindow,
+	placesWindowHere,
 	placesWindowOf,
 	isCorePage,
 	isTearOffGhostPage,

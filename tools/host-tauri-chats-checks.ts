@@ -17,8 +17,8 @@ import { check, waitFor } from "./check-helpers.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
 import type { Doc } from "./host-tauri-fake-store.ts";
 import { placesOver } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 
 interface HeldRun {
 	readonly run: TurnRun;
@@ -54,7 +54,7 @@ function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 		marks,
 		started: runtime()
 			.modules(layoutModule({ injects: { ...partsOf() } }), workspacesModule({ injects: parts }))
-			.imports(placesOver(tabs))
+			.imports(...placesOver(tabs))
 			.start(),
 	};
 }
@@ -121,7 +121,7 @@ async function perChatChecks(): Promise<void> {
 
 	await quietly(async () => {
 		await workspaces.started.send(layout.paneTabs.showChat, { chatId: firstId, paneId: null });
-		await workspaces.started.send(places.tabFacts.markSeen, { id: firstId });
+		await workspaces.started.send(chatFacts.turns.markSeen, { id: firstId });
 	});
 	await waitFor(() => sessions.now().turns.length === 2);
 	check(

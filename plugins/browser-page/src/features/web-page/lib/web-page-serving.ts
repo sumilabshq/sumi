@@ -1,4 +1,4 @@
-import { places } from "@sumi/contract";
+import { navigation } from "@sumi/contract";
 import type { FrameServing, WindowOffers } from "@sumi/sumi-host-plugin";
 import type { Runtime } from "@widgetarium/data-framework";
 import { webPage } from "@widgetarium/web-page/implementation";
@@ -35,7 +35,7 @@ function webPageConfigOf(appTabs: AppTabs, nativePages: NativeWebPages | null): 
 function appTabsOver(windowApp: Runtime): AppTabs {
 	return {
 		appOfTab: async (tab) => {
-			const answer = await windowApp.send(places.tabFacts.ownAppTab, { id: tab });
+			const answer = await windowApp.send(navigation.tabFacts.ownAppTab, { id: tab });
 			return answer.ok ? answer.output.app : null;
 		},
 	};

@@ -9,7 +9,7 @@ export function WorkspaceKeys(): null {
 	useEffect(() => {
 		const pressed = (event: KeyboardEvent): void => {
 			const digit = DIGIT_KEY.exec(event.code)?.[1];
-			if (digit === undefined || !isCommandAlone(event)) {
+			if (digit === undefined || !isControlAlone(event)) {
 				return;
 			}
 
@@ -22,6 +22,6 @@ export function WorkspaceKeys(): null {
 	return null;
 }
 
-function isCommandAlone(event: KeyboardEvent): boolean {
-	return event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey;
+function isControlAlone(event: KeyboardEvent): boolean {
+	return event.ctrlKey && !event.altKey && !event.metaKey && !event.shiftKey;
 }

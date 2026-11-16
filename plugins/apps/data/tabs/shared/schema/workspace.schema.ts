@@ -15,13 +15,6 @@ export const StateTabSchema = z.object({
 	status: z.enum(["reading", "waiting", "cannot-look"]).nullable(),
 });
 
-export const StateChatSchema = z.object({
-	kind: z.literal("chat"),
-	id: z.string(),
-	title: z.string(),
-	mark: ChatMarkSchema,
-});
-
 export const StateGroupSchema = z.object({
 	kind: z.literal("group"),
 	id: z.string(),
@@ -29,12 +22,10 @@ export const StateGroupSchema = z.object({
 	colour: GroupColourSchema.nullable(),
 	isOpen: z.boolean(),
 	tabs: z.array(StateTabSchema),
-	chats: z.array(StateChatSchema),
 });
 
 export const StateEntrySchema = z.discriminatedUnion("kind", [
 	StateTabSchema.extend({ kind: z.literal("tab") }),
-	StateChatSchema,
 	StateGroupSchema,
 ]);
 

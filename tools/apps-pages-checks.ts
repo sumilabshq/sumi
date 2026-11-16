@@ -4,10 +4,10 @@ import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { apps } from "../plugins/apps/data/apps/generated/contract.ts";
 import { apps as RunnableAppsModule } from "../plugins/apps/data/apps/generated/module.ts";
-import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
+import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
@@ -67,7 +67,7 @@ function appsAs(id: string | null): Runtime {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
 	const transport = orpcTransport("http://apps.test", { fetch: served.fetch, headers });
 	return runtime()
-		.imports(apps({ over: transport }), places({ over: transport }))
+		.imports(apps({ over: transport }), navigation({ over: transport }))
 		.start();
 }
 

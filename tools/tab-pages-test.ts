@@ -1,15 +1,16 @@
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
-import { MemoryStudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/memory.gateway.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { groups } from "../plugins/tabs/tab-groups/data/groups/generated/contract.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
+import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
-import { WORKSPACE_LIST } from "../plugins/tab-strip/data/places/shared/lib/tabs/tab-lists.ts";
-import { givePage } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
-import { momentOfWindow } from "../plugins/tab-strip/data/places/shared/lib/tabs/kept-tabs.ts";
+import { WORKSPACE_LIST } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-lists.ts";
+import { givePage } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
+import { momentOfWindow } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
 import { check, tally, thrownBy, waitFor } from "./check-helpers.ts";
 
 const BROWSER_FIRST_PAGE = "tab-1";
@@ -156,13 +157,13 @@ async function showAndPaneChecks(): Promise<void> {
 async function handlerRuleChecks(): Promise<void> {
 	const { studioApp } = restoredStudio();
 	const renamed = await studioApp.send(appHost.tabActions.renameTab, { id: "tab-99", label: "Gone" });
-	const grouped = await studioApp.send(appHost.groups.create, { list: "chat-elsewhere" });
+	const grouped = await studioApp.send(groups.actions.create, { list: "chat-elsewhere" });
 	check(
 		"renaming a tab places does not hold and grouping into a list no chat owns are refused by places",
 		[renamed.ok ? null : renamed.reason, grouped.ok ? null : grouped.reason],
 		[
-			'places.tab-placing.rename answered refused: the host holds no tab "tab-99"',
-			'places.tab-placing.create-group answered refused: no tab list "chat-elsewhere" is here',
+			'navigation.tab-placing.rename answered refused: the host holds no tab "tab-99"',
+			'tab-groups.groups.create answered refused: no tab list "chat-elsewhere" is here',
 		],
 	);
 }

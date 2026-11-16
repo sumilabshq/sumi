@@ -1,9 +1,9 @@
-import { MemoryStudioWindowGateway } from "../plugins/tab-strip/data/app-host/gateways/studio-window/memory.gateway.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { NoPaneFlashGateway } from "../plugins/tab-strip/data/app-host/gateways/pane-flash/none.gateway.ts";
-import { NoCoreChangesGateway } from "../plugins/tab-strip/data/app-host/gateways/core-changes/none.gateway.ts";
+import { NoPaneFlashGateway } from "../plugins/tabs/navigation/data/app-host/gateways/pane-flash/none.gateway.ts";
+import { NoCoreChangesGateway } from "../plugins/tabs/navigation/data/app-host/gateways/core-changes/none.gateway.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
@@ -18,7 +18,7 @@ import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/wo
 import { layout } from "../packages/state/layout/generated/contract.ts";
 import type { PaneSide, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 

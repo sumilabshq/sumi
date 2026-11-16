@@ -1,4 +1,4 @@
-import type { PlacedApp } from "@widgetarium/places/implementation";
+import type { PlacedApp } from "@widgetarium/navigation/implementation";
 import type { TabRules } from "./app-types.js";
 import type { FilledApp } from "../ui/app-tab/app-tab.js";
 

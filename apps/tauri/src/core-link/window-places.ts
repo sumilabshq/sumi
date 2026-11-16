@@ -1,7 +1,7 @@
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { runtime } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
-import { places as placesContract } from "@widgetarium/places/contract";
+import { navigation as placesContract } from "@widgetarium/navigation/contract";
 import { ipcTransport } from "./ipc-transport.js";
 
 export interface WindowPlaces {

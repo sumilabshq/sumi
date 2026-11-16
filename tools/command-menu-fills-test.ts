@@ -1,5 +1,6 @@
 import { apps } from "@sumi/apps-plugin";
 import { controlMenu } from "@sumi/control-menu-plugin";
+import { navigation } from "@sumi/navigation-plugin";
 import { tabStrip } from "@sumi/tab-strip-plugin";
 import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { commandMenu } from "@sumi/command-menu-plugin";
@@ -9,7 +10,7 @@ import { agent } from "@sumi/agent-plugin";
 import type { DeviceModule } from "@widgetarium/data-framework";
 import { MemoryPluginStateStore, plugin, runtime as pluginRuntime } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/module.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/module.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import { layout } from "../packages/state/layout/generated/module.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/module.ts";
@@ -72,9 +73,9 @@ const probe = plugin("probe")
 	});
 
 const windowModules = new Map<string, DeviceModule>();
-const ENABLED = [sumiHost.id, controlMenu.id, tabStrip.id, agent.id, apps.id, commandMenu.id, chat.id, probe.id];
+const ENABLED = [sumiHost.id, navigation.id, controlMenu.id, tabStrip.id, agent.id, apps.id, commandMenu.id, chat.id, probe.id];
 const started = pluginRuntime()
-	.builtInPlugins(sumiHost, controlMenu, tabStrip, agent, apps, commandMenu, chat, probe)
+	.builtInPlugins(sumiHost, navigation, controlMenu, tabStrip, agent, apps, commandMenu, chat, probe)
 	.state(new MemoryPluginStateStore(ENABLED))
 	.provide(backend, () => ({
 		module: () => undefined,
@@ -106,7 +107,7 @@ if (menuModule === undefined) {
 
 const studio = runtime()
 	.modules(browser, layout, workspaces, appHost, chatTabs, PluginAppsModule, menuModule)
-	.imports(placesOver())
+	.imports(...placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "menu-fills" } });
 
 async function outputOf<T>(answer: Promise<{ ok: true; output: T } | { ok: false; reason: string }>): Promise<T> {

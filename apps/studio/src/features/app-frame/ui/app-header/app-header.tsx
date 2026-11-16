@@ -2,7 +2,7 @@ import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { apps as appsContract } from "@sumi/apps/contract";
 import { useCommand, useOptionalQuery, useQuery } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places/contract";
+import { navigation } from "@widgetarium/navigation/contract";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 import { PlateCrumb } from "../../../plate/ui/plate-header/plate-crumb.js";
 import { PlateHeaderPart } from "../../../plate/ui/plate-header/plate-header-part.js";
@@ -16,11 +16,11 @@ export interface AppHeaderProps {
 const HOME_ADDRESS = "";
 
 export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
-	const tab = useOptionalQuery(places.tabFacts.ownAppTab, { id: tabId }).data;
+	const tab = useOptionalQuery(navigation.tabFacts.ownAppTab, { id: tabId }).data;
 	const { apps } = useQuery(appsContract.apps.all).data;
 	const pageTitle = useOptionalQuery(appsContract.pages.pageOfTab, { id: tabId }).data?.title ?? null;
-	const goBack = useCommand(places.tabHistory.goBack);
-	const goForward = useCommand(places.tabHistory.goForward);
+	const goBack = useCommand(navigation.tabHistory.goBack);
+	const goForward = useCommand(navigation.tabHistory.goForward);
 
 	if (tab === null) {
 		return null;

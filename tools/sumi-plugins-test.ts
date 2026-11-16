@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { fileSystem } from "@widgetarium/file-system/implementation";
-import { places } from "@widgetarium/places/implementation";
+import { navigation as places } from "@widgetarium/navigation/implementation";
 import { questions } from "@widgetarium/questions/implementation";
 import { tasks } from "@widgetarium/tasks/implementation";
 import { terminal } from "@widgetarium/terminal/implementation";
@@ -198,7 +198,7 @@ check(
 );
 check(
 	"the registered background modules include places, tasks, questions and apps, so no host list names them",
-	["places", "tasks", "questions", "apps"].every((name) =>
+	["navigation", "tasks", "questions", "apps"].every((name) =>
 		frameCoreModulesOf(resolved.backgroundModules).some(({ module }) => module.name === name),
 	),
 	true,

@@ -25,8 +25,8 @@ import type {
 } from "../../shared/schema/workspace.schema.js";
 
 const KEYED_WORKSPACES = 9;
-const KEY_HINT = "⌘{n}";
-const NO_WORKSPACE_AT = "There is no workspace at ⌘{n}.";
+const KEY_HINT = "⌃{n}";
+const NO_WORKSPACE_AT = "There is no workspace at ⌃{n}.";
 const STRIP_FROM = 2;
 const NO_NAME = "A workspace needs a name.";
 const UNKNOWN = "There is no workspace {id}.";

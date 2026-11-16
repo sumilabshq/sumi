@@ -2,13 +2,14 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Repeatable, refusalOf, wireAnswerOf } from "@widgetarium/data-framework";
 import type { Answer, HearChanges, RemoteTransport } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places/contract";
+import { navigation } from "@widgetarium/navigation/contract";
 import { questions } from "@widgetarium/questions/contract";
 import { tasks } from "@widgetarium/tasks/contract";
 import { fileSystem } from "@widgetarium/file-system/contract";
 import { terminal } from "@widgetarium/terminal/contract";
 import { CORE_CALL, CORE_CHANGED_EVENT, CORE_RESTARTED, CORE_SERVING_EVENT, CoreChangeSchema } from "./core-wire.js";
 import type { CoreCall } from "./core-wire.js";
+import { chatFacts } from "@sumi/chat-facts/contract";
 
 type CoreAsk = Parameters<RemoteTransport["call"]>[0];
 
@@ -103,7 +104,8 @@ export function listenOnWindow(name: string, heard: (payload: unknown) => void):
 }
 
 const EVERY_CORE_QUERY: Parameters<HearChanges>[0] = [
-	...places.requests,
+	...navigation.requests,
+	...chatFacts.requests,
 	...tasks.requests,
 	...questions.requests,
 	...fileSystem.requests,

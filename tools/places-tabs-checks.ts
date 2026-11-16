@@ -1,23 +1,27 @@
 import { placesWindowOf } from "@widgetarium/behaviors";
+import { tabGroups } from "../plugins/tabs/tab-groups/data/tab-groups/generated/contract.ts";
+import { tabGroups as RunnableTabGroupsModule } from "../plugins/tabs/tab-groups/data/tab-groups/generated/module.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { BUILT_IN_PLACED_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
-import { ListedPlacedAppsGateway } from "../plugins/tab-strip/data/places/gateways/placed-apps/listed.gateway.ts";
+import { ListedPlacedAppsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/placed-apps/listed.gateway.ts";
 import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app-of.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import type { TabsAsk } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { TauriTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/tauri/tauri.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
-import { KeptPlacesSchema } from "../plugins/tab-strip/data/places/gateways/windows/tauri.gateway.ts";
-import type { KeptPlaces } from "../plugins/tab-strip/data/places/gateways/windows/tauri.gateway.ts";
+import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import type { TabsAsk } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { TauriTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/tauri.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
+import { KeptPlacesSchema } from "../plugins/tabs/navigation/data/navigation/gateways/windows/tauri.gateway.ts";
+import type { KeptPlaces } from "../plugins/tabs/navigation/data/navigation/gateways/windows/tauri.gateway.ts";
 import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
+import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
+import { chatFacts as chatFactsModule } from "../plugins/ai/chat/data/chat-facts/generated/module.ts";
 
 const PLACES: DocKind<KeptPlaces> = {
 	file: "places.json",
@@ -36,28 +40,25 @@ function windowsOver(tabs: MemoryTabsGateway | TauriTabsGateway): readonly [Runt
 }
 
 function placesCoreOver(tabs: MemoryTabsGateway | TauriTabsGateway): Runtime {
+	const parts = {
+		windows: new MemoryWindowsGateway({ windows: [] }),
+		tabs,
+		placedApps: builtInPlacedApps(),
+		home: mainHome(),
+	};
 	return runtime()
-		.modules(
-			RunnablePlacesModule({
-				injects: {
-					windows: new MemoryWindowsGateway({ windows: [] }),
-					tabs,
-					placedApps: builtInPlacedApps(),
-					home: mainHome(),
-				},
-			}),
-		)
+		.modules(RunnablePlacesModule({ injects: parts }), RunnableTabGroupsModule({ injects: parts }), chatFactsModule({ injects: parts }))
 		.start({ platform: "server", env: {} });
 }
 
 function windowOver(core: RemoteTransport): Runtime {
 	return runtime()
-		.imports(places({ over: core }))
+		.imports(navigation({ over: core }), tabGroups({ over: core }), chatFacts({ over: core }))
 		.start();
 }
 
 async function listsIn(windowApp: Runtime, window: string): Promise<unknown> {
-	const placed = await windowApp.send(places.tabs.placedTabs, { window });
+	const placed = await windowApp.send(navigation.tabs.placedTabs, { window });
 	return placed.ok ? [placed.output.lists, placed.output.shownId] : placed.reason;
 }
 
@@ -69,7 +70,7 @@ async function unreadableChecks(): Promise<void> {
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
 	const [main] = windowsOver(new TauriTabsGateway({ workspaceId: DEFAULT.id, kept }));
-	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
+	const placed = await main.send(navigation.tabs.placedTabs, { window: "main" });
 	check(
 		"unreadable tabs start empty and are kept aside, never read again from the older files",
 		[placed.ok ? placed.output.minted : placed.reason, fake.files.get(`${root}:places.json`)?.["unreadableTabs"]],
@@ -81,8 +82,8 @@ async function oneWriterChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main, side] = windowsOver(tabs);
 	const opened = await Promise.all([
-		main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" }),
-		side.send(places.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" }),
+		main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "canvas" }),
+		side.send(navigation.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" }),
 	]);
 	check(
 		"two windows opening a tab at once each get their own, minted by the one writer",
@@ -101,25 +102,25 @@ async function oneWriterChecks(): Promise<void> {
 	);
 
 	const heard = { count: 0 };
-	main.routes.watch(places.tabs.placedTabs, { window: "main" }, () => {
+	main.routes.watch(navigation.tabs.placedTabs, { window: "main" }, () => {
 		heard.count += 1;
 	});
-	await side.send(places.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" });
+	await side.send(navigation.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" });
 	check("and the other window hears the change without asking", await waitFor(() => heard.count > 0), true);
 }
 
 async function declaredRuleChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main] = windowsOver(tabs);
-	const canvas = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
-	const below = await main.send(places.tabOpening.openBelow, {
+	const canvas = await main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
+	const below = await main.send(navigation.tabOpening.openBelow, {
 		at: askAt("main"),
 		id: canvas.ok ? canvas.output.id : "",
 	});
-	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
+	const placed = await main.send(navigation.tabs.placedTabs, { window: "main" });
 	const belowApp = placed.ok && below.ok ? placed.output.tabs.find(({ id }) => id === below.output.id)?.app : null;
 	check("a tab opened below opens the app that declares it navigates", belowApp, "browser");
-	const chat = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "chat" });
+	const chat = await main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "chat" });
 	check(
 		"opening a tab of the app that declares it draws no page is refused",
 		chat.ok ? "opened" : chat.reason,
@@ -130,26 +131,26 @@ async function declaredRuleChecks(): Promise<void> {
 async function lawChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main] = windowsOver(tabs);
-	await main.send(places.tabFacts.keepChatTabs, {
+	await main.send(chatFacts.turns.keepChatTabs, {
 		chats: [
 			{ id: "chat-a", title: null },
 			{ id: "chat-b", title: null },
 		],
 	});
-	await main.send(places.tabFacts.keepChatTabs, {
+	await main.send(chatFacts.turns.keepChatTabs, {
 		chats: [
 			{ id: "chat-a", title: null },
 			{ id: "chat-b", title: null },
 		],
 	});
-	const tab = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
+	const tab = await main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
 	const tabId = tab.ok ? tab.output.id : "";
-	const chatInChat = await main.send(places.tabPlacing.place, {
+	const chatInChat = await main.send(navigation.tabPlacing.place, {
 		at: askAt("main"),
 		id: "chat-b",
 		place: { list: "chat-a", groupId: null, before: null },
 	});
-	const noChat = await main.send(places.tabPlacing.place, {
+	const noChat = await main.send(navigation.tabPlacing.place, {
 		at: askAt("main"),
 		id: tabId,
 		place: { list: "tab-1", groupId: null, before: null },
@@ -168,8 +169,8 @@ async function lawChecks(): Promise<void> {
 		],
 	);
 
-	const grouped = await main.send(places.tabPlacing.createGroup, { window: "main", from: { kind: "tab", tabId } });
-	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
+	const grouped = await main.send(tabGroups.groups.create, { window: "main", from: { kind: "tab", tabId } });
+	const placed = await main.send(navigation.tabs.placedTabs, { window: "main" });
 	check(
 		"a group born around a tab stands in its list",
 		[placed.ok ? placed.output.lists["workspace"]?.some((entry) => entry.kind === "group") : placed.reason, grouped.ok],
@@ -179,24 +180,24 @@ async function lawChecks(): Promise<void> {
 }
 
 async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void> {
-	const toOpen = await main.send(places.tabPlacing.placeGroup, {
+	const toOpen = await main.send(tabGroups.groups.place, {
 		window: "main",
 		id: groupId,
 		place: { list: "workspace", before: null },
 	});
-	const afterOpen = await main.send(places.tabs.placedTabs, { window: "main" });
+	const afterOpen = await main.send(navigation.tabs.placedTabs, { window: "main" });
 	const lists = afterOpen.ok ? afterOpen.output.lists : {};
 	check(
 		"a group carried to the end of the list stands last there",
 		[toOpen.ok, lists["workspace"]?.at(-1)?.id],
 		[true, groupId],
 	);
-	await main.send(places.tabPlacing.place, {
+	await main.send(navigation.tabPlacing.place, {
 		at: askAt("main"),
 		id: "chat-b",
 		place: { list: "workspace", groupId, before: null },
 	});
-	const intoChat = await main.send(places.tabPlacing.placeGroup, {
+	const intoChat = await main.send(tabGroups.groups.place, {
 		window: "main",
 		id: groupId,
 		place: { list: "chat-a", before: null },
@@ -220,8 +221,8 @@ const MARKDOWN_TO_CANVAS_PLACED_APP = placedAppOf({
 });
 
 async function openedAppAndAddressAt(main: Runtime, address: string): Promise<readonly unknown[]> {
-	const opened = await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "file", address });
-	const placed = await main.send(places.tabs.placedTabs, { window: "main" });
+	const opened = await main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "file", address });
+	const placed = await main.send(navigation.tabs.placedTabs, { window: "main" });
 	const tab = placed.ok && opened.ok ? placed.output.tabs.find(({ id }) => id === opened.output.id) : undefined;
 	return [tab?.app, tab?.lastAddress];
 }
@@ -260,7 +261,7 @@ async function handoffChecks(): Promise<void> {
 }
 
 async function sidebarTabIdsIn(windowApp: Runtime, at: TabsAsk): Promise<unknown> {
-	const sidebar = await windowApp.send(places.tabs.sidebar, { at });
+	const sidebar = await windowApp.send(navigation.tabs.sidebar, { at });
 	return sidebar.ok
 		? sidebar.output.sections.map((section) => [
 				section.list,
@@ -272,9 +273,9 @@ async function sidebarTabIdsIn(windowApp: Runtime, at: TabsAsk): Promise<unknown
 async function windowTabsChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main, side] = windowsOver(tabs);
-	await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
-	await main.send(places.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
-	await side.send(places.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" });
+	await main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
+	await main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
+	await side.send(navigation.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" });
 	check(
 		"two windows each see only their own tabs in the sidebar",
 		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
@@ -284,7 +285,7 @@ async function windowTabsChecks(): Promise<void> {
 		],
 	);
 
-	const foreign = await side.send(places.tabShowing.show, { at: askAt("studio-2"), id: "tab-1" });
+	const foreign = await side.send(navigation.tabShowing.show, { at: askAt("studio-2"), id: "tab-1" });
 	check(
 		"a window cannot show a tab another window holds",
 		foreign.ok ? "shown" : foreign.reason,
@@ -295,7 +296,7 @@ async function windowTabsChecks(): Promise<void> {
 		window: "studio-2",
 		screen: { ...BARE_SCREEN, tabPanes: [{ paneId: "pane-1", tabId: "tab-1" }] },
 	};
-	await side.send(places.tabShowing.fitToPanes, { at: torn });
+	await side.send(navigation.tabShowing.fitToPanes, { at: torn });
 	check(
 		"a torn-off tab moves into the list of the window that shows it",
 		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
@@ -305,7 +306,7 @@ async function windowTabsChecks(): Promise<void> {
 		],
 	);
 
-	await side.send(places.windows.closeWindow, { window: "studio-2" });
+	await side.send(navigation.windows.closeWindow, { window: "studio-2" });
 	const placed = await tabs.placedTabs();
 	check(
 		"closing a window stores it as a session: its tabs leave the window lists, the closed history stays as it was",
@@ -319,15 +320,15 @@ async function windowTabsChecks(): Promise<void> {
 		[["tab-2"], [], [["studio-2", ["tab-1", "tab-3"]]], ["window:main"], false],
 	);
 
-	await main.send(places.windows.closeWindow, { window: "main" });
+	await main.send(navigation.windows.closeWindow, { window: "main" });
 	check(
 		"the main window is a window like any other: closing it stores its session too",
 		[(await tabs.placedTabs()).tabs.map((tab) => tab.id), (await tabs.placedTabs()).sessions.length],
 		[[], 2],
 	);
 
-	await side.send(places.tabOpening.openTab, { at: askAt("studio-3"), app: "canvas" });
-	await main.send(places.windows.keepLiveWindows, { windows: ["main"] });
+	await side.send(navigation.tabOpening.openTab, { at: askAt("studio-3"), app: "canvas" });
+	await main.send(navigation.windows.keepLiveWindows, { windows: ["main"] });
 	check(
 		"a window no longer open becomes a session when the core checks what is open",
 		[(await tabs.placedTabs()).tabs.map((tab) => tab.id), (await tabs.placedTabs()).sessions.length],

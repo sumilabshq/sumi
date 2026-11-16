@@ -16,6 +16,10 @@ export function placesWindowOf(label: string, workspaceId: string): string {
 	return `${label}${PLACES_WINDOW_JOIN}${workspaceId}`;
 }
 
+export function placesWindowHere(search: string | null, workspaceId: string): string {
+	return placesWindowOf(search === null ? MAIN_STUDIO_WINDOW : studioWindowOf(search).label, workspaceId);
+}
+
 export function labelOfPlacesWindow(placesWindow: string): string {
 	return placesWindow.split(PLACES_WINDOW_JOIN)[0] ?? placesWindow;
 }

@@ -1,6 +1,6 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import type { Send, User } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places/contract";
+import { navigation } from "@widgetarium/navigation/contract";
 import { command, query, subscriber } from "#module";
 import {
 	AppPageAskSchema,
@@ -132,7 +132,7 @@ export const takeActionPress = command()
 	});
 
 async function ownTabOf(send: Send, user: User | null, id: string): Promise<{ app: string; address: string | null }> {
-	const tab = await send(places.tabFacts.ownAppTab, { id });
+	const tab = await send(navigation.tabFacts.ownAppTab, { id });
 
 	if (user !== null && tab.app !== user.id) {
 		return refuse(NOT_ITS_TAB.replace("{id}", id).replace("{app}", user.id));

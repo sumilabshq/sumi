@@ -1,0 +1,35 @@
+import type { AccessAsk, BrowserTabState, BrowserTabs, InkReading } from "@widgetarium/browser/contract";
+import type { PaneBoard } from "@widgetarium/layout/contract";
+import type { PageFacts, Screen } from "@widgetarium/navigation/contract";
+
+export interface ScreenSources {
+	readonly browserTabs: BrowserTabs;
+	readonly asks: readonly AccessAsk[];
+	readonly board: PaneBoard;
+}
+
+export function screenOf({ browserTabs, asks, board }: ScreenSources): Screen {
+	return {
+		pages: browserTabs.tabs.map((tab) => pageFactsOf(tab, browserTabs.inkReading, asks)),
+		isBrowserAvailable: browserTabs.isAvailable,
+		canOpenOwnWindow: browserTabs.canOpenOwnWindow,
+		tabPanes: board.tabPanes.map(({ paneId, tabId }) => ({ paneId, tabId })),
+		shownTabPaneId: board.leaves.find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === null)?.id ?? null,
+		tabTargetId: board.tabTargetId,
+		chatGroups: board.chatGroups.map(({ chatId, paneIds }) => ({ chatId, paneIds: [...paneIds] })),
+		elsewhere: board.elsewhere.map(({ window, tabIds, chatIds }) => ({ window, tabIds: [...tabIds, ...chatIds] })),
+	};
+}
+
+function pageFactsOf(tab: BrowserTabState, inkReading: InkReading | null, asks: readonly AccessAsk[]): PageFacts {
+	return {
+		pageId: tab.id,
+		title: tab.title,
+		url: tab.url,
+		favicon: tab.favicon,
+		isInkReading: inkReading?.tabId === tab.id,
+		isAskWaiting: asks.some((ask) => ask.tabId === tab.id),
+		isClosedToInk: tab.access?.decision === "deny",
+		isInOwnWindow: tab.isInOwnWindow,
+	};
+}

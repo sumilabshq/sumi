@@ -2,12 +2,15 @@ import { BARE_SCREEN } from "./places-fixture.ts";
 import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { places as placesContract } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import type { PlacedSidebar, TabsAsk } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
+import { navigation as placesContract } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import type { PlacedSidebar, TabsAsk } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import type { PlacesParts } from "../plugins/tabs/navigation/data/navigation/gateways/places-parts/places-parts.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { check, tally } from "./check-helpers.ts";
+import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
+import { chatFacts as chatFactsModule } from "../plugins/ai/chat/data/chat-facts/generated/module.ts";
 
 const WINDOW = "main";
 
@@ -21,20 +24,23 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 	core.serve(
 		runtime()
 			.modules(
-				RunnablePlacesModule({
-					injects: {
-						windows: new MemoryWindowsGateway({ windows: [] }),
-						tabs,
-						placedApps: builtInPlacedApps(),
-						home: mainHome(),
-					},
-				}),
+				RunnablePlacesModule({ injects: partsOf(tabs) }),
+				chatFactsModule({ injects: partsOf(tabs) }),
 			)
 			.start({ platform: "server", env: {} }),
 	);
 	return runtime()
-		.imports(placesContract({ over: core }))
+		.imports(placesContract({ over: core }), chatFacts({ over: core }))
 		.start();
+}
+
+function partsOf(tabs: MemoryTabsGateway): PlacesParts {
+	return {
+		windows: new MemoryWindowsGateway({ windows: [] }),
+		tabs,
+		placedApps: builtInPlacedApps(),
+		home: mainHome(),
+	};
 }
 
 async function sidebarOf(places: Runtime): Promise<PlacedSidebar | string> {
@@ -49,14 +55,14 @@ function openRowsOf(sidebar: PlacedSidebar | string): unknown {
 
 	return sidebar.sections
 		.flatMap((section) => section.entries)
-		.map((entry) => (entry.kind === "tab" ? [entry.tab.title, entry.tab.mark, entry.isChat] : entry.kind));
+		.map((entry) => (entry.kind === "tab" ? [entry.tab.title, entry.tab.mark, entry.tab.app === "chat"] : entry.kind));
 }
 
 async function wholeChatChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
-	await places.send(placesContract.tabFacts.recordTurn, { id: "chat-a", title: null, isBusy: true, isSeen: false });
+	await places.send(chatFacts.turns.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
+	await places.send(chatFacts.turns.recordTurn, { id: "chat-a", title: null, isBusy: true, isSeen: false });
 	check(
 		"places alone answers a chat row: its title and its running mark, with no chat record anywhere",
 		openRowsOf(await sidebarOf(places)),
@@ -84,9 +90,9 @@ async function chatIdChecks(places: Runtime): Promise<void> {
 }
 
 async function turnEndingChecks(places: Runtime): Promise<void> {
-	await places.send(placesContract.tabFacts.recordTurn, { id: "chat-a", title: null, isBusy: false, isSeen: false });
+	await places.send(chatFacts.turns.recordTurn, { id: "chat-a", title: null, isBusy: false, isSeen: false });
 	const unread = openRowsOf(await sidebarOf(places));
-	await places.send(placesContract.tabFacts.markSeen, { id: "chat-a" });
+	await places.send(chatFacts.turns.markSeen, { id: "chat-a" });
 	check(
 		"a turn ending unseen marks the tab unread, and seeing it clears the mark",
 		[unread, openRowsOf(await sidebarOf(places))],
@@ -107,7 +113,7 @@ async function archiveChecks(places: Runtime): Promise<void> {
 		[true, [], [["chat-a", "Release plan"]]],
 	);
 
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
+	await places.send(chatFacts.turns.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
 	check("a closed chat is not brought back by its record", openRowsOf(await sidebarOf(places)), []);
 
 	await places.send(placesContract.tabOpening.reopenClosed, { at: AT, tabId: "chat-a" });
@@ -117,7 +123,7 @@ async function archiveChecks(places: Runtime): Promise<void> {
 async function sameForEveryTabChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
-	await places.send(placesContract.tabFacts.keepChatTabs, {
+	await places.send(chatFacts.turns.keepChatTabs, {
 		chats: [
 			{ id: "chat-a", title: "One" },
 			{ id: "chat-b", title: "Two" },
@@ -156,7 +162,7 @@ async function reuseChecks(): Promise<void> {
 
 async function oneWindowOwnerChecks(): Promise<void> {
 	const places = placesApp(new MemoryTabsGateway());
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-b", title: "Draft" }] });
+	await places.send(chatFacts.turns.keepChatTabs, { chats: [{ id: "chat-b", title: "Draft" }] });
 	const terminal = await places.send(placesContract.tabOpening.openTab, { at: AT, app: "terminal", list: null });
 	const terminalId = terminal.ok ? terminal.output.id : terminal.reason;
 	const able = { ...AT, screen: { ...BARE_SCREEN, canOpenOwnWindow: true } };
@@ -189,7 +195,7 @@ async function oneWindowOwnerChecks(): Promise<void> {
 
 async function selectionChecks(): Promise<void> {
 	const places = placesApp(new MemoryTabsGateway());
-	await places.send(placesContract.tabFacts.keepChatTabs, { chats: [{ id: "chat-b", title: "Draft" }] });
+	await places.send(chatFacts.turns.keepChatTabs, { chats: [{ id: "chat-b", title: "Draft" }] });
 	const onScreen: TabsAsk = {
 		...AT,
 		screen: {

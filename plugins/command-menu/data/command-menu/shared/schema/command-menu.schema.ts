@@ -73,7 +73,7 @@ export const IntentSchema = z.discriminatedUnion("do", [
 	}),
 	z.object({
 		do: z.literal("open-app"),
-		app: z.string().regex(/^(?!chat$)[a-z][a-z0-9-]*$/, "a page app is any app but the chat"),
+		app: z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes"),
 		title: z.string(),
 	}),
 	z.object({

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { JSDOM } from "jsdom";
 import type { McpServer } from "../packages/shared/data-framework/src/index.ts";
 import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
-import { appHost } from "../plugins/tab-strip/data/app-host/generated/contract.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { apps as appsContract } from "../plugins/apps/data/apps/generated/contract.ts";
 import type { WorkspaceState } from "../plugins/apps/data/tabs/shared/schema/workspace.schema.ts";
 import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";

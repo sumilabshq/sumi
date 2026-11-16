@@ -1,7 +1,6 @@
 import { PerCall, Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places/contract";
 import { workspacesChanged } from "../../gateways/workspaces/workspaces.events.js";
 import { currentWorkspaceChanged } from "../../gateways/current-workspace/current-workspace.events.js";
 import { chatsChanged } from "../../gateways/chats/chats.events.js";
@@ -17,6 +16,7 @@ import {
 	WorkspaceCrumbSchema,
 } from "../../shared/schema/chat.schema.js";
 import type { KeptChat, KeptChats } from "../../shared/schema/chat.schema.js";
+import { chatFacts } from "@sumi/chat-facts/contract";
 
 const TITLE_MOST_CHARS = 80;
 
@@ -122,7 +122,7 @@ export const recordTurn = command()
 		}
 
 		const title = was.title ?? titleOfAsk(turn.firstAsked);
-		const marks = await send(places.tabFacts.recordTurn, {
+		const marks = await send(chatFacts.turns.recordTurn, {
 			id: was.id,
 			title,
 			isBusy: turn.isBusy,
@@ -148,7 +148,7 @@ export const rereadCrumbForCurrent = subscriber(currentWorkspaceChanged).handle(
 
 async function keepTabOf(send: Send, chat: KeptChat, window: string): Promise<void> {
 	try {
-		await send(places.tabFacts.keepChatTabs, { window, chats: [{ id: chat.id, title: chat.title }] });
+		await send(chatFacts.turns.keepChatTabs, { window, chats: [{ id: chat.id, title: chat.title }] });
 	} catch (failure: unknown) {
 		console.error(`[widgetarium] chat ${chat.id} kept with no tab yet; the next restore gives it one`, failure);
 	}

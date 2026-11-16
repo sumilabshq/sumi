@@ -3,7 +3,7 @@ import { z } from "zod";
 export const DomProbeAskSchema = z.object({
 	id: z.number().int(),
 	kind: z.literal("dom"),
-	action: z.enum(["inspect", "click", "wheel", "drag", "pinch", "type", "press"]),
+	action: z.enum(["inspect", "click", "context", "wheel", "drag", "pinch", "type", "press"]),
 	selector: z.string().min(1).max(300),
 	deltaX: z.number().default(0),
 	deltaY: z.number().default(0),
@@ -36,6 +36,11 @@ export async function answerDomProbe(asked: DomProbeAsk): Promise<unknown> {
 
 	if (asked.action === "click") {
 		element.click();
+	}
+
+	if (asked.action === "context") {
+		const { x, y, width, height } = boxOf(element);
+		element.dispatchEvent(new MouseEvent("contextmenu", { clientX: x + width / 2, clientY: y + height / 2, button: 2, bubbles: true, cancelable: true }));
 	}
 
 	if (asked.action === "type") {

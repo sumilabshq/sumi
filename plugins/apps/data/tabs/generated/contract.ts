@@ -108,8 +108,6 @@ export const ClosedTabSchema = z.object({
 
 export const NoInputSchema = z.strictObject({});
 
-export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
-
 export const StateTabSchema = z.object({
 	id: z.string(),
 	title: z.string(),
@@ -120,13 +118,6 @@ export const StateTabSchema = z.object({
 	status: z.enum(["reading", "waiting", "cannot-look"]).nullable(),
 });
 
-export const StateChatSchema = z.object({
-	kind: z.literal("chat"),
-	id: z.string(),
-	title: z.string(),
-	mark: ChatMarkSchema,
-});
-
 export const StateGroupSchema = z.object({
 	kind: z.literal("group"),
 	id: z.string(),
@@ -134,12 +125,10 @@ export const StateGroupSchema = z.object({
 	colour: GroupColourSchema.nullable(),
 	isOpen: z.boolean(),
 	tabs: z.array(StateTabSchema),
-	chats: z.array(StateChatSchema),
 });
 
 export const StateEntrySchema = z.discriminatedUnion("kind", [
 	StateTabSchema.extend({ kind: z.literal("tab") }),
-	StateChatSchema,
 	StateGroupSchema,
 ]);
 
@@ -248,7 +237,7 @@ export const tabs = moduleContract("tabs", Device, {
 			.public()
 			.metadata({
 				description:
-					"Read Sumi's state: every chat, which chat is asking, the tab the person sees, and the tab list with its tabs, chats and groups. Read it before acting on tabs.",
+					"Read Sumi's state: every chat, which chat is asking, the tab the person sees, and the tab list with its tabs and groups; a chat is a tab with app chat. Read it before acting on tabs.",
 			})
 			.input(NoInputSchema)
 			.output(WorkspaceStateSchema)),

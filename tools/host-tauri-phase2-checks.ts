@@ -75,7 +75,7 @@ async function railChecks(): Promise<void> {
 	const parts = tauriWorkspacesParts(DEFAULT.id, new StoreClient(fake.invoke));
 	const workspacesApp = runtime()
 		.modules(workspaces({ injects: parts }))
-		.imports(placesOver())
+		.imports(...placesOver())
 		.start();
 	reopensOnWorkspaceSwitch(workspacesApp, DEFAULT.id, async () => void reopened.push("reopen"));
 	await quietly(() => waitFor(() => parts.workspaces.workspaces().length === 2));

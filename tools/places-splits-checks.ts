@@ -1,35 +1,25 @@
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import type { TabsAsk } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import type { SidebarEntry } from "../plugins/tab-strip/data/places/shared/schema/tab-rows.schema.ts";
-import type { SplitDir, SplitNode } from "../plugins/tab-strip/data/places/shared/schema/splits.schema.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { splitMapOf } from "../plugins/tab-strip/data/places/shared/lib/splits/split-map.ts";
-import { splitBreaksOf } from "../plugins/tab-strip/data/places/shared/lib/splits/split-members.ts";
-import { placeInView } from "../plugins/tab-strip/data/places/shared/lib/splits/split-moves.ts";
-import { momentOfWindow } from "../plugins/tab-strip/data/places/shared/lib/tabs/kept-tabs.ts";
-import type { HostTabsMoment } from "../plugins/tab-strip/data/places/shared/lib/tabs/host-tabs.ts";
-import { BARE_SCREEN, MAIN_WINDOW, placedTabsOf, placesLinkOf } from "./places-fixture.ts";
+import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import type { SplitNode } from "../plugins/tabs/navigation/data/navigation/shared/schema/splits.schema.ts";
+import { splitMapOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/splits/split-map.ts";
+import { splitBreaksOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/splits/split-members.ts";
+import { placeInView } from "../plugins/tabs/navigation/data/navigation/shared/lib/splits/split-moves.ts";
+import { momentOfWindow } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
+import type { HostTabsMoment } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
+import { MAIN_WINDOW } from "./places-fixture.ts";
+import {
+	AT,
+	SPLIT_ON_BOARD,
+	effectKindsOf,
+	entryShapeOf,
+	openShapesOf,
+	rowOfTwo,
+	sent,
+	splitOf,
+	started,
+} from "./places-splits-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
-
-const AT: TabsAsk = { window: MAIN_WINDOW, screen: BARE_SCREEN };
-
-const SEED = {
-	tabs: ["tab-1", "tab-2", "tab-3", "tab-4", "tab-5"].map((id) => ({
-		id,
-		app: "canvas" as const,
-		pageId: null,
-		label: null,
-	})),
-	lists: {
-		workspace: ["tab-1", "tab-2", "tab-3", "tab-4", "tab-5"].map((id) => ({ kind: "tab" as const, id })),
-	},
-	shownId: "tab-1",
-	minted: 6,
-	closed: [],
-};
 
 const OPEN_WITH_SPLIT = [
 	"chat",
@@ -49,59 +39,9 @@ const THREE_PANES: SplitNode = {
 
 console.info = () => undefined;
 
-function rowOfTwo(id: string, first: string, second: string, dir: SplitDir = "row"): SplitNode {
-	return {
-		kind: "branch",
-		id,
-		dir,
-		children: [
-			{ kind: "tab", tabId: first },
-			{ kind: "tab", tabId: second },
-		],
-		shares: [0.5, 0.5],
-	};
-}
-
-function entryShapeOf(entry: SidebarEntry): unknown {
-	if (entry.kind === "split") {
-		return entry.split.members.map((member) => member.item.tab.id);
-	}
-
-	return entry.kind === "tab" ? entry.tab.id : entry.kind;
-}
-
-function started(): { readonly window: Runtime; readonly tabs: MemoryTabsGateway } {
-	const tabs = new MemoryTabsGateway(placedTabsOf(SEED, ["chat"]));
-	return {
-		window: runtime()
-			.imports(places({ over: placesLinkOf(tabs) }))
-			.start(),
-		tabs,
-	};
-}
-
-async function sent<T>(answer: Promise<{ ok: true; output: T } | { ok: false; reason: string }>): Promise<T | string> {
-	const settled = await answer;
-	return settled.ok ? settled.output : settled.reason;
-}
-
-async function effectKindsOf(answer: Promise<unknown>): Promise<unknown> {
-	const settled = await answer;
-	return typeof settled === "object" && settled !== null && "effects" in settled && Array.isArray(settled.effects)
-		? settled.effects.map((effect: { kind: string }) => effect.kind)
-		: settled;
-}
-
-async function splitOf(window: Runtime): Promise<unknown> {
-	const shown = await sent(window.send(places.splits.shown, { window: MAIN_WINDOW }));
-	return typeof shown === "string" || shown.split === null
-		? shown
-		: { members: shown.split.memberIds, focused: shown.split.focusedId, layout: shown.split.layout };
-}
-
 async function placingChecks(): Promise<void> {
 	const { window } = started();
-	const placed = await window.send(places.splits.placeInView, {
+	const placed = await window.send(navigation.splits.placeInView, {
 		at: AT,
 		tabId: "tab-2",
 		targetTabId: null,
@@ -121,9 +61,9 @@ async function placingChecks(): Promise<void> {
 }
 
 async function fullChecks(window: Runtime): Promise<void> {
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-2", side: "bottom" });
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-1", side: "left" });
-	const full = await window.send(places.splits.placeInView, {
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-2", side: "bottom" });
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-1", side: "left" });
+	const full = await window.send(navigation.splits.placeInView, {
 		at: AT,
 		tabId: "tab-5",
 		targetTabId: "tab-1",
@@ -135,7 +75,7 @@ async function fullChecks(window: Runtime): Promise<void> {
 		'the split "split-1" holds 4 tabs already',
 	);
 	const unknown = await sent(
-		window.send(places.splits.placeInView, { at: AT, tabId: "tab-9", targetTabId: "tab-1", side: "top" }),
+		window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-9", targetTabId: "tab-1", side: "top" }),
 	);
 	check(
 		"a tab places does not hold is not placed, so the board places it itself",
@@ -146,17 +86,17 @@ async function fullChecks(window: Runtime): Promise<void> {
 
 async function swappingChecks(): Promise<void> {
 	const { window, tabs } = started();
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
 	check(
 		"showing a tab outside the split takes the whole split off the board, then draws that tab alone",
-		await effectKindsOf(sent(window.send(places.tabShowing.show, { at: AT, id: "tab-3" }))),
+		await effectKindsOf(sent(window.send(navigation.tabShowing.show, { at: AT, id: "tab-3" }))),
 		["leave-split", "open-shown-tab-pane"],
 	);
 	check("and nothing is shown as a split then", await splitOf(window), { shownId: "tab-3", split: null });
 	check(
 		"showing a member brings the whole split back, focused on that member",
 		[
-			await effectKindsOf(sent(window.send(places.tabShowing.show, { at: AT, id: "tab-1" }))),
+			await effectKindsOf(sent(window.send(navigation.tabShowing.show, { at: AT, id: "tab-1" }))),
 			((await splitOf(window)) as { focused?: string }).focused,
 		],
 		[["show-split"], "tab-1"],
@@ -166,32 +106,37 @@ async function swappingChecks(): Promise<void> {
 	check(
 		"showing another member of the shown split only moves the focus: no redraw",
 		[
-			await effectKindsOf(sent(window.send(places.tabShowing.show, { at: AT, id: "tab-2" }))),
+			await effectKindsOf(sent(window.send(navigation.tabShowing.show, { at: SPLIT_ON_BOARD, id: "tab-2" }))),
 			((await splitOf(window)) as { focused?: string }).focused,
 		],
 		[["focus-split"], "tab-2"],
 	);
 	check(
 		"showing the member already focused changes nothing",
-		await effectKindsOf(sent(window.send(places.tabShowing.show, { at: AT, id: "tab-2" }))),
+		await effectKindsOf(sent(window.send(navigation.tabShowing.show, { at: SPLIT_ON_BOARD, id: "tab-2" }))),
 		[],
+	);
+	check(
+		"showing a member while the board lost the split draws it again",
+		await effectKindsOf(sent(window.send(navigation.tabShowing.show, { at: AT, id: "tab-2" }))),
+		["show-split"],
 	);
 }
 
 async function dissolvingChecks(): Promise<void> {
 	const { window } = started();
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
 	check(
 		"closing a member of a split of two dissolves it and shows the other alone",
 		[
-			await effectKindsOf(sent(window.send(places.tabClosing.closeTab, { at: AT, id: "tab-2" }))),
+			await effectKindsOf(sent(window.send(navigation.tabClosing.closeTab, { at: AT, id: "tab-2" }))),
 			await splitOf(window),
 		],
 		[["leave-split", "open-shown-tab-pane"], { shownId: "tab-1", split: null }],
 	);
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
-	await window.send(places.splits.remove, { at: AT, tabId: "tab-4" });
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
+	await window.send(navigation.splits.remove, { at: AT, tabId: "tab-4" });
 	check("a member taken out of a split of three leaves two drawn", await splitOf(window), {
 		members: ["tab-1", "tab-3"],
 		focused: "tab-1",
@@ -199,18 +144,11 @@ async function dissolvingChecks(): Promise<void> {
 	});
 }
 
-async function openShapesOf(window: Runtime): Promise<unknown> {
-	const sidebar = await sent(window.send(places.tabs.sidebar, { at: AT }));
-	const sections = typeof sidebar === "string" ? [] : sidebar.sections;
-	const open = sections.find((section) => section.list === "workspace")?.entries ?? [];
-	return open.map(entryShapeOf).filter((shape) => shape !== "chat");
-}
-
 async function draggingOutChecks(): Promise<void> {
 	const { window } = started();
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
-	await window.send(places.tabPlacing.place, {
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
+	await window.send(navigation.tabPlacing.place, {
 		at: AT,
 		id: "tab-4",
 		place: { list: "workspace", groupId: null, before: "tab-2" },
@@ -228,7 +166,7 @@ async function draggingOutChecks(): Promise<void> {
 			"tab-5",
 		],
 	);
-	await window.send(places.tabPlacing.place, {
+	await window.send(navigation.tabPlacing.place, {
 		at: AT,
 		id: "tab-5",
 		place: { list: "workspace", groupId: null, before: "tab-3" },
@@ -246,8 +184,8 @@ async function draggingOutChecks(): Promise<void> {
 
 async function carryingChecks(): Promise<void> {
 	const { window } = started();
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
-	await window.send(places.tabPlacing.place, {
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
+	await window.send(navigation.tabPlacing.place, {
 		at: AT,
 		id: "tab-2",
 		place: { list: "workspace", groupId: null, before: "tab-1" },
@@ -256,9 +194,9 @@ async function carryingChecks(): Promise<void> {
 		shownId: "tab-2",
 		split: null,
 	});
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
-	await window.send(places.tabPlacing.place, {
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
+	await window.send(navigation.tabPlacing.place, {
 		at: AT,
 		id: "tab-4",
 		place: { list: "workspace", groupId: null, before: "tab-4" },
@@ -272,7 +210,7 @@ async function carryingChecks(): Promise<void> {
 		],
 		"tab-5",
 	]);
-	await window.send(places.splits.reorderMember, { at: AT, tabId: "tab-3", before: "tab-1" });
+	await window.send(navigation.splits.reorderMember, { at: AT, tabId: "tab-3", before: "tab-1" });
 	check("a member reordered inside its split moves only in the split", await openShapesOf(window), [
 		"tab-2",
 		"tab-4",
@@ -286,8 +224,8 @@ async function carryingChecks(): Promise<void> {
 
 async function dissolvedPlaceChecks(): Promise<void> {
 	const { window } = started();
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-1", side: "right" });
-	await window.send(places.tabPlacing.place, {
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-4", targetTabId: "tab-1", side: "right" });
+	await window.send(navigation.tabPlacing.place, {
 		at: AT,
 		id: "tab-1",
 		place: { list: "workspace", groupId: null, before: "tab-5" },
@@ -301,8 +239,8 @@ async function dissolvedPlaceChecks(): Promise<void> {
 
 async function sidebarChecks(): Promise<void> {
 	const { window } = started();
-	await window.send(places.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
-	const sidebar = await sent(window.send(places.tabs.sidebar, { at: AT }));
+	await window.send(navigation.splits.placeInView, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
+	const sidebar = await sent(window.send(navigation.tabs.sidebar, { at: AT }));
 	const sections = typeof sidebar === "string" ? [] : sidebar.sections;
 	const open = sections.find((section) => section.list === "workspace")?.entries ?? [];
 	check("the split stands in the list once, in place of its members", open.map(entryShapeOf), OPEN_WITH_SPLIT);

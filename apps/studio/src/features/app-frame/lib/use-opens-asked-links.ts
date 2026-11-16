@@ -1,15 +1,15 @@
 import { useEffect, useMemo } from "react";
 import { appHost } from "@widgetarium/app-host/contract";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places/contract";
+import { navigation } from "@widgetarium/navigation/contract";
 
 const NOT_OPENED = "[widgetarium] the link {href} asked from tab {from} was not opened: {reason}";
 
 export function useOpensAskedLinks(): void {
 	const held = useOptionalQuery(appHost.tabs.heldTabs).data;
 	const tabIds = useMemo(() => held?.tabs.map(({ id }) => id) ?? [], [held]);
-	const asked = useOptionalQuery(places.tabFacts.askedLinks, { tabIds }).data;
-	const { run: take } = useCommand(places.tabFacts.takeAskedLink);
+	const asked = useOptionalQuery(navigation.tabFacts.askedLinks, { tabIds }).data;
+	const { run: take } = useCommand(navigation.tabFacts.takeAskedLink);
 	const { run: openLink } = useCommand(appHost.links.openLink);
 
 	useEffect(() => {

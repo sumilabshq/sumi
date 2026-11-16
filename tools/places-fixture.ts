@@ -1,13 +1,15 @@
 import { BUILT_IN_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport, ServerSideModule } from "../packages/shared/data-framework/src/index.ts";
-import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
-import { places as placesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
+import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import { navigation as placesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
+import { tabGroups as tabGroupsModule } from "../plugins/tabs/tab-groups/data/tab-groups/generated/module.ts";
+import { tabGroups } from "../plugins/tabs/tab-groups/data/tab-groups/generated/contract.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { z } from "zod";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
-import { momentOfWindow, windowTabsOf } from "../plugins/tab-strip/data/places/shared/lib/tabs/kept-tabs.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
+import { momentOfWindow, windowTabsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
 import {
 	ClosedTabSchema,
 	KeptGroupSchema,
@@ -15,15 +17,17 @@ import {
 	ListEntrySchema,
 	PlacedTabsSchema,
 	WindowViewSchema,
-} from "../plugins/tab-strip/data/places/shared/schema/tabs.schema.ts";
-import type { ListEntry } from "../plugins/tab-strip/data/places/shared/schema/tabs.schema.ts";
-import type { Screen } from "../plugins/tab-strip/data/places/shared/schema/screen.schema.ts";
+} from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
+import type { ListEntry } from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
+import type { Screen } from "../plugins/tabs/navigation/data/navigation/shared/schema/screen.schema.ts";
 import type {
 	PlacedTabs,
 	StudioView,
 	TabMark,
 	WindowTabs,
-} from "../plugins/tab-strip/data/places/shared/schema/tabs.schema.ts";
+} from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
+import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
+import { chatFacts as chatFactsModule } from "../plugins/ai/chat/data/chat-facts/generated/module.ts";
 
 export const MAIN_WINDOW = "main";
 
@@ -104,27 +108,24 @@ export function withWindowView(placed: PlacedTabs, view: StudioView, windowLabel
 
 export function placesLinkOf(tabs: MemoryTabsGateway, besidePlaces: readonly ServerSideModule[] = []): RemoteTransport {
 	const link = localTransport();
+	const parts = {
+		windows: new MemoryWindowsGateway({ windows: [] }),
+		tabs,
+		placedApps: builtInPlacedApps(),
+		home: mainHome(),
+	};
 	link.serve(
 		runtime()
-			.modules(
-				placesModule({
-					injects: {
-						windows: new MemoryWindowsGateway({ windows: [] }),
-						tabs,
-						placedApps: builtInPlacedApps(),
-						home: mainHome(),
-					},
-				}),
-				...besidePlaces,
-			)
+			.modules(placesModule({ injects: parts }), tabGroupsModule({ injects: parts }), chatFactsModule({ injects: parts }), ...besidePlaces)
 			.start({ platform: "server", env: {}, scope: { workspaceId: "places-core" } }),
 		{ authenticate: new AppCallerAuthenticate() },
 	);
 	return link;
 }
 
-export function placesOver(tabs: MemoryTabsGateway = new MemoryTabsGateway()): RemoteModule {
-	return places({ over: placesLinkOf(tabs) });
+export function placesOver(tabs: MemoryTabsGateway = new MemoryTabsGateway()): readonly RemoteModule[] {
+	const link = placesLinkOf(tabs);
+	return [navigation({ over: link }), tabGroups({ over: link }), chatFacts({ over: link })];
 }
 
 export async function windowTabsIn(tabs: MemoryTabsGateway, window = MAIN_WINDOW): Promise<WindowTabs> {

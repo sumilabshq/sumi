@@ -10,8 +10,8 @@ import type { WorkspaceFolder } from "../packages/domain/workspaces/shared/schem
 import { check, tally } from "./check-helpers.ts";
 import { quietly } from "./host-tauri-fake-store.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { places } from "../plugins/tab-strip/data/places/generated/contract.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 
 const SEEDED_CHATS = ["old", "pinned", "new"];
 
@@ -74,7 +74,7 @@ function started(
 ): Runtime {
 	return runtime()
 		.modules(workspacesModule({ injects: parts }))
-		.imports(placesOver(tabs))
+		.imports(...placesOver(tabs))
 		.start();
 }
 
@@ -103,7 +103,7 @@ async function workspaceChecks(): Promise<void> {
 	check("an ink for an unknown workspace is refused", outputOf(unknownInk), "There is no workspace nope.");
 
 	await workspaces.send(workspacesContract.workspaces.openByPosition, { position: 9 });
-	check("⌘10 opens nothing", parts.currentWorkspace.currentWorkspace().currentId, "home");
+	check("⌃10 opens nothing", parts.currentWorkspace.currentWorkspace().currentId, "home");
 	await workspaces.send(workspacesContract.workspaces.openByPosition, { position: 1 });
 	check("⌘2 opens the second workspace", parts.currentWorkspace.currentWorkspace(), {
 		currentId: "lab",
@@ -117,7 +117,7 @@ async function workspaceChecks(): Promise<void> {
 	check(
 		"a new workspace takes the first free untitled number and becomes current",
 		[view.current.name, view.rows.map((row) => row.keyHint)],
-		["Untitled 1", ["⌘1", "⌘2", "⌘3"]],
+		["Untitled 1", ["⌃1", "⌃2", "⌃3"]],
 	);
 }
 
@@ -195,7 +195,7 @@ async function chatChecks(): Promise<void> {
 	});
 	check("a chat finishing while not shown is unread", (await marksIn(tabs))["old"], "unread");
 	const openBefore = parts.chats.chats().openOnStartId;
-	await chats.send(places.tabFacts.markSeen, { id: "old" });
+	await chats.send(chatFacts.turns.markSeen, { id: "old" });
 	check(
 		"marking it seen clears unread and moves no chat anywhere",
 		[await marksIn(tabs), parts.chats.chats().openOnStartId],

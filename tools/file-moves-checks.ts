@@ -4,10 +4,10 @@ import path from "node:path";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
-import { places, fileSystem } from "@sumi/contract";
-import { places as RunnablePlacesModule } from "../plugins/tab-strip/data/places/generated/module.ts";
-import { MemoryTabsGateway } from "../plugins/tab-strip/data/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tab-strip/data/places/gateways/windows/memory.gateway.ts";
+import { navigation, fileSystem } from "@sumi/contract";
+import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
 import { filePage } from "../plugins/files/data/file-page/generated/module.ts";
@@ -61,7 +61,7 @@ const transport = orpcTransport("http://file-moves.test", {
 function tabAppOf(tabId: string): Runtime {
 	return runtime()
 		.modules(filePage({ tabId }))
-		.imports(fileSystem({ over: transport }), places({ over: transport }))
+		.imports(fileSystem({ over: transport }), navigation({ over: transport }))
 		.start({ platform: "browser", scope: { workspaceId: "file-moves" } });
 }
 
@@ -69,7 +69,7 @@ const tabs = [tabAppOf("tab-notes"), tabAppOf("tab-gone")];
 
 async function addressesOf(): Promise<unknown> {
 	const answers = await Promise.all(
-		["tab-notes", "tab-gone"].map((id) => tabs[0]?.send(places.tabFacts.ownAppTab, { id })),
+		["tab-notes", "tab-gone"].map((id) => tabs[0]?.send(navigation.tabFacts.ownAppTab, { id })),
 	);
 	return answers.map((answer) => (answer?.ok ? answer.output.address : answer?.reason));
 }

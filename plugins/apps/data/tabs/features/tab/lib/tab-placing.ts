@@ -2,6 +2,7 @@ import type { Send } from "@widgetarium/data-framework";
 import { appHost } from "@widgetarium/app-host/contract";
 import type { Grouping } from "../../../shared/schema/place.schema.js";
 import type { PlacedTab, TabDuplicate, TabOpen } from "../../../shared/schema/tab-asks.schema.js";
+import { groups } from "@sumi/groups/contract";
 
 const ONE_GROUP = "Name either group or newGroup, not both.";
 const NO_APP = "No app {app}. A tab opens one of: {known}.";
@@ -48,7 +49,7 @@ export async function groupIdFor(send: Send, list: string, { group, newGroup }: 
 		return group ?? null;
 	}
 
-	const created = await send(appHost.groups.create, {
+	const created = await send(groups.actions.create, {
 		list,
 		name: newGroup.name,
 		hue: newGroup.colour ?? null,

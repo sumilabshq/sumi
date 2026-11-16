@@ -50,7 +50,7 @@ function entryOf(entry: ListedEntry): StateEntry {
 		};
 	}
 
-	return entry.kind === "chat" ? entry : groupOf(entry);
+	return groupOf(entry);
 }
 
 function groupOf(group: ListedGroup): StateEntry {
@@ -61,7 +61,6 @@ function groupOf(group: ListedGroup): StateEntry {
 		colour: group.hue,
 		isOpen: group.isOpen,
 		tabs: group.tabs.map(tabOf),
-		chats: [...group.chats],
 	};
 }
 

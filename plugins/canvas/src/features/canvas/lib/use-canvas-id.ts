@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { places } from "@sumi/contract";
+import { navigation } from "@sumi/contract";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 
 export function useCanvasId(tabId: string): string | null {
-	const read = useOptionalQuery(places.tabFacts.ownAppTab, { id: tabId });
-	const { run } = useCommand(places.tabFacts.recordAppAddress);
+	const read = useOptionalQuery(navigation.tabFacts.ownAppTab, { id: tabId });
+	const { run } = useCommand(navigation.tabFacts.recordAppAddress);
 	const tab = read.data?.id === tabId ? read.data : null;
 	const address = tab?.address ?? null;
 	const isUnaddressed = tab !== null && address === null;

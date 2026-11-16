@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
-import type { Send } from "@widgetarium/data-framework";
+import type { InputOf, Send } from "@widgetarium/data-framework";
 import { appHost } from "@widgetarium/app-host/contract";
 import { chatTabs } from "@sumi/chat-tabs/contract";
 import type { HeldTabs } from "@widgetarium/app-host/contract";
@@ -14,6 +14,21 @@ import { homePlaceOf, openedInNewTab, whereOf } from "./lib/home-place.js";
 import { menuAfter } from "./lib/menu-after.js";
 
 type OpenedOver = Pick<KeptMenu, "newTabList" | "pageId">;
+
+type Target = InputOf<typeof appHost.tabActions.navigate>["target"];
+
+interface HomeTarget {
+	readonly target: Target;
+	readonly chatId: string | null;
+}
+
+interface HomeNavigation {
+	readonly target: Target;
+	readonly placed: HomePlace;
+	readonly homeTabId: string;
+}
+
+const ADDRESS_APP = "browser";
 
 const NO_NAME = "A new name cannot be empty.";
 const OVER_NO_PAGE: OpenedOver = {
@@ -55,8 +70,15 @@ export const runHomeIntent = command()
 	.idempotencyKey(PerCall)
 	.handle(async ({ intent, homeTabId, place }, { send }): Promise<Done> => {
 		const placed = homePlaceOf(intent, place);
-		const chatId = await performIntent(openedInNewTab(intent), send, OVER_NO_PAGE);
-		await settlePlace(placed, homeTabId, send);
+		const reached = await homeTargetOf(intent, send);
+		const chatId = reached === null ? await performIntent(openedInNewTab(intent), send, OVER_NO_PAGE) : reached.chatId;
+
+		if (reached === null) {
+			await settlePlace(placed, homeTabId, send);
+		} else {
+			await navigatedFromHome(send, { target: reached.target, placed, homeTabId });
+		}
+
 		const said = confirmationOf(intent);
 		console.info(`[widgetarium] home ${homeTabId} did ${intent.do} (${placed}): ${said}`);
 		return {
@@ -97,6 +119,59 @@ export const renameRow = command()
 			chatId: null,
 		};
 	});
+
+async function homeTargetOf(intent: Intent, send: Send): Promise<HomeTarget | null> {
+	switch (intent.do) {
+		case "open-app":
+			return reachedApp(intent.app, "");
+		case "open-address":
+			return reachedApp(ADDRESS_APP, intent.address);
+		case "show-tab":
+		case "open-chat":
+			return reachedTab(intent.id, false);
+		case "ask-ink":
+			return reachedTab(await createdChatIdOf(intent.text, send), true);
+		case "run":
+			return intent.command === "new-chat" ? reachedTab(await createdChatIdOf("", send), true) : null;
+		default:
+			return null;
+	}
+}
+
+function reachedApp(app: string, address: string): HomeTarget {
+	return {
+		target: {
+			kind: "app",
+			app,
+			address,
+		},
+		chatId: null,
+	};
+}
+
+function reachedTab(id: string, isNewChat: boolean): HomeTarget {
+	return {
+		target: {
+			kind: "tab",
+			id,
+			isMoved: isNewChat,
+		},
+		chatId: isNewChat ? id : null,
+	};
+}
+
+async function navigatedFromHome(send: Send, { target, placed, homeTabId }: HomeNavigation): Promise<void> {
+	const navigated = await send(appHost.tabActions.navigate, {
+		target,
+		where: placed === "here" ? "this-tab" : "new-tab",
+		from: homeTabId,
+	});
+
+	if (placed === "new-window") {
+		await send(appHost.tabActions.tearOff, { id: navigated.id });
+		console.info(`[widgetarium] tab ${navigated.id} in this window → in its own window (opened from home)`);
+	}
+}
 
 async function performIntent(intent: Intent, send: Send, over: OpenedOver): Promise<string | null> {
 	if (intent.do === "ask-ink") {
@@ -209,8 +284,17 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 }
 
 async function newChatIdOf(text: string, send: Send): Promise<string> {
-	const opened = await send(chatTabs.chatOpening.openNew, { title: text === "" ? null : text });
+	const opened = await send(chatTabs.chatOpening.openNew, { title: titleOf(text) });
 	return opened.id;
+}
+
+async function createdChatIdOf(text: string, send: Send): Promise<string> {
+	const created = await send(chatTabs.chatOpening.create, { title: titleOf(text) });
+	return created.id;
+}
+
+function titleOf(text: string): string | null {
+	return text === "" ? null : text;
 }
 
 function unknownIntent(intent: never): never {

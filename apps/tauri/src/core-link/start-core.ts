@@ -4,7 +4,7 @@ import { z } from "zod";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
-import { places as placesContract } from "@widgetarium/places/contract";
+import { navigation as placesContract } from "@widgetarium/navigation/contract";
 import { tasks } from "@widgetarium/tasks/contract";
 import { AppCallerAuthenticate, startBackendServers, startSumiPlugins } from "@widgetarium/studio";
 import type { ResolvedPlugins } from "@widgetarium/studio";
@@ -15,6 +15,7 @@ import type { CoreListener } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
 import { TauriSecretVault } from "../secrets/tauri-secret-vault.js";
+import { chatFacts } from "@sumi/chat-facts/contract";
 
 const NOT_KEPT = "[studio-core] workspace {workspace}: the open windows were not checked ({reason})";
 const TURNS_KEPT = "[studio-core] workspace {workspace}: running marks of the last run stay ({reason})";
@@ -26,6 +27,7 @@ const NOT_COLD =
 const NOT_SWEPT = "[tasks] workspace {workspace}: stale tasks stay open ({reason})";
 const SWEPT = "[tasks] workspace {workspace}: {count} stale tasks → cancelled (the {when} sweep)";
 const SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
+const LIVE_WINDOWS_EVERY_MS = 15 * 1000;
 const CORE_IPC = "the core IPC";
 const SERVING = "[studio-core] workspace {workspace}: none → serving, plugins {plugins}";
 const PLUGIN_REFUSED = "[studio-core] workspace {workspace}: plugins: {refusal}";
@@ -50,6 +52,7 @@ export function startCore(): void {
 			served.set(workspace, places);
 			console.info(SERVING.replace("{workspace}", workspace).replace("{plugins}", plugins.startedIds.join(", ")));
 			void keepLiveWindows(places, workspace);
+			setInterval(() => void keepLiveWindows(places, workspace), LIVE_WINDOWS_EVERY_MS);
 			void forgetRunningTurns(places, workspace);
 			void superviseTasks(places, workspace);
 		});
@@ -131,7 +134,7 @@ function coreServedOver({ workspace, listener, store, plugins }: CoreServing): R
 			servers: plugins.servers,
 		});
 		const places = runtime()
-			.imports(placesContract({ over: own }), tasks({ over: own }))
+			.imports(placesContract({ over: own }), chatFacts({ over: own }), tasks({ over: own }))
 			.start();
 		listener.serve(exposed);
 		return places;
@@ -160,7 +163,7 @@ async function keepLiveWindows(places: Runtime, workspace: string): Promise<void
 }
 
 async function forgetRunningTurns(places: Runtime, workspace: string): Promise<void> {
-	const answered = await places.send(placesContract.tabFacts.forgetRunningTurns);
+	const answered = await places.send(chatFacts.turns.forgetRunningTurns);
 
 	if (!answered.ok) {
 		console.warn(TURNS_KEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));

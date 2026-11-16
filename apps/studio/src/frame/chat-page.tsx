@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useOptionalQuery } from "@widgetarium/data-framework";
-import { places } from "@widgetarium/places/contract";
+import { navigation } from "@widgetarium/navigation/contract";
 import { AppPage } from "../features/app-frame/ui/app-page/app-page.js";
 
 export interface ChatPageProps {
@@ -9,7 +9,7 @@ export interface ChatPageProps {
 }
 
 export function ChatPage({ chatId }: ChatPageProps): ReactElement | null {
-	const tab = useOptionalQuery(places.tabFacts.ownAppTab, {
+	const tab = useOptionalQuery(navigation.tabFacts.ownAppTab, {
 		id: chatId,
 	}).data;
 
