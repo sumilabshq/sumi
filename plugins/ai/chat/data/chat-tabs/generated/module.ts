@@ -2,13 +2,17 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { chatTabs as definition } from "../module.js";
 import { all, reread, rereadForCore } from "../features/chat-list/requests.js";
-import { namePane, openAskedOnStart, openNew } from "../features/chat-opening/requests.js";
+import { create, namePane, openAskedOnStart, openNew } from "../features/chat-opening/requests.js";
+import { sync, syncOnChatsChanged } from "../features/chat-sync/requests.js";
 
 export const chatTabs = handledModule(definition, [
 	reread,
 	rereadForCore,
+	syncOnChatsChanged,
 	named("chat-list.all", all),
+	named("chat-opening.create", create),
 	named("chat-opening.name-pane", namePane),
 	named("chat-opening.open-asked-on-start", openAskedOnStart),
 	named("chat-opening.open-new", openNew),
+	named("chat-sync.sync", sync),
 ]);

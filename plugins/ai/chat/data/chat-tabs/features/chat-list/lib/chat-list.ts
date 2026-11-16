@@ -1,9 +1,9 @@
-import type { ChatTabs } from "@widgetarium/places/contract";
+import type { OpenChats } from "@sumi/chat-facts/contract";
 import type { ChatListData, ChatRowData } from "../../../shared/schema/chat-list.schema.js";
 
-type ChatTabRow = ChatTabs["open"][number];
+type ChatTabRow = OpenChats["open"][number];
 
-export function chatListOf(tabs: ChatTabs): ChatListData {
+export function chatListOf(tabs: OpenChats): ChatListData {
 	return {
 		recents: tabs.open.map(rowOf),
 	};

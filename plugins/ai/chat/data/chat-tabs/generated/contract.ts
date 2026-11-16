@@ -37,6 +37,11 @@ export const chatTabs = moduleContract("chat-tabs", Device, {
 			.output(ChatListSchema)),
 	},
 	chatOpening: {
+		create: named("chat-opening.create", command()
+			.public()
+			.input(NewChatTitleSchema)
+			.output(ChatOpenedSchema)
+			.idempotencyKey(PerCall)),
 		openNew: named("chat-opening.open-new", command()
 			.public()
 			.input(NewChatTitleSchema)
@@ -48,6 +53,11 @@ export const chatTabs = moduleContract("chat-tabs", Device, {
 			.output(ChatOpenedSchema)
 			.idempotencyKey((input) => input.paneId)),
 		openAskedOnStart: named("chat-opening.open-asked-on-start", command()
+			.public()
+			.idempotencyKey(Repeatable)),
+	},
+	chatSync: {
+		sync: named("chat-sync.sync", command()
 			.public()
 			.idempotencyKey(Repeatable)),
 	},

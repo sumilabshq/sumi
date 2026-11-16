@@ -1,7 +1,10 @@
 import { apps } from "@sumi/apps-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { controlMenu } from "@sumi/control-menu-plugin";
-import { shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
+import { backend, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
+import { navigation } from "@sumi/navigation-plugin";
+import { chatFacts as chatFactsContract } from "@sumi/chat-facts/contract";
+import { chatFacts as chatFactsModule } from "@sumi/chat-facts/implementation";
 import { agent } from "@sumi/agent-plugin";
 import { chatTabs } from "@sumi/chat-tabs/implementation";
 import { plugin } from "@widgetarium/plugin-framework";
@@ -14,7 +17,7 @@ import { NewSessionRow } from "./features/new-chat/ui/new-chat-row/new-chat-row.
 import { SessionRows } from "./features/sessions/ui/session-rows/session-rows.js";
 
 export const chat = plugin("chat")
-	.require(sumiHost, windows, shell, apps, commandMenu, agent, controlMenu)
+	.require(sumiHost, backend, windows, shell, apps, commandMenu, agent, controlMenu, navigation)
 	.apply((app) => {
 		const pageImports: ChatPageImportOf[] = [];
 		app.use(apps).app({
@@ -25,6 +28,8 @@ export const chat = plugin("chat")
 			tabs: { isChat: true, splits: true, runsInPage: false, keepsRecord: true },
 		});
 		app.use(shell).tabPage(chatTabPageOf(pageImports));
+		const { placedApps } = app.use(navigation);
+		app.use(backend).moduleOf(({ store }) => chatFactsModule({ store, apps: placedApps }), chatFactsContract);
 		app.use(windows).module(chatTabs);
 		app.use(sumiHost).slots.sidebarActions.add(NewSessionRow);
 		app.use(controlMenu).slots.top.add(SessionRows);
