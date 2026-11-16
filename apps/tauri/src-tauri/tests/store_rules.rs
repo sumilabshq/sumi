@@ -5,7 +5,7 @@ use std::process::{Command, ExitCode};
 use std::time::{Duration, Instant};
 use tauri::EventTarget;
 use widgetarium_host_tauri_lib::store::dispatch::{answer_of, call_of, change_of, is_studio_target};
-use widgetarium_host_tauri_lib::store::{atomic, workspaces, Refusal, Store, APP_FOLDER};
+use widgetarium_host_tauri_lib::store::{atomic, legacy, workspaces, Refusal, Store, APP_FOLDER};
 use widgetarium_host_tauri_lib::studio_core::quit::{QuitEnd, QuitFlushes, QuitStart};
 use widgetarium_host_tauri_lib::studio_caller::{refuse_foreign_caller, NOT_FROM_STUDIO};
 
@@ -285,6 +285,47 @@ fn workspace_life(checks: &mut Checks) {
     checks.check("a missing folder's root is refused", code_of(store.place(&root, SETTINGS)), "folder-not-found");
 }
 
+fn legacy_moves(checks: &mut Checks) {
+    let home = TempHome::new("legacy");
+    let store = home.store();
+    let first_id = workspaces::first_workspace_id();
+    let other_id = "3a32cc8a-785e-4742-8c6d-c6b21031bccf";
+    let project = home.path.join("project");
+    fs::create_dir_all(&project).unwrap();
+    let legacy_first = home.app_folder().join("workspaces").join(&first_id);
+    let legacy_other = home.app_folder().join("workspaces").join(other_id);
+    fs::create_dir_all(legacy_first.join("chat")).unwrap();
+    fs::create_dir_all(&legacy_other).unwrap();
+    fs::create_dir_all(home.app_folder().join("app-data").join(other_id).join("tasks")).unwrap();
+    fs::write(legacy_first.join("workspace.json"), json!({ "v": 1, "id": first_id, "name": "Default" }).to_string()).unwrap();
+    fs::write(legacy_first.join("chats.json"), json!({ "v": 1, "chats": [{ "id": "old", "title": "Hi", "createdAt": 1, "lastAt": 1 }] }).to_string()).unwrap();
+    fs::write(legacy_first.join("chat").join("old.jsonl"), "{\"id\":\"0\"}\n").unwrap();
+    fs::write(legacy_first.join("chat").join("sessions.json"), json!({ "v": 1, "sessions": { "old": { "logId": "old" } } }).to_string()).unwrap();
+    fs::write(legacy_other.join("workspace.json"), json!({ "v": 1, "id": other_id, "name": "Other", "folder": project.to_string_lossy() }).to_string()).unwrap();
+    fs::write(legacy_other.join("chats.json"), json!({ "v": 1, "chats": [{ "id": "work", "title": null, "createdAt": 2, "lastAt": 2 }] }).to_string()).unwrap();
+    fs::write(home.app_folder().join("app-data").join(other_id).join("tasks").join("tasks.json"), "{}").unwrap();
+    fs::write(home.app_folder().join("workspaces.json"), json!({ "v": 1, "lastOpenedId": first_id, "workspaces": [{ "id": first_id, "lastOpenedAt": 5 }] }).to_string()).unwrap();
+    let sumi = home.path.join("Sumi").join(APP_FOLDER);
+    fs::create_dir_all(&sumi).unwrap();
+    fs::write(sumi.join("workspace.json"), json!({ "v": 1, "id": first_id, "name": "Default" }).to_string()).unwrap();
+    fs::write(sumi.join("chats.json"), json!({ "v": 1, "chats": [{ "id": "new", "title": null, "createdAt": 3, "lastAt": 3 }] }).to_string()).unwrap();
+
+    legacy::move_legacy_workspaces(&store);
+    let chat_ids = |folder: &Path| -> Vec<String> {
+        let doc: Value = serde_json::from_str(&fs::read_to_string(folder.join("chats.json")).unwrap()).unwrap();
+        doc["chats"].as_array().unwrap().iter().map(|chat| chat["id"].as_str().unwrap().to_owned()).collect()
+    };
+    checks.check("Default keeps its new chats and gains the old ones", chat_ids(&sumi), vec!["new".to_owned(), "old".to_owned()]);
+    checks.check("an old chat's turns are copied", sumi.join("chat").join("old.jsonl").is_file(), true);
+    checks.check("a workspace with a folder moves into its .sumi", chat_ids(&project.join(APP_FOLDER)), vec!["work".to_owned()]);
+    checks.check("its app data moves with it", project.join(APP_FOLDER).join("app-data").join("tasks").join("tasks.json").is_file(), true);
+    let listed: Vec<String> = workspaces::list(&store).unwrap().into_iter().map(|entry| entry.id).collect();
+    checks.check("both are listed", listed.len(), 2);
+    checks.check("the old folders stay as they were", legacy_first.join("chats.json").is_file() && legacy_other.join("chats.json").is_file(), true);
+    legacy::move_legacy_workspaces(&store);
+    checks.check("a second run copies nothing new", chat_ids(&sumi), vec!["new".to_owned(), "old".to_owned()]);
+}
+
 fn killed_between_write_and_rename(checks: &mut Checks) {
     let home = TempHome::new("crash");
     let store = home.store();
@@ -354,6 +395,7 @@ fn main() -> ExitCode {
     quit_waits_for_every_window(&mut checks);
     workspace_life(&mut checks);
     recent_folders(&mut checks);
+    legacy_moves(&mut checks);
     killed_between_write_and_rename(&mut checks);
     println!("{} check(s) failed", checks.failed);
     if checks.failed == 0 {

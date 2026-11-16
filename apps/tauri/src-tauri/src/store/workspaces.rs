@@ -51,14 +51,42 @@ struct Identity {
 }
 
 pub fn open_first(store: &Store) -> Result<WorkspaceEntry, Refusal> {
-    let id = uuid::Uuid::new_v5(&uuid::Uuid::NAMESPACE_OID, FIRST_WORKSPACE_SEED).to_string();
+    let id = first_workspace_id();
     if let Ok(home) = home_of(store, &id) {
         return open_folder(store, &home);
     }
 
-    let home = store.home().join(FIRST_WORKSPACE_FOLDER);
+    let home = first_workspace_home(store);
     fs::create_dir_all(&home)?;
     create(store, &id, FIRST_WORKSPACE_NAME, &home.canonicalize()?)
+}
+
+pub fn first_workspace_id() -> String {
+    uuid::Uuid::new_v5(&uuid::Uuid::NAMESPACE_OID, FIRST_WORKSPACE_SEED).to_string()
+}
+
+pub fn first_workspace_home(store: &Store) -> PathBuf {
+    store.home().join(FIRST_WORKSPACE_FOLDER)
+}
+
+pub fn register_moved(store: &Store, id: &str, home: &Path) -> Result<(), Refusal> {
+    keep_out_of_git(home)?;
+    store.update_doc(&store.global_place(WORKSPACES_FILE)?, "register a workspace moved into its folder", |current| {
+        let rows = current.and_then(|fields| fields.get("workspaces")).and_then(Value::as_array).cloned().unwrap_or_default();
+        let last_opened_at = rows
+            .iter()
+            .find(|row| row.get("id").and_then(Value::as_str) == Some(id))
+            .and_then(|row| row.get("lastOpenedAt"))
+            .and_then(Value::as_u64)
+            .unwrap_or(0);
+        let mut kept: Vec<Value> = rows.into_iter().filter(|row| row.get("id").and_then(Value::as_str) != Some(id)).collect();
+        kept.push(json!({ "id": id, "lastOpenedAt": last_opened_at, "home": home.to_string_lossy() }));
+        let mut fields = current.cloned().unwrap_or_default();
+        fields.insert("v".to_owned(), Value::from(DOC_V));
+        fields.insert("workspaces".to_owned(), Value::Array(kept));
+        Ok(fields)
+    })?;
+    Ok(())
 }
 
 pub fn open_folder(store: &Store, folder: &Path) -> Result<WorkspaceEntry, Refusal> {

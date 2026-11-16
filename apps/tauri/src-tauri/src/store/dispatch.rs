@@ -1,4 +1,5 @@
 use super::files::FILE_EXTENSION;
+use super::legacy;
 use super::place;
 use super::refusal::Refusal;
 use super::workspaces::{self, WORKSPACES_FILE, WORKSPACE_FILE};
@@ -105,7 +106,10 @@ pub fn answer_of(store: &Store, call: &Call) -> Option<Answer> {
         "remove_file" => remove_file(store, call),
         "take_entry" => take_entry(store, call),
         "list_workspaces" => list_workspaces(store),
-        "open_first_workspace" => workspaces::open_first(store).map(|entry| entry.to_json()),
+        "open_first_workspace" => {
+            legacy::move_legacy_workspaces(store);
+            workspaces::open_first(store).map(|entry| entry.to_json())
+        }
         "rename_workspace" => rename_workspace(store, call),
         "mark_workspace_opened" => mark_workspace_opened(store, call),
         "choose_workspace_folder" => choose_workspace_folder(store, call),

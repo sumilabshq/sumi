@@ -2,6 +2,7 @@ pub mod atomic;
 pub mod dispatch;
 pub mod docs;
 pub mod files;
+pub mod legacy;
 pub mod lines;
 pub mod place;
 pub mod refusal;
