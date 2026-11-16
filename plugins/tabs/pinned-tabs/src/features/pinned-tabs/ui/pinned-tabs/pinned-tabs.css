@@ -1,0 +1,29 @@
+.sumi-pin-tab {
+	padding-right: calc(var(--sumi-sp-3) + 22px);
+}
+
+.sumi-strip-tab .sumi-pin-end {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.sumi-strip-tab:has(.sumi-pin-end) .sumi-strip-tab-title {
+	mask-image: linear-gradient(to right, black calc(100% - 22px), transparent calc(100% - 6px));
+}
+
+.sumi-pin-end > span {
+	display: flex;
+}
+
+.sumi-strip-tab .sumi-pin-unmark,
+.sumi-strip-tab:is(:hover, :focus-visible) .sumi-pin-mark {
+	display: none;
+}
+
+.sumi-strip-tab:is(:hover, :focus-visible) .sumi-pin-unmark {
+	display: flex;
+}
+
+.sumi-pin-tab[data-place="elsewhere"] :is(.sumi-strip-tab-icons, .sumi-strip-tab-title) {
+	opacity: 0.5;
+}
