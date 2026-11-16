@@ -86,6 +86,7 @@ export const chatsElsewhere = query()
 					workspaceName: workspace.name,
 					chatId: chat.id,
 					title: titleOf(chat),
+					lastAt: chat.lastAt,
 				})),
 			),
 		);

@@ -1,0 +1,121 @@
+:is(.wg-root, .wg-portal) .sumi-sessions-button {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: var(--sumi-h-sm);
+	height: var(--sumi-h-sm);
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: none;
+	box-shadow: none;
+	color: var(--sumi-text);
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .sumi-sessions-button:hover {
+	background: var(--sumi-hover);
+}
+
+:is(.wg-root, .wg-portal) .sumi-sessions-button[data-state="open"] {
+	background: var(--sumi-soft);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.sumi-sessions-pop {
+	width: 320px;
+	min-width: 0;
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .sumi-sessions-row {
+	gap: var(--sumi-sp-4);
+	height: var(--sumi-h-md);
+	min-height: var(--sumi-h-md);
+}
+
+.sumi-sessions-row-icon {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	color: var(--sumi-text-3);
+}
+
+.sumi-sessions-row-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--sumi-fs-13);
+	text-overflow: ellipsis;
+	text-align: start;
+	white-space: nowrap;
+}
+
+.sumi-sessions-row-meta {
+	flex: none;
+	max-width: 40%;
+	overflow: hidden;
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-13);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sumi-sessions-line {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .sumi-sessions-line[data-current="true"] > .sumi-sessions-row {
+	background: var(--sumi-soft);
+	font-weight: 600;
+}
+
+.sumi-sessions-actions {
+	position: absolute;
+	inset-block: 0;
+	inset-inline-end: var(--sumi-sp-1);
+	display: none;
+	align-items: center;
+	gap: var(--sumi-sp-1);
+}
+
+.sumi-sessions-line:hover .sumi-sessions-actions,
+.sumi-sessions-line:focus-within .sumi-sessions-actions {
+	display: flex;
+}
+
+:is(.wg-root, .wg-portal) .sumi-sessions-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-width: var(--sumi-h-sm);
+	height: var(--sumi-h-sm);
+	padding: 0 var(--sumi-sp-1);
+	border: none;
+	border-radius: 0;
+	background: var(--sumi-plate);
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-13);
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .sumi-sessions-action:hover {
+	background: var(--sumi-hover);
+	color: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .sumi-sessions-action[data-confirming="true"] {
+	background: var(--sumi-danger-wash);
+	color: var(--sumi-danger);
+}
+
+.sumi-sessions-more {
+	flex: none;
+	height: var(--sumi-sp-1);
+}

@@ -1,6 +1,5 @@
 import { apps } from "@sumi/apps-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
-import { controlMenu } from "@sumi/control-menu-plugin";
 import { backend, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
 import { navigation } from "@sumi/navigation-plugin";
 import { chatFacts as chatFactsContract } from "@sumi/chat-facts/contract";
@@ -14,10 +13,9 @@ import { DATA_MARKS_GUIDE } from "./features/assistant/lib/data-marks-guide.js";
 import type { ChatPageImportOf } from "./features/chat-page/lib/chat-modules-of.js";
 import { chatTabPageOf } from "./features/chat-page/lib/chat-tab-page.js";
 import { NewSessionRow } from "./features/new-chat/ui/new-chat-row/new-chat-row.js";
-import { SessionRows } from "./features/sessions/ui/session-rows/session-rows.js";
 
 export const chat = plugin("chat")
-	.require(sumiHost, backend, windows, shell, apps, commandMenu, agent, controlMenu, navigation)
+	.require(sumiHost, backend, windows, shell, apps, commandMenu, agent, navigation)
 	.apply((app) => {
 		const pageImports: ChatPageImportOf[] = [];
 		app.use(apps).app({
@@ -32,7 +30,6 @@ export const chat = plugin("chat")
 		app.use(backend).moduleOf(({ store }) => chatFactsModule({ store, apps: placedApps }), chatFactsContract);
 		app.use(windows).module(chatTabs);
 		app.use(sumiHost).slots.sidebarActions.add(NewSessionRow);
-		app.use(controlMenu).slots.top.add(SessionRows);
 		app.use(shell).provider(askComposerProviderOf);
 		app.use(commandMenu).door({
 			id: "ask",

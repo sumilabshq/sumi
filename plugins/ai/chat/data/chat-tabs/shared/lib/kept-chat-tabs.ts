@@ -10,5 +10,6 @@ export async function keepChatTabs(send: Send, window: string): Promise<void> {
 		return;
 	}
 
-	await send(chatFacts.turns.keepChatTabs, { window, chats: records.chats.map(({ id, title }) => ({ id, title })) });
+	const live = records.chats.filter(({ isArchived }) => !isArchived);
+	await send(chatFacts.turns.keepChatTabs, { window, chats: live.map(({ id, title }) => ({ id, title })) });
 }

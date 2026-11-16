@@ -5,6 +5,7 @@ export const KeptChatSchema = z.object({
 	title: z.string().nullable(),
 	createdAt: z.number().nonnegative(),
 	lastAt: z.number().nonnegative(),
+	archivedAt: z.number().nonnegative().nullable().default(null),
 });
 
 export type KeptChat = z.infer<typeof KeptChatSchema>;
@@ -44,6 +45,12 @@ export const ChatRecordSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	lastAt: z.number().nonnegative(),
+	isArchived: z.boolean(),
+});
+
+export const ChatArchivingSchema = z.object({
+	id: z.string().min(1),
+	isArchived: z.boolean(),
 });
 
 export type ChatRecord = z.infer<typeof ChatRecordSchema>;
@@ -64,6 +71,7 @@ export const ChatElsewhereRowSchema = z.object({
 	workspaceName: z.string(),
 	chatId: z.string().min(1),
 	title: z.string(),
+	lastAt: z.number().nonnegative(),
 });
 
 export type ChatElsewhereRow = z.infer<typeof ChatElsewhereRowSchema>;

@@ -27,6 +27,23 @@
 	height: 100%;
 }
 
+.wg-chat-app {
+	position: relative;
+}
+
+.wg-chat-top-start {
+	position: absolute;
+	inset-block-start: var(--sumi-sp-2);
+	inset-inline-start: 0;
+	z-index: 2;
+	display: flex;
+	gap: var(--sumi-sp-1);
+}
+
+.wg-chat-top-start:empty {
+	display: none;
+}
+
 .wg-chat-app-none {
 	margin: 0;
 	padding: calc(24px + var(--sumi-corner-top, 0px)) 24px 24px;

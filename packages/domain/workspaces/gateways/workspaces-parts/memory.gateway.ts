@@ -45,6 +45,7 @@ export function firstChats(): KeptChats {
 				title: null,
 				createdAt: at,
 				lastAt: at,
+				archivedAt: null,
 			},
 		],
 		openOnStartId: id,

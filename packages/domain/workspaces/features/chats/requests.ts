@@ -1,4 +1,4 @@
-import { PerCall, Repeatable } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
 import { workspacesChanged } from "../../gateways/workspaces/workspaces.events.js";
@@ -8,6 +8,7 @@ import { ChatsGateway } from "../../gateways/chats/chats.gateway.js";
 import { titleOf } from "../../shared/lib/chat-title.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
 import {
+	ChatArchivingSchema,
 	ChatIdSchema,
 	ChatRecordsSchema,
 	ChatToOpenSchema,
@@ -30,6 +31,7 @@ export const chatRecords = query()
 			id: chat.id,
 			title: titleOf(chat),
 			lastAt: chat.lastAt,
+			isArchived: chat.archivedAt !== null,
 		})),
 	}));
 
@@ -133,6 +135,53 @@ export const recordTurn = command()
 		saveTurned(chats, now, chatAfterTurn(now, { title: now.title ?? title, isStarting }));
 	});
 
+export const archiveChat = command()
+	.public()
+	.input(ChatArchivingSchema)
+	.idempotencyKey(Repeatable)
+	.handle(({ id, isArchived }, { chats, invalidate }) => {
+		invalidate(chatRecords);
+		const kept = chats.chats();
+		const was = kept.chats.find((chat) => chat.id === id);
+
+		if (was === undefined) {
+			return refuse(`no chat ${id} in this workspace`);
+		}
+
+		if ((was.archivedAt !== null) === isArchived) {
+			console.info(`[widgetarium] chat ${id} archived ${isArchived} skipped: it is so already`);
+			return;
+		}
+
+		const reason = `chat ${id} archived ${!isArchived} → ${isArchived}`;
+		chats.saveChats(withChat(kept, { ...was, archivedAt: isArchived ? Date.now() : null }), reason);
+		console.info(`[widgetarium] ${reason}`);
+	});
+
+export const deleteChat = command()
+	.public()
+	.input(ChatIdSchema)
+	.idempotencyKey(Repeatable)
+	.handle(({ id }, { chats, invalidate }) => {
+		invalidate(chatRecords);
+		const kept = chats.chats();
+
+		if (!kept.chats.some((chat) => chat.id === id)) {
+			console.info(`[widgetarium] delete chat ${id} skipped: no such chat in this workspace`);
+			return;
+		}
+
+		const reason = `chats ${kept.chats.length} → ${kept.chats.length - 1} (deleted chat ${id})`;
+		chats.saveChats(
+			{
+				chats: kept.chats.filter((chat) => chat.id !== id),
+				openOnStartId: kept.openOnStartId === id ? null : kept.openOnStartId,
+			},
+			reason,
+		);
+		console.info(`[widgetarium] ${reason}`);
+	});
+
 export const rereadChats = subscriber(chatsChanged).handle((_input, { invalidate }) => {
 	invalidate(chatRecords);
 	invalidate(chatToOpen);
@@ -161,6 +210,7 @@ function newChatOf(title: string | null): KeptChat {
 		title: title?.trim() || null,
 		createdAt: at,
 		lastAt: at,
+		archivedAt: null,
 	};
 }
 

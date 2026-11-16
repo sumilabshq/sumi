@@ -23,6 +23,7 @@ const SOURCES = [
 	"plugins/ai/model-picker/src",
 	"plugins/ai/effort-picker/src",
 	"plugins/control-menu/src",
+	"plugins/ai/sessions/src",
 	"plugins/tabs/tab-strip/src",
 	"plugins/tabs/pinned-tabs/src",
 ];
@@ -40,6 +41,10 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@widgetarium/studio/command-menu.css":
 		"plugins/command-menu/src/features/command-menu/ui/command-menu/command-menu.css",
 	"@sumi/command-menu-plugin/home-page.css": "plugins/command-menu/src/features/command-menu/ui/home-page/home-page.css",
+	"@sumi/home-pages-plugin/home-pages.css":
+		"plugins/homepages/home-pages/src/features/home-pages/ui/chosen-home/home-pages.css",
+	"@sumi/launcher-home-plugin/launcher-home.css":
+		"plugins/homepages/launcher-home/src/features/launcher/ui/launcher-home/launcher-home.css",
 	"@sumi/chat-plugin/assistant.css": "plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant.css",
 	"@sumi/chat-plugin/assistant-utilities.css":
 		"plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant-utilities.css",
@@ -58,6 +63,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/sumi-host-plugin/sumi-figure.css": "plugins/sumi-host/src/features/mascot/ui/sumi-figure/sumi-figure.css",
 	"@sumi/control-menu-plugin/control-menu.css":
 		"plugins/control-menu/src/features/control-menu/ui/control-menu/control-menu.css",
+	"@sumi/sessions-plugin/sessions-button.css":
+		"plugins/ai/sessions/src/features/sessions/ui/sessions-button/sessions-button.css",
 	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
 	"@sumi/pinned-tabs-plugin/pinned-tabs.css":
 		"plugins/tabs/pinned-tabs/src/features/pinned-tabs/ui/pinned-tabs/pinned-tabs.css",
@@ -83,6 +90,8 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@widgetarium/studio/shell.css";
 @import "@widgetarium/studio/command-menu.css";
 @import "@sumi/command-menu-plugin/home-page.css";
+@import "@sumi/home-pages-plugin/home-pages.css";
+@import "@sumi/launcher-home-plugin/launcher-home.css";
 @import "@sumi/chat-plugin/assistant.css";
 @import "@sumi/chat-plugin/assistant-utilities.css";
 @import "@sumi/chat-plugin/queue.css";
@@ -97,6 +106,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
 @import "@sumi/sumi-host-plugin/title-bar.css";
 @import "@sumi/control-menu-plugin/control-menu.css";
+@import "@sumi/sessions-plugin/sessions-button.css";
 @import "@sumi/tab-strip-plugin/tab-strip.css";
 @import "@sumi/pinned-tabs-plugin/pinned-tabs.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";

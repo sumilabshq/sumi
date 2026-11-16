@@ -92,6 +92,7 @@ function keptOfLegacy(id: string): KeptChats {
 				title: null,
 				createdAt: 0,
 				lastAt: 0,
+				archivedAt: null,
 			},
 		],
 		openOnStartId: id,

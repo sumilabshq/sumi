@@ -1,0 +1,41 @@
+{
+	"name": "@sumi/sessions",
+	"version": "0.1.0",
+	"description": "Every session of every workspace, newest first, a page at a time, and opening one wherever it lives",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		"./contract": {
+			"source": "./generated/contract.ts",
+			"types": "./dist/generated/contract.d.ts",
+			"default": "./dist/generated/contract.js"
+		},
+		"./implementation": {
+			"source": "./generated/module.ts",
+			"types": "./dist/generated/module.d.ts",
+			"default": "./dist/generated/module.js"
+		}
+	},
+	"imports": {
+		"#module": {
+			"source": "./generated/command.ts",
+			"types": "./dist/generated/command.d.ts",
+			"default": "./dist/generated/command.js"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/app-host": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/workspaces": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}

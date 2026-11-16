@@ -12,8 +12,12 @@ import type {
 import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
+import { commandMenuHome } from "@sumi/command-menu-home-plugin";
+import { homePages } from "@sumi/home-pages-plugin";
+import { launcherHome } from "@sumi/launcher-home-plugin";
 import { composerExpand } from "@sumi/composer-expand-plugin";
 import { controlMenu } from "@sumi/control-menu-plugin";
+import { sessions } from "@sumi/sessions-plugin";
 import { navigation } from "@sumi/navigation-plugin";
 import { tabStrip } from "@sumi/tab-strip-plugin";
 import { tabGroups } from "@sumi/tab-groups-plugin";
@@ -125,6 +129,9 @@ const INSTALLED_PLUGINS = [
 	tabGroups,
 	apps,
 	commandMenu,
+	homePages,
+	launcherHome,
+	commandMenuHome,
 	chat,
 	main,
 	agent,
@@ -150,6 +157,7 @@ const INSTALLED_PLUGINS = [
 	planUsage,
 	terminalCursor,
 	controlMenu,
+	sessions,
 	tabStrip,
 	pinnedTabs,
 ];
@@ -157,6 +165,9 @@ const ALWAYS_ON_PLUGINS = [sumiHost, navigation, tabGroups, controlMenu, tabStri
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
+		homePages.id,
+		launcherHome.id,
+		commandMenuHome.id,
 		canvas.id,
 		terminal.id,
 		browserPage.id,
@@ -177,6 +188,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		planUsage.id,
 		terminalCursor.id,
 		controlMenu.id,
+		sessions.id,
 		tabStrip.id,
 		pinnedTabs.id,
 	],

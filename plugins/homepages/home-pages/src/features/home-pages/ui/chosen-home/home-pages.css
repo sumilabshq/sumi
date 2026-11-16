@@ -1,0 +1,44 @@
+.sumi-home-pages {
+	position: relative;
+	height: 100%;
+	min-height: 0;
+	background: var(--sumi-plate);
+}
+
+.sumi-home-switch {
+	position: absolute;
+	right: var(--sumi-sp-8);
+	bottom: var(--sumi-sp-6);
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	font-family: var(--sumi-font-ui);
+	font-size: var(--sumi-fs-12);
+	line-height: 24px;
+	color: var(--sumi-text-3);
+}
+
+.sumi-home-switch-label {
+	margin-right: 8px;
+}
+
+.sumi-home-switch-option {
+	height: 24px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	font: inherit;
+	color: inherit;
+	cursor: pointer;
+	transition: background-color var(--sumi-dur-hover) var(--sumi-ease);
+}
+
+.sumi-home-switch-option:hover {
+	background: var(--sumi-hover);
+}
+
+.sumi-home-switch-option[aria-pressed="true"] {
+	background: var(--sumi-selected);
+	color: var(--sumi-text);
+}

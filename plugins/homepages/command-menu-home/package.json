@@ -1,0 +1,24 @@
+{
+	"name": "@sumi/command-menu-home-plugin",
+	"version": "0.1.0",
+	"description": "The command menu as a home page: the same line and results as ⌘K, drawn in a new tab",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/command-menu-plugin": "0.1.0",
+		"@sumi/home-pages-plugin": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

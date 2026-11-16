@@ -41,6 +41,7 @@ function chatOf(id: string, lastAt: number): KeptChat {
 		title: null,
 		createdAt: lastAt,
 		lastAt,
+		archivedAt: null,
 	};
 }
 

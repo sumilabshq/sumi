@@ -1,0 +1,29 @@
+{
+	"name": "@sumi/launcher-home-plugin",
+	"version": "0.1.0",
+	"description": "The launcher home page: setups that open a chat with its apps, every app, and what you worked on last",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/command-menu": "0.1.0",
+		"@sumi/command-menu-plugin": "0.1.0",
+		"@sumi/home-pages-plugin": "0.1.0",
+		"@sumi/setups": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

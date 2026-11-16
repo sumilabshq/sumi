@@ -30,6 +30,12 @@ export const ChatRecordSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	lastAt: z.number().nonnegative(),
+	isArchived: z.boolean(),
+});
+
+export const ChatArchivingSchema = z.object({
+	id: z.string().min(1),
+	isArchived: z.boolean(),
 });
 
 export type ChatRecord = z.infer<typeof ChatRecordSchema>;
@@ -50,6 +56,7 @@ export const ChatElsewhereRowSchema = z.object({
 	workspaceName: z.string(),
 	chatId: z.string().min(1),
 	title: z.string(),
+	lastAt: z.number().nonnegative(),
 });
 
 export type ChatElsewhereRow = z.infer<typeof ChatElsewhereRowSchema>;
@@ -153,6 +160,14 @@ export const workspaces = moduleContract("workspaces", Device, {
 		recordTurn: named("chats.record-turn", command()
 			.public()
 			.input(ChatTurnSchema)
+			.idempotencyKey(Repeatable)),
+		archiveChat: named("chats.archive-chat", command()
+			.public()
+			.input(ChatArchivingSchema)
+			.idempotencyKey(Repeatable)),
+		deleteChat: named("chats.delete-chat", command()
+			.public()
+			.input(ChatIdSchema)
 			.idempotencyKey(Repeatable)),
 		chatsChanged: named("chats.chats-changed", event()
 			.public()),
