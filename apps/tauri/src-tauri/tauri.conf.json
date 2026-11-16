@@ -1,6 +1,6 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "Widgetarium",
+	"productName": "Sumi",
 	"version": "0.1.0",
 	"identifier": "app.widgetarium.studio",
 	"build": {
@@ -15,7 +15,7 @@
 		"windows": [
 			{
 				"label": "main",
-				"title": "Widgetarium",
+				"title": "Sumi",
 				"width": 1440,
 				"height": 900,
 				"minWidth": 360,
