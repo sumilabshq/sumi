@@ -1,0 +1,23 @@
+{
+	"name": "@sumi/tab-groups-plugin",
+	"version": "0.1.0",
+	"description": "Tab groups: a window's tabs gathered under a named, coloured, foldable group",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/groups": "0.1.0",
+		"@sumi/navigation-plugin": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@sumi/tab-groups": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}
