@@ -48,12 +48,13 @@ check("the program is the claude command, found on the login PATH by the host", 
 const linkedPrompt = after(linked.args, "--append-system-prompt") ?? "";
 check("Claude Code gets Sumi's prompt first", linkedPrompt.startsWith("Sumi's prompt\n\n"), true);
 check(
-	"and is told Sumi's tools take the place of its own, and how to find any of them",
-	["switched off", "agent-tools_shell_run", "agent-tools_tools_get-tools"].every((said) => linkedPrompt.includes(said)),
+	"and is told Sumi's tools take the place of its own",
+	["switched off", "agent-tools_shell_run"].every((said) => linkedPrompt.includes(said)),
 	true,
 );
 check("the system prompt is given once", linked.args.filter((arg) => arg === "--append-system-prompt").length, 1);
 check("the person's own settings and CLAUDE.md load", after(linked.args, "--setting-sources"), "user,project,local");
+check("only Sumi's MCP servers load", linked.args.includes("--strict-mcp-config"), true);
 const config: unknown = JSON.parse(after(linked.args, "--mcp-config") ?? "null");
 const servers = typeof config === "object" && config !== null ? Reflect.get(config, "mcpServers") : null;
 check("one MCP server per server a plugin registered", Object.keys(servers ?? {}), ["questions", "tasks"]);
@@ -75,7 +76,20 @@ check(
 			"--folder",
 			"/work/app",
 		],
+		alwaysLoad: false,
 	},
+);
+check(
+	"a core server's tools are loaded up front, any other server's when asked",
+	Reflect.get(Reflect.get(servers ?? {}, "questions") ?? {}, "alwaysLoad"),
+	true,
+);
+check(
+	"Claude Code is told which servers load when asked",
+	linkedPrompt.includes(
+		"Sumi also serves tasks: their tools are listed by name only, so find and load one with ToolSearch",
+	),
+	true,
 );
 check(
 	"every registered server's tools are allowed, and only those",
@@ -98,10 +112,11 @@ check(
 	true,
 );
 check("the person's message stays last", linked.args.at(-1), "which tabs?");
-check("the MCP timeout waits for a person's answer, and every tool is loaded up front", linked.env, {
+check("the MCP timeout waits for a person's answer, and Claude Code's own tools load when asked", linked.env, {
 	MCP_TOOL_TIMEOUT: "86400000",
-	ENABLE_TOOL_SEARCH: "false",
+	ENABLE_TOOL_SEARCH: "true",
 });
+check("Sumi serves no tool search of its own", linkedPrompt.includes("get-tools"), false);
 
 const unlinked = claudeLaunchOf({
 	...FACTS,

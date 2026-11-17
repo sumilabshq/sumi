@@ -4,10 +4,7 @@ import { agentTools as definition } from "../module.js";
 import { getNow, wait } from "../features/clock/requests.js";
 import { edit, findMatches, findPaths, getImage, getText, write } from "../features/files/requests.js";
 import { getOutput, run, start, stop } from "../features/shell/requests.js";
-import { getTools } from "../features/tools/requests.js";
 import { fetchPage, search } from "../features/web/requests.js";
-
-export type { AgentToolsConfig } from "../module.js";
 
 export const agentTools = handledModule(definition, [
 	named("clock.get-now", getNow),
@@ -22,7 +19,6 @@ export const agentTools = handledModule(definition, [
 	named("shell.run", run),
 	named("shell.start", start),
 	named("shell.stop", stop),
-	named("tools.get-tools", getTools),
 	named("web.fetch-page", fetchPage),
 	named("web.search", search),
 ]);

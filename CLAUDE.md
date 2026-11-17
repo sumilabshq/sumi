@@ -50,6 +50,16 @@ In code and text, never write a bare "session": write "window session" or "chat 
 
 A tab never holds tabs. A chat is a plain tab (`isChat`); tabs stand together in a split, never inside a chat.
 
+**CRITICAL — Sumi is a harness over harnesses, at this stage.** Sumi writes no agent loop. Each model runs in its vendor's own harness, started headless as a runner (`agent.addRunner`), and gets Sumi's tools through MCP. A new model is a new runner: its `launchOf` and a translator of its events into chat parts. A model is never pushed through another vendor's harness. Sumi's own harness comes later, as one more runner beside these.
+
+| Model     | Runner      | The person pays with                                       |
+| --------- | ----------- | ---------------------------------------------------------- |
+| Claude    | Claude Code | a Claude subscription                                      |
+| GPT       | Codex       | a ChatGPT subscription                                     |
+| any other | OpenCode    | an OpenRouter key, or a key of any provider OpenCode takes |
+
+Only the Claude Code runner is built (`plugins/ai/claude-code`).
+
 @docs/architecture/README.md
 
 @docs/architecture/layers.md

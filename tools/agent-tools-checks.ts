@@ -72,11 +72,11 @@ async function called(tool: string, args: unknown, chat = "chat-7") {
 }
 
 check(
-	"the server is listed for tool search",
+	"the server joins the served list",
 	servers.map(({ name }) => name),
 	["agent-tools"],
 );
-check("every tool is served", server.tools.length, 15);
+check("every tool is served", server.tools.length, 14);
 
 const read = await called("files_get-text", { path: notes, offset: 2, limit: 2 });
 check("a file reads numbered, from its offset", read.json, {
@@ -137,13 +137,6 @@ await called("shell_stop", { name: "ticker" });
 const now = await called("clock_get-now", {});
 check("the clock answers UTC", z.object({ utc: z.string() }).parse(now.json).utc.endsWith("Z"), true);
 
-const found = await called("tools_get-tools", { query: "run shell command" });
-check(
-	"tool search ranks the shell run first, by its full name",
-	z.object({ tools: z.array(z.object({ name: z.string() })) }).parse(found.json).tools[0]?.name,
-	"mcp__agent-tools__agent-tools_shell_run",
-);
-
 const notPng = await called("files_get-image", { path: notes });
 check("an image that is not PNG is refused", notPng.isError, true);
 writeFileSync(
@@ -203,7 +196,11 @@ check(
 	"Read README.md",
 );
 check("an edit reads as Edited", shownCallOf("files_edit", { path: "/a/app.ts" }, true), "Edited app.ts");
-check("a glob reads as Found, its own word", shownCallOf("files_find-paths", { pattern: "**/*.md" }, true), "Found **/*.md");
+check(
+	"a glob reads as Found, its own word",
+	shownCallOf("files_find-paths", { pattern: "**/*.md" }, true),
+	"Found **/*.md",
+);
 check(
 	"a page fetch reads as Fetching while it runs",
 	shownCallOf("web_fetch-page", { url: "https://wttr.in" }, false),

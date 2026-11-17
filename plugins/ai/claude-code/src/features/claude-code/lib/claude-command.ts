@@ -28,7 +28,7 @@ const REPLACED_BY_SUMI_TOOLS = [
 	"WebSearch",
 ];
 const TOOL_SEARCH = "ENABLE_TOOL_SEARCH";
-const EVERY_TOOL_LOADED = "false";
+const CLAUDE_TOOLS_LOADED_WHEN_ASKED = "true";
 const END_OF_OPTIONS = "--";
 const HOOK_TIMEOUT_SECONDS = 10;
 const SESSION_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
@@ -44,8 +44,8 @@ const SUMI_TOOLS = [
 	"Your own Bash, Read, Edit, Write, Glob, Grep, WebSearch and WebFetch are switched off here: Sumi's tools under mcp__agent-tools__ take their place.",
 	"Files: agent-tools_files_get-text, _write, _edit, _find-paths (glob), _find-matches (grep), _get-image. Commands: agent-tools_shell_run, and _start, _get-output, _stop for processes that keep running.",
 	"Web: agent-tools_web_search and _fetch-page. Also agent-tools_clock_get-now and _wait.",
-	"To find any other Sumi tool for a task, call mcp__agent-tools__agent-tools_tools_get-tools with a few words.",
 ].join(" ");
+const ALWAYS_LOADED_SERVERS = ["agent-tools", "questions"];
 
 export function claudeLaunchOf(facts: TurnFacts): TurnLaunch {
 	if (facts.prompt.trim() === "") {
@@ -71,7 +71,7 @@ export function claudeLaunchOf(facts: TurnFacts): TurnLaunch {
 		],
 		env: {
 			[MCP_TOOL_TIMEOUT]: PERSON_ANSWER_MS,
-			...(facts.link === null ? {} : { [TOOL_SEARCH]: EVERY_TOOL_LOADED }),
+			...(facts.link === null ? {} : { [TOOL_SEARCH]: CLAUDE_TOOLS_LOADED_WHEN_ASKED }),
 		},
 	};
 }
@@ -92,13 +92,24 @@ function choiceArgsOf({ model, options }: TurnFacts): string[] {
 }
 
 function systemPromptOf({ link }: TurnFacts): string {
-	return link === null ? BUILT_IN_TOOLS : `${link.systemPrompt}\n\n${SUMI_TOOLS}`;
+	return link === null ? BUILT_IN_TOOLS : `${link.systemPrompt}\n\n${sumiToolsPromptOf(link.servers)}`;
+}
+
+function sumiToolsPromptOf(servers: readonly string[]): string {
+	const loadedWhenAsked = servers.filter((server) => !ALWAYS_LOADED_SERVERS.includes(server));
+
+	if (loadedWhenAsked.length === 0) {
+		return SUMI_TOOLS;
+	}
+
+	return `${SUMI_TOOLS} Sumi also serves ${loadedWhenAsked.join(", ")}: their tools are listed by name only, so find and load one with ToolSearch before its first call.`;
 }
 
 function linkArgsOf(link: AgentLinkFacts, facts: TurnFacts): string[] {
 	return [
 		"--mcp-config",
 		mcpConfigOf(link, facts),
+		"--strict-mcp-config",
 		"--allowedTools",
 		link.servers.map((server) => `mcp__${server}`).join(","),
 		"--disallowedTools",
@@ -128,6 +139,7 @@ function mcpConfigOf(link: AgentLinkFacts, { project, model }: TurnFacts): strin
 					project,
 					...(model === null ? [] : ["--model", model]),
 				],
+				alwaysLoad: ALWAYS_LOADED_SERVERS.includes(server),
 			},
 		]),
 	);

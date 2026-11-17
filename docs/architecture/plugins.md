@@ -160,14 +160,14 @@ A feature may draw another feature's block; it never imports another feature's `
 
 The relay (`apps/tauri/src/agent/agent-relay.ts`, `apps/tauri/src-tauri/src/agent/`) knows no server: the window tells the Rust hub the names it serves, each agent turn gets one `--mcp-config` entry per name (the Sumi binary in `--mcp --server <name>` mode, with the turn's chat, folder and model), and every JSON-RPC message passes through unchanged to that server's `answer`. The same socket serves a terminal: `widgetarium-host-tauri --open <link> [--new-tab]` asks the window to open a link through `appHost.links.openLink`, and `--mcp --server <name> --chat <id>` with no `--socket` and `--token` finds the app's socket and the owner-only token file it writes beside it at start (`~/.sumi/agent-tools.token`). TODO: servers from a file (GitHub, Jira) with no plugin.
 
-| Plugin         | MCP server    | Module                                                                                                                                                    |
-| -------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps`         | `apps`        | `tabs` (`plugins/apps/data/tabs`)                                                                                                                         |
-| `browser-page` | `browser`     | `pages` (`plugins/browser-page/data/pages`)                                                                                                               |
-| `questions`    | `questions`   | `ask` (`plugins/ai/questions/data/ask`)                                                                                                                   |
-| `agent`        | `agent-tools` | `agent-tools` (`plugins/ai/agent/data/agent-tools`): files, shell, web, PNG images, clock, tool search; its own runtime calls the core as the `agent` app |
-| `tasks`        | `tasks`       | `task-work` (`plugins/tasks/data/task-work`)                                                                                                              |
-| `canvas`       | `canvas`      | `canvas-work` (`plugins/canvas/data/canvas-work`): read, draw, arrange and shoot the HTML artboards of canvas tabs; shots are drawn in the window         |
+| Plugin         | MCP server    | Module                                                                                                                                            |
+| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps`         | `apps`        | `tabs` (`plugins/apps/data/tabs`)                                                                                                                 |
+| `browser-page` | `browser`     | `pages` (`plugins/browser-page/data/pages`)                                                                                                       |
+| `questions`    | `questions`   | `ask` (`plugins/ai/questions/data/ask`)                                                                                                           |
+| `agent`        | `agent-tools` | `agent-tools` (`plugins/ai/agent/data/agent-tools`): files, shell, web, PNG images, clock; its own runtime calls the core as the `agent` app      |
+| `tasks`        | `tasks`       | `task-work` (`plugins/tasks/data/task-work`)                                                                                                      |
+| `canvas`       | `canvas`      | `canvas-work` (`plugins/canvas/data/canvas-work`): read, draw, arrange and shoot the HTML artboards of canvas tabs; shots are drawn in the window |
 
 ## Example: canvas
 

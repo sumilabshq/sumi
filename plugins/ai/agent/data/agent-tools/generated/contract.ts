@@ -133,21 +133,6 @@ export const ShellRunSchema = z.object({
 
 export type ShellRun = z.infer<typeof ShellRunSchema>;
 
-export const ToolsAskedSchema = z.object({
-	query: z.string().min(1).max(200).describe('Words for what the tool should do, such as "open a browser page"'),
-});
-
-export const FoundToolSchema = z.object({
-	name: z.string(),
-	description: z.string(),
-});
-
-export type FoundTool = z.infer<typeof FoundToolSchema>;
-
-export const FoundToolsSchema = z.object({
-	tools: z.array(FoundToolSchema),
-});
-
 export const PageAskedSchema = z.object({
 	url: z.string().url().max(4096).describe("An http or https address"),
 	from: z
@@ -298,17 +283,6 @@ export const agentTools = moduleContract("agent-tools", Device, {
 			.input(StopAskedSchema)
 			.output(ShellRunSchema)
 			.idempotencyKey(Repeatable)),
-	},
-	tools: {
-		getTools: named("tools.get-tools", query()
-			.public()
-			.metadata({
-				description:
-					"Find Sumi's tools for a task by words: answers up to ten tools, best first, with the full name to call and what each does. Use it before saying a tool does not exist.",
-				mcp: { kind: "other", running: "Looking up tools for", done: "Looked up tools for", shows: "query" },
-			})
-			.input(ToolsAskedSchema)
-			.output(FoundToolsSchema)),
 	},
 	web: {
 		fetchPage: named("web.fetch-page", command()

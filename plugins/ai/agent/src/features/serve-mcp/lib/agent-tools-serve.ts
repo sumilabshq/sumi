@@ -14,7 +14,7 @@ export function agentToolsServeOf(servers: McpServer[]): (offers: WindowOffers) 
 	return ({ core, platform, workspaceId }) => {
 		const asAgent = calledAsAgent(core);
 		const tools = runtime()
-			.modules(agentTools({ servers }))
+			.modules(agentTools)
 			.imports(fileSystem({ over: asAgent }), terminal({ over: asAgent }))
 			.start({ platform, scope: { workspaceId } });
 		const server = servedMcpOf(tools, AGENT_TOOLS_SERVER, [agentTools.definition.name]);
