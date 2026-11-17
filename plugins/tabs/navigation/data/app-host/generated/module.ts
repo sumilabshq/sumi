@@ -2,12 +2,17 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { appHost as definition } from "../module.js";
 import { closedTabs, reopenById, rereadClosedTabs, rereadClosedTabsForCore } from "../features/closed-tabs/requests.js";
+import { conceal, frameSides, peek, rereadSides, rereadSidesForCore, toggle } from "../features/frame-sides/requests.js";
 import { openLink } from "../features/links/requests.js";
+import { closeShowingPanes, closeShown as paneTabsCloseShown, dropGoneTabs, openShown, showChat, showInTarget } from "../features/pane-tabs/requests.js";
+import { aim, close, paneTree, place, placementPreview, rereadPanes, rereadPanesForCore, rereadPanesForTabs, resizeSplit } from "../features/panes/requests.js";
 import { current, rereadShownView, rereadShownViewForCore, showView } from "../features/shown-view/requests.js";
 import { closeViewPane, placeInView, rereadShown, rereadShownForCore, resize, shown, unsplit } from "../features/splits/requests.js";
-import { closeGroup, closeOthers, closeShown, closeTab, closeTabs, duplicate, navigate, openBelow, openOnce, openTab, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
+import { closeGroup, closeOthers, closeShown as tabActionsCloseShown, closeTab, closeTabs, duplicate, navigate, openBelow, openOnce, openTab, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
 import { appTabs, canOpenOwnWindow, ensurePanePages, heldTabs, holders, placeTab, rememberPages, rereadForAccessAsks, rereadForChats, rereadForInk, rereadForPages, rereadTabs, rereadTabsForCore, restore, showTab, tabsSidebar } from "../features/tabs/requests.js";
 import { studioCoreChanged } from "../gateways/core-changes/core-changes.events.js";
+import { peeksChanged } from "../gateways/side-peeks/side-peeks.events.js";
+import { panesChanged } from "../shared/events/panes.events.js";
 import { tabsSettled } from "../shared/events/tabs.events.js";
 
 export type { AppHostConfig, CoreChanges } from "../module.js";
@@ -21,18 +26,41 @@ export const appHost = handledModule(definition, [
 	rereadForChats,
 	rereadForInk,
 	rereadForPages,
+	rereadPanes,
+	rereadPanesForCore,
+	rereadPanesForTabs,
 	rereadShown,
 	rereadShownForCore,
 	rereadShownView,
 	rereadShownViewForCore,
+	rereadSides,
+	rereadSidesForCore,
 	rereadTabs,
 	rereadTabsForCore,
 	named("closed-tabs.closed-tabs", closedTabs),
 	named("closed-tabs.reopen-by-id", reopenById),
 	named("core-changes.studio-core-changed", studioCoreChanged),
+	named("frame-sides.conceal", conceal),
+	named("frame-sides.frame-sides", frameSides),
+	named("frame-sides.peek", peek),
+	named("frame-sides.toggle", toggle),
 	named("links.open-link", openLink),
+	named("pane-tabs.close-showing-panes", closeShowingPanes),
+	named("pane-tabs.close-shown", paneTabsCloseShown),
+	named("pane-tabs.drop-gone-tabs", dropGoneTabs),
+	named("pane-tabs.open-shown", openShown),
+	named("pane-tabs.show-chat", showChat),
+	named("pane-tabs.show-in-target", showInTarget),
+	named("panes.aim", aim),
+	named("panes.close", close),
+	named("panes.pane-tree", paneTree),
+	named("panes.panes-changed", panesChanged),
+	named("panes.place", place),
+	named("panes.placement-preview", placementPreview),
+	named("panes.resize-split", resizeSplit),
 	named("shown-view.current", current),
 	named("shown-view.show-view", showView),
+	named("side-peeks.peeks-changed", peeksChanged),
 	named("splits.close-view-pane", closeViewPane),
 	named("splits.place-in-view", placeInView),
 	named("splits.resize", resize),
@@ -40,7 +68,7 @@ export const appHost = handledModule(definition, [
 	named("splits.unsplit", unsplit),
 	named("tab-actions.close-group", closeGroup),
 	named("tab-actions.close-others", closeOthers),
-	named("tab-actions.close-shown", closeShown),
+	named("tab-actions.close-shown", tabActionsCloseShown),
 	named("tab-actions.close-tab", closeTab),
 	named("tab-actions.close-tabs", closeTabs),
 	named("tab-actions.duplicate", duplicate),

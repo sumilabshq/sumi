@@ -3,13 +3,14 @@ import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import type { AnyQuery, Send } from "@widgetarium/data-framework";
 import { browser } from "@widgetarium/browser/contract";
-import { layout } from "@widgetarium/layout/contract";
 import { navigation } from "@widgetarium/navigation/contract";
 import type { TabsAsk, TabsSettled } from "@widgetarium/navigation/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { studioCoreChanged } from "../../gateways/core-changes/core-changes.events.js";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
+import { panesChanged } from "../../shared/events/panes.events.js";
+import { seatOf } from "../../shared/lib/window-seat.js";
 import { pageTitlesOf, rememberPageTitles } from "../../shared/lib/page-titles/page-titles-read.js";
 import {
 	pageTabsOfRows,
@@ -117,7 +118,7 @@ export const placeTab = command()
 		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, placingOf(send, { id, to }));
 	});
 
-export const ensurePanePages = subscriber(layout.paneTree.panesChanged).handle(
+export const ensurePanePages = subscriber(panesChanged).handle(
 	async (_input, { send, emit, invalidate, ...injects }) => {
 		invalidateTabReads(invalidate);
 		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
@@ -171,15 +172,16 @@ function invalidateTabReads(invalidate: (query: { readonly request: AnyQuery }) 
 	invalidate(holders);
 }
 
-async function dropGoneTabPanes(send: Send, window: string): Promise<void> {
-	const placed = await send(navigation.tabs.placedTabs, { window });
+async function dropGoneTabPanes(send: Send, studioWindow: StudioWindowGateway): Promise<void> {
+	const seat = seatOf(studioWindow);
+	const placed = await send(navigation.tabs.placedTabs, { window: seat.window });
 	const heldTabIds = placed.tabs.map(({ id }) => id);
-	await sendLogged("drop the panes of gone tabs", () => send(layout.paneTabs.dropGoneTabs, { heldTabIds }));
+	await sendLogged("drop the panes of gone tabs", () => send(navigation.panes.dropGoneTabs, { seat, heldTabIds }));
 }
 
 async function readyToRestore(send: Send, injects: { readonly studioWindow: StudioWindowGateway }): Promise<void> {
 	if (!injects.studioWindow.opensBesideAnother()) {
-		await dropGoneTabPanes(send, injects.studioWindow.placesWindow());
+		await dropGoneTabPanes(send, injects.studioWindow);
 	}
 }
 

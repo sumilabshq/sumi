@@ -24,7 +24,6 @@ export function ControlRows(): ReactElement {
 			{address === null ? null : (
 				<ControlMenuRow label="Copy link" keys={null} icon={<Icon name="link" />} onRun={() => copyLink(address)} />
 			)}
-			<PopoverSeparator />
 		</>
 	);
 }

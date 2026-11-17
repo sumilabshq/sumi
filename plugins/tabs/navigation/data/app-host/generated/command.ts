@@ -2,6 +2,8 @@
 import { buildersOf } from "@widgetarium/data-framework";
 import type { appHost } from "../module.js";
 import type { studioCoreChanged } from "../gateways/core-changes/core-changes.events.js";
+import type { peeksChanged } from "../gateways/side-peeks/side-peeks.events.js";
+import type { panesChanged } from "../shared/events/panes.events.js";
 import type { tabsSettled } from "../shared/events/tabs.events.js";
 
-export const { command, query, subscriber } = buildersOf<typeof appHost, typeof studioCoreChanged | typeof tabsSettled>();
+export const { command, query, subscriber } = buildersOf<typeof appHost, typeof panesChanged | typeof peeksChanged | typeof studioCoreChanged | typeof tabsSettled>();

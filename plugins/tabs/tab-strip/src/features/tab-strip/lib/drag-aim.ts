@@ -42,13 +42,28 @@ const STRIP_SLACK_PX = 60;
 const HALF = 0.5;
 const GAP_MIDDLE_PX = 1;
 
+export interface PaneAimFacts {
+	readonly x: number;
+	readonly y: number;
+	readonly page: Box;
+	readonly view: Box;
+}
+
 export function aimOf(facts: AimFacts): DragAim {
+	if (isInside(facts.view, facts.x, facts.y) && facts.y < facts.page.top + STRIP_SLACK_PX) {
+		return stripAimOf(facts);
+	}
+
+	return paneAimOf(facts);
+}
+
+export function paneAimOf(facts: PaneAimFacts): DragAim {
 	if (!isInside(facts.view, facts.x, facts.y)) {
 		return { kind: "away" };
 	}
 
-	if (facts.y < facts.page.top + STRIP_SLACK_PX) {
-		return stripAimOf(facts);
+	if (!isInside(facts.page, facts.x, facts.y)) {
+		return { kind: "none" };
 	}
 
 	return splitAimOf(facts);
@@ -79,7 +94,7 @@ function lineXOf(tabs: readonly Box[], index: number, strip: Box): number {
 	return last === undefined ? strip.left : last.left + last.width + GAP_MIDDLE_PX;
 }
 
-function splitAimOf({ x, y, page }: AimFacts): DragAim {
+function splitAimOf({ x, y, page }: PaneAimFacts): DragAim {
 	const side = sideOf((x - page.left) / page.width, (y - page.top) / page.height);
 	return {
 		kind: "split",

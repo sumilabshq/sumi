@@ -1,0 +1,28 @@
+{
+	"name": "@sumi/tabs-view-plugin",
+	"version": "0.1.0",
+	"description": "Tabs view: which view draws the workspace's tabs (header strip, sidebar or another a plugin adds), chosen from the control menu",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/control-menu-plugin": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@sumi/tab-views": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

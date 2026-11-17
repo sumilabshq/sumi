@@ -253,6 +253,22 @@ export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).rea
 
 export const ClosedTabIdSchema = z.object({ tabId: z.string().min(1) });
 
+export const FrameSideSchema = z.enum(["left"]);
+
+export type FrameSide = z.infer<typeof FrameSideSchema>;
+
+export const SideLookSchema = z.enum(["docked", "hidden", "peeking"]);
+
+export type SideLook = z.infer<typeof SideLookSchema>;
+
+export const FrameSidesSchema = z.object({
+	left: SideLookSchema,
+});
+
+export type FrameSides = z.infer<typeof FrameSidesSchema>;
+
+export const FrameSideInputSchema = z.object({ side: FrameSideSchema });
+
 export const MOST_LINK_CHARS = 2048;
 
 export const LinkToOpenSchema = z.object({
@@ -260,7 +276,118 @@ export const LinkToOpenSchema = z.object({
 	opensNew: z.boolean().default(false),
 });
 
+export const SplitDirSchema = z.enum(["row", "column"]);
+
+export type SplitDir = z.infer<typeof SplitDirSchema>;
+
+export type PaneSide = z.infer<typeof SplitSideSchema>;
+
+export const PaneViewSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("chat"),
+		chatId: z.string().min(1).optional(),
+	}),
+	z.object({
+		kind: z.literal("app"),
+		tabId: z.string().nullable(),
+	}),
+]);
+
+export type PaneView = z.infer<typeof PaneViewSchema>;
+
+export interface PaneLeaf {
+	readonly kind: "pane";
+	readonly id: string;
+	readonly view: PaneView;
+}
+
+export interface PaneSplit {
+	readonly kind: "split";
+	readonly id: string;
+	readonly dir: SplitDir;
+	readonly children: readonly PaneNode[];
+	readonly shares: readonly number[];
+	readonly chatId?: string | undefined;
+}
+
+export type PaneNode = PaneLeaf | PaneSplit;
+
+export const PaneLeafSchema = z.object({
+	kind: z.literal("pane"),
+	id: z.string(),
+	view: PaneViewSchema,
+});
+
+export const PaneNodeSchema: z.ZodType<PaneNode> = z.lazy(() =>
+	z.discriminatedUnion("kind", [
+		PaneLeafSchema,
+		z.object({
+			kind: z.literal("split"),
+			id: z.string(),
+			dir: SplitDirSchema,
+			children: z.array(PaneNodeSchema).readonly(),
+			shares: z.array(z.number().nonnegative()).readonly(),
+			chatId: z.string().min(1).optional(),
+		}),
+	]),
+);
+
+export const PaneBoardSchema = z.object({
+	root: PaneNodeSchema.nullable(),
+	targetId: z.string().nullable(),
+	chatTargetId: z.string().nullable(),
+	focusedChatId: z.string().nullable(),
+	isLoaded: z.boolean(),
+	tabTargetId: z.string().nullable(),
+	leaves: z.array(PaneLeafSchema).readonly(),
+	closableIds: z.array(z.string()).readonly(),
+	tabPanes: z
+		.array(
+			z.object({
+				paneId: z.string(),
+				tabId: z.string(),
+			}),
+		)
+		.readonly(),
+	chatGroups: z
+		.array(
+			z.object({
+				chatId: z.string(),
+				groupId: z.string(),
+				paneIds: z.array(z.string()).readonly(),
+			}),
+		)
+		.readonly(),
+	elsewhere: z
+		.array(
+			z.object({
+				window: z.string(),
+				tabIds: z.array(z.string()).readonly(),
+				chatIds: z.array(z.string()).readonly(),
+			}),
+		)
+		.readonly(),
+});
+
+export type PaneBoard = z.infer<typeof PaneBoardSchema>;
+
 export const SplitSideSchema = z.enum(["left", "right", "top", "bottom"]);
+
+export const PanePlacementSchema = z.object({
+	view: PaneViewSchema,
+	targetId: z.string().nullable(),
+	side: SplitSideSchema,
+	home: z.string().nullable().optional(),
+});
+
+export type PanePlacement = z.infer<typeof PanePlacementSchema>;
+
+export const PlacementPreviewSchema = z.object({
+	root: PaneNodeSchema.nullable(),
+	placedId: z.string(),
+});
+
+export type PlacementPreview = z.infer<typeof PlacementPreviewSchema>;
 
 export const SplitPlacingSchema = z.object({
 	tabId: z.string().min(1),
@@ -327,11 +454,89 @@ export const appHost = moduleContract("app-host", Device, {
 			.input(ClosedTabIdSchema)
 			.idempotencyKey(Repeatable)),
 	},
+	frameSides: {
+		frameSides: named("frame-sides.frame-sides", query()
+			.public()
+			.output(FrameSidesSchema)),
+		toggle: named("frame-sides.toggle", command()
+			.public()
+			.input(FrameSideInputSchema)
+			.idempotencyKey(Repeatable)),
+		peek: named("frame-sides.peek", command()
+			.public()
+			.input(FrameSideInputSchema)
+			.idempotencyKey(Repeatable)),
+		conceal: named("frame-sides.conceal", command()
+			.public()
+			.input(FrameSideInputSchema)
+			.idempotencyKey(Repeatable)),
+	},
 	links: {
 		openLink: named("links.open-link", command()
 			.public()
 			.input(LinkToOpenSchema)
 			.idempotencyKey(Repeatable)),
+	},
+	paneTabs: {
+		showInTarget: named("pane-tabs.show-in-target", command()
+			.public()
+			.input(z.object({ tabId: z.string() }))
+			.idempotencyKey(Repeatable)),
+		showChat: named("pane-tabs.show-chat", command()
+			.public()
+			.input(
+				z.object({
+					chatId: z.string().min(1),
+					paneId: z.string().nullable(),
+				}),
+			)
+			.idempotencyKey(Repeatable)),
+		openShown: named("pane-tabs.open-shown", command()
+			.public()
+			.idempotencyKey(Repeatable)),
+		closeShown: named("pane-tabs.close-shown", command()
+			.public()
+			.idempotencyKey(Repeatable)),
+		closeShowingPanes: named("pane-tabs.close-showing-panes", command()
+			.public()
+			.input(z.object({ tabIds: z.array(z.string()).readonly() }))
+			.idempotencyKey(Repeatable)),
+		dropGoneTabs: named("pane-tabs.drop-gone-tabs", command()
+			.public()
+			.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
+			.idempotencyKey(Repeatable)),
+	},
+	panes: {
+		paneTree: named("panes.pane-tree", query()
+			.public()
+			.output(PaneBoardSchema)),
+		placementPreview: named("panes.placement-preview", query()
+			.public()
+			.input(PanePlacementSchema.nullable())
+			.output(PlacementPreviewSchema.nullable())),
+		place: named("panes.place", command()
+			.public()
+			.input(PanePlacementSchema)
+			.idempotencyKey(Repeatable)),
+		close: named("panes.close", command()
+			.public()
+			.input(z.object({ id: z.string() }))
+			.idempotencyKey(Repeatable)),
+		resizeSplit: named("panes.resize-split", command()
+			.public()
+			.input(
+				z.object({
+					splitId: z.string(),
+					at: z.number().int().nonnegative(),
+					share: z.number().nonnegative(),
+				}),
+			)
+			.idempotencyKey(Repeatable)),
+		aim: named("panes.aim", command()
+			.public()
+			.input(z.object({ id: z.string() }))
+			.idempotencyKey(Repeatable)),
+		panesChanged: named("panes.panes-changed", event().public()),
 	},
 	shownView: {
 		current: named("shown-view.current", query()

@@ -2,7 +2,13 @@ import { GLOBAL_ROOT, HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/ta
 import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { z } from "zod";
 import type { TabsGateway } from "../tabs/tabs.gateway.js";
-import { KeptNavigationSchema, TauriTabsGateway, workspaceTabsOf } from "../tabs/tauri/tauri.gateway.js";
+import {
+	KeptNavigationSchema,
+	TauriTabsGateway,
+	oldViewsOf,
+	viewsCarried,
+	workspaceTabsOf,
+} from "../tabs/tauri/tauri.gateway.js";
 import type { KeptNavigation } from "../tabs/tauri/tauri.gateway.js";
 import { ListedPlacedAppsGateway } from "../placed-apps/listed.gateway.js";
 import type { PlacedAppsGateway } from "../placed-apps/placed-apps.gateway.js";
@@ -33,7 +39,7 @@ const NOT_CARRIED =
 export function keptPlacesParts({ store, apps }: PlacesConfig, workspaceId: string): PlacesParts {
 	const root = workspaceRootOf(workspaceId);
 	const kept = store.heldOnce(root, NAVIGATION.file, async () =>
-		startedFresh(await carriedNavigation(store, workspaceId)),
+		startedFresh(await panesCarried(store, workspaceId, await carriedNavigation(store, workspaceId))),
 	);
 	return {
 		tabs: new TauriTabsGateway(kept),
@@ -63,6 +69,29 @@ async function carriedNavigation(store: StoreClient, workspaceId: string): Promi
 	kept.change({ tabs: carried.placed }, `navigation ${carried.reason}`);
 	await kept.flush();
 	console.info(`[widgetarium] navigation ${carried.reason}`);
+	return kept;
+}
+
+async function panesCarried(
+	store: StoreClient,
+	workspaceId: string,
+	kept: HeldDoc<KeptNavigation>,
+): Promise<HeldDoc<KeptNavigation>> {
+	const readable = PlacedTabsSchema.safeParse(kept.now().tabs);
+
+	if (kept.now().panesCarried === true || !readable.success) {
+		return kept;
+	}
+
+	const carried = viewsCarried(readable.data, await oldViewsOf(store, workspaceId), workspaceId);
+	const reason = `panes carried none → ${carried.said.length === 0 ? "nothing to carry" : carried.said.join("; ")}`;
+	kept.change({ tabs: carried.placed, panesCarried: true }, `navigation ${reason}`);
+	await kept.flush();
+
+	for (const said of carried.said) {
+		console.info(`[widgetarium] ${said}`);
+	}
+
 	return kept;
 }
 

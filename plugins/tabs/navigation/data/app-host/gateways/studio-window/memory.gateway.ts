@@ -25,6 +25,10 @@ export class MemoryStudioWindowGateway extends StudioWindowGateway {
 		return placesWindowOf(this.seat.label, this.workspaceId);
 	}
 
+	override boot(): null {
+		return null;
+	}
+
 	override opensBesideAnother(): boolean {
 		return this.seat.isBeside;
 	}

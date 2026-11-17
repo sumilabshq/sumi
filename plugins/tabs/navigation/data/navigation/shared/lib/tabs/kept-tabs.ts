@@ -68,6 +68,7 @@ export function placedWith(placed: PlacedTabs, window: string | null, moment: Ho
 				: {
 						...placed.views,
 						[window]: {
+							...placed.views[window],
 							shownId,
 							selectedId,
 							view,

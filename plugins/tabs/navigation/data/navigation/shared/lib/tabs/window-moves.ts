@@ -1,4 +1,4 @@
-import { labelOfPlacesWindow } from "@widgetarium/behaviors";
+import { MAIN_STUDIO_WINDOW, labelOfPlacesWindow } from "@widgetarium/behaviors";
 import type { MovePlacedTabs } from "../settling/settling.js";
 import { viewsSettled } from "./tab-leases.js";
 
@@ -20,7 +20,10 @@ export function windowJoined(label: string, at: number): MovePlacedTabs<null> {
 export function windowsLeft(isGone: (label: string) => boolean, why: string): MovePlacedTabs<null> {
 	return (placed) => {
 		const gone = placed.windows.filter(({ label }) => isGone(label)).map(({ label }) => label);
-		const goneViews = Object.keys(placed.views).filter((window) => isGone(labelOfPlacesWindow(window)));
+		const goneViews = Object.keys(placed.views).filter((window) => {
+			const label = labelOfPlacesWindow(window);
+			return label !== MAIN_STUDIO_WINDOW && isGone(label);
+		});
 
 		if (gone.length === 0 && goneViews.length === 0) {
 			return { next: null, reason: `no window ${why}`, answer: null };

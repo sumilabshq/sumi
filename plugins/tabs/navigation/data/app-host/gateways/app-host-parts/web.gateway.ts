@@ -1,6 +1,7 @@
 import { NoCoreChangesGateway } from "../core-changes/none.gateway.js";
 import { DocumentPaneFlashGateway } from "../pane-flash/document.gateway.js";
 import { MemoryStudioWindowGateway } from "../studio-window/memory.gateway.js";
+import { MemorySidePeeksGateway } from "../side-peeks/memory.gateway.js";
 import type { AppHostParts } from "./app-host-parts.gateway.js";
 
 export function webAppHostParts(workspaceId: string): AppHostParts {
@@ -8,5 +9,6 @@ export function webAppHostParts(workspaceId: string): AppHostParts {
 		studioWindow: new MemoryStudioWindowGateway(workspaceId),
 		paneFlash: new DocumentPaneFlashGateway(),
 		coreChanges: new NoCoreChangesGateway(),
+		sidePeeks: new MemorySidePeeksGateway(),
 	};
 }

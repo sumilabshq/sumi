@@ -1,0 +1,6 @@
+.sumi-sidebar-title {
+	display: flex;
+	align-items: center;
+	height: 100%;
+	pointer-events: auto;
+}

@@ -82,6 +82,8 @@ export const WindowViewSchema = z.object({
 	view: StudioViewSchema.default("app"),
 	selectedId: z.string().nullable().default(null),
 	sessionId: z.string().nullable().default(null),
+	panes: z.unknown().optional(),
+	leftHidden: z.boolean().optional().catch(undefined),
 });
 
 export type WindowView = z.infer<typeof WindowViewSchema>;

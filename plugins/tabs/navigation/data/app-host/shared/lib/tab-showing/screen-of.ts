@@ -1,5 +1,5 @@
 import type { AccessAsk, BrowserTabState, BrowserTabs, InkReading } from "@widgetarium/browser/contract";
-import type { PaneBoard } from "@widgetarium/layout/contract";
+import type { PaneBoard } from "@widgetarium/navigation/contract";
 import type { PageFacts, Screen } from "@widgetarium/navigation/contract";
 
 export interface ScreenSources {

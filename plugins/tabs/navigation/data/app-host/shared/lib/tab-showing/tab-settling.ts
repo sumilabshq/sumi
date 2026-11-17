@@ -1,8 +1,10 @@
 import type { Send } from "@widgetarium/data-framework";
 import { browser } from "@widgetarium/browser/contract";
-import { layout } from "@widgetarium/layout/contract";
+import { navigation } from "@widgetarium/navigation/contract";
 import type { TabEffect, TabsAsk, TabsSettled } from "@widgetarium/navigation/contract";
 import { screenOf } from "./screen-of.js";
+import { seatOf } from "../window-seat.js";
+import type { SeatedWindow, WindowSeat } from "../window-seat.js";
 
 const ALL_PAGES = { heldTabId: null };
 
@@ -28,16 +30,12 @@ type WindowEffect = Extract<TabEffect, { readonly kind: (typeof WINDOW_EFFECTS)[
 type PaneEffect = Extract<TabEffect, { readonly kind: (typeof PANE_EFFECTS)[number] }>;
 type ViewEffect = Exclude<TabEffect, PageEffect | WindowEffect | PaneEffect>;
 
-interface StudioWindowSeat {
-	placesWindow(): string;
-}
-
 interface PaneFlasher {
 	flashPane(paneId: string): void;
 }
 
 export interface TabStores {
-	readonly studioWindow: StudioWindowSeat;
+	readonly studioWindow: SeatedWindow;
 	readonly paneFlash: PaneFlasher;
 }
 
@@ -51,7 +49,7 @@ export async function tabsAskOf({ injects, send }: Pick<TabsReach, "injects" | "
 	const [browserTabs, asks, board] = await Promise.all([
 		send(browser.tabs.all, ALL_PAGES),
 		send(browser.asks.pending),
-		send(layout.panes.paneTree),
+		send(navigation.panes.board, { seat: seatOf(injects.studioWindow) }),
 	]);
 	return {
 		window: injects.studioWindow.placesWindow(),
@@ -90,7 +88,7 @@ async function sendEffect(effect: TabEffect, reach: TabsReach): Promise<unknown>
 		return sendWindowEffect(effect, reach.send);
 	}
 
-	return isPaneEffect(effect) ? sendPaneEffect(effect, reach) : sendViewEffect(effect, reach.send);
+	return isPaneEffect(effect) ? sendPaneEffect(effect, reach) : sendViewEffect(effect, reach);
 }
 
 async function sendPageEffect(effect: PageEffect, send: Send): Promise<unknown> {
@@ -125,46 +123,48 @@ function sendWindowEffect(effect: WindowEffect, send: Send): Promise<unknown> {
 }
 
 async function sendPaneEffect(effect: PaneEffect, { injects, send }: TabsReach): Promise<unknown> {
+	const seat = seatOf(injects.studioWindow);
 	switch (effect.kind) {
 		case "close-panes":
-			return send(layout.paneTabs.closeShowingPanes, { tabIds: effect.tabIds });
+			return send(navigation.panes.closeShowingPanes, { seat, tabIds: effect.tabIds });
 		case "close-chat-panes":
-			return closeChatPanes(send, effect.chatIds);
+			return closeChatPanes(send, { seat, chatIds: effect.chatIds });
 		case "open-shown-tab-pane":
-			return send(layout.paneTabs.openShown);
+			return send(navigation.panes.openShown, { seat });
 		case "close-shown-tab-pane":
-			return send(layout.paneTabs.closeShown);
+			return send(navigation.panes.closeShown, { seat });
 		case "show-in-target-pane":
-			return send(layout.paneTabs.showInTarget, { tabId: effect.tabId });
+			return send(navigation.panes.showInTarget, { seat, tabId: effect.tabId });
 		case "flash-pane":
-			await send(layout.panes.aim, { id: effect.paneId });
+			await send(navigation.panes.aim, { seat, id: effect.paneId });
 			return injects.paneFlash.flashPane(effect.paneId);
 	}
 }
 
-function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
-	switch (effect.kind) {
-		case "show-chat":
-			return send(layout.paneTabs.showChat, { chatId: effect.chatId, paneId: effect.paneId });
-		case "show-split":
-			return send(layout.splitBoard.show, {
-				layout: effect.layout,
-				chatIds: effect.chatIds,
-				focusedId: effect.focusedId,
-			});
-		case "focus-split":
-			return send(layout.splitBoard.focus, { focusedId: effect.focusedId });
-		case "leave-split":
-			return send(layout.splitBoard.leave);
+async function sendViewEffect(effect: ViewEffect, { injects, send }: TabsReach): Promise<unknown> {
+	if (effect.kind === "show-chat") {
+		return send(navigation.panes.showChat, {
+			seat: seatOf(injects.studioWindow),
+			chatId: effect.chatId,
+			paneId: effect.paneId,
+		});
 	}
+
+	console.info(`[widgetarium] ${effect.kind} skipped: navigation draws the shown split on read`);
+	return undefined;
 }
 
-async function closeChatPanes(send: Send, chatIds: readonly string[]): Promise<void> {
-	const board = await send(layout.panes.paneTree);
+interface ChatPanes {
+	readonly seat: WindowSeat;
+	readonly chatIds: readonly string[];
+}
+
+async function closeChatPanes(send: Send, { seat, chatIds }: ChatPanes): Promise<void> {
+	const board = await send(navigation.panes.board, { seat });
 	const standing = board.leaves.filter((leaf) => leaf.view.kind === "chat" && chatIds.includes(leaf.view.chatId ?? ""));
 
 	for (const leaf of standing) {
-		await send(layout.panes.close, { id: leaf.id });
+		await send(navigation.panes.close, { seat, id: leaf.id });
 	}
 }
 

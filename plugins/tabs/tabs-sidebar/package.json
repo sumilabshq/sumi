@@ -1,0 +1,31 @@
+{
+	"name": "@sumi/tabs-sidebar-plugin",
+	"version": "0.1.0",
+	"description": "Tabs sidebar: the workspace's tabs in a column on the left, offered to tabs-view as the sidebar view",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/groups": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@sumi/tab-strip-plugin": "0.1.0",
+		"@sumi/tabs-view-plugin": "0.1.0",
+		"@widgetarium/app-host": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/layout": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}
