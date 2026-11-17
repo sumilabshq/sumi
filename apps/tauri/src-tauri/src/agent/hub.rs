@@ -45,7 +45,7 @@ impl AgentHub {
     }
 
     pub fn open_studio(&self, channel: Channel<Value>, servers: Vec<String>) {
-        eprintln!("[agent] studio relay → open, MCP servers: {}", servers.join(", "));
+        log::info!("[agent] studio relay → open, MCP servers: {}", servers.join(", "));
         self.studio.lock().expect("the agent hub's studio channel").replace(channel);
         let mut held = self.servers.lock().expect("the agent hub's MCP servers");
         held.clear();
@@ -63,7 +63,10 @@ impl AgentHub {
         let wait = if may_wait_for_person { PERSON_WAIT } else { ANSWER_WAIT };
         let result = sent.and_then(|()| answer.recv_timeout(wait).map_err(|_| NO_ANSWER.to_string())?);
         self.waiting.lock().expect("the agent hub's waiting calls").remove(&id);
-        eprintln!("[agent] {said} → {}", if result.is_ok() { "answered" } else { "refused" });
+        match &result {
+            Ok(_) => log::info!("[agent] {said} → answered"),
+            Err(refusal) => log::warn!("[agent] {said} → refused ({refusal})"),
+        }
         result
     }
 

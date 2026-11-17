@@ -60,7 +60,7 @@ pub fn answer(app: &AppHandle<Wry>, command: &str, args: &Value) -> Result<Value
     }
 
     if command == "drive_log" {
-        println!("[browser-drive] {}", text("line"));
+        log::info!("[browser-drive] {}", text("line"));
         return Ok(Value::Null);
     }
 

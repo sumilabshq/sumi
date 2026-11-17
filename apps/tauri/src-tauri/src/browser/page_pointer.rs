@@ -32,7 +32,7 @@ fn installed_monitor() -> Option<Retained<AnyObject>> {
     let monitor = unsafe { NSEvent::addLocalMonitorForEventsMatchingMask_handler(watched, &heard) };
 
     if monitor.is_none() {
-        eprintln!("[browser] page pointer monitor → none (AppKit refused it; the studio never hears the pointer over a page)");
+        log::warn!("[browser] page pointer monitor → none (AppKit refused it; the studio never hears the pointer over a page)");
     }
 
     monitor

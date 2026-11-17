@@ -24,11 +24,11 @@ pub fn start_in_debug<R: Runtime>(app: &AppHandle<R>) {
 
     let folder = drive_folder();
     if let Err(failure) = fs::create_dir_all(&folder) {
-        eprintln!("[drive] off → off ({} could not be made: {failure})", folder.display());
+        log::warn!("[drive] off → off ({} could not be made: {failure})", folder.display());
         return;
     }
 
-    eprintln!("[drive] off → watching {}", folder.display());
+    log::info!("[drive] off → watching {}", folder.display());
     let app = app.clone();
     thread::spawn(move || loop {
         answer_requests(&app, &folder);
@@ -63,7 +63,7 @@ fn answer_request<R: Runtime>(app: &AppHandle<R>, request: &Path) {
         Ok(content) => take_shot(app, name, content.trim()),
     };
     if let Err(failure) = answered {
-        eprintln!("[drive] {name} asked → refused ({failure})");
+        log::warn!("[drive] {name} asked → refused ({failure})");
     }
 }
 
@@ -90,7 +90,7 @@ fn take_shot<R: Runtime>(app: &AppHandle<R>, id: &str, label: &str) -> Result<()
     let png = receiver.recv().map_err(|failure| failure.to_string())??;
     let path = drive_folder().join(format!("{id}.png"));
     fs::write(&path, png).map_err(|failure| failure.to_string())?;
-    eprintln!("[drive] {id} shot {}", path.display());
+    log::info!("[drive] {id} shot {}", path.display());
     Ok(())
 }
 

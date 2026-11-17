@@ -104,7 +104,7 @@ fn write_next(place: &Place, current: &Settled, mut next: Fields, reason: &str) 
 
     atomic::sweep_temps(&place.file)?;
     atomic::write_atomically(&place.file, &bytes)?;
-    eprintln!(
+    log::info!(
         "[ink-store] {} rev {} → {} {:?} ({reason})",
         place.label,
         current.rev,
@@ -165,7 +165,7 @@ fn quarantine(place: &Place, why: &str) -> Result<String, Refusal> {
         QUARANTINE_SEQUENCE.fetch_add(1, Ordering::Relaxed)
     );
     fs::rename(&place.file, place.file.with_file_name(&name))?;
-    eprintln!("[ink-store] {} corrupt → {name} ({why}), the store starts it empty", place.label);
+    log::error!("[ink-store] {} corrupt → {name} ({why}), the store starts it empty", place.label);
     Ok(name)
 }
 

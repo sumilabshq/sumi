@@ -93,14 +93,14 @@ fn is_web_view(view: &NSView) -> bool {
 
 pub fn keep_under_studio(view: &WKWebView) {
     let Some(superview) = (unsafe { view.superview() }) else {
-        eprintln!("[browser] page view stays where it is (it has no superview)");
+        log::info!("[browser] page view stays where it is (it has no superview)");
         return;
     };
     let stacked: Vec<Retained<NSView>> = superview.subviews().iter().collect();
     let page_at = stacked.iter().position(|held| key_of(&**held) == key_of(view));
     let studio_at = stacked.iter().position(|held| is_studio_view(held));
     let (Some(page_at), Some(studio_at)) = (page_at, studio_at) else {
-        eprintln!("[browser] page view stays where it is (page at {page_at:?}, studio at {studio_at:?} among {} views)", stacked.len());
+        log::info!("[browser] page view stays where it is (page at {page_at:?}, studio at {studio_at:?} among {} views)", stacked.len());
         return;
     };
 
@@ -109,7 +109,7 @@ pub fn keep_under_studio(view: &WKWebView) {
     }
 
     let _: () = unsafe { msg_send![&superview, addSubview: view, positioned: ORDERED_BELOW, relativeTo: &*stacked[studio_at]] };
-    eprintln!("[browser] page view {page_at} → under the studio at {studio_at} (the studio draws over its pages)");
+    log::info!("[browser] page view {page_at} → under the studio at {studio_at} (the studio draws over its pages)");
 }
 
 pub fn page_hit_of(event: &NSEvent) -> Option<PageHit> {

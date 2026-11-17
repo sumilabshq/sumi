@@ -4027,6 +4027,7 @@ dependencies = [
  "base64 0.22.1",
  "block2",
  "libc",
+ "log",
  "objc2",
  "objc2-app-kit",
  "objc2-core-foundation",

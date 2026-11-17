@@ -33,7 +33,7 @@ fn installed_monitor() -> Option<Retained<AnyObject>> {
     let monitor = unsafe { NSEvent::addLocalMonitorForEventsMatchingMask_handler(NSEventMask::KeyDown, &heard) };
 
     if monitor.is_none() {
-        eprintln!("[browser] page key monitor → none (AppKit refused it; menu keys pressed in a page stay in the page)");
+        log::warn!("[browser] page key monitor → none (AppKit refused it; menu keys pressed in a page stay in the page)");
     }
 
     monitor
@@ -46,13 +46,13 @@ fn hand_menu_key_to_studio(event: &NSEvent) -> bool {
     let Some(page_view) = focused_page_view(&window) else { return false };
     let Some(page_id) = page_id_of_view(&page_view) else { return false };
     let Some(studio) = studio_view_beside(&page_view) else {
-        eprintln!("[browser] key ⌘{} page {page_id} → page (no studio view beside it)", letter.to_uppercase());
+        log::info!("[browser] key ⌘{} page {page_id} → page (no studio view beside it)", letter.to_uppercase());
         return false;
     };
 
     let responder: &NSResponder = &studio;
     window.makeFirstResponder(Some(responder));
-    eprintln!("[browser] key ⌘{} page {page_id} → studio (keyboard focus moved off the page)", letter.to_uppercase());
+    log::info!("[browser] key ⌘{} page {page_id} → studio (keyboard focus moved off the page)", letter.to_uppercase());
     tell_keyed(&page_id, letter);
     true
 }

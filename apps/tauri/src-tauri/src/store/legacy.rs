@@ -23,8 +23,8 @@ pub fn move_legacy_workspaces(store: &Store) {
     for entry in entries.flatten() {
         let from = entry.path();
         match move_workspace(store, &from) {
-            Ok(said) => eprintln!("[ink-store] legacy workspace {}: {said}", from.display()),
-            Err(refusal) => eprintln!("[ink-store] legacy workspace {} not moved: {} {:?}", from.display(), refusal.code(), refusal.to_json()),
+            Ok(said) => log::info!("[ink-store] legacy workspace {}: {said}", from.display()),
+            Err(refusal) => log::error!("[ink-store] legacy workspace {} not moved: {} {:?}", from.display(), refusal.code(), refusal.to_json()),
         }
     }
 }

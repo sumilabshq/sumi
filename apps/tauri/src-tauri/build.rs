@@ -70,7 +70,7 @@ const BROWSER_COMMANDS: &[&str] = &[
     "drive_front",
 ];
 
-const STUDIO_LOG_COMMANDS: &[&str] = &["line"];
+const STUDIO_LOG_COMMANDS: &[&str] = &["line", "level"];
 
 const AGENT_COMMANDS: &[&str] = &["open_channel", "answer"];
 

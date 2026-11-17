@@ -123,17 +123,17 @@ const NOT_ENV: &str = "The call's env argument must map names to texts.";
 
 fn agent_link_of<R: Runtime>(message: &InvokeMessage<R>) -> Option<AgentLink> {
     let Some(chat) = json_args(message).and_then(|args| args.get("chatId")).and_then(Value::as_str) else {
-        eprintln!("[agent] turn names no chat → runs without Sumi's tools");
+        log::warn!("[agent] turn names no chat → runs without Sumi's tools");
         return None;
     };
     let app = message.webview().app_handle().clone();
     let Some(hub) = app.try_state::<Arc<AgentHub>>() else {
-        eprintln!("[agent] tools not started → chat {chat} runs without them");
+        log::warn!("[agent] tools not started → chat {chat} runs without them");
         return None;
     };
     let link = hub.link_for(chat);
     if link.is_none() {
-        eprintln!("[agent] own executable unknown → chat {chat} runs without Sumi's tools");
+        log::warn!("[agent] own executable unknown → chat {chat} runs without Sumi's tools");
     }
     link
 }
@@ -175,7 +175,7 @@ fn working_folder_of<R: Runtime>(message: &InvokeMessage<R>) -> Option<PathBuf> 
     let webview = message.webview();
     let store = webview.app_handle().try_state::<Store>()?;
     opened_working_folder(&store)
-        .map_err(|refusal| eprintln!("[ink-assistant] no working folder: {refusal}"))
+        .map_err(|refusal| log::warn!("[ink-assistant] no working folder: {refusal}"))
         .ok()
 }
 

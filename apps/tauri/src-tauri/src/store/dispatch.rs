@@ -139,7 +139,7 @@ fn announce_change<R: Runtime>(app: &AppHandle<R>, change: Option<Value>) {
         return;
     };
     if let Err(failure) = app.emit_filter(STORE_CHANGED, &change, is_studio_target) {
-        eprintln!("[ink-store] {change} written → unannounced ({failure})");
+        log::warn!("[ink-store] {change} written → unannounced ({failure})");
     }
 }
 

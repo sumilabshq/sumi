@@ -80,7 +80,7 @@ pub fn start_launch(assistant: &Assistant, project: Option<&Path>, launch: &Laun
     let binary = find_command(path, &launch.program).ok_or_else(|| NOT_ON_THIS_MACHINE.replace("{command}", &launch.program))?;
     let process = ProcessLaunch { binary: &binary, argv: &launch.args, cwd: project, search_path: path, env: &launch.env };
     let run_id = assistant.turns.start(&process, sink)?;
-    eprintln!("[ink-assistant] turn {run_id}: none → running ({})", launch.program);
+    log::info!("[ink-assistant] turn {run_id}: none → running ({})", launch.program);
     Ok(json!(run_id))
 }
 

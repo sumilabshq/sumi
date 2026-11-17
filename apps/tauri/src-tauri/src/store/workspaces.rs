@@ -363,7 +363,7 @@ fn opened_row(row: &Value) -> Option<OpenedWorkspace> {
     let last_opened_at = row.get("lastOpenedAt").and_then(Value::as_u64);
     let home = row.get("home").and_then(Value::as_str).filter(|home| !home.is_empty());
     let (Some(id), Some(last_opened_at), Some(home)) = (id, last_opened_at, home) else {
-        eprintln!("[ink-store] global:{WORKSPACES_FILE} skipped an unreadable row {row}");
+        log::warn!("[ink-store] global:{WORKSPACES_FILE} skipped an unreadable row {row}");
         return None;
     };
     Some(OpenedWorkspace {

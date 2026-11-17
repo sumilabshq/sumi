@@ -10,6 +10,7 @@ import type { ModuleReach } from "./remote-modules";
 import { reportRefusal } from "./report-failure";
 import type { FailureReport } from "./report-failure";
 import type { AnyRequest } from "./request";
+import { traceRequest } from "./request-tracing";
 import type { Missing } from "./route-queries";
 
 export interface Sending {
@@ -66,6 +67,13 @@ export class Mediator implements Settle {
 	constructor(private readonly parts: MediatorParts) {}
 
 	async send(request: AnyRequest, sent: unknown, sending: MediatedSending = {}): Promise<Answer<unknown>> {
+		const startedMs = performance.now();
+		const answer = await this.answerOf(request, sent, sending);
+		traceRequest(request.name, sent, answer, startedMs);
+		return answer;
+	}
+
+	private async answerOf(request: AnyRequest, sent: unknown, sending: MediatedSending): Promise<Answer<unknown>> {
 		try {
 			const addressing = this.localAddressingOf(request, sending);
 

@@ -85,14 +85,14 @@ fn spawn(message: &InvokeMessage<Wry>) -> Result<Value, String> {
         let _ = on_data.send(event);
     });
     let id = runs().start(&launch, sink)?;
-    eprintln!("[terminal] process {id}: none → running ({})", input.program);
+    log::info!("[terminal] process {id}: none → running ({})", input.program);
     Ok(Value::from(id))
 }
 
 fn stop(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     let id = number_of(message, "id")?;
     runs().stop(id);
-    eprintln!("[terminal] process {id}: running → stopping (asked)");
+    log::info!("[terminal] process {id}: running → stopping (asked)");
     Ok(Value::Null)
 }
 
@@ -231,7 +231,7 @@ fn pipe_output(id: u64, mut reader: File, on_data: Channel<Value>) {
         }
 
         let code = exit_code_of(id);
-        eprintln!("[terminal] session {id} exited with {code:?}");
+        log::info!("[terminal] session {id} exited with {code:?}");
         let _ = on_data.send(exit_message(code));
     });
 }
@@ -253,7 +253,7 @@ fn open(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     };
     sessions().lock().map_err(|error| error.to_string())?.insert(id, Arc::new(session));
     pipe_output(id, reader, on_data);
-    eprintln!("[terminal] session {id} opened ({}×{})", size.ws_col, size.ws_row);
+    log::info!("[terminal] session {id} opened ({}×{})", size.ws_col, size.ws_row);
     Ok(Value::from(id))
 }
 
@@ -285,7 +285,7 @@ fn close(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     let mut child = session.child.lock().map_err(|error| error.to_string())?;
     let _ = child.kill();
     let _ = child.wait();
-    eprintln!("[terminal] session {id} closed");
+    log::info!("[terminal] session {id} closed");
     Ok(Value::Null)
 }
 

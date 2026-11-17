@@ -18,7 +18,7 @@ impl Assistant {
     pub fn remember_picked(&self, folder: PathBuf) {
         let mut picked = self.picked_folders.lock().unwrap_or_else(PoisonError::into_inner);
         if !picked.contains(&folder) {
-            eprintln!("[ink-assistant] picked folders gain {}", folder.display());
+            log::info!("[ink-assistant] picked folders gain {}", folder.display());
             picked.push(folder);
         }
     }
@@ -30,7 +30,7 @@ impl Assistant {
     pub fn replace_dropped(&self, files: Vec<PathBuf>) {
         let mut dropped = self.dropped_files.lock().unwrap_or_else(PoisonError::into_inner);
         let was = std::mem::replace(&mut *dropped, files);
-        eprintln!("[ink-assistant] dropped files {} → {}", was.len(), dropped.len());
+        log::info!("[ink-assistant] dropped files {} → {}", was.len(), dropped.len());
     }
 
     pub fn was_dropped(&self, file: &Path) -> bool {

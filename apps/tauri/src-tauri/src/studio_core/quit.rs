@@ -123,20 +123,20 @@ pub fn ask_macos_before_terminating<R: Runtime>(app: &AppHandle<R>) {
         QuitStart::Waiting | QuitStart::AlreadyWaiting => TERMINATE_LATER,
     }));
     let Some(ns_application) = AnyClass::get(c"NSApplication") else {
-        eprintln!("[studio-core] quit → no NSApplication, macOS quits without asking the windows to save");
+        log::warn!("[studio-core] quit → no NSApplication, macOS quits without asking the windows to save");
         return;
     };
     let shared: *mut AnyObject = unsafe { msg_send![ns_application, sharedApplication] };
     let delegate: *mut AnyObject = unsafe { msg_send![shared, delegate] };
     let Some(delegate) = (unsafe { delegate.as_ref() }) else {
-        eprintln!("[studio-core] quit → the app has no delegate yet, macOS quits without asking the windows to save");
+        log::warn!("[studio-core] quit → the app has no delegate yet, macOS quits without asking the windows to save");
         return;
     };
     let class: &AnyClass = delegate.class();
     let ours: Imp = unsafe { std::mem::transmute::<unsafe extern "C-unwind" fn(&AnyObject, Sel, *mut AnyObject) -> usize, Imp>(application_should_terminate) };
     let added = unsafe { ffi::class_addMethod(class as *const AnyClass as *mut AnyClass, sel!(applicationShouldTerminate:), ours, c"Q@:@".as_ptr()) };
     let said = if added.as_bool() { "asks the windows to save first" } else { "already had applicationShouldTerminate, left alone" };
-    eprintln!("[studio-core] quit through macOS ({}) → {said}", class.name().to_string_lossy());
+    log::info!("[studio-core] quit through macOS ({}) → {said}", class.name().to_string_lossy());
 }
 
 pub fn follow_exit_request<R: Runtime>(app: &AppHandle<R>, event: &RunEvent) {
@@ -145,7 +145,7 @@ pub fn follow_exit_request<R: Runtime>(app: &AppHandle<R>, event: &RunEvent) {
     };
 
     if ask_to_quit(app, QuitEnd::Exit) == QuitStart::Now {
-        eprintln!("[studio-core] exit {code:?} asked → nothing left to save, exits");
+        log::info!("[studio-core] exit {code:?} asked → nothing left to save, exits");
         return;
     }
 
@@ -160,16 +160,16 @@ pub fn ask_to_quit<R: Runtime>(app: &AppHandle<R>, end: QuitEnd) -> QuitStart {
     }
 
     let waiting = flushes.waiting_for();
-    eprintln!("[studio-core] quit asked ({end:?}) → waiting for {waiting:?} to save");
+    log::info!("[studio-core] quit asked ({end:?}) → waiting for {waiting:?} to save");
     if let Err(failure) = app.emit_filter(FLUSH_BEFORE_QUIT_EVENT, (), |target| is_one_of(target, &waiting)) {
-        eprintln!("[studio-core] quit asked → windows not told to save: {failure}");
+        log::error!("[studio-core] quit asked → windows not told to save: {failure}");
     }
 
     let app = app.clone();
     std::thread::spawn(move || {
         std::thread::sleep(MOST_FLUSH_WAIT);
         if let Some(end) = flushes.give_up() {
-            eprintln!("[studio-core] quit waited {MOST_FLUSH_WAIT:?} for {:?} → quits with saves still pending", flushes.waiting_for());
+            log::warn!("[studio-core] quit waited {MOST_FLUSH_WAIT:?} for {:?} → quits with saves still pending", flushes.waiting_for());
             end_quit(&app, end);
         }
     });
@@ -178,12 +178,12 @@ pub fn ask_to_quit<R: Runtime>(app: &AppHandle<R>, end: QuitEnd) -> QuitStart {
 
 pub fn heard_flushed<R: Runtime>(app: &AppHandle<R>, label: &str, is_saved: bool) {
     if !is_saved {
-        eprintln!("[studio-core] window {label} could not save everything before quitting, see its log");
+        log::error!("[studio-core] window {label} could not save everything before quitting, see its log");
     }
 
     let flushes = app.state::<Arc<QuitFlushes>>().inner().clone();
     if let Some(end) = flushes.heard(label) {
-        eprintln!("[studio-core] window {label} answered → every window answered, the app quits");
+        log::info!("[studio-core] window {label} answered → every window answered, the app quits");
         end_quit(app, end);
     }
 }
@@ -200,7 +200,7 @@ fn end_quit<R: Runtime>(app: &AppHandle<R>, end: QuitEnd) {
                 let _: () = unsafe { msg_send![shared, replyToApplicationShouldTerminate: Bool::YES] };
             });
             if let Err(failure) = replied {
-                eprintln!("[studio-core] quit → macOS was not answered, exits instead: {failure}");
+                log::error!("[studio-core] quit → macOS was not answered, exits instead: {failure}");
                 app.exit(0);
             }
         }

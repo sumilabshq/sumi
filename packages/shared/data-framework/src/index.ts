@@ -132,6 +132,7 @@ export { MemoryRateLimits, RateLimits } from "./rate-limits";
 export type { RateLimit } from "./rate-limits";
 export type { ProvideRuntime, RuntimeFacts, RuntimeProvides } from "./runtime-provides";
 export { reportToConsole } from "./report-failure";
+export { setRequestTracing } from "./request-tracing";
 export type { Failure, FailureReport } from "./report-failure";
 export { PerCall, Repeatable, command, query } from "./request";
 export type {

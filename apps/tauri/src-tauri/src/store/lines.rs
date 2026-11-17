@@ -105,7 +105,7 @@ fn keep_tail(pieces: &mut PiecesFromEnd, page: &mut Page, label: &str) -> io::Re
     }
 
     if serde_json::from_slice::<Value>(&tail.bytes).is_err() {
-        eprintln!("[ink-store] {label} skipped a torn last line");
+        log::warn!("[ink-store] {label} skipped a torn last line");
         page.cursor = tail.start;
         return Ok(true);
     }
@@ -151,7 +151,7 @@ impl Page {
         }
 
         let Ok(line) = serde_json::from_slice::<Value>(&piece.bytes) else {
-            eprintln!("[ink-store] {label} skipped an unreadable line");
+            log::warn!("[ink-store] {label} skipped an unreadable line");
             return;
         };
         if let Some(id) = id_of(&line) {

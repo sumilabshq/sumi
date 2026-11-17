@@ -23,7 +23,7 @@ fn place_buttons_soon(window: &WebviewWindow<Wry>, at: LogicalPosition<f64>) {
     });
 
     if let Err(failure) = placed {
-        eprintln!("[browser] window buttons default → default (the move could not reach the main thread: {failure})");
+        log::warn!("[browser] window buttons default → default (the move could not reach the main thread: {failure})");
     }
 }
 

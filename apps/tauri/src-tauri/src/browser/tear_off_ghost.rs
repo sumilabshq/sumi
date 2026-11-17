@@ -66,7 +66,7 @@ pub fn lay(app: &AppHandle<Wry>, ghost: GhostLay) -> Answer<Value> {
     let pointer = window.ns_window().map_err(|failure| failure.to_string())? as usize;
     let anchor = (ghost.anchor_x, ghost.anchor_y);
     app.run_on_main_thread(move || hold(pointer, anchor)).map_err(|failure| failure.to_string())?;
-    eprintln!("[browser] tear-off ghost none → laid ({:.0}×{:.0}, hidden until it would leave the studio)", ghost.width, ghost.height);
+    log::info!("[browser] tear-off ghost none → laid ({:.0}×{:.0}, hidden until it would leave the studio)", ghost.width, ghost.height);
     Ok(Value::Null)
 }
 
@@ -97,8 +97,8 @@ fn shoot_ghost() {
     let written = super::drive::png_of_window(number as u32).and_then(|png| std::fs::write(&path, png).map_err(|failure| failure.to_string()));
 
     match written {
-        Ok(()) => eprintln!("[browser] tear-off ghost shot → {}", path.display()),
-        Err(failure) => eprintln!("[browser] tear-off ghost shot → none ({failure})"),
+        Ok(()) => log::info!("[browser] tear-off ghost shot → {}", path.display()),
+        Err(failure) => log::warn!("[browser] tear-off ghost shot → none ({failure})"),
     }
 }
 
@@ -106,7 +106,7 @@ pub fn prepare(app: &AppHandle<Wry>) {
     let preparing = app.clone();
     std::thread::spawn(move || {
         if let Err(failure) = ghost_window(&preparing) {
-            eprintln!("[browser] tear-off ghost window none → none (it could not be prepared: {failure})");
+            log::error!("[browser] tear-off ghost window none → none (it could not be prepared: {failure})");
         }
     });
 }
@@ -143,12 +143,12 @@ fn ghost_window(app: &AppHandle<Wry>) -> Answer<WebviewWindow<Wry>> {
     window.set_ignore_cursor_events(true).map_err(|failure| failure.to_string())?;
 
     match load_heard.recv_timeout(LOAD_WAIT) {
-        Ok(()) => eprintln!("[browser] tear-off ghost window none → ready (its page loaded)"),
-        Err(_) => eprintln!("[browser] tear-off ghost window none → built (its page did not report loaded in {LOAD_WAIT:?})"),
+        Ok(()) => log::info!("[browser] tear-off ghost window none → ready (its page loaded)"),
+        Err(_) => log::warn!("[browser] tear-off ghost window none → built (its page did not report loaded in {LOAD_WAIT:?})"),
     }
 
     window.hide().map_err(|failure| failure.to_string())?;
-    eprintln!("[browser] tear-off ghost window shown off-screen → hidden (loaded, waits for a drag)");
+    log::info!("[browser] tear-off ghost window shown off-screen → hidden (loaded, waits for a drag)");
     Ok(window)
 }
 
@@ -181,7 +181,7 @@ fn show_now(is_shown: bool) {
         follow_cursor(ghost);
         ghost.window.orderFront(None);
     });
-    eprintln!("[browser] tear-off ghost {}", if is_shown { "hidden → shown (it would leave the studio)" } else { "shown → hidden" });
+    log::info!("[browser] tear-off ghost {}", if is_shown { "hidden → shown (it would leave the studio)" } else { "shown → hidden" });
 }
 
 fn follow_cursor(ghost: &HeldGhost) {
@@ -209,7 +209,7 @@ fn installed_monitor() -> Option<Retained<AnyObject>> {
     let monitor = unsafe { NSEvent::addLocalMonitorForEventsMatchingMask_handler(mask, &heard) };
 
     if monitor.is_none() {
-        eprintln!("[browser] tear-off ghost monitor → none (AppKit refused it; the ghost will not follow the cursor)");
+        log::warn!("[browser] tear-off ghost monitor → none (AppKit refused it; the ghost will not follow the cursor)");
     }
 
     monitor

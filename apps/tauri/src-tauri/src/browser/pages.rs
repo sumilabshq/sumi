@@ -217,7 +217,7 @@ impl Pages {
     pub fn wear_appearance(&self, app: &AppHandle<Wry>, is_dark: bool) -> Answer<Value> {
         let was = self.is_dark.lock().expect("the pages' appearance").replace(is_dark);
         let pages = browser_webviews(app);
-        eprintln!("[browser] pages' appearance {} → {} on {} pages (the studio's theme changed)", appearance_word(was), appearance_word(Some(is_dark)), pages.len());
+        log::info!("[browser] pages' appearance {} → {} on {} pages (the studio's theme changed)", appearance_word(was), appearance_word(Some(is_dark)), pages.len());
 
         for webview in pages {
             let _ = webview.with_webview(move |platform| webkit::wear_appearance(view_of(&platform), is_dark));
@@ -229,14 +229,14 @@ impl Pages {
     // TODO: close pages left from the previous start; the studio's first show only hides them
     pub fn open(&self, window: &str, sink: Channel<Value>) {
         let was = if self.sinks.lock().expect("the browser's event sinks").insert(window.to_string(), sink).is_some() { "listening" } else { "none" };
-        eprintln!("[browser] studio {window} events {was} → listening (the studio started)");
+        log::info!("[browser] studio {window} events {was} → listening (the studio started)");
         let standing = pages_standing_in(window, &self.homes_now());
         let mut shown = self.shown.lock().expect("the shown pages");
         let covered_before = shown.covered.len();
         shown.covered.retain(|page| !standing.contains(page));
 
         if shown.covered.len() != covered_before {
-            eprintln!("[browser] covered pages {covered_before} → {} (a new start of studio {window} holds no cover)", shown.covered.len());
+            log::info!("[browser] covered pages {covered_before} → {} (a new start of studio {window} holds no cover)", shown.covered.len());
         }
     }
 
@@ -401,7 +401,7 @@ impl Pages {
 
         if let Some(window) = app.get_window(&label) {
             if let Err(failure) = window.destroy() {
-                eprintln!("[browser] page {page_id} own window {label} → left open (the page closed, the window did not: {failure})");
+                log::warn!("[browser] page {page_id} own window {label} → left open (the page closed, the window did not: {failure})");
             }
         }
 
@@ -483,7 +483,7 @@ impl Pages {
         let arriving_covered = covered_on_arrival(&was_shown, &pages, &shown.covered);
 
         if !arriving_covered.is_empty() {
-            eprintln!("[browser] pages {} covered → parked (shown under an overlay in {window_label})", arriving_covered.join(", "));
+            log::info!("[browser] pages {} covered → parked (shown under an overlay in {window_label})", arriving_covered.join(", "));
         }
 
         shown.covered.extend(arriving_covered);
@@ -508,7 +508,7 @@ impl Pages {
         webview.reparent(&window).map_err(failure_text)?;
         self.homes.lock().expect("the pages' windows").insert(page_id.to_string(), window_label.to_string());
         self.shown.lock().expect("the shown pages").covered.remove(page_id);
-        eprintln!("[browser] page {page_id} window {was} → {window_label} (shown there)");
+        log::info!("[browser] page {page_id} window {was} → {window_label} (shown there)");
         self.tell_facts(&webview, PAGE_MOVED);
         Ok(())
     }
@@ -524,8 +524,8 @@ impl Pages {
             let refuge_label = refuge.as_ref().map_or("nowhere", |window| window.label());
 
             match parked {
-                Ok(()) => eprintln!("[browser] page {page_id} window {window_label} → none (its studio window closed; kept hidden in {refuge_label})"),
-                Err(failure) => eprintln!("[browser] page {page_id} window {window_label} → none, not kept in {refuge_label}: {failure}"),
+                Ok(()) => log::info!("[browser] page {page_id} window {window_label} → none (its studio window closed; kept hidden in {refuge_label})"),
+                Err(failure) => log::error!("[browser] page {page_id} window {window_label} → none, not kept in {refuge_label}: {failure}"),
             }
 
             self.tell_facts(&webview, PAGE_MOVED);
@@ -539,10 +539,10 @@ impl Pages {
         self.homes.lock().expect("the pages' windows").retain(|_, home| home != window_label);
 
         if !lost.is_empty() {
-            eprintln!("[browser] pages {} window {window_label} → none (closed with their window)", lost.join(", "));
+            log::info!("[browser] pages {} window {window_label} → none (closed with their window)", lost.join(", "));
         }
 
-        eprintln!("[browser] studio {window_label} events {} → none (its window closed)", if had_events { "listening" } else { "none" });
+        log::info!("[browser] studio {window_label} events {} → none (its window closed)", if had_events { "listening" } else { "none" });
         self.tell_studios(json!({ "kind": WINDOW_CLOSED, "window": window_label }));
     }
 
@@ -564,7 +564,7 @@ impl Pages {
             let _ = studio.with_webview(|platform| studio_hit::let_pages_take_their_pointer(view_of(&platform)));
         }
 
-        eprintln!("[browser] studio {window_label} frame → {colour} (the studio is see-through over its pages)");
+        log::info!("[browser] studio {window_label} frame → {colour} (the studio is see-through over its pages)");
         Ok(Value::Null)
     }
 
@@ -586,12 +586,12 @@ impl Pages {
 
     pub fn open_own_window_at_cursor(self: &Arc<Self>, app: &AppHandle<Wry>, page_id: &str, title: &str) -> Answer<Value> {
         let Some(origin) = tear_off::origin_at_cursor(app, &TORN_WINDOW)? else {
-            eprintln!("[browser] page {page_id} studio → studio (the drag ended inside the studio window)");
+            log::info!("[browser] page {page_id} studio → studio (the drag ended inside the studio window)");
             return Ok(Value::Bool(false));
         };
 
         self.open_own_window_from(app, page_id, title, origin)?;
-        eprintln!("[browser] page {page_id} studio → own window at {:.0},{:.0} (released outside the studio)", origin.x, origin.y);
+        log::info!("[browser] page {page_id} studio → own window at {:.0},{:.0} (released outside the studio)", origin.x, origin.y);
         Ok(Value::Bool(true))
     }
 
@@ -614,7 +614,7 @@ impl Pages {
                 Ok(Value::Null)
             }
             Err(failure) => {
-                eprintln!("[browser] page {page_id} studio → own window {label} failed, rolling back: {failure}");
+                log::error!("[browser] page {page_id} studio → own window {label} failed, rolling back: {failure}");
                 self.roll_back_own_window(app, &webview, page_id, &label);
                 Err(failure)
             }
@@ -633,13 +633,13 @@ impl Pages {
         drop(shown);
 
         if let Err(failure) = applied {
-            eprintln!("[browser] page {page_id} own window {label} → studio failed while rolling back: {failure}");
+            log::error!("[browser] page {page_id} own window {label} → studio failed while rolling back: {failure}");
         }
 
         let Some(window) = app.get_window(label) else { return };
 
         if let Err(failure) = window.destroy() {
-            eprintln!("[browser] page {page_id} own window {label} → left open while rolling back: {failure}");
+            log::error!("[browser] page {page_id} own window {label} → left open while rolling back: {failure}");
         }
     }
 
@@ -670,11 +670,11 @@ impl Pages {
                 let Err(failure) = pages.bring_home(&app, &page) else { return };
 
                 if !pages.is_in_own_window(&page) {
-                    eprintln!("[browser] page {page} own window → closed, back in the studio but not placed: {failure}");
+                    log::error!("[browser] page {page} own window → closed, back in the studio but not placed: {failure}");
                     return;
                 }
 
-                eprintln!("[browser] page {page} own window → kept open (bringing it home failed: {failure})");
+                log::warn!("[browser] page {page} own window → kept open (bringing it home failed: {failure})");
                 api.prevent_close();
             }
             _ => {}
@@ -688,7 +688,7 @@ impl Pages {
 
         let Ok(webview) = self.webview(app, page_id) else {
             self.shown.lock().expect("the shown pages").own_windows.remove(page_id);
-            eprintln!("[browser] page {page_id} own window → closed (its page is already gone)");
+            log::info!("[browser] page {page_id} own window → closed (its page is already gone)");
             return Ok(Value::Null);
         };
         let main = app.get_window(MAIN_WINDOW).ok_or(NO_WINDOW)?;
@@ -828,7 +828,7 @@ pub fn user_agent() -> &'static str {
         let version = webkit::safari_version();
 
         if version.is_none() {
-            eprintln!("[widgetarium] Safari version unread, pages say Safari {}", policy::SAFARI_VERSION_UNREAD);
+            log::warn!("[widgetarium] Safari version unread, pages say Safari {}", policy::SAFARI_VERSION_UNREAD);
         }
 
         policy::user_agent_of(version.as_deref())

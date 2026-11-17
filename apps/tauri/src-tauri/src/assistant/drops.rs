@@ -57,7 +57,7 @@ pub fn drop_paths(assistant: &Assistant, asked: &[String]) -> Value {
     let mut entries: Vec<Value> = Vec::new();
     for path in asked {
         let Some((real, held)) = real_with_metadata(path) else {
-            eprintln!("[ink-assistant] dropped path skipped, it cannot be read: {path}");
+            log::warn!("[ink-assistant] dropped path skipped, it cannot be read: {path}");
             continue;
         };
         let shown = real.to_string_lossy().into_owned();

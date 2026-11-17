@@ -43,6 +43,11 @@ class StudioProfiler {
 			dom: this.dom.drain(),
 			...this.ipc.drain(REPORT_ROWS_LIMIT),
 		};
+
+		if (report.frames.frames === 0 && report.dom.mutations === 0) {
+			return;
+		}
+
 		console.info(`${STUDIO_MARK} perf ${JSON.stringify(report)}`);
 	}
 }

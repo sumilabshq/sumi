@@ -127,7 +127,7 @@ pub fn open_studio_window(app: &AppHandle<Wry>, opener: &str, tab: &str, at: Opt
     policy::label_of(tab)?;
     let profile = profile_part_of(app, opener);
     let label = open_window_with(app, at, |label| STUDIO_URL.replace("{window}", label).replace("{tab}", tab) + &profile)?;
-    eprintln!("[browser] studio window none → {label} (tab {tab} torn off)");
+    log::info!("[browser] studio window none → {label} (tab {tab} torn off)");
     Ok(json!({ "window": label }))
 }
 
@@ -135,14 +135,14 @@ pub fn open_chat_window(app: &AppHandle<Wry>, opener: &str, chat: &str, at: Opti
     policy::label_of(chat)?;
     let profile = profile_part_of(app, opener);
     let label = open_window_with(app, at, |label| CHAT_WINDOW_URL.replace("{window}", label).replace("{chat}", chat) + &profile)?;
-    eprintln!("[browser] studio window none → {label} (chat {chat} torn off)");
+    log::info!("[browser] studio window none → {label} (chat {chat} torn off)");
     Ok(json!({ "window": label }))
 }
 
 pub fn open_profile_window(app: &AppHandle<Wry>, profile: &str) -> Result<Value, String> {
     policy::label_of(profile)?;
     let label = open_window_with(app, None, |label| PROFILE_WINDOW_URL.replace("{window}", label).replace("{profile}", profile))?;
-    eprintln!("[browser] studio window none → {label} (profile {profile})");
+    log::info!("[browser] studio window none → {label} (profile {profile})");
     Ok(json!({ "window": label }))
 }
 

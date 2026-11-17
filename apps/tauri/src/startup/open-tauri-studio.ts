@@ -31,6 +31,7 @@ import { reopensOnWorkspaceSwitch } from "../workspace/workspace-switch.js";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
 import type { WorkspaceEntry } from "../workspace/workspace-docs.js";
 import { TauriSecretVault } from "../secrets/tauri-secret-vault.js";
+import { followStudioLogContext } from "../studio-log-context.js";
 
 export interface StudioOpening {
 	readonly project: WidgetariumProject;
@@ -81,6 +82,7 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	const core = ipcTransport(opening.workspace.id);
 	const plugins = await pluginsOf(opening);
 	const studioApp = startTauriStudioApp(opening, core, plugins);
+	followStudioLogContext(studioApp, opening.workspace.id);
 	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () =>
 		reopenWindow(async () => {
 			await Promise.all([docs.flushAll(), joined.leave()]);

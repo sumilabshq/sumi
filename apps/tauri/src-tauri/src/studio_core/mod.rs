@@ -44,8 +44,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
 fn open_core_window<R: Runtime>(app: &AppHandle<R>) {
     match WebviewWindowBuilder::new(app, CORE_WINDOW, WebviewUrl::App(CORE_URL.into())).visible(false).build() {
-        Ok(_) => eprintln!("[studio-core] core window none → {CORE_WINDOW} (hidden)"),
-        Err(failure) => eprintln!("[studio-core] core window none → none: {failure}"),
+        Ok(_) => log::info!("[studio-core] core window none → {CORE_WINDOW} (hidden)"),
+        Err(failure) => log::error!("[studio-core] core window none → none: {failure}"),
     }
 }
 
@@ -60,11 +60,11 @@ fn follow_closed_window<R: Runtime>(app: &AppHandle<R>, event: &RunEvent) {
 
     app.state::<Arc<QuitFlushes>>().gone(label);
     if let Err(failure) = app.emit_to(CORE_WINDOW, WINDOW_CLOSED_EVENT, label) {
-        eprintln!("[studio-core] window {label} closed → the core was not told: {failure}");
+        log::error!("[studio-core] window {label} closed → the core was not told: {failure}");
     }
 
     if live_studio_windows(app).iter().all(|open| open == label) {
-        eprintln!("[studio-core] the last studio window {label} closed → the app quits");
+        log::info!("[studio-core] the last studio window {label} closed → the app quits");
         app.exit(0);
     }
 }
@@ -117,7 +117,7 @@ fn serve<R: Runtime>(message: &InvokeMessage<R>) -> Result<Value, String> {
     let id = JavaScriptChannelId::from_str(named).map_err(|_| NOT_A_CHANNEL.to_string())?;
     let channel: Channel<Value> = id.channel_on(message.webview());
     hub_of(message)?.serve(channel);
-    eprintln!("[studio-core] core none → serving");
+    log::info!("[studio-core] core none → serving");
     message.webview().app_handle().emit_filter(SERVING_EVENT, (), is_studio_window).map_err(|failure| failure.to_string())?;
     Ok(Value::Null)
 }

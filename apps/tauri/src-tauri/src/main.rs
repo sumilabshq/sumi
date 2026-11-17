@@ -1,19 +1,24 @@
 use widgetarium_host_tauri_lib::agent::{hook, mcp, open};
+use widgetarium_host_tauri_lib::app_log;
 use widgetarium_host_tauri_lib::app_pages::{self, scheme};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if mcp::is_asked(&args) {
+        app_log::start("mcp");
         mcp::serve(&args);
         return;
     }
     if hook::is_asked(&args) {
+        app_log::start("hook");
         hook::run(&args);
         return;
     }
     if open::is_asked(&args) {
         std::process::exit(open::run(&args));
     }
+
+    app_log::start("app");
 
     tauri::Builder::default()
         .plugin(widgetarium_host_tauri_lib::assistant::init())

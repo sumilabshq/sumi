@@ -41,7 +41,7 @@ pub fn let_pages_take_their_pointer(view: &WKWebView) {
 
     let selector = sel!(hitTest:);
     let Some(inherited) = WKWebView::class().instance_method(selector) else {
-        eprintln!("[browser] studio hit test stays WebKit's (WKWebView answers no hitTest:)");
+        log::warn!("[browser] studio hit test stays WebKit's (WKWebView answers no hitTest:)");
         return;
     };
     let web_view_hit_test: HitTest = unsafe { std::mem::transmute::<Imp, HitTest>(inherited.implementation()) };
@@ -50,5 +50,5 @@ pub fn let_pages_take_their_pointer(view: &WKWebView) {
     let types = c"@@:{CGPoint=dd}";
     let added = unsafe { ffi::class_addMethod(class as *const AnyClass as *mut AnyClass, selector, ours, types.as_ptr()) };
     let said = if added.as_bool() { "its own hitTest" } else { "a hitTest already, left alone" };
-    eprintln!("[browser] studio hit test on {} → {said} (pages under the studio take their own pointer)", class.name().to_string_lossy());
+    log::info!("[browser] studio hit test on {} → {said} (pages under the studio take their own pointer)", class.name().to_string_lossy());
 }

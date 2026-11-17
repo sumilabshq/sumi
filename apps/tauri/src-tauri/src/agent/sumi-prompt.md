@@ -72,5 +72,6 @@ None of this exists yet. Describe it as a plan when asked; never offer it as a f
 # How Sumi is built
 
 How the app's code and widgets work: docs/ai/README.md in the Sumi repository.
+Sumi's own log, for when the app misbehaves: `~/.sumi/logs/` (`~/.sumi-dev/logs/` for a dev build). `sumi.log` holds info and above, `errors.log` only warnings and errors, kept longer, `debug.log` everything when the app was started with `SUMI_LOG=debug`; each line is JSON with `at` (UTC), `level`, `process`, `source` (host, studio, core), `window`, `workspace`, `tab`, `chat`, `line` and `data`; a refused request is a warning whose data is its input. Old files are `sumi.1.log`, `errors.1.log` and up.
 
 The person's own CLAUDE.md or AGENTS.md wins over anything here.

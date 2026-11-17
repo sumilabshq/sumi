@@ -25,6 +25,6 @@ pub fn context_of(text: &str) -> Value {
 fn settled_text(args: &[String]) -> Option<String> {
     let bridge = mcp::Bridge { socket: mcp::flag_value(args, "--socket"), token: mcp::flag_value(args, "--token") };
     let answer = mcp::call_sumi(&bridge, json!({ "kind": "between-steps", "chat": mcp::flag_value(args, "--chat") }));
-    let value = answer.map_err(|refusal| eprintln!("[agent] between-steps hook: {refusal}")).ok()?;
+    let value = answer.map_err(|refusal| log::warn!("[agent] between-steps hook: {refusal}")).ok()?;
     value.get("text").and_then(Value::as_str).filter(|text| !text.is_empty()).map(str::to_string)
 }

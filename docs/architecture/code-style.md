@@ -86,7 +86,19 @@ console.info(`[widgetarium] ${reason}`);
 - The same `reason` string goes to the gateway (the storage may keep it) and to the log.
 - Every early exit logs why: `frame side left peek skipped: docked`.
 - A refusal carries its reason in `refuse(…)`; the app reports it once to the developer and once to the person.
-- The prefix is `[widgetarium]`. TODO: a project logger in place of `console`.
+- The prefix is `[widgetarium]`.
+
+Every line lands in one log for the whole app, never per workspace: `~/.sumi/logs/` (the app folder's `logs/`, `apps/tauri/src-tauri/src/app_log/`).
+
+- The level is `SUMI_LOG` at launch (`error`, `warn`, `info`, `debug`, `trace`; `info` without it): `SUMI_LOG=debug npm run start`, or `npm run start:debug` / `dev:debug` in `apps/tauri`. Rust decides it and tells the studio through `plugin:studio-log|level`.
+- `sumi.log` takes `info` and above, `errors.log` only `warn` and `error`, `debug.log` every kept line, and exists only at `debug` or `trace`. Each file moves aside at 5 MB; `sumi.log` keeps 3 old files, `errors.log` 5, `debug.log` 2. Every process start writes `[app-log] <process> none → running (pid, version, level)`, so runs stay apart across restarts.
+- One JSON object per line: `at` (UTC), `level`, `process` (`app`, `mcp`, `hook`), `source` (`host`, `studio`, `core`), `module` for the host, `window`, `workspace`, `tab`, `chat`, `line`, `data`.
+- Rust logs with `log::info!` / `warn!` / `error!`, never `eprintln!`; a panic is logged with its backtrace. Other crates reach the file from `warn`.
+- A studio window forwards every `console.info`, `warn` and `error` and every uncaught error (`apps/tauri/src/studio-log.ts`). The first part is the line; every other part travels as `data`, an `Error` as its name, message and stack. The window adds its workspace, the tab in the pane new tabs open into and the focused chat (`studio-log-context.ts`).
+- `console.debug` and `console.log` reach the file as `debug`, only while the host keeps `debug`.
+- Every request through the mediator is traced (`packages/shared/data-framework/src/request-tracing.ts`): a refused one is a `warn` carrying its input, an answered one a `debug` line with its input and time while tracing is on.
+- `data` keys naming a secret (`password`, `secret`, `*token`, `authorization`, `cookie`, `*apiKey`) are written as `[redacted]`; free text in `line` is not.
+- The console keeps printing everything.
 
 ## A module and what it provides
 
