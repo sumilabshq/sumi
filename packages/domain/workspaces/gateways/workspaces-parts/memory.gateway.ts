@@ -43,6 +43,7 @@ export function firstChats(): KeptChats {
 			{
 				id,
 				title: null,
+				titleBy: "ask",
 				createdAt: at,
 				lastAt: at,
 				archivedAt: null,

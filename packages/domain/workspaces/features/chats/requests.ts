@@ -5,12 +5,14 @@ import { workspacesChanged } from "../../gateways/workspaces/workspaces.events.j
 import { currentWorkspaceChanged } from "../../gateways/current-workspace/current-workspace.events.js";
 import { chatsChanged } from "../../gateways/chats/chats.events.js";
 import { ChatsGateway } from "../../gateways/chats/chats.gateway.js";
-import { titleOf } from "../../shared/lib/chat-title.js";
+import { titleOf, withCapitalFirst } from "../../shared/lib/chat-title.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
 import {
 	ChatArchivingSchema,
 	ChatIdSchema,
 	ChatRecordsSchema,
+	ChatRenamedSchema,
+	ChatRenamingSchema,
 	ChatToOpenSchema,
 	ChatTurnSchema,
 	NewChatSchema,
@@ -30,6 +32,7 @@ export const chatRecords = query()
 		chats: chats.chats().chats.map((chat) => ({
 			id: chat.id,
 			title: titleOf(chat),
+			titleBy: chat.titleBy,
 			lastAt: chat.lastAt,
 			isArchived: chat.archivedAt !== null,
 		})),
@@ -135,6 +138,36 @@ export const recordTurn = command()
 		saveTurned(chats, now, chatAfterTurn(now, { title: now.title ?? title, isStarting }));
 	});
 
+export const renameChat = command()
+	.public()
+	.input(ChatRenamingSchema)
+	.output(ChatRenamedSchema)
+	.idempotencyKey(Repeatable)
+	.handle(({ id, title: asked, by }, { chats, invalidate }) => {
+		invalidate(chatRecords);
+		const kept = chats.chats();
+		const was = kept.chats.find((chat) => chat.id === id);
+		const title = withCapitalFirst(asked);
+
+		if (was === undefined) {
+			return refuse(`no chat ${id} in this workspace`);
+		}
+
+		if (by === "auto" && was.titleBy === "person") {
+			console.info(`[widgetarium] auto title of chat ${id} skipped: the person named it ${titleOf(was)}`);
+			return { isRenamed: false };
+		}
+
+		if (was.title === title && was.titleBy === by) {
+			return { isRenamed: false };
+		}
+
+		const reason = `chat ${id} title ${titleOf(was)} (${was.titleBy}) → ${title} (${by})`;
+		chats.saveChats(withChat(kept, { ...was, title, titleBy: by }), reason);
+		console.info(`[widgetarium] ${reason}`);
+		return { isRenamed: true };
+	});
+
 export const archiveChat = command()
 	.public()
 	.input(ChatArchivingSchema)
@@ -208,6 +241,7 @@ function newChatOf(title: string | null): KeptChat {
 	return {
 		id: crypto.randomUUID(),
 		title: title?.trim() || null,
+		titleBy: "ask",
 		createdAt: at,
 		lastAt: at,
 		archivedAt: null,
@@ -252,5 +286,6 @@ function titleOfAsk(asked: string | null): string | null {
 		return null;
 	}
 
-	return line.length <= TITLE_MOST_CHARS ? line : `${line.slice(0, TITLE_MOST_CHARS - 1).trimEnd()}…`;
+	const title = line.length <= TITLE_MOST_CHARS ? line : `${line.slice(0, TITLE_MOST_CHARS - 1).trimEnd()}…`;
+	return withCapitalFirst(title);
 }

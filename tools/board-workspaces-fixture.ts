@@ -27,6 +27,7 @@ function chatOf(id: string, title: string, at: number): KeptChat {
 	return {
 		id,
 		title,
+		titleBy: "ask",
 		createdAt: at,
 		lastAt: at,
 		archivedAt: null,

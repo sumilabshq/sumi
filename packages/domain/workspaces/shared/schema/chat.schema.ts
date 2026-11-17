@@ -1,8 +1,13 @@
 import { z } from "zod";
 
+export const TitleBySchema = z.enum(["ask", "auto", "person"]);
+
+export type TitleBy = z.infer<typeof TitleBySchema>;
+
 export const KeptChatSchema = z.object({
 	id: z.string().min(1),
 	title: z.string().nullable(),
+	titleBy: TitleBySchema.default("ask"),
 	createdAt: z.number().nonnegative(),
 	lastAt: z.number().nonnegative(),
 	archivedAt: z.number().nonnegative().nullable().default(null),
@@ -41,9 +46,20 @@ export const ChatTurnSchema = z.object({
 
 export type ChatTurn = z.infer<typeof ChatTurnSchema>;
 
+export const ChatRenamingSchema = z.object({
+	id: z.string().min(1),
+	title: z.string().trim().min(1).max(200),
+	by: TitleBySchema.exclude(["ask"]),
+});
+
+export const ChatRenamedSchema = z.object({
+	isRenamed: z.boolean(),
+});
+
 export const ChatRecordSchema = z.object({
 	id: z.string(),
 	title: z.string(),
+	titleBy: TitleBySchema,
 	lastAt: z.number().nonnegative(),
 	isArchived: z.boolean(),
 });

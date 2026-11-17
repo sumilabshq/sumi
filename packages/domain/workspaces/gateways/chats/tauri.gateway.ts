@@ -90,6 +90,7 @@ function keptOfLegacy(id: string): KeptChats {
 			{
 				id,
 				title: null,
+				titleBy: "ask",
 				createdAt: 0,
 				lastAt: 0,
 				archivedAt: null,

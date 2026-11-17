@@ -2,6 +2,10 @@
 import { Device, PerCall, Repeatable, command, event, moduleContract, named, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
+export const TitleBySchema = z.enum(["ask", "auto", "person"]);
+
+export type TitleBy = z.infer<typeof TitleBySchema>;
+
 export const ChatIdSchema = z.object({
 	id: z.string().min(1),
 });
@@ -26,9 +30,20 @@ export const ChatTurnSchema = z.object({
 
 export type ChatTurn = z.infer<typeof ChatTurnSchema>;
 
+export const ChatRenamingSchema = z.object({
+	id: z.string().min(1),
+	title: z.string().trim().min(1).max(200),
+	by: TitleBySchema.exclude(["ask"]),
+});
+
+export const ChatRenamedSchema = z.object({
+	isRenamed: z.boolean(),
+});
+
 export const ChatRecordSchema = z.object({
 	id: z.string(),
 	title: z.string(),
+	titleBy: TitleBySchema,
 	lastAt: z.number().nonnegative(),
 	isArchived: z.boolean(),
 });
@@ -160,6 +175,11 @@ export const workspaces = moduleContract("workspaces", Device, {
 		recordTurn: named("chats.record-turn", command()
 			.public()
 			.input(ChatTurnSchema)
+			.idempotencyKey(Repeatable)),
+		renameChat: named("chats.rename-chat", command()
+			.public()
+			.input(ChatRenamingSchema)
+			.output(ChatRenamedSchema)
 			.idempotencyKey(Repeatable)),
 		archiveChat: named("chats.archive-chat", command()
 			.public()
