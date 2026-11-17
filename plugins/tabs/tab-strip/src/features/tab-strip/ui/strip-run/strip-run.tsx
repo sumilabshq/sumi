@@ -2,6 +2,7 @@ import { createElement as h } from "react";
 import type { CSSProperties, MouseEvent, ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { groupColourOf } from "../../lib/group-colour.js";
+import { openGroupMenu } from "../../lib/group-menu-ask.js";
 import type { StripItem } from "../../lib/strip-items.js";
 import { itemIdOf } from "../../lib/strip-items.js";
 import type { StripRun as Run } from "../../lib/strip-runs.js";
@@ -54,6 +55,11 @@ export function StripRun({ run, acts, drag, liftedId, onMenu }: StripRunProps): 
 				type="button"
 				className="sumi-strip-chip"
 				data-own-drag=""
+				data-group-anchor={group.id}
+				onContextMenu={(event) => {
+					event.preventDefault();
+					openGroupMenu(group.id);
+				}}
 				aria-label={label}
 				title={label}
 				onClick={() => void fold.run({ id: group.id })}

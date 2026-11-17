@@ -68,6 +68,12 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
 	"@sumi/pinned-tabs-plugin/pinned-tabs.css":
 		"plugins/tabs/pinned-tabs/src/features/pinned-tabs/ui/pinned-tabs/pinned-tabs.css",
+	"@sumi/tab-groups-plugin/group-editor.css":
+		"plugins/tabs/tab-groups/src/features/group-menu/ui/group-editor/group-editor.css",
+	"@sumi/tabs-sidebar-plugin/tabs-sidebar.css":
+		"plugins/tabs/tabs-sidebar/src/features/tabs-sidebar/ui/tabs-sidebar/tabs-sidebar.css",
+	"@sumi/tabs-sidebar-plugin/sidebar-title.css":
+		"plugins/tabs/tabs-sidebar/src/features/sidebar-title/ui/sidebar-title/sidebar-title.css",
 	"@sumi/sumi-host-plugin/title-bar.css": "plugins/sumi-host/src/features/title-bar/ui/title-bar/title-bar.css",
 	"@sumi/chat-plugin/new-chat-row.css": "plugins/ai/chat/src/features/new-chat/ui/new-chat-row/new-chat-row.css",
 	"@sumi/terminal-cursor-plugin/terminal-cursor.css":
@@ -109,6 +115,9 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sessions-plugin/sessions-button.css";
 @import "@sumi/tab-strip-plugin/tab-strip.css";
 @import "@sumi/pinned-tabs-plugin/pinned-tabs.css";
+@import "@sumi/tab-groups-plugin/group-editor.css";
+@import "@sumi/tabs-sidebar-plugin/tabs-sidebar.css";
+@import "@sumi/tabs-sidebar-plugin/sidebar-title.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
 @import "@sumi/canvas-plugin/canvas-page.css";

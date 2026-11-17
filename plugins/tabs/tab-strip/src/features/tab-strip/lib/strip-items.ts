@@ -61,7 +61,7 @@ export function shownTabOf(items: readonly StripItem[]): AppTabState | null {
 	return shown === undefined ? null : tabOf(shown);
 }
 
-function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripItem[] {
+export function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripItem[] {
 	if (entry.kind === "tab") {
 		return [
 			{

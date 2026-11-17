@@ -1,2 +1,12 @@
 export * from "./generated/plugin.js";
 export * from "./features/tab-strip/ui/tab-menu/tab-menu-for.js";
+export * from "./features/tab-strip/ui/list-menu/list-menu.js";
+export { openGroupMenu } from "./features/tab-strip/lib/group-menu-ask.js";
+export * from "./features/tab-strip/ui/strip-tab/tab-icons.js";
+export * from "./features/tab-strip/lib/strip-items.js";
+export * from "./features/tab-strip/lib/use-tab-acts.js";
+export * from "./features/tab-strip/lib/use-new-tabs.js";
+export * from "./features/tab-strip/lib/group-colour.js";
+export * from "./features/tab-strip/lib/drag-aim.js";
+export * from "./features/tab-strip/ui/drag-layer/drag-layer.js";
+export type { Lifted } from "./features/tab-strip/lib/use-tab-drag.js";

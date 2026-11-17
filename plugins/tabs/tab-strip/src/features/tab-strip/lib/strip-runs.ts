@@ -1,3 +1,5 @@
+import type { SidebarEntry, TabsSidebar } from "@widgetarium/app-host/contract";
+import { itemsOfEntry } from "./strip-items.js";
 import type { StripGroup, StripItem, StripSplit, StripTab } from "./strip-items.js";
 
 export type StripRun =
@@ -15,24 +17,8 @@ export type StripRun =
 			readonly split: StripSplit;
 	  };
 
-export function stripRunsOf(items: readonly StripItem[]): readonly StripRun[] {
-	return items.reduce<readonly StripRun[]>((runs, item) => {
-		if (item.kind === "split") {
-			return [...runs, { kind: "split", split: item }];
-		}
-
-		if (item.group === null) {
-			return [...runs, { kind: "item", item }];
-		}
-
-		const last = runs.at(-1);
-
-		if (last?.kind === "group" && last.group.id === item.group.id) {
-			return [...runs.slice(0, -1), { ...last, tabs: [...last.tabs, item] }];
-		}
-
-		return [...runs, { kind: "group", group: item.group, tabs: [item] }];
-	}, []);
+export function stripRunsOf(sidebar: TabsSidebar): readonly StripRun[] {
+	return sidebar.sections.flatMap(({ list, entries }) => entries.flatMap((entry) => runsOfEntry(entry, list)));
 }
 
 export function runIdOf(run: StripRun): string {
@@ -41,4 +27,29 @@ export function runIdOf(run: StripRun): string {
 	}
 
 	return run.kind === "group" ? run.group.id : run.split.split.id;
+}
+
+function runsOfEntry(entry: SidebarEntry, list: string): readonly StripRun[] {
+	const items = itemsOfEntry(entry, list);
+
+	if (entry.kind === "group") {
+		return [
+			{
+				kind: "group",
+				group: {
+					id: entry.group.id,
+					name: entry.group.name,
+					hue: entry.group.hue,
+					isOpen: entry.group.isOpen,
+				},
+				tabs: items.filter(isTabItem),
+			},
+		];
+	}
+
+	return items.map((item) => (item.kind === "split" ? { kind: "split", split: item } : { kind: "item", item }));
+}
+
+function isTabItem(item: StripItem): item is StripTab {
+	return item.kind === "tab";
 }

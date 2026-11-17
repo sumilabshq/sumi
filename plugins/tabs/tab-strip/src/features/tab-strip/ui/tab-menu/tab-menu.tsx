@@ -1,7 +1,8 @@
-import { createElement as h, Fragment, useRef } from "react";
+import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
-import { Icon, Popover, PopoverAnchor, PopoverContent, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
+import { Icon, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
+import { SpotMenu } from "../spot-menu/spot-menu.js";
 import { tabOf } from "../../lib/strip-items.js";
 import type { StripItem } from "../../lib/strip-items.js";
 import type { TabActs } from "../../lib/use-tab-acts.js";
@@ -24,39 +25,14 @@ const MENU_LABEL = "Tab";
 const ITEM_ICON_PX = 16;
 
 export function TabMenu({ at, acts, hasOthers, onClose }: TabMenuProps): ReactElement {
-	const last = useRef(at);
-
-	if (at !== null) {
-		last.current = at;
-	}
-
-	const spot = last.current;
 	const chose = (run: () => void) => () => {
 		onClose();
 		run();
 	};
 	return (
-		<Popover
-			open={at !== null}
-			onOpenChange={(isOpen) => isOpen || onClose()}
-			placement="over"
-			isPortaled
-			className="is-compact sumi-tab-menu"
-		>
-			{spot === null ? null : (
-				<PopoverAnchor
-					className="sumi-tab-menu-spot"
-					style={{
-						left: spot.x,
-						top: spot.y,
-					}}
-					aria-hidden="true"
-				/>
-			)}
-			<PopoverContent>
-				{spot === null ? null : <TabMenuItems at={spot} acts={acts} hasOthers={hasOthers} chose={chose} onDone={onClose} />}
-			</PopoverContent>
-		</Popover>
+		<SpotMenu at={at} onClose={onClose}>
+			{(shown) => <TabMenuItems at={shown} acts={acts} hasOthers={hasOthers} chose={chose} onDone={onClose} />}
+		</SpotMenu>
 	);
 }
 
