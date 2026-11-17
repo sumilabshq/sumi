@@ -2,7 +2,7 @@ import { PerCall, Repeatable, deny, guard, refuse } from "@widgetarium/data-fram
 import { command, query, subscriber } from "#module";
 import { sessionChanged } from "../../gateways/chat-parts/chat-parts.events.js";
 import { ChatSchema, QueueChangeInChatSchema } from "../../shared/schema/chat.schema.js";
-import { TextAskedSchema } from "../../shared/schema/attachment.schema.js";
+import { QuickAnswerSchema, QuickAskedSchema, TextAskedSchema } from "../../shared/schema/attachment.schema.js";
 import { chatOf } from "./lib/chat-of.js";
 import { labelledFaceOf, servedToolNameOf } from "./lib/labelled-face.js";
 import type { ToolLabel } from "../../shared/schema/tool-label.schema.js";
@@ -101,6 +101,13 @@ export const sendText = command()
 	.input(TextAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(inChat(({ said }, { assistantSession }) => assistantSession.send(said)));
+
+export const quickAsk = command()
+	.public()
+	.input(QuickAskedSchema)
+	.output(QuickAnswerSchema)
+	.idempotencyKey(PerCall)
+	.handle(inChat(async ({ prompt }, { assistantSession }) => ({ said: await assistantSession.quickAsk(prompt) })));
 
 export const rereadChat = subscriber(sessionChanged).handle(({ chat: chatId }, { invalidate }) => {
 	invalidate(one, { chat: chatId });

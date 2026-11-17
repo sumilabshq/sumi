@@ -150,6 +150,10 @@ class FakeSessionGateway extends AssistantSessionGateway {
 	async compact(): Promise<void> {
 		this.compacted += 1;
 	}
+
+	async quickAsk(prompt: string): Promise<string> {
+		return `quick: ${prompt}`;
+	}
 }
 
 class FakeSetupGateway extends AssistantSetupGateway {

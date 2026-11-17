@@ -1,5 +1,6 @@
 import type { Runner, RunnerCatalog } from "@sumi/agent-plugin";
 import { claudeLaunchOf } from "./claude-command.js";
+import { claudeQuickAskOf } from "./claude-quick-ask.js";
 
 type AgentOption = RunnerCatalog["models"][number]["options"][number];
 
@@ -30,6 +31,8 @@ const EFFORT: AgentOption = {
 
 export const CLAUDE_CODE_RUNNER: Runner = {
 	launchOf: claudeLaunchOf,
+	quickAskOf: claudeQuickAskOf,
+	quickModel: "haiku",
 	id: "claude-code",
 	label: "Claude Code",
 	models: [

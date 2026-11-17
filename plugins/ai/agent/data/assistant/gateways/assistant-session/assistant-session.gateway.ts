@@ -19,4 +19,5 @@ export abstract class AssistantSessionGateway {
 	abstract stop(): void;
 	abstract clear(): Promise<void>;
 	abstract compact(): Promise<void>;
+	abstract quickAsk(prompt: string): Promise<string>;
 }

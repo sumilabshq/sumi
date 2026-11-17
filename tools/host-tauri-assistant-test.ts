@@ -1,6 +1,7 @@
 import type {
 	AssistantPort,
 	AssistantSession,
+	QuickAskFacts,
 	TurnFacts,
 	TurnLaunch,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
@@ -129,7 +130,23 @@ function recordingRunnersOf(ipc: FakeIpc): readonly Runner[] {
 		ipc.launched.push(facts);
 		return { program: facts.runner, args: [facts.prompt], env: {} };
 	};
-	return ["claude-code", "opencode"].map((id) => ({ id, label: id, models: [], meters: [], launchOf: recording }));
+	return ["claude-code", "opencode"].map((id) => ({
+		id,
+		label: id,
+		models: [],
+		meters: [],
+		launchOf: recording,
+		quickAskOf: quickAskOf,
+		quickModel: null,
+	}));
+}
+
+function quickAskOf({ runner, prompt }: QuickAskFacts): TurnLaunch {
+	return {
+		program: runner,
+		args: [prompt],
+		env: {},
+	};
 }
 
 function factsAnswerOf(args: unknown): unknown {

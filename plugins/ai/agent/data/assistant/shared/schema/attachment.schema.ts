@@ -71,3 +71,11 @@ export const MessageAskedSchema = ChatKeySchema.extend({
 export const TextAskedSchema = ChatKeySchema.extend({
 	said: z.string(),
 });
+
+export const QuickAskedSchema = ChatKeySchema.extend({
+	prompt: z.string().min(1).max(20000),
+});
+
+export const QuickAnswerSchema = z.object({
+	said: z.string(),
+});

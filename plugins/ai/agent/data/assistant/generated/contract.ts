@@ -113,6 +113,14 @@ export const TextAskedSchema = ChatKeySchema.extend({
 	said: z.string(),
 });
 
+export const QuickAskedSchema = ChatKeySchema.extend({
+	prompt: z.string().min(1).max(20000),
+});
+
+export const QuickAnswerSchema = z.object({
+	said: z.string(),
+});
+
 export const DraftTextSchema = z.object({ said: z.string() });
 
 export const DraftNoticeSchema = z.object({ notice: z.string().nullable() });
@@ -467,7 +475,7 @@ export const OptionAskedSchema = ChatKeySchema.extend({
 	value: z.string(),
 });
 
-export const SlashNameSchema = z.enum(["clear", "compact"]);
+export const SlashNameSchema = z.enum(["clear", "compact", "rename"]);
 
 export type SlashName = z.infer<typeof SlashNameSchema>;
 
@@ -548,6 +556,11 @@ export const assistant = moduleContract("assistant", Anywhere, {
 		sendText: named("chat.send-text", command()
 			.public()
 			.input(TextAskedSchema)
+			.idempotencyKey(PerCall)),
+		quickAsk: named("chat.quick-ask", command()
+			.public()
+			.input(QuickAskedSchema)
+			.output(QuickAnswerSchema)
 			.idempotencyKey(PerCall)),
 	},
 	composer: {

@@ -1,5 +1,5 @@
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
-import { launcherFrom } from "../../shared/lib/turn-launcher.js";
+import { launcherFrom, quickLauncherFrom } from "../../shared/lib/turn-launcher.js";
 import type { ChatPartsGateway } from "../chat-parts/chat-parts.gateway.js";
 import { LentChatPartsGateway } from "../chat-parts/lent.gateway.js";
 import { AddedRunnersGateway } from "../runners/added.gateway.js";
@@ -17,6 +17,7 @@ export type AssistantModuleParts = {
 export function chatPartsOn({ config }: { readonly config: AgentHosts }): AssistantModuleParts {
 	const runners = config.runners ?? [];
 	portOf(config).useLauncher?.(launcherFrom(runners, config.promptParts ?? []));
+	portOf(config).useQuickLauncher?.(quickLauncherFrom(runners));
 	return {
 		chatParts: new LentChatPartsGateway(config),
 		runners: new AddedRunnersGateway(runners),

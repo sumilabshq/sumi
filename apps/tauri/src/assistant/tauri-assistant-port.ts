@@ -5,8 +5,10 @@ import type {
 	AssistantSetup,
 	QueueChange,
 	RenderMarkdown,
+	QuickAskLauncher,
 	TurnLauncher,
 } from "@widgetarium/core/engine/assistant-port.js";
+import { quickAnswerOf } from "./quick-ask-run.js";
 import type { ClaudeOptions } from "@widgetarium/assistant/contract";
 import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
@@ -76,6 +78,7 @@ type SetupDoors = Pick<AssistantPort, "setup" | "onSetup" | "chooseProvider" | "
 
 interface PortHeld {
 	launcher: TurnLauncher | null;
+	quickLauncher: QuickAskLauncher | null;
 	answer: Promise<ProvidersAnswer> | null;
 	chosen: string | null;
 	helperAgents: boolean;
@@ -84,7 +87,14 @@ interface PortHeld {
 
 // TODO: the brief, the helper agents, persisted transcripts, call faces and chat cards from the Obsidian session are not wired in Tauri yet
 export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPort {
-	const held: PortHeld = { launcher: null, answer: null, chosen: null, helperAgents: false, setupWatchers: new Set() };
+	const held: PortHeld = {
+		launcher: null,
+		quickLauncher: null,
+		answer: null,
+		chosen: null,
+		helperAgents: false,
+		setupWatchers: new Set(),
+	};
 	const sessions = new ChatSessions(doors.chats ?? ONE_CHAT_LINK, turnStarter(doors, held));
 	const setup = setupDoorsOf(doors, held);
 	const chatPorts = new Map<string, AssistantPort>();
@@ -97,6 +107,10 @@ export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPo
 		useLauncher: (launcher) => {
 			held.launcher = launcher;
 		},
+		useQuickLauncher: (launcher) => {
+			held.quickLauncher = launcher;
+		},
+		quickAsk: (prompt) => quickAsked(doors, held, prompt),
 		forChat: (chatId) => {
 			const made = chatPorts.get(chatId) ?? { ...port, ...chatDoorsOf(sessions, chatId, { doors, held }) };
 			chatPorts.set(chatId, made);
@@ -238,6 +252,21 @@ async function choose(doors: TauriAssistantDoors, held: PortHeld, id: string): P
 
 	held.chosen = id;
 	setupChanged(held);
+}
+
+async function quickAsked(doors: TauriAssistantDoors, held: PortHeld, prompt: string): Promise<string> {
+	const provider = chosenIn(await providersOf(doors.bridge, held), held.chosen);
+
+	if (provider === null) {
+		throw new Error(NO_PROVIDER_FOUND);
+	}
+
+	return quickAnswerOf(doors.bridge, {
+		runner: provider.id,
+		model: provider.id === PREFERRED_PROVIDER ? doors.claude.value().model : null,
+		prompt,
+		launcher: held.quickLauncher,
+	});
 }
 
 function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn {

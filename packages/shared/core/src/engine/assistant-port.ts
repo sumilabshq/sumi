@@ -197,6 +197,8 @@ export interface AssistantPort {
 	sendFromHost?(said: string): Promise<void>;
 	changeQueue?(change: QueueChange): string | null;
 	useLauncher?(launcher: TurnLauncher): void;
+	useQuickLauncher?(launcher: QuickAskLauncher): void;
+	quickAsk?(prompt: string): Promise<string>;
 }
 
 export interface AgentLinkFacts {
@@ -229,6 +231,14 @@ export interface TurnLaunch {
 }
 
 export type TurnLauncher = (facts: TurnFacts) => TurnLaunch;
+
+export interface QuickAskFacts {
+	readonly runner: string;
+	readonly model: string | null;
+	readonly prompt: string;
+}
+
+export type QuickAskLauncher = (facts: QuickAskFacts) => TurnLaunch;
 
 export function portForChat(port: AssistantPort, chatId: string): AssistantPort {
 	return port.forChat?.(chatId) ?? port;

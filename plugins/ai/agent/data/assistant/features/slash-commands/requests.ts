@@ -7,8 +7,8 @@ import type { SlashName } from "../../shared/schema/slash-command.schema.js";
 import { ChatKeySchema } from "../../shared/schema/chat-key.schema.js";
 import { inChat } from "../../gateways/chat-parts/in-chat.js";
 
-const SLASH_ALWAYS: readonly SlashName[] = ["clear"];
-const SLASH_WITH_COMPACT: readonly SlashName[] = ["clear", "compact"];
+const SLASH_ALWAYS: readonly SlashName[] = ["clear", "rename"];
+const SLASH_WITH_COMPACT: readonly SlashName[] = ["clear", "compact", "rename"];
 
 export const all = query()
 	.public()
