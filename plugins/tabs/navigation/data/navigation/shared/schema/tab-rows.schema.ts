@@ -157,6 +157,12 @@ export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).rea
 
 export const TabHoldersAskSchema = z.object({
 	ids: z.array(z.string().min(1)).readonly(),
+	window: z
+		.string()
+		.min(1)
+		.nullable()
+		.default(null)
+		.describe("the places window that asks: a tab of the workspace no window shows answers this window"),
 });
 
 export const TabHoldersSchema = z.object({

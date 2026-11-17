@@ -1,4 +1,4 @@
-import { BUILT_IN_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
+import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport, ServerSideModule } from "../packages/shared/data-framework/src/index.ts";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
@@ -8,7 +8,6 @@ import { tabGroups } from "../plugins/tabs/tab-groups/data/tab-groups/generated/
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { z } from "zod";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { momentOfWindow, windowTabsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
 import {
 	ClosedTabSchema,
@@ -75,7 +74,7 @@ export function placedTabsOf(
 	const placed = PlacedTabsSchema.parse({
 		tabs: [...session.tabs, ...chatTabs],
 		lists: {
-			"window:main": [...chatIds.map(tabEntryOf), ...listed],
+			workspace: [...chatIds.map(tabEntryOf), ...listed],
 		},
 		groups: session.groups,
 		views: { [MAIN_WINDOW]: { shownId: session.shownId } },
@@ -109,14 +108,17 @@ export function withWindowView(placed: PlacedTabs, view: StudioView, windowLabel
 export function placesLinkOf(tabs: MemoryTabsGateway, besidePlaces: readonly ServerSideModule[] = []): RemoteTransport {
 	const link = localTransport();
 	const parts = {
-		windows: new MemoryWindowsGateway({ windows: [] }),
 		tabs,
 		placedApps: builtInPlacedApps(),
-		home: mainHome(),
 	};
 	link.serve(
 		runtime()
-			.modules(placesModule({ injects: parts }), tabGroupsModule({ injects: parts }), chatFactsModule({ injects: parts }), ...besidePlaces)
+			.modules(
+				placesModule({ injects: parts }),
+				tabGroupsModule({ injects: parts }),
+				chatFactsModule({ injects: parts }),
+				...besidePlaces,
+			)
 			.start({ platform: "server", env: {}, scope: { workspaceId: "places-core" } }),
 		{ authenticate: new AppCallerAuthenticate() },
 	);

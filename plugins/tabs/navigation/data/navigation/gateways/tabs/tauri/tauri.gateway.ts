@@ -1,24 +1,27 @@
+import { z } from "zod";
 import type { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { PlacedTabsSchema } from "../../../shared/schema/tabs.schema.js";
 import type { PlacedTabs } from "../../../shared/schema/tabs.schema.js";
 import { emptyPlacedTabs } from "../../../shared/lib/tabs/kept-tabs.js";
 import type { MovePlacedTabs } from "../../../shared/lib/settling/settling.js";
-import type { KeptPlaces } from "../../windows/tauri.gateway.js";
-import { windowedTabsOf, workspacedTabsOf } from "./kept-session.js";
-import type { ReshapedTabs } from "./kept-session.js";
+import { windowListsFolded } from "./legacy-tabs.js";
+
+export { workspaceTabsOf } from "./legacy-tabs.js";
 import { TabsGateway } from "../tabs.gateway.js";
 
-export interface TabsStore {
-	readonly workspaceId: string;
-	readonly kept: Promise<HeldDoc<KeptPlaces>>;
-}
+export const KeptNavigationSchema = z.looseObject({
+	tabs: z.unknown().optional(),
+	unreadableTabs: z.unknown().optional(),
+});
+
+export type KeptNavigation = z.infer<typeof KeptNavigationSchema>;
 
 export class TauriTabsGateway extends TabsGateway {
-	private readonly ready: Promise<HeldDoc<KeptPlaces>>;
+	private readonly ready: Promise<HeldDoc<KeptNavigation>>;
 
-	constructor(at: TabsStore) {
+	constructor(kept: Promise<HeldDoc<KeptNavigation>>) {
 		super();
-		this.ready = at.kept.then((kept) => readyTabsIn(at, kept));
+		this.ready = kept.then(readyTabsIn);
 	}
 
 	override async placedTabs(): Promise<PlacedTabs> {
@@ -33,7 +36,7 @@ export class TauriTabsGateway extends TabsGateway {
 			return moved.answer;
 		}
 
-		kept.change({ tabs: moved.next }, `places ${moved.reason}`);
+		kept.change({ tabs: moved.next }, `navigation ${moved.reason}`);
 		await kept.flush();
 		return moved.answer;
 	}
@@ -55,44 +58,37 @@ export class TauriTabsGateway extends TabsGateway {
 	}
 }
 
-function placedIn(kept: HeldDoc<KeptPlaces>): PlacedTabs {
+function placedIn(kept: HeldDoc<KeptNavigation>): PlacedTabs {
 	return PlacedTabsSchema.parse(kept.now().tabs);
 }
 
-async function readyTabsIn({ workspaceId }: TabsStore, kept: HeldDoc<KeptPlaces>): Promise<HeldDoc<KeptPlaces>> {
+async function readyTabsIn(kept: HeldDoc<KeptNavigation>): Promise<HeldDoc<KeptNavigation>> {
 	const { tabs } = kept.now();
 
 	if (tabs === undefined || tabs === null) {
-		kept.change({ tabs: emptyPlacedTabs() }, "places tabs none → empty (no tabs kept yet)");
+		kept.change({ tabs: emptyPlacedTabs() }, "navigation tabs none → empty (no tabs kept yet)");
 		await kept.flush();
 		return kept;
 	}
 
 	const readable = PlacedTabsSchema.safeParse(tabs);
 
-	if (readable.success) {
-		return movedBy(await movedBy(kept, windowedTabsOf), workspacedTabsOf(workspaceId));
-	}
-
-	const reason = "tabs unreadable → none, the unreadable ones kept aside as unreadableTabs";
-	console.error(`[widgetarium] places ${reason}`);
-	kept.change({ tabs: emptyPlacedTabs(), unreadableTabs: tabs }, `places ${reason}`);
-	await kept.flush();
-	return kept;
-}
-
-async function movedBy(
-	kept: HeldDoc<KeptPlaces>,
-	move: (placed: PlacedTabs) => ReshapedTabs | null,
-): Promise<HeldDoc<KeptPlaces>> {
-	const moved = move(placedIn(kept));
-
-	if (moved === null) {
+	if (!readable.success) {
+		const reason = "tabs unreadable → none, the unreadable ones kept aside as unreadableTabs";
+		console.error(`[widgetarium] navigation ${reason}`);
+		kept.change({ tabs: emptyPlacedTabs(), unreadableTabs: tabs }, `navigation ${reason}`);
+		await kept.flush();
 		return kept;
 	}
 
-	kept.change({ tabs: moved.placed }, `places ${moved.reason}`);
+	const folded = windowListsFolded(readable.data);
+
+	if (folded === null) {
+		return kept;
+	}
+
+	kept.change({ tabs: folded.placed }, `navigation ${folded.reason}`);
 	await kept.flush();
-	console.info(`[widgetarium] ${moved.reason}`);
+	console.info(`[widgetarium] navigation ${folded.reason}`);
 	return kept;
 }

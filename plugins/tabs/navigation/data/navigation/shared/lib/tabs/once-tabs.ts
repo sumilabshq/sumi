@@ -4,17 +4,12 @@ import type { KeptSplit } from "../../schema/splits.schema.js";
 import { splitWithout } from "../splits/split-members.js";
 import { isPageTab } from "./host-tabs.js";
 import type { HostTab, HostTabsMoment, OpenedHostTab, OpenedTab } from "./host-tabs.js";
-import { WORKSPACE_LIST, locationOf, windowOfList, withTabAt, withoutTab } from "./tab-lists.js";
+import { WORKSPACE_LIST, withTabAt, withoutTab } from "./tab-lists.js";
 import type { TabPlace } from "./tab-lists.js";
 
 export interface TabNaming {
 	readonly id: string;
 	readonly place: TabPlace;
-}
-
-export function windowHoldingTab(placed: Pick<PlacedTabs, "lists" | "groups">, tabId: string): string | null {
-	const list = locationOf(placed, tabId)?.chatId ?? null;
-	return list === null ? null : windowOfList(list);
 }
 
 export function withTabFreed(placed: PlacedTabs, tabId: string, address: string): PlacedTabs | null {
@@ -31,7 +26,16 @@ export function withTabFreed(placed: PlacedTabs, tabId: string, address: string)
 		views: Object.fromEntries(Object.entries(placed.views).map(([window, view]) => [window, viewWithout(view, tabId)])),
 		splits: splitsWithout(placed.splits, tabId),
 		sessions: placed.sessions.map((session) => sessionWithout(session, tabId)),
-		closed: [...placed.closed, { tab: { ...tab, mark: tab.mark === "running" ? "none" : tab.mark }, chatId: null, groupId: null, at: 0, address }],
+		closed: [
+			...placed.closed,
+			{
+				tab: { ...tab, mark: tab.mark === "running" ? "none" : tab.mark },
+				chatId: null,
+				groupId: null,
+				at: 0,
+				address,
+			},
+		],
 	});
 }
 

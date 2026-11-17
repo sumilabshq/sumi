@@ -22,7 +22,6 @@ import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file
 import { navigation as places } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { questions } from "../plugins/ai/questions/data/questions/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import { seededBoard } from "./tasks-fixture.ts";
 import { REGISTERED_APPS } from "../packages/shared/app-registry/index.ts";
@@ -161,9 +160,6 @@ const sumiCore = runtime()
 		places({
 			injects: {
 				placedApps: builtInPlacedApps(),
-				windows: new MemoryWindowsGateway({
-					windows: [],
-				}),
 				tabs: new MemoryTabsGateway(
 					placedTabsOf(
 						{

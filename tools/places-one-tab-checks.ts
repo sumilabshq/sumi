@@ -1,5 +1,5 @@
 import { BARE_SCREEN } from "./places-fixture.ts";
-import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { navigation as placesContract } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
@@ -7,7 +7,6 @@ import type { PlacedSidebar, TabsAsk } from "../plugins/tabs/navigation/data/nav
 import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import type { PlacesParts } from "../plugins/tabs/navigation/data/navigation/gateways/places-parts/places-parts.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { check, tally } from "./check-helpers.ts";
 import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 import { chatFacts as chatFactsModule } from "../plugins/ai/chat/data/chat-facts/generated/module.ts";
@@ -23,10 +22,7 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 	const core = localTransport();
 	core.serve(
 		runtime()
-			.modules(
-				RunnablePlacesModule({ injects: partsOf(tabs) }),
-				chatFactsModule({ injects: partsOf(tabs) }),
-			)
+			.modules(RunnablePlacesModule({ injects: partsOf(tabs) }), chatFactsModule({ injects: partsOf(tabs) }))
 			.start({ platform: "server", env: {} }),
 	);
 	return runtime()
@@ -36,10 +32,8 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 
 function partsOf(tabs: MemoryTabsGateway): PlacesParts {
 	return {
-		windows: new MemoryWindowsGateway({ windows: [] }),
 		tabs,
 		placedApps: builtInPlacedApps(),
-		home: mainHome(),
 	};
 }
 
@@ -137,7 +131,7 @@ async function sameForEveryTabChecks(): Promise<void> {
 	check(
 		"a chat dropped onto a chat is refused",
 		inChat.ok ? "placed" : inChat.reason,
-		'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in the list of a window',
+		'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in the list of the workspace',
 	);
 }
 
@@ -183,6 +177,7 @@ async function oneWindowOwnerChecks(): Promise<void> {
 			[{ kind: "tear-off-tab", tabId: terminalId, view: "app" }, { kind: "close-shown-tab-pane" }],
 		],
 	);
+	await places.send(placesContract.windows.openWindow, { window: "studio-2" });
 	check(
 		"a chat another window holds comes forward on open and on tear-off, decided by places alone",
 		[

@@ -1,63 +1,94 @@
 import { GLOBAL_ROOT, HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
+import { z } from "zod";
 import type { TabsGateway } from "../tabs/tabs.gateway.js";
-import { TauriTabsGateway } from "../tabs/tauri/tauri.gateway.js";
-import type { WindowsGateway } from "../windows/windows.gateway.js";
-import { KeptPlacesSchema, TauriWindowsGateway } from "../windows/tauri.gateway.js";
-import type { KeptPlaces } from "../windows/tauri.gateway.js";
-import type { HomeGateway } from "../home/home.gateway.js";
-import { WorkspaceHomeGateway } from "../home/workspace.gateway.js";
+import { KeptNavigationSchema, TauriTabsGateway, workspaceTabsOf } from "../tabs/tauri/tauri.gateway.js";
+import type { KeptNavigation } from "../tabs/tauri/tauri.gateway.js";
 import { ListedPlacedAppsGateway } from "../placed-apps/listed.gateway.js";
 import type { PlacedAppsGateway } from "../placed-apps/placed-apps.gateway.js";
 import type { PlacesConfig } from "../../shared/host/places.host.js";
 import { PlacedTabsSchema } from "../../shared/schema/tabs.schema.js";
-import { windowsForgotten } from "../../shared/lib/tabs/window-moves.js";
-import type { PlacedApps } from "../../shared/lib/tabs/app-abilities.js";
+import type { PlacedTabs } from "../../shared/schema/tabs.schema.js";
 
 export type PlacesParts = {
-	readonly windows: WindowsGateway;
 	readonly tabs: TabsGateway;
 	readonly placedApps: PlacedAppsGateway;
-	readonly home: HomeGateway;
 };
 
-const PLACES: DocKind<KeptPlaces> = {
+const NAVIGATION: DocKind<KeptNavigation> = {
+	file: "navigation.json",
+	v: 1,
+	schema: KeptNavigationSchema,
+};
+
+const GLOBAL_PLACES: DocKind<{ readonly tabs?: unknown }> = {
 	file: "places.json",
 	v: 1,
-	schema: KeptPlacesSchema,
+	schema: z.looseObject({ tabs: z.unknown().optional() }),
 };
 
-const SEEDED = "places global none → workspace {workspace} places (tabs belong to windows, not workspaces)";
+const NOT_CARRIED =
+	"[widgetarium] navigation of workspace {workspace}: the global places.json was not carried over ({reason})";
 
 export function keptPlacesParts({ store, apps }: PlacesConfig, workspaceId: string): PlacesParts {
-	const placedApps = new ListedPlacedAppsGateway(apps);
-	const kept = store.heldOnce(GLOBAL_ROOT, PLACES.file, async () =>
-		startedFresh(await seededPlaces(store, workspaceId), placedApps.placedApps()),
+	const root = workspaceRootOf(workspaceId);
+	const kept = store.heldOnce(root, NAVIGATION.file, async () =>
+		startedFresh(await carriedNavigation(store, workspaceId)),
 	);
 	return {
-		windows: new TauriWindowsGateway(kept),
-		tabs: new TauriTabsGateway({ workspaceId, kept }),
-		placedApps,
-		home: new WorkspaceHomeGateway(workspaceId),
+		tabs: new TauriTabsGateway(kept),
+		placedApps: new ListedPlacedAppsGateway(apps),
 	};
 }
 
-async function startedFresh(kept: HeldDoc<KeptPlaces>, apps: PlacedApps): Promise<HeldDoc<KeptPlaces>> {
+async function carriedNavigation(store: StoreClient, workspaceId: string): Promise<HeldDoc<KeptNavigation>> {
+	const kept = await HeldDoc.read({
+		store,
+		root: workspaceRootOf(workspaceId),
+		kind: NAVIGATION,
+		empty: KeptNavigationSchema.parse({}),
+	});
+
+	if (kept.now().tabs !== undefined) {
+		return kept;
+	}
+
+	const global = await readGlobalTabs(store, workspaceId);
+
+	if (global === null) {
+		return kept;
+	}
+
+	const carried = workspaceTabsOf(global, workspaceId);
+	kept.change({ tabs: carried.placed }, `navigation ${carried.reason}`);
+	await kept.flush();
+	console.info(`[widgetarium] navigation ${carried.reason}`);
+	return kept;
+}
+
+async function readGlobalTabs(store: StoreClient, workspaceId: string): Promise<PlacedTabs | null> {
+	try {
+		const global = await store.readDoc(GLOBAL_ROOT, GLOBAL_PLACES);
+		const readable = PlacedTabsSchema.safeParse(global.doc?.tabs);
+		return readable.success ? readable.data : null;
+	} catch (failure: unknown) {
+		console.warn(NOT_CARRIED.replace("{workspace}", workspaceId).replace("{reason}", String(failure)));
+		return null;
+	}
+}
+
+async function startedFresh(kept: HeldDoc<KeptNavigation>): Promise<HeldDoc<KeptNavigation>> {
 	const readable = PlacedTabsSchema.safeParse(kept.now().tabs);
 
-	if (isAppReloaded() || !readable.success) {
+	if (isAppReloaded() || !readable.success || readable.data.windows.length === 0) {
 		return kept;
 	}
 
-	const moved = windowsForgotten(() => true, apps)(readable.data);
-
-	if (moved.next === null) {
-		return kept;
-	}
-
-	kept.change({ tabs: moved.next }, `places ${moved.reason} (the app started)`);
+	const gone = readable.data.windows.map(({ label }) => label);
+	const reason = `windows ${gone.join(", ")} → none (the app started: every window joins again, no tab stays held)`;
+	kept.change({ tabs: { ...readable.data, windows: [] } }, `navigation ${reason}`);
 	await kept.flush();
-	console.info(`[widgetarium] ${moved.reason} (the app started)`);
+	console.info(`[widgetarium] navigation ${reason}`);
 	return kept;
 }
 
@@ -65,24 +96,4 @@ function isAppReloaded(): boolean {
 	return performance
 		.getEntriesByType("navigation")
 		.some((entry) => entry instanceof PerformanceNavigationTiming && entry.type === "reload");
-}
-
-async function seededPlaces(store: StoreClient, workspaceId: string): Promise<HeldDoc<KeptPlaces>> {
-	const kept = await HeldDoc.read({ store, root: GLOBAL_ROOT, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
-
-	if (kept.now().tabs !== undefined) {
-		return kept;
-	}
-
-	const workspace = await store.readDoc(workspaceRootOf(workspaceId), PLACES);
-
-	if (workspace.doc === null) {
-		return kept;
-	}
-
-	const reason = SEEDED.replace("{workspace}", workspaceId);
-	kept.change(workspace.doc, reason);
-	await kept.flush();
-	console.info(`[widgetarium] ${reason}`);
-	return kept;
 }

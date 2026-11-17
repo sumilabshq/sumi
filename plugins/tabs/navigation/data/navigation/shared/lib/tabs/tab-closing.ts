@@ -113,6 +113,6 @@ function neighbourOf(moment: HostTabsMoment, id: string, leaving: ReadonlySet<st
 
 	const ids = pageTabIdsOf(moment, chatId);
 	const at = ids.indexOf(id);
-	const isStaying = (one: string): boolean => !leaving.has(one);
+	const isStaying = (one: string): boolean => !leaving.has(one) && !moment.heldElsewhere.has(one);
 	return ids.slice(at + 1).find(isStaying) ?? ids.slice(0, at).reverse().find(isStaying) ?? null;
 }

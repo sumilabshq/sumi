@@ -6,13 +6,12 @@ import type { Showing } from "../showing/showing.js";
 import { tabFactsOf } from "../showing/tab-facts.js";
 import type { TabFacts } from "../showing/tab-facts.js";
 import type { HostTabsMoment, MovedTabs } from "../tabs/host-tabs.js";
-import { momentOfWindow, placedWith, tabsTransitionSaid } from "../tabs/kept-tabs.js";
+import { momentAt, momentOfWindow, placedWith, tabsTransitionSaid } from "../tabs/kept-tabs.js";
 import { tabBreaksOf } from "../tabs/tab-invariants.js";
 import { splitBreaksOf, splitsPruned } from "../splits/split-members.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 import { withSplitFollowed } from "../showing/split-showing.js";
-import { adoptedBy } from "../tabs/window-moves.js";
-import type { WindowsMove } from "../tabs/window-moves.js";
+import { holdBreaksOf, leaseBreaksOf } from "../tabs/lease-breaks.js";
 
 export interface PlacedTabsMove<T> {
 	readonly next: PlacedTabs | null;
@@ -75,32 +74,16 @@ export function settling(at: TabsAsk, apps: PlacedApps, plan: ShowingPlan): Move
 }
 
 export function settlingWith<E>(at: TabsAsk, apps: PlacedApps, plan: ExtraPlan<E>): MovePlacedTabs<Answer<Settled<E>>> {
-	return (stored) => {
-		const adoption = adoptedBy(stored, at);
-		const placed = adoption?.placed ?? stored;
-		const was = showingOf(momentOfWindow(placed, at.window, apps));
+	return (placed) => {
 		const facts = tabFactsOf(at.screen);
+		const was = showingOf(momentAt(placed, { window: at.window, tabWindows: facts.tabWindows }, apps));
 		const planned = plan(was, facts);
 
 		if (isRefusal(planned)) {
 			return refusedMove(planned.refusal);
 		}
 
-		return withAdoption(settledMove({ placed, window: at.window, was: was.moment }, { ...planned, facts }), adoption);
-	};
-}
-
-function withAdoption<T>(moved: PlacedTabsMove<Answer<T>>, adoption: WindowsMove | null): PlacedTabsMove<Answer<T>> {
-	if (adoption === null || moved.answer.isRefused) {
-		return moved;
-	}
-
-	const reason = [...adoption.reasons, moved.reason].join("; ");
-	console.info(`[widgetarium] tabs ${adoption.reasons.join("; ")}`);
-	return {
-		...moved,
-		next: moved.next ?? adoption.placed,
-		reason,
+		return settledMove({ placed, window: at.window, was: was.moment }, { ...planned, facts });
 	};
 }
 
@@ -157,7 +140,8 @@ function checkedMove<T>(asked: MomentChange, reasons: readonly string[], value: 
 		return acceptedMove(null, reason || "nothing changes", value);
 	}
 
-	const broken = newlyBrokenBy(change);
+	const next = placedWith(change.placed, change.window, change.next);
+	const broken = newlyBrokenBy(change) ?? holdBreaksOf(change.placed, next, change.window)[0] ?? null;
 
 	if (broken !== null) {
 		console.warn(`[widgetarium] tabs refused (${reason}): ${broken}`);
@@ -165,12 +149,12 @@ function checkedMove<T>(asked: MomentChange, reasons: readonly string[], value: 
 	}
 
 	console.info(`[widgetarium] ${tabsTransitionSaid(change.was, change.next, reason)}`);
-	return acceptedMove(placedWith(change.placed, change.window, change.next), reason, value);
+	return acceptedMove(next, reason, value);
 }
 
 function newlyBrokenBy({ was, next }: MomentChange): string | null {
 	const before = new Set(breaksOf(was));
-	return breaksOf(next).find((broken) => !before.has(broken)) ?? null;
+	return breaksOf(next).find((broken) => !before.has(broken)) ?? leaseBreaksOf(was, next)[0] ?? null;
 }
 
 function breaksOf(moment: HostTabsMoment): readonly string[] {

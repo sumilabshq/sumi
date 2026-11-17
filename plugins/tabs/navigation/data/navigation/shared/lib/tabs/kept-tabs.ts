@@ -4,7 +4,8 @@ import { emptyMoment, momentSaid } from "./host-tabs.js";
 import type { HostTabsMoment } from "./host-tabs.js";
 import { placedAppsOf } from "./app-abilities.js";
 import type { PlacedApps } from "./app-abilities.js";
-import { elsewhereOf, keptElsewhere, mergedById, shownListsOf, storedListsOf } from "./window-share.js";
+import { heldAt, heldElsewhereOf, viewsOfOthersKept, viewsSettled } from "./tab-leases.js";
+import type { Holders, ScreenHolds } from "./tab-leases.js";
 
 const NO_VIEW: WindowView = {
 	shownId: null,
@@ -21,26 +22,22 @@ export function emptyPlacedTabs(): PlacedTabs {
 		view: _view,
 		shownSplitId: _split,
 		apps: _apps,
+		heldElsewhere: _held,
 		...shared
 	} = emptyMoment(placedAppsOf([]));
 	return PlacedTabsSchema.parse({
 		...shared,
 		views: {},
+		windows: [],
 	});
 }
 
 export function momentOfWindow(placed: PlacedTabs, window: string | null, apps: PlacedApps): HostTabsMoment {
-	const { views, ...shared } = placed;
-	const elsewhere = elsewhereOf(placed, window);
-	return {
-		...shared,
-		...((window === null ? undefined : views[window]) ?? NO_VIEW),
-		tabs: shared.tabs.filter((tab) => !elsewhere.tabIds.has(tab.id)),
-		lists: shownListsOf(shared.lists, elsewhere, window),
-		groups: shared.groups.filter((group) => !elsewhere.groupIds.has(group.id)),
-		splits: shared.splits.filter((split) => !elsewhere.splitIds.has(split.id)),
-		apps,
-	};
+	return momentHeld(placed, { window, apps, heldElsewhere: heldElsewhereOf(placed, window) });
+}
+
+export function momentAt(placed: PlacedTabs, at: ScreenHolds, apps: PlacedApps): HostTabsMoment {
+	return momentHeld(placed, { window: at.window, apps, heldElsewhere: heldAt(placed, at) });
 }
 
 export function windowTabsOf(moment: HostTabsMoment): WindowTabs {
@@ -57,21 +54,14 @@ export function windowTabsOf(moment: HostTabsMoment): WindowTabs {
 export function placedWith(placed: PlacedTabs, window: string | null, moment: HostTabsMoment): PlacedTabs {
 	const { shownId, ...shared } = windowTabsOf(moment);
 	const { splits, mintedSplits, shownSplitId, selectedId, view } = moment;
-	const elsewhere = elsewhereOf(placed, window);
-	return PlacedTabsSchema.parse({
+	const next = PlacedTabsSchema.parse({
 		...shared,
-		tabs: mergedById(
-			placed.tabs,
-			elsewhere.tabIds,
-			shared.tabs,
-		),
-		lists: { ...keptElsewhere(placed.lists, elsewhere), ...storedListsOf(shared.lists, window) },
-		groups: mergedById(placed.groups, elsewhere.groupIds, shared.groups),
-		splits: mergedById(placed.splits, elsewhere.splitIds, splits),
+		splits,
 		mintedSplits,
 		askedLinks: placed.askedLinks,
 		mintedLinks: placed.mintedLinks,
 		sessions: placed.sessions,
+		windows: placed.windows,
 		views:
 			window === null
 				? placed.views
@@ -86,8 +76,45 @@ export function placedWith(placed: PlacedTabs, window: string | null, moment: Ho
 						},
 					},
 	});
+	return {
+		...next,
+		views: viewsSettled({ ...next, views: viewsOfOthersKept(placed, next, window) }),
+	};
 }
 
 export function tabsTransitionSaid(was: HostTabsMoment, next: HostTabsMoment, reason: string): string {
 	return `tabs ${momentSaid(was)} → ${momentSaid(next)} (${reason})`;
+}
+
+interface HeldWindow {
+	readonly window: string | null;
+	readonly apps: PlacedApps;
+	readonly heldElsewhere: Holders;
+}
+
+function momentHeld(placed: PlacedTabs, { window, apps, heldElsewhere }: HeldWindow): HostTabsMoment {
+	const { views, windows: _joined, ...shared } = placed;
+	const kept = (window === null ? undefined : views[window]) ?? NO_VIEW;
+	return {
+		...shared,
+		...viewFreeOf(placed, kept, heldElsewhere),
+		apps,
+		heldElsewhere,
+	};
+}
+
+function viewFreeOf(placed: PlacedTabs, view: WindowView, heldElsewhere: Holders): WindowView {
+	const split = placed.splits.find(({ id }) => id === view.shownSplitId);
+	const isShownHeld = view.shownId !== null && heldElsewhere.has(view.shownId);
+	const isSplitHeld = split !== undefined && split.memberIds.some((id) => heldElsewhere.has(id));
+
+	if (!isShownHeld && !isSplitHeld) {
+		return view;
+	}
+
+	return {
+		...view,
+		shownId: isShownHeld ? null : view.shownId,
+		shownSplitId: isSplitHeld ? null : view.shownSplitId,
+	};
 }

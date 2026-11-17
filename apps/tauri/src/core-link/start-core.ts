@@ -14,12 +14,16 @@ import { serveCore } from "./core-calls.js";
 import type { CoreListener } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
+import { windowsLeftBehind } from "./joined-windows.js";
+import type { JoinedWindow } from "./joined-windows.js";
 import { TauriSecretVault } from "../secrets/tauri-secret-vault.js";
 import { chatFacts } from "@sumi/chat-facts/contract";
 
 const NOT_KEPT = "[studio-core] workspace {workspace}: the open windows were not checked ({reason})";
 const TURNS_KEPT = "[studio-core] workspace {workspace}: running marks of the last run stay ({reason})";
 const NOT_CLOSED = "[studio-core] workspace {workspace}: window {window} closed but stays listed ({reason})";
+const LEFT_BEHIND =
+	"[studio-core] workspace {workspace}: window {window} → none (it joined workspace {latest} later; its holds here end)";
 const NOT_RECONCILED = "[tasks] workspace {workspace}: tasks in progress before this start stay in progress ({reason})";
 const RECONCILED = "[tasks] workspace {workspace}: {count} tasks in progress → blocked (the app started, no turn runs)";
 const NOT_COLD =
@@ -51,6 +55,7 @@ export function startCore(): void {
 
 			served.set(workspace, places);
 			console.info(SERVING.replace("{workspace}", workspace).replace("{plugins}", plugins.startedIds.join(", ")));
+			places.routes.watch(placesContract.windows.all, undefined, () => void keepWindowsInOneWorkspace(served));
 			void keepLiveWindows(places, workspace);
 			setInterval(() => void keepLiveWindows(places, workspace), LIVE_WINDOWS_EVERY_MS);
 			void forgetRunningTurns(places, workspace);
@@ -151,6 +156,24 @@ function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): 
 			}
 		});
 	}
+}
+
+async function keepWindowsInOneWorkspace(served: ReadonlyMap<string, Runtime>): Promise<void> {
+	const joined = (await Promise.all([...served].map(([workspace, places]) => joinedIn(places, workspace)))).flat();
+
+	for (const stale of windowsLeftBehind(joined)) {
+		console.info(
+			LEFT_BEHIND.replace("{workspace}", stale.workspace)
+				.replace("{window}", stale.label)
+				.replace("{latest}", stale.latest),
+		);
+		await served.get(stale.workspace)?.send(placesContract.windows.closeWindow, { window: stale.label });
+	}
+}
+
+async function joinedIn(places: Runtime, workspace: string): Promise<readonly JoinedWindow[]> {
+	const all = await places.send(placesContract.windows.all);
+	return all.ok ? all.output.windows.map(({ label, openedAt }) => ({ workspace, label, openedAt })) : [];
 }
 
 async function keepLiveWindows(places: Runtime, workspace: string): Promise<void> {

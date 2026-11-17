@@ -28,6 +28,7 @@ export const NamedRecordSchema = z.object({
 export type NamedRecord = z.infer<typeof NamedRecordSchema>;
 
 export const KeepChatTabsAskSchema = z.object({
+	// TODO: drop window, a chat tab belongs to the workspace now
 	window: z.string().min(1).nullable().default(null),
 	chats: z.array(NamedRecordSchema),
 });

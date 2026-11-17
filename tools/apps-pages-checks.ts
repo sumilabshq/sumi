@@ -1,4 +1,4 @@
-import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
@@ -7,7 +7,6 @@ import { apps as RunnableAppsModule } from "../plugins/apps/data/apps/generated/
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
@@ -55,7 +54,7 @@ const served = dataFrameworkMiddleware(
 	runtime()
 		.modules(
 			RunnablePlacesModule({
-				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
+				injects: { tabs, placedApps: builtInPlacedApps() },
 			}),
 			RunnableAppsModule({ apps: FACES, titlesOf: new Map([["notes", (address: string) => `Note ${address}`]]) }),
 		)

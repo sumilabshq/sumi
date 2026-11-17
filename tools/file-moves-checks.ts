@@ -7,13 +7,12 @@ import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/s
 import { navigation, fileSystem } from "@sumi/contract";
 import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { fileSystem as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
 import { filePage } from "../plugins/files/data/file-page/generated/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
-import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 
 const VIEWER = "code-viewer";
@@ -32,9 +31,7 @@ const served = dataFrameworkMiddleware(
 		.modules(
 			RunnablePlacesModule({
 				injects: {
-					windows: new MemoryWindowsGateway({ windows: [] }),
 					placedApps: builtInPlacedApps(),
-					home: mainHome(),
 					tabs: new MemoryTabsGateway(
 						placedTabsOf({
 							tabs: [

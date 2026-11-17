@@ -9,7 +9,7 @@ import { tabFactsOf } from "../../../shared/lib/showing/tab-facts.js";
 import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
 import { tabPagesOf } from "../../../shared/lib/showing/tab-pages.js";
 import { isPageTab } from "../../../shared/lib/tabs/host-tabs.js";
-import { momentOfWindow } from "../../../shared/lib/tabs/kept-tabs.js";
+import { momentAt } from "../../../shared/lib/tabs/kept-tabs.js";
 import type { HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
 import { WORKSPACE_LIST } from "../../../shared/lib/tabs/tab-lists.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
@@ -19,7 +19,7 @@ export function rowsAt(
 	apps: PlacedApps,
 	at: TabsAsk,
 ): { readonly tabs: readonly AppTabState[]; readonly canReopen: boolean } {
-	const moment = momentOfWindow(placed, at.window, apps);
+	const moment = momentAtScreen(placed, apps, at);
 	const chatIds = at.screen.chatGroups.map((group) => group.chatId);
 	return {
 		tabs: tabRowsOf(moment, at.screen.pages, [WORKSPACE_LIST, ...chatIds]),
@@ -28,7 +28,7 @@ export function rowsAt(
 }
 
 export function sidebarAskOf(placed: PlacedTabs, apps: PlacedApps, { at }: SidebarAsk): SidebarRowsAsk {
-	const moment = momentOfWindow(placed, at.window, apps);
+	const moment = momentAtScreen(placed, apps, at);
 	return {
 		moment,
 		pages: at.screen.pages,
@@ -41,11 +41,11 @@ export function placedSidebarOf(placed: PlacedTabs, apps: PlacedApps, ask: Sideb
 }
 
 export function heldTabsAt(placed: PlacedTabs, apps: PlacedApps, at: TabsAsk): HeldTabs {
-	const moment = momentOfWindow(placed, at.window, apps);
+	const moment = momentAtScreen(placed, apps, at);
 	const pages = tabPagesOf(moment.tabs, at.screen.pages);
 	return {
 		tabs: moment.tabs
-			.filter((tab) => isPageTab(apps, tab))
+			.filter((tab) => isPageTab(apps, tab) && !moment.heldElsewhere.has(tab.id))
 			.map((tab) => ({
 				id: tab.id,
 				app: tab.app,
@@ -60,6 +60,10 @@ export function heldTabsAt(placed: PlacedTabs, apps: PlacedApps, at: TabsAsk): H
 function paneLooksOf(moment: HostTabsMoment, facts: TabFacts): Pick<SidebarRowsAsk, "highlightedIds" | "elsewhere"> {
 	return {
 		highlightedIds: selectedIdsOf(moment, facts),
-		elsewhere: [...facts.tabWindows.keys()],
+		elsewhere: [...moment.heldElsewhere.keys()],
 	};
+}
+
+function momentAtScreen(placed: PlacedTabs, apps: PlacedApps, at: TabsAsk): HostTabsMoment {
+	return momentAt(placed, { window: at.window, tabWindows: tabFactsOf(at.screen).tabWindows }, apps);
 }

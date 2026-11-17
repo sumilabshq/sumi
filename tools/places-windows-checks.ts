@@ -1,18 +1,14 @@
-import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "@widgetarium/data-framework";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
-const windows = new MemoryWindowsGateway({ windows: [] });
 const core = localTransport();
 core.serve(
 	runtime()
-		.modules(
-			RunnablePlacesModule({ injects: { windows, tabs: new MemoryTabsGateway(), placedApps: builtInPlacedApps(), home: mainHome() } }),
-		)
+		.modules(RunnablePlacesModule({ injects: { tabs: new MemoryTabsGateway(), placedApps: builtInPlacedApps() } }))
 		.start({ platform: "server", env: {} }),
 );
 const main = runtime()

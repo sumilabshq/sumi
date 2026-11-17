@@ -28,19 +28,18 @@ export function rememberPages(moment: HostTabsMoment, pages: readonly Remembered
 }
 
 export function forgetPages(moment: HostTabsMoment): MovedTabs | null {
-	if (moment.tabs.every((tab) => tab.pageId === null)) {
+	const isForgotten = (tab: HostTab): boolean => tab.pageId !== null && !moment.heldElsewhere.has(tab.id);
+
+	if (!moment.tabs.some(isForgotten)) {
 		return null;
 	}
 
 	return {
 		moment: {
 			...moment,
-			tabs: moment.tabs.map((tab) => ({
-				...tab,
-				pageId: null,
-			})),
+			tabs: moment.tabs.map((tab) => (isForgotten(tab) ? { ...tab, pageId: null } : tab)),
 		},
-		reason: "pages do not outlive a start",
+		reason: "pages do not outlive a start (a page another window shows stays)",
 	};
 }
 

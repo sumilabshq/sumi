@@ -5,6 +5,7 @@ import { isChatTab } from "../tabs/app-abilities.js";
 import { chatIdOf } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment } from "../tabs/host-tabs.js";
 import { markSeen } from "../tabs/tab-marks.js";
+import { holderLabelOf } from "../tabs/tab-leases.js";
 import { boardlessOf, withLostSplitDrawn, withSplitLeftFor } from "./split-showing.js";
 import { withEffect, withMoved, withTabShown } from "./showing.js";
 import type { Showing } from "./showing.js";
@@ -17,6 +18,13 @@ export interface TabToShow {
 }
 
 export function withShownTab(showing: Showing, facts: TabFacts, { tab, paneId }: TabToShow): Showing {
+	const holder = holderLabelOf(showing.moment.heldElsewhere, tab.id);
+
+	if (holder !== null) {
+		console.info(`[widgetarium] show ${tab.id} → window ${holder} comes forward (it holds the tab)`);
+		return withEffect(showing, { kind: "focus-window", window: holder });
+	}
+
 	if (isChatTab(showing.moment.apps, tab)) {
 		return withHolderShown(showing, facts, { tab, paneId });
 	}
@@ -60,15 +68,6 @@ function withSplitLeftAlone(showing: Showing, facts: TabFacts, tab: HostTab): Sh
 }
 
 function shownApartEffectOf(tab: HostTab, moment: HostTabsMoment, facts: TabFacts): TabEffect | null {
-	const window = facts.tabWindows.get(tab.id);
-
-	if (window !== undefined) {
-		return {
-			kind: "focus-window",
-			window,
-		};
-	}
-
 	const pane = facts.tabPanes.find(({ tabId }) => tabId === tab.id);
 
 	if (pane !== undefined) {

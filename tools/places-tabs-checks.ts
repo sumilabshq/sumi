@@ -2,7 +2,7 @@ import { placesWindowOf } from "@widgetarium/behaviors";
 import { tabGroups } from "../plugins/tabs/tab-groups/data/tab-groups/generated/contract.ts";
 import { tabGroups as RunnableTabGroupsModule } from "../plugins/tabs/tab-groups/data/tab-groups/generated/module.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
-import { BUILT_IN_PLACED_APPS, builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
+import { BUILT_IN_PLACED_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { ListedPlacedAppsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/placed-apps/listed.gateway.ts";
 import { placedAppOf } from "../plugins/apps/src/features/app-tab/lib/placed-app-of.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
@@ -14,19 +14,25 @@ import { navigation } from "../plugins/tabs/navigation/data/navigation/generated
 import type { TabsAsk } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
-import { TauriTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/tauri.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
-import { KeptPlacesSchema } from "../plugins/tabs/navigation/data/navigation/gateways/windows/tauri.gateway.ts";
-import type { KeptPlaces } from "../plugins/tabs/navigation/data/navigation/gateways/windows/tauri.gateway.ts";
+import {
+	KeptNavigationSchema,
+	TauriTabsGateway,
+} from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/tauri.gateway.ts";
+import type { KeptNavigation } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/tauri.gateway.ts";
+import { workspaceTabsOf } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/legacy-tabs.ts";
+import { PlacedTabsSchema } from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
+import { tabBreaksOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-invariants.ts";
+import { momentOfWindow } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
+import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 import { chatFacts as chatFactsModule } from "../plugins/ai/chat/data/chat-facts/generated/module.ts";
 
-const PLACES: DocKind<KeptPlaces> = {
-	file: "places.json",
+const NAVIGATION: DocKind<KeptNavigation> = {
+	file: "navigation.json",
 	v: 1,
-	schema: KeptPlacesSchema,
+	schema: KeptNavigationSchema,
 };
 
 function askAt(window: string): TabsAsk {
@@ -41,13 +47,15 @@ function windowsOver(tabs: MemoryTabsGateway | TauriTabsGateway): readonly [Runt
 
 function placesCoreOver(tabs: MemoryTabsGateway | TauriTabsGateway): Runtime {
 	const parts = {
-		windows: new MemoryWindowsGateway({ windows: [] }),
 		tabs,
 		placedApps: builtInPlacedApps(),
-		home: mainHome(),
 	};
 	return runtime()
-		.modules(RunnablePlacesModule({ injects: parts }), RunnableTabGroupsModule({ injects: parts }), chatFactsModule({ injects: parts }))
+		.modules(
+			RunnablePlacesModule({ injects: parts }),
+			RunnableTabGroupsModule({ injects: parts }),
+			chatFactsModule({ injects: parts }),
+		)
 		.start({ platform: "server", env: {} });
 }
 
@@ -66,14 +74,14 @@ async function unreadableChecks(): Promise<void> {
 	const fake = new FakeStore();
 	const root = workspaceRootOf(DEFAULT.id);
 	fake.put(`${root}:session.json`, { v: 1, rev: 1, tabs: { tabs: [], shownId: null, minted: 4, closed: [] } });
-	fake.put(`${root}:places.json`, { v: 1, rev: 1, tabs: { broken: true } });
+	fake.put(`${root}:navigation.json`, { v: 1, rev: 1, tabs: { broken: true } });
 	const store = new StoreClient(fake.invoke);
-	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
-	const [main] = windowsOver(new TauriTabsGateway({ workspaceId: DEFAULT.id, kept }));
+	const kept = HeldDoc.read({ store, root, kind: NAVIGATION, empty: KeptNavigationSchema.parse({}) });
+	const [main] = windowsOver(new TauriTabsGateway(kept));
 	const placed = await main.send(navigation.tabs.placedTabs, { window: "main" });
 	check(
 		"unreadable tabs start empty and are kept aside, never read again from the older files",
-		[placed.ok ? placed.output.minted : placed.reason, fake.files.get(`${root}:places.json`)?.["unreadableTabs"]],
+		[placed.ok ? placed.output.minted : placed.reason, fake.files.get(`${root}:navigation.json`)?.["unreadableTabs"]],
 		[0, { broken: true }],
 	);
 }
@@ -92,12 +100,18 @@ async function oneWriterChecks(): Promise<void> {
 	);
 
 	const [mainView, sideView] = await Promise.all([listsIn(main, "main"), listsIn(side, "studio-2")]);
+	const both = {
+		workspace: [
+			{ kind: "tab", id: "tab-1" },
+			{ kind: "tab", id: "tab-2" },
+		],
+	};
 	check(
-		"each window keeps only the tabs it opened, in a list of its own",
+		"every window sees the one list of the workspace, and shows the tab it opened",
 		[Array.isArray(mainView) ? mainView : [], Array.isArray(sideView) ? sideView : []],
 		[
-			[{ workspace: [{ kind: "tab", id: "tab-1" }] }, "tab-1"],
-			[{ workspace: [{ kind: "tab", id: "tab-2" }] }, "tab-2"],
+			[both, "tab-1"],
+			[both, "tab-2"],
 		],
 	);
 
@@ -164,8 +178,8 @@ async function lawChecks(): Promise<void> {
 		],
 		[
 			2,
-			'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in the list of a window',
-			'the tab "tab-1" cannot stand inside "tab-1": a tab stands only in the list of a window',
+			'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in the list of the workspace',
+			'the tab "tab-1" cannot stand inside "tab-1": a tab stands only in the list of the workspace',
 		],
 	);
 
@@ -234,10 +248,8 @@ async function handoffChecks(): Promise<void> {
 			.modules(
 				RunnablePlacesModule({
 					injects: {
-						windows: new MemoryWindowsGateway({ windows: [] }),
 						tabs: new MemoryTabsGateway(),
 						placedApps: new ListedPlacedAppsGateway([...BUILT_IN_PLACED_APPS, MARKDOWN_TO_CANVAS_PLACED_APP]),
-						home: mainHome(),
 					},
 				}),
 			)
@@ -273,103 +285,143 @@ async function sidebarTabIdsIn(windowApp: Runtime, at: TabsAsk): Promise<unknown
 async function windowTabsChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main, side] = windowsOver(tabs);
+	await main.send(navigation.windows.openWindow, { window: "main" });
+	await side.send(navigation.windows.openWindow, { window: "studio-2" });
 	await main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
 	await main.send(navigation.tabOpening.openTab, { at: askAt("main"), app: "canvas" });
 	await side.send(navigation.tabOpening.openTab, { at: askAt("studio-2"), app: "canvas" });
 	check(
-		"two windows each see only their own tabs in the sidebar",
+		"two windows see the same tabs of the workspace in the sidebar",
 		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
-		[
-			[["workspace", ["tab-1", "tab-2"]]],
-			[["workspace", ["tab-3"]]],
-		],
+		[[["workspace", ["tab-1", "tab-2", "tab-3"]]], [["workspace", ["tab-1", "tab-2", "tab-3"]]]],
 	);
 
-	const foreign = await side.send(navigation.tabShowing.show, { at: askAt("studio-2"), id: "tab-1" });
+	const held = await side.send(navigation.tabShowing.show, { at: askAt("studio-2"), id: "tab-2" });
 	check(
-		"a window cannot show a tab another window holds",
-		foreign.ok ? "shown" : foreign.reason,
-		'the host holds no tab "tab-1"',
+		"a window that shows a tab another window holds brings that window forward instead",
+		held.ok ? held.output.effects : held.reason,
+		[{ kind: "focus-window", window: "main" }],
 	);
-
-	const torn: TabsAsk = {
-		window: "studio-2",
-		screen: { ...BARE_SCREEN, tabPanes: [{ paneId: "pane-1", tabId: "tab-1" }] },
-	};
-	await side.send(navigation.tabShowing.fitToPanes, { at: torn });
+	const closedElsewhere = await side.send(navigation.tabClosing.closeTab, { at: askAt("studio-2"), id: "tab-2" });
 	check(
-		"a torn-off tab moves into the list of the window that shows it",
-		[await sidebarTabIdsIn(main, askAt("main")), await sidebarTabIdsIn(side, askAt("studio-2"))],
-		[
-			[["workspace", ["tab-2"]]],
-			[["workspace", ["tab-3", "tab-1"]]],
-		],
+		"and cannot close it",
+		closedElsewhere.ok ? "closed" : closedElsewhere.reason,
+		'the tab "tab-2" is open in window main: only that window closes it',
 	);
+	const renamed = await side.send(navigation.tabPlacing.rename, { window: "studio-2", id: "tab-2", label: "Plan" });
+	check("but may rename it", renamed.ok, true);
 
-	await side.send(navigation.windows.closeWindow, { window: "studio-2" });
-	const placed = await tabs.placedTabs();
+	const free = await side.send(navigation.tabShowing.show, { at: askAt("studio-2"), id: "tab-1" });
 	check(
-		"closing a window stores it as a session: its tabs leave the window lists, the closed history stays as it was",
-		[
-			placed.tabs.map((tab) => tab.id),
-			placed.closed.map(({ tab }) => tab.id),
-			placed.sessions.map((session) => [session.window, session.tabs.map((tab) => tab.id)]),
-			Object.keys(placed.lists),
-			Object.keys(placed.views).includes("studio-2"),
-		],
-		[["tab-2"], [], [["studio-2", ["tab-1", "tab-3"]]], ["window:main"], false],
+		"a tab no window shows opens where it is asked",
+		[free.ok, (await tabs.placedTabs()).views["studio-2"]?.shownId],
+		[true, "tab-1"],
 	);
 
 	await main.send(navigation.windows.closeWindow, { window: "main" });
+	const afterClose = await tabs.placedTabs();
 	check(
-		"the main window is a window like any other: closing it stores its session too",
-		[(await tabs.placedTabs()).tabs.map((tab) => tab.id), (await tabs.placedTabs()).sessions.length],
-		[[], 2],
+		"closing a window keeps its tabs in the workspace and frees them",
+		[afterClose.tabs.map((tab) => tab.id), Object.keys(afterClose.views), afterClose.windows.map(({ label }) => label)],
+		[["tab-1", "tab-2", "tab-3"], ["studio-2"], ["studio-2"]],
+	);
+	const taken = await side.send(navigation.tabShowing.show, { at: askAt("studio-2"), id: "tab-2" });
+	check(
+		"a tab a closed window held opens anywhere at once: no hold outlives its window",
+		[
+			taken.ok ? taken.output.effects.some((effect) => effect.kind === "focus-window") : taken.reason,
+			(await tabs.placedTabs()).views["studio-2"]?.shownId,
+		],
+		[false, "tab-2"],
 	);
 
-	await side.send(navigation.tabOpening.openTab, { at: askAt("studio-3"), app: "canvas" });
-	await main.send(navigation.windows.keepLiveWindows, { windows: ["main"] });
+	await side.send(navigation.windows.keepLiveWindows, { windows: [] });
+	const none = await tabs.placedTabs();
 	check(
-		"a window no longer open becomes a session when the core checks what is open",
-		[(await tabs.placedTabs()).tabs.map((tab) => tab.id), (await tabs.placedTabs()).sessions.length],
-		[[], 3],
+		"when no window is left, every tab stays in the workspace and none is held",
+		[none.tabs.length, none.windows.length, Object.keys(none.views).length],
+		[3, 0, 0],
 	);
 }
 
 async function workspaceListsMigrationChecks(): Promise<void> {
+	const workspace = DEFAULT.id;
+	const tabOf = (id: string): Record<string, unknown> => ({ id, app: "canvas", pageId: null, label: null });
+	const global = PlacedTabsSchema.parse({
+		tabs: [tabOf("tab-1"), tabOf("tab-2"), tabOf("tab-9")],
+		lists: {
+			[`window:main@${workspace}`]: [{ kind: "tab", id: "tab-1" }],
+			[`window:studio-2@${workspace}`]: [{ kind: "tab", id: "tab-2" }],
+			"window:main@other": [{ kind: "tab", id: "tab-9" }],
+		},
+		views: { [`main@${workspace}`]: { shownId: "tab-1" }, "main@other": { shownId: "tab-9" } },
+		sessions: [
+			{
+				id: "old",
+				window: `studio-3@${workspace}`,
+				closedAt: 1,
+				tabs: [tabOf("tab-4")],
+				lists: { workspace: [{ kind: "tab", id: "tab-4" }] },
+				groups: [],
+				splits: [],
+				view: null,
+			},
+			{
+				id: "new",
+				window: `studio-3@${workspace}`,
+				closedAt: 2,
+				tabs: [tabOf("tab-5")],
+				lists: { workspace: [{ kind: "tab", id: "tab-5" }] },
+				groups: [],
+				splits: [],
+				view: null,
+			},
+		],
+		minted: 9,
+		closed: [],
+	});
+	const carried = workspaceTabsOf(global, workspace);
+	check(
+		"the global places.json gives a workspace its own tabs: live window lists and the newest session of a closed window",
+		[
+			carried.placed.tabs.map((tab) => tab.id),
+			carried.placed.lists["workspace"]?.map((entry) => entry.id),
+			Object.keys(carried.placed.views),
+			carried.placed.sessions.map((session) => session.id),
+			carried.placed.minted,
+			tabBreaksOf(momentOfWindow(carried.placed, null, BUILT_IN_APPS)),
+		],
+		[["tab-1", "tab-2", "tab-5"], ["tab-1", "tab-2", "tab-5"], [`main@${workspace}`], ["old"], 9, []],
+	);
+
 	const fake = new FakeStore();
-	const root = workspaceRootOf(DEFAULT.id);
-	fake.put(`${root}:places.json`, {
+	const root = workspaceRootOf(workspace);
+	fake.put(`${root}:navigation.json`, {
 		v: 1,
 		rev: 1,
 		tabs: {
-			tabs: ["tab-1", "tab-2"].map((id) => ({ id, app: "canvas", pageId: null, label: null })),
-			lists: { workspace: [{ kind: "tab", id: "tab-1" }, { kind: "tab", id: "tab-2" }] },
+			tabs: [tabOf("tab-1"), tabOf("tab-2")],
+			lists: {
+				[`window:main@${workspace}`]: [{ kind: "tab", id: "tab-1" }],
+				workspace: [{ kind: "tab", id: "tab-2" }],
+			},
 			minted: 2,
 			closed: [],
 		},
 	});
 	const store = new StoreClient(fake.invoke);
-	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
-	const [main, side] = windowsOver(new TauriTabsGateway({ workspaceId: DEFAULT.id, kept }));
+	const kept = HeldDoc.read({ store, root, kind: NAVIGATION, empty: KeptNavigationSchema.parse({}) });
+	const [main] = windowsOver(new TauriTabsGateway(kept));
 	check(
-		"the workspace-wide list of an older places.json moves into the main window on first read",
-		[
-			await sidebarTabIdsIn(main, askAt(placesWindowOf("main", DEFAULT.id))),
-			await sidebarTabIdsIn(side, askAt(placesWindowOf("studio-2", DEFAULT.id))),
-			Object.keys(KeptPlacesSchema.parse(fake.files.get(`${root}:places.json`)).tabs ?? {}).length > 0,
-		],
-		[
-			[["workspace", ["tab-1", "tab-2"]]],
-			[["workspace", []]],
-			true,
-		],
+		"a list kept under a window id folds into the list of the workspace on first read",
+		await sidebarTabIdsIn(main, askAt(placesWindowOf("main", workspace))),
+		[["workspace", ["tab-2", "tab-1"]]],
 	);
-	const stored = fake.files.get(`${root}:places.json`)?.["tabs"];
+	const stored = fake.files.get(`${root}:navigation.json`)?.["tabs"];
 	check(
-		"and the file keeps it under the main window's list id",
+		"and the file keeps only the list of the workspace",
 		typeof stored === "object" && stored !== null && "lists" in stored ? Object.keys(stored.lists ?? {}) : stored,
-		[`window:main@${DEFAULT.id}`],
+		["workspace"],
 	);
 }
 

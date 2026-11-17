@@ -2,8 +2,8 @@ import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "./host-tabs-moment.js";
 import { findGroup, isSectionList } from "./tab-lists.js";
 
-const LIST_OF_NO_WINDOW = 'the list "{list}" belongs to no window: only a window owns a list';
-const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands only in the list of a window';
+const LIST_OF_NO_WINDOW = 'the list "{list}" belongs to no tab: only the workspace and a tab own a list';
+const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands only in the list of the workspace';
 const NOT_ONE_PLACE = 'the tab "{id}" stands in {count} places: a tab stands in exactly one list';
 const UNKNOWN_ENTRY = 'the list "{list}" names "{id}", which is no tab or group here';
 const GROUP_NOT_ONE_LIST = 'the group "{id}" stands in {count} lists: a group stands in exactly one';
@@ -49,10 +49,10 @@ function groupsNotInOneList(moment: TabLaws): readonly string[] {
 	const listed = Object.values(moment.lists).flatMap((entries) =>
 		entries.filter((entry) => entry.kind === "group").map((entry) => entry.id),
 	);
-	const countOf = (id: string): number => listed.filter((one) => one === id).length;
+	const counts = countsOf(listed);
 	return moment.groups
-		.filter((group) => countOf(group.id) !== 1)
-		.map((group) => GROUP_NOT_ONE_LIST.replace("{id}", group.id).replace("{count}", String(countOf(group.id))));
+		.filter((group) => (counts.get(group.id) ?? 0) !== 1)
+		.map((group) => GROUP_NOT_ONE_LIST.replace("{id}", group.id).replace("{count}", String(counts.get(group.id) ?? 0)));
 }
 
 function tabsStandingRefused(moment: TabLaws): readonly string[] {
@@ -65,11 +65,20 @@ function tabsStandingRefused(moment: TabLaws): readonly string[] {
 }
 
 function tabsNotInOnePlace(moment: TabLaws): readonly string[] {
-	const standings = standingsOf(moment);
-	const countOf = (id: string): number => standings.filter((standing) => standing.tabId === id).length;
+	const counts = countsOf(standingsOf(moment).map(({ tabId }) => tabId));
 	return moment.tabs
-		.filter((tab) => countOf(tab.id) !== 1)
-		.map((tab) => NOT_ONE_PLACE.replace("{id}", tab.id).replace("{count}", String(countOf(tab.id))));
+		.filter((tab) => (counts.get(tab.id) ?? 0) !== 1)
+		.map((tab) => NOT_ONE_PLACE.replace("{id}", tab.id).replace("{count}", String(counts.get(tab.id) ?? 0)));
+}
+
+function countsOf(ids: readonly string[]): ReadonlyMap<string, number> {
+	const counts = new Map<string, number>();
+
+	for (const id of ids) {
+		counts.set(id, (counts.get(id) ?? 0) + 1);
+	}
+
+	return counts;
 }
 
 function standingsOf(moment: TabLaws): readonly Standing[] {

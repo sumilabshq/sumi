@@ -12,7 +12,6 @@ import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateway
 import { fileSystem } from "../apps/tauri/capabilities/file-system/generated/module.ts";
 import { navigation as places } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import { MemoryProcessesGateway } from "../apps/tauri/capabilities/terminal/gateways/processes/memory.gateway.ts";
 import { NodeTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/node.gateway.ts";
@@ -40,7 +39,6 @@ const served = dataFrameworkMiddleware(
 			places({
 				injects: {
 					placedApps: builtInPlacedApps(),
-					windows: new MemoryWindowsGateway({ windows: [] }),
 					tabs: new MemoryTabsGateway(
 						placedTabsOf({
 							tabs: [

@@ -19,6 +19,7 @@ import { tabPageOf } from "../../../shared/lib/showing/tab-pages.js";
 import { abilitiesOf, isChatTab, isPageApp } from "../../../shared/lib/tabs/app-abilities.js";
 import { chatIdOf, heldTabOf, markSelected } from "../../../shared/lib/tabs/host-tabs.js";
 import { forgetPages, rememberPages } from "../../../shared/lib/tabs/page-memory.js";
+import { holderLabelOf } from "../../../shared/lib/tabs/tab-leases.js";
 
 export const NOT_HELD = 'the host holds no tab "{id}"';
 export const NO_OWN_WINDOW = 'the tab "{id}" holds no page that can open in its own window';
@@ -97,9 +98,9 @@ export function tearOffPlan(id: string): ShowingPlan {
 			return refusal(NOT_HELD.replace("{id}", id));
 		}
 
-		const window = facts.tabWindows.get(id);
+		const window = holderLabelOf(showing.moment.heldElsewhere, tab.id);
 
-		if (window !== undefined) {
+		if (window !== null) {
 			console.info(`[widgetarium] tear off ${id} → window ${window} comes forward (it holds the tab)`);
 			return withEffect(showing, { kind: "focus-window", window });
 		}

@@ -1,11 +1,10 @@
-import { builtInPlacedApps, mainHome } from "./placed-apps-fixture.ts";
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { navigation as RunnablePlacesModule } from "../plugins/tabs/navigation/data/navigation/generated/module.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/windows/memory.gateway.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 import { placedTabsOf } from "./places-fixture.ts";
@@ -25,7 +24,7 @@ const served = dataFrameworkMiddleware(
 	runtime()
 		.modules(
 			RunnablePlacesModule({
-				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps(), home: mainHome() },
+				injects: { tabs, placedApps: builtInPlacedApps() },
 			}),
 		)
 		.start({ platform: "server", env: {} }),
@@ -79,7 +78,11 @@ async function sameTabLinkChecks(): Promise<void> {
 		[same.ok ? same.output.kind : same.reason, await tabOf()],
 		["navigated", ["T-2", true, false]],
 	);
-	const deep = await tasks.send(navigation.tabFacts.openLink, { from: "t1", href: "sumi://tasks/T-3", inNewTab: false });
+	const deep = await tasks.send(navigation.tabFacts.openLink, {
+		from: "t1",
+		href: "sumi://tasks/T-3",
+		inNewTab: false,
+	});
 	check(
 		"a sumi:// link to the same app navigates the same tab",
 		[deep.ok ? deep.output.kind : deep.reason, await tabOf()],

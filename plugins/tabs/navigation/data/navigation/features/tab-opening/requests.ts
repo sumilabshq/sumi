@@ -12,12 +12,7 @@ import {
 	ReopenClosedAskSchema,
 	TabAskSchema,
 } from "../../shared/schema/tab-asks.schema.js";
-import {
-	duplicatePlan,
-	openBelowPlan,
-	openPlan,
-	reopenPlan,
-} from "./lib/opening-plans.js";
+import { duplicatePlan, openBelowPlan, openPlan, reopenPlan } from "./lib/opening-plans.js";
 import { resolvedAppOf } from "../../shared/lib/tabs/app-abilities.js";
 import { navigatePlan, resolvedTargetOf } from "./lib/navigating-plans.js";
 import { openedOnce } from "./lib/once-plans.js";
@@ -55,10 +50,9 @@ export const openOnce = command()
 	.input(OpenOnceAskSchema)
 	.output(OnceOpenedSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ at, ...ask }, { tabs, placedApps, windows }) => {
-		const liveLabels = (await windows.windows()).windows.map(({ label }) => label);
-		return answered(await tabs.movePlacedTabs(openedOnce({ at, apps: placedApps.placedApps(), liveLabels }, ask)));
-	});
+	.handle(async ({ at, ...ask }, { tabs, placedApps }) =>
+		answered(await tabs.movePlacedTabs(openedOnce({ at, apps: placedApps.placedApps() }, ask))),
+	);
 
 export const openBelow = command()
 	.public()

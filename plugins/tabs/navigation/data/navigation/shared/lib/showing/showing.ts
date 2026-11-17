@@ -43,7 +43,7 @@ export function shownTabIdOf(moment: HostTabsMoment, shownApp: PageApp | null): 
 		return null;
 	}
 
-	const free = moment.tabs.filter((tab) => tab.app === shownApp);
+	const free = moment.tabs.filter((tab) => tab.app === shownApp && !moment.heldElsewhere.has(tab.id));
 	return (free.find((tab) => tab.id === moment.shownId) ?? free[0])?.id ?? null;
 }
 
@@ -160,7 +160,7 @@ export function withFreeTabBesidePanes(showing: Showing, facts: TabFacts): Showi
 	}
 
 	const listed = topPageTabIdsOf(showing.moment);
-	const freeId = listed.find((id) => !inPanes.includes(id));
+	const freeId = listed.find((id) => !inPanes.includes(id) && !showing.moment.heldElsewhere.has(id));
 	console.info(`[widgetarium] shown tab ${shownId} → ${freeId ?? "none"} (${shownId} stands in its own pane now)`);
 
 	if (freeId === undefined) {
@@ -183,7 +183,8 @@ export function withTabTornOff(showing: Showing, facts: TabFacts, tabId: string)
 	const listed = topPageTabIdsOf(unpaned.moment);
 	const freeId = listed.find((id) => {
 		const pageId = tabOf(unpaned.moment, id).pageId;
-		return id !== tabId && !inPanes.includes(id) && (pageId === null || !inOwnWindows.has(pageId));
+		const isFree = !unpaned.moment.heldElsewhere.has(id);
+		return id !== tabId && isFree && !inPanes.includes(id) && (pageId === null || !inOwnWindows.has(pageId));
 	});
 	console.info(`[widgetarium] shown tab ${tabId} → ${freeId ?? "none"} (${tabId} left for its own window)`);
 
@@ -210,7 +211,7 @@ export function withFirstTabShown(showing: Showing, facts: TabFacts): Showing {
 		return withMoved(showing, markShown(moment, shownId));
 	}
 
-	const first = moment.tabs.find((tab) => isPageTab(moment.apps, tab));
+	const first = moment.tabs.find((tab) => isPageTab(moment.apps, tab) && !moment.heldElsewhere.has(tab.id));
 	console.info(
 		`[widgetarium] studio opened on ${shownApp ?? "no app"} → ${first?.id ?? "nothing"} (no ${shownApp ?? ""} tab to show)`,
 	);

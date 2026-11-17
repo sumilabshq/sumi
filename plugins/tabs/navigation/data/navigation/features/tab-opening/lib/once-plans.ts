@@ -1,9 +1,14 @@
-import { labelOfPlacesWindow } from "@widgetarium/behaviors";
 import type { OnceOpened, TabsAsk } from "../../../shared/schema/screen.schema.js";
 import type { OpenOnceAsk } from "../../../shared/schema/tab-asks.schema.js";
 import type { PlacedTabs } from "../../../shared/schema/tabs.schema.js";
 import { plannedWith, refusal, settlingWith } from "../../../shared/lib/settling/settling.js";
-import type { Answer, ExtraPlan, MovePlacedTabs, PlacedTabsMove, Settled } from "../../../shared/lib/settling/settling.js";
+import type {
+	Answer,
+	ExtraPlan,
+	MovePlacedTabs,
+	PlacedTabsMove,
+	Settled,
+} from "../../../shared/lib/settling/settling.js";
 import { freshTabOf } from "../../../shared/lib/showing/new-tab-page.js";
 import { withOpenedTabShown } from "../../../shared/lib/showing/opening.js";
 import { withMoved } from "../../../shared/lib/showing/showing.js";
@@ -11,7 +16,9 @@ import { withClosedReopened } from "../../../shared/lib/showing/reopening.js";
 import { isPageApp } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import { heldTabOf } from "../../../shared/lib/tabs/host-tabs.js";
-import { listStartOf, openTabAs, windowHoldingTab, withTabFreed } from "../../../shared/lib/tabs/once-tabs.js";
+import { listStartOf, openTabAs, withTabFreed } from "../../../shared/lib/tabs/once-tabs.js";
+import { heldAt, holderLabelOf } from "../../../shared/lib/tabs/tab-leases.js";
+import { tabFactsOf } from "../../../shared/lib/showing/tab-facts.js";
 import { withAddressKept } from "./opening-plans.js";
 import { withExistingShown } from "./navigating-plans.js";
 
@@ -20,7 +27,6 @@ type OnceAsk = Omit<OpenOnceAsk, "at">;
 export interface OnceOpening {
 	readonly at: TabsAsk;
 	readonly apps: PlacedApps;
-	readonly liveLabels: readonly string[];
 }
 
 interface Freed {
@@ -29,31 +35,22 @@ interface Freed {
 }
 
 const HELD_ELSEWHERE = "{id} stays in {window}: it is open there, that window comes forward";
-const FREED = "{id} leaves {window}, a window that is gone or shows another workspace";
 const FREED_FROM_SESSION = "{id} leaves the session of a closed window";
 const NO_RECORD = "{id} is no tab of {app} here or anywhere: {app} draws no page to open it from";
 
 export function openedOnce(opening: OnceOpening, ask: OnceAsk): MovePlacedTabs<Answer<OnceOpened>> {
 	return (stored) => {
-		const holder = windowHoldingTab(stored, ask.id);
-		const isHeldElsewhere = holder !== null && holder !== opening.at.window;
+		const held = heldAt(stored, { window: opening.at.window, tabWindows: tabFactsOf(opening.at.screen).tabWindows });
+		const holder = holderLabelOf(held, ask.id);
 
-		if (isHeldElsewhere && isLiveHere(holder, opening)) {
-			return heldElsewhereMove(ask.id, labelOfPlacesWindow(holder));
+		if (holder !== null) {
+			return heldElsewhereMove(ask.id, holder);
 		}
 
-		const freed = holder === opening.at.window ? null : freedOf(stored, ask, holder);
+		const freed = stored.tabs.some((tab) => tab.id === ask.id) ? null : freedOf(stored, ask);
 		const moved = settlingWith(opening.at, opening.apps, onceOpenPlan(ask))(freed?.placed ?? stored);
 		return withFreedSaid(onceMoveOf(ask.id, moved), freed?.reason ?? null);
 	};
-}
-
-function isLiveHere(holder: string, { at, liveLabels }: OnceOpening): boolean {
-	return workspaceOf(holder) === workspaceOf(at.window) && liveLabels.includes(labelOfPlacesWindow(holder));
-}
-
-function workspaceOf(placesWindow: string): string {
-	return placesWindow.slice(labelOfPlacesWindow(placesWindow).length);
 }
 
 function onceOpenPlan(ask: OnceAsk): ExtraPlan<null> {
@@ -103,14 +100,14 @@ function heldElsewhereMove(id: string, window: string): PlacedTabsMove<Answer<On
 	};
 }
 
-function freedOf(stored: PlacedTabs, ask: OnceAsk, holder: string | null): Freed | null {
+function freedOf(stored: PlacedTabs, ask: OnceAsk): Freed | null {
 	const placed = withTabFreed(stored, ask.id, ask.address);
 
 	if (placed === null) {
 		return null;
 	}
 
-	const reason = holder === null ? FREED_FROM_SESSION.replace("{id}", ask.id) : FREED.replace("{id}", ask.id).replace("{window}", holder);
+	const reason = FREED_FROM_SESSION.replace("{id}", ask.id);
 	console.warn(`[widgetarium] ${reason}`);
 	return {
 		placed,

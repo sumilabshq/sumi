@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { KeptSplitSchema } from "./splits.schema.js";
+import { OpenWindowSchema } from "./windows.schema.js";
 
 export const AppKindSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
 
@@ -110,6 +111,7 @@ export const PlacedTabsSchema = z.object({
 	mintedSplits: z.number().int().nonnegative().default(0),
 	askedLinks: z.array(AskedLinkSchema).optional(),
 	mintedLinks: z.number().int().nonnegative().optional(),
+	windows: z.array(OpenWindowSchema).default([]),
 });
 
 export type PlacedTabs = z.infer<typeof PlacedTabsSchema>;

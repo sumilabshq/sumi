@@ -56,6 +56,7 @@ export interface HostTabsMoment extends TabLayout {
 	readonly shownSplitId: string | null;
 	readonly sessions: readonly WindowSession[];
 	readonly apps: PlacedApps;
+	readonly heldElsewhere: ReadonlyMap<string, string>;
 }
 
 export interface GroupChange {
@@ -81,6 +82,7 @@ export function emptyMoment(apps: PlacedApps): HostTabsMoment {
 		mintedSplits: 0,
 		shownSplitId: null,
 		apps,
+		heldElsewhere: new Map(),
 	};
 }
 

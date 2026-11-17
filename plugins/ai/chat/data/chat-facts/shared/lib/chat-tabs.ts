@@ -8,7 +8,7 @@ import type { HostTab, HostTabsMoment, MovedTabs } from "@widgetarium/navigation
 import {
 	flatTabIdsOf,
 	tabEntryOf,
-	windowOfList,
+	isSectionList,
 	withEntryBefore,
 } from "@widgetarium/navigation/lib/shared/lib/tabs/tab-lists";
 import type { ChatLists } from "@widgetarium/navigation/lib/shared/lib/tabs/tab-lists";
@@ -26,7 +26,7 @@ export interface ChatTabRows {
 export function chatTabRowsOf(moment: Pick<HostTabsMoment, "tabs" | "lists" | "groups" | "apps">): ChatTabRows {
 	const holderOf = new Map(moment.tabs.filter((tab) => isChatTab(moment.apps, tab)).map((tab) => [tab.id, tab]));
 	const rows = Object.keys(moment.lists)
-		.filter((listId) => windowOfList(listId) !== null)
+		.filter(isSectionList)
 		.flatMap((listId) => flatTabIdsOf(moment, listId))
 		.flatMap((id) => {
 			const holder = holderOf.get(id);
@@ -58,9 +58,11 @@ export function keepChatTabs(moment: HostTabsMoment, chats: readonly NamedRecord
 
 function chatsWithNoTab(moment: HostTabsMoment, chats: readonly NamedRecord[]): readonly NamedRecord[] {
 	const known = new Set(
-		[...moment.tabs, ...moment.closed.map((closed) => closed.tab), ...moment.sessions.flatMap((session) => session.tabs)].map(
-			(tab) => chatIdOf(moment.apps, tab) ?? tab.id,
-		),
+		[
+			...moment.tabs,
+			...moment.closed.map((closed) => closed.tab),
+			...moment.sessions.flatMap((session) => session.tabs),
+		].map((tab) => chatIdOf(moment.apps, tab) ?? tab.id),
 	);
 	return chats.filter((chat) => !known.has(chat.id));
 }

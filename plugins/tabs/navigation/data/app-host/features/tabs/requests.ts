@@ -17,13 +17,15 @@ import {
 	titledSidebarOf,
 	titledTabOf,
 } from "../../shared/lib/page-titles/page-titles.js";
-import {
-	sendLogged,
-	settleAsked,
-	tabsAskOf,
-} from "../../shared/lib/tab-showing/tab-settling.js";
+import { sendLogged, settleAsked, tabsAskOf } from "../../shared/lib/tab-showing/tab-settling.js";
 import { showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
-import { AppTabsSchema, HeldTabsSchema, TabHoldersAskSchema, TabHoldersSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
+import {
+	AppTabsSchema,
+	HeldTabsSchema,
+	TabHoldersAskSchema,
+	TabHoldersSchema,
+	TabsSidebarSchema,
+} from "../../shared/schema/app-tab.schema.js";
 import { labelOfPlacesWindow } from "@widgetarium/behaviors";
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
 import { TabToShowSchema } from "../../shared/schema/tab-to-show.schema.js";
@@ -59,7 +61,7 @@ export const holders = query()
 	.output(TabHoldersSchema)
 	.handle(async ({ ids }, { send, studioWindow }) => {
 		const here = studioWindow.placesWindow();
-		const held = await send(navigation.tabs.holders, { ids });
+		const held = await send(navigation.tabs.holders, { ids, window: here });
 		return {
 			holders: held.holders.map(({ id, window }) => {
 				const isOfThisWorkspace = window !== null && isOfWorkspace(window, here);

@@ -21,7 +21,7 @@ export function tabRowsOf(
 ): readonly AppTabState[] {
 	const rows = new TabRows(moment, pages, {
 		highlightedIds: shownIdsOf(moment),
-		elsewhereIds: new Set(),
+		elsewhereIds: new Set(moment.heldElsewhere.keys()),
 	});
 	const pageIds = new Set(moment.tabs.filter((tab) => isPageTab(moment.apps, tab)).map((tab) => tab.id));
 	const listed = listIds.flatMap((listId) => flatTabIdsOf(moment, listId));
@@ -36,7 +36,7 @@ export function shownIdsOf(moment: HostTabsMoment): ReadonlySet<string> {
 export function selectedIdsOf(moment: HostTabsMoment, facts: TabFacts): ReadonlySet<string> {
 	const { selectedId } = moment;
 
-	if (selectedId === null || facts.tabWindows.has(selectedId) || !isTabOnScreen(moment, facts, selectedId)) {
+	if (selectedId === null || moment.heldElsewhere.has(selectedId) || !isTabOnScreen(moment, facts, selectedId)) {
 		return new Set();
 	}
 

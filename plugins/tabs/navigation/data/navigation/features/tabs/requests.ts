@@ -15,7 +15,7 @@ import {
 import { StudioViewSchema, WindowTabsSchema } from "../../shared/schema/tabs.schema.js";
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { heldTabsAt, placedSidebarOf, rowsAt } from "./lib/tab-reads.js";
-import { windowHoldingTab } from "../../shared/lib/tabs/once-tabs.js";
+import { holdersOf } from "../../shared/lib/tabs/tab-leases.js";
 
 export const placedTabs = query()
 	.public()
@@ -63,9 +63,11 @@ export const holders = query()
 	.public()
 	.input(TabHoldersAskSchema)
 	.output(TabHoldersSchema)
-	.handle(async ({ ids }, { tabs }) => {
+	.handle(async ({ ids, window }, { tabs }) => {
 		const placed = await tabs.placedTabs();
-		return { holders: ids.map((id) => ({ id, window: windowHoldingTab(placed, id) })) };
+		const held = holdersOf(placed);
+		const listed = new Set(placed.tabs.map((tab) => tab.id));
+		return { holders: ids.map((id) => ({ id, window: held.get(id) ?? (listed.has(id) ? window : null) })) };
 	});
 
 export const rereadPlaced = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
