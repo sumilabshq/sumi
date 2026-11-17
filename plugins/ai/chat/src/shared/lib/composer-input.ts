@@ -12,6 +12,7 @@ export interface ComposerInput {
 	readonly keyTaker: RefObject<ComposerKeyTaker | null>;
 	readonly replaceDraft: (text: string, caret: number) => void;
 	readonly hideBoxText: (isHidden: boolean) => void;
+	readonly showHint: (hint: string | null) => void;
 }
 
 export interface ComposerInputAsk {
@@ -25,12 +26,14 @@ export interface ComposerInputParts {
 	readonly input: ComposerInput;
 	readonly takesKey: ComposerKeyTaker;
 	readonly isBoxTextHidden: boolean;
+	readonly hint: string | null;
 }
 
 export function useComposerInput({ draft, fill, box, field }: ComposerInputAsk): ComposerInputParts {
 	const keyTaker = useRef<ComposerKeyTaker | null>(null);
 	const pendingCaret = usePlacesCaretAfterDraft(box, draft);
 	const [isBoxTextHidden, hideBoxText] = useState(false);
+	const [hint, showHint] = useState<string | null>(null);
 	return {
 		input: {
 			chatId: useChatKey(),
@@ -43,9 +46,11 @@ export function useComposerInput({ draft, fill, box, field }: ComposerInputAsk):
 				fill(text);
 			},
 			hideBoxText,
+			showHint,
 		},
 		takesKey: (event) => keyTaker.current?.(event) ?? false,
 		isBoxTextHidden,
+		hint,
 	};
 }
 

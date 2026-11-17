@@ -63,7 +63,7 @@ export function Composer({
 	const fitBox = useFitsDraft(composerBox, draft);
 	useFocusesWhen(composerBox, attached?.label ?? null);
 	useTakesPrefill(composerBox, fill);
-	const { input, takesKey, isBoxTextHidden } = useComposerInput({ draft, fill, box: composerBox, field });
+	const { input, takesKey, isBoxTextHidden, hint } = useComposerInput({ draft, fill, box: composerBox, field });
 	useFocusesFromChat(composerBox);
 	return (
 		<div className="wg-studio-ai-composer" ref={composer}>
@@ -86,7 +86,7 @@ export function Composer({
 						className={isBoxTextHidden ? "wg-studio-ai-box is-text-hidden" : "wg-studio-ai-box"}
 						rows={1}
 						value={draft}
-						placeholder={placeholderOf({ isFirst, busy, isEditing: editing !== null })}
+						placeholder={placeholderOf({ isFirst, busy, isEditing: editing !== null, hint })}
 						onChange={onChange}
 						onKeyDown={(event) => {
 							if (takesKey(event)) {
@@ -124,10 +124,12 @@ function placeholderOf({
 	isFirst,
 	busy,
 	isEditing,
+	hint,
 }: {
 	readonly isFirst: boolean;
 	readonly busy: boolean;
 	readonly isEditing: boolean;
+	readonly hint: string | null;
 }): string {
 	if (isEditing) {
 		return EDIT_PLACEHOLDER;
@@ -135,6 +137,10 @@ function placeholderOf({
 
 	if (busy) {
 		return BUSY_PLACEHOLDER;
+	}
+
+	if (hint !== null) {
+		return hint;
 	}
 
 	return isFirst ? FIRST_PLACEHOLDER : NEXT_PLACEHOLDER;

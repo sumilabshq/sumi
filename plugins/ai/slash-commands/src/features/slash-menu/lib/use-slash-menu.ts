@@ -2,10 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, RefObject } from "react";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { assistant } from "@widgetarium/assistant/contract";
-import type { SlashName } from "@widgetarium/assistant/contract";
 import type { ComposerInput } from "@sumi/chat-plugin";
 import { commandPiecesOf, slashEntriesOf, slashQueryAt } from "./slash-matches.js";
-import type { CommandPiece, SlashEntry, SlashQuery } from "./slash-matches.js";
+import type { CommandPiece, RunSlashName, SlashEntry, SlashQuery } from "./slash-matches.js";
 
 export interface SlashMenu {
 	readonly matches: readonly SlashEntry[];
@@ -70,7 +69,7 @@ export function useSlashMenu(input: ComposerInput): SlashMenu {
 function entryActionsOf(
 	input: ComposerInput,
 	query: SlashQuery | null,
-	commandRuns: Readonly<Record<SlashName, CommandRun>>,
+	commandRuns: Readonly<Record<RunSlashName, CommandRun>>,
 ): Pick<MenuKeyActions, "insert" | "run"> {
 	const insert = (entry: SlashEntry): void => {
 		if (query !== null) {
@@ -78,7 +77,7 @@ function entryActionsOf(
 		}
 	};
 	const run = (entry: SlashEntry): void => {
-		if (entry.kind === "skill") {
+		if (entry.kind !== "command") {
 			insert(entry);
 			return;
 		}
@@ -104,7 +103,7 @@ function memoryFor(draft: string): MenuMemory {
 	};
 }
 
-function useCommandRuns(): Readonly<Record<SlashName, CommandRun>> {
+function useCommandRuns(): Readonly<Record<RunSlashName, CommandRun>> {
 	const clear = useCommand(assistant.composer.clearChat);
 	const compact = useCommand(assistant.slashCommands.compactChat);
 	return {

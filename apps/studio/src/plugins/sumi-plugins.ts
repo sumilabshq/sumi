@@ -23,6 +23,8 @@ import { tabStrip } from "@sumi/tab-strip-plugin";
 import { tabGroups } from "@sumi/tab-groups-plugin";
 import { pinnedTabs } from "@sumi/pinned-tabs-plugin";
 import { slashCommands } from "@sumi/slash-commands-plugin";
+import { chatTitle } from "@sumi/chat-title-plugin";
+import { nextPrompt } from "@sumi/next-prompt-plugin";
 import { effortPicker } from "@sumi/effort-picker-plugin";
 import { modelPicker } from "@sumi/model-picker-plugin";
 import { permissionMode } from "@sumi/permission-mode-plugin";
@@ -149,6 +151,8 @@ const INSTALLED_PLUGINS = [
 	git,
 	composerExpand,
 	slashCommands,
+	chatTitle,
+	nextPrompt,
 	claudeCode,
 	modelPicker,
 	effortPicker,
@@ -180,6 +184,8 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		git.id,
 		composerExpand.id,
 		slashCommands.id,
+		chatTitle.id,
+		nextPrompt.id,
 		claudeCode.id,
 		modelPicker.id,
 		effortPicker.id,

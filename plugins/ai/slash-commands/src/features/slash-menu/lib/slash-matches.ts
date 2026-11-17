@@ -6,8 +6,13 @@ interface EntryWords {
 	readonly aliases: readonly string[];
 }
 
+export type TextSlashName = Extract<SlashName, "rename">;
+
+export type RunSlashName = Exclude<SlashName, TextSlashName>;
+
 export type SlashEntry =
-	| (EntryWords & { readonly kind: "command"; readonly name: SlashName })
+	| (EntryWords & { readonly kind: "command"; readonly name: RunSlashName })
+	| (EntryWords & { readonly kind: "text-command"; readonly name: TextSlashName })
 	| (EntryWords & { readonly kind: "skill"; readonly name: string });
 
 export interface SlashQuery {
@@ -38,6 +43,12 @@ const COMMAND_ENTRIES: Readonly<Record<SlashName, SlashEntry>> = {
 		name: "compact",
 		description: "Summarize the chat to free up context",
 		aliases: ["summarize"],
+	},
+	rename: {
+		kind: "text-command",
+		name: "rename",
+		description: "Name this chat: type the name, or press ↵ to let Sumi name it",
+		aliases: ["title", "name"],
 	},
 };
 
