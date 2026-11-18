@@ -1,9 +1,9 @@
-import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
-import type { TurnStep } from "../../../shared/schema/chat.schema.js";
+import type { AssistantCall } from "@widgetarium/core/engine/assistant-port.js";
+import type { ShownFace, TurnStep } from "../../../shared/schema/chat.schema.js";
 
 export interface CallWithFace {
 	readonly call: AssistantCall;
-	readonly face: CallFace;
+	readonly face: ShownFace;
 }
 
 export function turnStepsOf(text: string, callsWithFaces: readonly CallWithFace[]): TurnStep[] {
@@ -32,7 +32,7 @@ function pushSaidStep(steps: TurnStep[], said: string): void {
 	});
 }
 
-function pushToolsStep(steps: TurnStep[], call: AssistantCall, face: CallFace): void {
+function pushToolsStep(steps: TurnStep[], call: AssistantCall, face: ShownFace): void {
 	const last = steps.at(-1);
 
 	if (last?.kind === "tools") {

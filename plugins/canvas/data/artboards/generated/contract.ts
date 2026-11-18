@@ -240,6 +240,10 @@ export const artboards = moduleContract("artboards", Server, {
 			.public()
 			.input(CanvasAskSchema)
 			.output(BoardSchema.array())),
+		getPageBoards: named("boards.get-page-boards", query()
+			.public()
+			.input(BoardsAskSchema)
+			.output(BoardSchema.array())),
 		getBoard: named("boards.get-board", query()
 			.public()
 			.input(BoardAskSchema)

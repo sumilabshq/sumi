@@ -1,0 +1,29 @@
+.wg-git.sumi-changes-card {
+	display: flex;
+	flex-direction: column;
+	height: auto;
+	background: none;
+}
+
+.sumi-changes-card-body {
+	flex: 1;
+	min-height: 0;
+	margin-top: 8px;
+	overflow: auto;
+}
+
+.sumi-changes-card-rows {
+	display: flex;
+	flex-direction: column;
+	padding: 0 4px 8px;
+}
+
+.sumi-changes-card-more {
+	color: var(--sumi-text-3);
+}
+
+.sumi-changes-card-note {
+	margin: 12px;
+	color: var(--wg-kit-text-muted);
+	font-size: 13px;
+}

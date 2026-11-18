@@ -874,7 +874,7 @@ const callAt = (ref: string, textOffset?: number): AssistantCall => ({
 const stepsSeen = (text: string, calls: readonly AssistantCall[]): unknown[] =>
 	turnStepsOf(
 		text,
-		calls.map((call) => ({ call, face: faceOf("read", call.ref) })),
+		calls.map((call) => ({ call, face: { ...faceOf("read", call.ref), view: null } })),
 	).map((step) => (step.kind === "said" ? step.text : step.calls.map(({ ref }) => ref)));
 check(
 	"tools stand where they ran: text, tools, text, and calls in a row share one group",

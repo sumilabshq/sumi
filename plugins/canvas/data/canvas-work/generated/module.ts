@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { canvasWork as definition } from "../module.js";
 import { getBoard, getBoardsMatching, moveBoard, removeBoard, renameBoard, renameLayer, writeBoard } from "../features/boards/requests.js";
-import { getCanvas, getCanvases } from "../features/canvases/requests.js";
+import { getCanvas, getCanvases, showCanvas } from "../features/canvases/requests.js";
 import { createPage, removePage, renamePage, showPage } from "../features/pages/requests.js";
 import { getBoardShot, getPageShot } from "../features/shots/requests.js";
 import { getTweaks, writeTweaks } from "../features/tweaks/requests.js";
@@ -19,6 +19,7 @@ export const canvasWork = handledModule(definition, [
 	named("boards.write-board", writeBoard),
 	named("canvases.get-canvas", getCanvas),
 	named("canvases.get-canvases", getCanvases),
+	named("canvases.show-canvas", showCanvas),
 	named("pages.create-page", createPage),
 	named("pages.remove-page", removePage),
 	named("pages.rename-page", renamePage),

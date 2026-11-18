@@ -82,6 +82,11 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/keyboard-language/src/features/keyboard-language/ui/keyboard-language-tag/keyboard-language-tag.css",
 	"@widgetarium/kit/side-panel.css": "packages/shared/kit/side-panel.css",
 	"@sumi/canvas-plugin/canvas-page.css": "plugins/canvas/src/features/canvas/ui/canvas-page/canvas-page.css",
+	"@sumi/canvas-plugin/mini-canvas.css": "plugins/canvas/src/features/mini-canvas/ui/mini-canvas/mini-canvas.css",
+	"@sumi/mcp-apps-plugin/mcp-app-card.css": "plugins/ai/mcp-apps/src/shared/ui/mcp-app-card/mcp-app-card.css",
+	"@sumi/mcp-apps-plugin/call-view.css": "plugins/ai/mcp-apps/src/features/call-views/ui/call-view/call-view.css",
+	"@sumi/code-viewer-plugin/file-card.css": "plugins/code-viewer/src/features/code/ui/file-card/file-card.css",
+	"@sumi/git-plugin/changes-card.css": "plugins/git/src/features/git-page/ui/changes-card/changes-card.css",
 	"@sumi/model-picker-plugin/model-menu.css":
 		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-menu.css",
 };
@@ -121,6 +126,11 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
 @import "@sumi/canvas-plugin/canvas-page.css";
+@import "@sumi/mcp-apps-plugin/mcp-app-card.css";
+@import "@sumi/mcp-apps-plugin/call-view.css";
+@import "@sumi/code-viewer-plugin/file-card.css";
+@import "@sumi/git-plugin/changes-card.css";
+@import "@sumi/canvas-plugin/mini-canvas.css";
 @import "@sumi/keyboard-language-plugin/keyboard-language-tag.css";
 `;
 

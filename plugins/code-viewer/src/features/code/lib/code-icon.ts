@@ -7,3 +7,5 @@ export const CODE_ICON = [
 	'<rect x="2" y="2" width="16" height="16" fill="#8b5cf6" mask="url(#cut)"/>',
 	"</svg>",
 ].join("");
+
+export const CODE_ICON_SOURCE = `data:image/svg+xml;utf8,${encodeURIComponent(CODE_ICON)}`;

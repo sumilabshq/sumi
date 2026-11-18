@@ -10,4 +10,5 @@ Work design first: when the person asks for a screen, a component or a visual ch
 - Use the project's real design system (its tokens, fonts, components) when there is one.
 - An artboard takes no clicks, so never draw working controls inside one. When the person should try values (a radius, a theme, a density, a state), give them tweaks with canvas-work_tweaks_write-tweaks: Sumi draws the sliders, switches and options in its own style in the side panel, and each value reaches the artboard live as var(--id), data-id on the html element and window.tweaks[id]. Write them for the page when several artboards share a value, for one artboard when only it reads it.
 - After each write, look at it with canvas-work_shots_get-board-shot and fix what is off before you say it is done.
-- Show the page you work on with canvas-work_pages_show-page, and link the canvas in your answer as [title](sumi://canvas/<canvasId>).`;
+- Show the page you work on with canvas-work_pages_show-page, and link the canvas in your answer as [title](sumi://canvas/<canvasId>).
+- When a drawing is done, call canvas-work_canvases_show-canvas once with the page you drew: the person gets a small live canvas in the chat, right under the call.`;

@@ -1,0 +1,123 @@
+.sumi-mcp-card {
+	--sumi-mcp-card-fill: var(--sumi-plate);
+	position: relative;
+	overflow: hidden;
+	background: var(--sumi-mcp-card-fill);
+}
+
+.sumi-mcp-card.is-border {
+	border: 1px solid var(--sumi-line);
+}
+
+.sumi-mcp-card.is-tile {
+	--sumi-mcp-card-fill: var(--wg-kit-group-fill);
+}
+
+.sumi-mcp-card.is-none {
+	overflow: visible;
+	background: none;
+}
+
+.sumi-mcp-head {
+	display: flex;
+	flex: none;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 8px 0;
+	color: var(--sumi-text);
+	font-family: var(--sumi-font-ui);
+	font-size: 13px;
+	line-height: 1.3;
+}
+
+.sumi-mcp-head.is-over {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.sumi-mcp-tag,
+.sumi-mcp-square {
+	height: 32px;
+	background: var(--sumi-plate);
+	pointer-events: auto;
+}
+
+.sumi-mcp-head.is-over .sumi-mcp-tag,
+.sumi-mcp-head.is-over .sumi-mcp-square {
+	background: color-mix(in oklch, var(--sumi-plate) 88%, transparent);
+	backdrop-filter: blur(8px);
+}
+
+.sumi-mcp-tag {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	padding: 0 10px;
+	cursor: default;
+}
+
+.sumi-mcp-tag-glyph {
+	flex: none;
+	width: 14px;
+	height: 14px;
+}
+
+.sumi-mcp-tag-title {
+	flex: none;
+	max-width: 280px;
+	overflow: hidden;
+	font-weight: 500;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.sumi-mcp-tag-meta {
+	min-width: 0;
+	overflow: hidden;
+	color: var(--wg-kit-text-muted);
+	font-size: 12px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.sumi-mcp-square,
+.sumi-mcp-tag-button {
+	display: grid;
+	place-items: center;
+	border: 0;
+	color: var(--wg-kit-text-muted);
+	cursor: pointer;
+}
+
+.sumi-mcp-square {
+	flex: none;
+	width: 32px;
+}
+
+.sumi-mcp-tag-button {
+	flex: none;
+	width: 24px;
+	height: 24px;
+	margin-left: -6px;
+	background: none;
+}
+
+.sumi-mcp-square:hover,
+.sumi-mcp-tag-button:hover {
+	color: var(--sumi-text);
+}
+
+.sumi-mcp-square svg,
+.sumi-mcp-tag-button svg {
+	width: 12px;
+	height: 12px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.4;
+}

@@ -9,3 +9,5 @@ export const GIT_ICON = [
 	'<rect x="2" y="2" width="16" height="16" fill="#f05032" mask="url(#cut)"/>',
 	"</svg>",
 ].join("");
+
+export const GIT_ICON_SOURCE = `data:image/svg+xml;utf8,${encodeURIComponent(GIT_ICON)}`;

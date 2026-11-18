@@ -1,7 +1,17 @@
 import { artboards } from "@sumi/artboards/contract";
+import { refuse } from "@widgetarium/data-framework";
 import { query } from "#module";
-import { CanvasAskSchema, CanvasRowSchema, CanvasSchema, NoAskSchema } from "../../shared/schema/canvas-work.schema.js";
+import {
+	CanvasAskSchema,
+	CanvasRowSchema,
+	CanvasSchema,
+	NoAskSchema,
+	ShowCanvasAskSchema,
+	ShownCanvasSchema,
+} from "../../shared/schema/canvas-work.schema.js";
 import { canvasPagesOf } from "./lib/canvas-pages.js";
+
+const NO_PAGE = "the canvas has no page {page}; list them with getCanvas";
 
 export const getCanvases = query()
 	.public()
@@ -30,5 +40,36 @@ export const getCanvas = query()
 			canvasId,
 			title: canvas.title,
 			pages: canvasPagesOf(canvas, boards),
+		};
+	});
+
+export const showCanvas = query()
+	.public()
+	.metadata({
+		description:
+			"Show a canvas in this chat as a small live canvas the person can pan, zoom and switch pages in, with a link to open it whole. Call it after drawing, so the person sees the result without leaving the chat.",
+		mcp: {
+			kind: "read",
+			running: "Showing the canvas",
+			done: "Showed the canvas",
+			ui: { resourceUri: "ui://canvas-mini" },
+		},
+	})
+	.input(ShowCanvasAskSchema)
+	.output(ShownCanvasSchema)
+	.handle(async ({ canvasId, page }, { send }) => {
+		const canvas = await send(artboards.canvases.getCanvas, { canvasId });
+		const shown = canvas.pages.find(({ id }) => id === (page ?? canvas.shownPage));
+
+		if (shown === undefined) {
+			return refuse(NO_PAGE.replace("{page}", page ?? canvas.shownPage));
+		}
+
+		return {
+			canvasId,
+			title: canvas.title,
+			page: shown.id,
+			pageName: shown.name,
+			boardCount: shown.boardCount,
 		};
 	});

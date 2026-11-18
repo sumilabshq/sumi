@@ -5,7 +5,7 @@ import type { PromptPart, Runner } from "@widgetarium/assistant/implementation";
 import type { McpServer } from "@widgetarium/data-framework";
 import { plugin } from "@widgetarium/plugin-framework";
 import { agentToolsServeOf } from "./features/serve-mcp/lib/agent-tools-serve.js";
-import { mcpServeOf } from "./features/serve-mcp/lib/serve-mcp.js";
+import { hasOwnRuntime, mcpServeOf } from "./features/serve-mcp/lib/serve-mcp.js";
 import type { McpServerEntry } from "./features/serve-mcp/lib/serve-mcp.js";
 
 export const agent = plugin("agent")
@@ -28,7 +28,7 @@ export const agent = plugin("agent")
 			},
 			mcp: {
 				addServer: (entry: McpServerEntry): void => {
-					for (const module of entry.modules) {
+					for (const module of hasOwnRuntime(entry) ? [] : entry.modules) {
 						app.use(windows).module(module);
 					}
 

@@ -129,3 +129,16 @@ export const ShotSchema = z.object({
 	width: z.number(),
 	height: z.number(),
 });
+
+export const ShowCanvasAskSchema = z.object({
+	canvasId: CanvasIdSchema,
+	page: PageIdSchema.nullable().default(null).describe("The page the person sees first; null is the canvas's shown page"),
+});
+
+export const ShownCanvasSchema = z.object({
+	canvasId: CanvasIdSchema,
+	title: NameSchema,
+	page: PageIdSchema,
+	pageName: NameSchema,
+	boardCount: z.number().int().nonnegative(),
+});

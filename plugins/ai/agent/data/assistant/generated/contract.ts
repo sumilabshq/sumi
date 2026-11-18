@@ -250,7 +250,10 @@ export const CallFaceSchema = z.object({
 	isCodeObject: z.boolean(),
 	meta: CallMetaSchema.nullable(),
 	change: CallChangeSchema.nullable(),
+	view: z.string().nullable(),
 });
+
+export type ShownFace = z.infer<typeof CallFaceSchema>;
 
 const SaidStepSchema = z.object({
 	kind: z.literal("said"),

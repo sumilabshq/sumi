@@ -10,7 +10,7 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { askComposerProviderOf } from "./features/ask/ui/ask-composer-provider/ask-composer-provider.js";
 import { askPageOf } from "./features/ask/lib/ask-page.js";
 import { DATA_MARKS_GUIDE } from "./features/assistant/lib/data-marks-guide.js";
-import type { ChatPageImportOf } from "./features/chat-page/lib/chat-modules-of.js";
+import type { ChatPageImportOf, ChatPageModuleOf } from "./features/chat-page/lib/chat-modules-of.js";
 import { chatTabPageOf } from "./features/chat-page/lib/chat-tab-page.js";
 import { NewSessionRow } from "./features/new-chat/ui/new-chat-row/new-chat-row.js";
 
@@ -18,6 +18,7 @@ export const chat = plugin("chat")
 	.require(sumiHost, backend, windows, shell, apps, commandMenu, agent, navigation)
 	.apply((app) => {
 		const pageImports: ChatPageImportOf[] = [];
+		const pageModules: ChatPageModuleOf[] = [];
 		app.use(apps).app({
 			id: "chat",
 			title: "New chat",
@@ -25,7 +26,7 @@ export const chat = plugin("chat")
 			isListed: false,
 			tabs: { isChat: true, splits: true, runsInPage: false, keepsRecord: true },
 		});
-		app.use(shell).tabPage(chatTabPageOf(pageImports));
+		app.use(shell).tabPage(chatTabPageOf({ imports: pageImports, modules: pageModules }));
 		const { placedApps } = app.use(navigation);
 		app.use(backend).moduleOf(({ store }) => chatFactsModule({ store, apps: placedApps }), chatFactsContract);
 		app.use(windows).module(chatTabs);
@@ -43,6 +44,9 @@ export const chat = plugin("chat")
 		return {
 			pageImport: (importOf: ChatPageImportOf): void => {
 				pageImports.push(importOf);
+			},
+			pageModule: (moduleOf: ChatPageModuleOf): void => {
+				pageModules.push(moduleOf);
 			},
 		};
 	});

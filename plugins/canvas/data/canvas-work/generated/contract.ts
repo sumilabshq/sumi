@@ -140,6 +140,19 @@ export const ShotSchema = z.object({
 	height: z.number(),
 });
 
+export const ShowCanvasAskSchema = z.object({
+	canvasId: CanvasIdSchema,
+	page: PageIdSchema.nullable().default(null).describe("The page the person sees first; null is the canvas's shown page"),
+});
+
+export const ShownCanvasSchema = z.object({
+	canvasId: CanvasIdSchema,
+	title: NameSchema,
+	page: PageIdSchema,
+	pageName: NameSchema,
+	boardCount: z.number().int().nonnegative(),
+});
+
 export const LayerKindSchema = z.enum(["frame", "group", "text", "picture", "control", "shape"]);
 
 export interface Layer {
@@ -278,6 +291,20 @@ export const canvasWork = moduleContract("canvas-work", Device, {
 			})
 			.input(CanvasAskSchema)
 			.output(CanvasSchema)),
+		showCanvas: named("canvases.show-canvas", query()
+			.public()
+			.metadata({
+				description:
+					"Show a canvas in this chat as a small live canvas the person can pan, zoom and switch pages in, with a link to open it whole. Call it after drawing, so the person sees the result without leaving the chat.",
+				mcp: {
+					kind: "read",
+					running: "Showing the canvas",
+					done: "Showed the canvas",
+					ui: { resourceUri: "ui://canvas-mini" },
+				},
+			})
+			.input(ShowCanvasAskSchema)
+			.output(ShownCanvasSchema)),
 	},
 	pages: {
 		createPage: named("pages.create-page", command()

@@ -62,12 +62,19 @@ export const one = query()
 				const named = servedToolNameOf(callName);
 				return named === null ? null : toolLabels.labelOf(named);
 			};
+			const viewOf = (callName: string): string | null => {
+				const named = servedToolNameOf(callName);
+				return named === null ? null : toolLabels.viewOf(named);
+			};
 			return chatOf({
 				isAvailable: assistantSession.isAvailable(),
 				session,
 				cards: assistantSession.cardsOf(session),
 				faces: session.turns.map((turn) =>
-					turn.calls.map((call) => labelledFaceOf(call, assistantSession.faceOf(call), labelOf(call.name))),
+					turn.calls.map((call) => ({
+						...labelledFaceOf(call, assistantSession.faceOf(call), labelOf(call.name)),
+						view: viewOf(call.name),
+					})),
 				),
 			});
 		}),

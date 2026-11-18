@@ -1,0 +1,40 @@
+{
+	"name": "@sumi/git-work",
+	"version": "0.1.0",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		"./contract": {
+			"source": "./generated/contract.ts",
+			"types": "./dist/generated/contract.d.ts",
+			"default": "./dist/generated/contract.js"
+		},
+		"./implementation": {
+			"source": "./generated/module.ts",
+			"types": "./dist/generated/module.d.ts",
+			"default": "./dist/generated/module.js"
+		}
+	},
+	"imports": {
+		"#module": {
+			"source": "./generated/command.ts",
+			"types": "./dist/generated/command.d.ts",
+			"default": "./dist/generated/command.js"
+		}
+	},
+	"dependencies": {
+		"@sumi/contract": "0.6.0",
+		"@widgetarium/data-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false,
+	"description": "The git tool an agent reaches over MCP: show changes between two sides of a repo in the chat"
+}

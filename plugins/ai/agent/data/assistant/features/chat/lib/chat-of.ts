@@ -3,7 +3,6 @@ import type {
 	AssistantCall,
 	AssistantSession,
 	AssistantTurn,
-	CallFace,
 	QueuedMessage,
 	SentPictures,
 } from "@widgetarium/core/engine/assistant-port.js";
@@ -11,14 +10,14 @@ import { attachmentsIn } from "../../../shared/lib/attachment-trailer.js";
 import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
 import { shortPathOf } from "../../../shared/lib/short-path.js";
 import type { AttachmentChip } from "../../../shared/schema/attachment.schema.js";
-import type { Chat, QueuedShown, ShownTurn } from "../../../shared/schema/chat.schema.js";
+import type { Chat, QueuedShown, ShownFace, ShownTurn } from "../../../shared/schema/chat.schema.js";
 import { turnStepsOf } from "./turn-steps.js";
 
 export interface ChatSeen {
 	readonly isAvailable: boolean;
 	readonly session: AssistantSession;
 	readonly cards: ChatCards;
-	readonly faces: readonly (readonly CallFace[])[];
+	readonly faces: readonly (readonly ShownFace[])[];
 }
 
 export function chatOf({ isAvailable, session, cards, faces }: ChatSeen): Chat {
@@ -48,7 +47,7 @@ function isAskingOf(session: AssistantSession, cards: ChatCards): boolean {
 	return !session.busy && Boolean(lastCards?.specApp ?? lastCards?.designApp);
 }
 
-function shownTurnOf(turn: AssistantTurn, faces: readonly CallFace[], at: number): ShownTurn {
+function shownTurnOf(turn: AssistantTurn, faces: readonly ShownFace[], at: number): ShownTurn {
 	if (turn.role !== "user") {
 		return agentTurnOf(turn, faces);
 	}
@@ -71,7 +70,7 @@ function queuedShownOf(message: QueuedMessage): QueuedShown {
 	};
 }
 
-function agentTurnOf(turn: AssistantTurn, faces: readonly CallFace[]): ShownTurn {
+function agentTurnOf(turn: AssistantTurn, faces: readonly ShownFace[]): ShownTurn {
 	const callsWithFaces = turn.calls.flatMap((call, at) => {
 		const face = faces[at];
 		return face === undefined ? [] : [{ call, face }];

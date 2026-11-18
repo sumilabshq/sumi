@@ -1,0 +1,44 @@
+.sumi-mini-canvas {
+	position: relative;
+	display: flex;
+	overflow: hidden;
+	user-select: none;
+}
+
+.sumi-mini-canvas .sumi-mini-canvas-field {
+	height: 100%;
+	background: var(--sumi-mcp-card-fill, var(--wg-kit-group-fill));
+}
+
+.sumi-mini-canvas-cover {
+	position: absolute;
+	inset: 0;
+	cursor: grab;
+}
+
+.sumi-mini-canvas-pages {
+	display: flex;
+	min-width: 0;
+	gap: 2px;
+	overflow: hidden;
+}
+
+.sumi-mini-canvas-page {
+	flex: none;
+	padding: 3px 8px;
+	border: 0;
+	background: none;
+	color: var(--wg-kit-text-muted);
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.sumi-mini-canvas-page:hover {
+	color: var(--sumi-text);
+}
+
+.sumi-mini-canvas-page.is-shown {
+	background: var(--sumi-active);
+	color: var(--sumi-text);
+}

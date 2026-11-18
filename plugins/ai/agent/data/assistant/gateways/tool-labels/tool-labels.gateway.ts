@@ -7,4 +7,6 @@ export interface ServedToolName {
 
 export abstract class ToolLabelsGateway {
 	abstract labelOf(named: ServedToolName): ToolLabel | null;
+
+	abstract viewOf(named: ServedToolName): string | null;
 }

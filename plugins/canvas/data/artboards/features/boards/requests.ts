@@ -40,6 +40,15 @@ export const getShownPageBoards = query()
 		return [...boardsOnPage(canvas, canvas.shownPage)];
 	});
 
+export const getPageBoards = query()
+	.public()
+	.input(BoardsAskSchema)
+	.output(BoardSchema.array())
+	.handle(({ canvasId, page }, { canvases }) => {
+		const canvas = canvases.canvas(canvasId);
+		return [...boardsOnPage(canvas, page ?? canvas.shownPage)];
+	});
+
 export const getBoard = query()
 	.public()
 	.input(BoardAskSchema)
