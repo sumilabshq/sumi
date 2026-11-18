@@ -2,6 +2,7 @@ import { newTabPlaceOf } from "../tabs/host-tabs.js";
 import type { HostTabsMoment, TabGroup } from "../tabs/host-tabs.js";
 import { SECTION_TITLES, WORKSPACE_LIST, findGroup } from "../tabs/tab-lists.js";
 import { TabRows } from "./tab-rows.js";
+import { artifactIdsOf, isChatList } from "../tabs/chat-lists.js";
 import { SplitRows } from "./split-rows.js";
 import type {
 	PlacedSidebar,
@@ -64,9 +65,18 @@ class SidebarEntries {
 	}
 
 	private sidebarTabOf(tab: SidebarTab["tab"]): SidebarTab {
+		if (!isChatList(this.moment, tab.id)) {
+			return {
+				kind: "tab",
+				tab,
+			};
+		}
+
 		return {
 			kind: "tab",
 			tab,
+			artifacts: artifactIdsOf(this.moment, tab.id).flatMap((id) => this.rows.rowsOf(id)).map((artifact) => ({ kind: "tab", tab: artifact })),
+			isFolded: this.moment.tabs.find((one) => one.id === tab.id)?.isFolded ?? false,
 		};
 	}
 

@@ -1,6 +1,7 @@
 import { closedPlaceOf, keptClosed, reopenPlaceOf, withoutGroup } from "./host-tabs-moment.js";
 import type { ClosedTab, HostTab, HostTabsMoment, TabPage } from "./host-tabs-moment.js";
 import { isPageTab, pageTabIdsOf, tabOf } from "./host-tabs.js";
+import { withArtifactsOf } from "./chat-lists.js";
 import type { MovedTabs } from "./host-tabs.js";
 import { groupsUnder, locationOf, tabIdsOfGroup, withTabAt, withoutTab } from "./tab-lists.js";
 import type { TabGroup, TabLayout } from "./tab-lists.js";
@@ -86,11 +87,13 @@ function closedMoment(
 	ids: readonly string[],
 	pages: ReadonlyMap<string, TabPage>,
 ): HostTabsMoment {
-	const closed = ids.map((id) => closedOf(moment, tabOf(moment, id), pages));
+	const closed = withArtifactsOf(moment, ids).map((id) => closedOf(moment, tabOf(moment, id), pages));
 	const leaving = new Set(closed.map(({ tab }) => tab.id));
+	const layout = closed.reduce<TabLayout>((kept, { tab }) => withoutTab(kept, tab.id), moment);
 	return {
 		...moment,
-		...closed.reduce<TabLayout>((kept, { tab }) => withoutTab(kept, tab.id), moment),
+		...layout,
+		lists: Object.fromEntries(Object.entries(layout.lists).filter(([list]) => !leaving.has(list))),
 		tabs: moment.tabs.filter((tab) => !leaving.has(tab.id)),
 		shownId: survivingIdOf(moment, moment.shownId, leaving),
 		selectedId: survivingIdOf(moment, moment.selectedId, leaving),

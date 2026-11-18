@@ -2,8 +2,8 @@ import { Repeatable } from "@widgetarium/data-framework";
 import { command } from "#module";
 import { answered, moving, settledOf, settling } from "../../shared/lib/settling/settling.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
-import { PlaceTabAskSchema, RenameTabAskSchema } from "../../shared/schema/tab-asks.schema.js";
-import { placeTabPlan, renamePlan } from "./lib/placing-plans.js";
+import { FoldTabAskSchema, PlaceTabAskSchema, RenameTabAskSchema } from "../../shared/schema/tab-asks.schema.js";
+import { foldPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
 
 export const place = command()
 	.public()
@@ -20,4 +20,12 @@ export const rename = command()
 	.idempotencyKey(Repeatable)
 	.handle(async ({ window, id, label }, { tabs, placedApps }) => {
 		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), renamePlan(id, label))));
+	});
+
+export const fold = command()
+	.public()
+	.input(FoldTabAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ window, id }, { tabs, placedApps }) => {
+		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), foldPlan(id))));
 	});

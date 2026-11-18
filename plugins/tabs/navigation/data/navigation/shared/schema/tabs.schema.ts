@@ -66,6 +66,7 @@ export const KeptTabSchema = z.object({
 	lastAddress: z.string().nullable().default(null),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),
+	isFolded: z.boolean().optional(),
 });
 
 export const ClosedTabSchema = z.object({

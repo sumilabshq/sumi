@@ -2,7 +2,8 @@ import type { TabPlaceAsked } from "../../../shared/schema/tab-asks.schema.js";
 import { movedPlan, refusal } from "../../../shared/lib/settling/settling.js";
 import type { MomentPlan, ShowingPlan } from "../../../shared/lib/settling/settling.js";
 import { withMoved } from "../../../shared/lib/showing/showing.js";
-import { heldTabOf, isKnownList, placeTab, renameTab } from "../../../shared/lib/tabs/host-tabs.js";
+import { foldTab, heldTabOf, placeTab, renameTab } from "../../../shared/lib/tabs/host-tabs.js";
+import { artifactIdsOf, isPlaceableList } from "../../../shared/lib/tabs/chat-lists.js";
 import type { HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
 import { refuseStanding } from "../../../shared/lib/tabs/tab-invariants.js";
 import { carryOutOfSplit, isSplitRefusal } from "../../../shared/lib/splits/split-moves.js";
@@ -11,7 +12,8 @@ import { firstListedMember, splitOfTab } from "../../../shared/lib/splits/split-
 import { WORKSPACE_LIST, chatOfGroup, locationOf } from "../../../shared/lib/tabs/tab-lists.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
-const UNKNOWN_LIST = 'no tab list "{list}" is here: a tab stands in the list of a window';
+const UNKNOWN_LIST = 'no tab list "{list}" is here: a tab stands in the list of the workspace or of a chat';
+const HOLDS_NOTHING = 'the tab "{id}" holds no tabs: there is nothing under it to fold';
 const GROUP_NOT_IN_LIST = 'no group "{group}" stands in the tab list "{list}"';
 
 export function placeTabPlan(id: string, asked: TabPlaceAsked): ShowingPlan {
@@ -46,6 +48,18 @@ export function beforeIdOfBlock(moment: HostTabsMoment, id: string, { list, befo
 	return firstListedMember(moment, others, list) ?? before;
 }
 
+export function foldPlan(id: string): MomentPlan<null> {
+	return (moment) => {
+		if (!heldTabOf(moment, id)) {
+			return refusal(NOT_HELD.replace("{id}", id));
+		}
+
+		return artifactIdsOf(moment, id).length === 0
+			? refusal(HOLDS_NOTHING.replace("{id}", id))
+			: movedPlan(moment, foldTab(moment, id), null);
+	};
+}
+
 export function renamePlan(id: string, label: string): MomentPlan<null> {
 	return (moment) =>
 		heldTabOf(moment, id)
@@ -70,11 +84,11 @@ function placeRefusalOf(moment: HostTabsMoment, id: string, asked: TabPlaceAsked
 		return NOT_HELD.replace("{id}", id);
 	}
 
-	return refuseStanding(tab, asked.list) ?? listRefusalOf(moment, asked);
+	return refuseStanding(moment, tab, asked.list) ?? listRefusalOf(moment, asked);
 }
 
 function listRefusalOf(moment: HostTabsMoment, asked: TabPlaceAsked): string | null {
-	if (!isKnownList(asked.list)) {
+	if (!isPlaceableList(moment, asked.list)) {
 		return UNKNOWN_LIST.replace("{list}", asked.list);
 	}
 

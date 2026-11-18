@@ -162,6 +162,17 @@ export function markSelected(moment: HostTabsMoment, id: string): MovedTabs | nu
 	};
 }
 
+export function foldTab(moment: HostTabsMoment, id: string): MovedTabs {
+	const isFolded = !(tabOf(moment, id).isFolded ?? false);
+	return {
+		moment: {
+			...moment,
+			tabs: tabsWith(moment, id, { isFolded }),
+		},
+		reason: `fold ${id}, ${isFolded ? "open → folded" : "folded → open"}`,
+	};
+}
+
 export function renameTab(moment: HostTabsMoment, id: string, typed: string): MovedTabs | null {
 	const renamed = tabOf(moment, id);
 	const label = typed.trim() || null;

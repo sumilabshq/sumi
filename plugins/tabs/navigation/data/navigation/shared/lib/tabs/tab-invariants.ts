@@ -1,9 +1,14 @@
 import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "./host-tabs-moment.js";
+import { isChatTab } from "./app-abilities.js";
+import { CHAT_HOLDS_CHAT, CHAT_HOLDS_GROUP, isChatList, isPlaceableList } from "./chat-lists.js";
+import type { ChatListFacts } from "./chat-lists.js";
 import { chatOfGroup, flatTabIdsOf, isSectionList } from "./tab-lists.js";
 
-const LIST_OF_NO_WINDOW = 'the list "{list}" belongs to no tab: only the workspace and a tab own a list';
-const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands only in the list of the workspace';
+const LIST_OF_NO_WINDOW = 'the list "{list}" belongs to no tab: only the workspace and a chat own a list';
+const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands in the list of the workspace or of a chat';
+const CHAT_IN_CHAT = 'the tab "{id}" cannot stand inside "{list}": {said}';
+const GROUP_IN_CHAT = 'the group "{id}" stands inside the chat "{list}": {said}';
 const NOT_ONE_PLACE = 'the tab "{id}" stands in {count} places: a tab stands in exactly one list';
 const UNKNOWN_ENTRY = 'the list "{list}" names "{id}", which is no tab or group here';
 const GROUP_NOT_ONE_LIST = 'the group "{id}" stands in {count} places: a group stands in exactly one list or group';
@@ -14,10 +19,24 @@ interface Standing {
 	readonly tabId: string;
 }
 
-type TabLaws = Pick<HostTabsMoment, "tabs" | "lists" | "groups">;
+type TabLaws = Pick<HostTabsMoment, "tabs" | "lists" | "groups" | "apps">;
 
-export function refuseStanding(tab: { readonly id: string }, list: string): string | null {
-	return isSectionList(list) ? null : REFUSED_STANDING.replace("{id}", tab.id).replace("{list}", list);
+export function refuseStanding(
+	facts: Pick<ChatListFacts, "tabs" | "apps">,
+	tab: Pick<ChatListFacts["tabs"][number], "id" | "app">,
+	list: string,
+): string | null {
+	if (isSectionList(list)) {
+		return null;
+	}
+
+	if (!isChatList(facts, list)) {
+		return REFUSED_STANDING.replace("{id}", tab.id).replace("{list}", list);
+	}
+
+	return isChatTab(facts.apps, tab)
+		? CHAT_IN_CHAT.replace("{id}", tab.id).replace("{list}", list).replace("{said}", CHAT_HOLDS_CHAT)
+		: null;
 }
 
 export function tabBreaksOf(moment: TabLaws): readonly string[] {
@@ -26,6 +45,7 @@ export function tabBreaksOf(moment: TabLaws): readonly string[] {
 		...unknownEntries(moment),
 		...groupsNotInOneList(moment),
 		...groupsUnderNoList(moment),
+		...groupsInChats(moment),
 		...tabsStandingRefused(moment),
 		...tabsNotInOnePlace(moment),
 	];
@@ -33,7 +53,7 @@ export function tabBreaksOf(moment: TabLaws): readonly string[] {
 
 function listsOfNoWindow(moment: TabLaws): readonly string[] {
 	return Object.keys(moment.lists)
-		.filter((list) => !isSectionList(list))
+		.filter((list) => !isPlaceableList(moment, list))
 		.map((list) => LIST_OF_NO_WINDOW.replace("{list}", list));
 }
 
@@ -67,11 +87,20 @@ function groupsUnderNoList(moment: TabLaws): readonly string[] {
 		.map((group) => GROUP_IN_NO_LIST.replace("{id}", group.id));
 }
 
+function groupsInChats(moment: TabLaws): readonly string[] {
+	return moment.groups.flatMap((group) => {
+		const list = chatOfGroup(moment, group.id);
+		return list !== null && isChatList(moment, list)
+			? [GROUP_IN_CHAT.replace("{id}", group.id).replace("{list}", list).replace("{said}", CHAT_HOLDS_GROUP)]
+			: [];
+	});
+}
+
 function tabsStandingRefused(moment: TabLaws): readonly string[] {
 	const tabOf = new Map(moment.tabs.map((tab) => [tab.id, tab]));
 	return standingsOf(moment).flatMap(({ list, tabId }) => {
 		const tab = tabOf.get(tabId);
-		const refusal = tab === undefined ? null : refuseStanding(tab, list);
+		const refusal = tab === undefined ? null : refuseStanding(moment, tab, list);
 		return refusal === null ? [] : [refusal];
 	});
 }

@@ -448,6 +448,11 @@ export const ReopenClosedAskSchema = z.object({
 	tabId: z.string().min(1).nullable(),
 });
 
+export const FoldTabAskSchema = z.object({
+	window: z.string().min(1),
+	id: z.string().min(1),
+});
+
 export const RenameTabAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),
@@ -567,10 +572,17 @@ export const AppTabsSchema = z.object({
 	canReopen: z.boolean(),
 });
 
+export const ArtifactRowSchema = z.object({
+	kind: z.literal("tab"),
+	tab: AppTabStateSchema,
+});
+
 export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
+	artifacts: z.array(ArtifactRowSchema).readonly().optional(),
+	isFolded: z.boolean().optional(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
@@ -745,6 +757,7 @@ export const KeptTabSchema = z.object({
 	lastAddress: z.string().nullable().default(null),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),
+	isFolded: z.boolean().optional(),
 });
 
 export const ClosedTabSchema = z.object({
@@ -968,6 +981,10 @@ export const navigation = moduleContract("navigation", Server, {
 		rename: named("tab-placing.rename", command()
 			.public()
 			.input(RenameTabAskSchema)
+			.idempotencyKey(Repeatable)),
+		fold: named("tab-placing.fold", command()
+			.public()
+			.input(FoldTabAskSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	tabShowing: {

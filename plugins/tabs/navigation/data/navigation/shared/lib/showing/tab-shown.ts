@@ -2,7 +2,9 @@ import type { TabEffect } from "../../schema/screen.schema.js";
 import { focusedInSplit } from "../splits/split-moves.js";
 import { shownSplitOf, splitOfTab } from "../splits/split-members.js";
 import { isChatTab } from "../tabs/app-abilities.js";
-import { chatIdOf } from "../tabs/host-tabs.js";
+import { chatIdOf, heldTabOf } from "../tabs/host-tabs.js";
+import { isChatList } from "../tabs/chat-lists.js";
+import { locationOf } from "../tabs/tab-lists.js";
 import type { HostTab, HostTabsMoment } from "../tabs/host-tabs.js";
 import { markSeen } from "../tabs/tab-marks.js";
 import { holderLabelOf } from "../tabs/tab-leases.js";
@@ -33,7 +35,23 @@ export function withShownTab(showing: Showing, facts: TabFacts, { tab, paneId }:
 		console.info(`[widgetarium] show ${tab.id}: pane ${paneId} ignored, only a tab holder opens in a pane it names`);
 	}
 
-	return splitShowingOf(showing, facts, tab) ?? withLoneTabShown(showing, facts, tab);
+	return withHoldingChatShown(splitShowingOf(showing, facts, tab) ?? withLoneTabShown(showing, facts, tab), tab);
+}
+
+function withHoldingChatShown(showing: Showing, tab: HostTab): Showing {
+	const list = locationOf(showing.moment, tab.id)?.chatId ?? null;
+	const chat = list === null || !isChatList(showing.moment, list) ? undefined : heldTabOf(showing.moment, list);
+
+	if (chat === undefined) {
+		return showing;
+	}
+
+	console.info(`[widgetarium] show ${tab.id}: its chat ${chat.id} comes beside it`);
+	return withEffect(showing, {
+		kind: "show-chat",
+		chatId: chatIdOf(showing.moment.apps, chat) ?? chat.id,
+		paneId: null,
+	});
 }
 
 function splitShowingOf(showing: Showing, facts: TabFacts, tab: HostTab): Showing | null {

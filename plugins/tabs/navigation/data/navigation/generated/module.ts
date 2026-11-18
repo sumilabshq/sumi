@@ -7,7 +7,7 @@ import { closeGroup, closeOthers, closeShown as tabClosingCloseShown, closeTab }
 import { askedLinks, openLink, ownAppTab, recordAppAddress, rereadAskedLinks, rereadOwnAppTab, takeAskedLink } from "../features/tab-facts/requests.js";
 import { goBack, goForward } from "../features/tab-history/requests.js";
 import { duplicate, navigate, openBelow, openOnce, openTab, reopenClosed } from "../features/tab-opening/requests.js";
-import { place as tabPlacingPlace, rename } from "../features/tab-placing/requests.js";
+import { fold, place as tabPlacingPlace, rename } from "../features/tab-placing/requests.js";
 import { fitToPanes, openInOwnWindow, reload, rememberPages, restore, show, showView, tearOff } from "../features/tab-showing/requests.js";
 import { closedTabs, heldTabs, holders, placedTabs, rereadPlaced, rows, shownView, sidebar } from "../features/tabs/requests.js";
 import { hideLeft, rereadSides, sides } from "../features/window-sides/requests.js";
@@ -59,6 +59,7 @@ export const navigation = handledModule(definition, [
 	named("tab-opening.open-once", openOnce),
 	named("tab-opening.open-tab", openTab),
 	named("tab-opening.reopen-closed", reopenClosed),
+	named("tab-placing.fold", fold),
 	named("tab-placing.place", tabPlacingPlace),
 	named("tab-placing.rename", rename),
 	named("tab-showing.fit-to-panes", fitToPanes),

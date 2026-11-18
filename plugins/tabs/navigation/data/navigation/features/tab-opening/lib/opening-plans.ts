@@ -16,7 +16,6 @@ import { tabPageOf } from "../../../shared/lib/showing/tab-pages.js";
 import {
 	chatIdOf,
 	heldTabOf,
-	isKnownList,
 	newTabPlaceOf,
 	openTab,
 	openTabAfter,
@@ -25,6 +24,7 @@ import {
 import type { HostTab, HostTabsMoment, OpenedHostTab, TabPlace } from "../../../shared/lib/tabs/host-tabs.js";
 import { chatOfGroup, placeAfterOf } from "../../../shared/lib/tabs/tab-lists.js";
 import { isPageApp, navigatingAppOf } from "../../../shared/lib/tabs/app-abilities.js";
+import { isChatList, isPlaceableList } from "../../../shared/lib/tabs/chat-lists.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
 const NOT_LISTED = 'the tab "{id}" stands in no list';
@@ -179,11 +179,11 @@ function askedPlaceOf(moment: HostTabsMoment, { list, groupId }: AskedPlace): Ta
 		return groupPlaceOf(moment, groupId, list);
 	}
 
-	if (list !== null && !isKnownList(list)) {
+	if (list !== null && !isPlaceableList(moment, list)) {
 		return refusal(NO_LIST.replace("{list}", list));
 	}
 
-	return newTabPlaceOf(list);
+	return list !== null && isChatList(moment, list) ? { chatId: list, groupId: null, before: null } : newTabPlaceOf(list);
 }
 
 function duplicatePlaceOf(moment: HostTabsMoment, asked: AskedPlace & { readonly id: string }): TabPlace | Refusal {

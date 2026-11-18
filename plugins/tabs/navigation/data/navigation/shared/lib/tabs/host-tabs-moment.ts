@@ -29,6 +29,7 @@ export interface HostTab extends OpenedTab {
 	readonly history?: TabHistory | undefined;
 	readonly title: string | null;
 	readonly mark: TabMark;
+	readonly isFolded?: boolean | undefined;
 }
 
 export interface TabPage {

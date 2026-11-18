@@ -154,6 +154,8 @@ export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
+	artifacts: z.array(z.object({ kind: z.literal("tab"), tab: AppTabStateSchema })).readonly().optional(),
+	isFolded: z.boolean().optional(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
@@ -623,6 +625,10 @@ export const appHost = moduleContract("app-host", Device, {
 		renameTab: named("tab-actions.rename-tab", command()
 			.public()
 			.input(z.object({ id: z.string(), label: z.string() }))
+			.idempotencyKey(Repeatable)),
+		foldTab: named("tab-actions.fold-tab", command()
+			.public()
+			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
 		closeOthers: named("tab-actions.close-others", command()
 			.public()

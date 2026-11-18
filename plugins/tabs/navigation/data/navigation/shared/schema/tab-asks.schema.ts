@@ -102,6 +102,11 @@ export const ReopenClosedAskSchema = z.object({
 	tabId: z.string().min(1).nullable(),
 });
 
+export const FoldTabAskSchema = z.object({
+	window: z.string().min(1),
+	id: z.string().min(1),
+});
+
 export const RenameTabAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),

@@ -153,6 +153,8 @@ export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
+	artifacts: z.array(z.object({ kind: z.literal("tab"), tab: AppTabStateSchema })).readonly().optional(),
+	isFolded: z.boolean().optional(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;

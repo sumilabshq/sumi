@@ -57,10 +57,17 @@ export const AppTabsSchema = z.object({
 	canReopen: z.boolean(),
 });
 
+export const ArtifactRowSchema = z.object({
+	kind: z.literal("tab"),
+	tab: AppTabStateSchema,
+});
+
 export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
+	artifacts: z.array(ArtifactRowSchema).readonly().optional(),
+	isFolded: z.boolean().optional(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;

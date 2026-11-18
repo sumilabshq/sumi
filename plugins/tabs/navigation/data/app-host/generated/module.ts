@@ -8,7 +8,7 @@ import { closeShowingPanes, closeShown as paneTabsCloseShown, dropGoneTabs, open
 import { aim, close, paneTree, place, placementPreview, rereadPanes, rereadPanesForCore, rereadPanesForTabs, resizeSplit } from "../features/panes/requests.js";
 import { current, rereadShownView, rereadShownViewForCore, showView } from "../features/shown-view/requests.js";
 import { closeViewPane, placeInView, rereadShown, rereadShownForCore, resize, shown, unsplit } from "../features/splits/requests.js";
-import { closeGroup, closeOthers, closeShown as tabActionsCloseShown, closeTab, closeTabs, duplicate, navigate, openBelow, openOnce, openTab, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
+import { closeGroup, closeOthers, closeShown as tabActionsCloseShown, closeTab, closeTabs, duplicate, foldTab, navigate, openBelow, openOnce, openTab, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
 import { appTabs, canOpenOwnWindow, ensurePanePages, heldTabs, holders, placeTab, rememberPages, rereadForAccessAsks, rereadForChats, rereadForInk, rereadForPages, rereadTabs, rereadTabsForCore, restore, showTab, tabsSidebar } from "../features/tabs/requests.js";
 import { studioCoreChanged } from "../gateways/core-changes/core-changes.events.js";
 import { peeksChanged } from "../gateways/side-peeks/side-peeks.events.js";
@@ -72,6 +72,7 @@ export const appHost = handledModule(definition, [
 	named("tab-actions.close-tab", closeTab),
 	named("tab-actions.close-tabs", closeTabs),
 	named("tab-actions.duplicate", duplicate),
+	named("tab-actions.fold-tab", foldTab),
 	named("tab-actions.navigate", navigate),
 	named("tab-actions.open-below", openBelow),
 	named("tab-actions.open-once", openOnce),

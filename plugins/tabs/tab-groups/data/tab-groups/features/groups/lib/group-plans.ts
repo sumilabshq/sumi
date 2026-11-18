@@ -14,6 +14,7 @@ import type { GroupChange, HostTabsMoment, TabGroup } from "@widgetarium/navigat
 import { addGroup, changeGroup, placeGroup, ungroup } from "../../../shared/lib/tab-groups.js";
 import { beforeIdOfBlock } from "@widgetarium/navigation/lib/features/tab-placing/lib/placing-plans";
 import { refuseStanding } from "@widgetarium/navigation/lib/shared/lib/tabs/tab-invariants";
+import { CHAT_HOLDS_GROUP, isChatList } from "@widgetarium/navigation/lib/shared/lib/tabs/chat-lists";
 import type { AddedGroup } from "../../../shared/lib/tab-groups.js";
 
 const NO_GROUP = 'no group "{id}"';
@@ -135,6 +136,10 @@ function withGroupFaced(added: AddedGroup, face: GroupChange): AddedGroup {
 }
 
 function groupPlaceRefusalOf(moment: HostTabsMoment, group: TabGroup, { list, groupId }: GroupPlaceAsked): string | null {
+	if (isChatList(moment, list)) {
+		return CHAT_HOLDS_GROUP;
+	}
+
 	if (!isKnownList(list)) {
 		return UNKNOWN_LIST.replace("{list}", list);
 	}
@@ -151,7 +156,7 @@ function groupPlaceRefusalOf(moment: HostTabsMoment, group: TabGroup, { list, gr
 
 	const holdsRefused = tabIdsOfGroup(moment.groups, group).some((tabId) => {
 		const tab = heldTabOf(moment, tabId);
-		return tab !== undefined && refuseStanding(tab, list) !== null;
+		return tab !== undefined && refuseStanding(moment, tab, list) !== null;
 	});
 	return holdsRefused ? REFUSED_IN_GROUP.replace("{id}", group.id).replace("{list}", list) : null;
 }

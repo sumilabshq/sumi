@@ -91,6 +91,15 @@ export const renameTab = command()
 		emit(tabsSettled);
 	});
 
+export const foldTab = command()
+	.public()
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable)
+	.handle(async ({ id }, { send, emit, studioWindow }) => {
+		await send(navigation.tabPlacing.fold, { window: studioWindow.placesWindow(), id });
+		emit(tabsSettled);
+	});
+
 export const closeOthers = command()
 	.public()
 	.input(z.object({ id: z.string() }))
