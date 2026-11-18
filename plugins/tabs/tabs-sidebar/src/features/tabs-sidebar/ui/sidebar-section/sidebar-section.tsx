@@ -1,4 +1,4 @@
-import { createElement as h, useEffect, useRef, useState } from "react";
+import { createElement as h, useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import {
@@ -16,7 +16,8 @@ import { appHost } from "@widgetarium/app-host/contract";
 import type { SidebarEntry, TabsSidebar } from "@widgetarium/app-host/contract";
 import { TabIcons, tabOf } from "@sumi/tab-strip-plugin";
 import type { StripItem, TabActs } from "@sumi/tab-strip-plugin";
-import { arrangedSidebarOf } from "../../lib/arranged-sidebar.js";
+import { groups } from "@sumi/groups/contract";
+import { arrangedSidebarOf, carriedOf } from "../../lib/arranged-sidebar.js";
 import { draggedItemOf } from "../../lib/dragged-item.js";
 import { splitItemOf, tabItemOf } from "../../lib/entry-items.js";
 import { GroupEntry } from "../group-entry/group-entry.js";
@@ -34,6 +35,8 @@ export interface SidebarSectionProps {
 	onDropOutside(outside: SidebarSortOutside): void;
 }
 
+const LEVEL_PX = 24;
+
 export function SidebarSection({
 	list,
 	sidebar,
@@ -47,7 +50,9 @@ export function SidebarSection({
 	const [isOpen, setOpen] = useState(true);
 	const menu = useRef<HTMLElement | null>(null);
 	const placeTab = useCommand(appHost.tabs.placeTab);
+	const placeGroup = useCommand(groups.actions.place);
 	const sort = useSidebarSort({
+		levelPx: LEVEL_PX,
 		onDrop: (drop) => {
 			const { placed } = arrangedSidebarOf(sidebar, drop.id, drop);
 
@@ -57,7 +62,9 @@ export function SidebarSection({
 			}
 
 			console.info(`[widgetarium] sidebar drop ${drop.id} ${drop.place} ${drop.targetId} → ${JSON.stringify(placed.to)}`);
-			void placeTab.run(placed).then((answer) => {
+			const placing =
+				placed.kind === "group" ? placeGroup.run({ id: placed.id, to: placed.to }) : placeTab.run({ id: placed.id, to: placed.to });
+			void placing.then((answer) => {
 				if (!answer.ok) {
 					console.warn(`[widgetarium] sidebar drop of ${drop.id} refused: ${answer.reason}`);
 				}
@@ -69,12 +76,36 @@ export function SidebarSection({
 	const latestOnSorting = useRef(onSorting);
 	latestOnSorting.current = onSorting;
 	useEffect(() => latestOnSorting.current(sorting), [sorting]);
-	useFlipRows(menu);
-	const shown =
-		sorting === null || sorting.outside !== null ? sidebar : arrangedSidebarOf(sidebar, sorting.id, sorting.aim).sidebar;
-	const section = shown.sections.find((one) => one.list === list);
 	const draggedId = sorting?.id ?? null;
-	const dragged = draggedId === null ? null : draggedItemOf(items, draggedId);
+	const aim = sorting === null || sorting.outside !== null ? null : sorting.aim;
+	const section = useMemo(() => {
+		const shown = draggedId === null ? sidebar : arrangedSidebarOf(sidebar, draggedId, aim).sidebar;
+		return shown.sections.find((one) => one.list === list);
+	}, [sidebar, draggedId, aim, list]);
+	useFlipRows(menu, section);
+	const rows = useMemo(
+		() => section?.entries.map((entry) => entryOf(entry, { list, acts, draggedId, onMenu })),
+		[section, list, acts, draggedId, onMenu],
+	);
+	const ghost = useMemo(() => {
+		const carried = draggedId === null ? null : carriedOf(sidebar, draggedId);
+		const tab = draggedId === null ? null : draggedItemOf(items, draggedId);
+
+		if (carried?.node.kind === "group") {
+			return (
+				<SidebarMenu role="presentation">
+					{entryOf(carried.node, { list, acts, draggedId: null, onMenu })}
+				</SidebarMenu>
+			);
+		}
+
+		return tab === null ? null : (
+			<SidebarMenuButton size="sm" tabIndex={-1}>
+				<TabIcons item={tab} />
+				<span className="sumi-tabs-sidebar-title">{tabOf(tab).title}</span>
+			</SidebarMenuButton>
+		);
+	}, [sidebar, items, draggedId, list, acts, onMenu]);
 
 	if (section === undefined) {
 		return null;
@@ -96,29 +127,27 @@ export function SidebarSection({
 					aria-label={section.title}
 					onPointerDown={sort.onPointerDown}
 				>
-					{section.entries.map((entry) => entryOf(entry, list, acts, draggedId, onMenu))}
+					{rows}
 					{last}
 				</SidebarMenu>
 			) : null}
-			{sorting === null || sorting.outside !== null || dragged === null ? null : (
+			{sorting === null || sorting.outside !== null || ghost === null ? null : (
 				<SidebarDragGhost left={sorting.left} top={sorting.top} width={sorting.width}>
-					<SidebarMenuButton size="sm" tabIndex={-1}>
-						<TabIcons item={dragged} />
-						<span className="sumi-tabs-sidebar-title">{tabOf(dragged).title}</span>
-					</SidebarMenuButton>
+					{ghost}
 				</SidebarDragGhost>
 			)}
 		</SidebarGroup>
 	);
 }
 
-function entryOf(
-	entry: SidebarEntry,
-	list: string,
-	acts: TabActs,
-	draggedId: string | null,
-	onMenu: (id: string, event: MouseEvent<HTMLElement>) => void,
-): ReactNode {
+interface EntryLook {
+	readonly list: string;
+	readonly acts: TabActs;
+	readonly draggedId: string | null;
+	onMenu(id: string, event: MouseEvent<HTMLElement>): void;
+}
+
+function entryOf(entry: SidebarEntry, { list, acts, draggedId, onMenu }: EntryLook): ReactNode {
 	if (entry.kind === "group") {
 		return (
 			<GroupEntry
@@ -127,6 +156,8 @@ function entryOf(
 				list={list}
 				acts={acts}
 				draggedId={draggedId}
+				depth={0}
+				isLifted={false}
 				onMenu={onMenu}
 			/>
 		);

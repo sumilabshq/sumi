@@ -5,6 +5,7 @@ import { groupColourOf } from "../../lib/group-colour.js";
 import { openGroupMenu } from "../../lib/group-menu-ask.js";
 import type { StripItem } from "../../lib/strip-items.js";
 import { itemIdOf } from "../../lib/strip-items.js";
+import { runIdOf, tabCountOf } from "../../lib/strip-runs.js";
 import type { StripRun as Run } from "../../lib/strip-runs.js";
 import type { TabActs } from "../../lib/use-tab-acts.js";
 import type { TabDrag } from "../../lib/use-tab-drag.js";
@@ -64,10 +65,14 @@ export function StripRun({ run, acts, drag, liftedId, onMenu }: StripRunProps): 
 				title={label}
 				onClick={() => void fold.run({ id: group.id })}
 			>
-				{group.isOpen ? group.name : `${group.name} ${run.tabs.length}`}
+				{group.isOpen ? group.name : `${group.name} ${tabCountOf(run)}`}
 			</button>
 			<div className="sumi-strip-group-tabs" aria-hidden={!group.isOpen}>
-				<div className="sumi-strip-group-track">{run.tabs.map((tab) => tabOf(tab))}</div>
+				<div className="sumi-strip-group-track">
+					{run.runs.map((inner) => (
+						<StripRun key={runIdOf(inner)} run={inner} acts={acts} drag={drag} liftedId={liftedId} onMenu={onMenu} />
+					))}
+				</div>
 			</div>
 		</div>
 	);

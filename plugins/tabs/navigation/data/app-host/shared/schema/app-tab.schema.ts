@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ChatMarkSchema } from "./tab-mark.schema.js";
 import { GroupHueSchema, WorkspaceListSchema } from "./tab-group.schema.js";
+import type { GroupHue } from "./tab-group.schema.js";
 
 export const AppKindSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
 
@@ -156,20 +157,33 @@ export const SidebarTabSchema = z.object({
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
 
-export const SidebarGroupStateSchema = z.object({
-	id: z.string(),
-	name: z.string(),
-	hue: GroupHueSchema.nullable(),
-	isOpen: z.boolean(),
-	items: z.array(SidebarTabSchema).readonly(),
-});
+export interface SidebarGroupState {
+	readonly id: string;
+	readonly name: string;
+	readonly hue: GroupHue | null;
+	readonly isOpen: boolean;
+	readonly items: readonly SidebarGroupItem[];
+}
 
-export type SidebarGroupState = z.infer<typeof SidebarGroupStateSchema>;
+export interface SidebarGroup {
+	readonly kind: "group";
+	readonly group: SidebarGroupState;
+}
 
-export const SidebarGroupSchema = z.object({
-	kind: z.literal("group"),
-	group: SidebarGroupStateSchema,
-});
+export type SidebarGroupItem = SidebarTab | SidebarGroup;
+
+export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
+	z.object({
+		kind: z.literal("group"),
+		group: z.object({
+			id: z.string(),
+			name: z.string(),
+			hue: GroupHueSchema.nullable(),
+			isOpen: z.boolean(),
+			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema])).readonly(),
+		}),
+	}),
+);
 
 export const SplitMemberSchema = z.object({
 	item: SidebarTabSchema,
@@ -192,11 +206,7 @@ export const SidebarSplitSchema = z.object({
 	split: SidebarSplitStateSchema,
 });
 
-export const SidebarEntrySchema = z.discriminatedUnion("kind", [
-	SidebarTabSchema,
-	SidebarGroupSchema,
-	SidebarSplitSchema,
-]);
+export const SidebarEntrySchema = z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 

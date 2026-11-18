@@ -40,13 +40,17 @@ function listedOf(entry: SidebarEntry | SidebarItem): readonly ListedEntry[] {
 		return entry.split.members.flatMap((member) => listedOf(member.item));
 	}
 
-	return [groupListedOf(entry.group)];
+	return groupsListedOf(entry.group);
 }
 
-function groupListedOf({ items, ...face }: Extract<SidebarEntry, { kind: "group" }>["group"]): ListedGroup {
-	return {
-		kind: "group",
-		...face,
-		tabs: items.map((item) => item.tab),
-	};
+// TRADE-OFF: a group inside a group is listed flat after its holder; a tree is better, agents read a flat state
+function groupsListedOf({ items, ...face }: Extract<SidebarEntry, { kind: "group" }>["group"]): readonly ListedGroup[] {
+	return [
+		{
+			kind: "group",
+			...face,
+			tabs: items.flatMap((item) => (item.kind === "tab" ? [item.tab] : [])),
+		},
+		...items.flatMap((item) => (item.kind === "group" ? groupsListedOf(item.group) : [])),
+	];
 }

@@ -7,6 +7,7 @@ import { tabGroups as tabGroupsModule } from "../plugins/tabs/tab-groups/data/ta
 import { tabGroups } from "../plugins/tabs/tab-groups/data/tab-groups/generated/contract.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { z } from "zod";
+import { groupEntriesOf } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/group-entries.ts";
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { momentOfWindow, windowTabsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
 import {
@@ -41,10 +42,12 @@ export const BARE_SCREEN: Screen = {
 	elsewhere: [],
 };
 
+const OldGroupSchema = KeptGroupSchema.omit({ entries: true }).extend({ tabIds: z.array(z.string()) });
+
 const SeededTabsSchema = z.object({
 	tabs: z.array(KeptTabSchema),
 	lists: z.record(z.string(), z.array(ListEntrySchema)).nullable().default(null),
-	groups: z.array(KeptGroupSchema).default([]),
+	groups: z.array(z.union([KeptGroupSchema, OldGroupSchema])).default([]),
 	shownId: z.string().nullable(),
 	minted: z.number().int().nonnegative(),
 	closed: z.array(ClosedTabSchema),
@@ -62,7 +65,7 @@ export function placedTabsOf(
 	chatIds: readonly string[] = [],
 	factsOf: Readonly<Record<string, SeededFacts>> = {},
 ): PlacedTabs {
-	const session = SeededTabsSchema.parse(seed);
+	const session = SeededTabsSchema.parse(groupEntriesOf(seed).tabs);
 	const heldIds = new Set(session.tabs.map((tab) => tab.id));
 	const chatTabs = chatIds
 		.filter((id) => !heldIds.has(id))

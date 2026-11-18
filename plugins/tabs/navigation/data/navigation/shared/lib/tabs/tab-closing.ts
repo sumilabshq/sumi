@@ -2,7 +2,7 @@ import { closedPlaceOf, keptClosed, reopenPlaceOf, withoutGroup } from "./host-t
 import type { ClosedTab, HostTab, HostTabsMoment, TabPage } from "./host-tabs-moment.js";
 import { isPageTab, pageTabIdsOf, tabOf } from "./host-tabs.js";
 import type { MovedTabs } from "./host-tabs.js";
-import { locationOf, withTabAt, withoutTab } from "./tab-lists.js";
+import { groupsUnder, locationOf, tabIdsOfGroup, withTabAt, withoutTab } from "./tab-lists.js";
 import type { TabGroup, TabLayout } from "./tab-lists.js";
 
 export interface ReopenedHostTab extends MovedTabs {
@@ -26,13 +26,15 @@ export function closeTabs(
 }
 
 export function closeGroup(moment: HostTabsMoment, group: TabGroup, pages: ReadonlyMap<string, TabPage>): MovedTabs {
-	const closed = closedMoment(moment, group.tabIds, pages);
+	const tabIds = tabIdsOfGroup(moment.groups, group);
+	const closed = closedMoment(moment, tabIds, pages);
+	const gone = [group, ...groupsUnder(moment.groups, group.entries, new Set([group.id]))];
 	return {
 		moment: {
 			...closed,
-			...withoutGroup(closed, group.id, []),
+			...gone.reduce<TabLayout>((kept, { id }) => withoutGroup(kept, id, []), closed),
 		},
-		reason: `close group ${group.id} with ${group.tabIds.length} tabs`,
+		reason: `close group ${group.id} with ${tabIds.length} tabs and ${gone.length - 1} groups inside`,
 	};
 }
 

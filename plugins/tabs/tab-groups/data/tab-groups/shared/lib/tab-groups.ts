@@ -1,24 +1,21 @@
-import { withEntryBefore } from "@widgetarium/navigation/lib/shared/lib/tabs/tab-lists";
+import { tabIdsOfGroup, withEntryAt, withoutEntry } from "@widgetarium/navigation/lib/shared/lib/tabs/tab-lists";
 import type { ListEntry } from "@widgetarium/navigation/lib/shared/schema/tabs.schema";
-import type { ChatLists, TabGroup, TabPlace } from "@widgetarium/navigation/lib/shared/lib/tabs/tab-lists";
+import type { TabGroup, TabPlace } from "@widgetarium/navigation/lib/shared/lib/tabs/tab-lists";
 import { groupChangeSaid, groupedMoment, isSameGroupFace, newGroupOf, withoutGroup } from "@widgetarium/navigation/lib/shared/lib/tabs/host-tabs-moment";
-import type { GroupChange, HostTabsMoment } from "@widgetarium/navigation/lib/shared/lib/tabs/host-tabs-moment";
+import type { GroupBirth, GroupChange, HostTabsMoment } from "@widgetarium/navigation/lib/shared/lib/tabs/host-tabs-moment";
 import type { MovedTabs } from "@widgetarium/navigation/lib/shared/lib/tabs/host-tabs";
 
 export interface AddedGroup extends MovedTabs {
 	readonly groupId: string;
 }
 
-export function addGroup(moment: HostTabsMoment, chatId: string, withTabId: string | null): AddedGroup {
-	const birth = {
-		chatId,
-		withTabId,
-	};
+export function addGroup(moment: HostTabsMoment, birth: GroupBirth): AddedGroup {
 	const group = newGroupOf(moment, birth);
+	const home = birth.inGroupId === null ? birth.chatId : `${birth.chatId}/${birth.inGroupId}`;
 	return {
 		groupId: group.id,
 		moment: groupedMoment(moment, group, birth),
-		reason: `new group ${group.id} "${group.name}" in ${chatId}${withTabId === null ? "" : ` with ${withTabId}`}`,
+		reason: `new group ${group.id} "${group.name}" in ${home}${birth.withTabId === null ? "" : ` with ${birth.withTabId}`}`,
 	};
 }
 
@@ -46,17 +43,13 @@ export function placeGroup(moment: HostTabsMoment, group: TabGroup, place: TabPl
 		return null;
 	}
 
+	const entry = groupEntryOf(group.id);
 	return {
 		moment: {
 			...moment,
-			lists: withEntryBefore(
-				listsWithoutEntry(moment.lists, group.id),
-				place.chatId,
-				groupEntryOf(group.id),
-				place.before,
-			),
+			...withEntryAt(withoutEntry(moment, entry), entry, place),
 		},
-		reason: `place group ${group.id} in ${place.chatId} before ${place.before ?? "the end"}`,
+		reason: `place group ${group.id} in ${place.chatId}/${place.groupId ?? "list"} before ${place.before ?? "the end"}`,
 	};
 }
 
@@ -64,16 +57,10 @@ export function ungroup(moment: HostTabsMoment, group: TabGroup): MovedTabs {
 	return {
 		moment: {
 			...moment,
-			...withoutGroup(moment, group.id, group.tabIds),
+			...withoutGroup(moment, group.id, group.entries),
 		},
-		reason: `ungroup ${group.id}, ${group.tabIds.length} tabs`,
+		reason: `ungroup ${group.id}, ${group.entries.length} entries (${tabIdsOfGroup(moment.groups, group).length} tabs) spill where it stood`,
 	};
-}
-
-function listsWithoutEntry(lists: ChatLists, id: string): ChatLists {
-	return Object.fromEntries(
-		Object.entries(lists).map(([chatId, entries]) => [chatId, entries.filter((one) => one.id !== id)]),
-	);
 }
 
 function groupEntryOf(id: string): ListEntry {

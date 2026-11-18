@@ -1,4 +1,4 @@
-import type { AppTabState, TabHolders, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { AppTabState, SidebarGroupItem, TabHolders, TabsSidebar } from "@widgetarium/app-host/contract";
 import type { OutputOf } from "@widgetarium/data-framework";
 import type { pins } from "@sumi/pins/contract";
 
@@ -35,11 +35,15 @@ function tabsOfSidebar(sidebar: TabsSidebar): ReadonlyMap<string, AppTabState> {
 			}
 
 			if (entry.kind === "group") {
-				return entry.group.items.map(({ tab }) => tab);
+				return tabsOfGroupItem(entry);
 			}
 
 			return entry.split.members.map((member) => member.item.tab);
 		}),
 	);
 	return new Map(tabs.map((tab) => [tab.id, tab]));
+}
+
+function tabsOfGroupItem(item: SidebarGroupItem): readonly AppTabState[] {
+	return item.kind === "tab" ? [item.tab] : item.group.items.flatMap(tabsOfGroupItem);
 }

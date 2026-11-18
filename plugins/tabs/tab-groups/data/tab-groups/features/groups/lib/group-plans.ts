@@ -1,7 +1,15 @@
 import type { CreateGroupAsk, GroupPlaceAsked } from "../../../shared/schema/group-asks.schema.js";
 import { movedPlan, refusal } from "@widgetarium/navigation/lib/shared/lib/settling/settling";
 import type { MomentPlan, Refusal } from "@widgetarium/navigation/lib/shared/lib/settling/settling";
-import { chatOfTab, findGroup, heldTabOf, isKnownList } from "@widgetarium/navigation/lib/shared/lib/tabs/host-tabs";
+import {
+	chatOfGroup,
+	chatOfTab,
+	findGroup,
+	groupsUnder,
+	heldTabOf,
+	isKnownList,
+	tabIdsOfGroup,
+} from "@widgetarium/navigation/lib/shared/lib/tabs/host-tabs";
 import type { GroupChange, HostTabsMoment, TabGroup } from "@widgetarium/navigation/lib/shared/lib/tabs/host-tabs";
 import { addGroup, changeGroup, placeGroup, ungroup } from "../../../shared/lib/tab-groups.js";
 import { beforeIdOfBlock } from "@widgetarium/navigation/lib/features/tab-placing/lib/placing-plans";
@@ -12,11 +20,14 @@ const NO_GROUP = 'no group "{id}"';
 const NOT_LISTED = 'the tab "{id}" stands in no list';
 const UNKNOWN_LIST = 'no tab list "{list}" is here';
 const NAMELESS = "a group needs a name";
+const GROUP_NOT_IN_LIST = 'no group "{group}" stands in the tab list "{list}"';
+const INSIDE_ITSELF = 'the group "{id}" cannot stand inside "{group}": that is itself or a group it holds';
 const REFUSED_IN_GROUP = 'the group "{id}" holds a tab whose app does not let it stand inside "{list}"';
 
 interface GroupBirth {
-	readonly listId: string;
+	readonly chatId: string;
 	readonly withTabId: string | null;
+	readonly inGroupId: string | null;
 }
 
 export function createGroupPlan({ from, name, hue }: Omit<CreateGroupAsk, "window">): MomentPlan<string> {
@@ -27,7 +38,7 @@ export function createGroupPlan({ from, name, hue }: Omit<CreateGroupAsk, "windo
 			return birth;
 		}
 
-		const added = withGroupFaced(addGroup(moment, birth.listId, birth.withTabId), {
+		const added = withGroupFaced(addGroup(moment, birth), {
 			...(name === undefined ? {} : { name }),
 			...(hue === undefined ? {} : { hue }),
 		});
@@ -61,8 +72,8 @@ export function placeGroupPlan(id: string, asked: GroupPlaceAsked): MomentPlan<n
 			return refusal(refused);
 		}
 
-		const before = beforeIdOfBlock(moment, id, { ...asked, groupId: null });
-		return movedPlan(moment, placeGroup(moment, group, { chatId: asked.list, groupId: null, before }), null);
+		const before = asked.groupId === null ? beforeIdOfBlock(moment, id, asked) : asked.before;
+		return movedPlan(moment, placeGroup(moment, group, { chatId: asked.list, groupId: asked.groupId, before }), null);
 	};
 }
 
@@ -91,12 +102,21 @@ function groupChanging(id: string, changeOf: (group: TabGroup) => GroupChange | 
 function birthOf(moment: HostTabsMoment, from: CreateGroupAsk["from"]): GroupBirth | Refusal {
 	if (from.kind === "list") {
 		return isKnownList(from.list)
-			? { listId: from.list, withTabId: null }
+			? { chatId: from.list, withTabId: null, inGroupId: null }
 			: refusal(UNKNOWN_LIST.replace("{list}", from.list));
 	}
 
-	const listId = chatOfTab(moment, from.tabId);
-	return listId === null ? refusal(NOT_LISTED.replace("{id}", from.tabId)) : { listId, withTabId: from.tabId };
+	if (from.kind === "group") {
+		const chatId = chatOfGroup(moment, from.groupId);
+		return chatId === null
+			? refusal(NO_GROUP.replace("{id}", from.groupId))
+			: { chatId, withTabId: null, inGroupId: from.groupId };
+	}
+
+	const chatId = chatOfTab(moment, from.tabId);
+	return chatId === null
+		? refusal(NOT_LISTED.replace("{id}", from.tabId))
+		: { chatId, withTabId: from.tabId, inGroupId: null };
 }
 
 function withGroupFaced(added: AddedGroup, face: GroupChange): AddedGroup {
@@ -114,12 +134,22 @@ function withGroupFaced(added: AddedGroup, face: GroupChange): AddedGroup {
 	};
 }
 
-function groupPlaceRefusalOf(moment: HostTabsMoment, group: TabGroup, { list }: GroupPlaceAsked): string | null {
+function groupPlaceRefusalOf(moment: HostTabsMoment, group: TabGroup, { list, groupId }: GroupPlaceAsked): string | null {
 	if (!isKnownList(list)) {
 		return UNKNOWN_LIST.replace("{list}", list);
 	}
 
-	const holdsRefused = group.tabIds.some((tabId) => {
+	if (groupId !== null && chatOfGroup(moment, groupId) !== list) {
+		return GROUP_NOT_IN_LIST.replace("{group}", groupId).replace("{list}", list);
+	}
+
+	const own = [group, ...groupsUnder(moment.groups, group.entries, new Set([group.id]))];
+
+	if (own.some((one) => one.id === groupId)) {
+		return INSIDE_ITSELF.replace("{id}", group.id).replace("{group}", groupId ?? "");
+	}
+
+	const holdsRefused = tabIdsOfGroup(moment.groups, group).some((tabId) => {
 		const tab = heldTabOf(moment, tabId);
 		return tab !== undefined && refuseStanding(tab, list) !== null;
 	});

@@ -575,20 +575,31 @@ export const SidebarTabSchema = z.object({
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
 
-export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
+export interface SidebarGroup {
+	readonly kind: "group";
+	readonly group: {
+		readonly id: string;
+		readonly name: string;
+		readonly hue: GroupHue | null;
+		readonly isOpen: boolean;
+		readonly items: readonly SidebarGroupItem[];
+	};
+}
 
-export const SidebarGroupSchema = z.object({
-	kind: z.literal("group"),
-	group: z.object({
-		id: z.string(),
-		name: z.string(),
-		hue: GroupHueSchema.nullable(),
-		isOpen: z.boolean(),
-		items: z.array(SidebarTabSchema).readonly(),
+export type SidebarGroupItem = SidebarTab | SidebarGroup;
+
+export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
+	z.object({
+		kind: z.literal("group"),
+		group: z.object({
+			id: z.string(),
+			name: z.string(),
+			hue: GroupHueSchema.nullable(),
+			isOpen: z.boolean(),
+			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema])).readonly(),
+		}),
 	}),
-});
-
-export type SidebarGroup = z.infer<typeof SidebarGroupSchema>;
+);
 
 export const SplitMemberSchema = z.object({
 	item: SidebarTabSchema,
@@ -609,11 +620,7 @@ export const SidebarSplitSchema = z.object({
 
 export type SidebarSplit = z.infer<typeof SidebarSplitSchema>;
 
-export const SidebarEntrySchema = z.discriminatedUnion("kind", [
-	SidebarTabSchema,
-	SidebarGroupSchema,
-	SidebarSplitSchema,
-]);
+export const SidebarEntrySchema = z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
@@ -701,6 +708,8 @@ export type TabMark = z.infer<typeof TabMarkSchema>;
 
 export type SectionList = z.infer<typeof SectionListSchema>;
 
+export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
+
 export type GroupHue = z.infer<typeof GroupHueSchema>;
 
 export const ListEntrySchema = z.object({
@@ -715,7 +724,7 @@ export const KeptGroupSchema = z.object({
 	name: z.string(),
 	hue: GroupHueSchema.nullable(),
 	isOpen: z.boolean(),
-	tabIds: z.array(z.string()),
+	entries: z.array(ListEntrySchema),
 });
 
 export const TabHistorySchema = z.object({

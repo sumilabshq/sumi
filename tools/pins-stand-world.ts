@@ -148,12 +148,12 @@ export interface Standing {
 }
 
 export function standingsOf(world: World): readonly Standing[] {
-	const doc = world.fake.files.get(PLACES_FILE) as { tabs?: { lists?: Record<string, readonly { kind: string; id: string }[]>; groups?: readonly { id: string; tabIds: readonly string[] }[] } } | undefined;
+	const doc = world.fake.files.get(PLACES_FILE) as { tabs?: { lists?: Record<string, readonly { kind: string; id: string }[]>; groups?: readonly { id: string; entries: readonly { kind: string; id: string }[] }[] } } | undefined;
 	const lists = doc?.tabs?.lists ?? {};
 	const groups = doc?.tabs?.groups ?? [];
 	return Object.entries(lists).flatMap(([list, entries]) =>
 		entries.flatMap((entry) =>
-			entry.kind === "tab" ? [{ id: entry.id, list }] : (groups.find((group) => group.id === entry.id)?.tabIds ?? []).map((id) => ({ id, list })),
+			entry.kind === "tab" ? [{ id: entry.id, list }] : (groups.find((group) => group.id === entry.id)?.entries ?? []).map(({ id }) => ({ id, list })),
 		),
 	);
 }

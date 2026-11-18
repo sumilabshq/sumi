@@ -1,6 +1,6 @@
-import type { SidebarEntry, TabsSidebar } from "@widgetarium/app-host/contract";
-import { itemsOfEntry } from "./strip-items.js";
-import type { StripGroup, StripItem, StripSplit, StripTab } from "./strip-items.js";
+import type { SidebarEntry, SidebarGroupState, TabsSidebar } from "@widgetarium/app-host/contract";
+import { itemsOfEntry, stripGroupOf } from "./strip-items.js";
+import type { StripGroup, StripItem, StripSplit } from "./strip-items.js";
 
 export type StripRun =
 	| {
@@ -10,7 +10,7 @@ export type StripRun =
 	| {
 			readonly kind: "group";
 			readonly group: StripGroup;
-			readonly tabs: readonly StripTab[];
+			readonly runs: readonly StripRun[];
 	  }
 	| {
 			readonly kind: "split";
@@ -29,27 +29,37 @@ export function runIdOf(run: StripRun): string {
 	return run.kind === "group" ? run.group.id : run.split.split.id;
 }
 
-function runsOfEntry(entry: SidebarEntry, list: string): readonly StripRun[] {
-	const items = itemsOfEntry(entry, list);
-
-	if (entry.kind === "group") {
-		return [
-			{
-				kind: "group",
-				group: {
-					id: entry.group.id,
-					name: entry.group.name,
-					hue: entry.group.hue,
-					isOpen: entry.group.isOpen,
-				},
-				tabs: items.filter(isTabItem),
-			},
-		];
-	}
-
-	return items.map((item) => (item.kind === "split" ? { kind: "split", split: item } : { kind: "item", item }));
+export function tabCountOf(run: StripRun): number {
+	return run.kind === "group" ? run.runs.reduce((count, inner) => count + tabCountOf(inner), 0) : 1;
 }
 
-function isTabItem(item: StripItem): item is StripTab {
-	return item.kind === "tab";
+function runsOfEntry(entry: SidebarEntry, list: string): readonly StripRun[] {
+	if (entry.kind === "group") {
+		return [groupRunOf(entry.group, list)];
+	}
+
+	return itemsOfEntry(entry, list).map((item) => (item.kind === "split" ? { kind: "split", split: item } : { kind: "item", item }));
+}
+
+function groupRunOf(group: SidebarGroupState, list: string): StripRun {
+	return {
+		kind: "group",
+		group: stripGroupOf(group),
+		runs: group.items.flatMap((item): readonly StripRun[] =>
+			item.kind === "group"
+				? [groupRunOf(item.group, list)]
+				: [
+						{
+							kind: "item",
+							item: {
+								kind: "tab",
+								tab: item.tab,
+								list,
+								groupId: group.id,
+								group: stripGroupOf(group),
+							},
+						},
+					],
+		),
+	};
 }

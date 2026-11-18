@@ -158,22 +158,33 @@ export const SidebarTabSchema = z.object({
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
 
-export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
+export interface SidebarGroupState {
+	readonly id: string;
+	readonly name: string;
+	readonly hue: GroupHue | null;
+	readonly isOpen: boolean;
+	readonly items: readonly SidebarGroupItem[];
+}
 
-export const SidebarGroupStateSchema = z.object({
-	id: z.string(),
-	name: z.string(),
-	hue: GroupHueSchema.nullable(),
-	isOpen: z.boolean(),
-	items: z.array(SidebarTabSchema).readonly(),
-});
+export interface SidebarGroup {
+	readonly kind: "group";
+	readonly group: SidebarGroupState;
+}
 
-export type SidebarGroupState = z.infer<typeof SidebarGroupStateSchema>;
+export type SidebarGroupItem = SidebarTab | SidebarGroup;
 
-export const SidebarGroupSchema = z.object({
-	kind: z.literal("group"),
-	group: SidebarGroupStateSchema,
-});
+export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
+	z.object({
+		kind: z.literal("group"),
+		group: z.object({
+			id: z.string(),
+			name: z.string(),
+			hue: GroupHueSchema.nullable(),
+			isOpen: z.boolean(),
+			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema])).readonly(),
+		}),
+	}),
+);
 
 export const SplitMemberSchema = z.object({
 	item: SidebarTabSchema,
@@ -196,11 +207,7 @@ export const SidebarSplitSchema = z.object({
 	split: SidebarSplitStateSchema,
 });
 
-export const SidebarEntrySchema = z.discriminatedUnion("kind", [
-	SidebarTabSchema,
-	SidebarGroupSchema,
-	SidebarSplitSchema,
-]);
+export const SidebarEntrySchema = z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
@@ -429,6 +436,8 @@ export const TabDropSchema = z.discriminatedUnion("kind", [
 ]);
 
 export type TabDrop = z.infer<typeof TabDropSchema>;
+
+export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
 
 export type GroupHue = z.infer<typeof GroupHueSchema>;
 

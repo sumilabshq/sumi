@@ -1,4 +1,5 @@
 import { Repeatable } from "@widgetarium/data-framework";
+import type { z } from "zod";
 import { command } from "#module";
 import { tabGroups } from "@sumi/tab-groups/contract";
 import {
@@ -17,7 +18,7 @@ export const create = command()
 	.handle(async (asked, { send, ownWindow }) =>
 		send(tabGroups.groups.create, {
 			window: ownWindow.placesWindow(),
-			from: "list" in asked ? { kind: "list", list: asked.list } : { kind: "tab", tabId: asked.withTabId },
+			from: birthplaceOf(asked),
 			...(asked.name === undefined ? {} : { name: asked.name }),
 			...(asked.hue === undefined ? {} : { hue: asked.hue }),
 		}),
@@ -62,3 +63,29 @@ export const ungroup = command()
 	.handle(async ({ id }, { send, ownWindow }) => {
 		await send(tabGroups.groups.ungroup, { window: ownWindow.placesWindow(), id });
 	});
+
+type Birthplace =
+	| { readonly kind: "list"; readonly list: string }
+	| { readonly kind: "tab"; readonly tabId: string }
+	| { readonly kind: "group"; readonly groupId: string };
+
+function birthplaceOf(asked: z.infer<typeof NewGroupSchema>): Birthplace {
+	if ("list" in asked) {
+		return {
+			kind: "list",
+			list: asked.list,
+		};
+	}
+
+	if ("inGroupId" in asked) {
+		return {
+			kind: "group",
+			groupId: asked.inGroupId,
+		};
+	}
+
+	return {
+		kind: "tab",
+		tabId: asked.withTabId,
+	};
+}

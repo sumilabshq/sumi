@@ -61,7 +61,7 @@
 }
 
 .wg-root .sumi-tabs-sidebar .wg-kit-side-menu-sub .wg-kit-side-menu-button {
-	padding-inline-start: calc(var(--sumi-sp-6) + var(--sumi-sp-6) + var(--sumi-sp-4));
+	padding-inline-start: calc(var(--sumi-sp-6) + var(--sumi-tabs-depth, 1) * (var(--sumi-sp-6) + var(--sumi-sp-4)));
 }
 
 .wg-root .sumi-tabs-sidebar .wg-kit-side-row::before {
@@ -102,9 +102,8 @@
 	background: var(--sumi-plate);
 }
 
-.wg-root .sumi-tabs-sidebar .wg-kit-side-ghost .wg-kit-side-menu-button {
+.wg-root .sumi-tabs-sidebar .wg-kit-side-ghost > .wg-kit-side-menu-button {
 	padding-inline: var(--sumi-sp-6);
-	pointer-events: none;
 }
 
 .wg-root .sumi-tabs-sidebar .sumi-tabs-sidebar-new {
@@ -123,5 +122,5 @@
 }
 
 .wg-root .sumi-tabs-sidebar .wg-kit-side-menu-sub .wg-kit-side-row[data-sort-placeholder]::before {
-	inset-inline-start: calc(var(--sumi-sp-6) + var(--sumi-sp-6));
+	inset-inline-start: calc(var(--sumi-sp-6) + var(--sumi-tabs-depth, 1) * (var(--sumi-sp-6) + var(--sumi-sp-4)) - var(--sumi-sp-4));
 }

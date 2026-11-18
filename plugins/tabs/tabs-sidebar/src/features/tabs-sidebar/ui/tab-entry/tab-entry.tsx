@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { MouseEvent, ReactElement } from "react";
-import { Icon, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSubItem } from "@widgetarium/kit";
+import { Icon, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSubItem, cn } from "@widgetarium/kit";
 import { TabIcons, isShownItem, tabOf } from "@sumi/tab-strip-plugin";
 import type { StripItem, TabActs } from "@sumi/tab-strip-plugin";
 
@@ -17,7 +17,7 @@ const CLOSE_PX = 14;
 const CLOSE_TAB = "Close tab";
 
 export function TabEntry({ item, acts, isSub, isPlaceholder, onMenu }: TabEntryProps): ReactElement {
-	const { id, title } = tabOf(item);
+	const { id, title, mark } = tabOf(item);
 	const Holder = isSub ? SidebarMenuSubItem : SidebarMenuItem;
 	return (
 		<Holder role="presentation">
@@ -40,7 +40,7 @@ export function TabEntry({ item, acts, isSub, isPlaceholder, onMenu }: TabEntryP
 				}}
 			>
 				<TabIcons item={item} />
-				<span className="sumi-tabs-sidebar-title">{title}</span>
+				<span className={cn("sumi-tabs-sidebar-title", mark === "running" && "wg-kit-shimmer")}>{title}</span>
 			</SidebarMenuButton>
 			<SidebarMenuAction showOnHover label={CLOSE_TAB} onClick={() => acts.close(item)}>
 				<Icon name="x" size={CLOSE_PX} />

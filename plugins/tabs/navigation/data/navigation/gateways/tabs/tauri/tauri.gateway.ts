@@ -7,6 +7,7 @@ import type { MovePlacedTabs } from "../../../shared/lib/settling/settling.js";
 import { windowListsFolded } from "./legacy-tabs.js";
 
 export { workspaceTabsOf } from "./legacy-tabs.js";
+export { groupEntriesOf } from "./group-entries.js";
 export { oldViewsOf, viewsCarried } from "./carried-panes.js";
 import { TabsGateway } from "../tabs.gateway.js";
 

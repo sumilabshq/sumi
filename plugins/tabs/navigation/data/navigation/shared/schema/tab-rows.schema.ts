@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TabsAskSchema } from "./screen.schema.js";
+import type { GroupHue } from "./tabs.schema.js";
 import { AppKindSchema, GroupHueSchema, PageAppSchema, SectionListSchema, TabMarkSchema } from "./tabs.schema.js";
 import { SplitMapSchema, SplitMarkSchema } from "./splits.schema.js";
 
@@ -64,18 +65,31 @@ export const SidebarTabSchema = z.object({
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
 
-export const SidebarGroupSchema = z.object({
-	kind: z.literal("group"),
-	group: z.object({
-		id: z.string(),
-		name: z.string(),
-		hue: GroupHueSchema.nullable(),
-		isOpen: z.boolean(),
-		items: z.array(SidebarTabSchema).readonly(),
-	}),
-});
+export interface SidebarGroup {
+	readonly kind: "group";
+	readonly group: {
+		readonly id: string;
+		readonly name: string;
+		readonly hue: GroupHue | null;
+		readonly isOpen: boolean;
+		readonly items: readonly SidebarGroupItem[];
+	};
+}
 
-export type SidebarGroup = z.infer<typeof SidebarGroupSchema>;
+export type SidebarGroupItem = SidebarTab | SidebarGroup;
+
+export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
+	z.object({
+		kind: z.literal("group"),
+		group: z.object({
+			id: z.string(),
+			name: z.string(),
+			hue: GroupHueSchema.nullable(),
+			isOpen: z.boolean(),
+			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema])).readonly(),
+		}),
+	}),
+);
 
 export const SplitMemberSchema = z.object({
 	item: SidebarTabSchema,
@@ -96,11 +110,7 @@ export const SidebarSplitSchema = z.object({
 
 export type SidebarSplit = z.infer<typeof SidebarSplitSchema>;
 
-export const SidebarEntrySchema = z.discriminatedUnion("kind", [
-	SidebarTabSchema,
-	SidebarGroupSchema,
-	SidebarSplitSchema,
-]);
+export const SidebarEntrySchema = z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 

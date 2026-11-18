@@ -6,6 +6,8 @@ import { SplitRows } from "./split-rows.js";
 import type {
 	PlacedSidebar,
 	SidebarEntry,
+	SidebarGroup,
+	SidebarGroupItem,
 	SidebarSection,
 	SidebarTab,
 } from "../../schema/tab-rows.schema.js";
@@ -51,7 +53,7 @@ class SidebarEntries {
 
 	private entriesOf(entry: ListEntry, list: SectionList): readonly SidebarEntry[] {
 		if (entry.kind === "group") {
-			return this.groupsOf(entry.id).map((group) => this.topGroupOf(group));
+			return this.groupsOf(entry.id);
 		}
 
 		return this.splitRows.entriesOf(entry.id, list) ?? this.tabsOf(entry.id);
@@ -68,19 +70,24 @@ class SidebarEntries {
 		};
 	}
 
-	private topGroupOf(group: TabGroup): SidebarEntry {
-		return {
-			kind: "group",
-			group: {
-				...groupWithoutTabsOf(group),
-				items: group.tabIds.flatMap((id) => this.tabsOf(id)),
-			},
-		};
-	}
-
-	private groupsOf(id: string): readonly TabGroup[] {
+	private groupsOf(id: string): readonly SidebarGroup[] {
 		const group = findGroup(this.moment.groups, id);
-		return group === undefined ? [] : [group];
+
+		if (group === undefined) {
+			return [];
+		}
+
+		return [
+			{
+				kind: "group",
+				group: {
+					...groupFaceOf(group),
+					items: group.entries.flatMap((entry): readonly SidebarGroupItem[] =>
+						entry.kind === "tab" ? this.tabsOf(entry.id) : this.groupsOf(entry.id),
+					),
+				},
+			},
+		];
 	}
 
 	private listOf(list: string): readonly ListEntry[] {
@@ -88,7 +95,7 @@ class SidebarEntries {
 	}
 }
 
-function groupWithoutTabsOf({ id, name, hue, isOpen }: TabGroup): Omit<TabGroup, "tabIds"> {
+function groupFaceOf({ id, name, hue, isOpen }: TabGroup): Omit<TabGroup, "entries"> {
 	return {
 		id,
 		name,

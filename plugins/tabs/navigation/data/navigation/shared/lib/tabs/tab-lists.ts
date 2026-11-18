@@ -6,7 +6,7 @@ export interface TabGroup {
 	readonly name: string;
 	readonly hue: GroupHue | null;
 	readonly isOpen: boolean;
-	readonly tabIds: readonly string[];
+	readonly entries: readonly ListEntry[];
 }
 
 export type ChatLists = Readonly<Record<string, readonly ListEntry[]>>;
@@ -45,6 +45,8 @@ export const WORKSPACE_END: TabPlace = {
 
 const NEW_GROUP = "New group";
 
+const NONE_CLIMBED: ReadonlySet<string> = new Set();
+
 const WINDOW_LIST_PREFIX = "window:";
 
 export function windowListOf(window: string): string {
@@ -66,52 +68,109 @@ export function sectionNameOf(listId: string): SectionList | null {
 
 export function locationOf(layout: TabLayout, tabId: string): TabLocation | null {
 	for (const chatId of Object.keys(layout.lists)) {
-		const location = topLocationOf(layout, chatId, tabId) ?? groupedLocationOf(layout, chatId, tabId);
+		const location = topLocationOf(layout, chatId, tabId);
 
 		if (location !== null) {
 			return location;
 		}
 	}
 
-	return null;
+	return groupedLocationOf(layout, tabId);
 }
 
-export function chatOfGroup({ lists }: TabLayout, groupId: string): string | null {
-	const found = Object.entries(lists).find(([, entries]) =>
-		entries.some((entry) => entry.kind === "group" && entry.id === groupId),
-	);
-	return found?.[0] ?? null;
+export function chatOfGroup(layout: TabLayout, groupId: string): string | null {
+	const climbed = new Set<string>();
+	let at = groupId;
+
+	while (!climbed.has(at)) {
+		climbed.add(at);
+		const listed = listOfEntry(layout.lists, at);
+
+		if (listed !== null) {
+			return listed;
+		}
+
+		const holder = holdingGroupOf(layout.groups, at);
+
+		if (holder === undefined) {
+			return null;
+		}
+
+		at = holder.id;
+	}
+
+	return null;
 }
 
 export function findGroup(groups: readonly TabGroup[], groupId: string): TabGroup | undefined {
 	return groups.find((group) => group.id === groupId);
 }
 
-export function flatTabIdsOf({ lists, groups }: TabLayout, chatId: string): readonly string[] {
-	return (lists[chatId] ?? []).flatMap((entry) =>
-		entry.kind === "tab" ? [entry.id] : (findGroup(groups, entry.id)?.tabIds ?? []),
-	);
+export function holdingGroupOf(groups: readonly TabGroup[], groupId: string): TabGroup | undefined {
+	return groups.find((group) => group.entries.some((entry) => entry.kind === "group" && entry.id === groupId));
 }
 
-export function withoutTab(layout: TabLayout, tabId: string): TabLayout {
+export function flatTabIdsOf({ lists, groups }: TabLayout, chatId: string): readonly string[] {
+	return tabIdsUnder(groups, lists[chatId] ?? [], NONE_CLIMBED);
+}
+
+export function tabIdsOfGroup(groups: readonly TabGroup[], group: TabGroup): readonly string[] {
+	return tabIdsUnder(groups, group.entries, new Set([group.id]));
+}
+
+export function groupsUnder(
+	groups: readonly TabGroup[],
+	entries: readonly ListEntry[],
+	climbed: ReadonlySet<string> = NONE_CLIMBED,
+): readonly TabGroup[] {
+	return entries.flatMap((entry) => {
+		const group = entry.kind === "group" && !climbed.has(entry.id) ? findGroup(groups, entry.id) : undefined;
+		return group === undefined ? [] : [group, ...groupsUnder(groups, group.entries, new Set([...climbed, group.id]))];
+	});
+}
+
+export function withoutEntry(layout: TabLayout, gone: ListEntry): TabLayout {
+	const isKept = (entry: ListEntry): boolean => entry.kind !== gone.kind || entry.id !== gone.id;
 	return {
-		lists: listsWithoutTab(layout.lists, tabId),
-		groups: layout.groups.map((group) => groupWithoutTab(group, tabId)),
+		lists: Object.fromEntries(Object.entries(layout.lists).map(([chatId, entries]) => [chatId, entries.filter(isKept)])),
+		groups: layout.groups.map((group) =>
+			group.entries.every(isKept)
+				? group
+				: {
+						...group,
+						entries: group.entries.filter(isKept),
+					},
+		),
 	};
 }
 
-export function withTabAt(layout: TabLayout, tabId: string, place: TabPlace): TabLayout {
+export function withEntryAt(layout: TabLayout, entry: ListEntry, place: TabPlace): TabLayout {
 	if (place.groupId !== null) {
 		return {
 			...layout,
-			groups: layout.groups.map((group) => (group.id === place.groupId ? groupWithTabAt(group, tabId, place) : group)),
+			groups: layout.groups.map((group) =>
+				group.id === place.groupId
+					? {
+							...group,
+							entries: placedBefore(group.entries, entry, place.before),
+						}
+					: group,
+			),
 		};
 	}
 
 	return {
 		...layout,
-		lists: withEntryBefore(layout.lists, place.chatId, tabEntryOf(tabId), place.before),
+		lists: withEntryBefore(layout.lists, place.chatId, entry, place.before),
 	};
+}
+
+export function withoutTab(layout: TabLayout, tabId: string): TabLayout {
+	return withoutEntry(layout, tabEntryOf(tabId));
+}
+
+export function withTabAt(layout: TabLayout, tabId: string, place: TabPlace): TabLayout {
+	return withEntryAt(layout, tabEntryOf(tabId), place);
 }
 
 export function isSectionList(listId: string): boolean {
@@ -141,12 +200,12 @@ export function placeAfterOf(layout: TabLayout, tabId: string): TabPlace | null 
 
 	const container =
 		location.groupId === null
-			? (layout.lists[location.chatId] ?? []).map((entry) => entry.id)
-			: (findGroup(layout.groups, location.groupId)?.tabIds ?? []);
+			? (layout.lists[location.chatId] ?? [])
+			: (findGroup(layout.groups, location.groupId)?.entries ?? []);
 	return {
 		chatId: location.chatId,
 		groupId: location.groupId,
-		before: container[location.at + 1] ?? null,
+		before: container[location.at + 1]?.id ?? null,
 	};
 }
 
@@ -157,7 +216,7 @@ export function placeOfLocation(layout: TabLayout, location: TabLocation): TabPl
 		return {
 			chatId: location.chatId,
 			groupId: group.id,
-			before: group.tabIds[location.at] ?? null,
+			before: group.entries[location.at]?.id ?? null,
 		};
 	}
 
@@ -169,9 +228,7 @@ export function placeOfLocation(layout: TabLayout, location: TabLocation): TabPl
 }
 
 export function freeGroupNameOf({ lists, groups }: TabLayout, chatId: string): string {
-	const names = new Set(
-		(lists[chatId] ?? []).flatMap((entry) => (entry.kind === "group" ? [findGroup(groups, entry.id)?.name] : [])),
-	);
+	const names = new Set(groupsUnder(groups, lists[chatId] ?? []).map((group) => group.name));
 
 	if (!names.has(NEW_GROUP)) {
 		return NEW_GROUP;
@@ -186,18 +243,32 @@ export function freeGroupNameOf({ lists, groups }: TabLayout, chatId: string): s
 	return `${NEW_GROUP} ${ordinal}`;
 }
 
-function placedBefore<Item extends string | ListEntry>(
-	items: readonly Item[],
-	item: Item,
-	before: string | null,
-): readonly Item[] {
-	const at = before === null ? -1 : items.findIndex((one) => idOf(one) === before);
+function placedBefore(items: readonly ListEntry[], item: ListEntry, before: string | null): readonly ListEntry[] {
+	const at = before === null ? -1 : items.findIndex((one) => one.id === before);
 	const cut = at === -1 ? items.length : at;
 	return [...items.slice(0, cut), item, ...items.slice(cut)];
 }
 
-function idOf(item: string | ListEntry): string {
-	return typeof item === "string" ? item : item.id;
+function tabIdsUnder(
+	groups: readonly TabGroup[],
+	entries: readonly ListEntry[],
+	climbed: ReadonlySet<string>,
+): readonly string[] {
+	return entries.flatMap((entry) => {
+		if (entry.kind === "tab") {
+			return [entry.id];
+		}
+
+		const group = climbed.has(entry.id) ? undefined : findGroup(groups, entry.id);
+		return group === undefined ? [] : tabIdsUnder(groups, group.entries, new Set([...climbed, group.id]));
+	});
+}
+
+function listOfEntry(lists: ChatLists, groupId: string): string | null {
+	const found = Object.entries(lists).find(([, entries]) =>
+		entries.some((entry) => entry.kind === "group" && entry.id === groupId),
+	);
+	return found?.[0] ?? null;
 }
 
 function topLocationOf({ lists }: TabLayout, chatId: string, tabId: string): TabLocation | null {
@@ -214,45 +285,19 @@ function topLocationOf({ lists }: TabLayout, chatId: string, tabId: string): Tab
 	};
 }
 
-function groupedLocationOf({ lists, groups }: TabLayout, chatId: string, tabId: string): TabLocation | null {
-	for (const entry of (lists[chatId] ?? []).filter((one) => one.kind === "group")) {
-		const at = findGroup(groups, entry.id)?.tabIds.indexOf(tabId) ?? -1;
+function groupedLocationOf(layout: TabLayout, tabId: string): TabLocation | null {
+	for (const group of layout.groups) {
+		const at = group.entries.findIndex((entry) => entry.kind === "tab" && entry.id === tabId);
+		const chatId = at === -1 ? null : chatOfGroup(layout, group.id);
 
-		if (at !== -1) {
+		if (chatId !== null) {
 			return {
 				chatId,
-				groupId: entry.id,
+				groupId: group.id,
 				at,
 			};
 		}
 	}
 
 	return null;
-}
-
-function listsWithoutTab(lists: ChatLists, tabId: string): ChatLists {
-	return Object.fromEntries(
-		Object.entries(lists).map(([chatId, entries]) => [
-			chatId,
-			entries.filter((entry) => entry.kind !== "tab" || entry.id !== tabId),
-		]),
-	);
-}
-
-function groupWithoutTab(group: TabGroup, tabId: string): TabGroup {
-	if (!group.tabIds.includes(tabId)) {
-		return group;
-	}
-
-	return {
-		...group,
-		tabIds: group.tabIds.filter((id) => id !== tabId),
-	};
-}
-
-function groupWithTabAt(group: TabGroup, tabId: string, place: TabPlace): TabGroup {
-	return {
-		...group,
-		tabIds: placedBefore(group.tabIds, tabId, place.before),
-	};
 }

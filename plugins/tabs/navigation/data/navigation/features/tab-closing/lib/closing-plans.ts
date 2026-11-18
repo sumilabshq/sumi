@@ -3,7 +3,7 @@ import type { ShowingPlan } from "../../../shared/lib/settling/settling.js";
 import { withGroupClosed, withTabsClosed } from "../../../shared/lib/showing/closing.js";
 import { shownAppOf, shownTabIdOf } from "../../../shared/lib/showing/showing.js";
 import { chatOfTab, findGroup, flatTabIdsOf, heldTabOf } from "../../../shared/lib/tabs/host-tabs.js";
-import { WORKSPACE_LIST } from "../../../shared/lib/tabs/tab-lists.js";
+import { WORKSPACE_LIST, tabIdsOfGroup } from "../../../shared/lib/tabs/tab-lists.js";
 import { holderLabelOf } from "../../../shared/lib/tabs/tab-leases.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
@@ -65,7 +65,7 @@ export function closeGroupPlan(id: string): ShowingPlan {
 			return refusal(NO_GROUP.replace("{id}", id));
 		}
 
-		const heldId = group.tabIds.find((tabId) => showing.moment.heldElsewhere.has(tabId));
+		const heldId = tabIdsOfGroup(showing.moment.groups, group).find((tabId) => showing.moment.heldElsewhere.has(tabId));
 
 		if (heldId !== undefined) {
 			return refusal(

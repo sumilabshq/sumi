@@ -2,7 +2,7 @@ import { labelOfPlacesWindow, placesWindowOf } from "@widgetarium/behaviors";
 import { PlacedTabsSchema } from "../../../shared/schema/tabs.schema.js";
 import type { ListEntry, PlacedTabs, WindowSession } from "../../../shared/schema/tabs.schema.js";
 import type { KeptSplit } from "../../../shared/schema/splits.schema.js";
-import { WORKSPACE_LIST, flatTabIdsOf, isSectionList, windowOfList } from "../../../shared/lib/tabs/tab-lists.js";
+import { WORKSPACE_LIST, flatTabIdsOf, groupsUnder, isSectionList, windowOfList } from "../../../shared/lib/tabs/tab-lists.js";
 import type { TabLayout } from "../../../shared/lib/tabs/tab-lists.js";
 import { emptyPlacedTabs } from "../../../shared/lib/tabs/kept-tabs.js";
 
@@ -127,11 +127,7 @@ function gatheredFrom(was: Gathered, part: TabsPart): Gathered {
 	const known = new Set([...was.tabs.map(({ id }) => id), ...was.groups.map(({ id }) => id)]);
 	const entries = roots.flatMap((listId) => part.lists[listId] ?? []).filter((entry) => !known.has(entry.id));
 	const tabIds = new Set([...held].flatMap((listId) => flatTabIdsOf(part, listId)).filter((id) => !known.has(id)));
-	const groupIds = new Set(
-		[...held].flatMap((listId) =>
-			(part.lists[listId] ?? []).filter((entry) => entry.kind === "group").map(({ id }) => id),
-		),
-	);
+	const groupIds = new Set([...held].flatMap((listId) => groupsUnder(part.groups, part.lists[listId] ?? []).map(({ id }) => id)));
 	const nested = [...held].filter((listId) => !roots.includes(listId) && was.lists[listId] === undefined);
 	return {
 		entries: [...was.entries, ...uniqueEntries(entries)],

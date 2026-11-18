@@ -20,6 +20,7 @@ import {
 } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/tauri.gateway.ts";
 import type { KeptNavigation } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/tauri.gateway.ts";
 import { workspaceTabsOf } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/tauri/legacy-tabs.ts";
+import { keptPlacesParts } from "../plugins/tabs/navigation/data/navigation/gateways/places-parts/places-parts.gateway.ts";
 import { PlacedTabsSchema } from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
 import { tabBreaksOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-invariants.ts";
 import { momentOfWindow } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
@@ -220,6 +221,93 @@ async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void>
 		"a group holding a chat cannot stand inside another chat",
 		intoChat.ok ? "placed" : intoChat.reason,
 		'no tab list "chat-a" is here',
+	);
+	await nestedGroupChecks(main, groupId);
+}
+
+async function nestedGroupChecks(main: Runtime, groupId: string): Promise<void> {
+	const inside = await main.send(tabGroups.groups.create, { window: "main", from: { kind: "group", groupId } });
+	const innerId = inside.ok ? inside.output.id : "";
+	const born = await main.send(navigation.tabs.placedTabs, { window: "main" });
+	check(
+		"a group born inside a group stands last among the entries of that group",
+		born.ok ? born.output.groups.find(({ id }) => id === groupId)?.entries.at(-1) : born.reason,
+		{ kind: "group", id: innerId },
+	);
+	const out = await main.send(tabGroups.groups.place, {
+		window: "main",
+		id: innerId,
+		place: { list: "workspace", groupId: null, before: groupId },
+	});
+	const outside = await main.send(navigation.tabs.placedTabs, { window: "main" });
+	const top = outside.ok ? (outside.output.lists["workspace"] ?? []).map((entry) => entry.id) : [];
+	check(
+		"a group carried out of a group stands in the list before the asked entry",
+		[out.ok, top.indexOf(innerId) + 1 === top.indexOf(groupId)],
+		[true, true],
+	);
+	const into = await main.send(tabGroups.groups.place, {
+		window: "main",
+		id: groupId,
+		place: { list: "workspace", groupId: innerId, before: null },
+	});
+	const intoItself = await main.send(tabGroups.groups.place, {
+		window: "main",
+		id: innerId,
+		place: { list: "workspace", groupId, before: null },
+	});
+	const held = await main.send(navigation.tabs.placedTabs, { window: "main" });
+	check(
+		"a group carried into a group stands in it, and the holder cannot then stand inside what it holds",
+		[
+			into.ok,
+			held.ok ? held.output.groups.find(({ id }) => id === innerId)?.entries : held.reason,
+			intoItself.ok ? "placed" : intoItself.reason,
+		],
+		[
+			true,
+			[{ kind: "group", id: groupId }],
+			`the group "${innerId}" cannot stand inside "${groupId}": that is itself or a group it holds`,
+		],
+	);
+	const sidebar = await main.send(navigation.tabs.sidebar, { at: askAt("main") });
+	const outer = sidebar.ok ? sidebar.output.sections[0]?.entries.find((entry) => entry.kind === "group" && entry.group.id === innerId) : undefined;
+	check(
+		"the sidebar shows a group inside its holder, tabs under it",
+		outer?.kind === "group"
+			? outer.group.items.map((item) => (item.kind === "group" ? [item.group.id, item.group.items.map((one) => one.kind)] : item.kind))
+			: null,
+		[[groupId, ["tab", "tab"]]],
+	);
+}
+
+async function oldGroupsChecks(): Promise<void> {
+	const workspace = "old-groups";
+	const fake = new FakeStore();
+	const tabOf = (id: string): Record<string, unknown> => ({ id, app: "canvas", pageId: null, label: null });
+	fake.put(`${workspaceRootOf(workspace)}:navigation.json`, {
+		v: 1,
+		rev: 1,
+		tabs: {
+			tabs: [tabOf("tab-1"), tabOf("tab-2")],
+			lists: { workspace: [{ kind: "group", id: "group-3" }, { kind: "tab", id: "tab-2" }] },
+			groups: [{ id: "group-3", name: "Kept", hue: null, isOpen: true, tabIds: ["tab-1"] }],
+			minted: 3,
+			closed: [],
+		},
+	});
+	const parts = keptPlacesParts({ store: new StoreClient(fake.invoke), apps: BUILT_IN_PLACED_APPS }, workspace);
+	const placed = await parts.tabs.placedTabs();
+	const stored = fake.files.get(`${workspaceRootOf(workspace)}:navigation.json`);
+	check(
+		"a file kept before groups held groups still loads: tabIds become entries, in the file too, and nothing lands in unreadableTabs",
+		[placed.tabs.map(({ id }) => id), placed.groups, JSON.stringify(stored?.["tabs"]).includes("tabIds"), stored?.["unreadableTabs"]],
+		[
+			["tab-1", "tab-2"],
+			[{ id: "group-3", name: "Kept", hue: null, isOpen: true, entries: [{ kind: "tab", id: "tab-1" }] }],
+			false,
+			undefined,
+		],
 	);
 }
 
@@ -434,6 +522,7 @@ await lawChecks();
 await declaredRuleChecks();
 await windowTabsChecks();
 await workspaceListsMigrationChecks();
+await oldGroupsChecks();
 console.info = quiet;
 console.log(tally.failed ? `places tabs: ${tally.failed} check(s) failed` : "places tabs: all checks passed");
 process.exit(tally.failed ? 1 : 0);

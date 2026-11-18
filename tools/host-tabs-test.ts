@@ -10,10 +10,11 @@ import {
 	tabOf,
 } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
 import { closeGroup, closeTabs, reopenClosed } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-closing.ts";
-import { addGroup, ungroup } from "../plugins/tabs/tab-groups/data/tab-groups/shared/lib/tab-groups.ts";
+import { addGroup, placeGroup, ungroup } from "../plugins/tabs/tab-groups/data/tab-groups/shared/lib/tab-groups.ts";
 import { rememberPages } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/page-memory.ts";
 import type { HostTabsMoment, MovedTabs, TabGroup } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-lists.ts";
+import { WORKSPACE_LIST, locationOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-lists.ts";
+import { tabBreaksOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-invariants.ts";
 import { withTabsClosed } from "../plugins/tabs/navigation/data/navigation/shared/lib/showing/closing.ts";
 import {
 	showingOf,
@@ -85,8 +86,8 @@ function factsOf(inPanes: readonly string[]): TabFacts {
 	};
 }
 
-const first = addGroup(threeTabs(), ONE, "tab-2");
-const second = addGroup(first.moment, ONE, null);
+const first = addGroup(threeTabs(), { chatId: ONE, withTabId: "tab-2", inGroupId: null });
+const second = addGroup(first.moment, { chatId: ONE, withTabId: null, inGroupId: null });
 const grouped = second.moment;
 check(
 	"groups are named New group, then New group 2, and a group made with a tab stands where the tab stood",
@@ -102,10 +103,59 @@ check(
 	],
 );
 const placed = movedTo(placeTab(grouped, "tab-3", { chatId: ONE, groupId: first.groupId, before: "tab-2" }), grouped);
-check("placing a tab into a group puts it before the asked row", groupOf(placed, first.groupId).tabIds, [
-	"tab-3",
-	"tab-2",
+check("placing a tab into a group puts it before the asked row", groupOf(placed, first.groupId).entries, [
+	{ kind: "tab", id: "tab-3" },
+	{ kind: "tab", id: "tab-2" },
 ]);
+const inner = addGroup(placed, { chatId: ONE, withTabId: null, inGroupId: first.groupId });
+const nested = movedTo(
+	placeTab(inner.moment, "tab-1", { chatId: ONE, groupId: inner.groupId, before: null }),
+	inner.moment,
+);
+check(
+	"a group born inside a group stands last in it, and a tab placed in it stays in the list of the outer group",
+	[groupOf(nested, first.groupId).entries, flatTabIdsOf(nested, ONE), locationOf(nested, "tab-1"), tabBreaksOf(nested)],
+	[
+		[
+			{ kind: "tab", id: "tab-3" },
+			{ kind: "tab", id: "tab-2" },
+			{ kind: "group", id: inner.groupId },
+		],
+		["tab-3", "tab-2", "tab-1"],
+		{ chatId: ONE, groupId: inner.groupId, at: 0 },
+		[],
+	],
+);
+const carriedOut = movedTo(
+	placeGroup(nested, groupOf(nested, inner.groupId), { chatId: ONE, groupId: null, before: first.groupId }),
+	nested,
+);
+check(
+	"a group carried out of its holder stands in the list before the asked entry, with its tabs",
+	[carriedOut.lists[ONE]?.map((entry) => entry.id), groupOf(carriedOut, first.groupId).entries.length, tabBreaksOf(carriedOut)],
+	[[inner.groupId, first.groupId, second.groupId], 2, []],
+);
+const carriedIn = movedTo(
+	placeGroup(carriedOut, groupOf(carriedOut, first.groupId), { chatId: ONE, groupId: inner.groupId, before: "tab-1" }),
+	carriedOut,
+);
+check(
+	"a group carried into a group stands before the asked entry of it",
+	[groupOf(carriedIn, inner.groupId).entries.map((entry) => entry.id), flatTabIdsOf(carriedIn, ONE), tabBreaksOf(carriedIn)],
+	[[first.groupId, "tab-1"], ["tab-3", "tab-2", "tab-1"], []],
+);
+const outerSpilled = ungroup(carriedIn, groupOf(carriedIn, inner.groupId)).moment;
+check(
+	"ungrouping the holder spills its tabs and groups where it stood",
+	[outerSpilled.lists[ONE]?.map((entry) => entry.id), tabBreaksOf(outerSpilled)],
+	[[first.groupId, "tab-1", second.groupId], []],
+);
+const nestedClosed = closeGroup(carriedIn, groupOf(carriedIn, inner.groupId), new Map()).moment;
+check(
+	"closing a group closes the tabs of the groups inside it and drops those groups too",
+	[nestedClosed.groups.map((group) => group.id), nestedClosed.tabs.length, tabBreaksOf(nestedClosed)],
+	[[second.groupId], 0, []],
+);
 const spilled = ungroup(placed, groupOf(placed, first.groupId)).moment;
 check("ungrouping spills the tabs in order where the group stood", flatTabIdsOf(spilled, ONE), [
 	"tab-1",

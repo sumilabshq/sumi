@@ -7,7 +7,9 @@ export const GroupFaceSchema = z.object({
 	hue: GroupHueSchema.nullable().optional(),
 });
 
-export const NewGroupSchema = z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]).and(GroupFaceSchema);
+export const NewGroupSchema = z
+	.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() }), z.object({ inGroupId: z.string() })])
+	.and(GroupFaceSchema);
 
 export const GroupIdSchema = z.object({
 	id: z.string(),
@@ -25,6 +27,7 @@ export const GroupPlaceSchema = z.object({
 	id: z.string().min(1),
 	to: z.object({
 		list: z.string().min(1),
+		groupId: z.string().min(1).nullable().default(null),
 		before: z.string().nullable(),
 	}),
 });

@@ -4,10 +4,12 @@ import {
 	chatOfGroup,
 	flatTabIdsOf,
 	findGroup,
+	groupsUnder,
 	isSectionList,
 	placeAfterOf,
 	sectionNameOf,
 	locationOf,
+	tabIdsOfGroup,
 	withTabAt,
 	withoutTab,
 } from "./tab-lists.js";
@@ -245,4 +247,4 @@ function mintTab(moment: HostTabsMoment, opened: OpenedTab): HostTab {
 	};
 }
 
-export { chatOfGroup, findGroup, flatTabIdsOf };
+export { chatOfGroup, findGroup, flatTabIdsOf, groupsUnder, tabIdsOfGroup };

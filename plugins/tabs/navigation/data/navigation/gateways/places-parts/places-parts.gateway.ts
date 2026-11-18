@@ -5,6 +5,7 @@ import type { TabsGateway } from "../tabs/tabs.gateway.js";
 import {
 	KeptNavigationSchema,
 	TauriTabsGateway,
+	groupEntriesOf,
 	oldViewsOf,
 	viewsCarried,
 	workspaceTabsOf,
@@ -56,7 +57,7 @@ async function carriedNavigation(store: StoreClient, workspaceId: string): Promi
 	});
 
 	if (kept.now().tabs !== undefined) {
-		return kept;
+		return groupsReshaped(kept);
 	}
 
 	const global = await readGlobalTabs(store, workspaceId);
@@ -69,6 +70,20 @@ async function carriedNavigation(store: StoreClient, workspaceId: string): Promi
 	kept.change({ tabs: carried.placed }, `navigation ${carried.reason}`);
 	await kept.flush();
 	console.info(`[widgetarium] navigation ${carried.reason}`);
+	return kept;
+}
+
+async function groupsReshaped(kept: HeldDoc<KeptNavigation>): Promise<HeldDoc<KeptNavigation>> {
+	const { tabs, reshaped } = groupEntriesOf(kept.now().tabs);
+
+	if (reshaped === 0) {
+		return kept;
+	}
+
+	const reason = `groups tabIds → entries in ${reshaped} groups (a group holds tabs and groups)`;
+	kept.change({ tabs }, `navigation ${reason}`);
+	await kept.flush();
+	console.info(`[widgetarium] navigation ${reason}`);
 	return kept;
 }
 
@@ -98,7 +113,7 @@ async function panesCarried(
 async function readGlobalTabs(store: StoreClient, workspaceId: string): Promise<PlacedTabs | null> {
 	try {
 		const global = await store.readDoc(GLOBAL_ROOT, GLOBAL_PLACES);
-		const readable = PlacedTabsSchema.safeParse(global.doc?.tabs);
+		const readable = PlacedTabsSchema.safeParse(groupEntriesOf(global.doc?.tabs).tabs);
 		return readable.success ? readable.data : null;
 	} catch (failure: unknown) {
 		console.warn(NOT_CARRIED.replace("{workspace}", workspaceId).replace("{reason}", String(failure)));

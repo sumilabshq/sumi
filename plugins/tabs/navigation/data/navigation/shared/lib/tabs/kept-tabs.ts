@@ -44,7 +44,7 @@ export function windowTabsOf(moment: HostTabsMoment): WindowTabs {
 	return {
 		tabs: [...moment.tabs],
 		lists: Object.fromEntries(Object.entries(moment.lists).map(([list, entries]) => [list, [...entries]])),
-		groups: moment.groups.map((group) => ({ ...group, tabIds: [...group.tabIds] })),
+		groups: moment.groups.map((group) => ({ ...group, entries: [...group.entries] })),
 		shownId: moment.shownId,
 		minted: moment.minted,
 		closed: [...moment.closed],

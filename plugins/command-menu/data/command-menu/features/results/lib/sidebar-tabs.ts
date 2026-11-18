@@ -1,4 +1,4 @@
-import type { AppTabState, SidebarEntry, SidebarTab, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { AppTabState, SidebarEntry, SidebarGroupItem, SidebarTab, TabsSidebar } from "@widgetarium/app-host/contract";
 
 const CHAT_APP = "chat";
 
@@ -28,10 +28,14 @@ function tabsOfEntry(entry: SidebarEntry, listTitle: string): readonly ListedTab
 
 function itemsOfEntry(entry: SidebarEntry): readonly SidebarTab[] {
 	if (entry.kind === "group") {
-		return entry.group.items;
+		return entry.group.items.flatMap(tabsOfGroupItem);
 	}
 
 	return entry.kind === "split" ? entry.split.members.map((member) => member.item) : [entry];
+}
+
+function tabsOfGroupItem(item: SidebarGroupItem): readonly SidebarTab[] {
+	return item.kind === "tab" ? [item] : item.group.items.flatMap(tabsOfGroupItem);
 }
 
 function tabsOfItem({ tab }: SidebarTab, listTitle: string): readonly ListedTab[] {

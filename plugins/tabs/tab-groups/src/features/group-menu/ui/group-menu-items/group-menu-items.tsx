@@ -44,7 +44,7 @@ export function GroupMenuItems({ tab, onDone }: GroupMenuItemsProps): ReactEleme
 								to: {
 									kind: "list",
 									list: holding.list,
-									groupId: null,
+									groupId: holding.outerGroupId,
 									before: holding.groupId,
 								},
 							})

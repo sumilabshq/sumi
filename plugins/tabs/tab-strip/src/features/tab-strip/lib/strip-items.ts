@@ -1,4 +1,10 @@
-import type { AppTabState, SidebarEntry, SidebarSplitState, TabsSidebar } from "@widgetarium/app-host/contract";
+import type {
+	AppTabState,
+	SidebarEntry,
+	SidebarGroupState,
+	SidebarSplitState,
+	TabsSidebar,
+} from "@widgetarium/app-host/contract";
 
 export interface StripGroup {
 	readonly id: string;
@@ -75,18 +81,7 @@ export function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripI
 	}
 
 	if (entry.kind === "group") {
-		return entry.group.items.map(({ tab }) => ({
-			kind: "tab",
-			tab,
-			list,
-			groupId: entry.group.id,
-			group: {
-				id: entry.group.id,
-				name: entry.group.name,
-				hue: entry.group.hue,
-				isOpen: entry.group.isOpen,
-			},
-		}));
+		return tabsOfGroup(entry.group, list);
 	}
 
 	const focused = focusedOf(entry.split);
@@ -100,6 +95,31 @@ export function itemsOfEntry(entry: SidebarEntry, list: string): readonly StripI
 					list,
 				},
 			];
+}
+
+export function stripGroupOf({ id, name, hue, isOpen }: SidebarGroupState): StripGroup {
+	return {
+		id,
+		name,
+		hue,
+		isOpen,
+	};
+}
+
+function tabsOfGroup(group: SidebarGroupState, list: string): readonly StripTab[] {
+	return group.items.flatMap((item): readonly StripTab[] =>
+		item.kind === "group"
+			? tabsOfGroup(item.group, list)
+			: [
+					{
+						kind: "tab",
+						tab: item.tab,
+						list,
+						groupId: group.id,
+						group: stripGroupOf(group),
+					},
+				],
+	);
 }
 
 function focusedOf(split: SidebarSplitState): AppTabState | null {

@@ -5,6 +5,7 @@ import { Icon, Input, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
 import type { SidebarGroupState } from "@widgetarium/app-host/contract";
 import { GroupHueSchema, groups } from "@sumi/groups/contract";
 import { groupColourOf } from "@sumi/tab-strip-plugin";
+import { editCreatedGroup } from "../../lib/edit-created-group.js";
 import { warnIfRefused } from "../../lib/warn-if-refused.js";
 
 export interface GroupEditorProps {
@@ -22,6 +23,7 @@ export function GroupEditor({ group, onDone }: GroupEditorProps): ReactElement {
 	const rename = useCommand(groups.actions.rename);
 	const setHue = useCommand(groups.actions.setHue);
 	const ungroup = useCommand(groups.actions.ungroup);
+	const create = useCommand(groups.actions.create);
 	const [name, setName] = useState(group.name);
 	const saveName = (): void => {
 		const said = name.trim();
@@ -64,6 +66,16 @@ export function GroupEditor({ group, onDone }: GroupEditorProps): ReactElement {
 				))}
 			</div>
 			<PopoverSeparator />
+			<PopoverItem
+				role="menuitem"
+				onClick={() => {
+					onDone();
+					void create.run({ inGroupId: group.id }).then(editCreatedGroup(`new group inside ${group.id}`));
+				}}
+			>
+				<Icon name="folder-plus" size={ITEM_ICON_PX} />
+				New group inside
+			</PopoverItem>
 			<PopoverItem
 				role="menuitem"
 				onClick={() => {

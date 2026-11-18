@@ -7,6 +7,7 @@ export const CreateGroupAskSchema = z.object({
 	from: z.discriminatedUnion("kind", [
 		z.object({ kind: z.literal("tab"), tabId: z.string().min(1) }),
 		z.object({ kind: z.literal("list"), list: z.string().min(1) }),
+		z.object({ kind: z.literal("group"), groupId: z.string().min(1) }),
 	]),
 	name: z.string().min(1).optional(),
 	hue: GroupHueSchema.nullable().optional(),
@@ -22,6 +23,7 @@ export const GroupAskSchema = z.object({
 export const PlaceGroupAskSchema = GroupAskSchema.extend({
 	place: z.object({
 		list: z.string().min(1),
+		groupId: z.string().min(1).nullable().default(null),
 		before: z.string().nullable(),
 	}),
 });

@@ -2,7 +2,7 @@ import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
 import { chatGroupsOf, groupedChat } from "../packages/state/layout/shared/lib/chat-groups.ts";
 import { JsonMemoryPaneTreeGateway } from "../packages/state/layout/gateways/pane-tree/json-memory.gateway.ts";
 import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
-import { aimTargetIdsOf } from "../apps/studio/src/features/panes/lib/aim-targets.ts";
+import { aimTargetIdsOf } from "../plugins/tabs/panes/src/features/pane-board/lib/aim-targets.ts";
 import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
 import { place, close, placementPreview } from "../packages/state/layout/features/panes/requests.ts";
 import { openShown, showChat } from "../packages/state/layout/features/pane-tabs/requests.ts";

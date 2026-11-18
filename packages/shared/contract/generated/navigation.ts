@@ -2,6 +2,154 @@
 import { Repeatable, Server, command, moduleContract, named, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
+export const PaneViewSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("chat"),
+		chatId: z.string().min(1).optional(),
+	}),
+	z.object({
+		kind: z.literal("app"),
+		tabId: z.string().nullable(),
+	}),
+]);
+
+export const WindowSeatSchema = z.object({
+	window: z.string().min(1),
+	boot: PaneViewSchema.nullable(),
+});
+
+export const SeatAskSchema = z.object({ seat: WindowSeatSchema });
+
+export const SplitSideSchema = z.enum(["left", "right", "top", "bottom"]);
+
+export const PanePlacementSchema = z.object({
+	view: PaneViewSchema,
+	targetId: z.string().nullable(),
+	side: SplitSideSchema,
+	home: z.string().nullable().optional(),
+});
+
+export const PreviewAskSchema = SeatAskSchema.extend({ placement: PanePlacementSchema.nullable() });
+
+export const PlaceAskSchema = SeatAskSchema.extend({ placement: PanePlacementSchema });
+
+export const PaneAskSchema = SeatAskSchema.extend({ id: z.string() });
+
+export const ResizePaneSplitAskSchema = SeatAskSchema.extend({
+	splitId: z.string(),
+	at: z.number().int().nonnegative(),
+	share: z.number().nonnegative(),
+});
+
+export const TabInPaneAskSchema = SeatAskSchema.extend({ tabId: z.string() });
+
+export const ChatInPaneAskSchema = SeatAskSchema.extend({
+	chatId: z.string().min(1),
+	paneId: z.string().nullable(),
+});
+
+export const TabsInPanesAskSchema = SeatAskSchema.extend({ tabIds: z.array(z.string()).readonly() });
+
+export const HeldTabsInPanesAskSchema = SeatAskSchema.extend({ heldTabIds: z.array(z.string()).readonly() });
+
+export const WindowSidesSchema = z.object({ leftHidden: z.boolean().nullable() });
+
+export const HideSideAskSchema = z.object({
+	window: z.string().min(1),
+	isHidden: z.boolean(),
+});
+
+export type PaneView = z.infer<typeof PaneViewSchema>;
+
+export type PaneSide = SplitSide;
+
+export interface PaneLeaf {
+	readonly kind: "pane";
+	readonly id: string;
+	readonly view: PaneView;
+}
+
+export interface PaneSplit {
+	readonly kind: "split";
+	readonly id: string;
+	readonly dir: SplitDir;
+	readonly children: readonly PaneNode[];
+	readonly shares: readonly number[];
+	readonly chatId?: string | undefined;
+}
+
+export type PaneNode = PaneLeaf | PaneSplit;
+
+export const PaneLeafSchema = z.object({
+	kind: z.literal("pane"),
+	id: z.string(),
+	view: PaneViewSchema,
+});
+
+export const PaneNodeSchema: z.ZodType<PaneNode> = z.lazy(() =>
+	z.discriminatedUnion("kind", [
+		PaneLeafSchema,
+		z.object({
+			kind: z.literal("split"),
+			id: z.string(),
+			dir: SplitDirSchema,
+			children: z.array(PaneNodeSchema).readonly(),
+			shares: z.array(z.number().nonnegative()).readonly(),
+			chatId: z.string().min(1).optional(),
+		}),
+	]),
+);
+
+export const PaneBoardSchema = z.object({
+	root: PaneNodeSchema.nullable(),
+	targetId: z.string().nullable(),
+	chatTargetId: z.string().nullable(),
+	focusedChatId: z.string().nullable(),
+	isLoaded: z.boolean(),
+	tabTargetId: z.string().nullable(),
+	leaves: z.array(PaneLeafSchema).readonly(),
+	closableIds: z.array(z.string()).readonly(),
+	tabPanes: z
+		.array(
+			z.object({
+				paneId: z.string(),
+				tabId: z.string(),
+			}),
+		)
+		.readonly(),
+	chatGroups: z
+		.array(
+			z.object({
+				chatId: z.string(),
+				groupId: z.string(),
+				paneIds: z.array(z.string()).readonly(),
+			}),
+		)
+		.readonly(),
+	elsewhere: z
+		.array(
+			z.object({
+				window: z.string(),
+				tabIds: z.array(z.string()).readonly(),
+				chatIds: z.array(z.string()).readonly(),
+			}),
+		)
+		.readonly(),
+});
+
+export type PaneBoard = z.infer<typeof PaneBoardSchema>;
+
+export type PanePlacement = z.infer<typeof PanePlacementSchema>;
+
+export const PlacementPreviewSchema = z.object({
+	root: PaneNodeSchema.nullable(),
+	placedId: z.string(),
+});
+
+export type PlacementPreview = z.infer<typeof PlacementPreviewSchema>;
+
+export type WindowSeat = z.infer<typeof WindowSeatSchema>;
+
 export const TornViewSchema = z.enum(["chat", "app"]);
 
 export const PageFactsSchema = z.object({
@@ -104,8 +252,6 @@ export const ReorderSplitMemberAskSchema = z.object({
 	tabId: z.string().min(1),
 	before: z.string().min(1).nullable(),
 });
-
-export const SplitSideSchema = z.enum(["left", "right", "top", "bottom"]);
 
 export const PlaceInViewAskSchema = z.object({
 	at: TabsAskSchema,
@@ -429,20 +575,31 @@ export const SidebarTabSchema = z.object({
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
 
-export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
+export interface SidebarGroup {
+	readonly kind: "group";
+	readonly group: {
+		readonly id: string;
+		readonly name: string;
+		readonly hue: GroupHue | null;
+		readonly isOpen: boolean;
+		readonly items: readonly SidebarGroupItem[];
+	};
+}
 
-export const SidebarGroupSchema = z.object({
-	kind: z.literal("group"),
-	group: z.object({
-		id: z.string(),
-		name: z.string(),
-		hue: GroupHueSchema.nullable(),
-		isOpen: z.boolean(),
-		items: z.array(SidebarTabSchema).readonly(),
+export type SidebarGroupItem = SidebarTab | SidebarGroup;
+
+export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
+	z.object({
+		kind: z.literal("group"),
+		group: z.object({
+			id: z.string(),
+			name: z.string(),
+			hue: GroupHueSchema.nullable(),
+			isOpen: z.boolean(),
+			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema])).readonly(),
+		}),
 	}),
-});
-
-export type SidebarGroup = z.infer<typeof SidebarGroupSchema>;
+);
 
 export const SplitMemberSchema = z.object({
 	item: SidebarTabSchema,
@@ -463,11 +620,7 @@ export const SidebarSplitSchema = z.object({
 
 export type SidebarSplit = z.infer<typeof SidebarSplitSchema>;
 
-export const SidebarEntrySchema = z.discriminatedUnion("kind", [
-	SidebarTabSchema,
-	SidebarGroupSchema,
-	SidebarSplitSchema,
-]);
+export const SidebarEntrySchema = z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
@@ -555,6 +708,8 @@ export type TabMark = z.infer<typeof TabMarkSchema>;
 
 export type SectionList = z.infer<typeof SectionListSchema>;
 
+export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
+
 export type GroupHue = z.infer<typeof GroupHueSchema>;
 
 export const ListEntrySchema = z.object({
@@ -569,7 +724,7 @@ export const KeptGroupSchema = z.object({
 	name: z.string(),
 	hue: GroupHueSchema.nullable(),
 	isOpen: z.boolean(),
-	tabIds: z.array(z.string()),
+	entries: z.array(ListEntrySchema),
 });
 
 export const TabHistorySchema = z.object({
@@ -640,6 +795,56 @@ export interface WindowsMoved {
 export type MoveWindows = (now: Windows) => WindowsMoved | null;
 
 export const navigation = moduleContract("navigation", Server, {
+	panes: {
+		board: named("panes.board", query()
+			.public()
+			.input(SeatAskSchema)
+			.output(PaneBoardSchema)),
+		placementPreview: named("panes.placement-preview", query()
+			.public()
+			.input(PreviewAskSchema)
+			.output(PlacementPreviewSchema.nullable())),
+		place: named("panes.place", command()
+			.public()
+			.input(PlaceAskSchema)
+			.idempotencyKey(Repeatable)),
+		close: named("panes.close", command()
+			.public()
+			.input(PaneAskSchema)
+			.idempotencyKey(Repeatable)),
+		resizeSplit: named("panes.resize-split", command()
+			.public()
+			.input(ResizePaneSplitAskSchema)
+			.idempotencyKey(Repeatable)),
+		aim: named("panes.aim", command()
+			.public()
+			.input(PaneAskSchema)
+			.idempotencyKey(Repeatable)),
+		showInTarget: named("panes.show-in-target", command()
+			.public()
+			.input(TabInPaneAskSchema)
+			.idempotencyKey(Repeatable)),
+		showChat: named("panes.show-chat", command()
+			.public()
+			.input(ChatInPaneAskSchema)
+			.idempotencyKey(Repeatable)),
+		openShown: named("panes.open-shown", command()
+			.public()
+			.input(SeatAskSchema)
+			.idempotencyKey(Repeatable)),
+		closeShown: named("panes.close-shown", command()
+			.public()
+			.input(SeatAskSchema)
+			.idempotencyKey(Repeatable)),
+		closeShowingPanes: named("panes.close-showing-panes", command()
+			.public()
+			.input(TabsInPanesAskSchema)
+			.idempotencyKey(Repeatable)),
+		dropGoneTabs: named("panes.drop-gone-tabs", command()
+			.public()
+			.input(HeldTabsInPanesAskSchema)
+			.idempotencyKey(Repeatable)),
+	},
 	splits: {
 		shown: named("splits.shown", query()
 			.public()
@@ -834,6 +1039,16 @@ export const navigation = moduleContract("navigation", Server, {
 			.public()
 			.input(TabHoldersAskSchema)
 			.output(TabHoldersSchema)),
+	},
+	windowSides: {
+		sides: named("window-sides.sides", query()
+			.public()
+			.input(WindowLabelSchema)
+			.output(WindowSidesSchema)),
+		hideLeft: named("window-sides.hide-left", command()
+			.public()
+			.input(HideSideAskSchema)
+			.idempotencyKey(Repeatable)),
 	},
 	windows: {
 		all: named("windows.all", query()

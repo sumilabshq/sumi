@@ -38,7 +38,7 @@ export const KeptGroupSchema = z.object({
 	name: z.string(),
 	hue: GroupHueSchema.nullable(),
 	isOpen: z.boolean(),
-	tabIds: z.array(z.string()),
+	entries: z.array(ListEntrySchema),
 });
 
 export const TabHistorySchema = z.object({

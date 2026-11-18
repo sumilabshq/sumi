@@ -96,6 +96,10 @@
 	overflow: hidden;
 }
 
+.sumi-strip-tab-icon:has(.wg-kit-status-cube) {
+	overflow: visible;
+}
+
 .sumi-strip-tab-icon:empty {
 	display: none;
 }

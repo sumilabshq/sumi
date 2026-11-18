@@ -1,5 +1,5 @@
 import type { PageTitle } from "@sumi/apps/contract";
-import type { AppTabState, SidebarEntry, SidebarTab, TabsSidebar } from "../../schema/app-tab.schema.js";
+import type { AppTabState, SidebarEntry, SidebarGroup, SidebarTab, TabsSidebar } from "../../schema/app-tab.schema.js";
 import type { ClosedTabRow } from "../../schema/closed-tab.schema.js";
 
 export type PageTitles = ReadonlyMap<string, PageTitle>;
@@ -71,7 +71,7 @@ function titledEntryOf(entry: SidebarEntry, titles: PageTitles): SidebarEntry {
 	}
 
 	if (entry.kind === "group") {
-		return { ...entry, group: { ...entry.group, items: entry.group.items.map((item) => titledItemOf(item, titles)) } };
+		return titledGroupOf(entry, titles);
 	}
 
 	return {
@@ -79,6 +79,16 @@ function titledEntryOf(entry: SidebarEntry, titles: PageTitles): SidebarEntry {
 		split: {
 			...entry.split,
 			members: entry.split.members.map((member) => ({ ...member, item: titledItemOf(member.item, titles) })),
+		},
+	};
+}
+
+function titledGroupOf(entry: SidebarGroup, titles: PageTitles): SidebarGroup {
+	return {
+		...entry,
+		group: {
+			...entry.group,
+			items: entry.group.items.map((item) => (item.kind === "tab" ? titledItemOf(item, titles) : titledGroupOf(item, titles))),
 		},
 	};
 }
@@ -96,7 +106,7 @@ function tabsOfEntry(entry: SidebarEntry): readonly AppTabState[] {
 	}
 
 	if (entry.kind === "group") {
-		return entry.group.items.map((item) => item.tab);
+		return entry.group.items.flatMap(tabsOfEntry);
 	}
 
 	return entry.split.members.map(({ item }) => item.tab);

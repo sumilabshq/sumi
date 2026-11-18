@@ -3,13 +3,13 @@ import type { KeptSplit } from "../../schema/splits.schema.js";
 import type { WindowSession } from "../../schema/tabs.schema.js";
 import {
 	WORKSPACE_LIST,
-	chatOfGroup,
 	isSectionList,
 	findGroup,
 	freeGroupNameOf,
 	locationOf,
 	placeOfLocation,
 	tabEntryOf,
+	withEntryAt,
 	withEntryBefore,
 	withoutTab,
 } from "./tab-lists.js";
@@ -86,21 +86,17 @@ export function emptyMoment(apps: PlacedApps): HostTabsMoment {
 	};
 }
 
-export function withoutGroup(layout: TabLayout, groupId: string, spilled: readonly string[]): TabLayout {
-	const chatId = chatOfGroup(layout, groupId);
-
-	if (chatId === null) {
-		return layout;
-	}
-
+export function withoutGroup(layout: TabLayout, groupId: string, spilled: readonly ListEntry[]): TabLayout {
+	const spilling = (entries: readonly ListEntry[]): readonly ListEntry[] =>
+		entries.flatMap((entry) => (entry.kind === "group" && entry.id === groupId ? spilled : [entry]));
 	return {
-		lists: {
-			...layout.lists,
-			[chatId]: (layout.lists[chatId] ?? []).flatMap((entry) =>
-				entry.kind === "group" && entry.id === groupId ? spilled.map(tabEntryOf) : [entry],
-			),
-		},
-		groups: layout.groups.filter((group) => group.id !== groupId),
+		lists: Object.fromEntries(Object.entries(layout.lists).map(([chatId, entries]) => [chatId, spilling(entries)])),
+		groups: layout.groups
+			.filter((group) => group.id !== groupId)
+			.map((group) => ({
+				...group,
+				entries: spilling(group.entries),
+			})),
 	};
 }
 
@@ -154,6 +150,7 @@ export function closedPlaceOf(location: TabLocation | null): Pick<ClosedTab, "ch
 export interface GroupBirth {
 	readonly chatId: string;
 	readonly withTabId: string | null;
+	readonly inGroupId: string | null;
 }
 
 export function newGroupOf(moment: HostTabsMoment, { chatId, withTabId }: GroupBirth): TabGroup {
@@ -162,7 +159,7 @@ export function newGroupOf(moment: HostTabsMoment, { chatId, withTabId }: GroupB
 		name: freeGroupNameOf(moment, chatId),
 		hue: null,
 		isOpen: true,
-		tabIds: withTabId === null ? [] : [withTabId],
+		entries: withTabId === null ? [] : [tabEntryOf(withTabId)],
 	};
 }
 
@@ -172,10 +169,23 @@ export function groupedMoment(moment: HostTabsMoment, group: TabGroup, birth: Gr
 		kind: "group",
 		id: group.id,
 	};
+	const born = {
+		...layout,
+		groups: [...layout.groups.map((one) => (one.id === birth.inGroupId ? { ...one, isOpen: true } : one)), group],
+	};
+
+	if (birth.inGroupId !== null) {
+		return {
+			...moment,
+			...withEntryAt(born, entry, { chatId: birth.chatId, groupId: birth.inGroupId, before: null }),
+			minted: moment.minted + 1,
+		};
+	}
+
 	return {
 		...moment,
 		lists: withEntryBefore(layout.lists, birth.chatId, entry, groupBeforeOf(moment, birth)),
-		groups: [...layout.groups, group],
+		groups: born.groups,
 		minted: moment.minted + 1,
 	};
 }

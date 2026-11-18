@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import { appHost } from "@widgetarium/app-host/contract";
-import type { SidebarGroupState, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { SidebarGroupItem, SidebarGroupState, TabsSidebar } from "@widgetarium/app-host/contract";
 import { closeGroupMenu, useAskedGroupMenu } from "../../lib/group-menu-ask.js";
 import { SpotMenu } from "../spot-menu/spot-menu.js";
 import type { MenuSpot } from "../spot-menu/spot-menu.js";
@@ -48,11 +48,20 @@ export function GroupMenu(): ReactElement {
 }
 
 function groupOf(sidebar: TabsSidebar, groupId: string): SidebarGroupState | null {
-	for (const section of sidebar.sections) {
-		for (const entry of section.entries) {
-			if (entry.kind === "group" && entry.group.id === groupId) {
-				return entry.group;
-			}
+	const tops = sidebar.sections.flatMap(({ entries }) => entries.flatMap((entry) => (entry.kind === "group" ? [entry] : [])));
+	return groupAmong(tops, groupId);
+}
+
+function groupAmong(items: readonly SidebarGroupItem[], groupId: string): SidebarGroupState | null {
+	for (const item of items) {
+		if (item.kind !== "group") {
+			continue;
+		}
+
+		const found = item.group.id === groupId ? item.group : groupAmong(item.group.items, groupId);
+
+		if (found !== null) {
+			return found;
 		}
 	}
 

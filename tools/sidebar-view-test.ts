@@ -64,8 +64,8 @@ const MOMENT: HostTabsMoment = {
 		],
 	},
 	groups: [
-		{ id: "g1", name: "Work", hue: "blue", isOpen: true, tabIds: ["chat-3"] },
-		{ id: "g2", name: "Docs", hue: null, isOpen: true, tabIds: ["loose"] },
+		{ id: "g1", name: "Work", hue: "blue", isOpen: true, entries: [{ kind: "tab", id: "chat-3" }] },
+		{ id: "g2", name: "Docs", hue: null, isOpen: true, entries: [{ kind: "tab", id: "loose" }] },
 	],
 };
 
@@ -96,7 +96,7 @@ function shapeOf(entry: SidebarEntry): string {
 		return `split:${entry.split.id}`;
 	}
 
-	return `group:${entry.group.id}[${entry.group.items.map(itemShapeOf).join(",")}]`;
+	return `group:${entry.group.id}[${entry.group.items.map(shapeOf).join(",")}]`;
 }
 
 function itemShapeOf({ tab }: Extract<SidebarEntry, { kind: "tab" }>): string {
