@@ -1,7 +1,6 @@
 import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { linkOf, linkTargetOf } from "../packages/shared/core/src/engine/sumi-link.ts";
 import type { LinkTarget } from "../packages/shared/core/src/engine/sumi-link.ts";
-import { layout } from "../packages/state/layout/generated/contract.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
 import { GIT_LINK_GUIDE, gitAddressOf } from "../plugins/git/src/features/git-page/lib/git-address.ts";
@@ -156,7 +155,7 @@ await openLink(linkOf({ kind: "tab", id: firstTask?.id ?? "" }));
 check("a tab link shows that tab", (await shownTab())?.id, firstTask?.id);
 
 async function paneViews() {
-	const tree = await studio.send(layout.panes.paneTree);
+	const tree = await studio.send(appHost.panes.paneTree);
 	return tree.ok ? tree.output.leaves.map((leaf) => leaf.view) : [];
 }
 

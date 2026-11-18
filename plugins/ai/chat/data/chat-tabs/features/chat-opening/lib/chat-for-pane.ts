@@ -1,5 +1,5 @@
 import type { Send } from "@widgetarium/data-framework";
-import type { PaneBoard } from "@widgetarium/layout/contract";
+import type { PaneBoard } from "@widgetarium/app-host/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
 import { isChatHeld } from "./chat-holders.js";
 

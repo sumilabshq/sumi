@@ -1,14 +1,13 @@
 import { appHost as appHostContract } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
-import { layout } from "../packages/state/layout/generated/contract.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
 import { chatTabs } from "../plugins/ai/chat/data/chat-tabs/generated/contract.ts";
-import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
+import { FIRST_PANES } from "../plugins/tabs/navigation/data/navigation/shared/lib/panes/kept-panes.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
 
 async function boardChatsOf(studioApp: Runtime): Promise<readonly string[]> {
-	const board = await studioApp.send(layout.panes.paneTree);
+	const board = await studioApp.send(appHostContract.panes.paneTree);
 	return board.ok ? board.output.chatGroups.map((group) => group.chatId) : [];
 }
 

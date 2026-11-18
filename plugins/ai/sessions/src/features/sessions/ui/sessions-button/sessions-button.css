@@ -1,28 +1,3 @@
-:is(.wg-root, .wg-portal) .sumi-sessions-button {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	box-sizing: border-box;
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	padding: 0;
-	border: none;
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
-	color: var(--sumi-text);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .sumi-sessions-button:hover {
-	background: var(--sumi-hover);
-}
-
-:is(.wg-root, .wg-portal) .sumi-sessions-button[data-state="open"] {
-	background: var(--sumi-soft);
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.sumi-sessions-pop {
 	width: 320px;
 	min-width: 0;
@@ -70,7 +45,10 @@
 	flex-direction: column;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .sumi-sessions-line[data-current="true"] > .sumi-sessions-row {
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio)
+	.wg-kit-pop
+	.sumi-sessions-line[data-current="true"]
+	> .sumi-sessions-row {
 	background: var(--sumi-soft);
 	font-weight: 600;
 }

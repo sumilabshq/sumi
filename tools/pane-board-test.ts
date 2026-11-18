@@ -10,18 +10,23 @@ import { isDeepStrictEqual } from "node:util";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
-import { checksLayoutRules, infosOf, memoriesOf, memoryOf, partsOf, shapeOf } from "./layout-rules-checks.ts";
-import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
-import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
-import { paneLayoutOf, sideAt } from "../apps/studio/src/features/panes/lib/pane-layout.ts";
-import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
-import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
-import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
-import { aim, close, place, resizeSplit } from "../packages/state/layout/features/panes/requests.ts";
-import { dropGoneTabs, showInTarget } from "../packages/state/layout/features/pane-tabs/requests.ts";
-import { peek, toggle } from "../packages/state/layout/features/frame-sides/requests.ts";
+import { checksLayoutRules, memoriesOf } from "./layout-rules-checks.ts";
+import { PANES_SEAT, infosOf, panePartsOf, placedWithTree, refusalOf, shapeOf, treeOf } from "./pane-harness.ts";
+import type { PaneParts } from "./pane-harness.ts";
+import { studioFakesOf } from "./app-host-fixture.ts";
+import { leavesOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/panes/pane-nodes.ts";
+import { boardOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/panes/pane-trees.ts";
+import { FIRST_PANES } from "../plugins/tabs/navigation/data/navigation/shared/lib/panes/kept-panes.ts";
+import { emptyPlacedTabs } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/kept-tabs.ts";
+import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
+import type { MovePlacedTabs } from "../plugins/tabs/navigation/data/navigation/shared/lib/settling/settling.ts";
+import type { PlacedTabs } from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
+import { paneLayoutOf, sideAt } from "../plugins/tabs/panes/src/features/pane-board/lib/pane-layout.ts";
+import { layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
+import { aim, close, dropGoneTabs, place, resizeSplit, showInTarget } from "../plugins/tabs/navigation/data/navigation/features/panes/requests.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { resizeEdge } from "../packages/state/layout/features/frame-widths/requests.ts";
-import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
+import type { PaneSide, PaneTree, PaneView } from "../plugins/tabs/navigation/data/navigation/shared/schema/pane-tree.schema.ts";
 import { emptyMoment, openTab } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-lists.ts";
 import { sidebarOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/rows/sidebar-rows.ts";
@@ -47,51 +52,53 @@ function check(what: string, isOk: boolean, got: unknown): void {
 	console.log(`${isOk ? "ok  " : "FAIL"} ${what}${isOk ? "" : ` — ${JSON.stringify(got)}`}`);
 }
 
-function placeView(
-	parts: LayoutParts,
+async function placeView(
+	parts: PaneParts,
 	view: PaneView,
 	at: { readonly targetId: string | null; readonly side: PaneSide },
-): void {
-	place.handle({ view, ...at }, parts);
+): Promise<void> {
+	await place.handle({ seat: parts.seat, placement: { view, ...at } }, parts);
 }
 
-function closeAll(parts: LayoutParts): void {
-	leavesOf(parts.paneTree.tree().root).forEach((leaf) => close.handle({ id: leaf.id }, parts));
+async function closeAll(parts: PaneParts): Promise<void> {
+	for (const leaf of leavesOf((await treeOf(parts)).root)) {
+		await close.handle({ seat: parts.seat, id: leaf.id }, parts);
+	}
 }
 
-function resize(parts: LayoutParts, share: number): void {
-	resizeSplit.handle({ splitId: "pane-root", at: 0, share }, parts);
+async function resize(parts: PaneParts, share: number): Promise<void> {
+	await resizeSplit.handle({ seat: parts.seat, splitId: "pane-root", at: 0, share }, parts);
 }
 
-function checksTree(): void {
+async function checksTree(): Promise<void> {
 	console.info = () => undefined;
-	const parts = partsOf();
-	placeView(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	const parts = panePartsOf();
+	await placeView(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
 	check(
 		"a tab dropped on the right of the app pane stands after it",
-		JSON.stringify(shapeOf(parts)) === '["chat","shown","tab-3"]',
-		shapeOf(parts),
+		JSON.stringify(await shapeOf(parts)) === '["chat","shown","tab-3"]',
+		await shapeOf(parts),
 	);
-	placeView(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "left" });
+	await placeView(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "left" });
 	check(
 		"placing a tab that already stands moves it, never copies it",
-		JSON.stringify(shapeOf(parts)) === '["tab-3","chat","shown"]',
-		shapeOf(parts),
+		JSON.stringify(await shapeOf(parts)) === '["tab-3","chat","shown"]',
+		await shapeOf(parts),
 	);
-	placeView(parts, { kind: "app", tabId: "tab-4" }, { targetId: "pane-app", side: "bottom" });
-	const root = parts.paneTree.tree().root;
+	await placeView(parts, { kind: "app", tabId: "tab-4" }, { targetId: "pane-app", side: "bottom" });
+	const root = (await treeOf(parts)).root;
 	check(
 		"a drop on the bottom edge wraps the pane in a column",
 		root?.kind === "split" && JSON.stringify(root.children.map((child) => child.kind)) === '["pane","pane","split"]',
 		root,
 	);
-	closeAll(parts);
-	check("closing every pane leaves an empty board", parts.paneTree.tree().root === null, parts.paneTree.tree().root);
-	placeView(parts, { kind: "chat" }, { targetId: null, side: "right" });
+	await closeAll(parts);
+	check("closing every pane leaves an empty board", (await treeOf(parts)).root === null, (await treeOf(parts)).root);
+	await placeView(parts, { kind: "chat" }, { targetId: null, side: "right" });
 	check(
 		"a pane placed on an empty board is the whole board",
-		parts.paneTree.tree().root?.kind === "pane",
-		parts.paneTree.tree().root,
+		(await treeOf(parts)).root?.kind === "pane",
+		(await treeOf(parts)).root,
 	);
 	const workspaceEnd = { chatId: WORKSPACE_LIST, groupId: null, before: null };
 	const oneTab = openTab(emptyMoment(BUILT_IN_APPS), { app: "browser", pageId: null }, workspaceEnd).moment;
@@ -111,8 +118,8 @@ function checksTree(): void {
 		JSON.stringify(rows) === '[["tab-1",false],["tab-2",false]]',
 		rows,
 	);
-	checksShares();
-	checksTarget();
+	await checksShares();
+	await checksTarget();
 	console.info = quiet;
 	const halves = paneLayoutOf(FIRST_PANES.root, { left: 0, top: 0, width: 1008, height: 800 }, SPACING).rects;
 	check(
@@ -148,113 +155,146 @@ function checksTree(): void {
 	);
 }
 
-function sharesOf(parts: LayoutParts): readonly number[] {
-	const root = parts.paneTree.tree().root;
+async function sharesOf(parts: PaneParts): Promise<readonly number[]> {
+	const root = (await treeOf(parts)).root;
 	return root?.kind === "split" ? root.shares.map((share) => Math.round(share * 1000) / 1000) : [];
 }
 
-function closableKindsOf(parts: LayoutParts): readonly string[] {
-	const board = boardOf(parts.paneTree.tree());
+async function closableKindsOf(parts: PaneParts): Promise<readonly string[]> {
+	const board = boardOf(await treeOf(parts));
 	return board.leaves.filter((leaf) => board.closableIds.includes(leaf.id)).map((leaf) => leaf.view.kind);
 }
 
-function checksClosable(): void {
+async function checksClosable(): Promise<void> {
 	console.info = () => undefined;
-	const parts = partsOf();
-	closeAll(parts);
-	placeView(parts, { kind: "chat", chatId: "chat-1" }, { targetId: null, side: "right" });
-	const lone = closableKindsOf(parts);
-	const chatPaneId = leavesOf(parts.paneTree.tree().root)[0]?.id ?? null;
-	place.handle({ view: { kind: "app", tabId: "tab-1" }, targetId: chatPaneId, side: "right", home: "chat-1" }, parts);
-	const withItsArtifact = closableKindsOf(parts);
-	placeView(parts, { kind: "chat", chatId: "chat-2" }, { targetId: null, side: "right" });
-	const split = closableKindsOf(parts);
+	const parts = panePartsOf();
+	await closeAll(parts);
+	await placeView(parts, { kind: "chat", chatId: "chat-1" }, { targetId: null, side: "right" });
+	const lone = await closableKindsOf(parts);
+	const chatPaneId = leavesOf((await treeOf(parts)).root)[0]?.id ?? null;
+	const homeRefusal = await refusalOf(() =>
+		place.handle(
+			{
+				seat: parts.seat,
+				placement: { view: { kind: "app", tabId: "tab-1" }, targetId: chatPaneId, side: "right", home: "chat-1" },
+			},
+			parts,
+		),
+	);
+	const withItsArtifact = await closableKindsOf(parts);
+	await placeView(parts, { kind: "chat", chatId: "chat-2" }, { targetId: null, side: "right" });
+	const split = await closableKindsOf(parts);
 	console.info = quiet;
 	check("a lone chat pane cannot be closed", lone.length === 0, lone);
 	check(
 		"a chat with its artifact closes only the artifact",
-		JSON.stringify(withItsArtifact) === '["app"]',
-		withItsArtifact,
+		homeRefusal === null && JSON.stringify(withItsArtifact) === '["app"]',
+		{ homeRefusal, withItsArtifact },
 	);
 	check("in a split of two chats every pane closes", split.filter((kind) => kind === "chat").length === 2, split);
 }
 
-function checksTarget(): void {
-	const parts = partsOf();
-	placeView(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
-	const afterDrop = parts.paneTree.tree().targetId;
-	aim.handle({ id: "pane-chat" }, parts);
-	const afterChat = parts.paneTree.tree().targetId;
-	aim.handle({ id: "pane-app" }, parts);
-	const afterApp = parts.paneTree.tree().targetId;
-	aim.handle({ id: "pane-1" }, parts);
-	showInTarget.handle({ tabId: "tab-9" }, parts);
-	const shownIn = leavesOf(parts.paneTree.tree().root).find((leaf) => leaf.id === "pane-1")?.view;
-	close.handle({ id: "pane-1" }, parts);
+async function targetOf(parts: PaneParts): Promise<string | null> {
+	return (await treeOf(parts)).targetId;
+}
+
+async function checksTarget(): Promise<void> {
+	const parts = panePartsOf();
+	const { seat } = parts;
+	await placeView(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	const afterDrop = await targetOf(parts);
+	await aim.handle({ seat, id: "pane-chat" }, parts);
+	const afterChat = await targetOf(parts);
+	await aim.handle({ seat, id: "pane-app" }, parts);
+	const afterApp = await targetOf(parts);
+	await aim.handle({ seat, id: "pane-1" }, parts);
+	await showInTarget.handle({ seat, tabId: "tab-9" }, parts);
+	const shownIn = leavesOf((await treeOf(parts)).root).find((leaf) => leaf.id === "pane-1")?.view;
+	await close.handle({ seat, id: "pane-1" }, parts);
 	check(
 		"a dropped tab's pane becomes the target, the chat never does, a press aims a pane, and showing replaces the target's tab",
 		afterDrop === "pane-1" &&
 			afterChat === "pane-1" &&
 			afterApp === "pane-app" &&
 			JSON.stringify(shownIn) === '{"kind":"app","tabId":"tab-9"}' &&
-			parts.paneTree.tree().targetId === null,
-		[afterDrop, afterChat, afterApp, shownIn, parts.paneTree.tree().targetId],
+			(await targetOf(parts)) === null,
+		[afterDrop, afterChat, afterApp, shownIn, await targetOf(parts)],
 	);
 }
 
-function checksShares(): void {
-	const even = partsOf();
-	placeView(even, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
+async function checksShares(): Promise<void> {
+	const even = panePartsOf();
+	await placeView(even, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
 	check(
 		"a pane dropped between halves gives every pane a third",
-		JSON.stringify(sharesOf(even)) === "[0.333,0.333,0.333]",
-		sharesOf(even),
+		JSON.stringify(await sharesOf(even)) === "[0.333,0.333,0.333]",
+		await sharesOf(even),
 	);
-	const uneven = partsOf();
-	resize(uneven, 2 / 3);
-	placeView(uneven, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
+	const uneven = panePartsOf();
+	await resize(uneven, 2 / 3);
+	await placeView(uneven, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
 	check(
 		"a new pane takes a third and the others shrink in proportion",
-		JSON.stringify(sharesOf(uneven)) === "[0.444,0.333,0.222]",
-		sharesOf(uneven),
+		JSON.stringify(await sharesOf(uneven)) === "[0.444,0.333,0.222]",
+		await sharesOf(uneven),
 	);
-	close.handle({ id: "pane-1" }, uneven);
+	await close.handle({ seat: uneven.seat, id: "pane-1" }, uneven);
 	check(
 		"closing a pane gives its share back in proportion",
-		JSON.stringify(sharesOf(uneven)) === "[0.667,0.333]",
-		sharesOf(uneven),
+		JSON.stringify(await sharesOf(uneven)) === "[0.667,0.333]",
+		await sharesOf(uneven),
 	);
-	const nested = partsOf();
-	placeView(nested, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "bottom" });
-	placeView(nested, { kind: "app", tabId: "tab-4" }, { targetId: "pane-1", side: "right" });
-	close.handle({ id: "pane-app" }, nested);
+	const nested = panePartsOf();
+	await placeView(nested, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "bottom" });
+	await placeView(nested, { kind: "app", tabId: "tab-4" }, { targetId: "pane-1", side: "right" });
+	await close.handle({ seat: nested.seat, id: "pane-app" }, nested);
 	check(
 		"a split left alone in a split of its direction folds into it",
-		JSON.stringify(shapeOf(nested)) === '["chat","tab-3","tab-4"]' && sharesOf(nested).length === 3,
-		[shapeOf(nested), sharesOf(nested)],
+		JSON.stringify(await shapeOf(nested)) === '["chat","tab-3","tab-4"]' && (await sharesOf(nested)).length === 3,
+		[await shapeOf(nested), await sharesOf(nested)],
 	);
 }
 
 const CARRY = `((phase, x, y) => { const detail = { phase, item: { kind: "tab", id: "tab-9", title: "Docs" }, x, y, isTaken: false }; document.dispatchEvent(new CustomEvent("wg-carry", { detail })); return detail.isTaken; })`;
 const PANES = `[...document.querySelectorAll("[data-pane-id]")].map((pane) => [pane.dataset.paneId, Math.round(pane.getBoundingClientRect().width)])`;
 
-function checksKept(): void {
+class ReasonedTabsGateway extends MemoryTabsGateway {
+	readonly reasons: string[] = [];
+
+	override async movePlacedTabs<T>(move: MovePlacedTabs<T>): Promise<T> {
+		return super.movePlacedTabs((placed) => {
+			const moved = move(placed);
+
+			if (moved.next !== null) {
+				this.reasons.push(moved.reason);
+			}
+
+			return moved;
+		});
+	}
+}
+
+function rawPanesIn(window: string, panes: unknown): PlacedTabs {
+	const placed = emptyPlacedTabs();
+	const view = placedWithTree(placed, window, FIRST_PANES).views[window];
+	return view === undefined ? placed : { ...placed, views: { [window]: { ...view, panes } } };
+}
+
+async function checksKept(): Promise<void> {
 	console.info = () => undefined;
-	const panes = memoryOf<unknown>();
-	const memories = memoriesOf(panes);
-	const first = layoutPartsOf(memories);
-	placeView(first, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
-	resize(first, 0.25);
-	const again = layoutPartsOf(memories).paneTree.tree();
+	const first = panePartsOf();
+	await placeView(first, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	await resize(first, 0.25);
+	const again = { ...first, tabs: new MemoryTabsGateway(await first.tabs.placedTabs()) };
 	check(
-		"a restart draws the panes as they were left: the same tree, the same shares",
-		isDeepStrictEqual(again, first.paneTree.tree()),
-		again,
+		"a restart draws the panes as they were left in navigation: the same tree, the same shares",
+		isDeepStrictEqual(await treeOf(again), await treeOf(first)),
+		await treeOf(again),
 	);
-	panes.write({ root: "torn" });
+	const torn = { ...first, tabs: new MemoryTabsGateway(rawPanesIn(PANES_SEAT.window, { root: "torn" })) };
 	let refused: PaneTree | null = null;
-	warnsOf(() => {
-		refused = layoutPartsOf(memories).paneTree.tree();
+	await warnsOf(async () => {
+		refused = await treeOf(torn);
 	});
 	check("a kept tree the schema refuses starts from the first panes", isDeepStrictEqual(refused, FIRST_PANES), refused);
 	console.info = quiet;
@@ -306,26 +346,25 @@ const BROKEN_TREES: readonly (readonly [string, unknown])[] = [
 	["a target naming no pane", { ...FIRST_PANES, targetId: "pane-9" }],
 ];
 
-function warnsOf(run: () => void): unknown[][] {
+async function warnsOf(run: () => Promise<void>): Promise<unknown[][]> {
 	const said: unknown[][] = [];
 	const wasWarn = console.warn;
 	console.warn = (...args: unknown[]) => {
 		said.push(args);
 	};
-	run();
+	await run();
 	console.warn = wasWarn;
 	return said;
 }
 
-function checksKeptRefusals(): void {
+async function checksKeptRefusals(): Promise<void> {
 	console.info = () => undefined;
 
 	for (const [what, tree] of BROKEN_TREES) {
-		const panes = memoryOf<unknown>();
-		panes.write(tree);
+		const parts = { ...panePartsOf(), tabs: new MemoryTabsGateway(rawPanesIn(PANES_SEAT.window, tree)) };
 		let started: PaneTree | null = null;
-		const warned = warnsOf(() => {
-			started = layoutPartsOf(memoriesOf(panes)).paneTree.tree();
+		const warned = await warnsOf(async () => {
+			started = await treeOf(parts);
 		});
 		check(
 			`a kept tree with ${what} starts from the first panes and says why`,
@@ -334,83 +373,75 @@ function checksKeptRefusals(): void {
 		);
 	}
 
-	const torn = memoryOf<unknown>();
-	const unreadable = { read: () => JSON.parse("{torn"), write: torn.write };
-	const unread = warnsOf(() => layoutPartsOf(memoriesOf(unreadable)));
-	check("kept panes that are not JSON warn with the parse error", unread[0]?.[1] instanceof SyntaxError, unread);
 	console.info = quiet;
 }
 
-function checksGoneTabs(): void {
+async function checksGoneTabs(): Promise<void> {
 	console.info = () => undefined;
-	const beside = partsOf();
-	placeView(beside, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
-	dropGoneTabs.handle({ heldTabIds: [] }, beside);
+	const beside = panePartsOf();
+	await placeView(beside, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	await dropGoneTabs.handle({ seat: beside.seat, heldTabIds: [] }, beside);
 	check(
 		"a pane whose kept tab the host no longer holds is closed",
-		JSON.stringify(shapeOf(beside)) === '["chat","shown"]',
-		shapeOf(beside),
+		JSON.stringify(await shapeOf(beside)) === '["chat","shown"]',
+		await shapeOf(beside),
 	);
 
-	const alone = partsOf();
-	aim.handle({ id: "pane-app" }, alone);
-	alone.paneTree.saveTree(
-		{
-			...alone.paneTree.tree(),
-			root: {
-				kind: "split",
-				id: "pane-root",
-				dir: "row",
-				shares: [0.5, 0.5],
-				children: [
-					{ kind: "pane", id: "pane-chat", view: { kind: "chat" } },
-					{ kind: "pane", id: "pane-app", view: { kind: "app", tabId: "tab-5" } },
-				],
-			},
+	const alone = panePartsOf({
+		...FIRST_PANES,
+		targetId: "pane-app",
+		root: {
+			kind: "split",
+			id: "pane-root",
+			dir: "row",
+			shares: [0.5, 0.5],
+			children: [
+				{ kind: "pane", id: "pane-chat", view: { kind: "chat" } },
+				{ kind: "pane", id: "pane-app", view: { kind: "app", tabId: "tab-5" } },
+			],
 		},
-		"a kept tab in the only app pane",
-	);
-	const said = infosOf(() => dropGoneTabs.handle({ heldTabIds: ["tab-1"] }, alone));
+	});
+	const said = await infosOf(() => dropGoneTabs.handle({ seat: alone.seat, heldTabIds: ["tab-1"] }, alone));
 	check(
 		"the only app pane keeps its place and shows no tab, logged as one transition",
-		JSON.stringify(shapeOf(alone)) === '["chat","shown"]' &&
+		JSON.stringify(await shapeOf(alone)) === '["chat","shown"]' &&
 			said.length === 1 &&
 			said[0]?.endsWith("(kept tab tab-5 is gone)") === true,
-		{ shape: shapeOf(alone), said },
+		{ shape: await shapeOf(alone), said },
 	);
 
-	const held = partsOf();
-	placeView(held, { kind: "app", tabId: "tab-5" }, { targetId: "pane-app", side: "right" });
-	const before = held.paneTree.tree();
-	dropGoneTabs.handle({ heldTabIds: ["tab-5"] }, held);
-	check("a pane whose tab the host holds is left alone", held.paneTree.tree() === before, shapeOf(held));
+	const held = panePartsOf();
+	await placeView(held, { kind: "app", tabId: "tab-5" }, { targetId: "pane-app", side: "right" });
+	const before = await treeOf(held);
+	await dropGoneTabs.handle({ seat: held.seat, heldTabIds: ["tab-5"] }, held);
+	check("a pane whose tab the host holds is left alone", isDeepStrictEqual(await treeOf(held), before), await shapeOf(held));
 	console.info = quiet;
 }
 
-function checksGatewaysKeep(): void {
+async function checksGatewaysKeep(): Promise<void> {
 	console.info = () => undefined;
-	const reasons: string[] = [];
-	const memories: LayoutMemories = {
-		...memoriesOf(),
-		panes: { read: () => null, write: (_tree, reason) => reasons.push(reason) },
-	};
-	const parts = layoutPartsOf(memories);
-	toggle.handle({ side: "left" }, parts);
-	resizeEdge.handle({ edge: "chat", px: 640, mostPx: 2000 }, parts);
-	const resized = infosOf(() => resize(parts, 0.25));
+	const memories = memoriesOf();
+	const widths = layoutPartsOf(memories);
+	const tabs = new ReasonedTabsGateway(placedWithTree(emptyPlacedTabs(), PANES_SEAT.window, FIRST_PANES));
+	const parts = { ...panePartsOf(), tabs };
+	await resizeEdge.handle({ edge: "chat", px: 640, mostPx: 2000 }, widths);
+	const resized = await infosOf(() => resize(parts, 0.25));
 	check(
-		"each gateway keeps its own transitions: the hidden side, the width, the pane tree with its reason",
-		memories.sides.left.read() === true &&
-			memories.widths.chat.read() === 640 &&
-			JSON.stringify(reasons) === '["split pane-root edge 0 0.500 → 0.250 (drag)"]',
-		{ left: memories.sides.left.read(), chat: memories.widths.chat.read(), reasons },
+		"each owner keeps its own transitions: the width in layout, the pane tree in navigation with its reason",
+		memories.widths.chat.read() === 640 &&
+			JSON.stringify(tabs.reasons) === JSON.stringify([`${PANES_SEAT.window} split pane-root edge 0 0.500 → 0.250 (drag)`]),
+		{ chat: memories.widths.chat.read(), reasons: tabs.reasons },
 	);
 	check("a pane resize stays quiet in the console", resized.length === 0, resized);
-	peek.handle({ side: "left" }, parts);
+	const { studioApp, places, appHost: fakes } = studioFakesOf();
+	await studioApp.send(appHost.frameSides.toggle, { side: "left" });
+	await studioApp.send(appHost.frameSides.peek, { side: "left" });
+	const sides = await studioApp.send(appHost.frameSides.frameSides);
+	const kept = (await places.placedTabs()).views[fakes.studioWindow.placesWindow()]?.leftHidden;
 	check(
-		"a peek keeps the side hidden between starts",
-		parts.frameSides.sides().left === "peeking" && memories.sides.left.read() === true,
-		memories.sides.left.read(),
+		"a peek keeps the side hidden in the window's navigation view between starts",
+		sides.ok && sides.output.left === "peeking" && kept === true,
+		{ sides, kept },
 	);
 	console.info = quiet;
 }
@@ -618,12 +649,12 @@ async function checksBoard(folder: string): Promise<void> {
 
 const folder = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-pane-board"));
 mkdirSync(folder, { recursive: true });
-checksTree();
-checksClosable();
-checksKept();
-checksKeptRefusals();
-checksGoneTabs();
-checksGatewaysKeep();
+await checksTree();
+await checksClosable();
+await checksKept();
+await checksKeptRefusals();
+await checksGoneTabs();
+await checksGatewaysKeep();
 await checksLayoutRules(check);
 await checksBoard(folder);
 console.log(failed === 0 ? "pane board: all checks pass" : `pane board: ${failed} failed`);

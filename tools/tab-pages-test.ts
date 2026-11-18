@@ -5,7 +5,6 @@ import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-h
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { layout } from "../packages/state/layout/generated/contract.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { WORKSPACE_LIST } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-lists.ts";
@@ -134,11 +133,11 @@ async function showAndPaneChecks(): Promise<void> {
 		[shownPage === BROWSER_FIRST_PAGE, pages.calls.slice(-2)],
 		[false, [`open ${shownPage}`, `show ${shownPage}`]],
 	);
-	const board = await studioApp.send(layout.panes.paneTree);
+	const board = await studioApp.send(appHost.panes.paneTree);
 	const shownPane = board.ok
 		? board.output.leaves.find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === null)
 		: undefined;
-	await studioApp.send(layout.panes.place, {
+	await studioApp.send(appHost.panes.place, {
 		view: { kind: "app", tabId: "tab-15" },
 		targetId: shownPane?.id ?? null,
 		side: "right",

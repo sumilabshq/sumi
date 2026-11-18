@@ -1,10 +1,10 @@
 import { createElement as h, useContext, useEffect, useRef } from "react";
+import { appHost } from "@widgetarium/app-host/contract";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { chatTabs } from "@sumi/chat-tabs/contract";
-import { layout } from "@widgetarium/layout/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
-import { PaneCloseContext } from "../features/panes/lib/pane-close-context.js";
+import { PaneCloseContext } from "@sumi/sumi-host-plugin";
 import { Plate } from "../features/plate/ui/plate/plate.js";
 import { ChatPage } from "./chat-page.js";
 
@@ -27,7 +27,7 @@ export function ChatPlate({ chatId, crumb, more }: ChatPlateProps): ReactElement
 
 function useNamesUnnamedPane(chatId: string | null): void {
 	const pane = useContext(PaneCloseContext);
-	const isBoardRead = useQuery(layout.panes.paneTree).data.isLoaded;
+	const isBoardRead = useQuery(appHost.panes.paneTree).data.isLoaded;
 	const areChatsRead = useQuery(workspaces.chats.chatToOpen).data.isRead;
 	const nameChatPane = useCommand(chatTabs.chatOpening.namePane);
 	const paneId = pane?.paneId ?? null;

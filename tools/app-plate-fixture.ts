@@ -4,6 +4,7 @@ import { placedTabsOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../plugins/tabs/navigation/data/app-host/gateways/pane-flash/none.gateway.ts";
 import { NoCoreChangesGateway } from "../plugins/tabs/navigation/data/app-host/gateways/core-changes/none.gateway.ts";
+import { MemorySidePeeksGateway } from "../plugins/tabs/navigation/data/app-host/gateways/side-peeks/memory.gateway.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
@@ -15,8 +16,7 @@ import type { StudioStart } from "../apps/studio/src/legacy/widgetarium-studio.t
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
 import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
-import { layout } from "../packages/state/layout/generated/contract.ts";
-import type { PaneSide, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
+import type { PaneSide, PaneView } from "../plugins/tabs/navigation/data/app-host/shared/schema/pane-board.schema.ts";
 import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
 import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
@@ -63,6 +63,7 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 			studioWindow: new MemoryStudioWindowGateway(),
 			paneFlash: new NoPaneFlashGateway(),
 			coreChanges: new NoCoreChangesGateway(),
+			sidePeeks: new MemorySidePeeksGateway(),
 		},
 		workspaces: newChatWorkspaces(),
 		workspaceId: TAURI_WORKSPACE,
@@ -71,13 +72,13 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 	void restoreTabs(studioApp);
 	Object.assign(window, {
 		__PLACE_TAB_IN_PANE__: (tabId: string) =>
-			studioApp.send(layout.panes.place, {
+			studioApp.send(appHost.panes.place, {
 				view: { kind: "app", tabId },
 				targetId: "pane-app",
 				side: "right",
 			}),
 		__PLACE_PANE__: (view: PaneView, targetId: string | null, side: PaneSide) =>
-			studioApp.send(layout.panes.place, { view, targetId, side }),
+			studioApp.send(appHost.panes.place, { view, targetId, side }),
 		__CREATE_CHAT__: () => studioApp.send(workspaces.chats.createChat, { title: null }),
 		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(appHost.tabActions.renameTab, { id, label: title }),
 	});

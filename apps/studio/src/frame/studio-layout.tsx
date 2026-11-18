@@ -12,7 +12,7 @@ import { WindowLayersContext } from "../features/frame/lib/window-layers-context
 import { AppFramesProvider } from "../features/app-frame/ui/app-frames/app-frames-provider.js";
 import { WindowOffersContext } from "../features/app-frame/lib/window-offers-context.js";
 import { WindowProviders } from "./window-providers.js";
-import type { PaneBoardProps } from "../features/panes/ui/pane-board/pane-board.js";
+import type { PaneBoardViews } from "@sumi/sumi-host-plugin";
 
 export interface StudioLayoutProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
@@ -24,7 +24,7 @@ export interface StudioLayoutProps {
 	readonly windowProviders: readonly ComponentType<WindowProviderProps>[];
 	readonly windowLayers: readonly WindowLayer[];
 	readonly studio: StudioHostPort;
-	readonly panes: PaneBoardProps;
+	readonly panes: PaneBoardViews;
 	readonly panel: ReactNode;
 }
 

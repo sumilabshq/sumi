@@ -1,4 +1,3 @@
-import type { PaneTree } from "../../shared/schema/pane-tree.schema.js";
 import type { LayoutParts } from "./layout-parts.gateway.js";
 import { layoutPartsOf } from "./memory.gateway.js";
 
@@ -13,10 +12,6 @@ export function serverLayoutParts(): LayoutParts {
 			left: heldValue<number>(),
 			chat: heldValue<number>(),
 		},
-		sides: {
-			left: heldValue<boolean>(),
-		},
-		panes: heldValue<PaneTree>(),
 	});
 }
 

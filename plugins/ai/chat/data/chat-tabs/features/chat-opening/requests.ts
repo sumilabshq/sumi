@@ -1,7 +1,6 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import type { Send } from "@widgetarium/data-framework";
 import { appHost } from "@widgetarium/app-host/contract";
-import { layout } from "@widgetarium/layout/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
 import { command } from "#module";
 import { ChatOpenedSchema, ChatPaneSchema, NewChatTitleSchema } from "../../shared/schema/chat-opening.schema.js";
@@ -35,7 +34,7 @@ export const namePane = command()
 	.output(ChatOpenedSchema)
 	.idempotencyKey((input) => input.paneId)
 	.handle(async ({ paneId }, { send, ownWindow }) => {
-		const [board, asked] = await Promise.all([send(layout.panes.paneTree), send(workspaces.chats.chatToOpen)]);
+		const [board, asked] = await Promise.all([send(appHost.panes.paneTree), send(workspaces.chats.chatToOpen)]);
 
 		if (!board.isLoaded || !asked.isRead) {
 			return refuse(NOT_READ);
@@ -57,7 +56,7 @@ export const openAskedOnStart = command()
 	.public()
 	.idempotencyKey(Repeatable)
 	.handle(async (_input, { send, ownWindow }) => {
-		const [board, asked] = await Promise.all([send(layout.panes.paneTree), send(workspaces.chats.chatToOpen)]);
+		const [board, asked] = await Promise.all([send(appHost.panes.paneTree), send(workspaces.chats.chatToOpen)]);
 
 		if (!board.isLoaded || !asked.isRead) {
 			return refuse(NOT_READ);

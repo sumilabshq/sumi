@@ -16,7 +16,9 @@ export function ChatRoot({ tabId }: TabPageProps): ReactElement {
 		<div className="wg-chat-app" data-sumi-corner="fade">
 			<ChatOfTab tab={tab} />
 			<div className="wg-chat-top-start" ref={corner}>
-				<ListPluginSlot name="chat.top-start" props={{ chatId: tab.data?.chatId ?? null }} />
+				<div className="wg-root wg-chat-top-start-row">
+					<ListPluginSlot name="chat.top-start" props={{ chatId: tab.data?.chatId ?? null }} />
+				</div>
 			</div>
 		</div>
 	);

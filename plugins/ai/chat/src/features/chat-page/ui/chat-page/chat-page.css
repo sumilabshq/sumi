@@ -33,15 +33,16 @@
 
 .wg-chat-top-start {
 	position: absolute;
-	inset-block-start: var(--sumi-sp-2);
-	inset-inline-start: 0;
-	z-index: 2;
+	inset-block-start: max(var(--wg-chat-window-controls-y, 0px), var(--sumi-sp-2));
+	inset-inline-start: max(var(--wg-chat-window-controls-x, 0px), var(--sumi-corner-start, 0px), var(--sumi-sp-6));
+	z-index: 3;
 	display: flex;
 	gap: var(--sumi-sp-1);
 }
 
-.wg-chat-top-start:empty {
-	display: none;
+.wg-chat-top-start-row {
+	display: flex;
+	gap: var(--sumi-sp-1);
 }
 
 .wg-chat-app-none {

@@ -9,10 +9,10 @@ import { placedTabsOf, placesOver, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../plugins/tabs/navigation/data/app-host/gateways/pane-flash/none.gateway.ts";
 import { NoCoreChangesGateway } from "../plugins/tabs/navigation/data/app-host/gateways/core-changes/none.gateway.ts";
+import { MemorySidePeeksGateway } from "../plugins/tabs/navigation/data/app-host/gateways/side-peeks/memory.gateway.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
-import { layout } from "../packages/state/layout/generated/contract.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
 import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
@@ -140,6 +140,7 @@ export function exactStudio({
 					studioWindow: new MemoryStudioWindowGateway(),
 					paneFlash: new NoPaneFlashGateway(),
 					coreChanges: new NoCoreChangesGateway(),
+					sidePeeks: new MemorySidePeeksGateway(),
 				},
 			}),
 			browser({ injects: fakeBrowser(boardPages).parts }),
@@ -149,7 +150,7 @@ export function exactStudio({
 		)
 		.imports(...placesOver(places))
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });
-	void studioApp.send(layout.paneTabs.showChat, { chatId: releaseChatId, paneId: null });
+	void studioApp.send(appHost.paneTabs.showChat, { chatId: releaseChatId, paneId: null });
 	return {
 		studioApp,
 		places,

@@ -31,7 +31,6 @@
 		"@widgetarium/app-host": "0.1.0",
 		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
-		"@widgetarium/layout": "0.1.0",
 		"@widgetarium/workspaces": "0.1.0"
 	},
 	"peerDependencies": {

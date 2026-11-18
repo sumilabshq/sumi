@@ -14,7 +14,6 @@ import type {
 } from "@widgetarium/data-framework";
 import { fileSystem, terminal } from "@sumi/contract";
 import { layout } from "@widgetarium/layout/implementation";
-import type { StudioWindows } from "@widgetarium/layout/implementation";
 import type { BoardFile } from "@widgetarium/tasks/implementation";
 import { fileSystem as fileSystemModule } from "@widgetarium/file-system/implementation";
 import { terminal as terminalModule } from "@widgetarium/terminal/implementation";
@@ -40,7 +39,6 @@ export function frameCoreModulesOf(backgroundModules: readonly BackgroundModule[
 
 export interface TauriStudioLent {
 	readonly store: StoreClient;
-	readonly windows: StudioWindows;
 	readonly coreChanges: CoreChanges;
 	readonly ipc: BrowserPagesIpc;
 }
@@ -97,8 +95,8 @@ function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModu
 		return [layout, browser, workspaces];
 	}
 
-	const { store, windows, ipc } = lent;
-	return [layout({ tauri: { store, windows } }), browser({ tauri: { ipc } }), workspaces({ tauri: { store, ipc } })];
+	const { store, ipc } = lent;
+	return [layout({ tauri: { store } }), browser({ tauri: { ipc } }), workspaces({ tauri: { store, ipc } })];
 }
 
 function boardFileInMemory(): BoardFile {

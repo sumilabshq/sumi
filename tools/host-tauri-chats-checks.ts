@@ -5,7 +5,12 @@ import { readChatLogs } from "../apps/tauri/src/chat/tauri-chat-history.ts";
 import { focusedChatPortOf } from "../apps/studio/src/chats-column/focused-chat.ts";
 import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
 import { partsOf } from "./layout-rules-checks.ts";
-import { layout } from "../packages/state/layout/generated/contract.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
+import { appHost as appHostModule } from "../plugins/tabs/navigation/data/app-host/generated/module.ts";
+import { browser as browserModule } from "../packages/domain/browser/generated/module.ts";
+import { PluginAppsModule } from "./plugin-apps-fixture.ts";
+import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
+import { fakeBrowser } from "./browser-fakes.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
@@ -53,7 +58,13 @@ function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 		parts,
 		marks,
 		started: runtime()
-			.modules(layoutModule({ injects: { ...partsOf() } }), workspacesModule({ injects: parts }))
+			.modules(
+				layoutModule({ injects: { ...partsOf() } }),
+				workspacesModule({ injects: parts }),
+				appHostModule({ injects: { ...appHostFakesOf({}) } }),
+				PluginAppsModule,
+				browserModule({ injects: fakeBrowser(new RecordedPagesGateway([])).parts }),
+			)
 			.imports(...placesOver(tabs))
 			.start(),
 	};
@@ -97,7 +108,7 @@ async function perChatChecks(): Promise<void> {
 		},
 	);
 	const firstId = (await firstChatIdIn(workspaces)) ?? "";
-	await quietly(() => workspaces.started.send(layout.paneTabs.showChat, { chatId: firstId, paneId: null }));
+	await quietly(() => workspaces.started.send(appHost.paneTabs.showChat, { chatId: firstId, paneId: null }));
 	await waitFor(() => focusedChat.now()?.id === firstId);
 	await quietly(async () => {
 		await (await sessions.shownSession()).send("Plan the release");
@@ -108,7 +119,7 @@ async function perChatChecks(): Promise<void> {
 
 	const made = await quietly(() => workspaces.started.send(workspacesContract.chats.createChat, { title: null }));
 	const secondId = made.answer.ok ? made.answer.output.id : "";
-	await quietly(() => workspaces.started.send(layout.paneTabs.showChat, { chatId: secondId, paneId: null }));
+	await quietly(() => workspaces.started.send(appHost.paneTabs.showChat, { chatId: secondId, paneId: null }));
 	check("a new chat shown in the chat pane is the focused one", focusedChat.now()?.id, secondId);
 	await waitFor(() => sessions.now().turns.length === 0);
 	check("a new chat shows its own empty conversation", sessions.now().turns.length, 0);
@@ -120,7 +131,7 @@ async function perChatChecks(): Promise<void> {
 	check("the shown chat is untouched by it", sessions.now().turns.length, 0);
 
 	await quietly(async () => {
-		await workspaces.started.send(layout.paneTabs.showChat, { chatId: firstId, paneId: null });
+		await workspaces.started.send(appHost.paneTabs.showChat, { chatId: firstId, paneId: null });
 		await workspaces.started.send(chatFacts.turns.markSeen, { id: firstId });
 	});
 	await waitFor(() => sessions.now().turns.length === 2);

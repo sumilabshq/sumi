@@ -61,17 +61,16 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 			{isEmpty ? <BareLead lead={lead} /> : <ChatLeadHead lead={lead} title={title ?? TITLE} />}
 			<ChatScroll key={chatId}>
 				<ChatTurns chat={chat} cards={cards} asks={asks} chatId={chatId} report={report} />
+				<QueueZone
+					queued={chat.queued}
+					actions={queueActions}
+					onEdit={(queued) => void queueActions.hold(queued.id, true)}
+				/>
 			</ChatScroll>
 			<ChatDock>
 				<Pinned session={session} showCard={showCard} />
 				<Strip showCard={showCard} />
 				<FailureSaid failure={failure ?? setupFailure} />
-				<QueueZone
-					queued={chat.queued}
-					isBusy={session.busy}
-					actions={queueActions}
-					onEdit={(queued) => void queueActions.hold(queued.id, true)}
-				/>
 				<Composer
 					busy={session.busy}
 					strip={

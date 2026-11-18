@@ -20,6 +20,9 @@ import { controlMenu } from "@sumi/control-menu-plugin";
 import { sessions } from "@sumi/sessions-plugin";
 import { navigation } from "@sumi/navigation-plugin";
 import { tabStrip } from "@sumi/tab-strip-plugin";
+import { tabsView } from "@sumi/tabs-view-plugin";
+import { panes } from "@sumi/panes-plugin";
+import { tabsSidebar } from "@sumi/tabs-sidebar-plugin";
 import { tabGroups } from "@sumi/tab-groups-plugin";
 import { pinnedTabs } from "@sumi/pinned-tabs-plugin";
 import { slashCommands } from "@sumi/slash-commands-plugin";
@@ -36,6 +39,7 @@ import { workingFolder } from "@sumi/working-folder-plugin";
 import { questions } from "@sumi/questions-plugin";
 import { tasks } from "@sumi/tasks-plugin";
 import { canvas } from "@sumi/canvas-plugin";
+import { mcpApps } from "@sumi/mcp-apps-plugin";
 import { agents, backend, secrets, shell, sumiHost, windows } from "@sumi/sumi-host-plugin";
 import type {
 	BackendOffers,
@@ -128,6 +132,7 @@ export interface ResolvedPlugins {
 const INSTALLED_PLUGINS = [
 	sumiHost,
 	navigation,
+	panes,
 	tabGroups,
 	apps,
 	commandMenu,
@@ -139,6 +144,7 @@ const INSTALLED_PLUGINS = [
 	agent,
 	questions,
 	tasks,
+	mcpApps,
 	canvas,
 	terminal,
 	browserPage,
@@ -162,10 +168,12 @@ const INSTALLED_PLUGINS = [
 	terminalCursor,
 	controlMenu,
 	sessions,
+	tabsView,
 	tabStrip,
+	tabsSidebar,
 	pinnedTabs,
 ];
-const ALWAYS_ON_PLUGINS = [sumiHost, navigation, tabGroups, controlMenu, tabStrip, apps, commandMenu, chat, main, agent, questions, tasks];
+const ALWAYS_ON_PLUGINS = [sumiHost, navigation, panes, tabGroups, controlMenu, tabsView, tabStrip, apps, commandMenu, chat, main, agent, questions, tasks, mcpApps];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
@@ -196,6 +204,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		controlMenu.id,
 		sessions.id,
 		tabStrip.id,
+		tabsSidebar.id,
 		pinnedTabs.id,
 	],
 };

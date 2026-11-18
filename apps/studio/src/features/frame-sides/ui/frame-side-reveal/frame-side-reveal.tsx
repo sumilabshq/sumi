@@ -1,10 +1,10 @@
+import { appHost } from "@widgetarium/app-host/contract";
 import { Fragment, createElement as h, useEffect, useRef } from "react";
 import type { ReactElement, RefObject } from "react";
 import { useEdgeReveal } from "@widgetarium/behaviors";
 import type { EdgeLook, ReadCursor } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import type { FrameSide, SideLook } from "@widgetarium/layout/contract";
-import { layout } from "@widgetarium/layout/contract";
+import type { FrameSide, SideLook } from "@widgetarium/app-host/contract";
 import { SIDE_KEYS } from "../../lib/side-keys.js";
 
 export interface FrameSideRevealProps {
@@ -24,10 +24,10 @@ const SIDES: readonly FrameSide[] = ["left"];
 const NO_PANEL: RefObject<HTMLElement | null> = { current: null };
 
 export function FrameSideReveal({ frame, content, panel, readCursor }: FrameSideRevealProps): ReactElement {
-	const sides = useQuery(layout.frameSides.frameSides).data;
-	const peek = useCommand(layout.frameSides.peek);
-	const conceal = useCommand(layout.frameSides.conceal);
-	const toggle = useCommand(layout.frameSides.toggle);
+	const sides = useQuery(appHost.frameSides.frameSides).data;
+	const peek = useCommand(appHost.frameSides.peek);
+	const conceal = useCommand(appHost.frameSides.conceal);
+	const toggle = useCommand(appHost.frameSides.toggle);
 	useSideKeys(frame, (side) => void toggle.run({ side }));
 	useEdgeReveal({
 		frame,

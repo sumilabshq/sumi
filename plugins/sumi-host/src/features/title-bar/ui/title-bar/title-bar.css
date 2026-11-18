@@ -24,3 +24,17 @@
 .sumi-title-bar-end {
 	gap: var(--sumi-sp-1);
 }
+
+.wg-shell:has([data-title-floats]) > .sumi-title-bar {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 4;
+	background: none;
+	pointer-events: none;
+}
+
+.wg-shell:has([data-title-floats]) > .sumi-title-bar > .sumi-title-bar-end {
+	pointer-events: auto;
+}

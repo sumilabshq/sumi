@@ -1,7 +1,7 @@
 {
 	"name": "@widgetarium/layout",
 	"version": "0.1.0",
-	"description": "The studio's layout as data: which sides are shown, the widths between them and the tree of panes, kept between starts",
+	"description": "The studio's layout as data: the widths of the frame's sides, kept in the global settings",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"files": [

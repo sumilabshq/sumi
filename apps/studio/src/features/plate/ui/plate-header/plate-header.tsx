@@ -1,8 +1,8 @@
 import { createElement as h, forwardRef, useContext, useMemo } from "react";
 import type { PointerEvent, ReactNode } from "react";
 import { CARRIED_PANE, PointerCarry } from "@widgetarium/behaviors";
-import { PaneCloseContext } from "../../../panes/lib/pane-close-context.js";
-import type { PaneClosing } from "../../../panes/lib/pane-close-context.js";
+import { PaneCloseContext } from "@sumi/sumi-host-plugin";
+import type { PaneClosing } from "@sumi/sumi-host-plugin";
 import { PlateHeaderContext } from "../../lib/plate-header-context.js";
 import type { PlateHeaderPlace, PlateHeaderStore } from "../../lib/plate-header-store.js";
 import { HeaderButton } from "./header-button.js";

@@ -1,35 +1,39 @@
 import { isDeepStrictEqual } from "node:util";
-import { Refused, runtime } from "../packages/shared/data-framework/src/index.ts";
-import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
+import { layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
-import { JsonMemoryPaneTreeGateway } from "../packages/state/layout/gateways/pane-tree/json-memory.gateway.ts";
 import {
 	concealedLook,
 	peekedLook,
 	refuseTurn,
 	toggledLook,
-} from "../packages/state/layout/features/frame-sides/lib/side-looks.ts";
-import { toggle } from "../packages/state/layout/features/frame-sides/requests.ts";
+} from "../plugins/tabs/navigation/data/app-host/features/frame-sides/lib/side-looks.ts";
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
 import { frameWidths } from "../packages/state/layout/features/frame-widths/requests.ts";
-import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
+import { leavesOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/panes/pane-nodes.ts";
+import { FIRST_PANES } from "../plugins/tabs/navigation/data/navigation/shared/lib/panes/kept-panes.ts";
+import { keptPanesOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/panes/kept-panes.ts";
 import {
 	goneTabPanesOf,
 	mintedLeafOf,
 	tabTargetOf,
 	treeWithoutGoneTabs,
-} from "../packages/state/layout/shared/lib/pane-trees.ts";
-import { aim, close, place, placementPreview, resizeSplit } from "../packages/state/layout/features/panes/requests.ts";
+} from "../plugins/tabs/navigation/data/navigation/shared/lib/panes/pane-trees.ts";
 import {
+	aim,
+	close,
 	closeShowingPanes,
 	closeShown,
 	openShown,
+	place,
+	placementPreview,
+	resizeSplit,
 	showInTarget,
-} from "../packages/state/layout/features/pane-tabs/requests.ts";
-import { layout } from "../packages/state/layout/generated/contract.ts";
-import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
+} from "../plugins/tabs/navigation/data/navigation/features/panes/requests.ts";
 import { edgePxWithin, widthsWithin } from "../packages/state/layout/shared/lib/frame-bounds.ts";
-import type { PaneTree } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
+import { infosOf, panePartsOf, refusalOf, shapeOf, treeOf } from "./pane-harness.ts";
+import type { PaneParts } from "./pane-harness.ts";
+import { studioFakesOf } from "./app-host-fixture.ts";
 
 export type Check = (what: string, isOk: boolean, got: unknown) => void;
 
@@ -48,59 +52,24 @@ export function memoryOf<T>(): Memory<T> {
 	};
 }
 
-export function memoriesOf(panes: LayoutMemories["panes"] = memoryOf<unknown>()): LayoutMemories {
+export function memoriesOf(): LayoutMemories {
 	return {
 		widths: {
 			left: memoryOf<number>(),
 			chat: memoryOf<number>(),
 		},
-		sides: {
-			left: memoryOf<boolean>(),
-		},
-		panes,
 	};
 }
 
-export function partsOf(tree: PaneTree = FIRST_PANES): LayoutParts {
-	return {
-		...layoutPartsOf(memoriesOf()),
-		paneTree: new JsonMemoryPaneTreeGateway(memoryOf<unknown>(), tree),
-	};
+export function partsOf(): LayoutParts {
+	return layoutPartsOf(memoriesOf());
 }
 
-export function shapeOf(parts: LayoutParts): readonly string[] {
-	return leavesOf(parts.paneTree.tree().root).map((leaf) =>
-		leaf.view.kind === "chat" ? "chat" : (leaf.view.tabId ?? "shown"),
-	);
+async function placeTab(parts: PaneParts, tabId: string, targetId: string): Promise<void> {
+	await place.handle({ seat: parts.seat, placement: { view: { kind: "app", tabId }, targetId, side: "right" } }, parts);
 }
 
-export function refusalOf(run: () => unknown): string | null {
-	try {
-		run();
-		return null;
-	} catch (thrown: unknown) {
-		if (thrown instanceof Refused) {
-			return thrown.message;
-		}
-
-		throw thrown;
-	}
-}
-
-export function infosOf(run: () => void): string[] {
-	const said: string[] = [];
-	const wasInfo = console.info;
-	console.info = (line: string) => said.push(line);
-	run();
-	console.info = wasInfo;
-	return said;
-}
-
-function placeTab(parts: LayoutParts, tabId: string, targetId: string): void {
-	place.handle({ view: { kind: "app", tabId }, targetId, side: "right" }, parts);
-}
-
-function checksSideLooks(check: Check): void {
+async function checksSideLooks(check: Check): Promise<void> {
 	const looks = [
 		["docked", toggledLook("docked"), peekedLook("docked"), concealedLook("docked")],
 		["hidden", toggledLook("hidden"), peekedLook("hidden"), concealedLook("hidden")],
@@ -117,13 +86,15 @@ function checksSideLooks(check: Check): void {
 		refuseTurn("docked", "peeking") === "cannot turn docked → peeking" && refuseTurn("hidden", "peeking") === null,
 		[refuseTurn("docked", "peeking"), refuseTurn("hidden", "peeking")],
 	);
-	const parts = partsOf();
-	const said = infosOf(() => toggle.handle({ side: "left" }, parts));
+	const { studioApp, places, appHost: fakes } = studioFakesOf();
+	const said = await infosOf(() => studioApp.send(appHost.frameSides.toggle, { side: "left" }));
+	const sides = await studioApp.send(appHost.frameSides.frameSides);
+	const kept = (await places.placedTabs()).views[fakes.studioWindow.placesWindow()]?.leftHidden;
+	const turns = said.filter((line) => line === "[widgetarium] frame side left docked → hidden (toggle)");
 	check(
-		"a toggle saves the turn and logs it once as was → now",
-		parts.frameSides.sides().left === "hidden" &&
-			JSON.stringify(said) === '["[widgetarium] frame side left docked → hidden (toggle)"]',
-		{ sides: parts.frameSides.sides(), said },
+		"a toggle saves the hidden side in the window's navigation view and logs the turn once as was → now",
+		sides.ok && sides.output.left === "hidden" && kept === true && turns.length === 1,
+		{ sides, kept, said },
 	);
 }
 
@@ -148,12 +119,12 @@ async function checksWidths(check: Check): Promise<void> {
 	);
 }
 
-function checksPaneRules(check: Check): void {
+async function checksPaneRules(check: Check): Promise<void> {
 	check("a minted leaf takes the next pane number", mintedLeafOf(FIRST_PANES, { kind: "chat" }).id === "pane-1", null);
 	check("a board whose target is no app tab has no tab target", tabTargetOf(FIRST_PANES) === null, null);
-	const parts = partsOf();
-	placeTab(parts, "tab-3", "pane-app");
-	const tree = parts.paneTree.tree();
+	const parts = panePartsOf();
+	await placeTab(parts, "tab-3", "pane-app");
+	const tree = await treeOf(parts);
 	const kept = treeWithoutGoneTabs(tree, goneTabPanesOf(tree, new Set(["tab-3"])));
 	const gone = treeWithoutGoneTabs(tree, goneTabPanesOf(tree, new Set()));
 	check(
@@ -163,109 +134,128 @@ function checksPaneRules(check: Check): void {
 	);
 }
 
-function checksRefusals(check: Check): void {
-	const parts = partsOf();
+async function checksRefusals(check: Check): Promise<void> {
+	const parts = panePartsOf();
+	const { seat } = parts;
 	const refusals = [
-		refusalOf(() => showInTarget.handle({ tabId: "tab-1" }, parts)),
-		refusalOf(() => place.handle({ view: { kind: "chat" }, targetId: "pane-9", side: "left" }, parts)),
-		refusalOf(() => close.handle({ id: "pane-9" }, parts)),
-		refusalOf(() => aim.handle({ id: "pane-9" }, parts)),
-		refusalOf(() => resizeSplit.handle({ splitId: "split-9", at: 0, share: 0.5 }, parts)),
-		refusalOf(() => resizeSplit.handle({ splitId: "pane-root", at: 1, share: 0.5 }, parts)),
+		await refusalOf(() => showInTarget.handle({ seat, tabId: "tab-1" }, parts)),
+		await refusalOf(() =>
+			place.handle({ seat, placement: { view: { kind: "chat" }, targetId: "pane-9", side: "left" } }, parts),
+		),
+		await refusalOf(() => close.handle({ seat, id: "pane-9" }, parts)),
+		await refusalOf(() => aim.handle({ seat, id: "pane-9" }, parts)),
+		await refusalOf(() => resizeSplit.handle({ seat, splitId: "split-9", at: 0, share: 0.5 }, parts)),
+		await refusalOf(() => resizeSplit.handle({ seat, splitId: "pane-root", at: 1, share: 0.5 }, parts)),
 	];
 	check(
 		"a show with no tab target, a pane or split that is not there and an edge past the last are refused",
-		refusals.every((reason) => reason !== null) && isDeepStrictEqual(parts.paneTree.tree(), FIRST_PANES),
+		refusals.every((reason) => reason !== null) && isDeepStrictEqual(await treeOf(parts), FIRST_PANES),
 		refusals,
 	);
-	aim.handle({ id: "pane-app" }, parts);
+	await aim.handle({ seat, id: "pane-app" }, parts);
 	check(
 		"a show into a target pane that shows no tab is refused",
-		refusalOf(() => showInTarget.handle({ tabId: "tab-1" }, parts)) !== null,
-		parts.paneTree.tree(),
+		(await refusalOf(() => showInTarget.handle({ seat, tabId: "tab-1" }, parts))) !== null,
+		await treeOf(parts),
 	);
-	placeTab(parts, "tab-3", "pane-app");
-	placeTab(parts, "tab-4", "pane-app");
+	await placeTab(parts, "tab-3", "pane-app");
+	await placeTab(parts, "tab-4", "pane-app");
 	check(
 		"a show of a tab that already stands in another pane is refused",
-		refusalOf(() => showInTarget.handle({ tabId: "tab-3" }, parts)) === "tab tab-3 already stands in pane-1",
-		parts.paneTree.tree(),
+		(await refusalOf(() => showInTarget.handle({ seat, tabId: "tab-3" }, parts))) === "tab tab-3 already stands in pane-1",
+		await treeOf(parts),
 	);
 }
 
-function checksTabPanes(check: Check): void {
-	const parts = partsOf();
-	closeShown.handle(undefined, parts);
-	const closed = shapeOf(parts);
-	openShown.handle(undefined, parts);
-	const opened = parts.paneTree.tree();
-	openShown.handle(undefined, parts);
+async function checksTabPanes(check: Check): Promise<void> {
+	const parts = panePartsOf();
+	const { seat } = parts;
+	await closeShown.handle({ seat }, parts);
+	const closed = await shapeOf(parts);
+	await openShown.handle({ seat }, parts);
+	const opened = await treeOf(parts);
+	await openShown.handle({ seat }, parts);
 	check(
 		"the shown tab pane closes, then takes the whole board once however often it is asked",
 		JSON.stringify(closed) === '["chat"]' &&
-			JSON.stringify(shapeOf(parts)) === '["shown"]' &&
-			parts.paneTree.tree() === opened,
-		[closed, shapeOf(parts)],
+			JSON.stringify(await shapeOf(parts)) === '["shown"]' &&
+			isDeepStrictEqual(await treeOf(parts), opened),
+		[closed, await shapeOf(parts)],
 	);
-	placeTab(parts, "tab-3", "pane-chat");
-	placeTab(parts, "tab-4", "pane-chat");
-	closeShowingPanes.handle({ tabIds: ["tab-3", "tab-7"] }, parts);
+	await placeTab(parts, "tab-3", "pane-chat");
+	await placeTab(parts, "tab-4", "pane-chat");
+	await closeShowingPanes.handle({ seat, tabIds: ["tab-3", "tab-7"] }, parts);
 	check(
 		"closing the panes of tabs closes only the panes showing them",
-		JSON.stringify(shapeOf(parts)) === '["chat","tab-4","shown"]',
-		shapeOf(parts),
+		JSON.stringify(await shapeOf(parts)) === '["chat","tab-4","shown"]',
+		await shapeOf(parts),
 	);
 }
 
 async function checksPreview(check: Check): Promise<void> {
-	const parts = partsOf();
+	const parts = panePartsOf();
+	const { seat } = parts;
 	const placement = { view: { kind: "app", tabId: "tab-3" }, targetId: "pane-app", side: "right" } as const;
-	const preview = await placementPreview.handle(placement, parts);
-	const untouched = isDeepStrictEqual(parts.paneTree.tree(), FIRST_PANES);
-	place.handle(placement, parts);
-	const placed = parts.paneTree.tree();
+	const preview = await placementPreview.handle({ seat, placement }, parts);
+	const untouched = isDeepStrictEqual(await treeOf(parts), FIRST_PANES);
+	await place.handle({ seat, placement }, parts);
+	const placed = await treeOf(parts);
 	check(
 		"a placement preview answers the tree the drop saves, names the placed pane and saves nothing",
 		untouched && isDeepStrictEqual(preview?.root, placed.root) && preview?.placedId === placed.targetId,
 		{ preview, placed },
 	);
-	const now = parts.paneTree.tree();
-	const standing = leavesOf(now.root).find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === "tab-3");
+	const standing = leavesOf(placed.root).find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === "tab-3");
 	const onItself =
-		standing === undefined ? null : await placementPreview.handle({ ...placement, targetId: standing.id }, parts);
+		standing === undefined
+			? null
+			: await placementPreview.handle({ seat, placement: { ...placement, targetId: standing.id } }, parts);
 	check(
 		"no placement previews nothing, and a drop where the pane already stands previews the tree unchanged with that pane placed",
-		(await placementPreview.handle(null, parts)) === null &&
+		(await placementPreview.handle({ seat, placement: null }, parts)) === null &&
 			onItself !== null &&
-			isDeepStrictEqual(onItself.root, now.root) &&
+			isDeepStrictEqual(onItself.root, placed.root) &&
 			onItself.placedId === standing?.id,
 		onItself,
 	);
 }
 
-function checksSendSaves(check: Check): void {
-	const parts = partsOf();
-	const layoutApp = runtime()
-		.modules(layoutModule({ injects: { ...parts } }))
-		.start();
-	placeTab(parts, "tab-8", "pane-app");
-	void layoutApp.send(layout.paneTabs.dropGoneTabs, { heldTabIds: [] });
+async function checksSendSaves(check: Check): Promise<void> {
+	const tree = {
+		...FIRST_PANES,
+		root: {
+			kind: "split",
+			id: "pane-root",
+			dir: "row",
+			shares: [0.5, 0.5],
+			children: [
+				{ kind: "pane", id: "pane-chat", view: { kind: "chat" } },
+				{ kind: "pane", id: "pane-app", view: { kind: "app", tabId: null } },
+				{ kind: "pane", id: "pane-1", view: { kind: "app", tabId: "tab-8" } },
+			],
+		},
+		minted: 1,
+	} as const;
+	const { studioApp, places, appHost: fakes } = studioFakesOf({ tree: { ...tree, root: { ...tree.root, shares: [0.4, 0.3, 0.3] } } });
+	await studioApp.send(appHost.paneTabs.dropGoneTabs, { heldTabIds: [] });
+	const kept = keptPanesOf((await places.placedTabs()).views[fakes.studioWindow.placesWindow()]?.panes);
+	const shape = leavesOf(kept?.root ?? null).map((leaf) => leaf.id);
 	check(
-		"a layout command sent through the app has saved before send returns",
-		!JSON.stringify(shapeOf(parts)).includes("tab-8"),
-		shapeOf(parts),
+		"a pane command sent through the window has saved the window's panes in navigation when send answers",
+		kept !== null && !shape.includes("pane-1"),
+		shape,
 	);
 }
 
 export async function checksLayoutRules(check: Check): Promise<void> {
 	const quiet = console.info;
 	console.info = () => undefined;
-	checksSideLooks(check);
+	await checksSideLooks(check);
 	await checksWidths(check);
-	checksPaneRules(check);
-	checksRefusals(check);
-	checksTabPanes(check);
+	await checksPaneRules(check);
+	await checksRefusals(check);
+	await checksTabPanes(check);
 	await checksPreview(check);
-	checksSendSaves(check);
+	await checksSendSaves(check);
 	console.info = quiet;
 }

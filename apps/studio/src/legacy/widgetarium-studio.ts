@@ -11,7 +11,7 @@ import { openApp, startOpenedProject } from "@widgetarium/core/app/widgetarium-a
 import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import type { McpServer, Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import type { PaneView } from "@widgetarium/layout/contract";
+import type { PaneView } from "@widgetarium/app-host/contract";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { DrawnTabPage, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
