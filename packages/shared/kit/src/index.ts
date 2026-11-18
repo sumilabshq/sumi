@@ -85,6 +85,7 @@ export {
 	SidebarMenuAction,
 	SidebarMenuButton,
 	SidebarMenuChevron,
+	SidebarMenuFold,
 	SidebarMenuItem,
 	SidebarMenuSub,
 	SidebarMenuSubItem,
@@ -95,6 +96,7 @@ export {
 	SidebarTrigger,
 	useSidebar,
 } from "./components/sidebar";
+export { DropRefusal } from "./components/drop-refusal";
 export { Slot, Slottable, composeRefs, createSlotPart } from "./components/slot";
 export {
 	Select,

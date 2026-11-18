@@ -10137,6 +10137,19 @@ body.wg-tree-carrying .wg-tile-body {
 	> .wg-kit-side-menu-action.is-on-hover {
 	opacity: 1;
 }
+:is(.wg-root, .wg-portal) .wg-kit-side-menu-action:has(+ .wg-kit-side-menu-action) {
+	inset-inline-end: calc(4px + 28px);
+}
+:is(.wg-root, .wg-portal)
+	:is(.wg-kit-side-menu-item, .wg-kit-side-menu-sub-item):has(
+		> .wg-kit-side-menu-action:not(.is-on-hover) + .wg-kit-side-menu-action
+	)
+	> .wg-kit-side-menu-button {
+	padding-inline-end: calc(2 * 28px + 8px);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-menu-action[data-side-fold] .wg-kit-side-menu-chevron {
+	margin-inline-start: 0;
+}
 :is(.wg-root, .wg-portal) .wg-kit-side-menu-chevron {
 	display: inline-flex;
 	flex: none;
@@ -10176,6 +10189,33 @@ body.wg-tree-carrying .wg-tile-body {
 }
 :is(.wg-root, .wg-portal) [data-sort-placeholder]::before {
 	background: var(--wg-kit-fill);
+}
+:is(.wg-root, .wg-portal) .wg-kit-drop-refusal {
+	position: fixed;
+	z-index: 91;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	background: color-mix(in srgb, var(--background) 78%, transparent);
+	backdrop-filter: blur(3px);
+	-webkit-backdrop-filter: blur(3px);
+	color: var(--wg-kit-text-muted);
+	font-size: 13px;
+	font-weight: 500;
+	white-space: nowrap;
+	pointer-events: none;
+	animation: wg-kit-drop-refusal-in var(--wg-kit-dur, 120ms) ease-out;
+}
+@keyframes wg-kit-drop-refusal-in {
+	from {
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	:is(.wg-root, .wg-portal) .wg-kit-drop-refusal {
+		animation: none;
+	}
 }
 :is(.wg-root, .wg-portal) .wg-kit-side-ghost {
 	position: fixed;
@@ -22474,6 +22514,20 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	display: flex;
 	align-items: center;
 	color: var(--sumi-text-3);
+}
+.sumi-strip-tab-tools {
+	display: flex;
+	flex: none;
+	align-items: center;
+}
+.sumi-strip-tab-tools:empty {
+	display: none;
+}
+.sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)) {
+	padding-right: calc(var(--sumi-sp-3) + 18px + var(--sumi-sp-1));
+}
+.sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)):is(:hover, :focus-visible) .sumi-strip-tab-title {
+	mask-image: none;
 }
 .sumi-pin-tab {
 	padding-right: calc(var(--sumi-sp-3) + 22px);
