@@ -95,6 +95,10 @@ export function GroupEntry({ group, list, acts, draggedId, depth, isLifted, onMe
 								acts={acts}
 								isSub
 								isPlaceholder={isPlaceholder || item.tab.id === draggedId}
+								artifacts={item.artifacts}
+								isFolded={item.isFolded}
+								depth={depth + 1}
+								draggedId={draggedId}
 								onMenu={onMenu}
 							/>
 						),

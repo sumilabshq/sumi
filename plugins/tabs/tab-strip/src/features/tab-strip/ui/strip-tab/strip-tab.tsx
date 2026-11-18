@@ -1,7 +1,7 @@
 import { createElement as h, useEffect, useRef } from "react";
 import type { KeyboardEvent, MouseEvent, PointerEvent, ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { PluginSlot } from "@widgetarium/plugin-framework/react";
+import { ListPluginSlot, PluginSlot } from "@widgetarium/plugin-framework/react";
 import { isShownItem, itemIdOf, tabOf } from "../../lib/strip-items.js";
 import type { StripItem } from "../../lib/strip-items.js";
 import type { TabActs } from "../../lib/use-tab-acts.js";
@@ -92,6 +92,9 @@ export function StripTab({ item, acts, drag, isLifted, onMenu, onClose }: StripT
 		>
 			<TabIcons item={item} />
 			<span className="sumi-strip-tab-title">{titleOf(item)}</span>
+			<span className="sumi-strip-tab-tools">
+				<ListPluginSlot name="tab-strip.tab-tools" props={{ tabId: itemIdOf(item) }} />
+			</span>
 			<PluginSlot name="tab-strip.tab-end" props={{ tabId: itemIdOf(item), children: closeButton }}>
 				{closeButton}
 			</PluginSlot>

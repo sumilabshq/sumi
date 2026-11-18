@@ -4,6 +4,7 @@ import { tabsSidebar as definition } from "../plugin.js";
 
 export const tabsSidebar = pluginWithSlots(definition, {
 	slots: {
+		tabActions: listPluginSlot<{ readonly tabId: never }>("tabs-sidebar.tab-actions"),
 		sectionsStart: listPluginSlot<{}>("tabs-sidebar.sections-start"),
 	},
 });

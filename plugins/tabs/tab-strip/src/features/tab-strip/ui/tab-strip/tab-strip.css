@@ -346,3 +346,21 @@
 	align-items: center;
 	color: var(--sumi-text-3);
 }
+
+.sumi-strip-tab-tools {
+	display: flex;
+	flex: none;
+	align-items: center;
+}
+
+.sumi-strip-tab-tools:empty {
+	display: none;
+}
+
+.sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)) {
+	padding-right: calc(var(--sumi-sp-3) + 18px + var(--sumi-sp-1));
+}
+
+.sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)):is(:hover, :focus-visible) .sumi-strip-tab-title {
+	mask-image: none;
+}

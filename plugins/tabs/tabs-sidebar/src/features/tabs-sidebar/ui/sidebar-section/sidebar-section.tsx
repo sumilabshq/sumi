@@ -2,6 +2,7 @@ import { createElement as h, useEffect, useMemo, useRef, useState } from "react"
 import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import {
+	DropRefusal,
 	SidebarDragGhost,
 	SidebarGroup,
 	SidebarGroupLabel,
@@ -19,6 +20,7 @@ import type { StripItem, TabActs } from "@sumi/tab-strip-plugin";
 import { groups } from "@sumi/groups/contract";
 import { arrangedSidebarOf, carriedOf } from "../../lib/arranged-sidebar.js";
 import { draggedItemOf } from "../../lib/dragged-item.js";
+import { refusedDropOf } from "../../lib/drop-refusals.js";
 import { splitItemOf, tabItemOf } from "../../lib/entry-items.js";
 import { GroupEntry } from "../group-entry/group-entry.js";
 import { SplitEntry } from "../split-entry/split-entry.js";
@@ -55,6 +57,12 @@ export function SidebarSection({
 		levelPx: LEVEL_PX,
 		onDrop: (drop) => {
 			const { placed } = arrangedSidebarOf(sidebar, drop.id, drop);
+			const refused = refusedDropOf(sidebar, carriedOf(sidebar, drop.id), placed);
+
+			if (refused !== null) {
+				console.info(`[widgetarium] sidebar drop of ${drop.id} into ${refused.chatId} skipped: ${refused.words}`);
+				return;
+			}
 
 			if (placed === null) {
 				console.info(`[widgetarium] sidebar drop of ${drop.id} ${drop.place} ${drop.targetId} skipped: no place for it`);
@@ -78,10 +86,15 @@ export function SidebarSection({
 	useEffect(() => latestOnSorting.current(sorting), [sorting]);
 	const draggedId = sorting?.id ?? null;
 	const aim = sorting === null || sorting.outside !== null ? null : sorting.aim;
-	const section = useMemo(() => {
-		const shown = draggedId === null ? sidebar : arrangedSidebarOf(sidebar, draggedId, aim).sidebar;
-		return shown.sections.find((one) => one.list === list);
-	}, [sidebar, draggedId, aim, list]);
+	const arranged = useMemo(() => (draggedId === null ? null : arrangedSidebarOf(sidebar, draggedId, aim)), [sidebar, draggedId, aim]);
+	const refused = useMemo(
+		() => (draggedId === null || arranged === null ? null : refusedDropOf(sidebar, carriedOf(sidebar, draggedId), arranged.placed)),
+		[sidebar, draggedId, arranged],
+	);
+	const section = useMemo(
+		() => (arranged === null || refused !== null ? sidebar : arranged.sidebar).sections.find((one) => one.list === list),
+		[sidebar, arranged, refused, list],
+	);
 	useFlipRows(menu, section);
 	const rows = useMemo(
 		() => section?.entries.map((entry) => entryOf(entry, { list, acts, draggedId, onMenu })),
@@ -131,6 +144,12 @@ export function SidebarSection({
 					{last}
 				</SidebarMenu>
 			) : null}
+			{refused === null ? null : (
+				<DropRefusal
+					anchor={menu.current?.querySelector<HTMLElement>(`[data-sort-id="${CSS.escape(refused.chatId)}"]`) ?? null}
+					words={refused.words}
+				/>
+			)}
 			{sorting === null || sorting.outside !== null || ghost === null ? null : (
 				<SidebarDragGhost left={sorting.left} top={sorting.top} width={sorting.width}>
 					{ghost}
@@ -171,6 +190,9 @@ function entryOf(entry: SidebarEntry, { list, acts, draggedId, onMenu }: EntryLo
 				acts={acts}
 				isSub={false}
 				isPlaceholder={entry.tab.id === draggedId}
+				artifacts={entry.artifacts}
+				isFolded={entry.isFolded}
+				draggedId={draggedId}
 				onMenu={onMenu}
 			/>
 		);

@@ -6,6 +6,7 @@ export const tabStrip = pluginWithSlots(definition, {
 	slots: {
 		groupMenuItems: listPluginSlot<{ readonly group: never; readonly onDone: never }>("tab-strip.group-menu-items"),
 		listMenuItems: listPluginSlot<{ readonly list: never; readonly onDone: never }>("tab-strip.list-menu-items"),
+		tabTools: listPluginSlot<{ readonly tabId: never }>("tab-strip.tab-tools"),
 		tabEnd: pluginSlot<{ readonly tabId: never; readonly children: never }>("tab-strip.tab-end"),
 		tabMenuItems: listPluginSlot<{ readonly tab: never; readonly onDone: never }>("tab-strip.tab-menu-items"),
 		leading: listPluginSlot<{ readonly newTabList: never }>("tab-strip.leading"),

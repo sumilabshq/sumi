@@ -78,7 +78,7 @@ function carriedAmong(nodes: readonly SidebarEntry[], id: string, depth: number)
 			};
 		}
 
-		const inner = node.kind === "tab" ? null : carriedAmong(innerOf(node), id, depth + 1);
+		const inner = carriedAmong(innerOf(node), id, depth + 1);
 
 		if (inner !== null) {
 			return inner;
@@ -88,7 +88,11 @@ function carriedAmong(nodes: readonly SidebarEntry[], id: string, depth: number)
 	return null;
 }
 
-function innerOf(node: Exclude<SidebarEntry, { kind: "tab" }>): readonly SidebarGroupItem[] {
+function innerOf(node: SidebarEntry): readonly SidebarGroupItem[] {
+	if (node.kind === "tab") {
+		return node.artifacts ?? [];
+	}
+
 	return node.kind === "group" ? node.group.items : node.split.members.map(({ item }) => item);
 }
 
@@ -117,7 +121,7 @@ function itemsWithout(items: readonly SidebarGroupItem[], id: string): readonly 
 		}
 
 		if (item.kind === "tab") {
-			return [item];
+			return [item.artifacts === undefined ? item : { ...item, artifacts: item.artifacts.filter(({ tab }) => tab.id !== id) }];
 		}
 
 		return [
@@ -152,7 +156,12 @@ function sectionWith(section: SidebarSection, node: SidebarGroupItem, spot: Spot
 	}
 
 	if (spot.list !== section.list) {
-		return section;
+		return node.kind === "tab"
+			? {
+					...section,
+					entries: section.entries.map((entry) => (entry.kind === "split" ? entry : chatWith(entry, node, spot))),
+				}
+			: section;
 	}
 
 	const { groupId, before } = spot;
@@ -205,4 +214,33 @@ function groupWith<Group extends Extract<SidebarGroupItem, { kind: "group" }>>(
 function insertedBefore<Node extends SidebarEntry>(nodes: readonly Node[], added: Node, before: string | null): readonly Node[] {
 	const at = before === null ? -1 : nodes.findIndex((node) => entryIdOf(node) === before);
 	return at === -1 ? [...nodes, added] : [...nodes.slice(0, at), added, ...nodes.slice(at)];
+}
+
+function chatWith<Item extends SidebarGroupItem>(
+	item: Item,
+	node: Extract<SidebarGroupItem, { kind: "tab" }>,
+	spot: { readonly list: string; readonly before: string | null },
+): Item {
+	if (item.kind === "group") {
+		return {
+			...item,
+			group: {
+				...item.group,
+				items: item.group.items.map((inner) => chatWith(inner, node, spot)),
+			},
+		};
+	}
+
+	if (item.tab.id !== spot.list || item.artifacts === undefined) {
+		return item;
+	}
+
+	const artifact = {
+		kind: "tab" as const,
+		tab: node.tab,
+	};
+	return {
+		...item,
+		artifacts: insertedBefore(item.artifacts, artifact, spot.before),
+	};
 }
