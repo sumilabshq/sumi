@@ -42,7 +42,7 @@ createRoot(host).render(
 			))}
 		</div>
 		<div className="row theme-dark dark-row">
-			<ChatTabIcon state="idle" />
+			<ChatTabIcon state="done" />
 		</div>
 	</div>,
 );

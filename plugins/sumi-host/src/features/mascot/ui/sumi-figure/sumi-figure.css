@@ -35,19 +35,8 @@
 	transition-duration: 120ms;
 }
 
-.sumi-figure.is-working .sumi-figure-eye {
-	animation: sumi-eye-glow 2.4s ease-in-out infinite;
-}
-
 .sumi-figure.is-asleep {
 	animation: sumi-figure-breathe 3.2s ease-in-out infinite;
-}
-
-@keyframes sumi-eye-glow {
-	50% {
-		fill: color-mix(in srgb, var(--sumi-accent) 45%, var(--sumi-plate));
-		filter: drop-shadow(0 0 3px var(--sumi-accent));
-	}
 }
 
 @keyframes sumi-figure-breathe {
@@ -57,12 +46,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.sumi-figure.is-working .sumi-figure-eye,
 	.sumi-figure.is-asleep {
 		animation: none;
-	}
-
-	.sumi-figure.is-working .sumi-figure-eye {
-		fill: color-mix(in srgb, var(--sumi-accent) 45%, var(--sumi-plate));
 	}
 }

@@ -51,3 +51,11 @@ export const SidebarGroupOfParts: FunctionComponent<SlotPartProps> = classedSlot
 	"wg-kit-side-group",
 	"SidebarGroup",
 );
+
+export const SidebarMenuSub: FunctionComponent<SlotPartProps> = classedSlotPart("ul", "wg-kit-side-menu-sub", "SidebarMenuSub");
+
+export const SidebarMenuSubItem: FunctionComponent<SlotPartProps> = classedSlotPart(
+	"li",
+	"wg-kit-side-menu-sub-item",
+	"SidebarMenuSubItem",
+);

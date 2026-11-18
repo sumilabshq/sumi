@@ -12,6 +12,10 @@ export { SidebarRow } from "./sidebar-row";
 export { SidebarSheet } from "./sidebar-sheet";
 export { SidebarProvider } from "./sidebar-provider";
 export { SidebarMenuButton } from "./sidebar-menu-button";
+export { SidebarMenuAction } from "./sidebar-menu-action";
+export { SidebarMenuChevron } from "./sidebar-menu-chevron";
+export { SidebarRail } from "./sidebar-rail";
+export { SidebarDragGhost } from "./sidebar-drag-ghost";
 export { SidebarTrigger } from "./sidebar-trigger";
 export { useSidebar } from "./sidebar-context";
 export {
@@ -23,12 +27,18 @@ export {
 	SidebarInset,
 	SidebarMenu,
 	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubItem,
 } from "./sidebar-parts";
 export type { SidebarGroupProps } from "./sidebar-group";
 export type { SidebarRowProps, SidebarRowState } from "./sidebar-row";
 export type { SheetHeight, SidebarSheetProps } from "./sidebar-sheet";
 export type { SidebarProviderProps } from "./sidebar-provider";
 export type { SidebarMenuButtonProps } from "./sidebar-menu-button";
+export type { SidebarMenuActionProps } from "./sidebar-menu-action";
+export type { SidebarMenuChevronProps } from "./sidebar-menu-chevron";
+export type { SidebarRailProps } from "./sidebar-rail";
+export type { SidebarDragGhostProps } from "./sidebar-drag-ghost";
 export type { SidebarState } from "./sidebar-context";
 
 export type SidebarTag = "div" | "aside" | "nav" | "section" | "button" | "li" | "a";

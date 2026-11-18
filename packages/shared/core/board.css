@@ -351,6 +351,9 @@
 		--sumi-code-string: #2f6b3a;
 		--sumi-success-wash: rgba(47, 107, 58, 0.1);
 		--sumi-danger-wash: rgba(166, 58, 40, 0.1);
+		--sumi-status-done: oklch(0.63 0.2 148);
+		--sumi-status-question: oklch(0.8 0.17 85);
+		--sumi-status-blocked: oklch(0.58 0.24 25);
 		--sumi-shadow-plate: none;
 		--sumi-shadow-pop: 0 0 0 1px var(--sumi-line);
 		--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
@@ -498,6 +501,9 @@
 		--sumi-code-string: #9dbf8a;
 		--sumi-success-wash: rgba(157, 191, 138, 0.1);
 		--sumi-danger-wash: rgba(227, 154, 139, 0.1);
+		--sumi-status-done: oklch(0.74 0.21 148);
+		--sumi-status-question: oklch(0.86 0.18 92);
+		--sumi-status-blocked: oklch(0.64 0.25 25);
 		--sumi-shadow-pop: 0 0 0 1px var(--sumi-line);
 		--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
 		--sumi-shadow-float: none;
@@ -2314,6 +2320,45 @@ body {
 	width: 56%;
 	height: 56%;
 	fill: currentColor;
+}
+
+.wg-kit-status-cube {
+	display: inline-flex;
+	flex: none;
+	vertical-align: middle;
+}
+
+.wg-kit-status-cube.is-question {
+	color: var(--sumi-status-question, var(--warning));
+}
+
+.wg-kit-status-cube.is-blocked {
+	color: var(--sumi-status-blocked, var(--destructive));
+}
+
+.wg-kit-status-cube.is-done {
+	color: var(--sumi-status-done, var(--success));
+}
+
+.wg-kit-status-cube-art {
+	display: block;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.wg-kit-status-cube-body {
+	fill: currentColor;
+	stroke: currentColor;
+	stroke-linejoin: round;
+	transition:
+		fill 160ms ease,
+		stroke 160ms ease;
+}
+
+.wg-kit-status-cube-eye {
+	fill: var(--sumi-plate, var(--background));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-count {
@@ -10012,6 +10057,7 @@ body.wg-tree-carrying .wg-tile-body {
 	list-style: none;
 }
 :is(.wg-root, .wg-portal) .wg-kit-side-menu-button {
+	isolation: isolate;
 	display: flex;
 	align-items: center;
 	gap: var(--wg-gap-parts, 8px);
@@ -10046,6 +10092,106 @@ body.wg-tree-carrying .wg-tile-body {
 	flex-direction: column;
 	flex: 1;
 	min-width: 0;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-menu-sub {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+	margin: 0;
+	padding: 0 0 0 var(--wg-kit-side-indent, 16px);
+	list-style: none;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-menu-sub-item {
+	position: relative;
+	margin: 0;
+	list-style: none;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-menu-action {
+	position: absolute;
+	top: var(--wg-kit-side-action-top, 2px);
+	inset-inline-end: 4px;
+	z-index: 1;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-menu-action.is-on-hover {
+	opacity: 0;
+}
+:is(.wg-root, .wg-portal)
+	:is(.wg-kit-side-menu-item, .wg-kit-side-menu-sub-item):has(> .wg-kit-side-menu-action:not(.is-on-hover))
+	> .wg-kit-side-menu-button,
+:is(.wg-root, .wg-portal)
+	:is(.wg-kit-side-menu-item, .wg-kit-side-menu-sub-item):has(
+		> .wg-kit-side-menu-button:hover,
+		> .wg-kit-side-menu-action:hover,
+		> :focus-visible
+	)
+	> .wg-kit-side-menu-button {
+	padding-inline-end: calc(28px + 8px);
+}
+:is(.wg-root, .wg-portal)
+	:is(.wg-kit-side-menu-item, .wg-kit-side-menu-sub-item):has(
+		> .wg-kit-side-menu-button:hover,
+		> .wg-kit-side-menu-action:hover,
+		> :focus-visible
+	)
+	> .wg-kit-side-menu-action.is-on-hover {
+	opacity: 1;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-menu-chevron {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	margin-inline-start: auto;
+	color: var(--wg-kit-text-muted);
+	transition:
+		transform var(--wg-kit-dur, 120ms) ease,
+		opacity var(--wg-kit-dur, 120ms) ease;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-menu-chevron[data-state="closed"] {
+	transform: rotate(-90deg);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-label .wg-kit-side-menu-chevron {
+	opacity: 0;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-label:is(:hover, :focus-visible) .wg-kit-side-menu-chevron {
+	opacity: 1;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-rail {
+	position: relative;
+	z-index: 1;
+	flex: none;
+	align-self: stretch;
+	width: 9px;
+	margin-inline: -4.5px;
+	background: linear-gradient(transparent, var(--wg-kit-group-line) 64px) center / 1px 100% no-repeat;
+	cursor: col-resize;
+	touch-action: none;
+}
+:is(.wg-root, .wg-portal) [data-sort-placeholder] > *,
+:is(.wg-root, .wg-portal) [data-sort-placeholder] ~ .wg-kit-side-menu-action {
+	visibility: hidden;
+}
+:is(.wg-root, .wg-portal) [data-sort-placeholder]::before {
+	background: var(--wg-kit-fill);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side-ghost {
+	position: fixed;
+	z-index: 90;
+	pointer-events: none;
+	background: var(--wg-kit-raise, var(--background));
+	box-shadow: var(--wg-kit-lift);
+}
+.wg-kit-tile-map {
+	display: block;
+	flex: none;
+	overflow: visible;
+	fill: var(--wg-kit-group-line);
+}
+.wg-kit-tile-map [data-marked] {
+	fill: var(--wg-kit-text);
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-sr-only {
@@ -16132,9 +16278,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	block-size: var(--wg-chat-tab-icon-size, 16px);
 	vertical-align: middle;
 }
-[data-tabs-item] .wg-chat-tab-icon .sumi-figure:is(.is-rest, .is-working) .sumi-figure-body {
-	fill: currentColor;
-}
 .wg-chat-tab-icon-host:hover .wg-chat-tab-icon {
 	animation: wg-chat-tab-icon-hop 0.45s ease-out;
 }
@@ -16961,6 +17104,22 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	--sumi-corner-end: 0px;
 	--sumi-corner-top: 0px;
 }
+.wg-shell:has([data-title-floats]) {
+	--sumi-corner-h: var(--sumi-header-h);
+	--sumi-corner-start-w: calc(
+		max(var(--wg-shell-chrome-left, 0px), var(--sumi-sp-3)) + var(--sumi-sp-3) + var(--sumi-sp-4) + var(--sumi-h-sm) +
+			var(--sumi-sp-4)
+	);
+	--sumi-corner-end-w: calc(var(--sumi-h-sm) + 2 * var(--sumi-sp-3));
+}
+.wg-shell:has([data-title-floats="covering"]) .wg-pane[data-corner-start] {
+	--sumi-corner-start: var(--sumi-corner-start-w);
+	--sumi-corner-top: var(--sumi-corner-h);
+}
+.wg-shell:has([data-title-floats]) .wg-pane[data-corner-end] {
+	--sumi-corner-end: var(--sumi-corner-end-w);
+	--sumi-corner-top: var(--sumi-corner-h);
+}
 .wg-pane .wg-shell-plate-body {
 	transition: padding-top var(--sumi-dur-base) var(--sumi-ease);
 }
@@ -16983,6 +17142,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-shell.is-flat .wg-plate-head {
 	display: none;
+}
+.wg-shell-body {
+	display: flex;
+	flex: 1 1 0;
+	min-height: 0;
 }
 .wg-shell-app-zone {
 	position: relative;
@@ -20768,7 +20932,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 			90deg,
 			var(--sumi-text-2) 0%,
 			var(--sumi-text-2) 38%,
-			var(--sumi-accent) 50%,
+			var(--sumi-text) 50%,
 			var(--sumi-text-2) 62%,
 			var(--sumi-text-2) 100%
 		)
@@ -21096,42 +21260,17 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-queue {
 	display: flex;
-	flex: none;
 	flex-direction: column;
-	min-height: 0;
-	position: relative;
-	max-height: 45vh;
+	gap: var(--sumi-sp-5);
+	align-items: flex-end;
 	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-queue::before {
-	content: "";
-	position: absolute;
-	right: 0;
-	bottom: 100%;
-	left: 0;
-	height: var(--sumi-sp-8);
-	background: linear-gradient(to bottom, transparent, var(--sumi-plate));
-	pointer-events: none;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-queue-head {
-	display: flex;
-	flex: none;
-	align-items: center;
-	gap: var(--sumi-sp-3);
-	height: 38px;
-	padding: 0 var(--sumi-sp-5) 0 var(--sumi-sp-8);
-	color: var(--sumi-text-3);
-	font-size: var(--sumi-fs-12);
-}
-:is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-head, .wg-studio-ai-queue-fold, .wg-studio-ai-edit-bar) b {
+:is(.wg-root, .wg-portal) .wg-studio-ai-edit-bar b {
 	color: var(--sumi-text);
 	font-weight: var(--sumi-fw-medium);
 	white-space: nowrap;
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-queue-head b {
-	color: var(--sumi-text-2);
-}
-:is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-when, .wg-studio-ai-queue-fold span, .wg-studio-ai-edit-bar span) {
+:is(.wg-root, .wg-portal) .wg-studio-ai-edit-bar span {
 	flex: 1;
 	min-width: 0;
 	overflow: hidden;
@@ -21150,6 +21289,9 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	text-underline-offset: 3px;
 	cursor: pointer;
 }
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue-send {
+	height: 26px;
+}
 :is(.wg-root, .wg-portal) .wg-studio-ai-queue-send:disabled {
 	color: var(--sumi-text-3);
 	cursor: default;
@@ -21159,40 +21301,22 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	padding: 0;
 	color: var(--sumi-text-2);
 }
-:is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-hide, .wg-studio-ai-queued-act, .wg-studio-ai-queue-fold) {
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-act {
 	border: none;
 	background: none;
 	box-shadow: none;
 	cursor: pointer;
 }
-:is(.wg-root, .wg-portal)
-	:is(.wg-studio-ai-queue-hide, .wg-studio-ai-queued-act:not(:disabled), .wg-studio-ai-queue-fold):hover {
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-act:not(:disabled):hover {
 	background: var(--sumi-hover);
 	color: var(--sumi-text);
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-queue-hide {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
-	padding: 0;
-	border-radius: 0;
-	color: var(--sumi-text-3);
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-queue-list {
-	display: flex;
-	flex-direction: column;
-	gap: var(--sumi-sp-5);
-	min-height: 0;
-	overflow-y: auto;
-	padding: var(--sumi-sp-1) var(--sumi-sp-8) var(--sumi-sp-5);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued {
 	display: flex;
 	flex-direction: column;
 	gap: var(--sumi-sp-3);
 	align-items: flex-end;
+	width: 100%;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued.is-held > :not(.wg-studio-ai-queued-line) {
 	opacity: 0.45;
@@ -21209,8 +21333,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	box-sizing: border-box;
 	flex-direction: column;
 	align-items: flex-start;
-	max-width: 72%;
-	padding: 9px 13px;
+	max-width: 80%;
+	padding: 8px 12px;
 	border: 1px dashed var(--sumi-line-strong);
 	border-radius: 0;
 	color: var(--sumi-text-2);
@@ -21251,22 +21375,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued-act:disabled {
 	color: var(--sumi-text-3);
 	cursor: default;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-queue-fold {
-	display: flex;
-	flex: none;
-	align-items: center;
-	gap: var(--sumi-sp-4);
-	box-sizing: border-box;
-	width: auto;
-	max-width: none;
-	height: 36px;
-	margin: 0 max(var(--sumi-sp-6), calc((100% - var(--wg-studio-chat-content, 100%)) / 2)) var(--sumi-sp-3);
-	padding: 0 var(--sumi-sp-5);
-	border-radius: 0;
-	color: var(--sumi-text-3);
-	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1 var(--sumi-font-ui);
-	text-align: left;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-edit-bar {
 	display: flex;
@@ -21468,14 +21576,15 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 .wg-chat-top-start {
 	position: absolute;
-	inset-block-start: var(--sumi-sp-2);
-	inset-inline-start: 0;
-	z-index: 2;
+	inset-block-start: max(var(--wg-chat-window-controls-y, 0px), var(--sumi-sp-2));
+	inset-inline-start: max(var(--wg-chat-window-controls-x, 0px), var(--sumi-corner-start, 0px), var(--sumi-sp-6));
+	z-index: 3;
 	display: flex;
 	gap: var(--sumi-sp-1);
 }
-.wg-chat-top-start:empty {
-	display: none;
+.wg-chat-top-start-row {
+	display: flex;
+	gap: var(--sumi-sp-1);
 }
 .wg-chat-app-none {
 	margin: 0;
@@ -21869,17 +21978,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	fill: var(--sumi-danger);
 	transition-duration: 120ms;
 }
-.sumi-figure.is-working .sumi-figure-eye {
-	animation: sumi-eye-glow 2.4s ease-in-out infinite;
-}
 .sumi-figure.is-asleep {
 	animation: sumi-figure-breathe 3.2s ease-in-out infinite;
-}
-@keyframes sumi-eye-glow {
-	50% {
-		fill: color-mix(in srgb, var(--sumi-accent) 45%, var(--sumi-plate));
-		filter: drop-shadow(0 0 3px var(--sumi-accent));
-	}
 }
 @keyframes sumi-figure-breathe {
 	50% {
@@ -21887,15 +21987,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	}
 }
 @media (prefers-reduced-motion: reduce) {
-	.sumi-figure.is-working .sumi-figure-eye,
 	.sumi-figure.is-asleep {
 		animation: none;
-	}
-	.sumi-figure.is-working .sumi-figure-eye {
-		fill: var(--sumi-accent);
-		@supports (color: color-mix(in lab, red, red)) {
-			fill: color-mix(in srgb, var(--sumi-accent) 45%, var(--sumi-plate));
-		}
 	}
 }
 .sumi-title-bar {
@@ -21920,6 +22013,18 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 .sumi-title-bar-end {
 	gap: var(--sumi-sp-1);
+}
+.wg-shell:has([data-title-floats]) > .sumi-title-bar {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 4;
+	background: none;
+	pointer-events: none;
+}
+.wg-shell:has([data-title-floats]) > .sumi-title-bar > .sumi-title-bar-end {
+	pointer-events: auto;
 }
 :is(.wg-root, .wg-portal) .sumi-control-menu-button {
 	display: inline-flex;
@@ -21979,28 +22084,6 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	margin-inline-start: auto;
 	color: var(--sumi-text-3);
 	font-size: var(--sumi-fs-13);
-}
-:is(.wg-root, .wg-portal) .sumi-sessions-button {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	box-sizing: border-box;
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	padding: 0;
-	border: none;
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
-	color: var(--sumi-text);
-	cursor: pointer;
-}
-:is(.wg-root, .wg-portal) .sumi-sessions-button:hover {
-	background: var(--sumi-hover);
-}
-:is(.wg-root, .wg-portal) .sumi-sessions-button[data-state="open"] {
-	background: var(--sumi-soft);
 }
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.sumi-sessions-pop {
 	width: 320px;
@@ -22172,6 +22255,9 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	width: 16px;
 	height: 16px;
 	overflow: hidden;
+}
+.sumi-strip-tab-icon:has(.wg-kit-status-cube) {
+	overflow: visible;
 }
 .sumi-strip-tab-icon:empty {
 	display: none;
@@ -22411,6 +22497,148 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 }
 .sumi-pin-tab[data-place="elsewhere"] :is(.sumi-strip-tab-icons, .sumi-strip-tab-title) {
 	opacity: 0.5;
+}
+.sumi-group-editor {
+	display: flex;
+	flex-direction: column;
+	gap: var(--sumi-sp-2);
+	padding-top: var(--sumi-sp-2);
+}
+.sumi-group-editor .sumi-group-editor-name {
+	margin-inline: var(--sumi-sp-4);
+}
+.sumi-group-hues {
+	display: flex;
+	gap: var(--sumi-sp-4);
+	padding: var(--sumi-sp-3) var(--sumi-sp-4);
+}
+.sumi-group-hue {
+	flex: none;
+	width: 14px;
+	height: 14px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: var(--sumi-group);
+	cursor: default;
+}
+.sumi-group-hue[aria-checked="true"] {
+	outline: 1px solid var(--sumi-text);
+	outline-offset: 2px;
+}
+.wg-root.sumi-tabs-sidebar-column {
+	display: flex;
+	flex: none;
+	width: auto;
+	min-height: 0;
+}
+.wg-root .wg-kit-side.sumi-tabs-sidebar {
+	--wg-kit-card-pad: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	min-height: 0;
+	padding: var(--sumi-header-h) 0 var(--sumi-sp-4);
+	border: 0;
+	border-radius: 0;
+	background: var(--sumi-frame);
+	box-shadow: none;
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-content {
+	gap: var(--sumi-sp-5);
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-group {
+	gap: var(--sumi-sp-1);
+	padding: 0;
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-label {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	min-height: var(--sumi-h-md);
+	margin: 0;
+	padding-inline: var(--sumi-sp-6);
+	border: 0;
+	background: none;
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1 var(--sumi-font-ui);
+	color: var(--sumi-text-3);
+	cursor: default;
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-menu {
+	gap: 0;
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-sub {
+	--wg-kit-side-indent: 0;
+	gap: 0;
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-button {
+	gap: var(--sumi-sp-4);
+	min-height: var(--sumi-h-md);
+	padding-block: 0;
+	padding-inline: var(--sumi-sp-6);
+	border-radius: 0;
+	font-size: var(--sumi-fs-13);
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-sub .wg-kit-side-menu-button {
+	padding-inline-start: calc(var(--sumi-sp-6) + var(--sumi-tabs-depth, 1) * (var(--sumi-sp-6) + var(--sumi-sp-4)));
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-row::before {
+	border-radius: 0;
+}
+.wg-root .sumi-tabs-sidebar {
+	--wg-kit-side-action-top: calc((var(--sumi-h-md) - var(--sumi-h-sm)) / 2);
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-row[data-sort-placeholder]::before {
+	background: var(--sumi-hover);
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-row.is-selected::before {
+	background: var(--sumi-selected);
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-row.is-selected .wg-kit-row-label,
+.wg-root .sumi-tabs-sidebar .wg-kit-side-row.is-selected {
+	color: var(--sumi-text);
+}
+.sumi-tabs-sidebar-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.sumi-tabs-sidebar-folder {
+	flex: none;
+	fill: currentColor;
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-ghost {
+	background: var(--sumi-plate);
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-ghost > .wg-kit-side-menu-button {
+	padding-inline: var(--sumi-sp-6);
+}
+.wg-root .sumi-tabs-sidebar .sumi-tabs-sidebar-new {
+	color: var(--sumi-text-3);
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-item:not(:has(> .wg-kit-side-menu-action)) > .wg-kit-side-menu-button {
+	padding-inline-end: var(--sumi-sp-6);
+}
+.wg-root .sumi-tabs-sidebar .sumi-tabs-sidebar-new-row {
+	position: sticky;
+	bottom: 0;
+	z-index: 1;
+	background: var(--sumi-frame);
+}
+.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-sub .wg-kit-side-row[data-sort-placeholder]::before {
+	inset-inline-start: calc(
+		var(--sumi-sp-6) + var(--sumi-tabs-depth, 1) * (var(--sumi-sp-6) + var(--sumi-sp-4)) - var(--sumi-sp-4)
+	);
+}
+.sumi-sidebar-title {
+	display: flex;
+	align-items: center;
+	height: 100%;
+	pointer-events: auto;
 }
 :root[data-terminal-cursor-on]
 	:is(
@@ -22723,6 +22951,220 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	width: 0;
 	height: 0;
 	pointer-events: none;
+}
+.sumi-mcp-card {
+	--sumi-mcp-card-fill: var(--sumi-plate);
+	position: relative;
+	overflow: hidden;
+	background: var(--sumi-mcp-card-fill);
+}
+.sumi-mcp-card.is-border {
+	border: 1px solid var(--sumi-line);
+}
+.sumi-mcp-card.is-tile {
+	--sumi-mcp-card-fill: var(--wg-kit-group-fill);
+}
+.sumi-mcp-card.is-none {
+	overflow: visible;
+	background: none;
+}
+.sumi-mcp-head {
+	display: flex;
+	flex: none;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 8px 0;
+	color: var(--sumi-text);
+	font-family: var(--sumi-font-ui);
+	font-size: 13px;
+	line-height: 1.3;
+}
+.sumi-mcp-head.is-over {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
+	pointer-events: none;
+}
+.sumi-mcp-tag,
+.sumi-mcp-square {
+	height: 32px;
+	background: var(--sumi-plate);
+	pointer-events: auto;
+}
+.sumi-mcp-head.is-over .sumi-mcp-tag,
+.sumi-mcp-head.is-over .sumi-mcp-square {
+	background: var(--sumi-plate);
+	@supports (color: color-mix(in lab, red, red)) {
+		background: color-mix(in oklch, var(--sumi-plate) 88%, transparent);
+	}
+	backdrop-filter: blur(8px);
+}
+.sumi-mcp-tag {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	padding: 0 10px;
+	cursor: default;
+}
+.sumi-mcp-tag-glyph {
+	flex: none;
+	width: 14px;
+	height: 14px;
+}
+.sumi-mcp-tag-title {
+	flex: none;
+	max-width: 280px;
+	overflow: hidden;
+	font-weight: 500;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.sumi-mcp-tag-meta {
+	min-width: 0;
+	overflow: hidden;
+	color: var(--wg-kit-text-muted);
+	font-size: 12px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.sumi-mcp-square,
+.sumi-mcp-tag-button {
+	display: grid;
+	place-items: center;
+	border: 0;
+	color: var(--wg-kit-text-muted);
+	cursor: pointer;
+}
+.sumi-mcp-square {
+	flex: none;
+	width: 32px;
+}
+.sumi-mcp-tag-button {
+	flex: none;
+	width: 24px;
+	height: 24px;
+	margin-left: -6px;
+	background: none;
+}
+.sumi-mcp-square:hover,
+.sumi-mcp-tag-button:hover {
+	color: var(--sumi-text);
+}
+.sumi-mcp-square svg,
+.sumi-mcp-tag-button svg {
+	width: 12px;
+	height: 12px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.4;
+}
+.sumi-mcp-app {
+	align-self: stretch;
+	min-width: 0;
+}
+.sumi-file-card {
+	display: flex;
+	flex-direction: column;
+}
+.sumi-file-card-body {
+	flex: 1;
+	min-height: 0;
+	margin-top: 8px;
+	overflow: auto;
+	background: none;
+}
+.sumi-file-card-body .sumi-code-line.is-marked {
+	background: var(--sumi-hue-amber, #f5b400);
+	@supports (color: color-mix(in lab, red, red)) {
+		background: color-mix(in oklch, var(--sumi-hue-amber, #f5b400) 14%, transparent);
+	}
+	box-shadow: inset 2px 0 var(--sumi-hue-amber, #f5b400);
+}
+.sumi-file-card-mark-note {
+	width: max-content;
+	max-width: calc(100% - 77px);
+	margin: 2px 0 6px 61px;
+	padding: 3px 10px;
+	border-left: 2px solid var(--sumi-hue-amber, #f5b400);
+	background: var(--sumi-hue-amber, #f5b400);
+	@supports (color: color-mix(in lab, red, red)) {
+		background: color-mix(in oklch, var(--sumi-hue-amber, #f5b400) 8%, transparent);
+	}
+	color: var(--sumi-text);
+	font: 12.5px / 1.4 var(--sumi-font-ui);
+	white-space: normal;
+}
+.sumi-file-card-note {
+	margin: 12px;
+	color: var(--wg-kit-text-muted);
+	font-size: 13px;
+}
+.wg-git.sumi-changes-card {
+	display: flex;
+	flex-direction: column;
+	height: auto;
+	background: none;
+}
+.sumi-changes-card-body {
+	flex: 1;
+	min-height: 0;
+	margin-top: 8px;
+	overflow: auto;
+}
+.sumi-changes-card-rows {
+	display: flex;
+	flex-direction: column;
+	padding: 0 4px 8px;
+}
+.sumi-changes-card-more {
+	color: var(--sumi-text-3);
+}
+.sumi-changes-card-note {
+	margin: 12px;
+	color: var(--wg-kit-text-muted);
+	font-size: 13px;
+}
+.sumi-mini-canvas {
+	position: relative;
+	display: flex;
+	overflow: hidden;
+	user-select: none;
+}
+.sumi-mini-canvas .sumi-mini-canvas-field {
+	height: 100%;
+	background: var(--sumi-mcp-card-fill, var(--wg-kit-group-fill));
+}
+.sumi-mini-canvas-cover {
+	position: absolute;
+	inset: 0;
+	cursor: grab;
+}
+.sumi-mini-canvas-pages {
+	display: flex;
+	min-width: 0;
+	gap: 2px;
+	overflow: hidden;
+}
+.sumi-mini-canvas-page {
+	flex: none;
+	padding: 3px 8px;
+	border: 0;
+	background: none;
+	color: var(--wg-kit-text-muted);
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+}
+.sumi-mini-canvas-page:hover {
+	color: var(--sumi-text);
+}
+.sumi-mini-canvas-page.is-shown {
+	background: var(--sumi-active);
+	color: var(--sumi-text);
 }
 .sumi-keyboard-language-tag {
 	position: fixed;

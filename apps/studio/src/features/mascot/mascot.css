@@ -8,10 +8,6 @@
 	vertical-align: middle;
 }
 
-[data-tabs-item] .wg-chat-tab-icon .sumi-figure:is(.is-rest, .is-working) .sumi-figure-body {
-	fill: currentColor;
-}
-
 .wg-chat-tab-icon-host:hover .wg-chat-tab-icon {
 	animation: wg-chat-tab-icon-hop 0.45s ease-out;
 }

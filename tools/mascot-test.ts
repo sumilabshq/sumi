@@ -349,14 +349,14 @@ const lowestY = (points: string): number => Math.max(...points.split(" ").map((o
 const page = await paged(origin, "mascot", { size: [1300, 700] });
 try {
 	await waited(800);
-	check("each state paints its body, the eye is the paper, working glows", await page.ask(FILLS), {
+	check("each state paints its body, the eye is the paper, working does not glow", await page.ask(FILLS), {
 		rest: true,
 		waits: true,
 		done: true,
 		error: true,
 		eye: true,
 		dark: true,
-		glow: "sumi-eye-glow",
+		glow: "none",
 	});
 	const resting = await liveOf(page);
 	check("the live mascot starts at rest", resting.state, "rest");

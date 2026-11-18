@@ -74,6 +74,7 @@ export type { LoaderProps } from "./components/loader";
 export {
 	Sidebar,
 	SidebarContent,
+	SidebarDragGhost,
 	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
@@ -81,9 +82,14 @@ export {
 	SidebarHeader,
 	SidebarInset,
 	SidebarMenu,
+	SidebarMenuAction,
 	SidebarMenuButton,
+	SidebarMenuChevron,
 	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubItem,
 	SidebarProvider,
+	SidebarRail,
 	SidebarRow,
 	SidebarSheet,
 	SidebarTrigger,
@@ -215,6 +221,10 @@ export { progressState } from "./utils/progress";
 export { prefersReducedMotion } from "./utils/reduced-motion";
 export { CORNER_TENSION, restingSpring, springToward } from "./utils/spring";
 export type { Point, Spring, Tension } from "./utils/spring";
+export { StatusCube } from "./components/status-cube";
+export type { StatusCubeProps } from "./components/status-cube";
+export { STATUS_CUBE_SAID, STATUS_CUBE_STATES } from "./constants/status-cube";
+export type { StatusCubeState } from "./constants/status-cube";
 export { barGeometry, circleGeometry } from "./utils/progress-geometry";
 export { inkedClass, toneClass, toneOf } from "./utils/tones";
 export { Ceiling, COUNTED_CEILING, countedFirstLine } from "./components/ceiling";
@@ -226,6 +236,18 @@ export { RenderedMarkdown } from "./components/rendered-markdown";
 export { useRendersMarkdownInto } from "./hooks/use-renders-markdown-into";
 export type { MarkdownHost } from "./hooks/use-renders-markdown-into";
 export { useNow } from "./hooks/use-now";
+export { useSidebarSort } from "./hooks/use-sidebar-sort";
+export { useFlipRows } from "./hooks/use-flip-rows";
+export { TileMap } from "./components/tile-map";
+export type { TileMapCell, TileMapProps } from "./components/tile-map";
+export type {
+	SidebarSortAim,
+	SidebarSortDrop,
+	SidebarSorting,
+	SidebarSortListeners,
+	SidebarSortOutside,
+	SidebarSortPlace,
+} from "./hooks/use-sidebar-sort";
 export { usePages } from "./hooks/use-pages";
 export { useScrollFog } from "./hooks/use-scroll-fog";
 export type { ScrollEdges } from "./hooks/use-scroll-fog";

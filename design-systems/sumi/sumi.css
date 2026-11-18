@@ -29,6 +29,9 @@
 	--sumi-code-string: #2f6b3a;
 	--sumi-success-wash: rgba(47, 107, 58, 0.1);
 	--sumi-danger-wash: rgba(166, 58, 40, 0.1);
+	--sumi-status-done: oklch(0.63 0.2 148);
+	--sumi-status-question: oklch(0.8 0.17 85);
+	--sumi-status-blocked: oklch(0.58 0.24 25);
 	--sumi-shadow-plate: none;
 	--sumi-shadow-pop: 0 0 0 1px var(--sumi-line);
 	--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
@@ -176,6 +179,9 @@
 	--sumi-code-string: #9dbf8a;
 	--sumi-success-wash: rgba(157, 191, 138, 0.1);
 	--sumi-danger-wash: rgba(227, 154, 139, 0.1);
+	--sumi-status-done: oklch(0.74 0.21 148);
+	--sumi-status-question: oklch(0.86 0.18 92);
+	--sumi-status-blocked: oklch(0.64 0.25 25);
 	--sumi-shadow-pop: 0 0 0 1px var(--sumi-line);
 	--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
 	--sumi-shadow-float: none;
