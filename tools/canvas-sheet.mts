@@ -85,6 +85,7 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/workspace-switcher/src/features/workspace-switcher/ui/workspace-look/workspace-look.css",
 	"@sumi/workspace-switcher-plugin/workspace-move-item.css":
 		"plugins/workspace-switcher/src/features/workspace-moves/ui/workspace-move-item/workspace-move-item.css",
+	"@sumi/panes-plugin/pane-tools.css": "plugins/tabs/panes/src/features/pane-board/ui/pane-tools/pane-tools.css",
 	"@sumi/tabs-sidebar-plugin/sidebar-title.css":
 		"plugins/tabs/tabs-sidebar/src/features/sidebar-title/ui/sidebar-title/sidebar-title.css",
 	"@sumi/sumi-host-plugin/title-bar.css": "plugins/sumi-host/src/features/title-bar/ui/title-bar/title-bar.css",
@@ -148,6 +149,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/workspace-switcher-plugin/workspace-control-row.css";
 @import "@sumi/workspace-switcher-plugin/workspace-look.css";
 @import "@sumi/workspace-switcher-plugin/workspace-move-item.css";
+@import "@sumi/panes-plugin/pane-tools.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
 @import "@sumi/canvas-plugin/canvas-page.css";

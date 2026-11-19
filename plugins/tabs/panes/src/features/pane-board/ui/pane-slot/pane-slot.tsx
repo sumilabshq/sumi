@@ -8,23 +8,37 @@ import type { SlotLook } from "../../lib/use-board-look.js";
 import type { PaneLeaf, PaneView } from "@widgetarium/app-host/contract";
 import { usePaneClosing } from "../../lib/use-pane-closing.js";
 import { chatFacts } from "@sumi/chat-facts/contract";
+import { PaneTools } from "../pane-tools/pane-tools.js";
 
 export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
 	readonly look: SlotLook;
 	readonly isClosable: boolean;
+	readonly isExpanded: boolean;
+	readonly onExpand: (paneId: string) => void;
 	readonly drawn: (view: PaneView) => ReactNode;
 	readonly onFocused: (paneId: string) => void;
 }
+
+const WHOLE_BOARD: PanePlace = {
+	left: "0px",
+	top: "0px",
+	width: "100%",
+	height: "100%",
+};
 
 export const PaneSlot = memo(function PaneSlot({
 	leaf,
 	look,
 	isClosable,
+	isExpanded,
+	onExpand,
 	drawn,
 	onFocused,
 }: PaneSlotProps): ReactElement {
-	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners } = look;
+	const { isDimmed, isMoving, isAway } = look;
+	const { place, isAtTopLeft, isAtTopRight, corners } = isExpanded ? expandedLookOf(look) : look;
+	const hasTools = isClosable && leaf.view.kind === "app";
 	const close = usePaneClosing(leaf);
 	const aimPane = useCommand(appHost.panes.aim);
 	const markTabSeen = useCommand(chatFacts.turns.markSeen);
@@ -60,6 +74,8 @@ export const PaneSlot = memo(function PaneSlot({
 			data-pane-grouped={corners === undefined ? undefined : ""}
 			data-pane-away={isAway ? "" : undefined}
 			data-pane-view={leaf.view.kind}
+			data-pane-tools={hasTools ? "" : undefined}
+			data-pane-expanded={isExpanded ? "" : undefined}
 			data-corner-start={isAtTopLeft ? "" : undefined}
 			data-corner-end={isAtTopRight ? "" : undefined}
 			data-pane-dimmed={isDimmed ? "" : undefined}
@@ -69,6 +85,9 @@ export const PaneSlot = memo(function PaneSlot({
 			onWheelCapture={isDimmed ? aim : undefined}
 		>
 			<PaneCloseContext.Provider value={closing}>{drawn(leaf.view)}</PaneCloseContext.Provider>
+			{hasTools ? (
+				<PaneTools paneId={leaf.id} isExpanded={isExpanded} onExpand={() => onExpand(leaf.id)} onClose={close} />
+			) : null}
 		</div>
 	);
 }, isSameSlot);
@@ -82,10 +101,22 @@ export function rectStyleOf(rect: PaneRect): CSSProperties {
 	};
 }
 
+function expandedLookOf(look: SlotLook): SlotLook {
+	return {
+		...look,
+		place: WHOLE_BOARD,
+		isAtTopLeft: true,
+		isAtTopRight: true,
+		corners: undefined,
+	};
+}
+
 function isSameSlot(before: PaneSlotProps, after: PaneSlotProps): boolean {
 	return (
 		before.leaf === after.leaf &&
 		before.isClosable === after.isClosable &&
+		before.isExpanded === after.isExpanded &&
+		before.onExpand === after.onExpand &&
 		before.drawn === after.drawn &&
 		before.onFocused === after.onFocused &&
 		isSameLook(before.look, after.look)
