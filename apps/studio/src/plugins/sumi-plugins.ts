@@ -30,6 +30,7 @@ import { subPages } from "@sumi/sub-pages-plugin";
 import { slashCommands } from "@sumi/slash-commands-plugin";
 import { chatTitle } from "@sumi/chat-title-plugin";
 import { nextPrompt } from "@sumi/next-prompt-plugin";
+import { chatImages } from "@sumi/chat-images-plugin";
 import { effortPicker } from "@sumi/effort-picker-plugin";
 import { modelPicker } from "@sumi/model-picker-plugin";
 import { permissionMode } from "@sumi/permission-mode-plugin";
@@ -161,6 +162,7 @@ const INSTALLED_PLUGINS = [
 	slashCommands,
 	chatTitle,
 	nextPrompt,
+	chatImages,
 	claudeCode,
 	modelPicker,
 	effortPicker,
@@ -198,6 +200,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		slashCommands.id,
 		chatTitle.id,
 		nextPrompt.id,
+		chatImages.id,
 		claudeCode.id,
 		modelPicker.id,
 		effortPicker.id,

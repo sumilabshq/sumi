@@ -11,6 +11,7 @@ export const chat = pluginWithSlots(definition, {
 		beforeLive: listPluginSlot<{ readonly chatId: never; readonly report: never }>("chat.before-live"),
 		frame: pluginSlot<{ readonly chatId: never; readonly children: never }>("chat.frame"),
 		toEndLabel: listPluginSlot<{ readonly chatId: never }>("chat.to-end-label"),
+		saidMarkdown: listPluginSlot<{ readonly holder: never }>("chat.said-markdown"),
 		callViews: listPluginSlot<{ readonly calls: never; readonly faces: never }>("chat.call-views"),
 		topStart: listPluginSlot<{ readonly chatId: never }>("chat.top-start"),
 		optionsStart: listPluginSlot<{ readonly chat: never; readonly surface: never }>("chat.options-start"),

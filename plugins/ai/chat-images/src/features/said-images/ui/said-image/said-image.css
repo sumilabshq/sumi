@@ -1,0 +1,32 @@
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-image {
+	display: block;
+	max-width: 100%;
+	margin: var(--sumi-sp-4, 8px) 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-said img.wg-studio-ai-image,
+:is(.wg-root, .wg-portal) .sumi-said-image img {
+	display: block;
+	max-width: 100%;
+	max-height: 420px;
+	object-fit: contain;
+}
+
+:is(.wg-root, .wg-portal) .sumi-said-image {
+	display: inline-block;
+	max-width: 100%;
+	outline: 1px solid var(--sumi-line, var(--background-modifier-border));
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .sumi-said-image.is-loading {
+	width: 240px;
+	height: 140px;
+	background: var(--sumi-soft, var(--wg-kit-fill));
+}
+
+:is(.wg-root, .wg-portal) .sumi-said-image.is-failed {
+	outline: none;
+	color: var(--sumi-text-3, var(--muted-foreground));
+	cursor: default;
+}

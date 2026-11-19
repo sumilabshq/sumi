@@ -68,6 +68,7 @@
 		"@sumi/chat-title-plugin": "0.1.0",
 		"@sumi/mcp-apps-plugin": "0.1.0",
 		"@sumi/next-prompt-plugin": "0.1.0",
+		"@sumi/chat-images-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@sumi/tab-groups-plugin": "0.1.0",
 		"@sumi/tab-strip-plugin": "0.1.0",
