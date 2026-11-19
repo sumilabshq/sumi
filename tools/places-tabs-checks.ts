@@ -78,7 +78,7 @@ async function unreadableChecks(): Promise<void> {
 	fake.put(`${root}:navigation.json`, { v: 1, rev: 1, tabs: { broken: true } });
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: NAVIGATION, empty: KeptNavigationSchema.parse({}) });
-	const [main] = windowsOver(new TauriTabsGateway(kept));
+	const [main] = windowsOver(new TauriTabsGateway({ ownId: DEFAULT.id, navigationOf: () => kept }));
 	const placed = await main.send(navigation.tabs.placedTabs, { window: "main" });
 	check(
 		"unreadable tabs start empty and are kept aside, never read again from the older files",
@@ -499,7 +499,7 @@ async function workspaceListsMigrationChecks(): Promise<void> {
 	});
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: NAVIGATION, empty: KeptNavigationSchema.parse({}) });
-	const [main] = windowsOver(new TauriTabsGateway(kept));
+	const [main] = windowsOver(new TauriTabsGateway({ ownId: DEFAULT.id, navigationOf: () => kept }));
 	check(
 		"a list kept under a window id folds into the list of the workspace on first read",
 		await sidebarTabIdsIn(main, askAt(placesWindowOf("main", workspace))),

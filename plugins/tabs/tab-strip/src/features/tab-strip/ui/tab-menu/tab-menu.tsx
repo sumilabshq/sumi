@@ -67,6 +67,7 @@ function TabMenuItems({ at: { item }, acts, hasOthers, chose, onDone }: TabMenuI
 				<Icon name="app-window" size={ITEM_ICON_PX} />
 				Move to a new window
 			</PopoverItem>
+			<ListPluginSlot name="tab-strip.tab-move-items" props={{ tab, onDone }} />
 			<PopoverSeparator />
 			<PopoverItem role="menuitem" onClick={chose(() => acts.close(item))}>
 				<Icon name="x" size={ITEM_ICON_PX} />

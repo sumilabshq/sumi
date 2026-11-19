@@ -160,6 +160,24 @@ export const tearOff = command()
 		);
 	});
 
+export const moveToWorkspace = command()
+	.public()
+	.input(
+		z.object({
+			entry: z.object({
+				kind: z.enum(["tab", "group"]),
+				id: z.string().min(1),
+			}),
+			workspace: z.string().min(1),
+		}),
+	)
+	.idempotencyKey(Repeatable)
+	.handle(async (asked, { send, emit, ...injects }) => {
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(navigation.workspaceMoves.move, { at, ...asked }),
+		);
+	});
+
 export const closeGroup = command()
 	.public()
 	.input(z.object({ id: z.string() }))

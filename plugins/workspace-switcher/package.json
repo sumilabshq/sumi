@@ -14,6 +14,7 @@
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@sumi/tab-strip-plugin": "0.1.0",
 		"@sumi/tabs-sidebar-plugin": "0.1.0",
+		"@widgetarium/app-host": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",

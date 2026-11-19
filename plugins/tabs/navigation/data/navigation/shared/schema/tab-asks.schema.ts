@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TabsAskSchema } from "./screen.schema.js";
-import { PageAppSchema, StudioViewSchema } from "./tabs.schema.js";
+import { ListEntrySchema, PageAppSchema, StudioViewSchema } from "./tabs.schema.js";
 
 export const TabPlaceSchema = z.object({
 	list: z.string().min(1),
@@ -100,6 +100,12 @@ export type DuplicateTabAsk = z.infer<typeof DuplicateTabAskSchema>;
 export const ReopenClosedAskSchema = z.object({
 	at: TabsAskSchema,
 	tabId: z.string().min(1).nullable(),
+});
+
+export const WorkspaceMoveAskSchema = z.object({
+	at: TabsAskSchema,
+	entry: ListEntrySchema,
+	workspace: z.string().min(1),
 });
 
 export const FoldTabAskSchema = z.object({

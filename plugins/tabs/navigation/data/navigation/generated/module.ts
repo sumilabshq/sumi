@@ -12,6 +12,7 @@ import { fitToPanes, openInOwnWindow, reload, rememberPages, restore, show, show
 import { closedTabs, heldTabs, holders, placedTabs, rereadPlaced, rows, shownView, sidebar } from "../features/tabs/requests.js";
 import { hideLeft, rereadSides, sides } from "../features/window-sides/requests.js";
 import { all, closeWindow, keepLiveWindows, openWindow, reread } from "../features/windows/requests.js";
+import { move } from "../features/workspace-moves/requests.js";
 import { placedTabsChanged } from "../gateways/tabs/tabs.events.js";
 import { windowsChanged } from "../gateways/windows/windows.events.js";
 
@@ -86,4 +87,5 @@ export const navigation = handledModule(definition, [
 	named("windows.keep-live-windows", keepLiveWindows),
 	named("windows.open-window", openWindow),
 	named("windows.windows-changed", windowsChanged),
+	named("workspace-moves.move", move),
 ]);

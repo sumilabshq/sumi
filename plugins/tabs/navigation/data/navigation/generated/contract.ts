@@ -464,6 +464,17 @@ export const ReopenClosedAskSchema = z.object({
 	tabId: z.string().min(1).nullable(),
 });
 
+export const ListEntrySchema = z.object({
+	kind: z.enum(["tab", "group"]),
+	id: z.string(),
+});
+
+export const WorkspaceMoveAskSchema = z.object({
+	at: TabsAskSchema,
+	entry: ListEntrySchema,
+	workspace: z.string().min(1),
+});
+
 export const FoldTabAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),
@@ -739,11 +750,6 @@ export type SectionList = z.infer<typeof SectionListSchema>;
 export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
 
 export type GroupHue = z.infer<typeof GroupHueSchema>;
-
-export const ListEntrySchema = z.object({
-	kind: z.enum(["tab", "group"]),
-	id: z.string(),
-});
 
 export type ListEntry = z.infer<typeof ListEntrySchema>;
 
@@ -1103,6 +1109,13 @@ export const navigation = moduleContract("navigation", Server, {
 		keepLiveWindows: named("windows.keep-live-windows", command()
 			.public()
 			.input(LiveWindowsSchema)
+			.idempotencyKey(Repeatable)),
+	},
+	workspaceMoves: {
+		move: named("workspace-moves.move", command()
+			.public()
+			.input(WorkspaceMoveAskSchema)
+			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
 	},
 });

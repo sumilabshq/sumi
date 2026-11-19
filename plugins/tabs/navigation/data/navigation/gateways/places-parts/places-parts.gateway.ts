@@ -38,14 +38,19 @@ const NOT_CARRIED =
 	"[widgetarium] navigation of workspace {workspace}: the global places.json was not carried over ({reason})";
 
 export function keptPlacesParts({ store, apps }: PlacesConfig, workspaceId: string): PlacesParts {
-	const root = workspaceRootOf(workspaceId);
-	const kept = store.heldOnce(root, NAVIGATION.file, async () =>
-		startedFresh(await panesCarried(store, workspaceId, await carriedNavigation(store, workspaceId))),
-	);
 	return {
-		tabs: new TauriTabsGateway(kept),
+		tabs: new TauriTabsGateway({
+			ownId: workspaceId,
+			navigationOf: (anyWorkspaceId) => heldNavigationOf(store, anyWorkspaceId),
+		}),
 		placedApps: new ListedPlacedAppsGateway(apps),
 	};
+}
+
+function heldNavigationOf(store: StoreClient, workspaceId: string): Promise<HeldDoc<KeptNavigation>> {
+	return store.heldOnce(workspaceRootOf(workspaceId), NAVIGATION.file, async () =>
+		startedFresh(await panesCarried(store, workspaceId, await carriedNavigation(store, workspaceId))),
+	);
 }
 
 async function carriedNavigation(store: StoreClient, workspaceId: string): Promise<HeldDoc<KeptNavigation>> {

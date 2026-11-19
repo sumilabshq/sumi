@@ -22729,6 +22729,40 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	padding: 12px 10px;
 	color: var(--sumi-text-3);
 }
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.sumi-ws-move-menu {
+	width: auto;
+	min-width: 200px;
+}
+.sumi-ws-move-list {
+	display: flex;
+	flex-direction: column;
+}
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .sumi-ws-move-row {
+	gap: var(--sumi-sp-4);
+}
+.sumi-ws-move-glyph {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	color: var(--sumi-text-3);
+}
+.sumi-ws-move-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-align: start;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.sumi-ws-move-chevron {
+	display: inline-flex;
+	flex: none;
+	margin-inline-start: auto;
+	color: var(--sumi-text-3);
+}
 :root[data-terminal-cursor-on]
 	:is(
 		textarea,

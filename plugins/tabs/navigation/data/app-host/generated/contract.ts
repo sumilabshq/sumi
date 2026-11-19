@@ -664,6 +664,18 @@ export const appHost = moduleContract("app-host", Device, {
 			.public()
 			.input(z.object({ id: z.string() }))
 			.idempotencyKey(Repeatable)),
+		moveToWorkspace: named("tab-actions.move-to-workspace", command()
+			.public()
+			.input(
+				z.object({
+					entry: z.object({
+						kind: z.enum(["tab", "group"]),
+						id: z.string().min(1),
+					}),
+					workspace: z.string().min(1),
+				}),
+			)
+			.idempotencyKey(Repeatable)),
 		closeGroup: named("tab-actions.close-group", command()
 			.public()
 			.input(z.object({ id: z.string() }))

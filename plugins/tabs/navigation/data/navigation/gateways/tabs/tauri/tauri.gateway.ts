@@ -19,12 +19,28 @@ export const KeptNavigationSchema = z.looseObject({
 
 export type KeptNavigation = z.infer<typeof KeptNavigationSchema>;
 
+export interface KeptWorkspaces {
+	readonly ownId: string;
+	readonly navigationOf: (workspaceId: string) => Promise<HeldDoc<KeptNavigation>>;
+}
+
 export class TauriTabsGateway extends TabsGateway {
 	private readonly ready: Promise<HeldDoc<KeptNavigation>>;
 
-	constructor(kept: Promise<HeldDoc<KeptNavigation>>) {
+	constructor(private readonly workspaces: KeptWorkspaces) {
 		super();
-		this.ready = kept.then(readyTabsIn);
+		this.ready = workspaces.navigationOf(workspaces.ownId).then(readyTabsIn);
+	}
+
+	override workspaceId(): string {
+		return this.workspaces.ownId;
+	}
+
+	override movePlacedTabsIn<T>(workspaceId: string, move: MovePlacedTabs<T>): Promise<T> {
+		return new TauriTabsGateway({
+			...this.workspaces,
+			ownId: workspaceId,
+		}).movePlacedTabs(move);
 	}
 
 	override async placedTabs(): Promise<PlacedTabs> {
