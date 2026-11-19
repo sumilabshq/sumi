@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 import type { ZoomStore } from "./zoom-store.js";
 
 export interface CanvasViewState {
+	readonly tabId: string;
 	readonly canvasId: string;
 	readonly pickedBoardId: string | null;
 	readonly zoom: ZoomStore;

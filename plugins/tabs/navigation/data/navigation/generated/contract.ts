@@ -507,6 +507,25 @@ export const OwnAppTabSchema = z.object({
 
 export type OwnAppTab = z.infer<typeof OwnAppTabSchema>;
 
+export const TabsOfAppAskSchema = z.object({ app: z.string().min(1) });
+
+export const AppTabInChatSchema = z.object({
+	id: z.string(),
+	address: z.string().nullable(),
+	chat: z
+		.object({
+			id: z.string(),
+			title: z.string().nullable(),
+		})
+		.nullable(),
+});
+
+export const TabsOfAppSchema = z.object({ tabs: z.array(AppTabInChatSchema) });
+
+export type AppTabInChat = z.infer<typeof AppTabInChatSchema>;
+
+export type TabsOfApp = z.infer<typeof TabsOfAppSchema>;
+
 export const TabStepSchema = z.object({ id: z.string().min(1) });
 
 export const LinkAskSchema = z.object({
@@ -952,6 +971,10 @@ export const navigation = moduleContract("navigation", Server, {
 			.public()
 			.input(OwnAppTabAskSchema)
 			.output(OwnAppTabSchema)),
+		tabsOfApp: named("tab-facts.tabs-of-app", query()
+			.public()
+			.input(TabsOfAppAskSchema)
+			.output(TabsOfAppSchema)),
 		recordAppAddress: named("tab-facts.record-app-address", command()
 			.public()
 			.input(AppAddressSchema)

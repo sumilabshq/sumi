@@ -95,6 +95,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/keyboard-language/src/features/keyboard-language/ui/keyboard-language-tag/keyboard-language-tag.css",
 	"@widgetarium/kit/side-panel.css": "packages/shared/kit/side-panel.css",
 	"@sumi/canvas-plugin/canvas-page.css": "plugins/canvas/src/features/canvas/ui/canvas-page/canvas-page.css",
+	"@sumi/canvas-plugin/top-row.css": "plugins/canvas/src/shared/ui/top-row/top-row.css",
+	"@sumi/canvas-plugin/canvas-home.css": "plugins/canvas/src/features/canvas-home/ui/canvas-home/canvas-home.css",
 	"@sumi/canvas-plugin/mini-canvas.css": "plugins/canvas/src/features/mini-canvas/ui/mini-canvas/mini-canvas.css",
 	"@sumi/mcp-apps-plugin/mcp-app-card.css": "plugins/ai/mcp-apps/src/shared/ui/mcp-app-card/mcp-app-card.css",
 	"@sumi/mcp-apps-plugin/call-view.css": "plugins/ai/mcp-apps/src/features/call-views/ui/call-view/call-view.css",
@@ -149,6 +151,8 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
 @import "@sumi/canvas-plugin/canvas-page.css";
+@import "@sumi/canvas-plugin/top-row.css";
+@import "@sumi/canvas-plugin/canvas-home.css";
 @import "@sumi/mcp-apps-plugin/mcp-app-card.css";
 @import "@sumi/mcp-apps-plugin/call-view.css";
 @import "@sumi/chat-images-plugin/said-image.css";

@@ -14,7 +14,7 @@ export const togglePanel = command()
 	.handle(({ canvasId }, { canvases }) => {
 		const canvas = canvases.canvas(canvasId);
 		const reason = `pages and layers ${shownWord(canvas.isPanelOpen)} → ${shownWord(!canvas.isPanelOpen)}`;
-		canvases.saveCanvas(canvasId, { ...canvas, isPanelOpen: !canvas.isPanelOpen }, reason);
+		canvases.keepView(canvasId, { ...canvas, isPanelOpen: !canvas.isPanelOpen }, reason);
 		console.info(`[artboards] ${canvasId}: ${reason}`);
 	});
 
@@ -26,7 +26,7 @@ export const resizePanel = command()
 		const canvas = canvases.canvas(canvasId);
 		const panelWidth = Math.round(Math.min(PANEL_MOST_PX, Math.max(PANEL_LEAST_PX, width)));
 		const reason = `pages and layers width ${canvas.panelWidth} → ${panelWidth}px`;
-		canvases.saveCanvas(canvasId, { ...canvas, panelWidth }, reason);
+		canvases.keepView(canvasId, { ...canvas, panelWidth }, reason);
 		console.info(`[artboards] ${canvasId}: ${reason}`);
 	});
 
@@ -37,7 +37,7 @@ export const setBackground = command()
 	.handle(({ canvasId, background }, { canvases }) => {
 		const canvas = canvases.canvas(canvasId);
 		const reason = `background ${backgroundWord(canvas.background)} → ${backgroundWord(background)}`;
-		canvases.saveCanvas(canvasId, { ...canvas, background }, reason);
+		canvases.keepView(canvasId, { ...canvas, background }, reason);
 		console.info(`[artboards] ${canvasId}: ${reason}`);
 	});
 
@@ -47,7 +47,7 @@ export const keepCamera = command()
 	.idempotencyKey(Repeatable)
 	.handle(({ canvasId, camera }, { canvases }) => {
 		const canvas = canvases.canvas(canvasId);
-		canvases.saveCanvas(canvasId, { ...canvas, camera }, `camera kept at ${Math.round(camera.scale * 100)}%`);
+		canvases.keepView(canvasId, { ...canvas, camera }, `camera kept at ${Math.round(camera.scale * 100)}%`);
 	});
 
 const PANEL_LEAST_PX = 200;

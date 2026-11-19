@@ -1,0 +1,102 @@
+.sumi-canvas-top-row {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--sumi-sp-3);
+	height: var(--sumi-header-h);
+	padding-inline-start: max(var(--sumi-corner-start, 0px), var(--sumi-sp-3));
+	padding-inline-end: max(var(--sumi-corner-end, 0px), var(--sumi-sp-3));
+	pointer-events: none;
+}
+
+.sumi-canvas-plate {
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-1);
+	min-width: 0;
+	height: var(--sumi-h-md);
+	padding-inline: var(--sumi-sp-1);
+	background: color-mix(in srgb, var(--sumi-plate) 72%, transparent);
+	backdrop-filter: var(--sumi-blur-corner);
+	-webkit-backdrop-filter: var(--sumi-blur-corner);
+	pointer-events: auto;
+}
+
+.sumi-canvas-top-button {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--sumi-sp-2);
+	min-width: 0;
+	height: var(--sumi-h-sm);
+	padding: 0 var(--sumi-sp-2);
+	border: 0;
+	background: none;
+	color: var(--sumi-text-3);
+	font: inherit;
+	font-size: var(--sumi-fs-13);
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.sumi-canvas-top-button:hover,
+.sumi-canvas-top-button[aria-expanded="true"],
+.sumi-canvas-top-button[aria-pressed="true"] {
+	background: var(--sumi-hover);
+	color: var(--sumi-text);
+}
+
+.sumi-canvas-top-button.is-title {
+	color: var(--sumi-text);
+	font-weight: var(--sumi-fw-medium);
+}
+
+.sumi-canvas-top-button.is-title span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sumi-canvas-top-button.is-zoom {
+	justify-content: center;
+	min-width: 52px;
+	color: var(--sumi-text);
+	font-variant-numeric: tabular-nums;
+}
+
+.sumi-canvas-top-button.is-square {
+	justify-content: center;
+	width: var(--sumi-h-sm);
+	padding: 0;
+}
+
+.sumi-canvas-crumb-slash {
+	color: var(--sumi-text-3);
+}
+
+.sumi-canvas-title-field {
+	width: 220px;
+	height: var(--sumi-h-sm);
+	padding: 0 var(--sumi-sp-2);
+	border: 0;
+	outline: 1px solid var(--sumi-line-strong);
+	background: var(--sumi-plate);
+	color: var(--sumi-text);
+	font: inherit;
+	font-size: var(--sumi-fs-13);
+	font-weight: var(--sumi-fw-medium);
+	user-select: text;
+}
+
+@container (max-width: 760px) {
+	.sumi-canvas-top-button.is-home span {
+		display: none;
+	}
+
+	.sumi-canvas-top-button.is-title {
+		max-width: 160px;
+	}
+}

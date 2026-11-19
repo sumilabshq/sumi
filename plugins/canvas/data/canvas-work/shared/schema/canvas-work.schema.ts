@@ -15,6 +15,10 @@ export const NameSchema = z.string().trim().min(1).max(120);
 
 export const CanvasAskSchema = z.object({ canvasId: CanvasIdSchema });
 
+export const RenameCanvasAskSchema = CanvasAskSchema.extend({
+	title: NameSchema.describe("What the canvas holds, in a few words: its tab and the canvas home show it"),
+});
+
 export const NoAskSchema = z.object({});
 
 export const NewPageAskSchema = z.object({

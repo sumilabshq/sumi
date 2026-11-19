@@ -14,8 +14,11 @@ import {
 	OwnAppTabAskSchema,
 	OwnAppTabSchema,
 	TakeAskedLinkSchema,
+	TabsOfAppAskSchema,
+	TabsOfAppSchema,
 } from "../../shared/schema/tab-facts.schema.js";
 import { linkRouteOf, navigatedPlan, withLinkAsked, withLinkTaken } from "./lib/link-routes.js";
+import { appTabsInChatsOf } from "./lib/app-tabs-in-chats.js";
 import { ownAppTabOf } from "./lib/own-app-tab.js";
 import { recordAppAddressPlan } from "./lib/fact-plans.js";
 
@@ -24,7 +27,9 @@ const APP_CALLABLE: ReadonlySet<string> = new Set([
 	"navigation.tab-facts.record-app-address",
 	"navigation.tab-facts.own-app-tab",
 	"navigation.tab-facts.open-link",
+	"navigation.tab-facts.tabs-of-app",
 ]);
+const NOT_OWN_APP = "app {app} asked for the tabs of {asked}; an app reads only its own tabs";
 const NOT_FOR_APPS = "{request} is not open to apps; an app may call {allowed}";
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
 const NO_TAB = "no open tab {id}";
@@ -45,6 +50,12 @@ export const OwnsAppTabGuard = guard<{ readonly id: string }>()
 
 		await denyUnlessAppHolds(tabs, input.id, context.user.id);
 	});
+
+export const AsksOwnAppGuard = guard<{ readonly app: string }>().handle(({ input, context }) => {
+	if (context.user !== null && context.user.id !== input.app) {
+		deny(NOT_OWN_APP.replace("{asked}", input.app).replace("{app}", context.user.id));
+	}
+});
 
 export const OwnsLinkingTabGuard = guard<{ readonly from: string }>()
 	.requires({ tabs: TabsGateway })
@@ -129,6 +140,17 @@ export const ownAppTab = query()
 
 export const rereadOwnAppTab = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
 	invalidate(ownAppTab);
+});
+
+export const tabsOfApp = query()
+	.public()
+	.input(TabsOfAppAskSchema)
+	.output(TabsOfAppSchema)
+	.guard(AsksOwnAppGuard)
+	.handle(async ({ app }, { tabs, placedApps }) => appTabsInChatsOf(await tabs.placedTabs(), placedApps.placedApps(), app));
+
+export const rereadTabsOfApp = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
+	invalidate(tabsOfApp);
 });
 
 export const recordAppAddress = command()

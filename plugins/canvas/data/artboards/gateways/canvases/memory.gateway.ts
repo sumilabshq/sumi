@@ -15,6 +15,10 @@ export class MemoryCanvasesGateway extends CanvasesGateway {
 	}
 
 	override saveCanvas(canvasId: string, canvas: Canvas): void {
+		this.keepView(canvasId, { ...canvas, editedAt: Date.now() });
+	}
+
+	override keepView(canvasId: string, canvas: Canvas): void {
 		this.held = {
 			...this.held,
 			[canvasId]: canvas,

@@ -16,6 +16,10 @@ export const NameSchema = z.string().trim().min(1).max(120);
 
 export const CanvasAskSchema = z.object({ canvasId: CanvasIdSchema });
 
+export const RenameCanvasAskSchema = CanvasAskSchema.extend({
+	title: NameSchema.describe("What the canvas holds, in a few words: its tab and the canvas home show it"),
+});
+
 export const NoAskSchema = z.object({});
 
 export const NewPageAskSchema = z.object({
@@ -291,6 +295,14 @@ export const canvasWork = moduleContract("canvas-work", Device, {
 			})
 			.input(CanvasAskSchema)
 			.output(CanvasSchema)),
+		renameCanvas: named("canvases.rename-canvas", command()
+			.public()
+			.metadata({
+				description:
+					"Name a canvas for what it holds (Sumi header, Onboarding flow). A new canvas is \"Untitled canvas\": name it with its first artboard, so its tab and the canvas home say what it is.",
+			})
+			.input(RenameCanvasAskSchema)
+			.idempotencyKey(Repeatable)),
 		showCanvas: named("canvases.show-canvas", query()
 			.public()
 			.metadata({

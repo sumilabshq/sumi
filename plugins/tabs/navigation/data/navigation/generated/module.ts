@@ -4,7 +4,7 @@ import { navigation as definition } from "../module.js";
 import { aim, board, close, closeShowingPanes, closeShown as panesCloseShown, dropGoneTabs, openShown, place as panesPlace, placementPreview, rereadBoard, resizeSplit, showChat, showInTarget } from "../features/panes/requests.js";
 import { place as splitsPlace, placeInView, remove, reorderMember, rereadShown, resize, shown } from "../features/splits/requests.js";
 import { closeGroup, closeOthers, closeShown as tabClosingCloseShown, closeTab } from "../features/tab-closing/requests.js";
-import { askedLinks, openLink, ownAppTab, recordAppAddress, rereadAskedLinks, rereadOwnAppTab, takeAskedLink } from "../features/tab-facts/requests.js";
+import { askedLinks, openLink, ownAppTab, recordAppAddress, rereadAskedLinks, rereadOwnAppTab, rereadTabsOfApp, tabsOfApp, takeAskedLink } from "../features/tab-facts/requests.js";
 import { goBack, goForward } from "../features/tab-history/requests.js";
 import { duplicate, navigate, openBelow, openOnce, openTab, reopenClosed } from "../features/tab-opening/requests.js";
 import { fold, place as tabPlacingPlace, rename } from "../features/tab-placing/requests.js";
@@ -26,6 +26,7 @@ export const navigation = handledModule(definition, [
 	rereadPlaced,
 	rereadShown,
 	rereadSides,
+	rereadTabsOfApp,
 	named("panes.aim", aim),
 	named("panes.board", board),
 	named("panes.close", close),
@@ -52,6 +53,7 @@ export const navigation = handledModule(definition, [
 	named("tab-facts.open-link", openLink),
 	named("tab-facts.own-app-tab", ownAppTab),
 	named("tab-facts.record-app-address", recordAppAddress),
+	named("tab-facts.tabs-of-app", tabsOfApp),
 	named("tab-facts.take-asked-link", takeAskedLink),
 	named("tab-history.go-back", goBack),
 	named("tab-history.go-forward", goForward),

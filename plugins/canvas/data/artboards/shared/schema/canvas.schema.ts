@@ -85,6 +85,7 @@ export const CanvasSchema = z.object({
 	panelWidth: z.number().min(120).max(800).default(240),
 	background: BackgroundSchema.default(null),
 	camera: CameraSchema.nullable(),
+	editedAt: z.number().nonnegative().default(0),
 });
 
 export const BoardPlaceSchema = BoardSchema.omit({ html: true });
@@ -102,11 +103,27 @@ export const CanvasViewSchema = z.object({
 	camera: CameraSchema.nullable(),
 });
 
+export const SketchBoxSchema = z.object({
+	x: z.number(),
+	y: z.number(),
+	w: z.number(),
+	h: z.number(),
+});
+
 export const CanvasRowSchema = z.object({
 	canvasId: CanvasIdSchema,
 	title: NameSchema,
 	pageCount: z.number().int().nonnegative(),
 	boardCount: z.number().int().nonnegative(),
+	editedAt: z.number().nonnegative(),
+	sketch: z.array(SketchBoxSchema),
+});
+
+export const CanvasOrderSchema = z.enum(["edited", "name"]);
+
+export const CanvasesPageSchema = z.object({
+	rows: z.array(CanvasRowSchema),
+	total: z.number().int().nonnegative(),
 });
 
 export const BoardHitSchema = z.object({
@@ -128,4 +145,6 @@ export type BoardPlace = z.infer<typeof BoardPlaceSchema>;
 export type Canvas = z.infer<typeof CanvasSchema>;
 export type CanvasView = z.infer<typeof CanvasViewSchema>;
 export type CanvasRow = z.infer<typeof CanvasRowSchema>;
+export type CanvasOrder = z.infer<typeof CanvasOrderSchema>;
+export type CanvasesPage = z.infer<typeof CanvasesPageSchema>;
 export type BoardHit = z.infer<typeof BoardHitSchema>;

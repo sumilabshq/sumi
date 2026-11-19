@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { artboards as definition } from "../module.js";
 import { getBoard, getBoards, getBoardsMatching, getPageBoards, getShownPageBoards, moveBoard, removeBoard, renameBoard, rereadBoards, writeBoard } from "../features/boards/requests.js";
-import { getCanvas, getCanvases, rereadCanvases } from "../features/canvases/requests.js";
+import { createCanvas, getCanvas, getCanvases, getCanvasesPage, renameCanvas, rereadCanvases } from "../features/canvases/requests.js";
 import { createPage, removePage, renamePage, showPage } from "../features/pages/requests.js";
 import { getBoardTweaks, getTweaks, rereadTweaks, resetTweaks, setTweakValue, writeTweaks } from "../features/tweaks/requests.js";
 import { keepCamera, resizePanel, setBackground, togglePanel } from "../features/view/requests.js";
@@ -24,8 +24,11 @@ export const artboards = handledModule(definition, [
 	named("boards.rename-board", renameBoard),
 	named("boards.write-board", writeBoard),
 	named("canvases.canvases-changed", canvasesChanged),
+	named("canvases.create-canvas", createCanvas),
 	named("canvases.get-canvas", getCanvas),
 	named("canvases.get-canvases", getCanvases),
+	named("canvases.get-canvases-page", getCanvasesPage),
+	named("canvases.rename-canvas", renameCanvas),
 	named("pages.create-page", createPage),
 	named("pages.remove-page", removePage),
 	named("pages.rename-page", renamePage),

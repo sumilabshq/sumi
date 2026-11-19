@@ -12,6 +12,7 @@ export interface PanZoom {
 	readonly moves: PointerMoves;
 	readonly flyTo: (look: StageLook) => void;
 	readonly lookNow: () => StageLook;
+	readonly fitNow: () => StageLook | null;
 	readonly watchLook: (watcher: LookWatcher) => () => void;
 }
 
@@ -49,6 +50,7 @@ export function usePanZoom({ layerRef, fieldRef }: StageRefs, grips: Grips, kept
 	const painter = usePainter(layerRef, watchers, commit);
 	const flying = useRef(0);
 	const lookNow = useCallback((): StageLook => held.current ?? fit ?? UNMEASURED, [fit]);
+	const fitNow = useCallback((): StageLook | null => fit, [fit]);
 	const moveTo = useCallback(
 		(next: StageLook): void => {
 			window.cancelAnimationFrame(flying.current);
@@ -93,9 +95,10 @@ export function usePanZoom({ layerRef, fieldRef }: StageRefs, grips: Grips, kept
 			moves,
 			flyTo,
 			lookNow,
+			fitNow,
 			watchLook,
 		}),
-		[fieldRef, moves, lookNow, flyTo, watchLook],
+		[fieldRef, moves, lookNow, fitNow, flyTo, watchLook],
 	);
 }
 

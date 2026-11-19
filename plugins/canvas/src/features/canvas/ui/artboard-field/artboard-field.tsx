@@ -36,6 +36,16 @@ export function ArtboardField(): ReactElement {
 		show(pan.lookNow().scale);
 		return pan.watchLook((look) => show(look.scale));
 	}, [pan.watchLook, pan.lookNow, zoom]);
+	useEffect(
+		() =>
+			zoom.steerWith({
+				fitNow: pan.fitNow,
+				lookNow: pan.lookNow,
+				flyTo: pan.flyTo,
+				fieldOf: () => fieldRef.current,
+			}),
+		[zoom, pan.fitNow, pan.lookNow, pan.flyTo],
+	);
 	const width = Math.max(0, ...boards.map(({ x, w }) => x + w));
 	const height = Math.max(0, ...boards.map(({ y, h: tall }) => y + tall));
 	return (

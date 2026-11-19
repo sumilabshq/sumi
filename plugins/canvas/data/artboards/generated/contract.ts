@@ -6,9 +6,20 @@ export const CanvasIdSchema = z.string().min(1).max(200);
 
 export const CanvasAskSchema = z.object({ canvasId: CanvasIdSchema });
 
-export const NoAskSchema = z.object({});
-
 export const NameSchema = z.string().trim().min(1).max(120);
+
+export const RenameCanvasAskSchema = CanvasAskSchema.extend({ title: NameSchema });
+
+export const CanvasOrderSchema = z.enum(["edited", "name"]);
+
+export const CanvasesPageAskSchema = z.object({
+	offset: z.number().int().nonnegative(),
+	limit: z.number().int().min(1).max(200),
+	order: CanvasOrderSchema.default("edited"),
+	words: z.string().trim().max(200).default(""),
+});
+
+export const NoAskSchema = z.object({});
 
 export const NewPageAskSchema = z.object({
 	canvasId: CanvasIdSchema,
@@ -138,6 +149,8 @@ export const CreatedPageSchema = z.object({ page: PageIdSchema });
 
 export type WriteBoardAsk = z.infer<typeof WriteBoardAskSchema>;
 
+export type CanvasesPageAsk = z.infer<typeof CanvasesPageAskSchema>;
+
 export type TweakAsk = z.infer<typeof TweakAskSchema>;
 
 export const PageSchema = z.object({
@@ -192,11 +205,25 @@ export const CanvasViewSchema = z.object({
 	camera: CameraSchema.nullable(),
 });
 
+export const SketchBoxSchema = z.object({
+	x: z.number(),
+	y: z.number(),
+	w: z.number(),
+	h: z.number(),
+});
+
 export const CanvasRowSchema = z.object({
 	canvasId: CanvasIdSchema,
 	title: NameSchema,
 	pageCount: z.number().int().nonnegative(),
 	boardCount: z.number().int().nonnegative(),
+	editedAt: z.number().nonnegative(),
+	sketch: z.array(SketchBoxSchema),
+});
+
+export const CanvasesPageSchema = z.object({
+	rows: z.array(CanvasRowSchema),
+	total: z.number().int().nonnegative(),
 });
 
 export const BoardHitSchema = z.object({
@@ -227,6 +254,10 @@ export type BoardPlace = z.infer<typeof BoardPlaceSchema>;
 export type CanvasView = z.infer<typeof CanvasViewSchema>;
 
 export type CanvasRow = z.infer<typeof CanvasRowSchema>;
+
+export type CanvasOrder = z.infer<typeof CanvasOrderSchema>;
+
+export type CanvasesPage = z.infer<typeof CanvasesPageSchema>;
 
 export type BoardHit = z.infer<typeof BoardHitSchema>;
 
@@ -279,6 +310,18 @@ export const artboards = moduleContract("artboards", Server, {
 			.public()
 			.input(NoAskSchema)
 			.output(CanvasRowSchema.array())),
+		getCanvasesPage: named("canvases.get-canvases-page", query()
+			.public()
+			.input(CanvasesPageAskSchema)
+			.output(CanvasesPageSchema)),
+		createCanvas: named("canvases.create-canvas", command()
+			.public()
+			.input(CanvasAskSchema)
+			.idempotencyKey(Repeatable)),
+		renameCanvas: named("canvases.rename-canvas", command()
+			.public()
+			.input(RenameCanvasAskSchema)
+			.idempotencyKey(Repeatable)),
 	},
 	pages: {
 		createPage: named("pages.create-page", command()

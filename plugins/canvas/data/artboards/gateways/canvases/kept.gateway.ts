@@ -39,6 +39,10 @@ export class KeptCanvasesGateway extends CanvasesGateway {
 	}
 
 	override saveCanvas(canvasId: string, canvas: Canvas, reason: string): void {
+		this.keepView(canvasId, { ...canvas, editedAt: Date.now() }, reason);
+	}
+
+	override keepView(canvasId: string, canvas: Canvas, reason: string): void {
 		const canvases = {
 			...this.kept.now().canvases,
 			[canvasId]: canvas,

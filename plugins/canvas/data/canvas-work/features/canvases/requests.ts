@@ -1,11 +1,12 @@
 import { artboards } from "@sumi/artboards/contract";
-import { refuse } from "@widgetarium/data-framework";
-import { query } from "#module";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query } from "#module";
 import {
 	CanvasAskSchema,
 	CanvasRowSchema,
 	CanvasSchema,
 	NoAskSchema,
+	RenameCanvasAskSchema,
 	ShowCanvasAskSchema,
 	ShownCanvasSchema,
 } from "../../shared/schema/canvas-work.schema.js";
@@ -42,6 +43,16 @@ export const getCanvas = query()
 			pages: canvasPagesOf(canvas, boards),
 		};
 	});
+
+export const renameCanvas = command()
+	.public()
+	.metadata({
+		description:
+			"Name a canvas for what it holds (Sumi header, Onboarding flow). A new canvas is \"Untitled canvas\": name it with its first artboard, so its tab and the canvas home say what it is.",
+	})
+	.input(RenameCanvasAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle((ask, { send }) => send(artboards.canvases.renameCanvas, ask));
 
 export const showCanvas = query()
 	.public()

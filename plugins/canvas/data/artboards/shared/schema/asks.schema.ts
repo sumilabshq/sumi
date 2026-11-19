@@ -3,6 +3,7 @@ import {
 	BackgroundSchema,
 	BoardIdSchema,
 	CameraSchema,
+	CanvasOrderSchema,
 	NameSchema,
 	PageIdSchema,
 	CanvasIdSchema,
@@ -12,6 +13,15 @@ import {
 } from "./canvas.schema.js";
 
 export const CanvasAskSchema = z.object({ canvasId: CanvasIdSchema });
+
+export const RenameCanvasAskSchema = CanvasAskSchema.extend({ title: NameSchema });
+
+export const CanvasesPageAskSchema = z.object({
+	offset: z.number().int().nonnegative(),
+	limit: z.number().int().min(1).max(200),
+	order: CanvasOrderSchema.default("edited"),
+	words: z.string().trim().max(200).default(""),
+});
 
 export const NoAskSchema = z.object({});
 
@@ -108,4 +118,5 @@ export const WrittenBoardSchema = z.object({
 export const CreatedPageSchema = z.object({ page: PageIdSchema });
 
 export type WriteBoardAsk = z.infer<typeof WriteBoardAskSchema>;
+export type CanvasesPageAsk = z.infer<typeof CanvasesPageAskSchema>;
 export type TweakAsk = z.infer<typeof TweakAskSchema>;

@@ -17,7 +17,7 @@ export function BackgroundAction(): ReactElement {
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
 			<button
 				type="button"
-				className="sumi-canvas-background"
+				className="sumi-canvas-top-button is-square"
 				aria-label="Canvas background"
 				aria-expanded={isOpen}
 				onClick={() => setOpen(!isOpen)}

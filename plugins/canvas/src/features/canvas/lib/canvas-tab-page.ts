@@ -6,7 +6,7 @@ const CANVAS_APP = "canvas";
 
 export const canvasTabPage: DrawnTabPage = {
 	page: CanvasPage,
-	header: "shell",
+	header: "none",
 	draws: (app) => app === CANVAS_APP,
 	modulesOf: (_tab, { core }) =>
 		Promise.resolve({
