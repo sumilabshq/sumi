@@ -1,7 +1,7 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement } from "react";
 import type { WorkspaceIcon } from "@widgetarium/workspaces/contract";
-import { EmojiGlyph } from "./emoji-glyph.js";
+import { FILLED_ICONS } from "../../lib/filled-icons.js";
 import { FilledIcon } from "./filled-icon.js";
 
 export const WorkspaceGlyph = memo(function WorkspaceGlyph({
@@ -9,13 +9,10 @@ export const WorkspaceGlyph = memo(function WorkspaceGlyph({
 }: {
 	readonly icon: WorkspaceIcon | null;
 }): ReactElement {
-	if (icon === null) {
-		return <span className="wg-ws-dot" aria-hidden="true" />;
+	const body = icon?.kind === "icon" ? FILLED_ICONS[icon.name] : undefined;
+	if (body === undefined) {
+		return <span className="sumi-ws-dot" aria-hidden="true" />;
 	}
 
-	if (icon.kind === "emoji") {
-		return <EmojiGlyph emoji={icon.emoji} />;
-	}
-
-	return <FilledIcon name={icon.name} />;
+	return <FilledIcon body={body} />;
 });

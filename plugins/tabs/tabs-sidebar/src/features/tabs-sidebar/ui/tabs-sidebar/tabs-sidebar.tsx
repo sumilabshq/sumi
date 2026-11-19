@@ -87,6 +87,7 @@ function SidebarColumn(): ReactNode {
 						/>
 					))}
 				</SidebarContent>
+				<ListPluginSlot name="tabs-sidebar.foot" props={{}} />
 				<TabMenuFor ask={menu} onClose={() => setMenu(null)} />
 				<ListMenu at={listMenu} onClose={() => setListMenu(null)} />
 			</Sidebar>

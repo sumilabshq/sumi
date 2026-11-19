@@ -6,5 +6,6 @@ export const tabsSidebar = pluginWithSlots(definition, {
 	slots: {
 		tabActions: listPluginSlot<{ readonly tabId: never }>("tabs-sidebar.tab-actions"),
 		sectionsStart: listPluginSlot<{}>("tabs-sidebar.sections-start"),
+		foot: listPluginSlot<{}>("tabs-sidebar.foot"),
 	},
 });

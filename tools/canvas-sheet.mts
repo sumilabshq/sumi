@@ -40,7 +40,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@widgetarium/studio/shell.css": "apps/studio/src/features/frame/shell.css",
 	"@widgetarium/studio/command-menu.css":
 		"plugins/command-menu/src/features/command-menu/ui/command-menu/command-menu.css",
-	"@sumi/command-menu-plugin/home-page.css": "plugins/command-menu/src/features/command-menu/ui/home-page/home-page.css",
+	"@sumi/command-menu-plugin/home-page.css":
+		"plugins/command-menu/src/features/command-menu/ui/home-page/home-page.css",
 	"@sumi/home-pages-plugin/home-pages.css":
 		"plugins/homepages/home-pages/src/features/home-pages/ui/chosen-home/home-pages.css",
 	"@sumi/launcher-home-plugin/launcher-home.css":
@@ -74,6 +75,14 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/tabs/tab-groups/src/features/group-menu/ui/group-editor/group-editor.css",
 	"@sumi/tabs-sidebar-plugin/tabs-sidebar.css":
 		"plugins/tabs/tabs-sidebar/src/features/tabs-sidebar/ui/tabs-sidebar/tabs-sidebar.css",
+	"@sumi/workspace-switcher-plugin/workspace-glyph.css":
+		"plugins/workspace-switcher/src/features/workspace-switcher/ui/workspace-glyph/workspace-glyph.css",
+	"@sumi/workspace-switcher-plugin/workspace-strip.css":
+		"plugins/workspace-switcher/src/features/workspace-switcher/ui/workspace-strip/workspace-strip.css",
+	"@sumi/workspace-switcher-plugin/workspace-control-row.css":
+		"plugins/workspace-switcher/src/features/workspace-switcher/ui/workspace-control-row/workspace-control-row.css",
+	"@sumi/workspace-switcher-plugin/workspace-look.css":
+		"plugins/workspace-switcher/src/features/workspace-switcher/ui/workspace-look/workspace-look.css",
 	"@sumi/tabs-sidebar-plugin/sidebar-title.css":
 		"plugins/tabs/tabs-sidebar/src/features/sidebar-title/ui/sidebar-title/sidebar-title.css",
 	"@sumi/sumi-host-plugin/title-bar.css": "plugins/sumi-host/src/features/title-bar/ui/title-bar/title-bar.css",
@@ -126,6 +135,10 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sub-pages-plugin/strip-sub-pages.css";
 @import "@sumi/tabs-sidebar-plugin/tabs-sidebar.css";
 @import "@sumi/tabs-sidebar-plugin/sidebar-title.css";
+@import "@sumi/workspace-switcher-plugin/workspace-glyph.css";
+@import "@sumi/workspace-switcher-plugin/workspace-strip.css";
+@import "@sumi/workspace-switcher-plugin/workspace-control-row.css";
+@import "@sumi/workspace-switcher-plugin/workspace-look.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
 @import "@sumi/canvas-plugin/canvas-page.css";

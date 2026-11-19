@@ -1,0 +1,56 @@
+.sumi-control-menu-list > .wg-kit-anchor:has(> [data-ws-control]) {
+	display: flex;
+	flex-direction: column;
+}
+
+.sumi-ws-control-glyph .sumi-ws-filled {
+	width: 16px;
+	height: 16px;
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.sumi-ws-submenu {
+	width: auto;
+	min-width: 260px;
+}
+
+.sumi-ws-submenu-list {
+	display: flex;
+	flex-direction: column;
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .sumi-ws-submenu-row {
+	gap: var(--sumi-sp-4);
+	height: var(--sumi-h-md);
+	min-height: var(--sumi-h-md);
+}
+
+.sumi-ws-submenu-glyph {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	color: var(--sumi-text-3);
+}
+
+.sumi-ws-submenu-row[aria-checked="true"] .sumi-ws-submenu-glyph {
+	color: var(--sumi-text);
+}
+
+.sumi-ws-submenu-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--sumi-fs-13);
+	text-align: start;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sumi-ws-submenu-key {
+	flex: none;
+	margin-inline-start: auto;
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-13);
+}

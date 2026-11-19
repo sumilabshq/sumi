@@ -48,6 +48,7 @@ export function TabStrip(): ReactElement {
 				});
 			}}
 		>
+			<ListPluginSlot name="tab-strip.start" props={{}} />
 			<div ref={strip} className="sumi-tab-strip-tabs" role="tablist" aria-label={STRIP_LABEL}>
 				<ListPluginSlot name="tab-strip.leading" props={{ newTabList: sidebar.newTabList }} />
 				{stripRunsOf(sidebar).map((run) => (

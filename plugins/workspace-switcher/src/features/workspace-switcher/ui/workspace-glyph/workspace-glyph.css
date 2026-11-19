@@ -1,0 +1,15 @@
+.sumi-ws-filled {
+	display: block;
+	flex: none;
+	width: 16px;
+	height: 16px;
+}
+
+.sumi-ws-dot {
+	display: block;
+	flex: none;
+	width: 6px;
+	height: 6px;
+	border-radius: 0;
+	background: currentColor;
+}

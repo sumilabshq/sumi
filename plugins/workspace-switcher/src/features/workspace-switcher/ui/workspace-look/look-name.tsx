@@ -1,9 +1,9 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
+import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 
 const NAME_LABEL = "Workspace name";
 
@@ -17,11 +17,11 @@ export function LookName({ workspace }: { readonly workspace: WorkspaceRow }): R
 		}
 	};
 	return (
-		<div className="wg-ws-pick-head">
-			<span className="wg-ws-pick-now">
+		<div className="sumi-ws-look-head">
+			<span className="sumi-ws-look-now">
 				<WorkspaceGlyph icon={workspace.icon} />
 			</span>
-			<label className="wg-ws-pick-name">
+			<label className="sumi-ws-look-name">
 				<input
 					type="text"
 					value={typed}

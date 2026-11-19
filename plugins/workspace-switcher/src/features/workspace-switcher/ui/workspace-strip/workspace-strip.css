@@ -1,0 +1,107 @@
+.sumi-ws-strip {
+	position: relative;
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--sumi-sp-2);
+	min-width: 0;
+}
+
+.sumi-ws-strip.is-sidebar {
+	height: 52px;
+	padding: 0 var(--sumi-sp-5) var(--sumi-sp-2) var(--sumi-sp-5);
+}
+
+.sumi-ws-strip.is-header {
+	height: 100%;
+	margin-right: var(--sumi-sp-3);
+	padding-right: var(--sumi-sp-3);
+}
+
+.sumi-ws-strip.is-header::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: 0;
+	width: 1px;
+	height: 16px;
+	background: var(--sumi-line);
+	transform: translateY(-50%);
+}
+
+.sumi-ws-strip-scroll {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 2px;
+	min-width: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-behavior: smooth;
+	scrollbar-width: none;
+}
+
+.sumi-ws-strip-scroll::-webkit-scrollbar {
+	display: none;
+}
+
+.sumi-ws-strip-scroll[data-fades-start="true"],
+.sumi-ws-strip-scroll[data-fades-end="true"] {
+	-webkit-mask-image: linear-gradient(90deg, transparent 0, #000000 18px, #000000 calc(100% - 18px), transparent 100%);
+	mask-image: linear-gradient(90deg, transparent 0, #000000 18px, #000000 calc(100% - 18px), transparent 100%);
+}
+
+.sumi-ws-strip-scroll[data-fades-start="false"][data-fades-end="true"] {
+	-webkit-mask-image: linear-gradient(90deg, #000000 calc(100% - 18px), transparent 100%);
+	mask-image: linear-gradient(90deg, #000000 calc(100% - 18px), transparent 100%);
+}
+
+.sumi-ws-strip-scroll[data-fades-start="true"][data-fades-end="false"] {
+	-webkit-mask-image: linear-gradient(90deg, transparent 0, #000000 18px);
+	mask-image: linear-gradient(90deg, transparent 0, #000000 18px);
+}
+
+.sumi-ws-strip .wg-kit-anchor {
+	display: flex;
+	flex: none;
+}
+
+.wg-root .sumi-ws-strip .sumi-ws-strip-icon.wg-kit-icon {
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	min-width: 0;
+	padding: 0;
+	border-radius: 0;
+	background: none;
+	color: var(--sumi-glyph-rest);
+	transition:
+		background-color var(--sumi-dur-fast) var(--sumi-ease),
+		color var(--sumi-dur-fast) var(--sumi-ease);
+}
+
+.wg-root .sumi-ws-strip .sumi-ws-strip-icon.wg-kit-icon::before {
+	border-radius: 0;
+	background: none;
+}
+
+.wg-root .sumi-ws-strip .sumi-ws-strip-icon.wg-kit-icon:hover {
+	background: var(--sumi-hover);
+	color: var(--sumi-glyph-hover);
+	transition-duration: 0ms;
+}
+
+.wg-root
+	.sumi-ws-strip
+	.sumi-ws-strip-icon.wg-kit-icon:is([aria-current="true"], [data-opening], [data-running], :active) {
+	background: var(--sumi-selected);
+	color: var(--sumi-glyph-on);
+	transition-duration: 0ms;
+}
+
+.wg-root .sumi-ws-strip .sumi-ws-strip-icon.is-new {
+	margin-left: auto;
+}

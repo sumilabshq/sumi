@@ -42,6 +42,7 @@
 		"@sumi/composer-expand-plugin": "0.1.0",
 		"@sumi/contract": "0.6.0",
 		"@sumi/control-menu-plugin": "0.1.0",
+		"@sumi/workspace-switcher-plugin": "0.1.0",
 		"@sumi/sub-pages-plugin": "0.1.0",
 		"@sumi/sessions-plugin": "0.1.0",
 		"@sumi/effort-picker-plugin": "0.1.0",

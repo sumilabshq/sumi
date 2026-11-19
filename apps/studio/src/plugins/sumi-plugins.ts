@@ -23,6 +23,7 @@ import { tabStrip } from "@sumi/tab-strip-plugin";
 import { tabsView } from "@sumi/tabs-view-plugin";
 import { panes } from "@sumi/panes-plugin";
 import { tabsSidebar } from "@sumi/tabs-sidebar-plugin";
+import { workspaceSwitcher } from "@sumi/workspace-switcher-plugin";
 import { tabGroups } from "@sumi/tab-groups-plugin";
 import { pinnedTabs } from "@sumi/pinned-tabs-plugin";
 import { subPages } from "@sumi/sub-pages-plugin";
@@ -172,6 +173,7 @@ const INSTALLED_PLUGINS = [
 	tabsView,
 	tabStrip,
 	tabsSidebar,
+	workspaceSwitcher,
 	pinnedTabs,
 	subPages,
 ];
@@ -207,6 +209,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		sessions.id,
 		tabStrip.id,
 		tabsSidebar.id,
+		workspaceSwitcher.id,
 		pinnedTabs.id,
 		subPages.id,
 	],

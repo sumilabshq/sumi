@@ -1,0 +1,30 @@
+{
+	"name": "@sumi/workspace-switcher-plugin",
+	"version": "0.1.0",
+	"description": "Workspace switcher: the Control menu's workspace row and submenu, the workspace strip at the foot of the tabs sidebar and in the header, ⌃1–9, and the name and icon editor",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/control-menu-plugin": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@sumi/tab-strip-plugin": "0.1.0",
+		"@sumi/tabs-sidebar-plugin": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0",
+		"@widgetarium/workspaces": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}
