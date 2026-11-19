@@ -6,7 +6,7 @@ import { Button, Popover, PopoverContent, PopoverTrigger } from "@widgetarium/ki
 import type { ComposerOptionProps } from "@sumi/chat-plugin";
 import { percentOf } from "../../lib/usage-said.js";
 import { UsageMenu } from "./usage-menu.js";
-import { UsageSquares } from "./usage-squares.js";
+import { UsageRing } from "./usage-ring.js";
 
 const USAGE = "usage";
 const USED = "{label}, {used} used";
@@ -31,7 +31,7 @@ export function UsageButton({ chat, surface }: ComposerOptionProps): ReactElemen
 						first === null ? usage.label : USED.replace("{label}", usage.label).replace("{used}", percentOf(first.used))
 					}
 				>
-					<UsageSquares part={first?.used ?? null} />
+					<UsageRing part={first?.used ?? null} />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="is-compact" side="top" align="end">

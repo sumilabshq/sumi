@@ -1,20 +1,18 @@
-.sumi-usage-squares {
-	display: inline-flex;
-	gap: 2px;
+.sumi-usage-ring {
+	flex: none;
 }
 
-.sumi-usage-squares i {
-	width: 4px;
-	height: 10px;
-	background: var(--sumi-text-2);
+.sumi-usage-ring circle {
+	fill: none;
+	stroke-width: 2;
 }
 
-.sumi-usage-squares i.is-empty {
-	background: var(--sumi-soft);
+.sumi-usage-ring .is-track {
+	stroke: var(--sumi-line-strong);
 }
 
-.is-working .sumi-usage-squares i:not(.is-empty):is(:last-child, :has(+ .is-empty)) {
-	background: var(--sumi-accent);
+.sumi-usage-ring .is-used {
+	stroke: currentColor;
 }
 
 .sumi-usage-meter {
