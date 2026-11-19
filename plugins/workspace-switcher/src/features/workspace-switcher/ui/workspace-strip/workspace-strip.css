@@ -8,8 +8,7 @@
 }
 
 .sumi-ws-strip.is-sidebar {
-	height: 52px;
-	padding: 0 var(--sumi-sp-5) var(--sumi-sp-2) var(--sumi-sp-5);
+	padding: var(--sumi-sp-5) var(--sumi-sp-5) var(--sumi-sp-2);
 }
 
 .sumi-ws-strip.is-header {
