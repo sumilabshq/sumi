@@ -10,7 +10,7 @@ export function AskComposerBar(): ReactElement {
 			<DraftAttachments />
 			<div className="wg-studio-ai-field-bar">
 				<ComposerTools />
-				<ComposerOptions chat={null} surface="ask" />
+				<ComposerOptions chat={null} surface="ask" isEmptyChat={false} />
 			</div>
 		</>
 	);

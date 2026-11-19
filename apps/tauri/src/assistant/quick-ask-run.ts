@@ -19,6 +19,7 @@ export async function quickAnswerOf(bridge: AssistantBridge, ask: QuickAsk): Pro
 		throw new Error(NO_QUICK_RUNNER.replace("{runner}", ask.runner));
 	}
 
+	const startedAt = Date.now();
 	const launch = ask.launcher({
 		runner: ask.runner,
 		model: ask.model,
@@ -49,7 +50,10 @@ export async function quickAnswerOf(bridge: AssistantBridge, ask: QuickAsk): Pro
 			reject(new Error(QUICK_ASK_TOO_LONG.replace("{runner}", ask.runner)));
 		}, QUICK_ASK_MS);
 	});
-	return answered.finally(() => clearTimeout(timer));
+	return answered.finally(() => {
+		clearTimeout(timer);
+		console.info(`[widgetarium] quick ask to ${ask.runner} (${ask.model ?? "default model"}) settled in ${Date.now() - startedAt}ms`);
+	});
 }
 
 function failureOf(runner: string, code: number | null, said: string): string {

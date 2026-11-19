@@ -16,7 +16,7 @@
 	justify-content: center;
 	width: 16px;
 	height: 16px;
-	color: var(--sumi-text-3);
+	color: var(--sumi-text);
 }
 
 .sumi-sessions-row-label {

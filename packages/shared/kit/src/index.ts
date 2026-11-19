@@ -105,6 +105,7 @@ export {
 	SelectItem,
 	SelectLabel,
 	SelectSeparator,
+	SelectChevron,
 	SelectTrigger,
 	SelectValue,
 } from "./components/select";

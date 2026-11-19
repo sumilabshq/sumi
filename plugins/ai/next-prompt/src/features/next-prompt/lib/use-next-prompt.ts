@@ -9,7 +9,7 @@ const TAKES_IT = "⇥ Tab";
 const HINT_GAP = "   ";
 
 export function useNextPrompt(input: ComposerInput): void {
-	const { chatId, draft, showHint } = input;
+	const { chatId, showHint } = input;
 	const chat = useOptionalQuery(assistant.chat.one, { chat: chatId }).data;
 	const quickAsk = useCommand(assistant.chat.quickAsk);
 	const [suggestion, suggest] = useState<string | null>(null);
@@ -38,12 +38,6 @@ export function useNextPrompt(input: ComposerInput): void {
 			suggest(nextPromptIn(answer.output.said));
 		});
 	}, [chatId, isBusy, ask, quickAsk]);
-
-	useEffect(() => {
-		if (draft !== "") {
-			suggest(null);
-		}
-	}, [draft]);
 
 	useEffect(() => {
 		showHint(suggestion === null ? null : `${suggestion}${HINT_GAP}${TAKES_IT}`);

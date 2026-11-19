@@ -13,8 +13,10 @@ export const chat = pluginWithSlots(definition, {
 		toEndLabel: listPluginSlot<{ readonly chatId: never }>("chat.to-end-label"),
 		saidMarkdown: listPluginSlot<{ readonly holder: never }>("chat.said-markdown"),
 		callViews: listPluginSlot<{ readonly calls: never; readonly faces: never }>("chat.call-views"),
-		topStart: listPluginSlot<{ readonly chatId: never }>("chat.top-start"),
+		headTitle: pluginSlot<{ readonly chatId: never }>("chat.head-title"),
+		headTools: listPluginSlot<{ readonly chatId: never }>("chat.head-tools"),
 		optionsStart: listPluginSlot<{ readonly chat: never; readonly surface: never }>("chat.options-start"),
+		emptyOptions: listPluginSlot<{ readonly chat: never }>("chat.empty-options"),
 		optionsEnd: listPluginSlot<{ readonly chat: never; readonly surface: never }>("chat.options-end"),
 	},
 });

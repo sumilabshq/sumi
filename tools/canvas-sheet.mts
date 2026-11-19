@@ -64,8 +64,12 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/sumi-host-plugin/sumi-figure.css": "plugins/sumi-host/src/features/mascot/ui/sumi-figure/sumi-figure.css",
 	"@sumi/control-menu-plugin/control-menu.css":
 		"plugins/control-menu/src/features/control-menu/ui/control-menu/control-menu.css",
-	"@sumi/sessions-plugin/sessions-button.css":
-		"plugins/ai/sessions/src/features/sessions/ui/sessions-button/sessions-button.css",
+	"@sumi/sessions-plugin/sessions-popover.css":
+		"plugins/ai/sessions/src/features/sessions/ui/sessions-popover/sessions-popover.css",
+	"@sumi/sessions-plugin/sessions-chevron.css":
+		"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
+	"@sumi/chat-title-plugin/head-title.css":
+		"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
 	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
 	"@sumi/pinned-tabs-plugin/pinned-tabs.css":
 		"plugins/tabs/pinned-tabs/src/features/pinned-tabs/ui/pinned-tabs/pinned-tabs.css",
@@ -137,7 +141,9 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
 @import "@sumi/sumi-host-plugin/title-bar.css";
 @import "@sumi/control-menu-plugin/control-menu.css";
-@import "@sumi/sessions-plugin/sessions-button.css";
+@import "@sumi/sessions-plugin/sessions-popover.css";
+@import "@sumi/sessions-plugin/sessions-chevron.css";
+@import "@sumi/chat-title-plugin/head-title.css";
 @import "@sumi/tab-strip-plugin/tab-strip.css";
 @import "@sumi/pinned-tabs-plugin/pinned-tabs.css";
 @import "@sumi/tab-groups-plugin/group-editor.css";

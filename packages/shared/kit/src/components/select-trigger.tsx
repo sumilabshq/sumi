@@ -10,6 +10,10 @@ export type SelectTriggerProps = ButtonProps;
 
 const CHEVRON_PX = 16;
 
+export function SelectChevron(): ReactElement | null {
+	return <Icon name="chevron-down" size={CHEVRON_PX} className="wg-kit-select-chevron" />;
+}
+
 export function SelectTrigger({
 	asChild = false,
 	children,
@@ -21,7 +25,7 @@ export function SelectTrigger({
 		<PopoverTrigger asChild aria-haspopup="listbox">
 			<Button data-slot="select-trigger" {...props} className={cn("wg-kit-select-trigger", cls)}>
 				{children}
-				<Icon name="chevron-down" size={CHEVRON_PX} className="wg-kit-select-chevron" />
+				<SelectChevron />
 			</Button>
 		</PopoverTrigger>
 	);

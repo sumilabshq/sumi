@@ -1,7 +1,7 @@
 {
 	"name": "@sumi/chat-title-plugin",
 	"version": "0.1.0",
-	"description": "Chat title: names a chat with the runner's quick model once its first answer ends",
+	"description": "Chat title: names a chat with the runner's quick model once its first answer ends, and shows the name in the chat header, renamed in place",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"exports": {
@@ -16,6 +16,7 @@
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@widgetarium/assistant": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",
 		"@widgetarium/workspaces": "0.1.0"
 	},

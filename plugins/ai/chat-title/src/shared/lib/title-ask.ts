@@ -7,31 +7,16 @@ const LABEL_BEFORE_NAME = /^[^:\s]+(?:\s[^:\s]+){0,2}:\s+/u;
 const TITLE_ASK = [
 	"Name this chat between a person and their AI agent in 3 to 6 words, in the language the person writes in.",
 	"Name its subject, not the chat itself. Answer with the bare name: no label such as 'Title:' or 'Назва чату:', no quotes.",
-	"",
-	"The person asked:",
-	"{asked}",
-	"",
-	"The agent answered:",
-	"{answered}",
 ].join("\n");
 
 export function titleAskOf(chat: Chat): string | null {
-	if (chat.session.busy) {
+	const asked = chat.session.turns.find(({ role }) => role === "user");
+
+	if (asked === undefined || asked.text.trim() === "") {
 		return null;
 	}
 
-	const turns = chat.session.turns;
-	const asked = turns.find(({ role }) => role === "user");
-	const answered = turns.find(({ role, outcome }) => role === "agent" && outcome === "done");
-
-	if (asked === undefined || answered === undefined) {
-		return null;
-	}
-
-	return TITLE_ASK.replace("{asked}", asked.text.slice(0, TEXT_MOST_CHARS)).replace(
-		"{answered}",
-		answered.text.slice(0, TEXT_MOST_CHARS),
-	);
+	return exchangeAskOf(asked.text.slice(0, TEXT_MOST_CHARS), null);
 }
 
 export function latestTitleAskOf(chat: Chat): string | null {
@@ -43,10 +28,17 @@ export function latestTitleAskOf(chat: Chat): string | null {
 		return null;
 	}
 
-	return TITLE_ASK.replace("{asked}", asked.text.slice(-TEXT_MOST_CHARS)).replace(
-		"{answered}",
-		(answered?.text ?? "").slice(-TEXT_MOST_CHARS),
-	);
+	return exchangeAskOf(asked.text.slice(-TEXT_MOST_CHARS), answered?.text.slice(-TEXT_MOST_CHARS) ?? null);
+}
+
+function exchangeAskOf(asked: string, answered: string | null): string {
+	const askedPart = ["", "The person asked:", asked];
+
+	if (answered === null) {
+		return [TITLE_ASK, ...askedPart].join("\n");
+	}
+
+	return [TITLE_ASK, ...askedPart, "", "The agent answered:", answered].join("\n");
 }
 
 export function titleIn(said: string): string | null {

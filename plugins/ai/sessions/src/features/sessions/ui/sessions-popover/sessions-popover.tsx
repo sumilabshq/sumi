@@ -1,18 +1,20 @@
 import { createElement as h, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import { RuntimeProvider } from "@widgetarium/data-framework";
-import { Icon, IconButton, Popover, PopoverContent, PopoverTrigger, tooltipMarks } from "@widgetarium/kit";
+import { Popover, PopoverContent } from "@widgetarium/kit";
 import { WindowAppContext } from "../../lib/window-app-context.js";
 import { SessionsList } from "../sessions-list/sessions-list.js";
 
-const SESSIONS = "Sessions";
-const ICON_PX = 16;
+export const SESSIONS = "Sessions";
 
-export interface SessionsButtonProps {
+export interface SessionsPopoverProps {
 	readonly chatId: string | null;
+	readonly side: "top" | "bottom";
+	readonly align: "start" | "end";
+	readonly trigger: ReactNode;
 }
 
-export function SessionsButton({ chatId }: SessionsButtonProps): ReactNode {
+export function SessionsPopover({ chatId, side, align, trigger }: SessionsPopoverProps): ReactNode {
 	const [isOpen, setOpen] = useState(false);
 	const windowApp = useContext(WindowAppContext);
 
@@ -22,12 +24,8 @@ export function SessionsButton({ chatId }: SessionsButtonProps): ReactNode {
 
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
-			<PopoverTrigger asChild aria-haspopup="menu">
-				<IconButton variant="ghost" size="xs" label={SESSIONS} {...tooltipMarks({ said: SESSIONS })}>
-					<Icon name="menu" size={ICON_PX} />
-				</IconButton>
-			</PopoverTrigger>
-			<PopoverContent side="bottom" align="start" className="sumi-sessions-pop">
+			{trigger}
+			<PopoverContent side={side} align={align} className="sumi-sessions-pop">
 				<RuntimeProvider runtime={windowApp}>
 					<SessionsList currentChatId={chatId} onClose={() => setOpen(false)} />
 				</RuntimeProvider>

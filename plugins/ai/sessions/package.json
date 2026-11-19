@@ -1,7 +1,7 @@
 {
 	"name": "@sumi/sessions-plugin",
 	"version": "0.1.0",
-	"description": "Sessions: a button at the top left of the chat opens every session of every workspace, searchable, grouped by day, loaded as you scroll",
+	"description": "Sessions: a chevron beside the chat title, or a Sessions picker in an empty chat's composer, opens every session of every workspace, searchable, grouped by day, loaded as you scroll",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"exports": {

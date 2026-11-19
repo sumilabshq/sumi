@@ -21,6 +21,7 @@ import { ChatTurns } from "./chat-turns.js";
 import { QueueZone } from "../queue/queue-zone.js";
 import { useQueueActions } from "../../lib/use-queue-actions.js";
 import { ChatDock } from "./chat-dock.js";
+import { ChatHead } from "../../../chat-page/ui/chat-page/chat-head.js";
 import { assistant } from "@widgetarium/assistant/contract";
 
 export interface ReadyChatProps {
@@ -60,6 +61,7 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 			onDrop={drop.onDrop}
 		>
 			{isEmpty ? <BareLead lead={lead} /> : <ChatLeadHead lead={lead} title={title ?? TITLE} />}
+			{isEmpty || chatId === undefined ? null : <ChatHead chatId={chatId} />}
 			<ChatScroll key={chatId}>
 				<ChatTurns chat={chat} cards={cards} asks={asks} chatId={chatId} report={report} />
 				<QueueZone
@@ -76,7 +78,7 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 					busy={session.busy}
 					strip={
 						<ChatPart>
-							<ComposerFooter />
+							<ComposerFooter isEmpty={isEmpty} />
 						</ChatPart>
 					}
 					isFirst={isEmpty}
