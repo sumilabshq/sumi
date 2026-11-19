@@ -15,7 +15,6 @@ import { withSubPagesOf } from "../../../shared/lib/tabs/sub-pages.js";
 import { holderLabelOf } from "../../../shared/lib/tabs/tab-leases.js";
 import { WORKSPACE_LIST, withEntryBefore, withoutEntry } from "../../../shared/lib/tabs/tab-lists.js";
 import type { ChatLists, TabLayout } from "../../../shared/lib/tabs/tab-lists.js";
-import { markWithoutTurn } from "../../../shared/lib/tabs/tab-marks.js";
 
 export interface CarriedTabs {
 	readonly entry: ListEntry;
@@ -184,7 +183,7 @@ function carriedTabOf(tab: HostTab, page: TabPage | undefined): HostTab {
 		...tab,
 		pageId: null,
 		lastAddress: page === undefined || page.address === "" ? tab.lastAddress : page.address,
-		mark: markWithoutTurn(tab.mark),
+		mark: "none",
 	};
 }
 
