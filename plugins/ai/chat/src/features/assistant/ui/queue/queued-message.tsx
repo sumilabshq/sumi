@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { QueuedShown } from "@widgetarium/assistant/contract";
-import { isPicture } from "../../lib/use-opens-pictures.js";
+import { isPicture } from "../../lib/picture-chips.js";
 import { SentAttachments } from "../turn/sent-attachments.js";
 import { SentPictures } from "../turn/sent-pictures.js";
 import { QueuedLine } from "./queued-line.js";

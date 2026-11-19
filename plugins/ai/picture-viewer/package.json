@@ -1,0 +1,26 @@
+{
+	"name": "@sumi/picture-viewer-plugin",
+	"version": "0.1.0",
+	"description": "Picture viewer: a press on a picture the chat marks opens it full size, with the other pictures of its group",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/chat-plugin": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { pictureMarksOf } from "@sumi/chat-plugin";
 import { fileSystem } from "@sumi/contract";
 import { imageSourceOf } from "@sumi/image-viewer-plugin";
-import { linkOf } from "@widgetarium/core/engine/sumi-link.js";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 
 export interface SaidImageProps {
@@ -11,7 +11,7 @@ export interface SaidImageProps {
 }
 
 const NOT_SHOWN = "{name} is not shown: {reason}";
-const FILE_APP = "file";
+const OPEN = "Open {name}";
 
 export function SaidImage({ path, alt }: SaidImageProps): ReactElement {
 	const read = useOptionalQuery(fileSystem.files.readBytes, { path });
@@ -29,9 +29,15 @@ export function SaidImage({ path, alt }: SaidImageProps): ReactElement {
 		return <span className="sumi-said-image is-loading" />;
 	}
 
+	const src = imageSourceOf(path, read.data);
 	return (
-		<a className="sumi-said-image" href={linkOf({ kind: "page", app: FILE_APP, address: path })} title={name}>
-			<img src={imageSourceOf(path, read.data)} alt={alt} />
-		</a>
+		<button
+			type="button"
+			className="sumi-said-image"
+			aria-label={OPEN.replace("{name}", name)}
+			{...pictureMarksOf({ src, name })}
+		>
+			<img src={src} alt={alt} />
+		</button>
 	);
 }

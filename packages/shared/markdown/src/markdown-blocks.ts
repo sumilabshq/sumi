@@ -12,6 +12,9 @@ const ITEM = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
 const TABLE_DIVIDER = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
 const BLANK = /^\s*$/;
 const ORDERED = /^\d/;
+const IMAGES_ONLY = /^\s*(?:!\[[^\]\n]*\]\([^)\s]+\)\s*)+$/;
+
+export const GALLERY_CLASS = "wg-studio-ai-gallery";
 
 interface MarkdownDrawing {
 	readonly page: Document;
@@ -88,6 +91,10 @@ function blockAt(drawing: MarkdownDrawing, lines: readonly string[], at: number)
 
 	if (line.includes("|") && TABLE_DIVIDER.test(lines[at + 1] ?? "")) {
 		return tableAt(drawing.page, lines, at);
+	}
+
+	if (IMAGES_ONLY.test(line)) {
+		return galleryAt(drawing.page, lines, at);
 	}
 
 	return paragraphAt(drawing.page, lines, at);
@@ -217,6 +224,34 @@ function cellsOf(line: string): readonly string[] {
 		.replace(/\|$/, "")
 		.split("|")
 		.map((cell) => cell.trim());
+}
+
+function galleryAt(page: Document, lines: readonly string[], at: number): Block {
+	const gallery = page.createElement("div");
+	gallery.className = GALLERY_CLASS;
+	let next = at;
+	let taken = at;
+
+	while (next < lines.length && (IMAGES_ONLY.test(lines[next] ?? "") || BLANK.test(lines[next] ?? ""))) {
+		const line = lines[next] ?? "";
+
+		if (IMAGES_ONLY.test(line)) {
+			gallery.append(...inlineNodesOf(page, line.trim()).filter(isShownNode));
+			taken = next;
+		}
+
+		next += 1;
+	}
+
+	gallery.dataset["count"] = String(gallery.childNodes.length);
+	return {
+		node: gallery,
+		next: taken + 1,
+	};
+}
+
+function isShownNode(node: Node): boolean {
+	return node.nodeType !== node.TEXT_NODE || (node.textContent ?? "").trim() !== "";
 }
 
 function paragraphAt(page: Document, lines: readonly string[], at: number): Block {

@@ -1,10 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import type { AttachmentChip } from "@widgetarium/assistant/contract";
+import type { ShownPicture } from "../../lib/shown-picture.js";
 
 export interface ViewerStageProps {
-	readonly shown: AttachmentChip;
+	readonly shown: ShownPicture;
 	readonly count: number;
 	readonly step: (by: number) => void;
 	readonly onClose: () => void;
@@ -22,7 +22,7 @@ export function ViewerStage({ shown, count, step, onClose }: ViewerStageProps): 
 				</button>
 			) : null}
 			<div className="wg-studio-ai-viewer-frame" onClick={onClose}>
-				<img src={shown.preview ?? ""} alt={shown.name} onClick={(event) => event.stopPropagation()} />
+				<img src={shown.src} alt={shown.name} onClick={(event) => event.stopPropagation()} />
 			</div>
 			{count > 1 ? (
 				<button type="button" className="wg-studio-ai-viewer-button" aria-label={NEXT} onClick={() => step(1)}>

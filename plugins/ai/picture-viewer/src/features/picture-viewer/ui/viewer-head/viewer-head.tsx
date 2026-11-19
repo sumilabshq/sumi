@@ -1,10 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import type { AttachmentChip } from "@widgetarium/assistant/contract";
+import type { ShownPicture } from "../../lib/shown-picture.js";
 
 export interface ViewerHeadProps {
-	readonly shown: AttachmentChip;
+	readonly shown: ShownPicture;
 	readonly at: number;
 	readonly count: number;
 	readonly onClose: () => void;
@@ -17,7 +17,7 @@ export function ViewerHead({ shown, at, count, onClose }: ViewerHeadProps): Reac
 	return (
 		<div className="wg-studio-ai-viewer-head">
 			<span className="wg-studio-ai-viewer-name">{shown.name}</span>
-			<span className="wg-studio-ai-viewer-faint">{shown.size}</span>
+			{shown.size === null ? null : <span className="wg-studio-ai-viewer-faint">{shown.size}</span>}
 			<span className="wg-studio-ai-viewer-fill" />
 			{count > 1 ? (
 				<span className="wg-studio-ai-viewer-faint">

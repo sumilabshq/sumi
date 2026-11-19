@@ -1,4 +1,4 @@
-export { markdownNodesOf } from "./src/markdown-blocks.js";
+export { GALLERY_CLASS, markdownNodesOf } from "./src/markdown-blocks.js";
 export { IMAGE_CLASS, IMAGE_PATH_ATTRIBUTE, LINK_ICON_CLASS, TAB_ATTRIBUTE, linkIconOf } from "./src/inline-nodes.js";
 export { CHAT_LOOK, FILE_LOOK } from "./src/markdown-look.js";
 export type { MarkdownLook } from "./src/markdown-look.js";

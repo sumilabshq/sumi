@@ -100,6 +100,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/mcp-apps-plugin/call-view.css": "plugins/ai/mcp-apps/src/features/call-views/ui/call-view/call-view.css",
 	"@sumi/chat-images-plugin/said-image.css":
 		"plugins/ai/chat-images/src/features/said-images/ui/said-image/said-image.css",
+	"@sumi/picture-viewer-plugin/picture-viewer.css":
+		"plugins/ai/picture-viewer/src/features/picture-viewer/ui/picture-viewer/picture-viewer.css",
 	"@sumi/code-viewer-plugin/file-card.css": "plugins/code-viewer/src/features/code/ui/file-card/file-card.css",
 	"@sumi/git-plugin/changes-card.css": "plugins/git/src/features/git-page/ui/changes-card/changes-card.css",
 	"@sumi/model-picker-plugin/model-menu.css":
@@ -150,6 +152,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/mcp-apps-plugin/mcp-app-card.css";
 @import "@sumi/mcp-apps-plugin/call-view.css";
 @import "@sumi/chat-images-plugin/said-image.css";
+@import "@sumi/picture-viewer-plugin/picture-viewer.css";
 @import "@sumi/code-viewer-plugin/file-card.css";
 @import "@sumi/git-plugin/changes-card.css";
 @import "@sumi/canvas-plugin/mini-canvas.css";

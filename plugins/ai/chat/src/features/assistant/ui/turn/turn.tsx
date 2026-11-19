@@ -5,7 +5,7 @@ import { SentAttachments } from "./sent-attachments.js";
 import { SentPictures } from "./sent-pictures.js";
 import { TurnFoot } from "./turn-foot.js";
 import { TurnSteps } from "./turn-steps.js";
-import { isPicture } from "../../lib/use-opens-pictures.js";
+import { isPicture } from "../../lib/picture-chips.js";
 import type { ShownTurn } from "@widgetarium/assistant/contract";
 
 export interface TurnProps {

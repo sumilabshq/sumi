@@ -1,32 +1,82 @@
-:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-image {
-	display: block;
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--sumi-sp-2, 4px);
 	max-width: 100%;
 	margin: var(--sumi-sp-4, 8px) 0;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-said img.wg-studio-ai-image,
-:is(.wg-root, .wg-portal) .sumi-said-image img {
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery[data-count="1"] {
+	grid-template-columns: minmax(0, 1fr);
+	justify-items: start;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery:is([data-count="2"], [data-count="4"]) {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-image {
+	display: block;
+	min-width: 0;
+	max-width: 100%;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-said p .wg-studio-ai-image {
+	margin: var(--sumi-sp-4, 8px) 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-said :is(img.wg-studio-ai-image, .sumi-said-image img) {
 	display: block;
 	max-width: 100%;
 	max-height: 420px;
 	object-fit: contain;
 }
 
+:is(.wg-root, .wg-portal) .wg-studio-ai-said img.wg-studio-ai-image[data-picture] {
+	cursor: zoom-in;
+}
+
 :is(.wg-root, .wg-portal) .sumi-said-image {
-	display: inline-block;
+	display: block;
 	max-width: 100%;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: var(--sumi-soft, var(--wg-kit-fill));
+	box-shadow: none;
 	outline: 1px solid var(--sumi-line, var(--background-modifier-border));
-	cursor: pointer;
+	cursor: zoom-in;
 }
 
 :is(.wg-root, .wg-portal) .sumi-said-image.is-loading {
 	width: 240px;
 	height: 140px;
-	background: var(--sumi-soft, var(--wg-kit-fill));
+	cursor: default;
 }
 
 :is(.wg-root, .wg-portal) .sumi-said-image.is-failed {
 	outline: none;
+	background: none;
 	color: var(--sumi-text-3, var(--muted-foreground));
 	cursor: default;
+}
+
+:is(.wg-root, .wg-portal)
+	.wg-studio-ai-said
+	.wg-studio-ai-gallery:not([data-count="1"])
+	:is(img.wg-studio-ai-image, .wg-studio-ai-image > .sumi-said-image) {
+	width: 100%;
+	height: auto;
+	max-height: none;
+	aspect-ratio: 4 / 3;
+}
+
+:is(.wg-root, .wg-portal)
+	.wg-studio-ai-said
+	.wg-studio-ai-gallery:not([data-count="1"])
+	:is(img.wg-studio-ai-image, .sumi-said-image img) {
+	width: 100%;
+	height: 100%;
+	max-height: none;
+	object-fit: cover;
 }

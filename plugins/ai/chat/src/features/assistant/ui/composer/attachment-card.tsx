@@ -1,12 +1,12 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, tooltipMarks } from "@widgetarium/kit";
+import { pictureMarksOf } from "../../../../shared/lib/picture-marks.js";
 import { CardWords } from "./card-words.js";
 import type { AttachmentChip } from "@widgetarium/assistant/contract";
 
 export interface AttachmentCardProps {
 	readonly chip: AttachmentChip;
-	readonly onOpen?: (() => void) | undefined;
 	readonly onRemove: () => void;
 }
 
@@ -14,25 +14,24 @@ const REMOVE = "Remove";
 const REMOVE_NAMED = "Remove {name}";
 const OPEN = "Open {name}";
 
-export function AttachmentCard({ chip, onOpen, onRemove }: AttachmentCardProps): ReactElement {
+export function AttachmentCard({ chip, onRemove }: AttachmentCardProps): ReactElement {
 	return (
 		<span
 			className={`wg-studio-ai-card is-${chip.preview === null ? "file" : "image"}`}
 			data-attachment-card={chip.kind}
-			tabIndex={onOpen ? undefined : 0}
+			tabIndex={chip.preview === null ? 0 : undefined}
 		>
 			{chip.preview === null ? <CardWords chip={chip} /> : null}
-			{chip.preview !== null && onOpen ? (
+			{chip.preview === null ? null : (
 				<button
 					type="button"
 					className="wg-studio-ai-card-open"
 					aria-label={OPEN.replace("{name}", chip.name)}
-					onClick={onOpen}
+					{...pictureMarksOf({ src: chip.preview, name: chip.name, size: chip.size })}
 				>
 					<img src={chip.preview} alt="" />
 				</button>
-			) : null}
-			{chip.preview !== null && !onOpen ? <img src={chip.preview} alt={chip.name} /> : null}
+			)}
 			<button
 				type="button"
 				className="wg-studio-ai-card-remove"

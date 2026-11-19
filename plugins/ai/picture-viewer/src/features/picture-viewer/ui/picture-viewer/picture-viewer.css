@@ -1,0 +1,144 @@
+.wg-portal.wg-studio-ai-viewer-host {
+	position: absolute;
+	inset: 0;
+	z-index: 30;
+	border-radius: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer {
+	position: absolute;
+	inset: 0;
+	z-index: 30;
+	display: flex;
+	flex-direction: column;
+	border-radius: 0;
+	background: var(--sumi-viewer-ground);
+	color: var(--sumi-viewer-ink);
+	font: var(--sumi-fw-regular, 400) var(--sumi-fs-13, 13px) / 1.3 var(--sumi-font-ui, inherit);
+	outline: none;
+	animation: wg-studio-ai-viewer-in var(--sumi-dur-base, 180ms) var(--sumi-ease-out, ease-out) both;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-head {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--sumi-sp-5, 12px);
+	height: 56px;
+	padding: 0 var(--sumi-sp-5, 12px) 0 var(--sumi-sp-7, 20px);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: var(--sumi-fw-medium, 500);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-faint {
+	flex: none;
+	color: var(--sumi-viewer-ink-2);
+	font-size: var(--sumi-fs-12, 12px);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-fill {
+	flex: 1 1 auto;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-button {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	color: var(--sumi-viewer-ink-2);
+	cursor: pointer;
+	transition:
+		background var(--sumi-dur-fast, 120ms) var(--sumi-ease, ease),
+		color var(--sumi-dur-fast, 120ms) var(--sumi-ease, ease);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-button:hover {
+	background: var(--sumi-viewer-hover);
+	color: var(--sumi-viewer-ink);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-stage {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: var(--sumi-sp-5, 12px);
+	min-height: 0;
+	padding: 0 var(--sumi-sp-5, 12px);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-frame {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	justify-content: center;
+	align-self: stretch;
+	min-width: 0;
+	min-height: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-frame img {
+	display: block;
+	max-width: 100%;
+	max-height: 100%;
+	border-radius: 0;
+	object-fit: contain;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-thumbs {
+	display: flex;
+	flex: none;
+	justify-content: center;
+	gap: var(--sumi-sp-4, 8px);
+	padding: var(--sumi-sp-6, 16px) var(--sumi-sp-5, 12px) var(--sumi-sp-7, 20px);
+	overflow-x: auto;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-thumb {
+	flex: none;
+	width: 56px;
+	height: 56px;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	overflow: hidden;
+	background: var(--sumi-viewer-thumb);
+	box-shadow: none;
+	opacity: 0.5;
+	cursor: pointer;
+	transition: opacity var(--sumi-dur-fast, 120ms) var(--sumi-ease, ease);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-thumb:hover {
+	opacity: 0.8;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-thumb.is-shown {
+	opacity: 1;
+	box-shadow: 0 0 0 2px var(--sumi-viewer-ink);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-thumb img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+@keyframes wg-studio-ai-viewer-in {
+	from {
+		opacity: 0;
+	}
+}

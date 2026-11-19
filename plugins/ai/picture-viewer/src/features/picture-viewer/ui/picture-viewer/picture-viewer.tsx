@@ -1,14 +1,14 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { createPortal } from "react-dom";
+import type { ShownPicture } from "../../lib/shown-picture.js";
 import { useStepsThroughPictures } from "../../lib/use-steps-through-pictures.js";
-import { ViewerHead } from "./viewer-head.js";
-import { ViewerStage } from "./viewer-stage.js";
-import { ViewerThumbs } from "./viewer-thumbs.js";
-import type { AttachmentChip } from "@widgetarium/assistant/contract";
+import { ViewerHead } from "../viewer-head/viewer-head.js";
+import { ViewerStage } from "../viewer-stage/viewer-stage.js";
+import { ViewerThumbs } from "../viewer-thumbs/viewer-thumbs.js";
 
 export interface PictureViewerProps {
-	readonly pictures: readonly AttachmentChip[];
+	readonly pictures: readonly ShownPicture[];
 	readonly startAt: number;
 	readonly host: HTMLElement;
 	readonly onClose: () => void;

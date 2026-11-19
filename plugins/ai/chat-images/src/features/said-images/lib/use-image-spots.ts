@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { RefObject } from "react";
 import { IMAGE_PATH_ATTRIBUTE } from "@widgetarium/markdown";
+import { marksSaidPictures } from "./marks-said-pictures.js";
 
 export interface ImageSpot {
 	readonly element: HTMLElement;
@@ -21,6 +22,7 @@ export function useImageSpots(holder: RefObject<HTMLDivElement | null>): readonl
 		}
 
 		const collect = (): void => {
+			marksSaidPictures(node);
 			const found = spotsIn(node);
 			setSpots((shown) => (isSameSpots(shown, found) ? shown : found));
 		};
