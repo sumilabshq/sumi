@@ -63,10 +63,23 @@ function placedTabsOf(sidebar: Sidebar): readonly TabSpot[] {
 
 function placedInEntry(list: string, entry: ListedEntry): readonly TabSpot[] {
 	if (entry.kind === "tab") {
-		return [spotOf(list, null, entry.tab)];
+		return [spotOf(list, null, entry.tab), ...entry.subPages.map((subPage) => spotOf(entry.tab.id, null, subPage))];
 	}
 
-	return entry.kind === "group" ? entry.tabs.map((tab) => spotOf(list, entry.id, tab)) : [];
+	return entry.tabs.flatMap((tab) => [
+		spotOf(list, entry.id, tab),
+		...(entry.subPages.get(tab.id) ?? []).map((subPage) => spotOf(tab.id, null, subPage)),
+	]);
+}
+
+export function subPageHomeOf(sidebar: Sidebar, chatId: string): string | null {
+	const spot = spotOfTab(sidebar, chatId);
+
+	if (spot === null) {
+		return null;
+	}
+
+	return spot.list === OPEN_LIST || spot.groupId !== null ? chatId : spot.list;
 }
 
 function spotOf(list: string, groupId: string | null, tab: SidebarTab): TabSpot {

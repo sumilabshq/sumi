@@ -3,8 +3,7 @@ import { focusedInSplit } from "../splits/split-moves.js";
 import { shownSplitOf, splitOfTab } from "../splits/split-members.js";
 import { isChatTab } from "../tabs/app-abilities.js";
 import { chatIdOf, heldTabOf } from "../tabs/host-tabs.js";
-import { isChatList } from "../tabs/chat-lists.js";
-import { locationOf } from "../tabs/tab-lists.js";
+import { mainPageOf, subPageIdsOf } from "../tabs/sub-pages.js";
 import type { HostTab, HostTabsMoment } from "../tabs/host-tabs.js";
 import { markSeen } from "../tabs/tab-marks.js";
 import { holderLabelOf } from "../tabs/tab-leases.js";
@@ -39,19 +38,24 @@ export function withShownTab(showing: Showing, facts: TabFacts, { tab, paneId }:
 }
 
 function withHoldingChatShown(showing: Showing, tab: HostTab): Showing {
-	const list = locationOf(showing.moment, tab.id)?.chatId ?? null;
-	const chat = list === null || !isChatList(showing.moment, list) ? undefined : heldTabOf(showing.moment, list);
+	const chat = pairedChatOf(showing.moment, tab);
 
 	if (chat === undefined) {
 		return showing;
 	}
 
-	console.info(`[widgetarium] show ${tab.id}: its chat ${chat.id} comes beside it`);
+	console.info(`[widgetarium] show ${tab.id}: its paired chat ${chat.id} comes beside it`);
 	return withEffect(showing, {
 		kind: "show-chat",
 		chatId: chatIdOf(showing.moment.apps, chat) ?? chat.id,
 		paneId: null,
 	});
+}
+
+function pairedChatOf(moment: HostTabsMoment, tab: HostTab): HostTab | undefined {
+	const main = mainPageOf(moment, tab.id);
+	const ids = main === null ? subPageIdsOf(moment, tab.id) : [main];
+	return ids.map((id) => heldTabOf(moment, id)).find((one) => one !== undefined && isChatTab(moment.apps, one));
 }
 
 function splitShowingOf(showing: Showing, facts: TabFacts, tab: HostTab): Showing | null {

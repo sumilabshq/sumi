@@ -1,14 +1,13 @@
 import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "./host-tabs-moment.js";
-import { isChatTab } from "./app-abilities.js";
-import { CHAT_HOLDS_CHAT, CHAT_HOLDS_GROUP, isChatList, isPlaceableList } from "./chat-lists.js";
-import type { ChatListFacts } from "./chat-lists.js";
+import { PAGE_HOLDS_GROUP, PAGE_WITH_SUB_PAGES, SUB_PAGE_HOLDS_PAGES, isMainPage, isPageList, isPlaceableList, subPageIdsOf } from "./sub-pages.js";
+import type { PageListFacts } from "./sub-pages.js";
 import { chatOfGroup, flatTabIdsOf, isSectionList } from "./tab-lists.js";
 
-const LIST_OF_NO_WINDOW = 'the list "{list}" belongs to no tab: only the workspace and a chat own a list';
-const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands in the list of the workspace or of a chat';
-const CHAT_IN_CHAT = 'the tab "{id}" cannot stand inside "{list}": {said}';
-const GROUP_IN_CHAT = 'the group "{id}" stands inside the chat "{list}": {said}';
+const LIST_OF_NO_WINDOW = 'the list "{list}" belongs to no main page: only the workspace and a main page own a list';
+const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands in the list of the workspace or of a main page';
+const SUB_PAGE_REFUSED = 'the tab "{id}" cannot stand inside "{list}": {said}';
+const GROUP_IN_PAGE = 'the group "{id}" stands inside the page "{list}": {said}';
 const NOT_ONE_PLACE = 'the tab "{id}" stands in {count} places: a tab stands in exactly one list';
 const UNKNOWN_ENTRY = 'the list "{list}" names "{id}", which is no tab or group here';
 const GROUP_NOT_ONE_LIST = 'the group "{id}" stands in {count} places: a group stands in exactly one list or group';
@@ -21,22 +20,17 @@ interface Standing {
 
 type TabLaws = Pick<HostTabsMoment, "tabs" | "lists" | "groups" | "apps">;
 
-export function refuseStanding(
-	facts: Pick<ChatListFacts, "tabs" | "apps">,
-	tab: Pick<ChatListFacts["tabs"][number], "id" | "app">,
-	list: string,
-): string | null {
+export function refuseStanding(facts: PageListFacts, tab: { readonly id: string }, list: string): string | null {
 	if (isSectionList(list)) {
 		return null;
 	}
 
-	if (!isChatList(facts, list)) {
+	if (list === tab.id || !facts.tabs.some(({ id }) => id === list)) {
 		return REFUSED_STANDING.replace("{id}", tab.id).replace("{list}", list);
 	}
 
-	return isChatTab(facts.apps, tab)
-		? CHAT_IN_CHAT.replace("{id}", tab.id).replace("{list}", list).replace("{said}", CHAT_HOLDS_CHAT)
-		: null;
+	const said = !isMainPage(facts, list) ? SUB_PAGE_HOLDS_PAGES : subPageIdsOf(facts, tab.id).length > 0 ? PAGE_WITH_SUB_PAGES : null;
+	return said === null ? null : SUB_PAGE_REFUSED.replace("{id}", tab.id).replace("{list}", list).replace("{said}", said);
 }
 
 export function tabBreaksOf(moment: TabLaws): readonly string[] {
@@ -45,7 +39,7 @@ export function tabBreaksOf(moment: TabLaws): readonly string[] {
 		...unknownEntries(moment),
 		...groupsNotInOneList(moment),
 		...groupsUnderNoList(moment),
-		...groupsInChats(moment),
+		...groupsInPages(moment),
 		...tabsStandingRefused(moment),
 		...tabsNotInOnePlace(moment),
 	];
@@ -53,7 +47,7 @@ export function tabBreaksOf(moment: TabLaws): readonly string[] {
 
 function listsOfNoWindow(moment: TabLaws): readonly string[] {
 	return Object.keys(moment.lists)
-		.filter((list) => !isPlaceableList(moment, list))
+		.filter((list) => (moment.lists[list]?.length ?? 0) > 0 && !isPlaceableList(moment, list))
 		.map((list) => LIST_OF_NO_WINDOW.replace("{list}", list));
 }
 
@@ -87,11 +81,11 @@ function groupsUnderNoList(moment: TabLaws): readonly string[] {
 		.map((group) => GROUP_IN_NO_LIST.replace("{id}", group.id));
 }
 
-function groupsInChats(moment: TabLaws): readonly string[] {
+function groupsInPages(moment: TabLaws): readonly string[] {
 	return moment.groups.flatMap((group) => {
 		const list = chatOfGroup(moment, group.id);
-		return list !== null && isChatList(moment, list)
-			? [GROUP_IN_CHAT.replace("{id}", group.id).replace("{list}", list).replace("{said}", CHAT_HOLDS_GROUP)]
+		return list !== null && isPageList(moment, list)
+			? [GROUP_IN_PAGE.replace("{id}", group.id).replace("{list}", list).replace("{said}", PAGE_HOLDS_GROUP)]
 			: [];
 	});
 }

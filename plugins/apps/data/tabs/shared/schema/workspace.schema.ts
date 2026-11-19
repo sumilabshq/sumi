@@ -15,17 +15,21 @@ export const StateTabSchema = z.object({
 	status: z.enum(["reading", "waiting", "cannot-look"]).nullable(),
 });
 
+export const StatePageSchema = StateTabSchema.extend({
+	subPages: z.array(StateTabSchema),
+});
+
 export const StateGroupSchema = z.object({
 	kind: z.literal("group"),
 	id: z.string(),
 	name: z.string(),
 	colour: GroupColourSchema.nullable(),
 	isOpen: z.boolean(),
-	tabs: z.array(StateTabSchema),
+	tabs: z.array(StatePageSchema),
 });
 
 export const StateEntrySchema = z.discriminatedUnion("kind", [
-	StateTabSchema.extend({ kind: z.literal("tab") }),
+	StatePageSchema.extend({ kind: z.literal("tab") }),
 	StateGroupSchema,
 ]);
 

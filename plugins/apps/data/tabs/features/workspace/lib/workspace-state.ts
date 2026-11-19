@@ -47,6 +47,7 @@ function entryOf(entry: ListedEntry): StateEntry {
 		return {
 			kind: "tab",
 			...tabOf(entry.tab),
+			subPages: entry.subPages.map(tabOf),
 		};
 	}
 
@@ -60,7 +61,7 @@ function groupOf(group: ListedGroup): StateEntry {
 		name: group.name,
 		colour: group.hue,
 		isOpen: group.isOpen,
-		tabs: group.tabs.map(tabOf),
+		tabs: group.tabs.map((tab) => ({ ...tabOf(tab), subPages: (group.subPages.get(tab.id) ?? []).map(tabOf) })),
 	};
 }
 

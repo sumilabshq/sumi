@@ -161,7 +161,11 @@ const shownBefore = await shownTabId();
 
 const hidden = await opened({ app: "browser", target: "https://jira.example.com" });
 check("a tab opened without show leaves the person's tab on screen", await shownTabId(), shownBefore);
-check("it opens in Open by default", idsIn(await sectionOf("workspace")).includes(hidden), true);
+check(
+	"it opens as a sub-page of the asking chat by default",
+	(await sectionOf("workspace"))?.entries.some((entry) => entry.kind === "tab" && entry.subPages.some((subPage) => subPage.id === hidden)),
+	true,
+);
 check("it is not shown", await isShown(hidden), false);
 check("its page loads the address without ever being shown", await pageWasShown(hidden), false);
 

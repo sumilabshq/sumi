@@ -171,7 +171,7 @@ async function lawChecks(): Promise<void> {
 		place: { list: "tab-1", groupId: null, before: null },
 	});
 	check(
-		"a chat is kept once, a chat holds no chat, and a tab that is no chat holds no list",
+		"a chat is kept once, a chat becomes a sub-page of a chat, and a tab never holds itself",
 		[
 			(await tabs.placedTabs()).tabs.filter((one) => one.app === "chat").length,
 			chatInChat.ok ? "placed" : chatInChat.reason,
@@ -179,8 +179,8 @@ async function lawChecks(): Promise<void> {
 		],
 		[
 			2,
-			'the tab "chat-b" cannot stand inside "chat-a": A chat can\'t hold a chat',
-			'the tab "tab-1" cannot stand inside "tab-1": a tab stands in the list of the workspace or of a chat',
+			"placed",
+			'the tab "tab-1" cannot stand inside "tab-1": a tab stands in the list of the workspace or of a main page',
 		],
 	);
 
@@ -218,9 +218,9 @@ async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void>
 		place: { list: "chat-a", before: null },
 	});
 	check(
-		"a group holding a chat cannot stand inside another chat",
+		"a group cannot stand inside a page",
 		intoChat.ok ? "placed" : intoChat.reason,
-		"A chat can't hold a group",
+		"A page can't hold a group",
 	);
 	await nestedGroupChecks(main, groupId);
 }

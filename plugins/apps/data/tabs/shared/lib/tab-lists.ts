@@ -13,9 +13,10 @@ interface ListedGroup {
 	readonly hue: Extract<SidebarEntry, { kind: "group" }>["group"]["hue"];
 	readonly isOpen: boolean;
 	readonly tabs: readonly SidebarTab[];
+	readonly subPages: ReadonlyMap<string, readonly SidebarTab[]>;
 }
 
-export type ListedEntry = { readonly kind: "tab"; readonly tab: SidebarTab } | ListedGroup;
+export type ListedEntry = { readonly kind: "tab"; readonly tab: SidebarTab; readonly subPages: readonly SidebarTab[] } | ListedGroup;
 
 interface TabList {
 	readonly list: string;
@@ -33,7 +34,7 @@ export function tabListsOf(sidebar: Sidebar): readonly TabList[] {
 
 function listedOf(entry: SidebarEntry | SidebarItem): readonly ListedEntry[] {
 	if (entry.kind === "tab") {
-		return [entry];
+		return [{ kind: "tab", tab: entry.tab, subPages: subPagesOf(entry) }];
 	}
 
 	if (entry.kind === "split") {
@@ -50,7 +51,12 @@ function groupsListedOf({ items, ...face }: Extract<SidebarEntry, { kind: "group
 			kind: "group",
 			...face,
 			tabs: items.flatMap((item) => (item.kind === "tab" ? [item.tab] : [])),
+			subPages: new Map(items.flatMap((item) => (item.kind === "tab" ? [[item.tab.id, subPagesOf(item)] as const] : []))),
 		},
 		...items.flatMap((item) => (item.kind === "group" ? groupsListedOf(item.group) : [])),
 	];
+}
+
+function subPagesOf(item: SidebarItem): readonly SidebarTab[] {
+	return (item.subPages ?? []).map(({ tab }) => tab);
 }

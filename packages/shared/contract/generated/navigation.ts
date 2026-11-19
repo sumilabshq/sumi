@@ -572,7 +572,7 @@ export const AppTabsSchema = z.object({
 	canReopen: z.boolean(),
 });
 
-export const ArtifactRowSchema = z.object({
+export const SubPageRowSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
 });
@@ -581,7 +581,7 @@ export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
-	artifacts: z.array(ArtifactRowSchema).readonly().optional(),
+	subPages: z.array(SubPageRowSchema).readonly().optional(),
 	isFolded: z.boolean().optional(),
 });
 

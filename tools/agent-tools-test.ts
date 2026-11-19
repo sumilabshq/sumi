@@ -95,6 +95,7 @@ check("groups keep their tabs and colour", whole.sections[0]?.entries[3], {
 			isShown: false,
 			isInOwnWindow: false,
 			status: null,
+			subPages: [],
 		},
 	],
 });

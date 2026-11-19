@@ -118,17 +118,21 @@ export const StateTabSchema = z.object({
 	status: z.enum(["reading", "waiting", "cannot-look"]).nullable(),
 });
 
+export const StatePageSchema = StateTabSchema.extend({
+	subPages: z.array(StateTabSchema),
+});
+
 export const StateGroupSchema = z.object({
 	kind: z.literal("group"),
 	id: z.string(),
 	name: z.string(),
 	colour: GroupColourSchema.nullable(),
 	isOpen: z.boolean(),
-	tabs: z.array(StateTabSchema),
+	tabs: z.array(StatePageSchema),
 });
 
 export const StateEntrySchema = z.discriminatedUnion("kind", [
-	StateTabSchema.extend({ kind: z.literal("tab") }),
+	StatePageSchema.extend({ kind: z.literal("tab") }),
 	StateGroupSchema,
 ]);
 
@@ -202,7 +206,7 @@ export const tabs = moduleContract("tabs", Device, {
 			.public()
 			.metadata({
 				description:
-					"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
+					"Open a tab in an app. app is always required: an id from tabs_apps_all. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Without group or newGroup it opens as a sub-page of this chat, or of the page this chat is a sub-page of. Opens hidden unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
 			})
 			.input(TabOpenSchema)
 			.output(PlacedTabSchema)
