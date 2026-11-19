@@ -35,6 +35,10 @@ function itemsOfEntry(entry: SidebarEntry): readonly SidebarTab[] {
 }
 
 function tabsOfGroupItem(item: SidebarGroupItem): readonly SidebarTab[] {
+	if (item.kind === "split") {
+		return item.split.members.map((member) => member.item);
+	}
+
 	return item.kind === "tab" ? [item] : item.group.items.flatMap(tabsOfGroupItem);
 }
 

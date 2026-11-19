@@ -45,5 +45,9 @@ function tabsOfSidebar(sidebar: TabsSidebar): ReadonlyMap<string, AppTabState> {
 }
 
 function tabsOfGroupItem(item: SidebarGroupItem): readonly AppTabState[] {
+	if (item.kind === "split") {
+		return item.split.members.map((member) => member.item.tab);
+	}
+
 	return item.kind === "tab" ? [item.tab] : item.group.items.flatMap(tabsOfGroupItem);
 }

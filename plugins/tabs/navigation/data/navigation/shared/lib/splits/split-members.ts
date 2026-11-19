@@ -1,40 +1,54 @@
 import type { KeptSplit, SplitNode } from "../../schema/splits.schema.js";
 import { SPLIT_LEAST_MEMBERS, SPLIT_MOST_MEMBERS } from "../../schema/splits.schema.js";
 import type { HostTabsMoment } from "../tabs/host-tabs-moment.js";
-import { isSectionList, locationOf } from "../tabs/tab-lists.js";
+import { findGroup, isSectionList, locationOf } from "../tabs/tab-lists.js";
+import type { TabLayout, TabLocation } from "../tabs/tab-lists.js";
+import type { ListEntry } from "../../schema/tabs.schema.js";
 import { leafIdsOf, withoutLeaf } from "./split-tree.js";
 
 const TOO_FEW = 'the split "{id}" holds {count} tabs: a split holds {least} to {most}';
 const LEAVES_DIFFER = 'the split "{id}" draws tabs other than its members';
 const FOCUS_OUTSIDE = 'the split "{id}" focuses "{focused}", which is not its member';
 const IN_TWO_SPLITS = 'the tab "{tab}" stands in {count} splits: a tab stands in one at most';
-const NOT_TOP_LEVEL = 'the tab "{tab}" stands in the split "{id}" from inside a chat or a group';
+const NOT_TOP_LEVEL = 'the tab "{tab}" stands in the split "{id}" from inside a page';
+const SPREAD = 'the split "{id}" spreads over {count} places: its tabs stand in one list or one group';
 
 export function splitOfTab(moment: Pick<HostTabsMoment, "splits">, tabId: string): KeptSplit | null {
 	return moment.splits.find((split) => split.memberIds.includes(tabId)) ?? null;
 }
 
-export function firstListedMember(
-	moment: Pick<HostTabsMoment, "lists">,
-	split: KeptSplit,
-	list: string,
-): string | null {
-	const first = (moment.lists[list] ?? []).find((entry) => entry.kind === "tab" && split.memberIds.includes(entry.id));
-	return first?.id ?? null;
+export function firstListedMember(moment: TabLayout, split: KeptSplit, list: string): string | null {
+	return firstAmong(moment.lists[list] ?? [], split);
+}
+
+export function firstAmong(entries: readonly ListEntry[], split: KeptSplit): string | null {
+	return entries.find((entry) => entry.kind === "tab" && split.memberIds.includes(entry.id))?.id ?? null;
+}
+
+export function containerEntriesOf(moment: TabLayout, location: TabLocation): readonly ListEntry[] {
+	return location.groupId === null
+		? (moment.lists[location.chatId] ?? [])
+		: (findGroup(moment.groups, location.groupId)?.entries ?? []);
+}
+
+export function firstInContainer(moment: TabLayout, split: KeptSplit, tabId: string): string | null {
+	const location = locationOf(moment, tabId);
+	return location === null ? null : firstAmong(containerEntriesOf(moment, location), split);
 }
 
 export function shownSplitOf(moment: Pick<HostTabsMoment, "splits" | "shownSplitId">): KeptSplit | null {
 	return moment.splits.find((split) => split.id === moment.shownSplitId) ?? null;
 }
 
-export function isTopLevel(moment: HostTabsMoment, tabId: string): boolean {
+export function standsInSection(moment: TabLayout, tabId: string): boolean {
 	const location = locationOf(moment, tabId);
-	return location !== null && location.groupId === null && isSectionList(location.chatId);
+	return location !== null && isSectionList(location.chatId);
 }
 
 export function splitsPruned(moment: HostTabsMoment): HostTabsMoment {
 	const splits = moment.splits.flatMap((split) => {
-		const pruned = splitWithout(split, (id) => !isTopLevel(moment, id));
+		const home = homeOf(moment, split);
+		const pruned = splitWithout(split, (id) => containerKeyOf(moment, id) !== home);
 		return pruned === null ? [] : [pruned];
 	});
 
@@ -77,9 +91,29 @@ export function splitBreaksOf(moment: HostTabsMoment): readonly string[] {
 
 function breaksOfSplit(moment: HostTabsMoment, split: KeptSplit): readonly string[] {
 	const notTop = split.memberIds
-		.filter((id) => !isTopLevel(moment, id))
+		.filter((id) => !standsInSection(moment, id))
 		.map((id) => NOT_TOP_LEVEL.replace("{tab}", id).replace("{id}", split.id));
-	return [...shapeBreaksOf(split), ...notTop];
+	const places = new Set(split.memberIds.map((id) => containerKeyOf(moment, id)));
+	const spread = places.size > 1 ? [SPREAD.replace("{id}", split.id).replace("{count}", String(places.size))] : [];
+	return [...shapeBreaksOf(split), ...notTop, ...spread];
+}
+
+function containerKeyOf(moment: TabLayout, tabId: string): string | null {
+	const location = locationOf(moment, tabId);
+	return location === null || !isSectionList(location.chatId) ? null : `${location.chatId}/${location.groupId ?? ""}`;
+}
+
+function homeOf(moment: TabLayout, split: KeptSplit): string | null {
+	const keys = split.memberIds.map((id) => containerKeyOf(moment, id)).filter((key): key is string => key !== null);
+	const counts = new Map<string, number>();
+
+	for (const key of keys) {
+		counts.set(key, (counts.get(key) ?? 0) + 1);
+	}
+
+	const focused = containerKeyOf(moment, split.focusedId);
+	const most = Math.max(0, ...counts.values());
+	return focused !== null && counts.get(focused) === most ? focused : (keys.find((key) => counts.get(key) === most) ?? null);
 }
 
 function shapeBreaksOf(split: KeptSplit): readonly string[] {

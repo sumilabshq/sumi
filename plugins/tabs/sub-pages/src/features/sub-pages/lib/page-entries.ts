@@ -50,6 +50,10 @@ export function isChatTab(tab: AppTabState): boolean {
 }
 
 function itemsUnder(item: SidebarGroupItem): readonly SidebarTab[] {
+	if (item.kind === "split") {
+		return item.split.members.map((member) => member.item);
+	}
+
 	return item.kind === "tab" ? [item] : item.group.items.flatMap(itemsUnder);
 }
 

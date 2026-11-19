@@ -9,11 +9,13 @@ import {
 	SidebarMenuSubItem,
 } from "@widgetarium/kit";
 import { groups } from "@sumi/groups/contract";
-import type { SidebarGroupState } from "@widgetarium/app-host/contract";
+import type { SidebarGroupState, SidebarSplitState } from "@widgetarium/app-host/contract";
 import { groupColourOf, openGroupMenu, stripGroupOf } from "@sumi/tab-strip-plugin";
 import type { TabActs } from "@sumi/tab-strip-plugin";
 import { GROUP_ROW, sortIdOf } from "../../lib/sidebar-drops.js";
 import { TabEntry } from "../tab-entry/tab-entry.js";
+import { SplitEntry } from "../split-entry/split-entry.js";
+import { splitItemOf } from "../../lib/entry-items.js";
 
 export interface GroupEntryProps {
 	readonly group: SidebarGroupState;
@@ -71,7 +73,18 @@ export function GroupEntry({ group, list, acts, draggedId, depth, isLifted, onMe
 			{isOpen ? (
 				<SidebarMenuSub role="presentation" style={inner}>
 					{group.items.map((item) =>
-						item.kind === "group" ? (
+						item.kind === "split" ? (
+							<GroupSplit
+								key={item.split.id}
+								split={item.split}
+								list={list}
+								acts={acts}
+								draggedId={draggedId}
+								depth={depth + 1}
+								isLifted={isPlaceholder}
+								onMenu={onMenu}
+							/>
+						) : item.kind === "group" ? (
 							<GroupEntry
 								key={item.group.id}
 								group={item.group}
@@ -107,4 +120,19 @@ export function GroupEntry({ group, list, acts, draggedId, depth, isLifted, onMe
 			) : null}
 		</Holder>
 	);
+}
+
+interface GroupSplitProps {
+	readonly split: SidebarSplitState;
+	readonly list: string;
+	readonly acts: TabActs;
+	readonly draggedId: string | null;
+	readonly depth: number;
+	readonly isLifted: boolean;
+	onMenu(id: string, event: MouseEvent<HTMLElement>): void;
+}
+
+function GroupSplit({ split, list, ...shown }: GroupSplitProps): ReactElement | null {
+	const item = splitItemOf(split, list);
+	return item === null ? null : <SplitEntry item={item} isSub {...shown} />;
 }

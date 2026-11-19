@@ -65,6 +65,21 @@ export const unsplit = command()
 		}
 	});
 
+export const placeSplit = command()
+	.public()
+	.input(
+		z.object({
+			id: z.string().min(1),
+			to: z.object({ list: z.string().min(1), groupId: z.string().nullable(), before: z.string().nullable() }),
+		}),
+	)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ id, to }, { send, emit, ...injects }) => {
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(navigation.splits.place, { at, id, place: to }),
+		);
+	});
+
 export const resize = command()
 	.public()
 	.input(

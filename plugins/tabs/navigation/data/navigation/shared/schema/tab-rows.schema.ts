@@ -83,7 +83,7 @@ export interface SidebarGroup {
 	};
 }
 
-export type SidebarGroupItem = SidebarTab | SidebarGroup;
+export type SidebarGroupItem = SidebarTab | SidebarGroup | SidebarSplit;
 
 export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
 	z.object({
@@ -93,7 +93,7 @@ export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
 			name: z.string(),
 			hue: GroupHueSchema.nullable(),
 			isOpen: z.boolean(),
-			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema])).readonly(),
+			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema])).readonly(),
 		}),
 	}),
 );

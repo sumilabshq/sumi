@@ -88,7 +88,7 @@ function titledGroupOf(entry: SidebarGroup, titles: PageTitles): SidebarGroup {
 		...entry,
 		group: {
 			...entry.group,
-			items: entry.group.items.map((item) => (item.kind === "tab" ? titledItemOf(item, titles) : titledGroupOf(item, titles))),
+			items: entry.group.items.map((item) => titledEntryOf(item, titles)),
 		},
 	};
 }
@@ -97,12 +97,15 @@ function titledItemOf(item: SidebarTab, titles: PageTitles): SidebarTab {
 	return {
 		...item,
 		tab: titledTabOf(item.tab, titles),
+		...(item.subPages === undefined
+			? {}
+			: { subPages: item.subPages.map((subPage) => ({ ...subPage, tab: titledTabOf(subPage.tab, titles) })) }),
 	};
 }
 
 function tabsOfEntry(entry: SidebarEntry): readonly AppTabState[] {
 	if (entry.kind === "tab") {
-		return [entry.tab];
+		return [entry.tab, ...(entry.subPages ?? []).map(({ tab }) => tab)];
 	}
 
 	if (entry.kind === "group") {

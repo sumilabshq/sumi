@@ -172,7 +172,7 @@ export interface SidebarGroup {
 	readonly group: SidebarGroupState;
 }
 
-export type SidebarGroupItem = SidebarTab | SidebarGroup;
+export type SidebarGroupItem = SidebarTab | SidebarGroup | SidebarSplit;
 
 export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
 	z.object({
@@ -182,7 +182,7 @@ export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
 			name: z.string(),
 			hue: GroupHueSchema.nullable(),
 			isOpen: z.boolean(),
-			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema])).readonly(),
+			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema])).readonly(),
 		}),
 	}),
 );
@@ -207,6 +207,8 @@ export const SidebarSplitSchema = z.object({
 	kind: z.literal("split"),
 	split: SidebarSplitStateSchema,
 });
+
+export type SidebarSplit = z.infer<typeof SidebarSplitSchema>;
 
 export const SidebarEntrySchema = z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema]);
 

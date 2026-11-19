@@ -128,11 +128,7 @@ async function sameForEveryTabChecks(): Promise<void> {
 		id: "chat-b",
 		place: { list: "chat-a", groupId: null, before: null },
 	});
-	check(
-		"a chat dropped onto a chat is refused",
-		inChat.ok ? "placed" : inChat.reason,
-		'the tab "chat-b" cannot stand inside "chat-a": a tab stands only in the list of the workspace',
-	);
+	check("a chat dropped onto a chat becomes its sub-page", inChat.ok ? "placed" : inChat.reason, "placed");
 }
 
 async function reuseChecks(): Promise<void> {

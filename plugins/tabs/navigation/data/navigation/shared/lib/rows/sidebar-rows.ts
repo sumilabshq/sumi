@@ -88,7 +88,9 @@ class SidebarEntries {
 				group: {
 					...groupFaceOf(group),
 					items: group.entries.flatMap((entry): readonly SidebarGroupItem[] =>
-						entry.kind === "tab" ? this.tabsOf(entry.id) : this.groupsOf(entry.id),
+						entry.kind === "tab"
+							? (this.splitRows.blockAmong(entry.id, group.entries) ?? this.tabsOf(entry.id))
+							: this.groupsOf(entry.id),
 					),
 				},
 			},

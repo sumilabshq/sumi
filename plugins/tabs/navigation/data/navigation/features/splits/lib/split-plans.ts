@@ -7,11 +7,12 @@ import { shownSplitOf, splitOfTab } from "../../../shared/lib/splits/split-membe
 import {
 	isSplitRefusal,
 	placeInView,
+	placeSplit,
 	removeFromSplit,
 	reorderInSplit,
 	resizeSplit,
 } from "../../../shared/lib/splits/split-moves.js";
-import type { SplitResizing, ViewPlacing } from "../../../shared/lib/splits/split-moves.js";
+import type { SplitPlace, SplitResizing, ViewPlacing } from "../../../shared/lib/splits/split-moves.js";
 
 export interface ViewPlacingAsk extends ViewPlacing {
 	readonly isPaneMoved: boolean;
@@ -28,6 +29,13 @@ export function placeInViewPlan({ isPaneMoved, ...placing }: ViewPlacingAsk): Ex
 
 		const move = placeInView(showing.moment, placing);
 		return isSplitRefusal(move) ? refusal(move.refusal) : plannedWith(withMoved(showing, move), true);
+	};
+}
+
+export function placeSplitPlan(id: string, place: SplitPlace): ExtraPlan<null> {
+	return (showing) => {
+		const move = placeSplit(showing.moment, id, place);
+		return isSplitRefusal(move) ? refusal(move.refusal) : plannedWith(withMoved(showing, move), null);
 	};
 }
 

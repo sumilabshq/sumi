@@ -53,14 +53,15 @@ export function SidebarSection({
 	const menu = useRef<HTMLElement | null>(null);
 	const placeTab = useCommand(appHost.tabs.placeTab);
 	const placeGroup = useCommand(groups.actions.place);
+	const placeSplit = useCommand(appHost.splits.placeSplit);
 	const sort = useSidebarSort({
 		levelPx: LEVEL_PX,
 		onDrop: (drop) => {
-			const { placed } = arrangedSidebarOf(sidebar, drop.id, drop);
-			const refused = refusedDropOf(sidebar, carriedOf(sidebar, drop.id), placed);
+			const { placed, holder } = arrangedSidebarOf(sidebar, drop.id, drop);
+			const refused = refusedDropOf(sidebar, carriedOf(sidebar, drop.id), holder);
 
 			if (refused !== null) {
-				console.info(`[widgetarium] sidebar drop of ${drop.id} into ${refused.pageId} skipped: ${refused.words}`);
+				console.info(`[widgetarium] sidebar drop of ${drop.id} onto ${refused.anchorId} skipped: ${refused.words}`);
 				return;
 			}
 
@@ -71,7 +72,11 @@ export function SidebarSection({
 
 			console.info(`[widgetarium] sidebar drop ${drop.id} ${drop.place} ${drop.targetId} → ${JSON.stringify(placed.to)}`);
 			const placing =
-				placed.kind === "group" ? placeGroup.run({ id: placed.id, to: placed.to }) : placeTab.run({ id: placed.id, to: placed.to });
+				placed.kind === "group"
+					? placeGroup.run({ id: placed.id, to: placed.to })
+					: placed.kind === "split"
+						? placeSplit.run({ id: placed.id, to: placed.to })
+						: placeTab.run({ id: placed.id, to: placed.to });
 			void placing.then((answer) => {
 				if (!answer.ok) {
 					console.warn(`[widgetarium] sidebar drop of ${drop.id} refused: ${answer.reason}`);
@@ -88,7 +93,7 @@ export function SidebarSection({
 	const aim = sorting === null || sorting.outside !== null ? null : sorting.aim;
 	const arranged = useMemo(() => (draggedId === null ? null : arrangedSidebarOf(sidebar, draggedId, aim)), [sidebar, draggedId, aim]);
 	const refused = useMemo(
-		() => (draggedId === null || arranged === null ? null : refusedDropOf(sidebar, carriedOf(sidebar, draggedId), arranged.placed)),
+		() => (draggedId === null || arranged === null ? null : refusedDropOf(sidebar, carriedOf(sidebar, draggedId), arranged.holder)),
 		[sidebar, draggedId, arranged],
 	);
 	const section = useMemo(
@@ -146,7 +151,7 @@ export function SidebarSection({
 			) : null}
 			{refused === null ? null : (
 				<DropRefusal
-					anchor={menu.current?.querySelector<HTMLElement>(`[data-sort-id="${CSS.escape(refused.pageId)}"]`) ?? null}
+					anchor={menu.current?.querySelector<HTMLElement>(`[data-sort-id="${CSS.escape(refused.anchorId)}"]`) ?? null}
 					words={refused.words}
 				/>
 			)}

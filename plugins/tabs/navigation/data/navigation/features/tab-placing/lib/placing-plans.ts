@@ -8,8 +8,8 @@ import type { HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
 import { refuseStanding } from "../../../shared/lib/tabs/tab-invariants.js";
 import { carryOutOfSplit, isSplitRefusal } from "../../../shared/lib/splits/split-moves.js";
 import type { SplitMove } from "../../../shared/lib/splits/split-moves.js";
-import { firstListedMember, splitOfTab } from "../../../shared/lib/splits/split-members.js";
-import { WORKSPACE_LIST, chatOfGroup, locationOf } from "../../../shared/lib/tabs/tab-lists.js";
+import { firstInContainer, splitOfTab, standsInSection } from "../../../shared/lib/splits/split-members.js";
+import { chatOfGroup } from "../../../shared/lib/tabs/tab-lists.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
 const UNKNOWN_LIST = 'no tab list "{list}" is here: a tab stands in the list of the workspace or of a chat';
@@ -37,15 +37,15 @@ export function placeTabPlan(id: string, asked: TabPlaceAsked): ShowingPlan {
 	};
 }
 
-export function beforeIdOfBlock(moment: HostTabsMoment, id: string, { list, before }: TabPlaceAsked): string | null {
+export function beforeIdOfBlock(moment: HostTabsMoment, id: string, { before }: TabPlaceAsked): string | null {
 	const split = before === null ? null : splitOfTab(moment, before);
 
-	if (split === null || list !== WORKSPACE_LIST) {
+	if (split === null || before === null) {
 		return before;
 	}
 
 	const others = { ...split, memberIds: split.memberIds.filter((member) => member !== id) };
-	return firstListedMember(moment, others, list) ?? before;
+	return firstInContainer(moment, others, before) ?? before;
 }
 
 export function foldPlan(id: string): MomentPlan<null> {
@@ -70,11 +70,7 @@ export function renamePlan(id: string, label: string): MomentPlan<null> {
 function freedFromBlock(moment: HostTabsMoment, id: string): SplitMove | null {
 	const split = splitOfTab(moment, id);
 
-	if (split === null || locationOf(moment, id)?.chatId !== WORKSPACE_LIST) {
-		return null;
-	}
-
-	return carryOutOfSplit(moment, id);
+	return split === null || !standsInSection(moment, id) ? null : carryOutOfSplit(moment, id);
 }
 
 function placeRefusalOf(moment: HostTabsMoment, id: string, asked: TabPlaceAsked): string | null {

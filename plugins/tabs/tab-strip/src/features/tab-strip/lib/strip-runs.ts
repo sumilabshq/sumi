@@ -45,8 +45,12 @@ function groupRunOf(group: SidebarGroupState, list: string): StripRun {
 	return {
 		kind: "group",
 		group: stripGroupOf(group),
-		runs: group.items.flatMap((item): readonly StripRun[] =>
-			item.kind === "group"
+		runs: group.items.flatMap((item): readonly StripRun[] => {
+			if (item.kind === "split") {
+				return runsOfEntry(item, list);
+			}
+
+			return item.kind === "group"
 				? [groupRunOf(item.group, list)]
 				: [
 						{
@@ -59,7 +63,7 @@ function groupRunOf(group: SidebarGroupState, list: string): StripRun {
 								group: stripGroupOf(group),
 							},
 						},
-					],
-		),
+					];
+		}),
 	};
 }

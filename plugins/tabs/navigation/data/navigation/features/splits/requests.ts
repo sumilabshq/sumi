@@ -8,6 +8,7 @@ import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import {
 	LeftSplitSchema,
 	PlaceInViewAskSchema,
+	PlaceSplitAskSchema,
 	PlacedInViewSchema,
 	ReorderSplitMemberAskSchema,
 	ResizeSplitAskSchema,
@@ -15,7 +16,7 @@ import {
 	SplitMemberAskSchema,
 } from "../../shared/schema/split-asks.schema.js";
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
-import { placeInViewPlan, removeFromSplitPlan, reorderSplitMemberPlan, resizeSplitPlan } from "./lib/split-plans.js";
+import { placeInViewPlan, placeSplitPlan, removeFromSplitPlan, reorderSplitMemberPlan, resizeSplitPlan } from "./lib/split-plans.js";
 
 export const shown = query()
 	.public()
@@ -86,3 +87,12 @@ export const resize = command()
 export const rereadShown = subscriber(placedTabsChanged).handle((_input, { invalidate }) => {
 	invalidate(shown);
 });
+
+export const place = command()
+	.public()
+	.input(PlaceSplitAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ at, id, place }, { tabs, placedApps }) =>
+		settledOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), placeSplitPlan(id, place)))),
+	);

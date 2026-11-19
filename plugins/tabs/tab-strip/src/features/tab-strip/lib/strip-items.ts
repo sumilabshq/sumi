@@ -106,9 +106,13 @@ export function stripGroupOf({ id, name, hue, isOpen }: SidebarGroupState): Stri
 	};
 }
 
-function tabsOfGroup(group: SidebarGroupState, list: string): readonly StripTab[] {
-	return group.items.flatMap((item): readonly StripTab[] =>
-		item.kind === "group"
+function tabsOfGroup(group: SidebarGroupState, list: string): readonly StripItem[] {
+	return group.items.flatMap((item): readonly StripItem[] => {
+		if (item.kind === "split") {
+			return itemsOfEntry(item, list);
+		}
+
+		return item.kind === "group"
 			? tabsOfGroup(item.group, list)
 			: [
 					{
@@ -118,8 +122,8 @@ function tabsOfGroup(group: SidebarGroupState, list: string): readonly StripTab[
 						groupId: group.id,
 						group: stripGroupOf(group),
 					},
-				],
-	);
+				];
+	});
 }
 
 function focusedOf(split: SidebarSplitState): AppTabState | null {

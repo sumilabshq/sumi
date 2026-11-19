@@ -1,9 +1,10 @@
 import type { KeptSplit } from "../../schema/splits.schema.js";
-import type { SidebarEntry, SidebarTab, SplitMember } from "../../schema/tab-rows.schema.js";
+import type { SidebarEntry, SidebarSplit, SidebarTab, SplitMember } from "../../schema/tab-rows.schema.js";
+import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "../tabs/host-tabs.js";
 import { WORKSPACE_LIST } from "../tabs/tab-lists.js";
 import { splitMapOf } from "../splits/split-map.js";
-import { firstListedMember, splitOfTab } from "../splits/split-members.js";
+import { firstAmong, firstListedMember, splitOfTab } from "../splits/split-members.js";
 
 export class SplitRows {
 	constructor(
@@ -28,7 +29,17 @@ export class SplitRows {
 		}));
 	}
 
-	private blockOf(split: KeptSplit): SidebarEntry {
+	blockAmong(tabId: string, entries: readonly ListEntry[]): readonly SidebarSplit[] | null {
+		const split = splitOfTab(this.moment, tabId);
+
+		if (split === null) {
+			return null;
+		}
+
+		return firstAmong(entries, split) === tabId ? [this.blockOf(split)] : [];
+	}
+
+	private blockOf(split: KeptSplit): SidebarSplit {
 		return {
 			kind: "split",
 			split: {

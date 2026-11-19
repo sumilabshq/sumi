@@ -2,8 +2,8 @@ import type { KeptSplit, SplitSide } from "../../schema/splits.schema.js";
 import { SPLIT_MOST_MEMBERS } from "../../schema/splits.schema.js";
 import type { HostTabsMoment, MovedTabs } from "../tabs/host-tabs.js";
 import { heldTabOf, isPageTab, markShown, placeTab } from "../tabs/host-tabs.js";
-import { WORKSPACE_LIST, isSectionList, locationOf } from "../tabs/tab-lists.js";
-import { firstListedMember, isTopLevel, shownSplitOf, splitOfTab, splitWithout } from "./split-members.js";
+import { WORKSPACE_LIST, isSectionList, locationOf, placeAfterOf } from "../tabs/tab-lists.js";
+import { containerEntriesOf, firstAmong, shownSplitOf, splitOfTab, splitWithout, standsInSection } from "./split-members.js";
 import { branchIdsOf, isEdgeOf, leafOf, withBranchShare, withLeafPlaced, withLeafSwapped, withoutLeaf } from "./split-tree.js";
 import type { BranchShare, LeafSwap } from "./split-tree.js";
 
@@ -43,6 +43,7 @@ const NO_TARGET = "no tab is shown to stand beside";
 const FULL = 'the split "{id}" holds {most} tabs already';
 const NO_SPLIT = 'the tab "{id}" stands in no split';
 const OTHER_SPLIT = 'the tab "{id}" stands in no place of the split "{split}"';
+const NO_SPLIT_ID = 'no split "{id}"';
 const NO_EDGE = 'no split has an edge {at} in "{branch}"';
 
 export function isSplitRefusal(move: object): move is SplitRefusal {
@@ -56,7 +57,7 @@ export function placeInView(moment: HostTabsMoment, { tabId, targetTabId, side }
 		return target;
 	}
 
-	const freed = withoutMember(liftedToTop(liftedToTop(moment, tabId), target.id), tabId, target.id);
+	const freed = withoutMember(joinedBeside(liftedToTop(liftedToTop(moment, tabId), target.id), tabId, target.id), tabId, target.id);
 	const targetSplit = splitOfTab(freed, target.id);
 	const full = targetSplit === null ? null : fullRefusalOf(targetSplit, tabId);
 
@@ -66,6 +67,38 @@ export function placeInView(moment: HostTabsMoment, { tabId, targetTabId, side }
 
 	const split = splitPlaced(freed, targetSplit, { tabId, targetTabId: target.id, side });
 	return shownIn(freed, split, tabId, `place ${tabId} ${side} of ${target.id} in ${split.id}`);
+}
+
+export interface SplitPlace {
+	readonly list: string;
+	readonly groupId: string | null;
+	readonly before: string | null;
+}
+
+export function placeSplit(moment: HostTabsMoment, splitId: string, place: SplitPlace): SplitMove {
+	const split = moment.splits.find(({ id }) => id === splitId);
+
+	if (split === undefined) {
+		return { refusal: NO_SPLIT_ID.replace("{id}", splitId) };
+	}
+
+	const isUnsplit = !isSectionList(place.list);
+	const freed: HostTabsMoment = isUnsplit
+		? {
+				...moment,
+				splits: splitsWith(moment.splits, split.id, null),
+				shownSplitId: moment.shownSplitId === split.id ? null : moment.shownSplitId,
+			}
+		: moment;
+	const before = place.before !== null && split.memberIds.includes(place.before) ? null : place.before;
+	const placed = split.memberIds.reduce(
+		(now, id) => placeTab(now, id, { chatId: place.list, groupId: place.groupId, before })?.moment ?? now,
+		freed,
+	);
+	return {
+		moment: placed,
+		reason: `${isUnsplit ? "unsplit" : "move"} ${split.id} (${split.memberIds.join(",")}) into ${place.list}/${place.groupId ?? "list"} before ${before ?? "the end"}`,
+	};
 }
 
 export function removeFromSplit(moment: HostTabsMoment, tabId: string): SplitMove {
@@ -192,18 +225,21 @@ function leftSplit(moment: HostTabsMoment, tabId: string): MovedTabs | null {
 }
 
 function withRemainderInBlock(moment: HostTabsMoment, split: KeptSplit, leavingId: string): HostTabsMoment {
-	const anchor = firstListedMember(moment, split, WORKSPACE_LIST);
+	const location = locationOf(moment, leavingId);
 	const remaining = split.memberIds.find((id) => id !== leavingId);
+	const anchor = location === null ? null : firstAmong(containerEntriesOf(moment, location), split);
 
-	if (anchor === null || remaining === undefined || anchor === remaining) {
+	if (location === null || anchor === null || remaining === undefined || anchor === remaining) {
 		return moment;
 	}
 
-	if (locationOf(moment, remaining)?.chatId !== WORKSPACE_LIST) {
+	const there = locationOf(moment, remaining);
+
+	if (there?.chatId !== location.chatId || there.groupId !== location.groupId) {
 		return moment;
 	}
 
-	return placeTab(moment, remaining, { chatId: WORKSPACE_LIST, groupId: null, before: anchor })?.moment ?? moment;
+	return placeTab(moment, remaining, { chatId: location.chatId, groupId: location.groupId, before: anchor })?.moment ?? moment;
 }
 
 function shownAfterLeaving(moment: HostTabsMoment, { split, left, tabId }: Leaving): HostTabsMoment {
@@ -263,8 +299,20 @@ function homeTabOf(moment: HostTabsMoment, tabId: string): string | null {
 	return list === null || isSectionList(list) ? tabId : list;
 }
 
+function joinedBeside(moment: HostTabsMoment, tabId: string, targetId: string): HostTabsMoment {
+	const at = locationOf(moment, tabId);
+	const target = locationOf(moment, targetId);
+	const place = placeAfterOf(moment, targetId);
+
+	if (target === null || place === null || (at?.chatId === target.chatId && at.groupId === target.groupId)) {
+		return moment;
+	}
+
+	return placeTab(moment, tabId, place)?.moment ?? moment;
+}
+
 function liftedToTop(moment: HostTabsMoment, tabId: string): HostTabsMoment {
-	if (isTopLevel(moment, tabId)) {
+	if (standsInSection(moment, tabId)) {
 		return moment;
 	}
 

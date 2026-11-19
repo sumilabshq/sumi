@@ -173,7 +173,7 @@ export interface SidebarGroup {
 	readonly group: SidebarGroupState;
 }
 
-export type SidebarGroupItem = SidebarTab | SidebarGroup;
+export type SidebarGroupItem = SidebarTab | SidebarGroup | SidebarSplit;
 
 export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
 	z.object({
@@ -183,7 +183,7 @@ export const SidebarGroupSchema: z.ZodType<SidebarGroup> = z.lazy(() =>
 			name: z.string(),
 			hue: GroupHueSchema.nullable(),
 			isOpen: z.boolean(),
-			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema])).readonly(),
+			items: z.array(z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema])).readonly(),
 		}),
 	}),
 );
@@ -208,6 +208,8 @@ export const SidebarSplitSchema = z.object({
 	kind: z.literal("split"),
 	split: SidebarSplitStateSchema,
 });
+
+export type SidebarSplit = z.infer<typeof SidebarSplitSchema>;
 
 export const SidebarEntrySchema = z.union([SidebarTabSchema, SidebarGroupSchema, SidebarSplitSchema]);
 
@@ -574,6 +576,15 @@ export const appHost = moduleContract("app-host", Device, {
 		unsplit: named("splits.unsplit", command()
 			.public()
 			.input(z.object({ tabIds: z.array(z.string().min(1)).min(1).readonly() }))
+			.idempotencyKey(Repeatable)),
+		placeSplit: named("splits.place-split", command()
+			.public()
+			.input(
+				z.object({
+					id: z.string().min(1),
+					to: z.object({ list: z.string().min(1), groupId: z.string().nullable(), before: z.string().nullable() }),
+				}),
+			)
 			.idempotencyKey(Repeatable)),
 		resize: named("splits.resize", command()
 			.public()

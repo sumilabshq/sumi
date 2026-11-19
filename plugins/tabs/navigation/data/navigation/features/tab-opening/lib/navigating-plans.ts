@@ -10,7 +10,7 @@ import type { Showing } from "../../../shared/lib/showing/showing.js";
 import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
 import { withShownTab } from "../../../shared/lib/showing/tab-shown.js";
 import { swappedInSplit } from "../../../shared/lib/splits/split-moves.js";
-import { isTopLevel, splitOfTab } from "../../../shared/lib/splits/split-members.js";
+import { splitOfTab, standsInSection } from "../../../shared/lib/splits/split-members.js";
 import { isPageApp, resolvedAppOf } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import { heldTabOf, isPageTab, markSelected, openTabUnshown, placeTab, tabOf } from "../../../shared/lib/tabs/host-tabs.js";
@@ -135,7 +135,7 @@ function inPlaceNavigated(showing: Showing, facts: TabFacts, { target, fromId }:
 		return plannedWith(withExistingShown(showing, facts, reached.tab), fromId);
 	}
 
-	const swapped = isTopLevel(reached.showing.moment, reached.tab.id)
+	const swapped = standsInSection(reached.showing.moment, reached.tab.id)
 		? withMoved(reached.showing, swappedInSplit(reached.showing.moment, { fromId, toId: reached.tab.id }))
 		: reached.showing;
 	const tab = tabOf(swapped.moment, reached.tab.id);

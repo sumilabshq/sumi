@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { navigation as definition } from "../module.js";
 import { aim, board, close, closeShowingPanes, closeShown as panesCloseShown, dropGoneTabs, openShown, place as panesPlace, placementPreview, rereadBoard, resizeSplit, showChat, showInTarget } from "../features/panes/requests.js";
-import { placeInView, remove, reorderMember, rereadShown, resize, shown } from "../features/splits/requests.js";
+import { place as splitsPlace, placeInView, remove, reorderMember, rereadShown, resize, shown } from "../features/splits/requests.js";
 import { closeGroup, closeOthers, closeShown as tabClosingCloseShown, closeTab } from "../features/tab-closing/requests.js";
 import { askedLinks, openLink, ownAppTab, recordAppAddress, rereadAskedLinks, rereadOwnAppTab, takeAskedLink } from "../features/tab-facts/requests.js";
 import { goBack, goForward } from "../features/tab-history/requests.js";
@@ -37,6 +37,7 @@ export const navigation = handledModule(definition, [
 	named("panes.resize-split", resizeSplit),
 	named("panes.show-chat", showChat),
 	named("panes.show-in-target", showInTarget),
+	named("splits.place", splitsPlace),
 	named("splits.place-in-view", placeInView),
 	named("splits.remove", remove),
 	named("splits.reorder-member", reorderMember),

@@ -20,6 +20,11 @@ export type Placed =
 			readonly kind: "group";
 			readonly id: string;
 			readonly to: GroupPlace;
+	  }
+	| {
+			readonly kind: "split";
+			readonly id: string;
+			readonly to: GroupPlace;
 	  };
 
 export interface Carried {
@@ -27,7 +32,7 @@ export interface Carried {
 	readonly depth: number;
 }
 
-type Holder =
+export type Holder =
 	| {
 			readonly kind: "list";
 			readonly list: string;
@@ -67,7 +72,12 @@ export function entryIdOf(node: SidebarEntry): string | null {
 	return node.kind === "group" ? node.group.id : (node.split.members[0]?.item.tab.id ?? null);
 }
 
-export function placedOf(without: TabsSidebar, carried: Carried, { targetId, place, levels }: SidebarSortDrop): Placed | null {
+export interface Aimed {
+	readonly holder: Holder;
+	readonly before: string | null;
+}
+
+export function aimedOf(without: TabsSidebar, carried: Carried, { targetId, place, levels }: SidebarSortDrop): Aimed | null {
 	const rows = without.sections.flatMap(sectionRows);
 	const target = rows.find((row) => row.sortId === targetId);
 
@@ -76,7 +86,7 @@ export function placedOf(without: TabsSidebar, carried: Carried, { targetId, pla
 	}
 
 	if (place === "into") {
-		return target.holds === null ? null : placedIn(carried.node, target.holds, null);
+		return target.holds === null ? null : { holder: target.holds, before: null };
 	}
 
 	const listed = rows.filter((row) => row.list === target.list);
@@ -87,11 +97,7 @@ export function placedOf(without: TabsSidebar, carried: Carried, { targetId, pla
 	const depth = Math.min(deepest, Math.max(below?.depth ?? 0, carried.depth + levels));
 	const holder = holderAt(listed.slice(0, gap), depth, target.list);
 
-	if (holder === null) {
-		return null;
-	}
-
-	return placedIn(carried.node, holder, below !== undefined && below.depth === depth ? below.entryId : null);
+	return holder === null ? null : { holder, before: below !== undefined && below.depth === depth ? below.entryId : null };
 }
 
 function holderAt(above: readonly SortRow[], depth: number, list: string): Holder | null {
@@ -105,9 +111,9 @@ function holderAt(above: readonly SortRow[], depth: number, list: string): Holde
 	return [...above].reverse().find((row) => row.depth === depth - 1)?.holds ?? null;
 }
 
-function placedIn(node: SidebarGroupItem, holder: Holder, before: string | null): Placed | null {
+export function placedIn(node: SidebarGroupItem, { holder, before }: Aimed): Placed | null {
 	if (holder.kind === "split") {
-		return node.kind === "group"
+		return node.kind !== "tab"
 			? null
 			: {
 					kind: "tab",
@@ -125,6 +131,14 @@ function placedIn(node: SidebarGroupItem, holder: Holder, before: string | null)
 		groupId: holder.kind === "group" ? holder.groupId : null,
 		before,
 	};
+	if (node.kind === "split") {
+		return {
+			kind: "split",
+			id: node.split.id,
+			to,
+		};
+	}
+
 	return node.kind === "group"
 		? {
 				kind: "group",

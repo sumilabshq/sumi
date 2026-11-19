@@ -7,7 +7,7 @@ import { openLink } from "../features/links/requests.js";
 import { closeShowingPanes, closeShown as paneTabsCloseShown, dropGoneTabs, openShown, showChat, showInTarget } from "../features/pane-tabs/requests.js";
 import { aim, close, paneTree, place, placementPreview, rereadPanes, rereadPanesForCore, rereadPanesForTabs, resizeSplit } from "../features/panes/requests.js";
 import { current, rereadShownView, rereadShownViewForCore, showView } from "../features/shown-view/requests.js";
-import { closeViewPane, placeInView, rereadShown, rereadShownForCore, resize, shown, unsplit } from "../features/splits/requests.js";
+import { closeViewPane, placeInView, placeSplit, rereadShown, rereadShownForCore, resize, shown, unsplit } from "../features/splits/requests.js";
 import { closeGroup, closeOthers, closeShown as tabActionsCloseShown, closeTab, closeTabs, duplicate, foldTab, navigate, openBelow, openOnce, openTab, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
 import { appTabs, canOpenOwnWindow, ensurePanePages, heldTabs, holders, placeTab, rememberPages, rereadForAccessAsks, rereadForChats, rereadForInk, rereadForPages, rereadTabs, rereadTabsForCore, restore, showTab, tabsSidebar } from "../features/tabs/requests.js";
 import { studioCoreChanged } from "../gateways/core-changes/core-changes.events.js";
@@ -63,6 +63,7 @@ export const appHost = handledModule(definition, [
 	named("side-peeks.peeks-changed", peeksChanged),
 	named("splits.close-view-pane", closeViewPane),
 	named("splits.place-in-view", placeInView),
+	named("splits.place-split", placeSplit),
 	named("splits.resize", resize),
 	named("splits.shown", shown),
 	named("splits.unsplit", unsplit),

@@ -44,3 +44,13 @@ export const ShownSplitSchema = z.object({
 });
 
 export type ShownSplit = z.infer<typeof ShownSplitSchema>;
+
+export const PlaceSplitAskSchema = z.object({
+	at: TabsAskSchema,
+	id: z.string().min(1),
+	place: z.object({
+		list: z.string().min(1),
+		groupId: z.string().nullable(),
+		before: z.string().nullable(),
+	}),
+});

@@ -50,8 +50,8 @@ function groupsListedOf({ items, ...face }: Extract<SidebarEntry, { kind: "group
 		{
 			kind: "group",
 			...face,
-			tabs: items.flatMap((item) => (item.kind === "tab" ? [item.tab] : [])),
-			subPages: new Map(items.flatMap((item) => (item.kind === "tab" ? [[item.tab.id, subPagesOf(item)] as const] : []))),
+			tabs: pagesOf(items).map(({ tab }) => tab),
+			subPages: new Map(pagesOf(items).map((page) => [page.tab.id, subPagesOf(page)] as const)),
 		},
 		...items.flatMap((item) => (item.kind === "group" ? groupsListedOf(item.group) : [])),
 	];
@@ -59,4 +59,14 @@ function groupsListedOf({ items, ...face }: Extract<SidebarEntry, { kind: "group
 
 function subPagesOf(item: SidebarItem): readonly SidebarTab[] {
 	return (item.subPages ?? []).map(({ tab }) => tab);
+}
+
+function pagesOf(items: Extract<SidebarEntry, { kind: "group" }>["group"]["items"]): readonly SidebarItem[] {
+	return items.flatMap((item) => {
+		if (item.kind === "split") {
+			return item.split.members.map(({ item: member }) => member);
+		}
+
+		return item.kind === "tab" ? [item] : [];
+	});
 }

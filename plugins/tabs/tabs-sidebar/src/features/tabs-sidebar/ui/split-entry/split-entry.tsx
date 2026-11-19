@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
-import type { MouseEvent, ReactElement } from "react";
-import { Icon, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, TileMap } from "@widgetarium/kit";
+import type { CSSProperties, MouseEvent, ReactElement } from "react";
+import { Icon, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem, TileMap } from "@widgetarium/kit";
 import { TabIcons } from "@sumi/tab-strip-plugin";
 import type { StripSplit, TabActs } from "@sumi/tab-strip-plugin";
 import { tabItemOf } from "../../lib/entry-items.js";
@@ -11,6 +11,9 @@ export interface SplitEntryProps {
 	readonly item: StripSplit;
 	readonly acts: TabActs;
 	readonly draggedId: string | null;
+	readonly isSub?: boolean;
+	readonly depth?: number;
+	readonly isLifted?: boolean;
 	onMenu(id: string, event: MouseEvent<HTMLElement>): void;
 }
 
@@ -19,8 +22,14 @@ const CLOSE_SPLIT = "Close split";
 const SPLIT = "Split";
 const JOINER = " + ";
 
-export function SplitEntry({ item, acts, draggedId, onMenu }: SplitEntryProps): ReactElement {
+export function SplitEntry({ item, acts, draggedId, isSub = false, depth = 0, isLifted = false, onMenu }: SplitEntryProps): ReactElement {
 	const { split, list } = item;
+	const sortId = `${SPLIT_ROW}${split.id}`;
+	const isPlaceholder = isLifted || sortId === draggedId;
+	const Holder = isSub ? SidebarMenuSubItem : SidebarMenuItem;
+	const inner: CSSProperties & Readonly<Record<"--sumi-tabs-depth", number>> = {
+		"--sumi-tabs-depth": depth + 1,
+	};
 	const isOpen = split.isShown || split.members.some(({ item: member }) => member.tab.id === draggedId);
 	const map = (
 		<TileMap
@@ -35,13 +44,13 @@ export function SplitEntry({ item, acts, draggedId, onMenu }: SplitEntryProps): 
 		/>
 	);
 	return (
-		<SidebarMenuItem role="presentation">
+		<Holder role="presentation" data-sort-block={sortId}>
 			<SidebarMenuButton
 				size="sm"
 				role="tab"
-				data-sort-id={`${SPLIT_ROW}${split.id}`}
+				data-sort-id={sortId}
 				data-sort-into=""
-				data-sort-fixed=""
+				data-sort-placeholder={isPlaceholder ? "" : undefined}
 				aria-selected={split.isShown}
 				isActive={split.isShown && !isOpen}
 				onClick={() => acts.show(item)}
@@ -60,19 +69,19 @@ export function SplitEntry({ item, acts, draggedId, onMenu }: SplitEntryProps): 
 				<Icon name="x" size={CLOSE_PX} />
 			</SidebarMenuAction>
 			{isOpen ? (
-				<SidebarMenuSub role="presentation">
+				<SidebarMenuSub role="presentation" style={inner}>
 					{split.members.map(({ item: member }) => (
 						<TabEntry
 							key={member.tab.id}
 							item={tabItemOf(member.tab, list)}
 							acts={acts}
 							isSub
-							isPlaceholder={member.tab.id === draggedId}
+							isPlaceholder={isPlaceholder || member.tab.id === draggedId}
 							onMenu={onMenu}
 						/>
 					))}
 				</SidebarMenuSub>
 			) : null}
-		</SidebarMenuItem>
+		</Holder>
 	);
 }

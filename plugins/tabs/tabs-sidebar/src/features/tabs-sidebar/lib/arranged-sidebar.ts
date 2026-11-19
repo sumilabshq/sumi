@@ -1,11 +1,12 @@
 import type { SidebarEntry, SidebarGroupItem, SidebarSection, TabsSidebar } from "@widgetarium/app-host/contract";
 import type { SidebarSortAim } from "@widgetarium/kit";
-import { entryIdOf, placedOf, sortIdOf } from "./sidebar-drops.js";
-import type { Carried, Placed } from "./sidebar-drops.js";
+import { aimedOf, entryIdOf, placedIn, sortIdOf } from "./sidebar-drops.js";
+import type { Carried, Holder, Placed } from "./sidebar-drops.js";
 
 export interface Arranged {
 	readonly sidebar: TabsSidebar;
 	readonly placed: Placed | null;
+	readonly holder: Holder | null;
 }
 
 type Spot =
@@ -28,6 +29,7 @@ export function arrangedSidebarOf(sidebar: TabsSidebar, id: string, aim: Sidebar
 		return {
 			sidebar,
 			placed: null,
+			holder: null,
 		};
 	}
 
@@ -38,13 +40,16 @@ export function arrangedSidebarOf(sidebar: TabsSidebar, id: string, aim: Sidebar
 			entries: entriesWithout(section.entries, id),
 		})),
 	};
-	const placed = placedOf(without, carried, { id, ...aim });
+	const aimed = aimedOf(without, carried, { id, ...aim });
+	const placed = aimed === null ? null : placedIn(carried.node, aimed);
+	const holder = aimed?.holder ?? null;
 	const spot = placed === null ? null : spotOf(placed);
 
 	if (placed === null || spot === null) {
 		return {
 			sidebar,
 			placed,
+			holder,
 		};
 	}
 
@@ -54,6 +59,7 @@ export function arrangedSidebarOf(sidebar: TabsSidebar, id: string, aim: Sidebar
 			sections: without.sections.map((section) => sectionWith(section, carried.node, spot)),
 		},
 		placed,
+		holder,
 	};
 }
 
@@ -71,7 +77,7 @@ export function carriedOf(sidebar: TabsSidebar, id: string): Carried | null {
 
 function carriedAmong(nodes: readonly SidebarEntry[], id: string, depth: number): Carried | null {
 	for (const node of nodes) {
-		if (node.kind !== "split" && sortIdOf(node) === id) {
+		if (sortIdOf(node) === id) {
 			return {
 				node,
 				depth,
@@ -97,21 +103,7 @@ function innerOf(node: SidebarEntry): readonly SidebarGroupItem[] {
 }
 
 function entriesWithout(entries: readonly SidebarEntry[], id: string): readonly SidebarEntry[] {
-	return entries.flatMap((entry): readonly SidebarEntry[] => {
-		if (entry.kind !== "split") {
-			return itemsWithout([entry], id);
-		}
-
-		return [
-			{
-				...entry,
-				split: {
-					...entry.split,
-					members: entry.split.members.filter(({ item }) => item.tab.id !== id),
-				},
-			},
-		];
-	});
+	return itemsWithout(entries, id);
 }
 
 function itemsWithout(items: readonly SidebarGroupItem[], id: string): readonly SidebarGroupItem[] {
@@ -122,6 +114,10 @@ function itemsWithout(items: readonly SidebarGroupItem[], id: string): readonly 
 
 		if (item.kind === "tab") {
 			return [item.subPages === undefined ? item : { ...item, subPages: item.subPages.filter(({ tab }) => tab.id !== id) }];
+		}
+
+		if (item.kind === "split") {
+			return [{ ...item, split: { ...item.split, members: item.split.members.filter((member) => member.item.tab.id !== id) } }];
 		}
 
 		return [
@@ -137,7 +133,7 @@ function itemsWithout(items: readonly SidebarGroupItem[], id: string): readonly 
 }
 
 function spotOf(placed: Placed): Spot | null {
-	if (placed.kind === "group") {
+	if (placed.kind !== "tab") {
 		return {
 			kind: "list",
 			...placed.to,
@@ -159,7 +155,7 @@ function sectionWith(section: SidebarSection, node: SidebarGroupItem, spot: Spot
 		return node.kind === "tab"
 			? {
 					...section,
-					entries: section.entries.map((entry) => (entry.kind === "split" ? entry : pageWith(entry, node, spot))),
+					entries: section.entries.map((entry) => pageWith(entry, node, spot)),
 				}
 			: section;
 	}
@@ -174,7 +170,11 @@ function sectionWith(section: SidebarSection, node: SidebarGroupItem, spot: Spot
 	};
 }
 
-function splitWith(entry: SidebarEntry, node: SidebarGroupItem, spot: Extract<Spot, { kind: "split" }>): SidebarEntry {
+function splitWith<Item extends SidebarGroupItem>(entry: Item, node: SidebarGroupItem, spot: Extract<Spot, { kind: "split" }>): Item {
+	if (entry.kind === "group") {
+		return { ...entry, group: { ...entry.group, items: entry.group.items.map((inner) => splitWith(inner, node, spot)) } };
+	}
+
 	if (entry.kind !== "split" || entry.split.id !== spot.splitId || node.kind !== "tab") {
 		return entry;
 	}
@@ -231,7 +231,7 @@ function pageWith<Item extends SidebarGroupItem>(
 		};
 	}
 
-	if (item.tab.id !== spot.list || item.subPages === undefined) {
+	if (item.kind === "split" || item.tab.id !== spot.list || item.subPages === undefined) {
 		return item;
 	}
 
