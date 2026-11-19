@@ -5,19 +5,39 @@ import type { HostTab, HostTabsMoment, MovedTabs } from "./host-tabs.js";
 export interface TurnFacts {
 	readonly title: string | null;
 	readonly isBusy: boolean;
+	readonly isAsking: boolean;
+	readonly isFailed: boolean;
 	readonly isSeen: boolean;
 }
 
-export function markAfter(mark: TabMark, { isBusy, isSeen }: Pick<TurnFacts, "isBusy" | "isSeen">): TabMark {
+type TurnState = Pick<TurnFacts, "isBusy" | "isAsking" | "isFailed" | "isSeen">;
+
+function isTurnLive(mark: TabMark): boolean {
+	return mark === "running" || mark === "asking";
+}
+
+export function markAfter(mark: TabMark, { isBusy, isAsking, isFailed, isSeen }: TurnState): TabMark {
+	if (isAsking) {
+		return "asking";
+	}
+
 	if (isBusy) {
 		return "running";
 	}
 
-	if (mark === "running") {
-		return isSeen ? "none" : "unread";
+	if (!isTurnLive(mark)) {
+		return mark;
 	}
 
-	return mark;
+	if (isSeen) {
+		return "none";
+	}
+
+	return isFailed ? "failed" : "unread";
+}
+
+export function markWithoutTurn(mark: TabMark): TabMark {
+	return mark === "running" ? "none" : mark;
 }
 
 export function recordTurn(moment: HostTabsMoment, tab: HostTab, turn: TurnFacts): MovedTabs | null {
@@ -27,7 +47,8 @@ export function recordTurn(moment: HostTabsMoment, tab: HostTab, turn: TurnFacts
 }
 
 export function markSeen(moment: HostTabsMoment, tab: HostTab): MovedTabs | null {
-	return changedFacts(moment, tab, { mark: "none", title: tab.title }, "seen");
+	const mark = tab.mark === "asking" ? tab.mark : "none";
+	return changedFacts(moment, tab, { mark, title: tab.title }, "seen");
 }
 
 export function withRunningMarksCleared(moment: HostTabsMoment): MovedTabs | null {
@@ -40,7 +61,7 @@ export function withRunningMarksCleared(moment: HostTabsMoment): MovedTabs | nul
 	return {
 		moment: {
 			...moment,
-			tabs: moment.tabs.map((tab) => (tab.mark === "running" ? { ...tab, mark: "none" } : tab)),
+			tabs: moment.tabs.map((tab) => ({ ...tab, mark: markWithoutTurn(tab.mark) })),
 		},
 		reason: `${running.map((tab) => tab.id).join(", ")} mark running → none (no turn runs across a start)`,
 	};

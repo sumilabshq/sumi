@@ -24,6 +24,8 @@ export const NewChatSchema = z.object({
 export const ChatTurnSchema = z.object({
 	chatId: z.string().min(1),
 	isBusy: z.boolean(),
+	isAsking: z.boolean(),
+	isFailed: z.boolean(),
 	isSeen: z.boolean(),
 	firstAsked: z.string().nullable(),
 });

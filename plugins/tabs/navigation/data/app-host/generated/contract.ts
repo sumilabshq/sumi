@@ -97,7 +97,7 @@ export const TabArtSchema = z.enum([
 
 export type TabArt = z.infer<typeof TabArtSchema>;
 
-export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
+export const ChatMarkSchema = z.enum(["none", "running", "asking", "failed", "unread"]);
 
 export const AppTabSchema = z.object({
 	id: z.string(),

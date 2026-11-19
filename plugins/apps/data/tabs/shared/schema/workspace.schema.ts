@@ -3,7 +3,7 @@ import { GroupColourSchema } from "./place.schema.js";
 
 export const NoInputSchema = z.strictObject({});
 
-export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
+export const ChatMarkSchema = z.enum(["none", "running", "asking", "failed", "unread"]);
 
 export const StateTabSchema = z.object({
 	id: z.string(),

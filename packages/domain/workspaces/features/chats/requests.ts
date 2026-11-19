@@ -131,9 +131,11 @@ export const recordTurn = command()
 			id: was.id,
 			title,
 			isBusy: turn.isBusy,
+			isAsking: turn.isAsking,
+			isFailed: turn.isFailed,
 			isSeen: turn.isSeen,
 		});
-		const isStarting = turn.isBusy && marks.was !== null && marks.was !== "running";
+		const isStarting = turn.isBusy && marks.was !== null && marks.was !== "running" && marks.was !== "asking";
 		const now = chats.chats().chats.find((chat) => chat.id === was.id) ?? was;
 		saveTurned(chats, now, chatAfterTurn(now, { title: now.title ?? title, isStarting }));
 	});

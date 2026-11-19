@@ -1,11 +1,13 @@
 import { z } from "zod";
 
-export const TabMarkSchema = z.enum(["none", "running", "unread"]);
+export const TabMarkSchema = z.enum(["none", "running", "asking", "failed", "unread"]);
 
 export const ChatTurnSchema = z.object({
 	id: z.string().min(1),
 	title: z.string().nullable(),
 	isBusy: z.boolean(),
+	isAsking: z.boolean(),
+	isFailed: z.boolean(),
 	isSeen: z.boolean(),
 });
 
@@ -29,6 +31,23 @@ export const KeepChatTabsAskSchema = z.object({
 	// TODO: drop window, a chat tab belongs to the workspace now
 	window: z.string().min(1).nullable().default(null),
 	chats: z.array(NamedRecordSchema),
+});
+
+export const ChatTabLabelSchema = z.object({
+	chatId: z.string().min(1),
+	label: z.string().min(1),
+});
+
+export type ChatTabLabel = z.infer<typeof ChatTabLabelSchema>;
+
+export const AdoptedLabelSchema = ChatTabLabelSchema.extend({
+	title: z.string().min(1),
+});
+
+export type AdoptedLabel = z.infer<typeof AdoptedLabelSchema>;
+
+export const ChatTabLabelsSchema = z.object({
+	labels: z.array(ChatTabLabelSchema),
 });
 
 export const OpenChatSchema = z.object({

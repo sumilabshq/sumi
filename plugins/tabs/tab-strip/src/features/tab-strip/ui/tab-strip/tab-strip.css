@@ -111,6 +111,28 @@
 	text-overflow: ellipsis;
 }
 
+.sumi-tab-status {
+	flex: none;
+	width: var(--sumi-sp-4);
+	height: var(--sumi-sp-4);
+}
+
+.sumi-tab-status[data-mark="unread"] {
+	background: var(--sumi-status-done);
+}
+
+.sumi-tab-status[data-mark="asking"] {
+	background: var(--sumi-status-question);
+}
+
+.sumi-tab-status[data-mark="failed"] {
+	background: var(--sumi-status-blocked);
+}
+
+.sumi-strip-tab:is(:hover, :focus-visible) > .sumi-tab-status {
+	margin-inline-end: calc(18px + var(--sumi-sp-1));
+}
+
 .sumi-strip-tab-close {
 	position: absolute;
 	top: 50%;
@@ -297,8 +319,6 @@
 	opacity: 0;
 	pointer-events: none;
 }
-
-
 
 .sumi-split-member {
 	position: relative;

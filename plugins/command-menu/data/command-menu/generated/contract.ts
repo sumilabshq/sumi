@@ -139,7 +139,7 @@ export const RowIconSchema = z.discriminatedUnion("kind", [
 		favicon: z.string().nullable(),
 		title: z.string(),
 		address: z.string().nullable(),
-		mark: z.enum(["none", "running", "unread"]),
+		mark: z.enum(["none", "running", "asking", "failed", "unread"]),
 	}),
 	z.object({
 		kind: z.literal("letter"),

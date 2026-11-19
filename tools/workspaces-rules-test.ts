@@ -175,6 +175,8 @@ async function chatChecks(): Promise<void> {
 	await chats.send(workspacesContract.chats.recordTurn, {
 		chatId: "old",
 		isBusy: true,
+		isAsking: false,
+		isFailed: false,
 		isSeen: false,
 		firstAsked: LONG_ASK,
 	});
@@ -192,6 +194,8 @@ async function chatChecks(): Promise<void> {
 	await chats.send(workspacesContract.chats.recordTurn, {
 		chatId: "old",
 		isBusy: false,
+		isAsking: false,
+		isFailed: false,
 		isSeen: false,
 		firstAsked: LONG_ASK,
 	});
@@ -206,12 +210,16 @@ async function chatChecks(): Promise<void> {
 	await chats.send(workspacesContract.chats.recordTurn, {
 		chatId: "old",
 		isBusy: true,
+		isAsking: false,
+		isFailed: false,
 		isSeen: true,
 		firstAsked: null,
 	});
 	await chats.send(workspacesContract.chats.recordTurn, {
 		chatId: "old",
 		isBusy: false,
+		isAsking: false,
+		isFailed: false,
 		isSeen: true,
 		firstAsked: null,
 	});

@@ -122,7 +122,7 @@ export async function chatDuplicateChecks(world: World): Promise<void> {
 	await client.send(chatFacts.turns.keepChatTabs, { window: atOf(first).window, chats: [{ id: "dup-chat", title: "Plan" }] });
 	const copied = await client.send(navigation.tabOpening.duplicate, { at: atOf(first), id: "dup-chat", list: null, groupId: null, show: true });
 	const copyId = copied.ok ? copied.output.id : "refused";
-	await client.send(chatFacts.turns.recordTurn, { id: "dup-chat", title: null, isBusy: true, isSeen: false });
+	await client.send(chatFacts.turns.recordTurn, { id: "dup-chat", title: null, isBusy: true, isAsking: false, isFailed: false, isSeen: false });
 	const own = await client.send(navigation.tabFacts.ownAppTab, { id: copyId });
 	const placed = await client.send(navigation.tabs.placedTabs, { window: atOf(first).window });
 	const marks = placed.ok ? placed.output.tabs.filter(({ id }) => id === "dup-chat" || id === copyId).map(({ mark }) => mark) : [];

@@ -5,6 +5,7 @@ import { withSubPagesOf } from "./sub-pages.js";
 import type { MovedTabs } from "./host-tabs.js";
 import { groupsUnder, locationOf, tabIdsOfGroup, withTabAt, withoutTab } from "./tab-lists.js";
 import type { TabGroup, TabLayout } from "./tab-lists.js";
+import { markWithoutTurn } from "./tab-marks.js";
 
 export interface ReopenedHostTab extends MovedTabs {
 	readonly closed: ClosedTab;
@@ -75,7 +76,7 @@ function closedOf(moment: HostTabsMoment, tab: HostTab, pages: ReadonlyMap<strin
 		tab: {
 			...tab,
 			pageId: page?.pageId ?? tab.pageId,
-			mark: tab.mark === "running" ? "none" : tab.mark,
+			mark: markWithoutTurn(tab.mark),
 		},
 		...closedPlaceOf(locationOf(moment, tab.id)),
 		address: page?.address ?? "",

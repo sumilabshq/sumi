@@ -6,6 +6,7 @@ import { isPageTab } from "./host-tabs.js";
 import type { HostTab, HostTabsMoment, OpenedHostTab, OpenedTab } from "./host-tabs.js";
 import { WORKSPACE_LIST, withTabAt, withoutTab } from "./tab-lists.js";
 import type { TabPlace } from "./tab-lists.js";
+import { markWithoutTurn } from "./tab-marks.js";
 
 export interface TabNaming {
 	readonly id: string;
@@ -29,7 +30,7 @@ export function withTabFreed(placed: PlacedTabs, tabId: string, address: string)
 		closed: [
 			...placed.closed,
 			{
-				tab: { ...tab, mark: tab.mark === "running" ? "none" : tab.mark },
+				tab: { ...tab, mark: markWithoutTurn(tab.mark) },
 				chatId: null,
 				groupId: null,
 				at: 0,

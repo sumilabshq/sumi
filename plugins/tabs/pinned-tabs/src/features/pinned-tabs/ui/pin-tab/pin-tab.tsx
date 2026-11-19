@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { KeyboardEvent, MouseEvent, ReactElement } from "react";
 import { useTabFace } from "@sumi/sumi-host-plugin";
+import { TabStatus } from "@sumi/tab-strip-plugin";
 import type { PinView } from "../../lib/pin-views.js";
 import type { PinActs } from "../../lib/use-pin-acts.js";
 import { PinEnd } from "../pin-end/pin-end.js";
@@ -55,6 +56,7 @@ export function PinTab({ view, acts, onMenu }: PinTabProps): ReactElement {
 				</span>
 			</span>
 			<span className="sumi-strip-tab-title">{title}</span>
+			<TabStatus mark={tab?.mark ?? "none"} />
 			<PinEnd onUnpin={() => acts.unpin(pin.id)} />
 		</div>
 	);

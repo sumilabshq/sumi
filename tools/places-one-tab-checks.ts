@@ -56,7 +56,7 @@ async function wholeChatChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const places = placesApp(tabs);
 	await places.send(chatFacts.turns.keepChatTabs, { chats: [{ id: "chat-a", title: "Release plan" }] });
-	await places.send(chatFacts.turns.recordTurn, { id: "chat-a", title: null, isBusy: true, isSeen: false });
+	await places.send(chatFacts.turns.recordTurn, { id: "chat-a", title: null, isBusy: true, isAsking: false, isFailed: false, isSeen: false });
 	check(
 		"places alone answers a chat row: its title and its running mark, with no chat record anywhere",
 		openRowsOf(await sidebarOf(places)),
@@ -65,6 +65,7 @@ async function wholeChatChecks(): Promise<void> {
 
 	await chatIdChecks(places);
 	await turnEndingChecks(places);
+	await askingAndFailingChecks(places);
 	await archiveChecks(places);
 }
 
@@ -84,13 +85,79 @@ async function chatIdChecks(places: Runtime): Promise<void> {
 }
 
 async function turnEndingChecks(places: Runtime): Promise<void> {
-	await places.send(chatFacts.turns.recordTurn, { id: "chat-a", title: null, isBusy: false, isSeen: false });
+	await places.send(chatFacts.turns.recordTurn, { id: "chat-a", title: null, isBusy: false, isAsking: false, isFailed: false, isSeen: false });
 	const unread = openRowsOf(await sidebarOf(places));
 	await places.send(chatFacts.turns.markSeen, { id: "chat-a" });
 	check(
 		"a turn ending unseen marks the tab unread, and seeing it clears the mark",
 		[unread, openRowsOf(await sidebarOf(places))],
 		[[["Release plan", "unread", true]], [["Release plan", "none", true]]],
+	);
+}
+
+interface TurnMoment {
+	readonly isBusy: boolean;
+	readonly isAsking: boolean;
+	readonly isFailed: boolean;
+}
+
+async function rowsAfterTurn(places: Runtime, moment: TurnMoment): Promise<unknown> {
+	await places.send(chatFacts.turns.recordTurn, {
+		id: "chat-a",
+		title: null,
+		isSeen: false,
+		...moment,
+	});
+	return openRowsOf(await sidebarOf(places));
+}
+
+async function askingAndFailingChecks(places: Runtime): Promise<void> {
+	const asking = await rowsAfterTurn(places, {
+		isBusy: true,
+		isAsking: true,
+		isFailed: false,
+	});
+	await places.send(chatFacts.turns.markSeen, { id: "chat-a" });
+	const askingSeen = openRowsOf(await sidebarOf(places));
+	const answered = await rowsAfterTurn(places, {
+		isBusy: true,
+		isAsking: false,
+		isFailed: false,
+	});
+	const failed = await rowsAfterTurn(places, {
+		isBusy: false,
+		isAsking: false,
+		isFailed: true,
+	});
+	await places.send(chatFacts.turns.markSeen, { id: "chat-a" });
+	const blocked = await rowsAfterTurn(places, {
+		isBusy: false,
+		isAsking: true,
+		isFailed: false,
+	});
+	await places.send(chatFacts.turns.forgetRunningTurns);
+	const restarted = openRowsOf(await sidebarOf(places));
+	const unblocked = await rowsAfterTurn(places, {
+		isBusy: false,
+		isAsking: false,
+		isFailed: false,
+	});
+	await places.send(chatFacts.turns.markSeen, { id: "chat-a" });
+	check(
+		"a blocked idle chat is asking, stays asking across a start, and ends unread once unblocked",
+		[blocked, restarted, unblocked],
+		[[["Release plan", "asking", true]], [["Release plan", "asking", true]], [["Release plan", "unread", true]]],
+	);
+	check(
+		"a question marks the tab asking until answered, seeing it keeps asking, and a failed turn ends failed until seen",
+		[asking, askingSeen, answered, failed, openRowsOf(await sidebarOf(places))],
+		[
+			[["Release plan", "asking", true]],
+			[["Release plan", "asking", true]],
+			[["Release plan", "running", true]],
+			[["Release plan", "failed", true]],
+			[["Release plan", "none", true]],
+		],
 	);
 }
 

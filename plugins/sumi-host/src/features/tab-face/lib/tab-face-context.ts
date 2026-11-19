@@ -7,7 +7,7 @@ export interface TabFaceProps {
 	readonly favicon: string | null;
 	readonly title: string;
 	readonly address: string | null;
-	readonly mark: "none" | "running" | "unread";
+	readonly mark: "none" | "running" | "asking" | "failed" | "unread";
 }
 
 export const TabFaceContext = createContext<ComponentType<TabFaceProps>>(NoTabFace);

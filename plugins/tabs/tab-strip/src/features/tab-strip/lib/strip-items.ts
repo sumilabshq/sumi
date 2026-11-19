@@ -1,5 +1,6 @@
 import type {
 	AppTabState,
+	ChatMark,
 	SidebarEntry,
 	SidebarGroupState,
 	SidebarSplitState,
@@ -40,6 +41,13 @@ export function itemIdOf(item: StripItem): string {
 
 export function tabOf(item: StripItem): AppTabState {
 	return item.kind === "tab" ? item.tab : item.focused;
+}
+
+const MARKS_BY_URGENCY: readonly ChatMark[] = ["asking", "failed", "unread", "running", "none"];
+
+export function itemMarkOf(item: StripItem): ChatMark {
+	const marks = item.kind === "tab" ? [item.tab.mark] : item.split.members.map((member) => member.item.tab.mark);
+	return MARKS_BY_URGENCY.find((mark) => marks.includes(mark)) ?? "none";
 }
 
 export function memberIdsOf(item: StripItem): readonly string[] {

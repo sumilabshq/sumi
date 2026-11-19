@@ -11,7 +11,7 @@ import {
 } from "@widgetarium/kit";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import type { SidebarTab } from "@widgetarium/app-host/contract";
-import { TabIcons, isShownItem, tabOf } from "@sumi/tab-strip-plugin";
+import { TabIcons, TabStatus, isShownItem, tabOf } from "@sumi/tab-strip-plugin";
 import type { StripItem, TabActs } from "@sumi/tab-strip-plugin";
 
 export interface TabEntryProps {
@@ -73,6 +73,7 @@ export function TabEntry({
 			>
 				<TabIcons item={item} />
 				<span className={cn("sumi-tabs-sidebar-title", mark === "running" && "wg-kit-shimmer")}>{title}</span>
+				<TabStatus mark={mark} />
 			</SidebarMenuButton>
 			<ListPluginSlot name="tabs-sidebar.tab-actions" props={{ tabId: id }} />
 			<SidebarMenuAction showOnHover={!isInFocus} label={CLOSE_TAB} onClick={() => acts.close(item)}>

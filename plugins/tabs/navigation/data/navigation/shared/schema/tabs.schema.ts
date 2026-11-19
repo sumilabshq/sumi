@@ -14,7 +14,7 @@ export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
 
 export type StudioView = z.infer<typeof StudioViewSchema>;
 
-export const TabMarkSchema = z.enum(["none", "running", "unread"]);
+export const TabMarkSchema = z.enum(["none", "running", "asking", "failed", "unread"]);
 
 export type TabMark = z.infer<typeof TabMarkSchema>;
 

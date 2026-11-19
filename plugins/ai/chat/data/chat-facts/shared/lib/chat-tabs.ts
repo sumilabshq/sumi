@@ -87,14 +87,20 @@ function withTitles(moment: HostTabsMoment, renamed: readonly NamedRecord[]): re
 	const titleOf = new Map(renamed.map((chat) => [chat.id, chat.title]));
 	return moment.tabs.map((tab) => {
 		const title = titleOf.get(chatIdOf(moment.apps, tab) ?? tab.id);
-		return title === undefined ? tab : { ...tab, title };
+		return title === undefined
+			? tab
+			: {
+					...tab,
+					title,
+					label: null,
+				};
 	});
 }
 
 function keptSaid(missing: readonly NamedRecord[], renamed: readonly NamedRecord[], listId: string): string {
 	const kept =
 		missing.length === 0 ? [] : [`chat tabs ${missing.map(({ id }) => id).join(", ")} kept at the end of ${listId}`];
-	const titled = renamed.length === 0 ? [] : [`titles of ${renamed.map(({ id }) => id).join(", ")} follow their chats`];
+	const titled = renamed.length === 0 ? [] : [`titles of ${renamed.map(({ id }) => id).join(", ")} follow their chats, labels dropped`];
 	return [...kept, ...titled].join("; ");
 }
 

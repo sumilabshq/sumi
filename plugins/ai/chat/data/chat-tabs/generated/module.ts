@@ -4,8 +4,10 @@ import { chatTabs as definition } from "../module.js";
 import { all, reread, rereadForCore } from "../features/chat-list/requests.js";
 import { create, namePane, openAskedOnStart, openNew } from "../features/chat-opening/requests.js";
 import { sync, syncOnChatsChanged } from "../features/chat-sync/requests.js";
+import { nameChatsAfterTabs } from "../features/tab-names/requests.js";
 
 export const chatTabs = handledModule(definition, [
+	nameChatsAfterTabs,
 	reread,
 	rereadForCore,
 	syncOnChatsChanged,

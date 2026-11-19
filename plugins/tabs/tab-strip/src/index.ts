@@ -10,3 +10,4 @@ export * from "./features/tab-strip/lib/group-colour.js";
 export * from "./features/tab-strip/lib/drag-aim.js";
 export * from "./features/tab-strip/ui/drag-layer/drag-layer.js";
 export type { Lifted } from "./features/tab-strip/lib/use-tab-drag.js";
+export * from "./features/tab-strip/ui/tab-status/tab-status.js";

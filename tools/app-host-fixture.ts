@@ -182,8 +182,10 @@ function workspacesOf(title: string | null): ReturnType<typeof memoryWorkspacesP
 				{
 					id: HOST_CHAT,
 					title,
+					titleBy: "ask",
 					createdAt: 1,
 					lastAt: 1,
+					archivedAt: null,
 				},
 			],
 			openOnStartId: HOST_CHAT,

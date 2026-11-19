@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ChatRowMarkSchema = z.enum(["none", "running", "unread"]);
+export const ChatRowMarkSchema = z.enum(["none", "running", "asking", "failed", "unread"]);
 
 export const ChatRowSchema = z.object({
 	id: z.string(),

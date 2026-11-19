@@ -2,12 +2,14 @@
 import { Repeatable, Server, command, moduleContract, named, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
-export const TabMarkSchema = z.enum(["none", "running", "unread"]);
+export const TabMarkSchema = z.enum(["none", "running", "asking", "failed", "unread"]);
 
 export const ChatTurnSchema = z.object({
 	id: z.string().min(1),
 	title: z.string().nullable(),
 	isBusy: z.boolean(),
+	isAsking: z.boolean(),
+	isFailed: z.boolean(),
 	isSeen: z.boolean(),
 });
 
@@ -33,6 +35,23 @@ export const KeepChatTabsAskSchema = z.object({
 	chats: z.array(NamedRecordSchema),
 });
 
+export const ChatTabLabelSchema = z.object({
+	chatId: z.string().min(1),
+	label: z.string().min(1),
+});
+
+export type ChatTabLabel = z.infer<typeof ChatTabLabelSchema>;
+
+export const AdoptedLabelSchema = ChatTabLabelSchema.extend({
+	title: z.string().min(1),
+});
+
+export type AdoptedLabel = z.infer<typeof AdoptedLabelSchema>;
+
+export const ChatTabLabelsSchema = z.object({
+	labels: z.array(ChatTabLabelSchema),
+});
+
 export const OpenChatSchema = z.object({
 	id: z.string(),
 	title: z.string(),
@@ -50,6 +69,15 @@ export const chatFacts = moduleContract("chat-facts", Server, {
 		all: named("open-chats.all", query()
 			.public()
 			.output(OpenChatsSchema)),
+	},
+	tabLabels: {
+		all: named("tab-labels.all", query()
+			.public()
+			.output(ChatTabLabelsSchema)),
+		drop: named("tab-labels.drop", command()
+			.public()
+			.input(AdoptedLabelSchema)
+			.idempotencyKey(Repeatable)),
 	},
 	turns: {
 		keepChatTabs: named("turns.keep-chat-tabs", command()

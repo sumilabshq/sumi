@@ -19,6 +19,8 @@ interface ShownFace {
 const ON_SCREEN = "on screen";
 const WORKING = "Working";
 const UNREAD = "Done, not read";
+const ASKING = "Waiting for you";
+const FAILED = "Failed";
 const WORKSPACE = "Workspace";
 const APP = "App";
 const NO_MARK = "none";
@@ -266,6 +268,8 @@ function chatMetaOf(row: ChatRowData, isOnScreen: boolean): string {
 	const said = [
 		row.mark === "running" ? WORKING : "",
 		row.mark === "unread" ? UNREAD : "",
+		row.mark === "asking" ? ASKING : "",
+		row.mark === "failed" ? FAILED : "",
 		isOnScreen ? ON_SCREEN : "",
 	];
 	return said.filter((part) => part !== "").join(" · ");
