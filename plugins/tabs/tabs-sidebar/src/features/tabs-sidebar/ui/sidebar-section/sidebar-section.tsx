@@ -60,7 +60,7 @@ export function SidebarSection({
 			const refused = refusedDropOf(sidebar, carriedOf(sidebar, drop.id), placed);
 
 			if (refused !== null) {
-				console.info(`[widgetarium] sidebar drop of ${drop.id} into ${refused.chatId} skipped: ${refused.words}`);
+				console.info(`[widgetarium] sidebar drop of ${drop.id} into ${refused.pageId} skipped: ${refused.words}`);
 				return;
 			}
 
@@ -146,7 +146,7 @@ export function SidebarSection({
 			) : null}
 			{refused === null ? null : (
 				<DropRefusal
-					anchor={menu.current?.querySelector<HTMLElement>(`[data-sort-id="${CSS.escape(refused.chatId)}"]`) ?? null}
+					anchor={menu.current?.querySelector<HTMLElement>(`[data-sort-id="${CSS.escape(refused.pageId)}"]`) ?? null}
 					words={refused.words}
 				/>
 			)}
@@ -190,7 +190,7 @@ function entryOf(entry: SidebarEntry, { list, acts, draggedId, onMenu }: EntryLo
 				acts={acts}
 				isSub={false}
 				isPlaceholder={entry.tab.id === draggedId}
-				artifacts={entry.artifacts}
+				subPages={entry.subPages}
 				isFolded={entry.isFolded}
 				draggedId={draggedId}
 				onMenu={onMenu}

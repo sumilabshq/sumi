@@ -1,7 +1,7 @@
 {
-	"name": "@sumi/artifacts-plugin",
+	"name": "@sumi/sub-pages-plugin",
 	"version": "0.1.0",
-	"description": "Artifacts: a chat keeps the tabs it made, folded under it in the sidebar and in a list on its tab in the header",
+	"description": "Sub-pages: a main page keeps the pages opened from it, folded under it in the sidebar and listed on its tab in the header; a chat opens as the AI assistant of a page",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"exports": {
@@ -10,6 +10,8 @@
 		}
 	},
 	"dependencies": {
+		"@sumi/chat-tabs": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
 		"@sumi/tab-strip-plugin": "0.1.0",
 		"@sumi/tabs-sidebar-plugin": "0.1.0",
 		"@widgetarium/app-host": "0.1.0",

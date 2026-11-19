@@ -1,14 +1,17 @@
+import { sumiHost } from "@sumi/sumi-host-plugin";
 import { tabStrip } from "@sumi/tab-strip-plugin";
 import { tabsSidebar } from "@sumi/tabs-sidebar-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
-import { ChatMenuItems } from "./features/artifacts/ui/chat-menu-items/chat-menu-items.js";
-import { SidebarFold } from "./features/artifacts/ui/sidebar-fold/sidebar-fold.js";
-import { StripArtifacts } from "./features/artifacts/ui/strip-artifacts/strip-artifacts.js";
+import { AssistantButton } from "./features/sub-pages/ui/assistant-button/assistant-button.js";
+import { SidebarFold } from "./features/sub-pages/ui/sidebar-fold/sidebar-fold.js";
+import { StripSubPages } from "./features/sub-pages/ui/strip-sub-pages/strip-sub-pages.js";
+import { SubPageMenuItems } from "./features/sub-pages/ui/sub-page-menu-items/sub-page-menu-items.js";
 
-export const artifacts = plugin("artifacts")
-	.require(tabStrip, tabsSidebar)
+export const subPages = plugin("sub-pages")
+	.require(sumiHost, tabStrip, tabsSidebar)
 	.apply((app) => {
 		app.use(tabsSidebar).slots.tabActions.add(SidebarFold);
-		app.use(tabStrip).slots.tabTools.add(StripArtifacts);
-		app.use(tabStrip).slots.tabMenuItems.add(ChatMenuItems);
+		app.use(tabStrip).slots.tabTools.add(StripSubPages);
+		app.use(tabStrip).slots.tabMenuItems.add(SubPageMenuItems);
+		app.use(sumiHost).slots.titleEnd.add(AssistantButton);
 	});

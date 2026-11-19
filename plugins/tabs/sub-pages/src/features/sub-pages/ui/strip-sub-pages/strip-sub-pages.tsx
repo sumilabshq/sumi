@@ -4,22 +4,23 @@ import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { Icon, Popover, PopoverContent, PopoverItem, PopoverTrigger } from "@widgetarium/kit";
 import { appHost } from "@widgetarium/app-host/contract";
 import { TabIcons } from "@sumi/tab-strip-plugin";
-import { chatEntryOf } from "../../lib/chat-entries.js";
+import { pageEntryOf } from "../../lib/page-entries.js";
 
-export interface StripArtifactsProps {
+export interface StripSubPagesProps {
 	readonly tabId: string;
 }
 
-const LIST = "Artifacts of {title}";
+const LIST = "Sub-pages of {title}";
+const HEAD = "Sub-pages · {count}";
 const CHEVRON_PX = 12;
 
-export function StripArtifacts({ tabId }: StripArtifactsProps): ReactElement | null {
+export function StripSubPages({ tabId }: StripSubPagesProps): ReactElement | null {
 	const sidebar = useQuery(appHost.tabs.tabsSidebar).data;
 	const showTab = useCommand(appHost.tabs.showTab);
 	const [isOpen, setOpen] = useState(false);
-	const chat = chatEntryOf(sidebar, tabId);
+	const page = pageEntryOf(sidebar, tabId);
 
-	if (chat === null || chat.artifacts.length === 0) {
+	if (page === null || page.subPages.length === 0) {
 		return null;
 	}
 
@@ -28,8 +29,8 @@ export function StripArtifacts({ tabId }: StripArtifactsProps): ReactElement | n
 			<PopoverTrigger asChild>
 				<button
 					type="button"
-					className="sumi-artifacts-chevron"
-					aria-label={LIST.replace("{title}", chat.tab.title)}
+					className="sumi-sub-pages-chevron"
+					aria-label={LIST.replace("{title}", page.tab.title)}
 					aria-expanded={isOpen}
 					data-open={isOpen ? "" : undefined}
 					onPointerDown={(event) => event.stopPropagation()}
@@ -38,9 +39,10 @@ export function StripArtifacts({ tabId }: StripArtifactsProps): ReactElement | n
 					<Icon name="chevron-down" size={CHEVRON_PX} />
 				</button>
 			</PopoverTrigger>
-			<PopoverContent side="bottom" align="start" className="is-compact sumi-artifacts-menu">
-				<div role="menu" aria-label={LIST.replace("{title}", chat.tab.title)}>
-					{chat.artifacts.map(({ tab }) => (
+			<PopoverContent side="bottom" align="start" className="is-compact sumi-sub-pages-menu">
+				<div role="menu" aria-label={LIST.replace("{title}", page.tab.title)}>
+					<div className="sumi-sub-pages-head">{HEAD.replace("{count}", String(page.subPages.length))}</div>
+					{page.subPages.map(({ tab }) => (
 						<PopoverItem
 							key={tab.id}
 							role="menuitem"
@@ -51,7 +53,7 @@ export function StripArtifacts({ tabId }: StripArtifactsProps): ReactElement | n
 							}}
 						>
 							<TabIcons item={{ kind: "tab", tab, list: tabId, groupId: null, group: null }} />
-							<span className="sumi-artifacts-title">{tab.title}</span>
+							<span className="sumi-sub-pages-title">{tab.title}</span>
 						</PopoverItem>
 					))}
 				</div>

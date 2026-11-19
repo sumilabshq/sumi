@@ -68,8 +68,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
 	"@sumi/pinned-tabs-plugin/pinned-tabs.css":
 		"plugins/tabs/pinned-tabs/src/features/pinned-tabs/ui/pinned-tabs/pinned-tabs.css",
-	"@sumi/artifacts-plugin/strip-artifacts.css":
-		"plugins/tabs/artifacts/src/features/artifacts/ui/strip-artifacts/strip-artifacts.css",
+	"@sumi/sub-pages-plugin/strip-sub-pages.css":
+		"plugins/tabs/sub-pages/src/features/sub-pages/ui/strip-sub-pages/strip-sub-pages.css",
 	"@sumi/tab-groups-plugin/group-editor.css":
 		"plugins/tabs/tab-groups/src/features/group-menu/ui/group-editor/group-editor.css",
 	"@sumi/tabs-sidebar-plugin/tabs-sidebar.css":
@@ -123,7 +123,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/tab-strip-plugin/tab-strip.css";
 @import "@sumi/pinned-tabs-plugin/pinned-tabs.css";
 @import "@sumi/tab-groups-plugin/group-editor.css";
-@import "@sumi/artifacts-plugin/strip-artifacts.css";
+@import "@sumi/sub-pages-plugin/strip-sub-pages.css";
 @import "@sumi/tabs-sidebar-plugin/tabs-sidebar.css";
 @import "@sumi/tabs-sidebar-plugin/sidebar-title.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";

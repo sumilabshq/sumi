@@ -1,35 +1,35 @@
-import type { SidebarGroupItem, SidebarTab, TabsSidebar } from "@widgetarium/app-host/contract";
+import type { AppTabState, SidebarGroupItem, SidebarTab, TabsSidebar } from "@widgetarium/app-host/contract";
 
-export type ChatEntry = SidebarTab & { readonly artifacts: NonNullable<SidebarTab["artifacts"]> };
+export type PageEntry = SidebarTab & { readonly subPages: NonNullable<SidebarTab["subPages"]> };
 
-export interface ChatHolding {
-	readonly chat: ChatEntry;
+export interface MainPage {
+	readonly page: PageEntry;
 	readonly list: string;
 }
 
-export function chatEntryOf(sidebar: TabsSidebar, tabId: string): ChatEntry | null {
-	return chatEntriesOf(sidebar).find((chat) => chat.tab.id === tabId) ?? null;
+export function pageEntryOf(sidebar: TabsSidebar, tabId: string): PageEntry | null {
+	return pageEntriesOf(sidebar).find((page) => page.tab.id === tabId) ?? null;
 }
 
-export function chatEntriesOf(sidebar: TabsSidebar): readonly ChatEntry[] {
+export function pageEntriesOf(sidebar: TabsSidebar): readonly PageEntry[] {
 	return sidebar.sections
 		.flatMap(({ entries }) =>
 			entries.flatMap((entry) =>
 				entry.kind === "split" ? entry.split.members.map(({ item }) => item) : itemsUnder(entry),
 			),
 		)
-		.filter(isChatEntry);
+		.filter(isPageEntry);
 }
 
-export function holdingChatOf(sidebar: TabsSidebar, tabId: string): ChatHolding | null {
+export function mainPageOf(sidebar: TabsSidebar, tabId: string): MainPage | null {
 	for (const section of sidebar.sections) {
-		const chat = chatEntriesOf({ ...sidebar, sections: [section] }).find(({ artifacts }) =>
-			artifacts.some(({ tab }) => tab.id === tabId),
+		const page = pageEntriesOf({ ...sidebar, sections: [section] }).find(({ subPages }) =>
+			subPages.some(({ tab }) => tab.id === tabId),
 		);
 
-		if (chat !== undefined) {
+		if (page !== undefined) {
 			return {
-				chat,
+				page,
 				list: section.list,
 			};
 		}
@@ -38,10 +38,21 @@ export function holdingChatOf(sidebar: TabsSidebar, tabId: string): ChatHolding 
 	return null;
 }
 
+export function shownTabOf(sidebar: TabsSidebar): AppTabState | null {
+	const shown = pageEntriesOf(sidebar)
+		.flatMap((page) => [page.tab, ...page.subPages.map(({ tab }) => tab)])
+		.find((tab) => tab.isShown);
+	return shown ?? null;
+}
+
+export function isChatTab(tab: AppTabState): boolean {
+	return tab.icon === "chat";
+}
+
 function itemsUnder(item: SidebarGroupItem): readonly SidebarTab[] {
 	return item.kind === "tab" ? [item] : item.group.items.flatMap(itemsUnder);
 }
 
-function isChatEntry(tab: SidebarTab): tab is ChatEntry {
-	return tab.artifacts !== undefined;
+function isPageEntry(tab: SidebarTab): tab is PageEntry {
+	return tab.subPages !== undefined;
 }

@@ -14,7 +14,7 @@ reportsFailures();
 const host = document.getElementById("root");
 
 if (host === null) {
-	throw new Error("chat artifacts page: no #root");
+	throw new Error("sub-pages page: no #root");
 }
 
 function tabOf(id: string, title: string, icon: AppTabState["icon"], isShown = false): AppTabState {
@@ -35,11 +35,11 @@ function tabOf(id: string, title: string, icon: AppTabState["icon"], isShown = f
 }
 
 const ENTRIES: readonly SidebarTab[] = [
-	{ kind: "tab", tab: tabOf("burger", "Дубль бургер-меню і дивайдер", "chat"), artifacts: [], isFolded: false },
+	{ kind: "tab", tab: tabOf("burger", "Дубль бургер-меню і дивайдер", "chat"), subPages: [], isFolded: false },
 	{
 		kind: "tab",
 		tab: tabOf("groups-chat", "Групи, спліти та артефакти", "chat"),
-		artifacts: [
+		subPages: [
 			{ kind: "tab", tab: tabOf("canvas", "Canvas", "canvas", true) },
 			{ kind: "tab", tab: tabOf("plan", "plan.md", "note") },
 			{ kind: "tab", tab: tabOf("jira", "jira.com · T-12", "site") },
@@ -49,11 +49,11 @@ const ENTRIES: readonly SidebarTab[] = [
 	{
 		kind: "tab",
 		tab: tabOf("icons-chat", "Дизайн статусів іконки чату", "chat"),
-		artifacts: [{ kind: "tab", tab: tabOf("icons", "status-icons.tsx", "code-ts") }],
+		subPages: [{ kind: "tab", tab: tabOf("icons", "status-icons.tsx", "code-ts") }],
 		isFolded: true,
 	},
-	{ kind: "tab", tab: tabOf("plugins", "Плагіни: UI і регістри", "chat"), artifacts: [], isFolded: false },
-	{ kind: "tab", tab: tabOf("page", "example.com", "site") },
+	{ kind: "tab", tab: tabOf("plugins", "Плагіни: UI і регістри", "chat"), subPages: [], isFolded: false },
+	{ kind: "tab", tab: tabOf("page", "example.com", "site"), subPages: [], isFolded: false },
 ];
 
 const ACTS = {
@@ -64,13 +64,13 @@ const ACTS = {
 function DemoFold({ tabId }: { readonly tabId: string }): ReactElement | null {
 	const entry = ENTRIES.find((one) => one.tab.id === tabId);
 	const [isOpen, setOpen] = useState(!(entry?.isFolded ?? false));
-	return entry?.artifacts === undefined || entry.artifacts.length === 0 ? null : (
+	return entry?.subPages === undefined || entry.subPages.length === 0 ? null : (
 		<SidebarMenuFold isOpen={isOpen} label="Fold" onClick={() => setOpen(!isOpen)} />
 	);
 }
 
 const FILLS = new SlotFills([
-	{ slot: "tabs-sidebar.tab-actions", pluginId: "artifacts", kind: "add", component: DemoFold as never },
+	{ slot: "tabs-sidebar.tab-actions", pluginId: "sub-pages", kind: "add", component: DemoFold as never },
 ]);
 
 function Demo(): ReactElement {
@@ -95,7 +95,7 @@ function Demo(): ReactElement {
 									acts={ACTS}
 									isSub={false}
 									isPlaceholder={false}
-									artifacts={entry.artifacts}
+									subPages={entry.subPages}
 									isFolded={entry.isFolded}
 									onMenu={() => undefined}
 								/>
@@ -110,7 +110,7 @@ function Demo(): ReactElement {
 						if (row !== anchor) setAnchor(row);
 					}}
 				/>
-				<DropRefusal anchor={anchor} words="A chat can't hold a chat" />
+				<DropRefusal anchor={anchor} words="A page with sub-pages can't be a sub-page" />
 			</div>
 		</PluginSlotsContext.Provider>
 	);

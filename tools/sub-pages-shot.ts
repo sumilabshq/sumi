@@ -6,7 +6,7 @@ import { paged, waited } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { BOARD_SHEET } from "./sheet-paths.mts";
 
-const SHOT_AT = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-chat-artifacts.png"));
+const SHOT_AT = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-sub-pages.png"));
 const SHEETS = [
 	BOARD_SHEET,
 	"plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
@@ -14,7 +14,7 @@ const SHEETS = [
 ];
 const LAYOUT = `body { margin: 0; } .demo { padding: 24px; min-height: 100vh; box-sizing: border-box; background: var(--sumi-frame, #0b0b0a); }`;
 
-const bundle = await bundleOf("tools/chat-artifacts-page.tsx");
+const bundle = await bundleOf("tools/sub-pages-page.tsx");
 const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</style>`).join("");
 const PAGE = `<!doctype html><html class="dark"><head><meta charset="utf-8">${styles}<style>${LAYOUT}</style></head>
 <body class="dark"><div id="root"></div><pre id="boom"></pre><script>${bundle}</script></body></html>`;
@@ -26,7 +26,7 @@ await new Promise<void>((listening) => server.listen(0, "127.0.0.1", listening))
 const address = server.address();
 const origin = typeof address === "object" && address !== null ? `http://127.0.0.1:${address.port}/` : "";
 
-const page = await paged(origin, "chat-artifacts", { size: [420, 360] });
+const page = await paged(origin, "sub-pages", { size: [420, 360] });
 try {
 	await waited(800);
 	const drawn = await page.ask(`({

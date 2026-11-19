@@ -46,11 +46,11 @@ const sidebar: TabsSidebar = {
 				{
 					kind: "tab",
 					tab: tabOf("chat-a", "chat"),
-					artifacts: [{ kind: "tab", tab: tabOf("plan", "browser") }],
+					subPages: [{ kind: "tab", tab: tabOf("plan", "browser") }],
 					isFolded: false,
 				},
-				{ kind: "tab", tab: tabOf("chat-b", "chat"), artifacts: [], isFolded: false },
-				{ kind: "tab", tab: tabOf("page", "browser") },
+				{ kind: "tab", tab: tabOf("chat-b", "chat"), subPages: [], isFolded: false },
+				{ kind: "tab", tab: tabOf("page", "browser"), subPages: [], isFolded: false },
 				{
 					kind: "group",
 					group: {
@@ -80,21 +80,23 @@ check("a page dropped onto a chat goes into the chat's list", pageIntoChat.place
 });
 check("a page dropped onto a chat is not refused", pageIntoChat.refused, null);
 
-const chatIntoChat = dropOf("chat-a", "chat-b");
-check("a chat dropped onto a chat is refused with the old words", chatIntoChat.refused, {
-	chatId: "chat-b",
-	words: "A chat can't hold a chat",
+const chatIntoChat = dropOf("chat-b", "page");
+check("a chat with no sub-pages dropped onto a page becomes its sub-page", chatIntoChat.refused, null);
+const pageWithSubPages = dropOf("chat-a", "page");
+check("a page with sub-pages dropped onto a page is refused", pageWithSubPages.refused, {
+	pageId: "page",
+	words: "A page with sub-pages can't be a sub-page",
 });
 
 const groupIntoChat = dropOf("group:g", "chat-b");
-check("a group dropped onto a chat is refused", groupIntoChat.refused, {
-	chatId: "chat-b",
-	words: "A chat can't hold a group",
+check("a group dropped onto a page is refused", groupIntoChat.refused, {
+	pageId: "chat-b",
+	words: "A page can't hold a group",
 });
 
-check("an artifact can be carried", carriedOf(sidebar, "plan")?.depth, 1);
-const artifactOut = arrangedSidebarOf(sidebar, "plan", { targetId: "page", place: "after", levels: -1 });
-check("an artifact dragged out of its chat lands in the workspace list, after the page", artifactOut.placed?.to, {
+check("a sub-page can be carried", carriedOf(sidebar, "plan")?.depth, 1);
+const subPageOut = arrangedSidebarOf(sidebar, "plan", { targetId: "page", place: "after", levels: -1 });
+check("a sub-page dragged out of its page lands in the workspace list, after the page", subPageOut.placed?.to, {
 	kind: "list",
 	list: "workspace",
 	groupId: null,
@@ -104,10 +106,10 @@ check("an artifact dragged out of its chat lands in the workspace list, after th
 const shown = arrangedSidebarOf(sidebar, "page", { targetId: "chat-a", place: "into", levels: 0 }).sidebar;
 const chatA = shown.sections[0]?.entries[0];
 check(
-	"the preview shows the dropped page among the chat's artifacts",
-	chatA?.kind === "tab" ? chatA.artifacts?.map(({ tab }) => tab.id) : null,
+	"the preview shows the dropped page among the chat's sub-pages",
+	chatA?.kind === "tab" ? chatA.subPages?.map(({ tab }) => tab.id) : null,
 	["plan", "page"],
 );
 
-console.log(failed === 0 ? "chat artifacts sidebar: all checks pass" : `chat artifacts sidebar: ${failed} failed`);
+console.log(failed === 0 ? "sub-pages sidebar: all checks pass" : `sub-pages sidebar: ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

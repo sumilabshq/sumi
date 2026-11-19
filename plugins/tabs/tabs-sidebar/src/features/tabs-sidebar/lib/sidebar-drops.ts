@@ -154,14 +154,14 @@ function rowsOf(node: SidebarEntry, list: string, depth: number): readonly SortR
 	};
 
 	if (node.kind === "tab") {
-		const isOpen = node.artifacts !== undefined && node.artifacts.length > 0 && !(node.isFolded ?? false);
+		const isOpen = node.subPages !== undefined && node.subPages.length > 0 && !(node.isFolded ?? false);
 		return [
 			{
 				...row,
-				holds: node.artifacts === undefined ? null : { kind: "list", list: node.tab.id },
+				holds: node.subPages === undefined ? null : { kind: "list", list: node.tab.id },
 				isOpen,
 			},
-			...(isOpen ? (node.artifacts ?? []).flatMap((artifact) => rowsOf(artifact, list, depth + 1)) : []),
+			...(isOpen ? (node.subPages ?? []).flatMap((subPage) => rowsOf(subPage, list, depth + 1)) : []),
 		];
 	}
 

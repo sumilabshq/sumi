@@ -19,7 +19,7 @@ export interface TabEntryProps {
 	readonly acts: TabActs;
 	readonly isSub: boolean;
 	readonly isPlaceholder: boolean;
-	readonly artifacts?: SidebarTab["artifacts"];
+	readonly subPages?: SidebarTab["subPages"];
 	readonly isFolded?: boolean | undefined;
 	readonly depth?: number;
 	readonly draggedId?: string | null;
@@ -35,7 +35,7 @@ export function TabEntry({
 	acts,
 	isSub,
 	isPlaceholder,
-	artifacts,
+	subPages,
 	isFolded = false,
 	depth = 0,
 	draggedId = null,
@@ -44,19 +44,19 @@ export function TabEntry({
 	const { id, title, mark } = tabOf(item);
 	const Holder = isSub ? SidebarMenuSubItem : SidebarMenuItem;
 	const isOpen =
-		artifacts !== undefined && artifacts.length > 0 && (!isFolded || artifacts.some(({ tab }) => tab.id === draggedId));
+		subPages !== undefined && subPages.length > 0 && (!isFolded || subPages.some(({ tab }) => tab.id === draggedId));
 	const inner: CSSProperties & Readonly<Record<"--sumi-tabs-depth", number>> = {
 		"--sumi-tabs-depth": depth + 1,
 	};
 	return (
-		<Holder role="presentation" data-sort-block={artifacts === undefined ? undefined : id}>
+		<Holder role="presentation" data-sort-block={subPages === undefined ? undefined : id}>
 			<SidebarMenuButton
 				size="sm"
 				role="tab"
 				data-sort-id={id}
-				data-sort-into={artifacts !== undefined && !isOpen ? "" : undefined}
+				data-sort-into={subPages !== undefined && !isOpen ? "" : undefined}
 				data-sort-placeholder={isPlaceholder ? "" : undefined}
-				data-tabs-chat={artifacts === undefined ? undefined : id}
+				data-tabs-page={subPages === undefined ? undefined : id}
 				aria-selected={isShownItem(item)}
 				isActive={isShownItem(item)}
 				onClick={() => acts.show(item)}
@@ -79,13 +79,13 @@ export function TabEntry({
 			</SidebarMenuAction>
 			{isOpen ? (
 				<SidebarMenuSub role="presentation" style={inner}>
-					{artifacts.map((artifact) => (
+					{subPages.map((subPage) => (
 						<TabEntry
-							key={artifact.tab.id}
-							item={{ kind: "tab", tab: artifact.tab, list: item.list, groupId: null, group: null }}
+							key={subPage.tab.id}
+							item={{ kind: "tab", tab: subPage.tab, list: item.list, groupId: null, group: null }}
 							acts={acts}
 							isSub
-							isPlaceholder={isPlaceholder || artifact.tab.id === draggedId}
+							isPlaceholder={isPlaceholder || subPage.tab.id === draggedId}
 							onMenu={onMenu}
 						/>
 					))}

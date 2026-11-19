@@ -14,7 +14,7 @@
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
 		"noEmit": true,
-		"tsBuildInfoFile": "../../../node_modules/.cache/widgetarium/artifacts-plugin.tsbuildinfo",
+		"tsBuildInfoFile": "../../../node_modules/.cache/widgetarium/sub-pages-plugin.tsbuildinfo",
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,

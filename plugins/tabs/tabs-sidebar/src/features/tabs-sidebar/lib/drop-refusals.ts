@@ -2,12 +2,12 @@ import type { SidebarGroupItem, TabsSidebar } from "@widgetarium/app-host/contra
 import type { Carried, Placed } from "./sidebar-drops.js";
 
 export interface DropRefused {
-	readonly chatId: string;
+	readonly pageId: string;
 	readonly words: string;
 }
 
-const CHAT_HOLDS_CHAT = "A chat can't hold a chat";
-const CHAT_HOLDS_GROUP = "A chat can't hold a group";
+const PAGE_HOLDS_GROUP = "A page can't hold a group";
+const PAGE_WITH_SUB_PAGES = "A page with sub-pages can't be a sub-page";
 
 export function refusedDropOf(
 	sidebar: TabsSidebar,
@@ -20,21 +20,21 @@ export function refusedDropOf(
 
 	const list = listOfPlaced(placed);
 
-	if (list === null || !isChatRow(sidebar, list)) {
+	if (list === null || !isPageRow(sidebar, list)) {
 		return null;
 	}
 
 	if (placed.kind === "group") {
 		return {
-			chatId: list,
-			words: CHAT_HOLDS_GROUP,
+			pageId: list,
+			words: PAGE_HOLDS_GROUP,
 		};
 	}
 
-	return carried.node.kind === "tab" && carried.node.artifacts !== undefined
+	return carried.node.kind === "tab" && (carried.node.subPages?.length ?? 0) > 0
 		? {
-				chatId: list,
-				words: CHAT_HOLDS_CHAT,
+				pageId: list,
+				words: PAGE_WITH_SUB_PAGES,
 			}
 		: null;
 }
@@ -47,16 +47,16 @@ function listOfPlaced(placed: Placed): string | null {
 	return placed.to.kind === "list" ? placed.to.list : null;
 }
 
-function isChatRow(sidebar: TabsSidebar, id: string): boolean {
+function isPageRow(sidebar: TabsSidebar, id: string): boolean {
 	return sidebar.sections.some(({ entries }) =>
-		entries.some((entry) => entry.kind !== "split" && holdsChatRow(entry, id)),
+		entries.some((entry) => entry.kind !== "split" && holdsPageRow(entry, id)),
 	);
 }
 
-function holdsChatRow(item: SidebarGroupItem, id: string): boolean {
+function holdsPageRow(item: SidebarGroupItem, id: string): boolean {
 	if (item.kind === "tab") {
-		return item.tab.id === id && item.artifacts !== undefined;
+		return item.tab.id === id && item.subPages !== undefined;
 	}
 
-	return item.group.items.some((inner) => holdsChatRow(inner, id));
+	return item.group.items.some((inner) => holdsPageRow(inner, id));
 }

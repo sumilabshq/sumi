@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { SidebarMenuFold } from "@widgetarium/kit";
 import { appHost } from "@widgetarium/app-host/contract";
-import { chatEntryOf } from "../../lib/chat-entries.js";
+import { pageEntryOf } from "../../lib/page-entries.js";
 
 export interface SidebarFoldProps {
 	readonly tabId: string;
@@ -15,17 +15,17 @@ const UNFOLD = "Unfold {title}";
 export function SidebarFold({ tabId }: SidebarFoldProps): ReactElement | null {
 	const sidebar = useQuery(appHost.tabs.tabsSidebar).data;
 	const fold = useCommand(appHost.tabActions.foldTab);
-	const chat = chatEntryOf(sidebar, tabId);
+	const page = pageEntryOf(sidebar, tabId);
 
-	if (chat === null || chat.artifacts.length === 0) {
+	if (page === null || page.subPages.length === 0) {
 		return null;
 	}
 
-	const isOpen = !(chat.isFolded ?? false);
+	const isOpen = !(page.isFolded ?? false);
 	return (
 		<SidebarMenuFold
 			isOpen={isOpen}
-			label={(isOpen ? FOLD : UNFOLD).replace("{title}", chat.tab.title)}
+			label={(isOpen ? FOLD : UNFOLD).replace("{title}", page.tab.title)}
 			onClick={() => void fold.run({ id: tabId })}
 		/>
 	);

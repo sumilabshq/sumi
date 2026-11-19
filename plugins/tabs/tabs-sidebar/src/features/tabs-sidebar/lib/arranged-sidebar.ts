@@ -90,7 +90,7 @@ function carriedAmong(nodes: readonly SidebarEntry[], id: string, depth: number)
 
 function innerOf(node: SidebarEntry): readonly SidebarGroupItem[] {
 	if (node.kind === "tab") {
-		return node.artifacts ?? [];
+		return node.subPages ?? [];
 	}
 
 	return node.kind === "group" ? node.group.items : node.split.members.map(({ item }) => item);
@@ -121,7 +121,7 @@ function itemsWithout(items: readonly SidebarGroupItem[], id: string): readonly 
 		}
 
 		if (item.kind === "tab") {
-			return [item.artifacts === undefined ? item : { ...item, artifacts: item.artifacts.filter(({ tab }) => tab.id !== id) }];
+			return [item.subPages === undefined ? item : { ...item, subPages: item.subPages.filter(({ tab }) => tab.id !== id) }];
 		}
 
 		return [
@@ -159,7 +159,7 @@ function sectionWith(section: SidebarSection, node: SidebarGroupItem, spot: Spot
 		return node.kind === "tab"
 			? {
 					...section,
-					entries: section.entries.map((entry) => (entry.kind === "split" ? entry : chatWith(entry, node, spot))),
+					entries: section.entries.map((entry) => (entry.kind === "split" ? entry : pageWith(entry, node, spot))),
 				}
 			: section;
 	}
@@ -216,7 +216,7 @@ function insertedBefore<Node extends SidebarEntry>(nodes: readonly Node[], added
 	return at === -1 ? [...nodes, added] : [...nodes.slice(0, at), added, ...nodes.slice(at)];
 }
 
-function chatWith<Item extends SidebarGroupItem>(
+function pageWith<Item extends SidebarGroupItem>(
 	item: Item,
 	node: Extract<SidebarGroupItem, { kind: "tab" }>,
 	spot: { readonly list: string; readonly before: string | null },
@@ -226,21 +226,21 @@ function chatWith<Item extends SidebarGroupItem>(
 			...item,
 			group: {
 				...item.group,
-				items: item.group.items.map((inner) => chatWith(inner, node, spot)),
+				items: item.group.items.map((inner) => pageWith(inner, node, spot)),
 			},
 		};
 	}
 
-	if (item.tab.id !== spot.list || item.artifacts === undefined) {
+	if (item.tab.id !== spot.list || item.subPages === undefined) {
 		return item;
 	}
 
-	const artifact = {
+	const subPage = {
 		kind: "tab" as const,
 		tab: node.tab,
 	};
 	return {
 		...item,
-		artifacts: insertedBefore(item.artifacts, artifact, spot.before),
+		subPages: insertedBefore(item.subPages, subPage, spot.before),
 	};
 }

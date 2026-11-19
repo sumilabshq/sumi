@@ -25,7 +25,7 @@ import { panes } from "@sumi/panes-plugin";
 import { tabsSidebar } from "@sumi/tabs-sidebar-plugin";
 import { tabGroups } from "@sumi/tab-groups-plugin";
 import { pinnedTabs } from "@sumi/pinned-tabs-plugin";
-import { artifacts } from "@sumi/artifacts-plugin";
+import { subPages } from "@sumi/sub-pages-plugin";
 import { slashCommands } from "@sumi/slash-commands-plugin";
 import { chatTitle } from "@sumi/chat-title-plugin";
 import { nextPrompt } from "@sumi/next-prompt-plugin";
@@ -173,7 +173,7 @@ const INSTALLED_PLUGINS = [
 	tabStrip,
 	tabsSidebar,
 	pinnedTabs,
-	artifacts,
+	subPages,
 ];
 const ALWAYS_ON_PLUGINS = [sumiHost, navigation, panes, tabGroups, controlMenu, tabsView, tabStrip, apps, commandMenu, chat, main, agent, questions, tasks, mcpApps];
 
@@ -208,7 +208,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		tabStrip.id,
 		tabsSidebar.id,
 		pinnedTabs.id,
-		artifacts.id,
+		subPages.id,
 	],
 };
 
