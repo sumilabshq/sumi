@@ -8,6 +8,9 @@ import type { AppTabState, SidebarTab } from "../plugins/tabs/navigation/data/ap
 import type { TabActs } from "../plugins/tabs/tab-strip/src/features/tab-strip/lib/use-tab-acts.ts";
 import { TabEntry } from "../plugins/tabs/tabs-sidebar/src/features/tabs-sidebar/ui/tab-entry/tab-entry.tsx";
 import { reportsFailures } from "./page-harness.ts";
+import { inlineNodesOf } from "../packages/shared/markdown/src/inline-nodes.ts";
+import { linkPressOf } from "../apps/studio/src/features/app-host/lib/link-presses/link-press.ts";
+import type { LinkPress } from "../apps/studio/src/features/app-host/lib/link-presses/link-press.ts";
 
 reportsFailures();
 
@@ -64,8 +67,9 @@ const ACTS = {
 function DemoFold({ tabId }: { readonly tabId: string }): ReactElement | null {
 	const entry = ENTRIES.find((one) => one.tab.id === tabId);
 	const [isOpen, setOpen] = useState(!(entry?.isFolded ?? false));
+	const isInFocus = entry !== undefined && (entry.tab.isShown || (entry.subPages ?? []).some(({ tab }) => tab.isShown));
 	return entry?.subPages === undefined || entry.subPages.length === 0 ? null : (
-		<SidebarMenuFold isOpen={isOpen} label="Fold" onClick={() => setOpen(!isOpen)} />
+		<SidebarMenuFold isOpen={isOpen} showOnHover={!isInFocus} label="Fold" onClick={() => setOpen(!isOpen)} />
 	);
 }
 
@@ -116,8 +120,43 @@ function Demo(): ReactElement {
 	);
 }
 
+const presses: LinkPress[] = [];
+Object.assign(window, { __presses: presses });
+document.addEventListener(
+	"click",
+	(event) => {
+		const press = linkPressOf(event, window);
+
+		if (press !== null) {
+			event.preventDefault();
+			presses.push(press);
+		}
+	},
+	{ capture: true },
+);
+
+function ChatLinks(): ReactElement {
+	return (
+		<div
+			className="chat-links"
+			data-link-home="chat-1"
+			ref={(element) => {
+				if (element !== null && element.childNodes.length === 0) {
+					element.append(
+						...inlineNodesOf(
+							document,
+							'Open [canvas](sumi://app/canvas) or [site](https://example.com "_blank") or [plain](https://example.org).',
+						),
+					);
+				}
+			}}
+		/>
+	);
+}
+
 createRoot(host).render(
 	<div className="wg-root dark">
 		<Demo />
+		<ChatLinks />
 	</div>,
 );

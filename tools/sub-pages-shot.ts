@@ -34,10 +34,16 @@ try {
 		nested: document.querySelectorAll(".wg-kit-side-menu-sub [data-sort-id]").length,
 		folds: [...document.querySelectorAll("[data-side-fold]")].map((fold) => fold.getAttribute("aria-expanded")),
 		veil: document.querySelector(".wg-kit-drop-refusal")?.textContent ?? null,
+		focusedParent: document.querySelector('[data-sort-id="groups-chat"]')?.getAttribute("data-active") ?? document.querySelector('[data-sort-id="groups-chat"]')?.className.includes("is-selected") ?? null,
+		quietRowActions: [...(document.querySelector('[data-sort-id="icons-chat"]')?.parentElement?.querySelectorAll(":scope > .wg-kit-side-menu-action") ?? [])].map((one) => getComputedStyle(one).opacity),
+		focusedRowActions: [...(document.querySelector('[data-sort-id="groups-chat"]')?.parentElement?.querySelectorAll(":scope > .wg-kit-side-menu-action") ?? [])].map((one) => getComputedStyle(one).opacity),
+		blankMark: document.querySelector('.chat-links a[href="https://example.com"]')?.getAttribute("data-link-target") ?? null,
 		boom: document.getElementById("boom").textContent,
 	})`);
 	console.log(JSON.stringify(drawn));
 	writeFileSync(SHOT_AT, await page.shoot());
+	await page.ask(`[...document.querySelectorAll(".chat-links a")].forEach((link) => link.click()); true`);
+	console.log(JSON.stringify(await page.ask("window.__presses")));
 	const row = await page.ask(
 		`(() => { const box = document.querySelector('[data-sort-id="groups-chat"]').getBoundingClientRect(); return [box.left + 40, box.top + box.height / 2]; })()`,
 	);

@@ -43,6 +43,7 @@ export function TabEntry({
 }: TabEntryProps): ReactElement {
 	const { id, title, mark } = tabOf(item);
 	const Holder = isSub ? SidebarMenuSubItem : SidebarMenuItem;
+	const isInFocus = isShownItem(item) || (subPages ?? []).some(({ tab }) => tab.isShown);
 	const isOpen =
 		subPages !== undefined && subPages.length > 0 && (!isFolded || subPages.some(({ tab }) => tab.id === draggedId));
 	const inner: CSSProperties & Readonly<Record<"--sumi-tabs-depth", number>> = {
@@ -58,7 +59,7 @@ export function TabEntry({
 				data-sort-placeholder={isPlaceholder ? "" : undefined}
 				data-tabs-page={subPages === undefined ? undefined : id}
 				aria-selected={isShownItem(item)}
-				isActive={isShownItem(item)}
+				isActive={isInFocus}
 				onClick={() => acts.show(item)}
 				onAuxClick={(event) => {
 					if (event.button === MIDDLE_BUTTON) {
@@ -74,7 +75,7 @@ export function TabEntry({
 				<span className={cn("sumi-tabs-sidebar-title", mark === "running" && "wg-kit-shimmer")}>{title}</span>
 			</SidebarMenuButton>
 			<ListPluginSlot name="tabs-sidebar.tab-actions" props={{ tabId: id }} />
-			<SidebarMenuAction showOnHover label={CLOSE_TAB} onClick={() => acts.close(item)}>
+			<SidebarMenuAction showOnHover={!isInFocus} label={CLOSE_TAB} onClick={() => acts.close(item)}>
 				<Icon name="x" size={CLOSE_PX} />
 			</SidebarMenuAction>
 			{isOpen ? (

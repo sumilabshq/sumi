@@ -142,6 +142,10 @@ async function sendPaneEffect(effect: PaneEffect, { injects, send }: TabsReach):
 }
 
 async function sendViewEffect(effect: ViewEffect, { injects, send }: TabsReach): Promise<unknown> {
+	if (effect.kind === "show-beside-chat") {
+		return showBesideChat(send, seatOf(injects.studioWindow), effect);
+	}
+
 	if (effect.kind === "show-chat") {
 		return send(navigation.panes.showChat, {
 			seat: seatOf(injects.studioWindow),
@@ -190,4 +194,30 @@ function isWindowEffect(effect: TabEffect): effect is WindowEffect {
 
 function isPaneEffect(effect: TabEffect): effect is PaneEffect {
 	return PANE_EFFECTS.some((kind) => kind === effect.kind);
+}
+
+async function showBesideChat(
+	send: Send,
+	seat: WindowSeat,
+	{ chatId, tabId, side }: Extract<TabEffect, { readonly kind: "show-beside-chat" }>,
+): Promise<unknown> {
+	await send(navigation.panes.showChat, { seat, chatId, paneId: null });
+	const board = await send(navigation.panes.board, { seat });
+
+	if (board.tabPanes.some((pane) => pane.tabId === tabId)) {
+		console.info(`[widgetarium] show ${tabId} beside chat ${chatId} skipped: a pane shows it already`);
+		return undefined;
+	}
+
+	const chat = board.leaves.find((leaf) => leaf.view.kind === "chat" && leaf.view.chatId === chatId);
+
+	if (chat === undefined) {
+		console.warn(`[widgetarium] show ${tabId} beside chat ${chatId} skipped: the chat has no pane after showing it`);
+		return undefined;
+	}
+
+	return send(navigation.panes.place, {
+		seat,
+		placement: { view: { kind: "app", tabId }, targetId: chat.id, side, home: chatId },
+	});
 }

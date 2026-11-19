@@ -22,9 +22,11 @@ export function SidebarFold({ tabId }: SidebarFoldProps): ReactElement | null {
 	}
 
 	const isOpen = !(page.isFolded ?? false);
+	const isInFocus = page.tab.isShown || page.subPages.some(({ tab }) => tab.isShown);
 	return (
 		<SidebarMenuFold
 			isOpen={isOpen}
+			showOnHover={!isInFocus}
 			label={(isOpen ? FOLD : UNFOLD).replace("{title}", page.tab.title)}
 			onClick={() => void fold.run({ id: tabId })}
 		/>

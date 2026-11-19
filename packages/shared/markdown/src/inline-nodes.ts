@@ -6,6 +6,8 @@ const WEB_LINK = /^https?:\/\//;
 
 export const TAB_ATTRIBUTE = "data-tab";
 
+export const LINK_TARGET_ATTRIBUTE = "data-link-target";
+
 export const LINK_ICON_CLASS = "wg-studio-ai-link-icon";
 
 interface InlineRule {
@@ -19,7 +21,7 @@ const INLINE_RULES: readonly InlineRule[] = [
 		tag: "code",
 	},
 	{
-		pattern: /\[([^\]\n]+)\]\(([^)\s]+)\)/,
+		pattern: /\[([^\]\n]+)\]\(([^)\s]+)(?:\s+"(_blank)")?\)/,
 		tag: "a",
 	},
 	{
@@ -107,7 +109,7 @@ function elementOf(page: Document, rule: InlineRule, match: RegExpExecArray): No
 	}
 
 	if (rule.tag === "a") {
-		return linkNodeOf(page, inner, oldTabLinkRead(match[2] ?? ""));
+		return linkNodeOf(page, inner, oldTabLinkRead(match[2] ?? ""), match[3] ?? null);
 	}
 
 	if (rule.tag === "mark") {
@@ -124,9 +126,9 @@ function oldTabLinkRead(target: string): string {
 	return oldTab === null ? target : linkOf({ kind: "tab", id: oldTab[1] ?? "" });
 }
 
-function linkNodeOf(page: Document, label: string, target: string): Node {
+function linkNodeOf(page: Document, label: string, target: string, opensIn: string | null): Node {
 	if (isSumiLink(target)) {
-		return sumiLinkNodeOf(page, label, target);
+		return withOpensIn(sumiLinkNodeOf(page, label, target), opensIn);
 	}
 
 	if (!WEB_LINK.test(target)) {
@@ -138,6 +140,14 @@ function linkNodeOf(page: Document, label: string, target: string): Node {
 	const link = labelledLinkOf(page, label, target, siteFaviconOf(target));
 	link.target = "_blank";
 	link.rel = "noopener noreferrer";
+	return withOpensIn(link, opensIn);
+}
+
+function withOpensIn<T extends Node>(link: T, opensIn: string | null): T {
+	if (opensIn !== null && link instanceof Element) {
+		link.setAttribute(LINK_TARGET_ATTRIBUTE, opensIn);
+	}
+
 	return link;
 }
 

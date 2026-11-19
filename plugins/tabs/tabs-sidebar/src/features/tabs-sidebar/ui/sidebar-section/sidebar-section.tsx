@@ -16,10 +16,9 @@ import type { SidebarSorting, SidebarSortOutside } from "@widgetarium/kit";
 import { appHost } from "@widgetarium/app-host/contract";
 import type { SidebarEntry, TabsSidebar } from "@widgetarium/app-host/contract";
 import { TabIcons, tabOf } from "@sumi/tab-strip-plugin";
-import type { StripItem, TabActs } from "@sumi/tab-strip-plugin";
+import type { TabActs } from "@sumi/tab-strip-plugin";
 import { groups } from "@sumi/groups/contract";
 import { arrangedSidebarOf, carriedOf } from "../../lib/arranged-sidebar.js";
-import { draggedItemOf } from "../../lib/dragged-item.js";
 import { refusedDropOf } from "../../lib/drop-refusals.js";
 import { splitItemOf, tabItemOf } from "../../lib/entry-items.js";
 import { GroupEntry } from "../group-entry/group-entry.js";
@@ -29,7 +28,6 @@ import { TabEntry } from "../tab-entry/tab-entry.js";
 export interface SidebarSectionProps {
 	readonly list: string;
 	readonly sidebar: TabsSidebar;
-	readonly items: readonly StripItem[];
 	readonly acts: TabActs;
 	readonly last: ReactNode;
 	onMenu(id: string, event: MouseEvent<HTMLElement>): void;
@@ -42,7 +40,6 @@ const LEVEL_PX = 24;
 export function SidebarSection({
 	list,
 	sidebar,
-	items,
 	acts,
 	last,
 	onMenu,
@@ -107,9 +104,12 @@ export function SidebarSection({
 	);
 	const ghost = useMemo(() => {
 		const carried = draggedId === null ? null : carriedOf(sidebar, draggedId);
-		const tab = draggedId === null ? null : draggedItemOf(items, draggedId);
 
-		if (carried?.node.kind === "group") {
+		if (carried === null) {
+			return null;
+		}
+
+		if (carried.node.kind !== "tab" || (carried.node.subPages?.length ?? 0) > 0) {
 			return (
 				<SidebarMenu role="presentation">
 					{entryOf(carried.node, { list, acts, draggedId: null, onMenu })}
@@ -117,13 +117,14 @@ export function SidebarSection({
 			);
 		}
 
-		return tab === null ? null : (
+		const tab = tabItemOf(carried.node.tab, list);
+		return (
 			<SidebarMenuButton size="sm" tabIndex={-1}>
 				<TabIcons item={tab} />
 				<span className="sumi-tabs-sidebar-title">{tabOf(tab).title}</span>
 			</SidebarMenuButton>
 		);
-	}, [sidebar, items, draggedId, list, acts, onMenu]);
+	}, [sidebar, draggedId, list, acts, onMenu]);
 
 	if (section === undefined) {
 		return null;

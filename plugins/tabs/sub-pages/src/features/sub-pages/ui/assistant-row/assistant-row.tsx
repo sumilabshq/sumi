@@ -1,22 +1,29 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/data-framework";
-import { Icon, IconButton } from "@widgetarium/kit";
+import { Icon } from "@widgetarium/kit";
 import { appHost } from "@widgetarium/app-host/contract";
+import { ControlMenuRow, useControlMenu } from "@sumi/control-menu-plugin";
 import { mainPageOf, shownTabOf } from "../../lib/page-entries.js";
 import { useAssistant } from "../../lib/use-assistant.js";
 
-const AI_ASSISTANT = "AI assistant";
-const ICON_PX = 16;
+const OPEN_AI_ASSISTANT = "Open AI assistant";
 
-export function AssistantButton(): ReactElement | null {
+export function AssistantRow(): ReactElement | null {
 	const sidebar = useQuery(appHost.tabs.tabsSidebar).data;
+	const menu = useControlMenu();
 	const shown = shownTabOf(sidebar);
 	const main = shown === null ? null : (mainPageOf(sidebar, shown.id)?.page.tab.id ?? shown.id);
 	const assistant = useAssistant(main);
 	return assistant.isOffered ? (
-		<IconButton variant="ghost" size="s" label={AI_ASSISTANT} title={AI_ASSISTANT} onClick={assistant.open}>
-			<Icon name="sparkles" size={ICON_PX} />
-		</IconButton>
+		<ControlMenuRow
+			label={OPEN_AI_ASSISTANT}
+			keys={null}
+			icon={<Icon name="sparkles" />}
+			onRun={() => {
+				menu.close();
+				assistant.open();
+			}}
+		/>
 	) : null;
 }

@@ -77,6 +77,10 @@ export function SplitEntry({ item, acts, draggedId, isSub = false, depth = 0, is
 							acts={acts}
 							isSub
 							isPlaceholder={isPlaceholder || member.tab.id === draggedId}
+							subPages={member.subPages}
+							isFolded={member.isFolded}
+							depth={depth + 1}
+							draggedId={draggedId}
 							onMenu={onMenu}
 						/>
 					))}

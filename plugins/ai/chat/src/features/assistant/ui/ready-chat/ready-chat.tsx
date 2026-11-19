@@ -53,6 +53,7 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 		<div
 			className={`wg-studio-ai${isEmpty ? " is-empty" : ""}`}
 			ref={chatRoot}
+			data-link-home={chatId}
 			onDragEnter={drop.onDragEnter}
 			onDragOver={drop.onDragOver}
 			onDragLeave={drop.onDragLeave}

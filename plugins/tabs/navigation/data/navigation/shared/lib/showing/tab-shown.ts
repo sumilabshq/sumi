@@ -44,11 +44,13 @@ function withHoldingChatShown(showing: Showing, tab: HostTab): Showing {
 		return showing;
 	}
 
-	console.info(`[widgetarium] show ${tab.id}: its paired chat ${chat.id} comes beside it`);
+	const isChatMain = mainPageOf(showing.moment, tab.id) === chat.id;
+	console.info(`[widgetarium] show ${tab.id}: its paired chat ${chat.id} stands beside it`);
 	return withEffect(showing, {
-		kind: "show-chat",
+		kind: "show-beside-chat",
 		chatId: chatIdOf(showing.moment.apps, chat) ?? chat.id,
-		paneId: null,
+		tabId: tab.id,
+		side: isChatMain ? "right" : "left",
 	});
 }
 
@@ -119,9 +121,17 @@ function withHolderShown(showing: Showing, facts: TabFacts, { tab, paneId }: Tab
 
 	const focused = splitShowingOf(showing, facts, tab) ?? showing;
 	const seen = withMoved(focused, markSeen(focused.moment, tab));
+	const chatId = chatIdOf(showing.moment.apps, tab) ?? tab.id;
+	const main = paneId === null ? mainPageOf(showing.moment, tab.id) : null;
+
+	if (main !== null) {
+		console.info(`[widgetarium] show chat ${chatId}: its page ${main} stands beside it`);
+		return withEffect(seen, { kind: "show-beside-chat", chatId, tabId: main, side: "left" });
+	}
+
 	return withEffect(seen, {
 		kind: "show-chat",
-		chatId: chatIdOf(showing.moment.apps, tab) ?? tab.id,
+		chatId,
 		paneId,
 	});
 }

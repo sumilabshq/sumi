@@ -14,6 +14,7 @@ const BOARD_EFFECTS: ReadonlySet<TabEffect["kind"]> = new Set([
 	"close-shown-tab-pane",
 	"show-in-target-pane",
 	"show-chat",
+	"show-beside-chat",
 	"flash-pane",
 ]);
 

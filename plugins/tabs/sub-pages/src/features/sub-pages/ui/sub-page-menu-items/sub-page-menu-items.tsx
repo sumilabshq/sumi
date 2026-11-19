@@ -5,7 +5,6 @@ import { Icon, PopoverItem } from "@widgetarium/kit";
 import { appHost } from "@widgetarium/app-host/contract";
 import type { AppTabState } from "@widgetarium/app-host/contract";
 import { isChatTab, mainPageOf, pageEntriesOf, pageEntryOf } from "../../lib/page-entries.js";
-import { useAssistant } from "../../lib/use-assistant.js";
 
 export interface SubPageMenuItemsProps {
 	readonly tab: AppTabState;
@@ -16,12 +15,10 @@ const ITEM_ICON_PX = 16;
 const PAGES_OFFERED = 3;
 const MAKE_SUB_PAGE = "Make a sub-page of";
 const TAKE_OUT = "Take out of {title}";
-const AI_ASSISTANT = "AI assistant";
 
 export function SubPageMenuItems({ tab, onDone }: SubPageMenuItemsProps): ReactElement {
 	const sidebar = useQuery(appHost.tabs.tabsSidebar).data;
 	const placeTab = useCommand(appHost.tabs.placeTab);
-	const assistant = useAssistant(tab.id);
 	const main = mainPageOf(sidebar, tab.id);
 	const ownSubPages = pageEntryOf(sidebar, tab.id)?.subPages.length ?? 0;
 	const placed = (asked: string, list: string): void => {
@@ -40,18 +37,6 @@ export function SubPageMenuItems({ tab, onDone }: SubPageMenuItemsProps): ReactE
 			: [];
 	return (
 		<>
-			{assistant.isOffered ? (
-				<PopoverItem
-					role="menuitem"
-					onClick={() => {
-						onDone();
-						assistant.open();
-					}}
-				>
-					<Icon name="sparkles" size={ITEM_ICON_PX} />
-					{AI_ASSISTANT}
-				</PopoverItem>
-			) : null}
 			{main === null ? null : (
 				<PopoverItem role="menuitem" onClick={() => placed(`taking ${tab.id} out of ${main.page.tab.id}`, main.list)}>
 					<Icon name="arrow-up-left" size={ITEM_ICON_PX} />

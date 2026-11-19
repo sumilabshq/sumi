@@ -73,7 +73,6 @@ function SidebarColumn(): ReactNode {
 							key={section.list}
 							list={section.list}
 							sidebar={sidebar}
-							items={items}
 							acts={acts}
 							last={index === sidebar.sections.length - 1 ? newTabRow : null}
 							onSorting={dragOut.onSorting}

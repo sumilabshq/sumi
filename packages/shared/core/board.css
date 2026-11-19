@@ -10147,6 +10147,15 @@ body.wg-tree-carrying .wg-tile-body {
 	> .wg-kit-side-menu-button {
 	padding-inline-end: calc(2 * 28px + 8px);
 }
+:is(.wg-root, .wg-portal)
+	:is(.wg-kit-side-menu-item, .wg-kit-side-menu-sub-item):has(> .wg-kit-side-menu-action + .wg-kit-side-menu-action):has(
+		> .wg-kit-side-menu-button:hover,
+		> .wg-kit-side-menu-action:hover,
+		> :focus-visible
+	)
+	> .wg-kit-side-menu-button {
+	padding-inline-end: calc(2 * 28px + 8px);
+}
 :is(.wg-root, .wg-portal) .wg-kit-side-menu-action[data-side-fold] .wg-kit-side-menu-chevron {
 	margin-inline-start: 0;
 }

@@ -13,6 +13,7 @@ import { LinkToOpenSchema } from "../../shared/schema/link.schema.js";
 interface LinkOpening {
 	readonly target: LinkTarget;
 	readonly opensNew: boolean;
+	readonly home: string | null;
 	readonly reach: TabsReach;
 }
 
@@ -26,29 +27,40 @@ export const openLink = command()
 	.public()
 	.input(LinkToOpenSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ href, opensNew }, { send, emit, ...injects }) => {
+	.handle(async ({ href, opensNew, home }, { send, emit, ...injects }) => {
 		const reach = { injects, send, told: () => emit(tabsSettled) };
+		const under = opensNew ? null : home;
 		const refusal = isWebPage(href)
-			? await openWebPageLinked(href, opensNew, reach)
-			: await openSumiLinked(href, opensNew, reach);
+			? await openWebPageLinked(href, { opensNew, home: under }, reach)
+			: await openSumiLinked(href, { opensNew, home: under }, reach);
 
 		if (refusal !== null) {
 			return refuse(refusal);
 		}
 
-		console.info(OPENED.replace("{href}", JSON.stringify(href)).replace("{where}", opensNew ? " in a new tab" : ""));
+		console.info(
+			OPENED.replace("{href}", JSON.stringify(href)).replace(
+				"{where}",
+				opensNew ? " in a new tab" : under === null ? "" : ` as a sub-page of ${under}`,
+			),
+		);
 	});
 
 function isWebPage(href: string): boolean {
 	return WEB_SCHEMES.has(URL.parse(href)?.protocol ?? "");
 }
 
-async function openSumiLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<string | null> {
-	const read = linkTargetOf(href);
-	return read.ok ? openTargetLinked({ target: read.target, opensNew, reach }) : read.reason;
+interface LinkWhere {
+	readonly opensNew: boolean;
+	readonly home: string | null;
 }
 
-async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promise<string | null> {
+async function openSumiLinked(href: string, where: LinkWhere, reach: TabsReach): Promise<string | null> {
+	const read = linkTargetOf(href);
+	return read.ok ? openTargetLinked({ target: read.target, ...where, reach }) : read.reason;
+}
+
+async function openTargetLinked({ target, opensNew, home, reach }: LinkOpening): Promise<string | null> {
 	if (target.kind === "chat" || target.kind === "tab") {
 		await showTabSettled(reach, { id: target.id });
 		return null;
@@ -60,26 +72,25 @@ async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promi
 		return NO_SUCH_APP.replace("{app}", target.app);
 	}
 
-	await openAppTab(reach, { app: app.data, address: target.address, opensNew });
+	await openAppTab(reach, { app: app.data, address: target.address, opensNew, home });
 	return null;
 }
 
-async function openWebPageLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<null> {
+async function openWebPageLinked(href: string, where: LinkWhere, reach: TabsReach): Promise<null> {
 	const app = (await isKnownApp(reach, BROWSER_PAGE_APP)) ? BROWSER_PAGE_APP : BROWSER_APP;
-	await openAppTab(reach, { app, address: href, opensNew });
+	await openAppTab(reach, { app, address: href, ...where });
 	return null;
 }
 
-interface AppTabAsk {
+interface AppTabAsk extends LinkWhere {
 	readonly app: AppKind;
 	readonly address: string;
-	readonly opensNew: boolean;
 }
 
-async function openAppTab(reach: TabsReach, { app, address, opensNew }: AppTabAsk): Promise<void> {
+async function openAppTab(reach: TabsReach, { app, address, opensNew, home }: AppTabAsk): Promise<void> {
 	await openTabSettled(reach, {
 		app,
-		list: null,
+		list: home,
 		groupId: null,
 		address,
 		show: true,
