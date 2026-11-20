@@ -1,5 +1,6 @@
 .sumi-canvas {
 	--wg-kit-side-panel-top: max(var(--sumi-corner-top, 0px), var(--sumi-header-h));
+	--wg-kit-side-panel-fill: var(--sumi-canvas-plate-fill);
 	position: relative;
 	container-type: inline-size;
 	display: flex;
@@ -133,4 +134,9 @@
 	width: 0;
 	height: 0;
 	pointer-events: none;
+}
+
+.sumi-canvas .wg-kit-side-panel {
+	backdrop-filter: var(--sumi-blur-corner);
+	-webkit-backdrop-filter: var(--sumi-blur-corner);
 }

@@ -14,6 +14,11 @@
 	pointer-events: none;
 }
 
+.sumi-canvas-top-row,
+.sumi-canvas {
+	--sumi-canvas-plate-fill: color-mix(in srgb, var(--sumi-plate) 72%, transparent);
+}
+
 .sumi-canvas-plate {
 	display: flex;
 	align-items: center;
@@ -21,10 +26,21 @@
 	min-width: 0;
 	height: var(--sumi-h-md);
 	padding-inline: var(--sumi-sp-2);
-	background: color-mix(in srgb, var(--sumi-plate) 72%, transparent);
+	background: var(--sumi-canvas-plate-fill);
 	backdrop-filter: var(--sumi-blur-corner);
 	-webkit-backdrop-filter: var(--sumi-blur-corner);
 	pointer-events: auto;
+}
+
+.wg-shell:has([data-title-floats]) .wg-pane[data-corner-end] .sumi-canvas-top-row > .sumi-canvas-plate:last-child,
+.wg-pane[data-pane-tools] .sumi-canvas-top-row > .sumi-canvas-plate:last-child {
+	margin-inline-end: calc(var(--sumi-sp-1) - var(--sumi-corner-end, 0px) - var(--sumi-sp-5));
+	padding-inline-end: calc(var(--sumi-corner-end, 0px) - var(--sumi-sp-3));
+}
+
+.wg-pane[data-pane-tools] .sumi-canvas-top-row > .sumi-canvas-plate:last-child,
+.wg-shell:has([data-title-floats]) .wg-pane[data-pane-tools][data-corner-end] .sumi-canvas-top-row > .sumi-canvas-plate:last-child {
+	padding-inline-end: calc(var(--sumi-pane-tools-end) + var(--sumi-pane-tools-w) - var(--sumi-sp-3));
 }
 
 .sumi-canvas-top-row svg.wg-kit-icon-glyph {

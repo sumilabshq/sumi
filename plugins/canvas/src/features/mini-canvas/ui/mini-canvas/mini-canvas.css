@@ -18,9 +18,7 @@
 
 .sumi-mini-canvas-pages {
 	display: flex;
-	min-width: 0;
 	gap: 2px;
-	overflow: hidden;
 }
 
 .sumi-mini-canvas-page {
