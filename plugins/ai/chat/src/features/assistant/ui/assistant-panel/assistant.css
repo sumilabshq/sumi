@@ -1770,7 +1770,7 @@
 	height: var(--sumi-h-sm);
 	min-height: 0;
 	padding: 0 5px;
-	color: var(--sumi-text-3);
+	color: var(--sumi-text);
 	font: var(--sumi-fw-regular) var(--sumi-fs-13) var(--sumi-font-ui);
 	white-space: nowrap;
 }
@@ -1780,7 +1780,10 @@
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar .wg-kit-btn.sumi-usage-button {
+	justify-content: center;
+	width: var(--sumi-h-sm);
 	margin-right: var(--sumi-sp-2);
+	padding: 0;
 }
 
 :is(.wg-root, .wg-portal) :is(.wg-studio-ai-strip, .wg-studio-ai-field-bar) .wg-kit-btn.is-ghost::before {
@@ -1797,7 +1800,9 @@
 	:is(.wg-studio-ai-strip, .wg-studio-ai-field-bar)
 	.wg-kit-btn.is-ghost
 	.wg-kit-select-chevron {
-	display: none;
+	width: 12px;
+	height: 12px;
+	color: var(--sumi-text-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field:has(> .wg-studio-ai-attachments) {
