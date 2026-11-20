@@ -48,7 +48,7 @@
 	box-sizing: border-box;
 	height: var(--wg-chat-head-h);
 	padding-block-end: var(--wg-chat-head-fade);
-	padding-inline-start: max(var(--wg-chat-window-controls-x, 0px), var(--sumi-corner-start, 0px), var(--sumi-sp-6));
+	padding-inline-start: max(var(--sumi-corner-start, 0px), var(--sumi-sp-6));
 	padding-inline-end: max(var(--sumi-corner-end, 0px), var(--sumi-sp-6));
 	background: linear-gradient(var(--wg-plate-fill, var(--sumi-plate)) var(--wg-chat-head-line), transparent);
 }
