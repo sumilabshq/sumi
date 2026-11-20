@@ -1,5 +1,5 @@
 .wg-pane[data-pane-tools] {
-	--sumi-pane-tools-w: calc(2 * var(--sumi-h-xs) + var(--sumi-sp-1) + 2 * var(--sumi-sp-3));
+	--sumi-pane-tools-w: calc(2 * var(--sumi-h-sm) + var(--sumi-sp-1) + 2 * var(--sumi-sp-3));
 	--sumi-pane-tools-end: 0px;
 	--sumi-corner-top: var(--sumi-header-h);
 	--sumi-corner-end: var(--sumi-pane-tools-w);
