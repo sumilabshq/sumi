@@ -1,0 +1,13 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import http from "node:http";
+import { paged, waited } from "./chrome-ask.ts";
+const html = readFileSync("/tmp/bento/board.html", "utf8");
+const server = http.createServer((_q, r) => { r.setHeader("content-type", "text/html"); r.end(html); });
+await new Promise<void>((ok) => server.listen(0, "127.0.0.1", ok));
+const a = server.address();
+const port = typeof a === "object" && a !== null ? a.port : 0;
+const page = await paged(`http://127.0.0.1:${port}/`, "bento", { size: [1440, 4600] });
+await waited(800);
+console.log(JSON.stringify(await page.ask(`[document.body.scrollHeight, [...document.querySelectorAll('.shape')].map(e=>e.textContent)]`)));
+writeFileSync("/tmp/bento/board.png", await page.shoot());
+page.close(); server.close();
