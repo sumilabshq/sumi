@@ -8,7 +8,13 @@ const FILE_LINK = /^(?:sumi:\/\/file\/|file:\/\/)(.*)$/;
 
 export const IMAGE_CLASS = "wg-studio-ai-image";
 
+export const FIGURE_CLASS = "wg-studio-ai-figure";
+
+export const CAPTION_CLASS = "wg-studio-ai-caption";
+
 export const IMAGE_PATH_ATTRIBUTE = "data-image-path";
+
+export const IMAGE_CAPTION_ATTRIBUTE = "data-image-caption";
 
 export const TAB_ATTRIBUTE = "data-tab";
 
@@ -27,7 +33,7 @@ const INLINE_RULES: readonly InlineRule[] = [
 		tag: "code",
 	},
 	{
-		pattern: /!\[([^\]\n]*)\]\(([^)\s]+)\)/,
+		pattern: /!\[([^\]\n]*)\]\(([^)\s]+)(?:\s+"([^"\n]*)")?\)/,
 		tag: "img",
 	},
 	{
@@ -119,7 +125,11 @@ function elementOf(page: Document, rule: InlineRule, match: RegExpExecArray): No
 	}
 
 	if (rule.tag === "img") {
-		return imageNodeOf(page, inner, match[2] ?? "");
+		return figureOf(page, {
+			alt: inner,
+			target: match[2] ?? "",
+			caption: match[3] ?? "",
+		});
 	}
 
 	if (rule.tag === "a") {
@@ -135,7 +145,35 @@ function elementOf(page: Document, rule: InlineRule, match: RegExpExecArray): No
 	return element;
 }
 
-function imageNodeOf(page: Document, alt: string, target: string): Node {
+interface SaidImage {
+	readonly alt: string;
+	readonly target: string;
+	readonly caption: string;
+}
+
+function figureOf(page: Document, said: SaidImage): Node {
+	const image = imageNodeOf(page, said);
+
+	if (image === null) {
+		return page.createTextNode(said.alt);
+	}
+
+	const figure = page.createElement("span");
+	figure.className = FIGURE_CLASS;
+	figure.append(image);
+
+	if (said.caption !== "") {
+		const caption = page.createElement("span");
+		caption.className = CAPTION_CLASS;
+		caption.append(...inlineNodesOf(page, said.caption));
+		image.setAttribute(IMAGE_CAPTION_ATTRIBUTE, caption.textContent);
+		figure.append(caption);
+	}
+
+	return figure;
+}
+
+function imageNodeOf(page: Document, { alt, target }: SaidImage): Element | null {
 	if (SHOWN_AS_IS.test(target)) {
 		const image = page.createElement("img");
 		image.className = IMAGE_CLASS;
@@ -147,7 +185,7 @@ function imageNodeOf(page: Document, alt: string, target: string): Node {
 	const path = filePathOf(target);
 
 	if (path === null) {
-		return page.createTextNode(alt);
+		return null;
 	}
 
 	const spot = page.createElement("span");

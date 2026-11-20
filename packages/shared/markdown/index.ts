@@ -1,10 +1,16 @@
 export { GALLERY_CLASS, markdownNodesOf } from "./src/markdown-blocks.js";
-export { IMAGE_CLASS, IMAGE_PATH_ATTRIBUTE, LINK_ICON_CLASS, TAB_ATTRIBUTE, linkIconOf } from "./src/inline-nodes.js";
+export {
+	CAPTION_CLASS,
+	FIGURE_CLASS,
+	IMAGE_CAPTION_ATTRIBUTE,
+	IMAGE_CLASS,
+	IMAGE_PATH_ATTRIBUTE, LINK_ICON_CLASS, TAB_ATTRIBUTE, linkIconOf } from "./src/inline-nodes.js";
 export { CHAT_LOOK, FILE_LOOK } from "./src/markdown-look.js";
 export type { MarkdownLook } from "./src/markdown-look.js";
 export { RUN_COMMAND_EVENT, createCodeBlock } from "./src/code-block.js";
 export type { CodeBlockAsk } from "./src/code-block.js";
 export { OPENED_LIVE_ATTRIBUTE, openCutsIn } from "./src/more-toggle.js";
 export { languageOf } from "./src/code-languages.js";
+export { highlightedLinesOf } from "./src/code-highlight.js";
 export { createCodeLines } from "./src/code-lines.js";
 export type { CodeLinesAsk } from "./src/code-lines.js";

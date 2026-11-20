@@ -8,14 +8,15 @@ import { useOptionalQuery } from "@widgetarium/data-framework";
 export interface SaidImageProps {
 	readonly path: string;
 	readonly alt: string;
+	readonly caption: string | null;
 }
 
 const NOT_SHOWN = "{name} is not shown: {reason}";
 const OPEN = "Open {name}";
 
-export function SaidImage({ path, alt }: SaidImageProps): ReactElement {
+export function SaidImage({ path, alt, caption }: SaidImageProps): ReactElement {
 	const read = useOptionalQuery(fileSystem.files.readBytes, { path });
-	const name = alt === "" ? path.slice(path.lastIndexOf("/") + 1) : alt;
+	const name = caption ?? (alt === "" ? path.slice(path.lastIndexOf("/") + 1) : alt);
 
 	if (read.failure !== null) {
 		return (

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import type { RefObject } from "react";
-import { IMAGE_PATH_ATTRIBUTE } from "@widgetarium/markdown";
+import { IMAGE_CAPTION_ATTRIBUTE, IMAGE_PATH_ATTRIBUTE } from "@widgetarium/markdown";
 import { marksSaidPictures } from "./marks-said-pictures.js";
 
 export interface ImageSpot {
 	readonly element: HTMLElement;
 	readonly path: string;
 	readonly alt: string;
+	readonly caption: string | null;
 }
 
 const ALT_ATTRIBUTE = "data-image-alt";
@@ -42,6 +43,7 @@ function spotsIn(node: HTMLElement): readonly ImageSpot[] {
 		element,
 		path: element.getAttribute(IMAGE_PATH_ATTRIBUTE) ?? "",
 		alt: takenAlt(element),
+		caption: element.getAttribute(IMAGE_CAPTION_ATTRIBUTE),
 	}));
 }
 

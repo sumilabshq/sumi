@@ -12,7 +12,7 @@ const ITEM = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
 const TABLE_DIVIDER = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
 const BLANK = /^\s*$/;
 const ORDERED = /^\d/;
-const IMAGES_ONLY = /^\s*(?:!\[[^\]\n]*\]\([^)\s]+\)\s*)+$/;
+const IMAGES_ONLY = /^\s*(?:!\[[^\]\n]*\]\([^)\s]+(?:\s+"[^"\n]*")?\)\s*)+$/;
 
 export const GALLERY_CLASS = "wg-studio-ai-gallery";
 
