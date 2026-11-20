@@ -55,11 +55,24 @@
 
 .sumi-mcp-tag {
 	display: flex;
+	flex: 0 1 auto;
 	align-items: center;
 	gap: 8px;
 	min-width: 0;
 	padding: 0 10px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
+	scrollbar-width: none;
 	cursor: default;
+}
+
+.sumi-mcp-tag::-webkit-scrollbar {
+	display: none;
+}
+
+.sumi-mcp-tag > * {
+	flex: none;
 }
 
 .sumi-mcp-tag-glyph {
@@ -69,21 +82,14 @@
 }
 
 .sumi-mcp-tag-title {
-	flex: none;
-	max-width: 280px;
-	overflow: hidden;
 	font-weight: 500;
 	white-space: nowrap;
-	text-overflow: ellipsis;
 }
 
 .sumi-mcp-tag-meta {
-	min-width: 0;
-	overflow: hidden;
 	color: var(--wg-kit-text-muted);
 	font-size: 12px;
 	white-space: nowrap;
-	text-overflow: ellipsis;
 }
 
 .sumi-mcp-square,
