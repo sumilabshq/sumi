@@ -13,7 +13,7 @@ export interface StripKeyActs {
 const DIGIT_CODE = /^Digit([1-9])$/;
 const NEW_TAB_CODE = "KeyT";
 const CLOSE_CODE = "KeyW";
-const SPLIT_CODE = "KeyD";
+const SPLIT_CODE = "Backslash";
 
 export function useStripKeys(acts: StripKeyActs): void {
 	const closeShown = useCommand(appHost.tabActions.closeShown);
