@@ -177,6 +177,7 @@
 		"test:host-tauri-assistant": "node --single-threaded --import ./tools/loader/register.mts tools/host-tauri-assistant-test.ts && cargo test --manifest-path apps/tauri/src-tauri/Cargo.toml",
 		"test:assistant": "node --single-threaded --import ./tools/loader/register.mts tools/assistant-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/chat-sessions-apart-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/chat-drafts-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/assistant-chats-test.ts",
 		"test:chat-composer": "node --single-threaded --import ./tools/loader/register.mts tools/chat-composer-test.ts",
+		"test:chat-images-bento": "node --single-threaded --import ./tools/loader/register.mts tools/chat-images-bento-test.ts",
 		"test:install": "node --single-threaded --import ./tools/loader/register.mts tools/install-test.ts",
 		"test:docs": "node --single-threaded --import ./tools/loader/register.mts tools/docs-test.ts",
 		"test:docs-code": "node --single-threaded --import ./tools/loader/register.mts tools/docs-code-test.ts",
