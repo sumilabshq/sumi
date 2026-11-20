@@ -12,7 +12,11 @@
 }
 
 .sumi-usage-ring .is-used {
-	stroke: currentColor;
+	stroke: var(--sumi-text-2);
+}
+
+.is-working .sumi-usage-ring .is-used {
+	stroke: var(--sumi-accent);
 }
 
 .sumi-usage-meter {

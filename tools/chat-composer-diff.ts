@@ -75,7 +75,7 @@ const IN_SUMI_PALETTE = `((sheet, isDark) => {
 })`;
 const TYPED = "Add a weekly view to the habits page";
 const TYPE_IN = `((said) => { const box = document.querySelector(".wg-studio-ai-box"); box.focus(); const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set; setter.call(box, said); box.dispatchEvent(new Event("input", { bubbles: true })); return true; })`;
-const PRESS = `((selector, text) => { const found = [...document.querySelectorAll(selector)].find((el) => text === "" || el.getAttribute("aria-label") === text); found.click(); return true; })`;
+const PRESS = `((selector, text) => { const found = [...document.querySelectorAll(selector)].find((el) => text === "" || el.getAttribute("aria-label") === text); if (!found) throw new Error("no " + selector + " labelled " + text + " among: " + [...document.querySelectorAll(selector)].map((el) => el.getAttribute("aria-label")).join(", ")); found.click(); return true; })`;
 const CENTRE = `((selector) => { const found = [...document.querySelectorAll(selector)].find((el) => el.getClientRects().length > 0); const box = found.getBoundingClientRect(); return [box.left + box.width / 2, box.top + box.height / 2]; })`;
 
 const noAct = async (): Promise<void> => undefined;
@@ -191,7 +191,7 @@ const PHASES: readonly Phase[] = [
 		boardScope: { light: "", dark: "" },
 		menuLabel: { board: "Usage", built: "Usage" },
 		state: "composer",
-		act: async (page) => pressed(page, ".wg-studio-ai-strip .wg-kit-btn", "Usage"),
+		act: async (page) => pressed(page, ".wg-studio-ai-strip .sumi-usage-button", ""),
 		parts: USAGE_PARTS,
 	},
 	{

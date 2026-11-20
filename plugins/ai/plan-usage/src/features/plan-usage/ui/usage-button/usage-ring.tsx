@@ -7,7 +7,7 @@ const FULL = 2 * Math.PI * RADIUS;
 export function UsageRing({ part }: { readonly part: number | null }): ReactElement {
 	const shown = Math.min(1, Math.max(0, part ?? 0));
 	return (
-		<svg className="sumi-usage-ring" aria-hidden="true" width="12" height="12" viewBox="0 0 14 14">
+		<svg className="sumi-usage-ring" aria-hidden="true" width="18" height="18" viewBox="0 0 14 14">
 			<circle cx="7" cy="7" r={RADIUS} className="is-track" />
 			{part === null ? null : (
 				<circle
