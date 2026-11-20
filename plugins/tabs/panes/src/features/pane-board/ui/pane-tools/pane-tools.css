@@ -7,7 +7,7 @@
 }
 
 .wg-shell:has([data-title-floats]) .wg-pane[data-pane-tools][data-corner-end] {
-	--sumi-pane-tools-end: var(--sumi-corner-end-w);
+	--sumi-pane-tools-end: calc(var(--sumi-corner-end-w) - 2 * var(--sumi-sp-3) + var(--sumi-sp-1));
 	--sumi-corner-end: calc(var(--sumi-pane-tools-w) + var(--sumi-corner-end-w));
 }
 
