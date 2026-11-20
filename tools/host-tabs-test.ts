@@ -9,10 +9,18 @@ import {
 	placeTab,
 	tabOf,
 } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
-import { closeGroup, closeTabs, reopenClosed } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-closing.ts";
+import {
+	closeGroup,
+	closeTabs,
+	reopenClosed,
+} from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-closing.ts";
 import { addGroup, placeGroup, ungroup } from "../plugins/tabs/tab-groups/data/tab-groups/shared/lib/tab-groups.ts";
 import { rememberPages } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/page-memory.ts";
-import type { HostTabsMoment, MovedTabs, TabGroup } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
+import type {
+	HostTabsMoment,
+	MovedTabs,
+	TabGroup,
+} from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/host-tabs.ts";
 import { WORKSPACE_LIST, locationOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-lists.ts";
 import { tabBreaksOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/tab-invariants.ts";
 import { withTabsClosed } from "../plugins/tabs/navigation/data/navigation/shared/lib/showing/closing.ts";
@@ -132,7 +140,11 @@ const carriedOut = movedTo(
 );
 check(
 	"a group carried out of its holder stands in the list before the asked entry, with its tabs",
-	[carriedOut.lists[ONE]?.map((entry) => entry.id), groupOf(carriedOut, first.groupId).entries.length, tabBreaksOf(carriedOut)],
+	[
+		carriedOut.lists[ONE]?.map((entry) => entry.id),
+		groupOf(carriedOut, first.groupId).entries.length,
+		tabBreaksOf(carriedOut),
+	],
 	[[inner.groupId, first.groupId, second.groupId], 2, []],
 );
 const carriedIn = movedTo(
@@ -141,7 +153,11 @@ const carriedIn = movedTo(
 );
 check(
 	"a group carried into a group stands before the asked entry of it",
-	[groupOf(carriedIn, inner.groupId).entries.map((entry) => entry.id), flatTabIdsOf(carriedIn, ONE), tabBreaksOf(carriedIn)],
+	[
+		groupOf(carriedIn, inner.groupId).entries.map((entry) => entry.id),
+		flatTabIdsOf(carriedIn, ONE),
+		tabBreaksOf(carriedIn),
+	],
 	[[first.groupId, "tab-1"], ["tab-3", "tab-2", "tab-1"], []],
 );
 const outerSpilled = ungroup(carriedIn, groupOf(carriedIn, inner.groupId)).moment;
@@ -205,18 +221,28 @@ check(
 );
 
 const shownSecond = movedTo(markShown(threeWorkspaceTabs(), "tab-2"), threeWorkspaceTabs());
-const freed = withFreeTabBesidePanes(showingOf({ ...shownSecond, view: "browser" }), factsOf(["tab-2"]));
+const freed = withFreeTabBesidePanes(showingOf({ ...shownSecond, view: "browser" }), {
+	...factsOf(["tab-2"]),
+	shownTabPaneId: "pane-shown",
+});
 check(
 	"a shown tab dragged into a pane leaves the shown-tab pane to a free tab",
 	freed.moment.shownId === "tab-2",
 	false,
 );
 
-const shownFirst = movedTo(markShown(threeWorkspaceTabs(), "tab-1"), threeWorkspaceTabs());
-const everyPaned = withFreeTabBesidePanes(
-	showingOf({ ...shownFirst, view: "browser" }),
-	factsOf(["tab-1", "tab-2", "tab-3"]),
+const besideChat = withFreeTabBesidePanes(showingOf({ ...shownSecond, view: "browser" }), factsOf(["tab-2"]));
+check(
+	"a shown tab standing beside a chat with no shown-tab pane stays shown and nothing takes the board",
+	[besideChat.moment.shownId, besideChat.effects],
+	["tab-2", []],
 );
+
+const shownFirst = movedTo(markShown(threeWorkspaceTabs(), "tab-1"), threeWorkspaceTabs());
+const everyPaned = withFreeTabBesidePanes(showingOf({ ...shownFirst, view: "browser" }), {
+	...factsOf(["tab-1", "tab-2", "tab-3"]),
+	shownTabPaneId: "pane-shown",
+});
 check(
 	"with no free tab left the shown-tab pane closes",
 	everyPaned.effects.map((effect) => effect.kind),

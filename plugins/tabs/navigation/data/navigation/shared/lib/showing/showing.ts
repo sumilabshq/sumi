@@ -159,6 +159,11 @@ export function withFreeTabBesidePanes(showing: Showing, facts: TabFacts): Showi
 		return showing;
 	}
 
+	if (facts.shownTabPaneId === null) {
+		console.info(`[widgetarium] shown tab ${shownId} kept (it stands in its own pane, no shown-tab pane to refill)`);
+		return showing;
+	}
+
 	const listed = topPageTabIdsOf(showing.moment);
 	const freeId = listed.find((id) => !inPanes.includes(id) && !showing.moment.heldElsewhere.has(id));
 	console.info(`[widgetarium] shown tab ${shownId} → ${freeId ?? "none"} (${shownId} stands in its own pane now)`);
