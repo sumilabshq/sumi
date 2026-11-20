@@ -72,7 +72,7 @@ await sent(
 );
 const afterBoard = await sent(core.send(artboards.canvases.getCanvases, {}));
 check("writing an artboard stamps the edit time", (afterBoard[0]?.editedAt ?? 0) > editedAt, true);
-check("the row sketches the shown page's artboards", afterBoard[0]?.sketch, [{ x: 0, y: 0, w: 400, h: 300 }]);
+check("the row counts the artboard", afterBoard[0]?.boardCount, 1);
 
 const names = Array.from({ length: 60 }, (_, at) => `Canvas ${String(at).padStart(2, "0")}`);
 
@@ -146,7 +146,7 @@ check(
 	"tab-9-3",
 );
 
-const shape = gridShapeOf(1040);
+const shape = gridShapeOf(1040, 220);
 check("1040 px holds four columns", shape.columns, 4);
 const view = {
 	width: 1040,
@@ -158,7 +158,7 @@ check("only rows near the view are drawn: rows 8 to 14", [shown.first, shown.las
 check("the next screen is wanted ahead of the scroll", wantedSpanOf(shown, view, shape).last, 72);
 check(
 	"a canvas never edited shows only its counts",
-	cardMetaOf({ canvasId: "a", title: "a", pageCount: 1, boardCount: 2, editedAt: 0, sketch: [] }, 0),
+	cardMetaOf({ canvasId: "a", title: "a", pageCount: 1, boardCount: 2, editedAt: 0 }, 0),
 	"1 page · 2 boards",
 );
 

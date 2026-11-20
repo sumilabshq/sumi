@@ -1,6 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import type { CanvasOrder } from "@sumi/artboards/contract";
+import { PLAIN_CARD_PX } from "../../lib/grid-span.js";
 import { usePagedCanvases } from "../../lib/use-paged-canvases.js";
 import { CanvasCard } from "../canvas-card/canvas-card.js";
 import { NoCanvases } from "../no-canvases/no-canvases.js";
@@ -33,6 +34,7 @@ export function AllCanvases({ tabId, words, scroller }: AllCanvasesProps): React
 			<VirtualGrid
 				scroller={scroller}
 				total={paged.total}
+				cardPx={PLAIN_CARD_PX}
 				itemAt={paged.rowAt}
 				onWanted={paged.want}
 				drawItem={(row) =>

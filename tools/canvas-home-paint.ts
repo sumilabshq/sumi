@@ -47,9 +47,12 @@ const SCROLL_TO = (top: string): string => `document.querySelector('.sumi-canvas
 const home = await paged(`${file}#home`, "test:canvas-home-paint", { size: VIEW, hearsFailures: true });
 await waited(SETTLE_MS * 3);
 check("the home names the tab's place", await home.ask("document.querySelector('.sumi-canvas-top-row').textContent.includes('Canvases')"), true);
-check("open in chats shows the canvas under the chat", await home.ask("[...document.querySelectorAll('.sumi-canvas-home-row .sumi-canvas-card-name')].map((one) => one.textContent).join()"), "Sumi header");
-check("its chip names the chat", await home.ask("document.querySelector('.sumi-canvas-card-chat-name').textContent"), "Заголовок чату та сесії");
-check("the section head carries no count", await home.ask("document.querySelector('.sumi-canvas-home-head').textContent"), "Open in chats");
+check("open in chats shows one row of four", await home.ask("document.querySelectorAll('.sumi-canvas-home-row .sumi-canvas-card').length"), 4);
+check("more than four canvases in chats offer Open all", await home.ask("[...document.querySelectorAll('.sumi-canvas-home-quiet')].some((one) => one.textContent === 'Open all')"), true);
+check("a chip names its chat", String(await home.ask("[...document.querySelectorAll('.sumi-canvas-card-chat-name')].map((one) => one.textContent).join()")).includes("Заголовок чату та сесії"), true);
+check("the chip's dot is round", await home.ask("getComputedStyle(document.querySelector('.sumi-canvas-card-chat-dot')).borderRadius"), "50%");
+check("cards carry no border", await home.ask("getComputedStyle(document.querySelector('.sumi-canvas-card-cover')).boxShadow"), "none");
+check("the section head carries no count", await home.ask("document.querySelector('.sumi-canvas-home-head h2').textContent"), "Open in chats");
 const firstNames = await home.ask(`${NAMES}.slice(0, 2).join()`);
 check("the newest edit comes first", firstNames, "Sumi header,Canvas 299");
 const drawnAtTop = Number(await home.ask(`${CARDS}.length`));

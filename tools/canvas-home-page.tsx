@@ -16,6 +16,8 @@ reportsFailures();
 
 export const SEEDED_CANVASES = 300;
 
+const CHATS = ["Питання про браузер Phi", "Дота HTML для MCP-чату", "Канвас: адаптив і домашня сторінка", "Sumi onboarding"];
+
 const screenOf = (title: string): string =>
 	`<!doctype html><html><body style="margin:0;font:16px system-ui;background:#fff;color:#1b1b1a"><div style="padding:48px"><h1 style="margin:0 0 24px;font-size:40px">${title}</h1><div style="height:56px;border:2px solid #ccc;margin-bottom:16px"></div><div style="width:240px;height:56px;background:#1b1b1a"></div></div></body></html>`;
 
@@ -33,14 +35,20 @@ async function seeded(): Promise<Runtime> {
 								{ id: "k1", app: "canvas", pageId: null, label: null, lastAddress: "tab-1" },
 								{ id: "home", app: "canvas", pageId: null, label: null, lastAddress: "" },
 								{ id: "editor", app: "canvas", pageId: null, label: null, lastAddress: "tab-1" },
+								...CHATS.flatMap((label, at) => [
+									{ id: `chat-${at}`, app: "chat", pageId: null, label },
+									{ id: `held-${at}`, app: "canvas", pageId: null, label: null, lastAddress: `c-${290 + at}` },
+								]),
 							],
 							lists: {
 								workspace: [
 									{ kind: "tab", id: "k0" },
 									{ kind: "tab", id: "home" },
 									{ kind: "tab", id: "editor" },
+									...CHATS.map((_, at) => ({ kind: "tab" as const, id: `chat-${at}` })),
 								],
 								k0: [{ kind: "tab", id: "k1" }],
+								...Object.fromEntries(CHATS.map((_, at) => [`chat-${at}`, [{ kind: "tab" as const, id: `held-${at}` }]])),
 							},
 							views: { main: { shownId: "home" } },
 							minted: 4,

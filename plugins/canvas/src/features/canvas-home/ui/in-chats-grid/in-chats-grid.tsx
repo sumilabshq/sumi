@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { CHAT_CARD_PX } from "../../lib/grid-span.js";
 import { useCanvasesInChats } from "../../lib/use-canvases-in-chats.js";
 import { CanvasCard } from "../canvas-card/canvas-card.js";
 import { VirtualGrid } from "../virtual-grid/virtual-grid.js";
@@ -30,6 +31,7 @@ export function InChatsGrid({ tabId, words, scroller }: InChatsGridProps): React
 			<VirtualGrid
 				scroller={scroller}
 				total={inChats.length}
+				cardPx={CHAT_CARD_PX}
 				itemAt={(index) => inChats[index]}
 				onWanted={wantsNothing}
 				drawItem={(held) =>

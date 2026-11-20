@@ -205,20 +205,12 @@ export const CanvasViewSchema = z.object({
 	camera: CameraSchema.nullable(),
 });
 
-export const SketchBoxSchema = z.object({
-	x: z.number(),
-	y: z.number(),
-	w: z.number(),
-	h: z.number(),
-});
-
 export const CanvasRowSchema = z.object({
 	canvasId: CanvasIdSchema,
 	title: NameSchema,
 	pageCount: z.number().int().nonnegative(),
 	boardCount: z.number().int().nonnegative(),
 	editedAt: z.number().nonnegative(),
-	sketch: z.array(SketchBoxSchema),
 });
 
 export const CanvasesPageSchema = z.object({

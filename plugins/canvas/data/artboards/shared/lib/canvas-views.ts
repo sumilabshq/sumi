@@ -36,14 +36,6 @@ export function canvasRowOf(canvasId: string, canvas: Canvas): CanvasRow {
 		pageCount: canvas.pages.length,
 		boardCount: canvas.boards.length,
 		editedAt: canvas.editedAt,
-		sketch: boardsOnPage(canvas, canvas.shownPage)
-			.slice(0, SKETCH_MOST_BOARDS)
-			.map(({ x, y, w, h }) => ({
-				x,
-				y,
-				w,
-				h,
-			})),
 	};
 }
 
@@ -61,8 +53,6 @@ export function canvasesPageOf(
 		total: rows.length,
 	};
 }
-
-const SKETCH_MOST_BOARDS = 24;
 
 const ORDERS: Readonly<Record<CanvasOrder, (a: CanvasRow, b: CanvasRow) => number>> = {
 	edited: (a, b) => b.editedAt - a.editedAt || a.title.localeCompare(b.title),
