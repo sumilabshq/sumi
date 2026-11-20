@@ -146,6 +146,10 @@ async function sendViewEffect(effect: ViewEffect, { injects, send }: TabsReach):
 		return showBesideChat(send, seatOf(injects.studioWindow), effect);
 	}
 
+	if (effect.kind === "show-chat-beside-chat") {
+		return showChatBesideChat(send, seatOf(injects.studioWindow), effect);
+	}
+
 	if (effect.kind === "show-chat") {
 		return send(navigation.panes.showChat, {
 			seat: seatOf(injects.studioWindow),
@@ -219,5 +223,31 @@ async function showBesideChat(
 	return send(navigation.panes.place, {
 		seat,
 		placement: { view: { kind: "app", tabId }, targetId: chat.id, side, home: chatId },
+	});
+}
+
+async function showChatBesideChat(
+	send: Send,
+	seat: WindowSeat,
+	{ chatId, besideChatId }: Extract<TabEffect, { readonly kind: "show-chat-beside-chat" }>,
+): Promise<unknown> {
+	await send(navigation.panes.showChat, { seat, chatId, paneId: null });
+	const board = await send(navigation.panes.board, { seat });
+
+	if (board.leaves.some((leaf) => leaf.view.kind === "chat" && leaf.view.chatId === besideChatId)) {
+		console.info(`[widgetarium] show chat ${besideChatId} beside chat ${chatId}: it stands there already`);
+		return send(navigation.panes.showChat, { seat, chatId: besideChatId, paneId: null });
+	}
+
+	const group = board.chatGroups.find((one) => one.chatId === chatId);
+
+	if (group === undefined) {
+		console.warn(`[widgetarium] show chat ${besideChatId} beside chat ${chatId} skipped: the chat has no group after showing it`);
+		return undefined;
+	}
+
+	return send(navigation.panes.place, {
+		seat,
+		placement: { view: { kind: "chat", chatId: besideChatId }, targetId: group.groupId, side: "right", home: null },
 	});
 }

@@ -1,5 +1,5 @@
 .wg-pane[data-pane-tools] {
-	--sumi-pane-tools-w: calc(2 * var(--sumi-h-sm) + var(--sumi-sp-1) + 2 * var(--sumi-sp-3));
+	--sumi-pane-tools-w: calc(2 * var(--sumi-h-xs) + var(--sumi-sp-1) + 2 * var(--sumi-sp-3));
 	--sumi-pane-tools-end: 0px;
 	--sumi-corner-top: var(--sumi-header-h);
 	--sumi-corner-end: var(--sumi-pane-tools-w);
@@ -27,33 +27,4 @@
 	width: auto;
 	height: var(--sumi-corner-top);
 	padding-inline: var(--sumi-sp-3);
-}
-
-.wg-root .sumi-pane-tools .sumi-pane-tool.wg-kit-icon {
-	display: flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	min-width: 0;
-	padding: 0;
-	border-radius: 0;
-	background: none;
-	color: var(--sumi-glyph-rest);
-}
-
-.wg-root .sumi-pane-tools .sumi-pane-tool.wg-kit-icon::before {
-	border-radius: 0;
-	background: none;
-}
-
-.wg-root .sumi-pane-tools .sumi-pane-tool.wg-kit-icon:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-glyph-hover);
-}
-
-.wg-root .sumi-pane-tools .sumi-pane-tool.wg-kit-icon[aria-pressed="true"] {
-	background: var(--sumi-selected);
-	color: var(--sumi-glyph-on);
 }

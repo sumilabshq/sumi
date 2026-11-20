@@ -109,6 +109,7 @@ export const PaneBoardSchema = z.object({
 	tabTargetId: z.string().nullable(),
 	leaves: z.array(PaneLeafSchema).readonly(),
 	closableIds: z.array(z.string()).readonly(),
+	hidableIds: z.array(z.string()).readonly(),
 	tabPanes: z
 		.array(
 			z.object({
@@ -221,6 +222,7 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 		tabId: z.string(),
 		side: z.enum(["left", "right"]),
 	}),
+	z.object({ kind: z.literal("show-chat-beside-chat"), chatId: z.string(), besideChatId: z.string() }),
 	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
 	z.object({
 		kind: z.literal("show-split"),

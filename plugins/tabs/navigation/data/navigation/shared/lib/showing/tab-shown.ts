@@ -124,14 +124,26 @@ function withHolderShown(showing: Showing, facts: TabFacts, { tab, paneId }: Tab
 	const chatId = chatIdOf(showing.moment.apps, tab) ?? tab.id;
 	const main = paneId === null ? mainPageOf(showing.moment, tab.id) : null;
 
-	if (main !== null) {
-		console.info(`[widgetarium] show chat ${chatId}: its page ${main} stands beside it`);
-		return withEffect(seen, { kind: "show-beside-chat", chatId, tabId: main, side: "left" });
+	if (main === null) {
+		return withEffect(seen, {
+			kind: "show-chat",
+			chatId,
+			paneId,
+		});
 	}
 
-	return withEffect(seen, {
-		kind: "show-chat",
-		chatId,
-		paneId,
-	});
+	const mainChatId = mainChatIdOf(showing.moment, main);
+
+	if (mainChatId !== null) {
+		console.info(`[widgetarium] show chat ${chatId}: its main chat ${mainChatId} stands left of it`);
+		return withEffect(seen, { kind: "show-chat-beside-chat", chatId: mainChatId, besideChatId: chatId });
+	}
+
+	console.info(`[widgetarium] show chat ${chatId}: its page ${main} stands beside it`);
+	return withEffect(seen, { kind: "show-beside-chat", chatId, tabId: main, side: "left" });
+}
+
+function mainChatIdOf(moment: HostTabsMoment, main: string): string | null {
+	const mainTab = heldTabOf(moment, main);
+	return mainTab === undefined ? null : chatIdOf(moment.apps, mainTab);
 }

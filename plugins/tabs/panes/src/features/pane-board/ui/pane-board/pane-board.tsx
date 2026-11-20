@@ -30,6 +30,7 @@ export function PaneBoard({ drawn, empty, chatPx, bounds, onChatPx }: PaneBoardP
 					leaf={leaf}
 					look={look.slotOf(leaf)}
 					isClosable={look.tree.closableIds.includes(leaf.id)}
+					isHidable={look.tree.hidableIds.includes(leaf.id)}
 					isExpanded={expanding.expandedId === leaf.id}
 					onExpand={expanding.toggle}
 					drawn={drawn}

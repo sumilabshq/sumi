@@ -19423,7 +19423,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	height: var(--sumi-h-sm);
 	min-height: 0;
 	padding: 0 5px;
-	color: var(--sumi-text-3);
+	color: var(--sumi-text);
 	font: var(--sumi-fw-regular) var(--sumi-fs-13) var(--sumi-font-ui);
 	white-space: nowrap;
 }
@@ -19431,7 +19431,10 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	color: var(--sumi-text);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar .wg-kit-btn.sumi-usage-button {
+	justify-content: center;
+	width: var(--sumi-h-sm);
 	margin-right: var(--sumi-sp-2);
+	padding: 0;
 }
 :is(.wg-root, .wg-portal) :is(.wg-studio-ai-strip, .wg-studio-ai-field-bar) .wg-kit-btn.is-ghost::before {
 	border-radius: 0;
@@ -19445,7 +19448,9 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	:is(.wg-studio-ai-strip, .wg-studio-ai-field-bar)
 	.wg-kit-btn.is-ghost
 	.wg-kit-select-chevron {
-	display: none;
+	width: 12px;
+	height: 12px;
+	color: var(--sumi-text-3);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field:has(> .wg-studio-ai-attachments) {
 	padding-top: var(--sumi-sp-4);
@@ -21290,8 +21295,8 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: var(--sumi-h-sm);
-	height: 22px;
+	width: var(--sumi-h-xs);
+	height: var(--sumi-h-xs);
 	padding: 0;
 	border: none;
 	border-radius: 0;
@@ -21299,7 +21304,7 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	box-shadow: none;
 	color: var(--sumi-text-3);
 	cursor: pointer;
-	margin-right: calc(-1 * var(--sumi-sp-3));
+	margin-right: calc(-1 * var(--sumi-sp-2));
 }
 :is(.wg-root, .wg-portal) .sumi-composer-expand-toggle:hover {
 	background: var(--sumi-hover);
@@ -21496,7 +21501,10 @@ body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
 	stroke: var(--sumi-line-strong);
 }
 .sumi-usage-ring .is-used {
-	stroke: currentColor;
+	stroke: var(--sumi-text-2);
+}
+.is-working .sumi-usage-ring .is-used {
+	stroke: var(--sumi-accent);
 }
 .sumi-usage-meter {
 	display: flex;
@@ -22730,7 +22738,7 @@ button.sumi-head-title:hover {
 	color: var(--sumi-text-3);
 }
 .wg-pane[data-pane-tools] {
-	--sumi-pane-tools-w: calc(2 * var(--sumi-h-sm) + var(--sumi-sp-1) + 2 * var(--sumi-sp-3));
+	--sumi-pane-tools-w: calc(2 * var(--sumi-h-xs) + var(--sumi-sp-1) + 2 * var(--sumi-sp-3));
 	--sumi-pane-tools-end: 0px;
 	--sumi-corner-top: var(--sumi-header-h);
 	--sumi-corner-end: var(--sumi-pane-tools-w);
@@ -22755,31 +22763,6 @@ button.sumi-head-title:hover {
 	width: auto;
 	height: var(--sumi-corner-top);
 	padding-inline: var(--sumi-sp-3);
-}
-.wg-root .sumi-pane-tools .sumi-pane-tool.wg-kit-icon {
-	display: flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	min-width: 0;
-	padding: 0;
-	border-radius: 0;
-	background: none;
-	color: var(--sumi-glyph-rest);
-}
-.wg-root .sumi-pane-tools .sumi-pane-tool.wg-kit-icon::before {
-	border-radius: 0;
-	background: none;
-}
-.wg-root .sumi-pane-tools .sumi-pane-tool.wg-kit-icon:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-glyph-hover);
-}
-.wg-root .sumi-pane-tools .sumi-pane-tool.wg-kit-icon[aria-pressed="true"] {
-	background: var(--sumi-selected);
-	color: var(--sumi-glyph-on);
 }
 :root[data-terminal-cursor-on]
 	:is(
@@ -23519,27 +23502,49 @@ button.sumi-head-title:hover {
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: var(--sumi-sp-2, 4px);
+	align-items: start;
+	gap: var(--sumi-sp-4, 8px);
 	max-width: 100%;
 	margin: var(--sumi-sp-4, 8px) 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery[data-count="1"] {
 	grid-template-columns: minmax(0, 1fr);
-	justify-items: start;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery:is([data-count="2"], [data-count="4"]) {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-image {
-	display: block;
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-figure {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--sumi-sp-2, 4px);
 	min-width: 0;
 	max-width: 100%;
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-said p .wg-studio-ai-image {
+:is(.wg-root, .wg-portal) .wg-studio-ai-said p .wg-studio-ai-figure {
 	margin: var(--sumi-sp-4, 8px) 0;
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-caption {
+	color: var(--sumi-text-3, var(--muted-foreground));
+	font-size: var(--sumi-fs-12, 12px);
+	line-height: 1.4;
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-image {
+	display: block;
+	box-sizing: border-box;
+	width: fit-content;
+	max-width: 100%;
+	background: none;
+	outline: 1px solid var(--sumi-line, var(--background-modifier-border));
+	outline-offset: -1px;
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-image:has(> .is-failed) {
+	outline: none;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said :is(img.wg-studio-ai-image, .sumi-said-image img) {
 	display: block;
+	width: auto;
+	height: auto;
 	max-width: 100%;
 	max-height: 420px;
 	object-fit: contain;
@@ -23553,9 +23558,8 @@ button.sumi-head-title:hover {
 	padding: 0;
 	border: none;
 	border-radius: 0;
-	background: var(--sumi-soft, var(--wg-kit-fill));
+	background: none;
 	box-shadow: none;
-	outline: 1px solid var(--sumi-line, var(--background-modifier-border));
 	cursor: zoom-in;
 }
 :is(.wg-root, .wg-portal) .sumi-said-image.is-loading {
@@ -23564,28 +23568,27 @@ button.sumi-head-title:hover {
 	cursor: default;
 }
 :is(.wg-root, .wg-portal) .sumi-said-image.is-failed {
-	outline: none;
-	background: none;
 	color: var(--sumi-text-3, var(--muted-foreground));
 	cursor: default;
 }
-:is(.wg-root, .wg-portal)
-	.wg-studio-ai-said
-	.wg-studio-ai-gallery:not([data-count="1"])
-	:is(img.wg-studio-ai-image, .wg-studio-ai-image > .sumi-said-image) {
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery:not([data-count="1"]) .wg-studio-ai-figure {
+	align-items: stretch;
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery:not([data-count="1"]) .wg-studio-ai-image {
 	width: 100%;
+	aspect-ratio: 4 / 3;
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery:not([data-count="1"]) img.wg-studio-ai-image {
 	height: auto;
 	max-height: none;
-	aspect-ratio: 4 / 3;
 }
 :is(.wg-root, .wg-portal)
 	.wg-studio-ai-said
 	.wg-studio-ai-gallery:not([data-count="1"])
-	:is(img.wg-studio-ai-image, .sumi-said-image img) {
+	:is(.sumi-said-image, .sumi-said-image img) {
 	width: 100%;
 	height: 100%;
 	max-height: none;
-	object-fit: cover;
 }
 .wg-portal.wg-studio-ai-viewer-host {
 	position: absolute;

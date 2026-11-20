@@ -12,6 +12,8 @@ import { holdsOf } from "./window-trees.js";
 import { treeLeavingSplit } from "./split-boards.js";
 import type { WindowTree } from "./window-trees.js";
 import type { PanePlace } from "./pane-nodes.js";
+import { hidableIdsOf } from "./hidable-panes.js";
+import type { HostTabsMoment } from "../tabs/host-tabs.js";
 
 export interface PlacedTree {
 	readonly tree: PaneTree;
@@ -34,8 +36,14 @@ export function refuseUnknownPane(tree: PaneTree, id: string | null): string | n
 	return NO_PANE.replace("{id}", id);
 }
 
-export function boardOf(tree: PaneTree, others: readonly WindowTree[] = []): PaneBoard {
+export function boardOf(
+	tree: PaneTree,
+	others: readonly WindowTree[] = [],
+	moment: HostTabsMoment | null = null,
+): PaneBoard {
 	const chatTarget = chatPaneOf(tree);
+	const leaves = leavesOf(tree.root);
+	const closableIds = closableIdsOf(tree);
 	return {
 		root: tree.root,
 		targetId: tree.targetId,
@@ -43,8 +51,9 @@ export function boardOf(tree: PaneTree, others: readonly WindowTree[] = []): Pan
 		focusedChatId: chatTarget?.view.kind === "chat" ? (chatTarget.view.chatId ?? null) : null,
 		isLoaded: true,
 		tabTargetId: tabTargetOf(tree)?.paneId ?? null,
-		leaves: leavesOf(tree.root),
-		closableIds: closableIdsOf(tree),
+		leaves,
+		closableIds,
+		hidableIds: hidableIdsOf(leaves, closableIds, moment),
 		tabPanes: tabPanesOf(tree),
 		chatGroups: chatGroupsOf(tree.root).map((group) => ({
 			chatId: group.chatId,

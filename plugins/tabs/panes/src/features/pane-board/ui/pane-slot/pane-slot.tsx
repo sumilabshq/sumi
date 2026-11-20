@@ -14,6 +14,7 @@ export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
 	readonly look: SlotLook;
 	readonly isClosable: boolean;
+	readonly isHidable: boolean;
 	readonly isExpanded: boolean;
 	readonly onExpand: (paneId: string) => void;
 	readonly drawn: (view: PaneView) => ReactNode;
@@ -31,6 +32,7 @@ export const PaneSlot = memo(function PaneSlot({
 	leaf,
 	look,
 	isClosable,
+	isHidable,
 	isExpanded,
 	onExpand,
 	drawn,
@@ -38,7 +40,6 @@ export const PaneSlot = memo(function PaneSlot({
 }: PaneSlotProps): ReactElement {
 	const { isDimmed, isMoving, isAway } = look;
 	const { place, isAtTopLeft, isAtTopRight, corners } = isExpanded ? expandedLookOf(look) : look;
-	const hasTools = isClosable && leaf.view.kind === "app";
 	const close = usePaneClosing(leaf);
 	const aimPane = useCommand(appHost.panes.aim);
 	const markTabSeen = useCommand(chatFacts.turns.markSeen);
@@ -74,7 +75,7 @@ export const PaneSlot = memo(function PaneSlot({
 			data-pane-grouped={corners === undefined ? undefined : ""}
 			data-pane-away={isAway ? "" : undefined}
 			data-pane-view={leaf.view.kind}
-			data-pane-tools={hasTools ? "" : undefined}
+			data-pane-tools={isHidable ? "" : undefined}
 			data-pane-expanded={isExpanded ? "" : undefined}
 			data-corner-start={isAtTopLeft ? "" : undefined}
 			data-corner-end={isAtTopRight ? "" : undefined}
@@ -85,8 +86,8 @@ export const PaneSlot = memo(function PaneSlot({
 			onWheelCapture={isDimmed ? aim : undefined}
 		>
 			<PaneCloseContext.Provider value={closing}>{drawn(leaf.view)}</PaneCloseContext.Provider>
-			{hasTools ? (
-				<PaneTools paneId={leaf.id} isExpanded={isExpanded} onExpand={() => onExpand(leaf.id)} onClose={close} />
+			{isHidable ? (
+				<PaneTools paneId={leaf.id} isExpanded={isExpanded} onExpand={() => onExpand(leaf.id)} onHide={close} />
 			) : null}
 		</div>
 	);
@@ -115,6 +116,7 @@ function isSameSlot(before: PaneSlotProps, after: PaneSlotProps): boolean {
 	return (
 		before.leaf === after.leaf &&
 		before.isClosable === after.isClosable &&
+		before.isHidable === after.isHidable &&
 		before.isExpanded === after.isExpanded &&
 		before.onExpand === after.onExpand &&
 		before.drawn === after.drawn &&

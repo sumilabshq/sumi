@@ -3,6 +3,7 @@ import { command, query, subscriber } from "#module";
 import { placedTabsChanged } from "../../gateways/tabs/tabs.events.js";
 import { windowBoardOf } from "../../shared/lib/panes/window-boards.js";
 import { boardOf, placementPreviewOf } from "../../shared/lib/panes/pane-trees.js";
+import { momentOfWindow } from "../../shared/lib/tabs/kept-tabs.js";
 import { PaneBoardSchema, PlacementPreviewSchema } from "../../shared/schema/pane-tree.schema.js";
 import {
 	ChatInPaneAskSchema,
@@ -36,8 +37,10 @@ export const board = query()
 	.input(SeatAskSchema)
 	.output(PaneBoardSchema)
 	.handle(async ({ seat }, { tabs, placedApps }) => {
-		const { tree, others } = windowBoardOf({ placed: await tabs.placedTabs(), seat, apps: placedApps.placedApps() });
-		return boardOf(tree, others);
+		const placed = await tabs.placedTabs();
+		const apps = placedApps.placedApps();
+		const { tree, others } = windowBoardOf({ placed, seat, apps });
+		return boardOf(tree, others, momentOfWindow(placed, seat.window, apps));
 	});
 
 export const placementPreview = query()
