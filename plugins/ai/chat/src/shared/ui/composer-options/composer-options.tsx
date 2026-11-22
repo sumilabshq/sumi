@@ -13,13 +13,25 @@ export interface ComposerOptionsProps extends ComposerOptionProps {
 	readonly isEmptyChat: boolean;
 }
 
-export function ComposerOptions({ chat, surface, isEmptyChat }: ComposerOptionsProps): ReactElement {
+export function ComposerOptionsStart({ chat, surface, isEmptyChat }: ComposerOptionsProps): ReactElement {
 	return (
 		<>
 			<ListPluginSlot name="chat.options-start" props={{ chat, surface }} />
-			<span className="wg-studio-ai-strip-space" />
 			{isEmptyChat ? <ListPluginSlot name="chat.empty-options" props={{ chat }} /> : null}
-			<ListPluginSlot name="chat.options-end" props={{ chat, surface }} />
+		</>
+	);
+}
+
+export function ComposerOptionsEnd({ chat, surface }: ComposerOptionProps): ReactElement {
+	return <ListPluginSlot name="chat.options-end" props={{ chat, surface }} />;
+}
+
+export function ComposerOptions(props: ComposerOptionsProps): ReactElement {
+	return (
+		<>
+			<ComposerOptionsStart {...props} />
+			<span className="wg-studio-ai-strip-space" />
+			<ComposerOptionsEnd chat={props.chat} surface={props.surface} />
 		</>
 	);
 }

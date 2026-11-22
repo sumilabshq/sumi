@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Button, Icon, TextArea } from "@widgetarium/kit";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import type { QueuedShown } from "@widgetarium/assistant/contract";
 import { useSetsDraftAside } from "../../lib/use-sets-draft-aside.js";
@@ -19,6 +19,7 @@ import { SendButton } from "./send-button.js";
 export interface ComposerProps {
 	readonly busy: boolean;
 	readonly strip?: ReactNode;
+	readonly meter?: ReactNode;
 	readonly isFirst: boolean;
 	readonly attached: Attached | null;
 	readonly onSend: (said: string) => Promise<boolean>;
@@ -41,6 +42,7 @@ const CANCEL = "Cancel";
 export function Composer({
 	busy,
 	strip = null,
+	meter = null,
 	isFirst,
 	attached,
 	onSend,
@@ -73,15 +75,16 @@ export function Composer({
 						<Icon name="pencil" size={13} />
 						<b>{EDITING}</b>
 						<span>{editNoteOf(editing)}</span>
-						<button type="button" className="wg-studio-ai-edit-cancel" onClick={onCancelEdit}>
+						<Button variant="ghost" size="s" className="wg-studio-ai-edit-cancel" onClick={onCancelEdit}>
 							{CANCEL}
-						</button>
+						</Button>
 					</div>
 				)}
 				<DraftAttachments />
 				{attached ? <AttachedChip attached={attached} /> : null}
 				<div className="wg-studio-ai-box-frame">
-					<textarea
+					<TextArea
+						variant="bare"
 						ref={composerBox}
 						className={isBoxTextHidden ? "wg-studio-ai-box is-text-hidden" : "wg-studio-ai-box"}
 						rows={1}
@@ -104,13 +107,17 @@ export function Composer({
 						onPaste={onPaste}
 					/>
 					<ListPluginSlot name="chat.composer-input" props={{ input }} />
-					<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 				</div>
 				<div className="wg-studio-ai-field-bar">
 					<ComposerTools />
-					{strip ?? <span className="wg-studio-ai-bar-space" />}
+					<span className="wg-studio-ai-bar-space" />
+					{meter}
 					<SendButton state={state} isEditing={editing !== null} onSend={sendDraft} onStop={onStop} />
 				</div>
+			</div>
+			<div className="wg-studio-ai-under">
+				{strip}
+				<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 			</div>
 		</div>
 	);

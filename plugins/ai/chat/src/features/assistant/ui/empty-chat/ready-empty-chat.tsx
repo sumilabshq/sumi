@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Mascot } from "../../../mascot/ui/mascot/mascot.js";
 
 const QUESTION = "What are we building?";
-const MASCOT_PX = 40;
+const MASCOT_PX = 168;
 
 export function ReadyEmptyChat(): ReactElement {
 	return (

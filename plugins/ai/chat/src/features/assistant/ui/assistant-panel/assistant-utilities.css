@@ -1,7 +1,6 @@
 @layer theme {
 	:root,
 	:host {
-		--cv-color-white: #fff;
 		--cv-spacing: 0.25rem;
 		--cv-leading-tight: 1.25;
 		--cv-radius-2xl: 1rem;
@@ -87,7 +86,6 @@
 		overflow: hidden !important;
 	}
 	.cv\:rounded-full {
-		border-radius: 0;
 	}
 	.cv\:border-0 {
 		border-style: var(--tw-border-style) !important;
@@ -131,15 +129,10 @@
 		color: var(--muted-foreground) !important;
 	}
 	.cv\:shadow-none {
-		--tw-shadow: 0 0 #0000 !important;
+		--tw-shadow: 0 0 transparent !important;
 		box-shadow:
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
-	}
-	@media (hover: hover) {
-		.cv\:hover\:bg-fill-hover:hover {
-			background-color: var(--fill-hover) !important;
-		}
 	}
 }
 @layer properties {
@@ -164,20 +157,20 @@
 			--tw-numeric-figure: initial;
 			--tw-numeric-spacing: initial;
 			--tw-numeric-fraction: initial;
-			--tw-shadow: 0 0 #0000;
+			--tw-shadow: 0 0 transparent;
 			--tw-shadow-color: initial;
 			--tw-shadow-alpha: 100%;
-			--tw-inset-shadow: 0 0 #0000;
+			--tw-inset-shadow: 0 0 transparent;
 			--tw-inset-shadow-color: initial;
 			--tw-inset-shadow-alpha: 100%;
 			--tw-ring-color: initial;
-			--tw-ring-shadow: 0 0 #0000;
+			--tw-ring-shadow: 0 0 transparent;
 			--tw-inset-ring-color: initial;
-			--tw-inset-ring-shadow: 0 0 #0000;
+			--tw-inset-ring-shadow: 0 0 transparent;
 			--tw-ring-inset: initial;
 			--tw-ring-offset-width: 0px;
-			--tw-ring-offset-color: #fff;
-			--tw-ring-offset-shadow: 0 0 #0000;
+			--tw-ring-offset-color: var(--wg-kit-page);
+			--tw-ring-offset-shadow: 0 0 transparent;
 			--tw-backdrop-blur: initial;
 			--tw-backdrop-brightness: initial;
 			--tw-backdrop-contrast: initial;

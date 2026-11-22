@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, tooltipMarks } from "@widgetarium/kit";
+import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
 import type { SendState } from "../../lib/send-state.js";
 
 export interface SendButtonProps {
@@ -21,10 +21,11 @@ export function SendButton({ state, isEditing, onSend, onStop }: SendButtonProps
 	const isStreaming = state === "streaming" && !isEditing;
 	const said = saidOf(state, isEditing);
 	return (
-		<button
-			type="button"
+		<IconButton
+			variant="primary"
+			size="xs"
 			className={`wg-studio-ai-send is-${state}`}
-			aria-label={said}
+			label={said}
 			aria-disabled={state === "idle"}
 			onClick={() => {
 				if (isStreaming) {
@@ -41,7 +42,7 @@ export function SendButton({ state, isEditing, onSend, onStop }: SendButtonProps
 			) : (
 				<SendGlyph isEditing={isEditing} />
 			)}
-		</button>
+		</IconButton>
 	);
 }
 

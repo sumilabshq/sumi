@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, Pressable } from "@widgetarium/kit";
 import type { AssistantTurn, RenderMarkdown } from "@widgetarium/core/engine/assistant-port.js";
 import { Chevron } from "../chevron/chevron.js";
 import { Said } from "../turn/said.js";
@@ -30,8 +30,7 @@ export function CompactLine({ turn, render, live }: CompactLineProps): ReactElem
 	return (
 		<div className={`wg-studio-ai-compact-block${isOpen ? " is-open" : ""}`}>
 			<div className="wg-studio-ai-compact">
-				<button
-					type="button"
+				<Pressable
 					className="wg-studio-ai-compact-said is-button"
 					aria-expanded={isOpen}
 					onClick={() => setOpen(!isOpen)}
@@ -39,7 +38,7 @@ export function CompactLine({ turn, render, live }: CompactLineProps): ReactElem
 					<Icon name="fold-vertical" size={15} />
 					{COMPACTED}
 					<Chevron isOpen={isOpen} />
-				</button>
+				</Pressable>
 			</div>
 			{isOpen ? (
 				<div className="wg-studio-ai-compact-summary">

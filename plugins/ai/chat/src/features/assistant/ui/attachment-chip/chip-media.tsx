@@ -9,7 +9,7 @@ export interface ChipMediaProps {
 }
 
 const OPEN = "Show {name} bigger";
-const MEDIA = "cv:grid cv:size-7 cv:flex-none cv:place-items-center cv:overflow-hidden cv:rounded-none cv:bg-fill";
+const MEDIA = "cv:grid cv:size-7 cv:flex-none cv:place-items-center cv:overflow-hidden cv:bg-fill";
 const OPENS = "cv:cursor-pointer cv:border-0 cv:p-0 cv:shadow-none";
 const PICTURE = "cv:size-full cv:object-cover";
 

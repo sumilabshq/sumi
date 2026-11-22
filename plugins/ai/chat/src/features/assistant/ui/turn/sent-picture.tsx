@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { pictureMarksOf } from "../../../../shared/lib/picture-marks.js";
 import { GonePicture } from "./gone-picture.js";
 import type { AttachmentChip } from "@widgetarium/assistant/contract";
@@ -19,14 +20,13 @@ export function SentPicture({ picture }: SentPictureProps): ReactElement {
 	}
 
 	return (
-		<button
-			type="button"
+		<Pressable
 			className="wg-studio-ai-picture"
-			aria-label={OPEN.replace("{name}", picture.name)}
+			label={OPEN.replace("{name}", picture.name)}
 			{...pictureMarksOf({ src: picture.preview, name: picture.name, size: picture.size })}
 		>
 			<img src={picture.preview} alt="" />
 			<span className="wg-studio-ai-picture-name">{named}</span>
-		</button>
+		</Pressable>
 	);
 }

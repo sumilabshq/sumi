@@ -1,6 +1,6 @@
 import { Fragment, createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { FilePicker, Icon, IconButton } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useMenuOpening } from "../../lib/menu-spot.js";
 import { ChatMenu } from "../chat-menu/chat-menu.js";
@@ -25,19 +25,20 @@ export function ComposerTools(): ReactElement {
 	const plus = useMenuOpening();
 	return (
 		<>
-			<button
-				type="button"
+			<IconButton
+				variant="ghost"
+				size="xs"
+				aria-pressed={plus.spot !== null}
 				className={`wg-studio-ai-plus${plus.spot === null ? "" : " is-on"}`}
-				aria-label={ADD}
+				label={ADD}
 				aria-haspopup="menu"
 				onClick={plus.openAt}
 			>
 				<Icon name="plus" size={16} />
-			</button>
-			<input
+			</IconButton>
+			<FilePicker
 				ref={picker}
 				className="cv:hidden"
-				type="file"
 				multiple
 				accept={accepted}
 				onChange={(event) => {

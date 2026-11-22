@@ -1,5 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 
 const LONG_AFTER_CHARS = 280;
 const LONG_AFTER_LINES = 4;
@@ -15,9 +16,14 @@ export function QueuedSaid({ said }: { readonly said: string }): ReactElement {
 				{said}
 			</div>
 			{isLong ? (
-				<button type="button" className="wg-studio-ai-queued-more" onClick={() => setExpanded(!isExpanded)}>
+				<Pressable
+					variant="quiet"
+					tone="muted"
+					className="wg-studio-ai-queued-more"
+					onClick={() => setExpanded(!isExpanded)}
+				>
 					{isExpanded ? SHOW_LESS : SHOW_MORE}
-				</button>
+				</Pressable>
 			) : null}
 		</div>
 	);

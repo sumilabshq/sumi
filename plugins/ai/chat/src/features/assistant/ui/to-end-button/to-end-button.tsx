@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactNode } from "react";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
-import { Icon, tooltipMarks, useMessageScroller, useMessageScrollerScrollable } from "@widgetarium/kit";
+import { Button, Icon, tooltipMarks, useMessageScroller, useMessageScrollerScrollable } from "@widgetarium/kit";
 
 const TO_END = "Scroll to the latest message";
 const ARROW_PX = 16;
@@ -18,9 +18,9 @@ export function ToEndButton(): ReactNode {
 
 	return (
 		<div className="wg-studio-ai-to-end">
-			<button
+			<Button
+				size="s"
 				className="wg-studio-ai-to-end-button"
-				type="button"
 				aria-label={TO_END}
 				onClick={() => scrollToEnd()}
 				{...tooltipMarks({ said: TO_END })}
@@ -29,7 +29,7 @@ export function ToEndButton(): ReactNode {
 				<span className="wg-studio-ai-to-end-label">
 					{chatId === null ? null : <ListPluginSlot name="chat.to-end-label" props={{ chatId }} />}
 				</span>
-			</button>
+			</Button>
 		</div>
 	);
 }

@@ -33,6 +33,7 @@ export function ChatTurns({ chat, cards, asks, chatId, report }: ChatTurnsProps)
 			{chatId === undefined ? null : <ListPluginSlot name="chat.before-live" props={{ chatId, report }} />}
 			<LiveRow live={live} session={chat.session} chatId={chatId} />
 			<EndLine chat={chat} />
+			{chatId === undefined ? null : <ListPluginSlot name="chat.after-end" props={{ chatId }} />}
 		</OpenGroupsContext.Provider>
 	);
 }

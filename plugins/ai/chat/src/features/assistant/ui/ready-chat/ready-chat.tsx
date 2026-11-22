@@ -2,6 +2,7 @@ import { createElement as h, useRef, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { ComposerFooter } from "../composer-footer/composer-footer.js";
+import { ComposerMeter } from "../composer-meter/composer-meter.js";
 import { useTellsAgentActivity } from "../../lib/agent-activity.js";
 import { ChatScroll } from "./chat-scroll.js";
 import { useChatAsks } from "../../lib/use-chat-asks.js";
@@ -79,6 +80,11 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 					strip={
 						<ChatPart>
 							<ComposerFooter isEmpty={isEmpty} />
+						</ChatPart>
+					}
+					meter={
+						<ChatPart>
+							<ComposerMeter />
 						</ChatPart>
 					}
 					isFirst={isEmpty}

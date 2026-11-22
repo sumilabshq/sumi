@@ -9,6 +9,7 @@ export const chat = pluginWithSlots(definition, {
 		liveTail: listPluginSlot<{ readonly chatId: never; readonly onRowsCounted: never }>("chat.live-tail"),
 		liveRows: listPluginSlot<{ readonly chatId: never }>("chat.live-rows"),
 		beforeLive: listPluginSlot<{ readonly chatId: never; readonly report: never }>("chat.before-live"),
+		afterEnd: listPluginSlot<{ readonly chatId: never }>("chat.after-end"),
 		frame: pluginSlot<{ readonly chatId: never; readonly children: never }>("chat.frame"),
 		toEndLabel: listPluginSlot<{ readonly chatId: never }>("chat.to-end-label"),
 		saidMarkdown: listPluginSlot<{ readonly holder: never }>("chat.said-markdown"),

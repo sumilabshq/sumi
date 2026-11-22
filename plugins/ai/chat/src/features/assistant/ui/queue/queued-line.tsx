@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 
 export interface QueuedLineProps {
 	readonly isHeld: boolean;
@@ -28,14 +28,14 @@ export function QueuedLine({ isHeld, canEdit, onEdit, onRemove }: QueuedLineProp
 		<div className="wg-studio-ai-queued-line">
 			<Icon name="clock" size={13} />
 			<span className="wg-studio-ai-queued-state">{QUEUED}</span>
-			<button type="button" className="wg-studio-ai-queued-act" disabled={!canEdit} onClick={onEdit}>
+			<Button variant="ghost" size="s" className="wg-studio-ai-queued-act" disabled={!canEdit} onClick={onEdit}>
 				<Icon name="pencil" size={13} />
 				{EDIT}
-			</button>
-			<button type="button" className="wg-studio-ai-queued-act" onClick={onRemove}>
+			</Button>
+			<Button variant="ghost" size="s" className="wg-studio-ai-queued-act" onClick={onRemove}>
 				<Icon name="trash" size={13} />
 				{REMOVE}
-			</button>
+			</Button>
 		</div>
 	);
 }

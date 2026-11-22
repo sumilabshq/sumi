@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, Pressable } from "@widgetarium/kit";
 import type { AssistantCall, AssistantSession, CallFace } from "@widgetarium/core/engine/assistant-port.js";
 import { BusyMark } from "../busy-mark/busy-mark.js";
 import { LineCounts } from "../tool-calls/line-counts.js";
@@ -22,7 +22,13 @@ export function LiveHead({ calls, faces, session, tail, isOpen, onPress }: LiveH
 	const { done, now } = liveSaidOf(calls, faces, saidWaiting(session.phase));
 	const changed = changedLinesOf(faces);
 	return (
-		<button className="wg-studio-ai-tools-head is-live" type="button" aria-expanded={isOpen} onClick={onPress}>
+		<Pressable
+			variant="quiet"
+			tone="muted"
+			className="wg-studio-ai-tools-head is-live"
+			aria-expanded={isOpen}
+			onClick={onPress}
+		>
 			<BusyMark />
 			<span className="wg-studio-ai-tools-said">
 				{done}
@@ -39,6 +45,6 @@ export function LiveHead({ calls, faces, session, tail, isOpen, onPress }: LiveH
 					className={isOpen ? "wg-studio-ai-tools-chevron is-open" : "wg-studio-ai-tools-chevron"}
 				/>
 			)}
-		</button>
+		</Pressable>
 	);
 }

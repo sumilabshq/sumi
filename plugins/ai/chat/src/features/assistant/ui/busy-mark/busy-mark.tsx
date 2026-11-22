@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { StatusCube } from "@widgetarium/kit";
+import { SumiFigure } from "@sumi/sumi-host-plugin";
 
 const MARK_PX = 14;
 
 export function BusyMark(): ReactElement {
-	return <StatusCube state="working" size={MARK_PX} />;
+	return <SumiFigure state="working" size={MARK_PX} />;
 }

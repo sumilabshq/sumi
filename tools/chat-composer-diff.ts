@@ -191,7 +191,7 @@ const PHASES: readonly Phase[] = [
 		boardScope: { light: "", dark: "" },
 		menuLabel: { board: "Usage", built: "Usage" },
 		state: "composer",
-		act: async (page) => pressed(page, ".wg-studio-ai-strip .sumi-usage-button", ""),
+		act: async (page) => pressed(page, ".wg-studio-ai-field-bar .sumi-usage-button", ""),
 		parts: USAGE_PARTS,
 	},
 	{

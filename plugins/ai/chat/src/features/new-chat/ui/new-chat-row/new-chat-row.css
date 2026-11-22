@@ -10,40 +10,13 @@
 	min-width: 0;
 	height: var(--sumi-h-row);
 	padding: 0 var(--sumi-side-pad);
-	border: 0;
-	border-radius: 0;
-	background: transparent;
-	box-shadow: none;
-	color: var(--sumi-text-2);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
 	cursor: pointer;
-	outline: none;
 	user-select: none;
 }
 
 :is(.wg-root, .wg-portal) .sumi-new-chat-row > svg {
 	margin: 0 1px;
-}
-
-:is(.wg-root, .wg-portal) .sumi-new-chat-row::before {
-	content: "";
-	position: absolute;
-	inset: 0 0 0 -100vw;
-	z-index: -1;
-	transition: background-color var(--sumi-dur-hover);
-}
-
-:is(.wg-root, .wg-portal) .sumi-new-chat-row:is(:hover, :focus-visible) {
-	color: var(--sumi-text);
-}
-
-:is(.wg-root, .wg-portal) .sumi-new-chat-row:is(:hover, :focus-visible)::before {
-	background: var(--sumi-hover);
-	transition-duration: 0ms;
-}
-
-:is(.wg-root, .wg-portal) .sumi-new-chat-row:active::before {
-	background: var(--sumi-active);
 }

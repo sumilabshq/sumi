@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useOverflowsAcross } from "../../lib/use-overflows-across.js";
 import { AttachmentCard } from "./attachment-card.js";
-import { AttachmentsMore } from "./attachments-more.js";
+import { AttachmentsHead } from "./attachments-head.js";
 import { assistant } from "@widgetarium/assistant/contract";
 import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 import { PICTURE_GROUP_MARKS } from "../../../../shared/lib/picture-marks.js";
@@ -21,20 +21,16 @@ export function DraftAttachments(): ReactElement | null {
 
 	return (
 		<div
-			className={`wg-studio-ai-attachments${across.overflows ? " is-over" : ""}`}
+			className={`wg-studio-ai-attachments${across.isMoreBefore ? " is-more-before" : ""}${across.isMoreAfter ? " is-more-after" : ""}`}
 			data-draft-attachments=""
 			{...PICTURE_GROUP_MARKS}
 		>
-			<div className="wg-studio-ai-attachments-track" ref={track} onScroll={across.onScroll}>
+			<AttachmentsHead drafts={drafts} across={across} />
+			<div className="wg-studio-ai-attachments-track" ref={track} onScroll={across.onScroll} onWheel={across.onWheel}>
 				{drafts.map((chip) => (
-					<AttachmentCard
-						key={chip.id}
-						chip={chip}
-						onRemove={() => void remove.run({ chat, id: chip.id })}
-					/>
+					<AttachmentCard key={chip.id} chip={chip} onRemove={() => void remove.run({ chat, id: chip.id })} />
 				))}
 			</div>
-			{across.overflows ? <AttachmentsMore drafts={drafts} seen={across.seen} onMore={across.pageOn} /> : null}
 		</div>
 	);
 }

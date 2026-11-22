@@ -78,7 +78,9 @@ const EMPTY: AssistantSession = {
 	tool: null,
 	phase: null,
 	spent: 0,
+	context: null,
 	queued: [],
+	background: [],
 };
 
 const TALKED: AssistantSession = {

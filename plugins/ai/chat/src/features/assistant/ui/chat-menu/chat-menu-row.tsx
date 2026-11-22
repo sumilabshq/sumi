@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, Pressable } from "@widgetarium/kit";
 
 export interface ChatMenuRowProps {
 	readonly text: string;
@@ -25,8 +25,8 @@ export function ChatMenuRow({
 }: ChatMenuRowProps): ReactElement {
 	const tail = isPicked ? <Icon name="tick" size={16} /> : end;
 	return (
-		<button
-			type="button"
+		<Pressable
+			data-highlighted={isActive ? "" : undefined}
 			{...pickedAriaOf(isPicked)}
 			className={rowClassOf(small !== undefined, isPicked, isActive)}
 			onClick={onPick}
@@ -39,7 +39,7 @@ export function ChatMenuRow({
 				{small === undefined ? null : <small>{small}</small>}
 			</span>
 			{tail === undefined ? null : <span className="wg-studio-ai-menu-end">{tail}</span>}
-		</button>
+		</Pressable>
 	);
 }
 
