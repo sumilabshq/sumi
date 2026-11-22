@@ -2,6 +2,7 @@
 	--sumi-mcp-card-fill: var(--sumi-plate);
 	position: relative;
 	overflow: hidden;
+	border-radius: var(--wg-kit-plate);
 	background: var(--sumi-mcp-card-fill);
 }
 
@@ -43,6 +44,7 @@
 .sumi-mcp-tag,
 .sumi-mcp-square {
 	height: 32px;
+	border-radius: var(--wg-kit-item);
 	background: var(--sumi-plate);
 	pointer-events: auto;
 }
@@ -96,8 +98,6 @@
 .sumi-mcp-tag-button {
 	display: grid;
 	place-items: center;
-	border: 0;
-	color: var(--wg-kit-text-muted);
 	cursor: pointer;
 }
 
@@ -111,12 +111,6 @@
 	width: 24px;
 	height: 24px;
 	margin-left: -6px;
-	background: none;
-}
-
-.sumi-mcp-square:hover,
-.sumi-mcp-tag-button:hover {
-	color: var(--sumi-text);
 }
 
 .sumi-mcp-square svg,

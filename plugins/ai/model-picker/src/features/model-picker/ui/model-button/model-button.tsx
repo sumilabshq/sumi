@@ -20,12 +20,12 @@ export function ModelButton({ chat }: ComposerOptionProps): ReactElement | null 
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
 			<PopoverTrigger asChild>
-				<Button variant="ghost" size="sm" aria-label={MODEL}>
+				<Button variant="ghost" size="xs" aria-label={MODEL}>
 					{chosenLabelOf(shown)}
 					<SelectChevron />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent side="top" align="center" className="is-compact sumi-model-menu">
+			<PopoverContent side="top" align="center" size="xl" className="sumi-model-menu">
 				<ModelMenu chat={chat} shown={shown} onPicked={() => setOpen(false)} />
 			</PopoverContent>
 		</Popover>

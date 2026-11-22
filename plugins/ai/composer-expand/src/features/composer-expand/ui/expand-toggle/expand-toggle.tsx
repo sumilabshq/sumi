@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, RefObject } from "react";
-import { Icon, tooltipMarks } from "@widgetarium/kit";
+import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
 import { useExpanding } from "../../lib/expanding-context.js";
 import { useGlidesComposer } from "../../lib/use-glides-composer.js";
 
@@ -33,10 +33,11 @@ export function ExpandToggle({ composer, box, fitBox }: ExpandToggleProps): Reac
 
 	const said = isExpanded ? COLLAPSE : EXPAND;
 	return (
-		<button
-			type="button"
+		<IconButton
+			variant="ghost"
+			size="xxs"
 			className="sumi-composer-expand-toggle"
-			aria-label={said}
+			label={said}
 			aria-pressed={isExpanded}
 			onMouseDown={(event) => event.preventDefault()}
 			onClick={() => {
@@ -46,6 +47,6 @@ export function ExpandToggle({ composer, box, fitBox }: ExpandToggleProps): Reac
 			{...tooltipMarks({ said, side: "top" })}
 		>
 			<Icon name={isExpanded ? "corners-in" : "corners-out"} size={16} />
-		</button>
+		</IconButton>
 	);
 }

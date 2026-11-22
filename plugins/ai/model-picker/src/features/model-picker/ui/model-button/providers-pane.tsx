@@ -25,11 +25,12 @@ export function ProvidersPane({ shown, shownRunner, onBrowse, onManage }: Provid
 						<PopoverItem
 							key={id}
 							className="sumi-provider-row"
-							data-shown={isShown ? "" : undefined}
+							aria-current={isShown}
 							onClick={() => onBrowse(id)}
 							onPointerEnter={() => onBrowse(id)}
 							onFocus={() => onBrowse(id)}
 						>
+							<Icon name="terminal" size={14} />
 							<span className="sumi-provider-label">{label}</span>
 							{isShown ? <Icon name="chevron-right" size={14} /> : null}
 						</PopoverItem>

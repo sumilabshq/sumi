@@ -10,7 +10,9 @@ export function marksSaidPictures(node: HTMLElement): void {
 	}
 
 	for (const image of node.querySelectorAll<HTMLImageElement>(WEB_IMAGE_SELECTOR)) {
-		for (const [name, value] of Object.entries(pictureMarksOf({ src: image.src, name: image.getAttribute(IMAGE_CAPTION_ATTRIBUTE) ?? image.alt }))) {
+		for (const [name, value] of Object.entries(
+			pictureMarksOf({ src: image.src, name: image.getAttribute(IMAGE_CAPTION_ATTRIBUTE) ?? image.alt }),
+		)) {
 			image.setAttribute(name, value);
 		}
 	}

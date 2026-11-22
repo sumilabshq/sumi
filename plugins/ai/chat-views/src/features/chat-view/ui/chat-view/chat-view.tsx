@@ -11,7 +11,10 @@ type ChatViewProps = McpAppViewProps<z.output<typeof ShownViewSchema>>;
 
 const NO_BUILT_IN = "This built-in view is not in this version of Sumi.";
 
-export function chatViewOf(parts: readonly ViewPart[], templates: readonly ViewTemplate[]): ComponentType<ChatViewProps> {
+export function chatViewOf(
+	parts: readonly ViewPart[],
+	templates: readonly ViewTemplate[],
+): ComponentType<ChatViewProps> {
 	return function ChatView({ result }: ChatViewProps): ReactElement | null {
 		if (result.path !== null) {
 			return <SavedView path={result.path} id={result.id} title={result.title} parts={parts} />;

@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { assistant } from "@widgetarium/assistant/contract";
-import { Button, Icon, Popover, PopoverContent, PopoverTrigger } from "@widgetarium/kit";
+import { Button, Icon, Popover, PopoverContent, PopoverTrigger, SelectChevron } from "@widgetarium/kit";
 import type { ComposerOptionProps } from "@sumi/chat-plugin";
 import { folderNameOf } from "../../lib/short-path.js";
 import { FolderMenu } from "./folder-menu.js";
@@ -25,9 +25,10 @@ export function FolderButton({ chat, surface }: ComposerOptionProps): ReactEleme
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
 			<PopoverTrigger asChild>
-				<Button variant="ghost" size="sm" aria-label={CHOOSE_A_FOLDER}>
+				<Button variant="ghost" size="xs" aria-label={CHOOSE_A_FOLDER}>
 					<Icon name="folder" size={12} />
 					{folders.current === null ? WORK_IN_A_FOLDER : folderNameOf(folders.current)}
+					<SelectChevron />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="is-compact" side="top" align="start">

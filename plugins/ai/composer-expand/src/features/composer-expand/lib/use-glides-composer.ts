@@ -17,16 +17,17 @@ export interface Glided {
 
 export function useGlidesComposer({ composer, box, isExpanded, fitBox, frame }: Glided): () => void {
 	const shownHeight = useShownHeight(composer);
-	const isMounted = useRef(false);
+	const wasExpanded = useRef(isExpanded);
 	useLayoutEffect(() => {
 		const node = composer.current;
 		const field = box.current;
 		const chatFrame = frame.current;
 
-		if (!isMounted.current) {
-			isMounted.current = true;
+		if (wasExpanded.current === isExpanded) {
 			return undefined;
 		}
+
+		wasExpanded.current = isExpanded;
 
 		if (!node || !field || !chatFrame) {
 			return undefined;

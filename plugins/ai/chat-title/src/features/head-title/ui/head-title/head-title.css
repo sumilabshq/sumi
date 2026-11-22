@@ -1,4 +1,5 @@
-.sumi-head-title {
+.sumi-head-title,
+.sumi-head-title-edit {
 	display: block;
 	flex: 0 1 auto;
 	box-sizing: border-box;
@@ -9,32 +10,24 @@
 	margin-inline-start: calc(-1 * var(--sumi-sp-2));
 	padding: 0 var(--sumi-sp-2);
 	overflow: hidden;
-	border: 0;
-	border-radius: var(--sumi-r-sm);
-	background: none;
-	color: var(--sumi-text);
 	font-family: var(--sumi-font-ui);
 	font-size: var(--sumi-fs-14);
 	font-weight: var(--sumi-fw-medium);
 	line-height: var(--sumi-h-sm);
-	letter-spacing: inherit;
 	text-align: start;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	transition: background-color var(--sumi-dur-base) var(--sumi-ease);
 }
 
-button.sumi-head-title:hover {
-	background: var(--sumi-hover);
-}
-
-.sumi-head-title.is-renaming {
+.sumi-head-title-edit {
 	display: inline-grid;
+	border-radius: var(--wg-kit-control-radius);
 	background: var(--sumi-plate);
 	box-shadow: inset 0 0 0 1px var(--sumi-line-strong);
+	color: var(--sumi-text);
 }
 
-.sumi-head-title.is-renaming::after {
+.sumi-head-title-edit::after {
 	content: attr(data-draft) " ";
 	grid-area: 1 / 1;
 	overflow: hidden;
@@ -49,10 +42,6 @@ button.sumi-head-title:hover {
 	min-width: 0;
 	margin: 0;
 	padding: 0;
-	border: 0;
-	outline: none;
-	background: none;
-	color: var(--sumi-text);
 	font: inherit;
 	letter-spacing: inherit;
 }

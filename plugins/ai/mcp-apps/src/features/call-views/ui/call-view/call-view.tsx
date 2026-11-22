@@ -17,7 +17,9 @@ export function CallView({ call, view }: CallViewProps): ReactElement | null {
 	}
 
 	if (!call.answered) {
-		return <div className="sumi-mcp-app" data-mcp-app={view.name} data-mcp-app-waiting="" style={{ height: view.height }} />;
+		return (
+			<div className="sumi-mcp-app" data-mcp-app={view.name} data-mcp-app-waiting="" style={{ height: view.height }} />
+		);
 	}
 
 	if (drawn === null) {

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, IconButton } from "@widgetarium/kit";
 import type { ShownPicture } from "../../lib/shown-picture.js";
 
 export interface ViewerHeadProps {
@@ -24,9 +24,9 @@ export function ViewerHead({ shown, at, count, onClose }: ViewerHeadProps): Reac
 					{COUNTER.replace("{at}", String(at + 1)).replace("{count}", String(count))}
 				</span>
 			) : null}
-			<button type="button" className="wg-studio-ai-viewer-button" aria-label={CLOSE} onClick={onClose}>
+			<IconButton variant="overlay" size="s" className="wg-studio-ai-viewer-button" label={CLOSE} onClick={onClose}>
 				<Icon name="x" size={16} />
-			</button>
+			</IconButton>
 		</div>
 	);
 }

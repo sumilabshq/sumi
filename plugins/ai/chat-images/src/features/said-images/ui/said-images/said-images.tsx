@@ -14,7 +14,9 @@ export function SaidImages({ holder }: SaidImagesProps): ReactElement {
 	useBentoGalleries(holder);
 	return (
 		<Fragment>
-			{spots.map((spot, at) => createPortal(<SaidImage path={spot.path} alt={spot.alt} caption={spot.caption} />, spot.element, String(at)))}
+			{spots.map((spot, at) =>
+				createPortal(<SaidImage path={spot.path} alt={spot.alt} caption={spot.caption} />, spot.element, String(at)),
+			)}
 		</Fragment>
 	);
 }

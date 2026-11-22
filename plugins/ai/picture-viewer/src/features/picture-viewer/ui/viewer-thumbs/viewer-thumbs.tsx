@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import type { ShownPicture } from "../../lib/shown-picture.js";
 
 export interface ViewerThumbsProps {
@@ -14,16 +15,15 @@ export function ViewerThumbs({ pictures, at, onPick }: ViewerThumbsProps): React
 	return (
 		<div className="wg-studio-ai-viewer-thumbs">
 			{pictures.map((picture, pictureAt) => (
-				<button
+				<Pressable
 					key={pictureAt}
-					type="button"
 					className={pictureAt === at ? "wg-studio-ai-viewer-thumb is-shown" : "wg-studio-ai-viewer-thumb"}
-					aria-label={SHOW.replace("{name}", picture.name)}
+					label={SHOW.replace("{name}", picture.name)}
 					aria-current={pictureAt === at}
 					onClick={() => onPick(pictureAt)}
 				>
 					<img src={picture.src} alt="" />
-				</button>
+				</Pressable>
 			))}
 		</div>
 	);

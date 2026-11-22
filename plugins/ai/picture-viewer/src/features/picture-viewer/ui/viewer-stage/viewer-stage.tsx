@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, IconButton } from "@widgetarium/kit";
 import type { ShownPicture } from "../../lib/shown-picture.js";
 
 export interface ViewerStageProps {
@@ -17,17 +17,29 @@ export function ViewerStage({ shown, count, step, onClose }: ViewerStageProps): 
 	return (
 		<div className="wg-studio-ai-viewer-stage">
 			{count > 1 ? (
-				<button type="button" className="wg-studio-ai-viewer-button" aria-label={PREVIOUS} onClick={() => step(-1)}>
+				<IconButton
+					variant="overlay"
+					size="s"
+					className="wg-studio-ai-viewer-button"
+					label={PREVIOUS}
+					onClick={() => step(-1)}
+				>
 					<Icon name="chevron-left" size={18} />
-				</button>
+				</IconButton>
 			) : null}
 			<div className="wg-studio-ai-viewer-frame" onClick={onClose}>
 				<img src={shown.src} alt={shown.name} onClick={(event) => event.stopPropagation()} />
 			</div>
 			{count > 1 ? (
-				<button type="button" className="wg-studio-ai-viewer-button" aria-label={NEXT} onClick={() => step(1)}>
+				<IconButton
+					variant="overlay"
+					size="s"
+					className="wg-studio-ai-viewer-button"
+					label={NEXT}
+					onClick={() => step(1)}
+				>
 					<Icon name="chevron-right" size={18} />
-				</button>
+				</IconButton>
 			) : null}
 		</div>
 	);

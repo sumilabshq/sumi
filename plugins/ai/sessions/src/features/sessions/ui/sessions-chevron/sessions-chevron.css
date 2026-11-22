@@ -1,14 +1,3 @@
-:is(.wg-root, .wg-portal) .wg-kit-icon.sumi-sessions-chevron {
-	flex: none;
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	color: var(--sumi-text-3);
-}
-
-:is(.wg-root, .wg-portal) .wg-kit-icon.is-ghost.sumi-sessions-chevron:is(:hover, [data-state="open"])::before {
-	background: var(--sumi-hover);
-}
-
 .sumi-sessions-chevron svg {
 	transition: transform var(--sumi-dur-base) var(--sumi-ease);
 }

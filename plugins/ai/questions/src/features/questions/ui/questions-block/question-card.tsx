@@ -1,5 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { FormEvent, KeyboardEvent, ReactElement } from "react";
+import { Button, Input, Pressable } from "@widgetarium/kit";
 import type { Question } from "@widgetarium/questions/contract";
 import type { AnswerQuestion } from "../../lib/use-answers-question.js";
 
@@ -48,9 +49,9 @@ export function QuestionCard({ question, answer }: QuestionCardProps): ReactElem
 			<p className="wg-questions-card-question">{question.question}</p>
 			{question.detail === "" ? null : <p className="wg-questions-card-detail">{question.detail}</p>}
 			{question.options.map((option, at) => (
-				<button
+				<Pressable
+					variant="soft"
 					key={option.label}
-					type="button"
 					aria-pressed={question.multiple ? picked.includes(option.label) : undefined}
 					className="wg-questions-option"
 					onClick={() => press(option.label)}
@@ -58,21 +59,24 @@ export function QuestionCard({ question, answer }: QuestionCardProps): ReactElem
 					<span className="wg-questions-option-num">{at + 1}</span>
 					<span className="wg-questions-option-label">{option.label}</span>
 					{option.detail === "" ? null : <span className="wg-questions-option-detail">{option.detail}</span>}
-				</button>
+				</Pressable>
 			))}
 			{question.multiple ? (
-				<button
-					type="button"
+				<Button
+					variant="primary"
+					size="s"
 					className="wg-questions-answer"
 					disabled={picked.length === 0}
 					onClick={() => answer(question.id, picked, null)}
 				>
 					{ANSWER}
-				</button>
+				</Button>
 			) : null}
 			{question.ownAnswer ? (
 				<form className="wg-questions-own" onSubmit={sendOwn}>
-					<input
+					<Input
+						size="s"
+						block
 						className="wg-questions-own-field"
 						value={own}
 						placeholder={OWN_PLACEHOLDER}

@@ -1,21 +1,3 @@
-:is(.wg-root, .wg-portal) .sumi-composer-expand-toggle {
-	display: inline-flex;
+.sumi-composer-expand-toggle {
 	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: var(--sumi-h-xs);
-	height: var(--sumi-h-xs);
-	padding: 0;
-	border: none;
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
-	color: var(--sumi-text-3);
-	cursor: pointer;
-	margin-right: calc(-1 * var(--sumi-sp-2));
-}
-
-:is(.wg-root, .wg-portal) .sumi-composer-expand-toggle:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
 }

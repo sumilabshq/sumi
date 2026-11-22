@@ -17,13 +17,19 @@
 :is(.wg-root, .wg-portal) .sumi-slash-menu {
 	position: absolute;
 	z-index: 5;
-	bottom: calc(100% + var(--sumi-sp-5) + var(--sumi-sp-2));
-	left: 0;
+	bottom: calc(100% + var(--sumi-slash-lift, var(--sumi-sp-5)));
+	left: calc(-1 * var(--sumi-sp-5));
 	box-sizing: border-box;
-	width: min(440px, 100%);
-	padding: var(--sumi-sp-2) 0 0;
-	background: var(--sumi-plate);
-	box-shadow: 0 0 0 1px var(--sumi-line);
+	width: calc(100% + 2 * var(--sumi-sp-5));
+	padding: var(--sumi-sp-2) 0;
+	border: 1px solid var(--sumi-divider);
+	border-bottom: 0;
+	border-start-start-radius: var(--wg-kit-plate);
+	border-start-end-radius: var(--wg-kit-plate);
+	overflow: hidden;
+	background: var(--wg-kit-soft-glass-fill);
+	-webkit-backdrop-filter: var(--wg-kit-soft-glass-blur);
+	backdrop-filter: var(--wg-kit-soft-glass-blur);
 	color: var(--sumi-text);
 	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.5 var(--sumi-font-ui);
 }
@@ -43,23 +49,14 @@
 	display: flex;
 	align-items: center;
 	gap: var(--sumi-sp-5);
-	width: 100%;
+	width: calc(100% - 2 * var(--sumi-sp-2));
 	height: var(--sumi-h-md);
-	margin: 0;
-	padding: 0 var(--sumi-sp-5);
-	border: 0;
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
-	color: inherit;
+	margin: 0 var(--sumi-sp-2);
+	padding: 0 var(--sumi-sp-4);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
 	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .sumi-slash-row:is(:hover, [aria-selected="true"]) {
-	background: var(--sumi-soft);
 }
 
 :is(.wg-root, .wg-portal) .sumi-slash-name {
@@ -76,24 +73,15 @@
 }
 
 :is(.wg-root, .wg-portal) .sumi-slash-foot {
+	position: absolute;
+	top: var(--sumi-sp-2);
+	right: var(--sumi-sp-5);
 	display: flex;
 	align-items: center;
 	gap: var(--sumi-sp-6);
-	height: var(--sumi-h-md);
-	margin: var(--sumi-sp-2) 0 0;
-	padding: 0 var(--sumi-sp-5);
-	border-top: 1px solid var(--sumi-line);
+	height: var(--sumi-h-sm);
+	margin: 0;
+	padding: 0;
 	color: var(--sumi-text-3);
 	font-size: var(--sumi-fs-12);
-}
-
-:is(.wg-root, .wg-portal) .sumi-slash-foot .wg-kit-kbd {
-	margin-right: var(--sumi-sp-2);
-	padding: 0 var(--sumi-sp-2);
-	border: 0;
-	border-radius: 0;
-	background: var(--sumi-soft);
-	box-shadow: none;
-	color: var(--sumi-text-2);
-	font: var(--sumi-fw-medium) var(--sumi-fs-11) var(--sumi-font-ui);
 }

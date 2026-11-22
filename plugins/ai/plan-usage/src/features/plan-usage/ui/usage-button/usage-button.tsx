@@ -13,6 +13,7 @@ const USED = "{label}, {used} used";
 
 export function UsageButton({ chat, surface }: ComposerOptionProps): ReactElement | null {
 	const meters = useOptionalQuery(assistant.runners.getMeters, { chat }).data ?? [];
+	const context = useOptionalQuery(assistant.chat.one, { chat }).data?.session.context ?? null;
 	const usage = meters.find(({ key }) => key === USAGE);
 
 	if (usage === undefined || surface === "ask") {
@@ -25,7 +26,7 @@ export function UsageButton({ chat, surface }: ComposerOptionProps): ReactElemen
 			<PopoverTrigger asChild>
 				<Button
 					variant="ghost"
-					size="sm"
+					size="xs"
 					className="sumi-usage-button"
 					aria-label={
 						first === null ? usage.label : USED.replace("{label}", usage.label).replace("{used}", percentOf(first.used))
@@ -35,7 +36,7 @@ export function UsageButton({ chat, surface }: ComposerOptionProps): ReactElemen
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="is-compact" side="top" align="end">
-				<UsageMenu meter={usage} />
+				<UsageMenu meter={usage} context={context} />
 			</PopoverContent>
 		</Popover>
 	);

@@ -1,7 +1,8 @@
-import { createElement as h } from "react";
+import { createElement as h, useLayoutEffect, useRef } from "react";
 import type { ReactElement } from "react";
-import { Kbd } from "@widgetarium/kit";
+import { Kbd, Pressable } from "@widgetarium/kit";
 import type { SlashMenu } from "../../lib/use-slash-menu.js";
+import { useResizesSmoothly } from "../../lib/use-resizes-smoothly.js";
 
 const MENU_LABEL = "Commands";
 const NO_MATCH = "No commands match “{typed}”";
@@ -11,16 +12,48 @@ const HINTS = [
 	["↑↓", "Move"],
 ] as const;
 
-export function SlashMenuPanel({ slash, draft }: { readonly slash: SlashMenu; readonly draft: string }): ReactElement {
+export interface SlashMenuPanelProps {
+	readonly slash: SlashMenu;
+	readonly draft: string;
+	readonly isLeaving: boolean;
+	readonly onGone: () => void;
+}
+
+export function SlashMenuPanel({ slash, draft, isLeaving, onGone }: SlashMenuPanelProps): ReactElement {
 	const isEmpty = slash.matches.length === 0;
+	const panel = useRef<HTMLDivElement>(null);
+	useResizesSmoothly(panel, isLeaving, onGone);
+	useLayoutEffect(() => {
+		const node = panel.current;
+		const frame = node?.offsetParent;
+		const field = frame?.parentElement;
+
+		if (!node || !(frame instanceof HTMLElement) || !field) {
+			return undefined;
+		}
+
+		const lift = (): void =>
+			node.style.setProperty(
+				"--sumi-slash-lift",
+				`${frame.getBoundingClientRect().top - field.getBoundingClientRect().top}px`,
+			);
+		lift();
+
+		if (typeof ResizeObserver !== "function") {
+			return undefined;
+		}
+
+		const sizes = new ResizeObserver(lift);
+		sizes.observe(field);
+		return () => sizes.disconnect();
+	}, []);
 	return (
-		<div className="sumi-slash-menu" role="listbox" aria-label={MENU_LABEL}>
+		<div ref={panel} className="sumi-slash-menu" role="listbox" aria-label={MENU_LABEL} aria-hidden={isLeaving}>
 			<p className="sumi-slash-label">{MENU_LABEL}</p>
 			{isEmpty ? <p className="sumi-slash-none">{NO_MATCH.replace("{typed}", draft)}</p> : null}
 			{slash.matches.map((entry) => (
-				<button
+				<Pressable
 					key={entry.name}
-					type="button"
 					role="option"
 					aria-selected={entry.name === slash.active?.name}
 					className="sumi-slash-row"
@@ -29,7 +62,7 @@ export function SlashMenuPanel({ slash, draft }: { readonly slash: SlashMenu; re
 				>
 					<span className="sumi-slash-name">/{entry.name}</span>
 					<span className="sumi-slash-said">{entry.description}</span>
-				</button>
+				</Pressable>
 			))}
 			{isEmpty ? null : (
 				<p className="sumi-slash-foot">

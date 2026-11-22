@@ -1,9 +1,4 @@
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.sumi-sessions-pop {
-	width: 320px;
-	min-width: 0;
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .sumi-sessions-row {
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .sumi-sessions-row {
 	gap: var(--sumi-sp-4);
 	height: var(--sumi-h-md);
 	min-height: var(--sumi-h-md);
@@ -45,18 +40,15 @@
 	flex-direction: column;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio)
-	.wg-kit-pop
-	.sumi-sessions-line[data-current="true"]
-	> .sumi-sessions-row {
-	background: var(--sumi-soft);
+.sumi-sessions-line[data-current="true"] > .sumi-sessions-row {
 	font-weight: 600;
 }
 
 .sumi-sessions-actions {
 	position: absolute;
 	inset-block: 0;
-	inset-inline-end: var(--sumi-sp-1);
+	inset-inline-end: var(--sumi-sp-2);
+	z-index: 2;
 	display: none;
 	align-items: center;
 	gap: var(--sumi-sp-1);
@@ -75,22 +67,12 @@
 	min-width: var(--sumi-h-sm);
 	height: var(--sumi-h-sm);
 	padding: 0 var(--sumi-sp-1);
-	border: none;
-	border-radius: 0;
-	background: var(--sumi-plate);
-	color: var(--sumi-text-3);
 	font-size: var(--sumi-fs-13);
 	cursor: pointer;
 }
 
-:is(.wg-root, .wg-portal) .sumi-sessions-action:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-}
-
-:is(.wg-root, .wg-portal) .sumi-sessions-action[data-confirming="true"] {
-	background: var(--sumi-danger-wash);
-	color: var(--sumi-danger);
+.sumi-sessions-line:is(:hover, :focus-within) .sumi-sessions-row-meta {
+	visibility: hidden;
 }
 
 .sumi-sessions-more {

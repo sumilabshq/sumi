@@ -25,7 +25,7 @@ export function SessionsPopover({ chatId, side, align, trigger }: SessionsPopove
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
 			{trigger}
-			<PopoverContent side={side} align={align} className="sumi-sessions-pop">
+			<PopoverContent side={side} align={align} size="l" className="sumi-sessions-pop">
 				<RuntimeProvider runtime={windowApp}>
 					<SessionsList currentChatId={chatId} onClose={() => setOpen(false)} />
 				</RuntimeProvider>

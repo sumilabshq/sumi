@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { pictureMarksOf } from "@sumi/chat-plugin";
 import { fileSystem } from "@sumi/contract";
 import { imageSourceOf } from "@sumi/image-viewer-plugin";
@@ -20,25 +21,20 @@ export function SaidImage({ path, alt, caption }: SaidImageProps): ReactElement 
 
 	if (read.failure !== null) {
 		return (
-			<span className="sumi-said-image is-failed">
+			<span className="sumi-said-image-state is-failed">
 				{NOT_SHOWN.replace("{name}", name).replace("{reason}", read.failure)}
 			</span>
 		);
 	}
 
 	if (read.data === null) {
-		return <span className="sumi-said-image is-loading" />;
+		return <span className="sumi-said-image-state is-loading" />;
 	}
 
 	const src = imageSourceOf(path, read.data);
 	return (
-		<button
-			type="button"
-			className="sumi-said-image"
-			aria-label={OPEN.replace("{name}", name)}
-			{...pictureMarksOf({ src, name })}
-		>
+		<Pressable className="sumi-said-image" label={OPEN.replace("{name}", name)} {...pictureMarksOf({ src, name })}>
 			<img src={src} alt={alt} />
-		</button>
+		</Pressable>
 	);
 }

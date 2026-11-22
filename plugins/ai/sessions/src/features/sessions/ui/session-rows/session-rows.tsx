@@ -25,7 +25,13 @@ export interface SessionRowsProps {
 	onClose(): void;
 }
 
-export function SessionRows({ needle, isArchived, currentChatId, onArchivedShown, onClose }: SessionRowsProps): ReactNode {
+export function SessionRows({
+	needle,
+	isArchived,
+	currentChatId,
+	onArchivedShown,
+	onClose,
+}: SessionRowsProps): ReactNode {
 	const [limit, setLimit] = useState(PAGE_ROWS);
 	const read = useOptionalQuery(sessions.sessionList.page, { text: needle, limit, isArchived }).data;
 	const lastRead = useRef<SessionPage | undefined>(read);
@@ -80,9 +86,7 @@ export function SessionRows({ needle, isArchived, currentChatId, onArchivedShown
 					<span className="sumi-sessions-row-icon" aria-hidden="true">
 						<Icon name="archive" size={ICON_PX} />
 					</span>
-					<span className="sumi-sessions-row-label">
-						{ARCHIVED.replace("{count}", String(archivedCount))}
-					</span>
+					<span className="sumi-sessions-row-label">{ARCHIVED.replace("{count}", String(archivedCount))}</span>
 				</PopoverItem>
 			) : null}
 		</>

@@ -39,6 +39,8 @@
 	box-sizing: border-box;
 	width: fit-content;
 	max-width: 100%;
+	overflow: hidden;
+	border-radius: var(--wg-kit-item);
 	background: none;
 	outline: 1px solid var(--sumi-line, var(--background-modifier-border));
 	outline-offset: -1px;
@@ -57,6 +59,10 @@
 	object-fit: contain;
 }
 
+:is(.wg-root, .wg-portal) .sumi-said-image img {
+	border-radius: inherit;
+}
+
 :is(.wg-root, .wg-portal) .wg-studio-ai-said img.wg-studio-ai-image[data-picture] {
 	cursor: zoom-in;
 }
@@ -64,21 +70,17 @@
 :is(.wg-root, .wg-portal) .sumi-said-image {
 	display: block;
 	max-width: 100%;
-	padding: 0;
-	border: none;
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
+	overflow: hidden;
 	cursor: zoom-in;
 }
 
-:is(.wg-root, .wg-portal) .sumi-said-image.is-loading {
+:is(.wg-root, .wg-portal) .sumi-said-image-state.is-loading {
 	width: 240px;
 	height: 140px;
 	cursor: default;
 }
 
-:is(.wg-root, .wg-portal) .sumi-said-image.is-failed {
+:is(.wg-root, .wg-portal) .sumi-said-image-state.is-failed {
 	color: var(--sumi-text-3, var(--muted-foreground));
 	cursor: default;
 }
@@ -142,7 +144,11 @@
 	outline-offset: -1px;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery[data-bento] > [data-bento-small] .wg-studio-ai-image {
+:is(.wg-root, .wg-portal)
+	.wg-studio-ai-said
+	.wg-studio-ai-gallery[data-bento]
+	> [data-bento-small]
+	.wg-studio-ai-image {
 	display: flex;
 	align-items: center;
 	justify-content: center;

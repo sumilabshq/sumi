@@ -1,5 +1,6 @@
 import { createElement as h, useLayoutEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
+import { Input } from "@widgetarium/kit";
 import { renamedTitleOf } from "../../lib/renamed-title.js";
 
 const CHAT_NAME = "Chat name";
@@ -28,13 +29,13 @@ export function TitleField({ title, onDone }: TitleFieldProps): ReactElement {
 	}, []);
 
 	return (
-		<span className="sumi-head-title is-renaming" data-draft={draft}>
-			<input
+		<span className="sumi-head-title-edit" data-draft={draft}>
+			<Input
 				ref={field}
+				variant="bare"
 				className="sumi-head-title-field"
 				aria-label={CHAT_NAME}
 				value={draft}
-				size={1}
 				spellCheck={false}
 				onChange={(event) => setDraft(event.target.value)}
 				onBlur={() => finish(renamedTitleOf(draft, title))}

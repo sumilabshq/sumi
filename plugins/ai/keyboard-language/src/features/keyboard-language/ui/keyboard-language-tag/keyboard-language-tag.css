@@ -4,7 +4,7 @@
 	margin-left: calc(var(--sumi-caret-w) + var(--sumi-sp-3));
 	padding: 2px var(--sumi-sp-2);
 	border: 1px solid var(--sumi-line-strong);
-	border-radius: 0;
+	border-radius: var(--wg-kit-control-radius);
 	background: var(--sumi-plate);
 	color: var(--sumi-text);
 	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1.5 var(--sumi-font-ui);

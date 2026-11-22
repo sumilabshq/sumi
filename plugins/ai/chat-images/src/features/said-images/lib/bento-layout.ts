@@ -72,7 +72,15 @@ function bestCandidateOf(placed: readonly Placed[], columnWidth: number, gap: nu
 	const narrowAt = placed.findIndex(({ ratio }) => ratio < NARROW_RATIO);
 	const hasTallTile = placed.length >= 3 && placed.length <= MOST_IN_ROW && narrowAt >= 0;
 	const candidates = hasTallTile
-		? [...rowCandidates, tallTileOf(placed[narrowAt] as Placed, placed.filter((_, at) => at !== narrowAt), columnWidth, gap)]
+		? [
+				...rowCandidates,
+				tallTileOf(
+					placed[narrowAt] as Placed,
+					placed.filter((_, at) => at !== narrowAt),
+					columnWidth,
+					gap,
+				),
+			]
 		: rowCandidates;
 	return candidates.reduce((best, candidate) => (candidate.cost < best.cost ? candidate : best));
 }
@@ -135,7 +143,9 @@ function tallTileOf(lead: Placed, rest: readonly Placed[], columnWidth: number, 
 	const tooTall = Math.max(0, height - columnWidth * TALLEST_ROW_PART * TALL_TILE_STRETCH);
 	const isStackTooNarrow = stackWidth < columnWidth * NARROWEST_STACK_PART;
 	const cost =
-		(height / rest.length - columnWidth * TARGET_ROW_PART) ** 2 + OUT_OF_BOUNDS_WEIGHT * tooTall ** 2 + (isStackTooNarrow ? RULED_OUT : 0);
+		(height / rest.length - columnWidth * TARGET_ROW_PART) ** 2 +
+		OUT_OF_BOUNDS_WEIGHT * tooTall ** 2 +
+		(isStackTooNarrow ? RULED_OUT : 0);
 	return { tiles, height, cost, shape: `tall + ${String(rest.length)} stacked` };
 }
 

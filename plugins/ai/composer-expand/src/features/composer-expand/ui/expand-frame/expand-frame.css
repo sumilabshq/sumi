@@ -5,7 +5,7 @@
 .sumi-composer-expand .wg-studio-ai-field {
 	flex: 1 1 auto;
 	min-height: 0;
-	transition-property: border-color, padding, margin;
+	transition-property: border-color, margin;
 	transition-duration: 180ms;
 	transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
@@ -53,6 +53,7 @@
 	flex: 1 1 0;
 	min-height: 0;
 	margin-block-start: auto;
+	padding-block-start: var(--sumi-sp-8);
 }
 
 /* TRADE-OFF: !important outranks the chat's inline fitted height; a box-height slot would be cleaner */

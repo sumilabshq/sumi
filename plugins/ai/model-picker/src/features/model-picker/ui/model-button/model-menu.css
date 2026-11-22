@@ -1,7 +1,3 @@
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact.sumi-model-menu {
-	width: 480px;
-}
-
 .sumi-model-panes {
 	display: flex;
 	max-height: min(360px, calc(100vh - 160px));
@@ -21,6 +17,11 @@
 .sumi-model-pane.is-providers {
 	flex: none;
 	width: 196px;
+	padding-inline-end: var(--sumi-sp-2);
+}
+
+.sumi-model-pane-divider + .sumi-model-pane {
+	padding-inline-start: var(--sumi-sp-2);
 }
 
 .sumi-model-pane-divider {
@@ -36,7 +37,7 @@
 	justify-content: space-between;
 	gap: var(--sumi-sp-2);
 	height: var(--sumi-h-sm);
-	padding: 0 var(--sumi-sp-3) 0 var(--sumi-sp-5);
+	padding: 0 var(--sumi-sp-4);
 	color: var(--sumi-text-3);
 	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1.4 var(--sumi-font-ui);
 }
@@ -49,17 +50,7 @@
 	width: var(--sumi-h-xs);
 	height: var(--sumi-h-xs);
 	padding: 0;
-	border: none;
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
-	color: var(--sumi-text-3);
 	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .sumi-pane-head-button:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
 }
 
 .sumi-pane-list {
@@ -70,8 +61,7 @@
 	min-height: 0;
 	overflow-y: auto;
 	overscroll-behavior: contain;
-	scrollbar-width: thin;
-	scrollbar-color: var(--sumi-line-strong) transparent;
+	scrollbar-width: none;
 }
 
 .sumi-pane-list > * {
@@ -81,10 +71,6 @@
 .sumi-provider-label {
 	flex: 1;
 	min-width: 0;
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .sumi-provider-row[data-shown]::before {
-	background: var(--sumi-hover);
 }
 
 .sumi-model-lists {
