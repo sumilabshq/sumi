@@ -5,86 +5,6 @@
 	min-height: 0;
 }
 
-.wg-root .wg-kit-side.sumi-tabs-sidebar {
-	--wg-kit-card-pad: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0;
-	min-height: 0;
-	padding: var(--sumi-header-h) 0 var(--sumi-sp-4);
-	border: 0;
-	border-radius: 0;
-	background: var(--sumi-frame);
-	box-shadow: none;
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-content {
-	gap: var(--sumi-sp-5);
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-group {
-	gap: var(--sumi-sp-1);
-	padding: 0;
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-label {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-	min-height: var(--sumi-h-md);
-	margin: 0;
-	padding-inline: var(--sumi-sp-6);
-	border: 0;
-	background: none;
-	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1 var(--sumi-font-ui);
-	color: var(--sumi-text-3);
-	cursor: default;
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-menu {
-	gap: 0;
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-sub {
-	--wg-kit-side-indent: 0;
-	gap: 0;
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-button {
-	gap: var(--sumi-sp-4);
-	min-height: var(--sumi-h-md);
-	padding-block: 0;
-	padding-inline: var(--sumi-sp-6);
-	border-radius: 0;
-	font-size: var(--sumi-fs-13);
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-sub .wg-kit-side-menu-button {
-	padding-inline-start: calc(var(--sumi-sp-6) + var(--sumi-tabs-depth, 1) * (var(--sumi-sp-6) + var(--sumi-sp-4)));
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-row::before {
-	border-radius: 0;
-}
-
-.wg-root .sumi-tabs-sidebar {
-	--wg-kit-side-action-top: calc((var(--sumi-h-md) - var(--sumi-h-sm)) / 2);
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-row[data-sort-placeholder]::before {
-	background: var(--sumi-hover);
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-row.is-selected::before {
-	background: var(--sumi-selected);
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-row.is-selected .wg-kit-row-label,
-.wg-root .sumi-tabs-sidebar .wg-kit-side-row.is-selected {
-	color: var(--sumi-text);
-}
-
 .sumi-tabs-sidebar-title {
 	flex: 1 1 auto;
 	min-width: 0;
@@ -96,31 +16,4 @@
 .sumi-tabs-sidebar-folder {
 	flex: none;
 	fill: currentColor;
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-ghost {
-	background: var(--sumi-plate);
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-ghost > .wg-kit-side-menu-button {
-	padding-inline: var(--sumi-sp-6);
-}
-
-.wg-root .sumi-tabs-sidebar .sumi-tabs-sidebar-new {
-	color: var(--sumi-text-3);
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-item:not(:has(> .wg-kit-side-menu-action)) > .wg-kit-side-menu-button {
-	padding-inline-end: var(--sumi-sp-6);
-}
-
-.wg-root .sumi-tabs-sidebar .sumi-tabs-sidebar-new-row {
-	position: sticky;
-	bottom: 0;
-	z-index: 1;
-	background: var(--sumi-frame);
-}
-
-.wg-root .sumi-tabs-sidebar .wg-kit-side-menu-sub .wg-kit-side-row[data-sort-placeholder]::before {
-	inset-inline-start: calc(var(--sumi-sp-6) + var(--sumi-tabs-depth, 1) * (var(--sumi-sp-6) + var(--sumi-sp-4)) - var(--sumi-sp-4));
 }

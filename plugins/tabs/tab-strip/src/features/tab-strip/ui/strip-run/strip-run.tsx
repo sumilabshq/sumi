@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { CSSProperties, MouseEvent, ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { groupColourOf } from "../../lib/group-colour.js";
 import { openGroupMenu } from "../../lib/group-menu-ask.js";
@@ -52,8 +53,7 @@ export function StripRun({ run, acts, drag, liftedId, onMenu }: StripRunProps): 
 	};
 	return (
 		<div className="sumi-strip-group" data-open={group.isOpen ? "" : undefined} style={colour}>
-			<button
-				type="button"
+			<Pressable
 				className="sumi-strip-chip"
 				data-own-drag=""
 				data-group-anchor={group.id}
@@ -61,12 +61,12 @@ export function StripRun({ run, acts, drag, liftedId, onMenu }: StripRunProps): 
 					event.preventDefault();
 					openGroupMenu(group.id);
 				}}
-				aria-label={label}
+				label={label}
 				title={label}
 				onClick={() => void fold.run({ id: group.id })}
 			>
-				{group.isOpen ? group.name : `${group.name} ${tabCountOf(run)}`}
-			</button>
+				<span className="sumi-strip-chip-face">{group.isOpen ? group.name : `${group.name} ${tabCountOf(run)}`}</span>
+			</Pressable>
 			<div className="sumi-strip-group-tabs" aria-hidden={!group.isOpen}>
 				<div className="sumi-strip-group-track">
 					{run.runs.map((inner) => (
@@ -77,4 +77,3 @@ export function StripRun({ run, acts, drag, liftedId, onMenu }: StripRunProps): 
 		</div>
 	);
 }
-

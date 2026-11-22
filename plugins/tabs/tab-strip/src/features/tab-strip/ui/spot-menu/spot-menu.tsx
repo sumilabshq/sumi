@@ -14,7 +14,12 @@ export interface SpotMenuProps<At extends MenuSpot> {
 	readonly children: (shown: At) => ReactNode;
 }
 
-export function SpotMenu<At extends MenuSpot>({ at, className = "", onClose, children }: SpotMenuProps<At>): ReactElement {
+export function SpotMenu<At extends MenuSpot>({
+	at,
+	className = "",
+	onClose,
+	children,
+}: SpotMenuProps<At>): ReactElement {
 	const last = useRef<At | null>(at);
 
 	if (at !== null) {

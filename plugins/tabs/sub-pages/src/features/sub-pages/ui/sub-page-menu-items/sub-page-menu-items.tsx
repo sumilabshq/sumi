@@ -25,11 +25,13 @@ export function SubPageMenuItems({ tab, onDone }: SubPageMenuItemsProps): ReactE
 
 	const takeOut = (): void => {
 		onDone();
-		void placeTab.run({ id: tab.id, to: { kind: "list", list: main.list, groupId: null, before: null } }).then((answer) => {
-			if (!answer.ok) {
-				console.warn(`[widgetarium] taking ${tab.id} out of ${main.page.tab.id} refused: ${answer.reason}`);
-			}
-		});
+		void placeTab
+			.run({ id: tab.id, to: { kind: "list", list: main.list, groupId: null, before: null } })
+			.then((answer) => {
+				if (!answer.ok) {
+					console.warn(`[widgetarium] taking ${tab.id} out of ${main.page.tab.id} refused: ${answer.reason}`);
+				}
+			});
 	};
 	return (
 		<PopoverItem role="menuitem" onClick={takeOut}>

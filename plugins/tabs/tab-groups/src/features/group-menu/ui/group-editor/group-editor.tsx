@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { CSSProperties, ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { Icon, Input, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
+import { Icon, Input, PopoverItem, PopoverSeparator, Pressable } from "@widgetarium/kit";
 import type { SidebarGroupState } from "@widgetarium/app-host/contract";
 import { GroupHueSchema, groups } from "@sumi/groups/contract";
 import { groupColourOf } from "@sumi/tab-strip-plugin";
@@ -53,16 +53,16 @@ export function GroupEditor({ group, onDone }: GroupEditorProps): ReactElement {
 			/>
 			<div className="sumi-group-hues" role="radiogroup" aria-label={HUES_LABEL}>
 				{HUES.map((hue) => (
-					<button
+					<Pressable
 						key={hue ?? NO_HUE}
-						type="button"
 						role="radio"
 						className="sumi-group-hue"
-						aria-label={hue ?? NO_HUE}
+						label={hue ?? NO_HUE}
 						aria-checked={group.hue === hue}
-						style={hueStyleOf(hue)}
 						onClick={() => void setHue.run({ id: group.id, hue }).then(warnIfRefused(`colouring ${group.id}`))}
-					/>
+					>
+						<span className="sumi-group-hue-dot" style={hueStyleOf(hue)} />
+					</Pressable>
 				))}
 			</div>
 			<PopoverSeparator />

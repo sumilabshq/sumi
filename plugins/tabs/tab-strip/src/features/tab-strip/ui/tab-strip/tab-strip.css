@@ -52,26 +52,6 @@
 	transition: background-color var(--sumi-dur-out) var(--sumi-ease-touch);
 }
 
-.sumi-strip-tab:hover {
-	background: var(--sumi-hover);
-	transition-duration: 0ms;
-}
-
-.sumi-strip-tab[data-shown] {
-	background: var(--sumi-selected);
-	color: var(--sumi-text);
-}
-
-[data-count="1"] .sumi-strip-tab {
-	background: none;
-	color: var(--sumi-text-3);
-}
-
-.sumi-strip-tab:focus-visible {
-	outline: 1px solid var(--sumi-line-strong);
-	outline-offset: -1px;
-}
-
 .sumi-strip-tab[data-lifted] {
 	opacity: 0.4;
 }
@@ -96,7 +76,7 @@
 	overflow: hidden;
 }
 
-.sumi-strip-tab-icon:has(.wg-kit-status-cube) {
+.sumi-strip-tab-icon:has([data-slot="status-cube"]) {
 	overflow: visible;
 }
 
@@ -144,11 +124,6 @@
 	height: 18px;
 	margin: 0;
 	padding: 0;
-	border: none;
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
-	color: var(--sumi-text-3);
 	opacity: 0;
 	transform: translateY(-50%);
 	pointer-events: none;
@@ -165,46 +140,18 @@
 	mask-image: linear-gradient(to right, black calc(100% - 22px), transparent calc(100% - 6px));
 }
 
-.wg-kit-pop.sumi-tab-menu .wg-kit-pop-sep {
-	margin-right: calc(-1 * var(--sumi-sp-2));
-	margin-left: calc(-1 * var(--sumi-sp-2));
-}
-
-.sumi-strip-tab-close:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-}
-
 .sumi-strip-new {
 	position: sticky;
 	right: 0;
 	display: flex;
 	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	margin: 0;
-	padding: 0;
-	border: none;
-	border-radius: 0;
 	background: var(--sumi-frame);
-	box-shadow: none;
-	color: var(--sumi-text-3);
-	cursor: default;
-	transition: background-color var(--sumi-dur-out) var(--sumi-ease-touch);
-}
-
-.sumi-strip-new:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-	transition-duration: 0ms;
 }
 
 .sumi-strip-lifted {
 	position: fixed;
 	z-index: 90;
-	background: var(--sumi-selected);
+	background: var(--sumi-soft);
 	outline: 1px solid var(--sumi-line-strong);
 	outline-offset: -1px;
 	color: var(--sumi-text);
@@ -225,7 +172,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--sumi-selected);
+	background: var(--sumi-soft);
 	pointer-events: none;
 }
 
@@ -275,21 +222,9 @@
 	height: 100%;
 	margin: 0;
 	padding: 0 var(--sumi-sp-4);
-	border: none;
-	border-radius: 0;
-	background: var(--sumi-group);
-	color: var(--sumi-frame);
 	font: var(--sumi-fw-medium, 500) var(--sumi-fs-12) / 1 var(--sumi-font-ui);
 	white-space: nowrap;
 	cursor: default;
-	transition:
-		background-color var(--sumi-dur-base) var(--sumi-ease),
-		color var(--sumi-dur-base) var(--sumi-ease);
-}
-
-.sumi-strip-group:not([data-open]) > .sumi-strip-chip {
-	background: none;
-	color: var(--sumi-group);
 }
 
 .sumi-strip-group-tabs {
@@ -331,7 +266,7 @@
 	padding-inline-end: calc(2 * var(--sumi-h-sm) + var(--sumi-sp-4));
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .sumi-split-row {
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .sumi-split-row {
 	gap: var(--sumi-sp-4);
 	height: var(--sumi-h-md);
 	min-height: var(--sumi-h-md);
@@ -383,4 +318,19 @@
 
 .sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)):is(:hover, :focus-visible) .sumi-strip-tab-title {
 	mask-image: none;
+}
+
+.sumi-strip-chip {
+	height: 100%;
+	padding: 0;
+}
+
+.sumi-strip-chip-face {
+	display: flex;
+	align-items: center;
+	height: 100%;
+	padding: 0 var(--sumi-sp-4);
+	border-radius: inherit;
+	background: var(--sumi-group);
+	color: var(--sumi-frame);
 }

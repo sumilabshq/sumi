@@ -1,6 +1,14 @@
 import { createElement as h } from "react";
 import type { CSSProperties, MouseEvent, ReactElement } from "react";
-import { Icon, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem, TileMap } from "@widgetarium/kit";
+import {
+	Icon,
+	SidebarMenuAction,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubItem,
+	TileMap,
+} from "@widgetarium/kit";
 import { TabIcons } from "@sumi/tab-strip-plugin";
 import type { StripSplit, TabActs } from "@sumi/tab-strip-plugin";
 import { tabItemOf } from "../../lib/entry-items.js";
@@ -22,13 +30,21 @@ const CLOSE_SPLIT = "Close split";
 const SPLIT = "Split";
 const JOINER = " + ";
 
-export function SplitEntry({ item, acts, draggedId, isSub = false, depth = 0, isLifted = false, onMenu }: SplitEntryProps): ReactElement {
+export function SplitEntry({
+	item,
+	acts,
+	draggedId,
+	isSub = false,
+	depth = 0,
+	isLifted = false,
+	onMenu,
+}: SplitEntryProps): ReactElement {
 	const { split, list } = item;
 	const sortId = `${SPLIT_ROW}${split.id}`;
 	const isPlaceholder = isLifted || sortId === draggedId;
 	const Holder = isSub ? SidebarMenuSubItem : SidebarMenuItem;
-	const inner: CSSProperties & Readonly<Record<"--sumi-tabs-depth", number>> = {
-		"--sumi-tabs-depth": depth + 1,
+	const inner: CSSProperties & Readonly<Record<"--wg-kit-side-depth", number>> = {
+		"--wg-kit-side-depth": depth + 1,
 	};
 	const isOpen = split.isShown || split.members.some(({ item: member }) => member.tab.id === draggedId);
 	const map = (

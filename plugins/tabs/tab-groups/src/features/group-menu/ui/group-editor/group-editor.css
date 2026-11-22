@@ -2,32 +2,29 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--sumi-sp-2);
-	padding-top: var(--sumi-sp-2);
+	padding-top: 0;
 }
 
 .sumi-group-editor .sumi-group-editor-name {
-	margin-inline: var(--sumi-sp-4);
+	margin-inline: 0;
 }
 
 .sumi-group-hues {
 	display: flex;
-	gap: var(--sumi-sp-4);
-	padding: var(--sumi-sp-3) var(--sumi-sp-4);
+	gap: var(--sumi-sp-2);
+	padding: var(--sumi-sp-2) var(--sumi-sp-3);
 }
 
 .sumi-group-hue {
 	flex: none;
-	width: 14px;
-	height: 14px;
-	margin: 0;
-	padding: 0;
-	border: 0;
-	border-radius: 50%;
-	background: var(--sumi-group);
-	cursor: default;
+	justify-content: center;
+	width: var(--wg-kit-control-xxs);
+	height: var(--wg-kit-control-xxs);
 }
 
-.sumi-group-hue[aria-checked="true"] {
-	outline: 1px solid var(--sumi-text);
-	outline-offset: 2px;
+.sumi-group-hue-dot {
+	width: 12px;
+	height: 12px;
+	border-radius: var(--wg-kit-round);
+	background: var(--sumi-group);
 }

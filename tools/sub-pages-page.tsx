@@ -87,6 +87,7 @@ function Demo(): ReactElement {
 					side="left"
 					variant="sidebar"
 					collapsible="none"
+					surface="chrome"
 					className="sumi-tabs-sidebar"
 					style={{ width: 300 }}
 				>

@@ -3,6 +3,7 @@ import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import {
 	DropRefusal,
+	Pressable,
 	SidebarDragGhost,
 	SidebarGroup,
 	SidebarGroupLabel,
@@ -63,11 +64,15 @@ export function SidebarSection({
 			}
 
 			if (placed === null) {
-				console.info(`[widgetarium] sidebar drop of ${drop.id} ${drop.place} ${drop.targetId} skipped: no place for it`);
+				console.info(
+					`[widgetarium] sidebar drop of ${drop.id} ${drop.place} ${drop.targetId} skipped: no place for it`,
+				);
 				return;
 			}
 
-			console.info(`[widgetarium] sidebar drop ${drop.id} ${drop.place} ${drop.targetId} → ${JSON.stringify(placed.to)}`);
+			console.info(
+				`[widgetarium] sidebar drop ${drop.id} ${drop.place} ${drop.targetId} → ${JSON.stringify(placed.to)}`,
+			);
 			const placing =
 				placed.kind === "group"
 					? placeGroup.run({ id: placed.id, to: placed.to })
@@ -88,13 +93,20 @@ export function SidebarSection({
 	useEffect(() => latestOnSorting.current(sorting), [sorting]);
 	const draggedId = sorting?.id ?? null;
 	const aim = sorting === null || sorting.outside !== null ? null : sorting.aim;
-	const arranged = useMemo(() => (draggedId === null ? null : arrangedSidebarOf(sidebar, draggedId, aim)), [sidebar, draggedId, aim]);
+	const arranged = useMemo(
+		() => (draggedId === null ? null : arrangedSidebarOf(sidebar, draggedId, aim)),
+		[sidebar, draggedId, aim],
+	);
 	const refused = useMemo(
-		() => (draggedId === null || arranged === null ? null : refusedDropOf(sidebar, carriedOf(sidebar, draggedId), arranged.holder)),
+		() =>
+			draggedId === null || arranged === null
+				? null
+				: refusedDropOf(sidebar, carriedOf(sidebar, draggedId), arranged.holder),
 		[sidebar, draggedId, arranged],
 	);
 	const section = useMemo(
-		() => (arranged === null || refused !== null ? sidebar : arranged.sidebar).sections.find((one) => one.list === list),
+		() =>
+			(arranged === null || refused !== null ? sidebar : arranged.sidebar).sections.find((one) => one.list === list),
 		[sidebar, arranged, refused, list],
 	);
 	useFlipRows(menu, section);
@@ -111,9 +123,7 @@ export function SidebarSection({
 
 		if (carried.node.kind !== "tab" || (carried.node.subPages?.length ?? 0) > 0) {
 			return (
-				<SidebarMenu role="presentation">
-					{entryOf(carried.node, { list, acts, draggedId: null, onMenu })}
-				</SidebarMenu>
+				<SidebarMenu role="presentation">{entryOf(carried.node, { list, acts, draggedId: null, onMenu })}</SidebarMenu>
 			);
 		}
 
@@ -133,10 +143,10 @@ export function SidebarSection({
 	return (
 		<SidebarGroup>
 			<SidebarGroupLabel asChild>
-				<button type="button" aria-expanded={isOpen} onClick={() => setOpen(!isOpen)}>
+				<Pressable variant="quiet" aria-expanded={isOpen} onClick={() => setOpen(!isOpen)}>
 					<span>{section.title}</span>
 					<SidebarMenuChevron isOpen={isOpen} />
-				</button>
+				</Pressable>
 			</SidebarGroupLabel>
 			{isOpen ? (
 				<SidebarMenu

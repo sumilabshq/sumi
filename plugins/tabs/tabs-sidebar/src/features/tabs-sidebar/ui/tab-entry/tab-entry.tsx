@@ -46,8 +46,8 @@ export function TabEntry({
 	const isInFocus = isShownItem(item) || (subPages ?? []).some(({ tab }) => tab.isShown);
 	const isOpen =
 		subPages !== undefined && subPages.length > 0 && (!isFolded || subPages.some(({ tab }) => tab.id === draggedId));
-	const inner: CSSProperties & Readonly<Record<"--sumi-tabs-depth", number>> = {
-		"--sumi-tabs-depth": depth + 1,
+	const inner: CSSProperties & Readonly<Record<"--wg-kit-side-depth", number>> = {
+		"--wg-kit-side-depth": depth + 1,
 	};
 	return (
 		<Holder role="presentation" data-sort-block={subPages === undefined ? undefined : id}>

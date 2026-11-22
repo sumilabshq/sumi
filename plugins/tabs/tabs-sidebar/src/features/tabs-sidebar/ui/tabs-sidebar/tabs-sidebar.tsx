@@ -33,7 +33,7 @@ function SidebarColumn(): ReactNode {
 	const column = useRef<HTMLDivElement | null>(null);
 	const dragOut = useSidebarDragOut(column, items, acts);
 	const newTabRow = (
-		<SidebarMenuItem role="presentation" className="sumi-tabs-sidebar-new-row">
+		<SidebarMenuItem role="presentation" className="is-sticky">
 			<SidebarMenuButton size="sm" className="sumi-tabs-sidebar-new" onClick={newTabs.open}>
 				<Icon name="plus" size={ICON_PX} />
 				<span className="sumi-tabs-sidebar-title">{NEW_TAB}</span>
@@ -62,6 +62,7 @@ function SidebarColumn(): ReactNode {
 				side="left"
 				variant="sidebar"
 				collapsible="none"
+				surface="chrome"
 				className="sumi-tabs-sidebar"
 				style={{ width: width.px }}
 				aria-label={TABS}

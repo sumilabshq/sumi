@@ -48,7 +48,9 @@ export function GroupMenu(): ReactElement {
 }
 
 function groupOf(sidebar: TabsSidebar, groupId: string): SidebarGroupState | null {
-	const tops = sidebar.sections.flatMap(({ entries }) => entries.flatMap((entry) => (entry.kind === "group" ? [entry] : [])));
+	const tops = sidebar.sections.flatMap(({ entries }) =>
+		entries.flatMap((entry) => (entry.kind === "group" ? [entry] : [])),
+	);
 	return groupAmong(tops, groupId);
 }
 

@@ -1,6 +1,6 @@
 import { createElement as h, useEffect, useRef } from "react";
 import type { KeyboardEvent, MouseEvent, PointerEvent, ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, IconButton, Pressable } from "@widgetarium/kit";
 import { ListPluginSlot, PluginSlot } from "@widgetarium/plugin-framework/react";
 import { isShownItem, itemIdOf, itemMarkOf, tabOf } from "../../lib/strip-items.js";
 import type { StripItem } from "../../lib/strip-items.js";
@@ -28,10 +28,11 @@ export function StripTab({ item, acts, drag, isLifted, onMenu, onClose }: StripT
 	const close = onClose ?? (() => acts.close(item));
 	const element = useRef<HTMLDivElement | null>(null);
 	const closeButton = (
-		<button
-			type="button"
+		<IconButton
+			variant="ghost"
+			size="xxs"
 			className="sumi-strip-tab-close"
-			aria-label={CLOSE_LABEL}
+			label={CLOSE_LABEL}
 			onPointerDown={(event) => event.stopPropagation()}
 			onClick={(event) => {
 				event.stopPropagation();
@@ -39,7 +40,7 @@ export function StripTab({ item, acts, drag, isLifted, onMenu, onClose }: StripT
 			}}
 		>
 			<Icon name="x" size={CLOSE_PX} />
-		</button>
+		</IconButton>
 	);
 	useEffect(() => {
 		if (isShown && element.current !== null) {
@@ -57,50 +58,52 @@ export function StripTab({ item, acts, drag, isLifted, onMenu, onClose }: StripT
 		}
 	};
 	return (
-		<div
-			ref={element}
-			role="tab"
-			tabIndex={0}
-			aria-selected={isShown}
-			aria-label={titleOf(item)}
-			title={titleOf(item)}
-			className="sumi-strip-tab"
-			data-strip-item={itemIdOf(item)}
-			data-own-drag=""
-			data-shown={isShown ? "" : undefined}
-			data-lifted={isLifted ? "" : undefined}
-			onPointerDown={pressed}
-			onAuxClick={(event) => {
-				if (event.button === MIDDLE_BUTTON) {
-					close();
-				}
-			}}
-			onClick={() => {
-				if (!drag.wasDragged()) {
-					acts.show(item);
-				}
-			}}
-			onKeyDown={(event: KeyboardEvent<HTMLElement>) => {
-				if (PRESS_KEYS.has(event.key)) {
+		<Pressable asChild>
+			<div
+				ref={element}
+				role="tab"
+				tabIndex={0}
+				aria-selected={isShown}
+				aria-label={titleOf(item)}
+				title={titleOf(item)}
+				className="sumi-strip-tab"
+				data-strip-item={itemIdOf(item)}
+				data-own-drag=""
+				data-shown={isShown ? "" : undefined}
+				data-lifted={isLifted ? "" : undefined}
+				onPointerDown={pressed}
+				onAuxClick={(event) => {
+					if (event.button === MIDDLE_BUTTON) {
+						close();
+					}
+				}}
+				onClick={() => {
+					if (!drag.wasDragged()) {
+						acts.show(item);
+					}
+				}}
+				onKeyDown={(event: KeyboardEvent<HTMLElement>) => {
+					if (PRESS_KEYS.has(event.key)) {
+						event.preventDefault();
+						acts.show(item);
+					}
+				}}
+				onContextMenu={(event) => {
 					event.preventDefault();
-					acts.show(item);
-				}
-			}}
-			onContextMenu={(event) => {
-				event.preventDefault();
-				onMenu(item, event);
-			}}
-		>
-			<TabIcons item={item} />
-			<span className="sumi-strip-tab-title">{titleOf(item)}</span>
-			<span className="sumi-strip-tab-tools">
-				<ListPluginSlot name="tab-strip.tab-tools" props={{ tabId: itemIdOf(item) }} />
-			</span>
-			<TabStatus mark={itemMarkOf(item)} />
-			<PluginSlot name="tab-strip.tab-end" props={{ tabId: itemIdOf(item), children: closeButton }}>
-				{closeButton}
-			</PluginSlot>
-		</div>
+					onMenu(item, event);
+				}}
+			>
+				<TabIcons item={item} />
+				<span className="sumi-strip-tab-title">{titleOf(item)}</span>
+				<span className="sumi-strip-tab-tools">
+					<ListPluginSlot name="tab-strip.tab-tools" props={{ tabId: itemIdOf(item) }} />
+				</span>
+				<TabStatus mark={itemMarkOf(item)} />
+				<PluginSlot name="tab-strip.tab-end" props={{ tabId: itemIdOf(item), children: closeButton }}>
+					{closeButton}
+				</PluginSlot>
+			</div>
+		</Pressable>
 	);
 }
 

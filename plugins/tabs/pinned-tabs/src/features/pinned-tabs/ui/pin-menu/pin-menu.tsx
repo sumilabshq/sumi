@@ -32,7 +32,13 @@ export function PinMenu({ at, acts, onClose }: PinMenuProps): ReactElement {
 		run();
 	};
 	return (
-		<Popover open={at !== null} onOpenChange={(isOpen) => isOpen || onClose()} placement="over" isPortaled className="is-compact sumi-tab-menu">
+		<Popover
+			open={at !== null}
+			onOpenChange={(isOpen) => isOpen || onClose()}
+			placement="over"
+			isPortaled
+			className="is-compact sumi-tab-menu"
+		>
 			{spot === null ? null : (
 				<PopoverAnchor
 					className="sumi-tab-menu-spot"
