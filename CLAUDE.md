@@ -118,6 +118,7 @@ plugins/ai/slash-commands   FSL  @sumi/slash-commands-plugin: the composer's / m
 plugins/ai/claude-code      FSL  @sumi/claude-code-plugin: the Claude Code runner: agent.addRunner with its models, their options (mode, effort), its usage meter and launchOf, which turns the host's TurnFacts into the claude command line the host starts as it is
 plugins/ai/working-folder   FSL  @sumi/working-folder-plugin: the composer's folder menu for a new chat, through chat.options-start
 plugins/ai/permission-mode  FSL  @sumi/permission-mode-plugin: the composer's permission mode select (the chosen model's `mode` option), through chat.options-start
+plugins/ai/sandbox-mode     FSL  @sumi/sandbox-mode-plugin: the composer's sandbox select (the chosen model's `sandbox` option: project folder, read only, full access), through chat.options-start; agent-tools enforces it (Seatbelt for commands, a path check for file writes)
 plugins/ai/plan-usage       FSL  @sumi/plan-usage-plugin: the composer's usage ring and menu (the runner's `usage` meter), through chat.options-end
 plugins/ai/model-picker     FSL  @sumi/model-picker-plugin: the composer's runner and model menu, through chat.options-end
 plugins/ai/effort-picker    FSL  @sumi/effort-picker-plugin: the composer's effort select (the chosen model's `effort` option), through chat.options-end

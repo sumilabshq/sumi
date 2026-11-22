@@ -436,6 +436,7 @@ check(
 			"model-picker": { enabled: false },
 			"effort-picker": { enabled: false },
 			"permission-mode": { enabled: false },
+			"sandbox-mode": { enabled: false },
 			"working-folder": { enabled: false },
 			"plan-usage": { enabled: false },
 			"terminal-cursor": { enabled: false },

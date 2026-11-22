@@ -16,6 +16,7 @@ import { commandMenuHome } from "@sumi/command-menu-home-plugin";
 import { homePages } from "@sumi/home-pages-plugin";
 import { launcherHome } from "@sumi/launcher-home-plugin";
 import { composerExpand } from "@sumi/composer-expand-plugin";
+import { backgroundAgents } from "@sumi/background-agents-plugin";
 import { controlMenu } from "@sumi/control-menu-plugin";
 import { sessions } from "@sumi/sessions-plugin";
 import { navigation } from "@sumi/navigation-plugin";
@@ -36,6 +37,7 @@ import { pictureViewer } from "@sumi/picture-viewer-plugin";
 import { effortPicker } from "@sumi/effort-picker-plugin";
 import { modelPicker } from "@sumi/model-picker-plugin";
 import { permissionMode } from "@sumi/permission-mode-plugin";
+import { sandboxMode } from "@sumi/sandbox-mode-plugin";
 import { planUsage } from "@sumi/plan-usage-plugin";
 import { main } from "@sumi/main-plugin";
 import { agent } from "@sumi/agent-plugin";
@@ -161,6 +163,7 @@ const INSTALLED_PLUGINS = [
 	htmlViewer,
 	git,
 	composerExpand,
+	backgroundAgents,
 	slashCommands,
 	chatTitle,
 	nextPrompt,
@@ -171,6 +174,7 @@ const INSTALLED_PLUGINS = [
 	modelPicker,
 	effortPicker,
 	permissionMode,
+	sandboxMode,
 	workingFolder,
 	planUsage,
 	terminalCursor,
@@ -201,6 +205,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		htmlViewer.id,
 		git.id,
 		composerExpand.id,
+		backgroundAgents.id,
 		slashCommands.id,
 		chatTitle.id,
 		nextPrompt.id,
@@ -211,6 +216,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		modelPicker.id,
 		effortPicker.id,
 		permissionMode.id,
+		sandboxMode.id,
 		workingFolder.id,
 		planUsage.id,
 		terminalCursor.id,
