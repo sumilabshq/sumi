@@ -1,5 +1,6 @@
 import { TONE_CLASSES } from "../constants/tones";
 import { cn, variants } from "./cn";
+import type { ClassNameValue } from "./cn";
 
 const BUTTON_WORDS = {
 	variant: {
@@ -110,6 +111,67 @@ export type DialogSize = keyof (typeof DIALOG_WORDS)["size"];
 export const buttonClass = variants("wg-kit-btn", BUTTON_WORDS, { variant: "neutral", size: "m" });
 
 export const iconButtonClass = variants("wg-kit-icon", ICON_BUTTON_WORDS, { variant: "neutral", size: "m" });
+
+// TODO: fold wash, muted, page, raised, glass, overlay into the four emphases, look changes
+const BUTTON_LOOKS: Readonly<Record<string, ButtonVariant>> = {
+	"solid-neutral": "primary",
+	"solid-brand": "accent",
+	"soft-neutral": "neutral",
+	"soft-brand": "tinted",
+	"soft-danger": "danger",
+	"soft-wash": "wash",
+	"outline-neutral": "outline",
+	"outline-muted": "outline-muted",
+	"ghost-neutral": "ghost",
+	"ghost-brand": "plain",
+	"page-neutral": "page",
+};
+
+const SQUARE_LOOKS: Readonly<Record<string, IconButtonVariant>> = {
+	"solid-neutral": "primary",
+	"solid-brand": "accent",
+	"soft-neutral": "neutral",
+	"ghost-neutral": "ghost",
+	"raised-neutral": "raised",
+	"glass-neutral": "glass",
+	"overlay-neutral": "overlay",
+};
+
+const BUTTON_LOOK_SIZES: Readonly<Record<string, ButtonSize>> = { xs: "xs", sm: "s", md: "m", lg: "l" };
+
+const SQUARE_LOOK_SIZES: Readonly<Record<string, IconButtonSize>> = {
+	"2xs": "xxs",
+	xs: "xs",
+	sm: "s",
+	md: "m",
+	lg: "l",
+};
+
+export interface ButtonLook {
+	readonly shape?: string | undefined;
+	readonly emphasis?: string | undefined;
+	readonly tone?: string | undefined;
+	readonly size?: string | undefined;
+	readonly block?: boolean | undefined;
+	readonly className?: ClassNameValue;
+}
+
+export function buttonLookClass({ shape, emphasis, tone = "neutral", size, block, className }: ButtonLook): string {
+	const look = `${emphasis}-${tone}`;
+	if (shape === "square") {
+		return iconButtonClass({
+			variant: emphasis ? SQUARE_LOOKS[look] : undefined,
+			size: size ? SQUARE_LOOK_SIZES[size] : undefined,
+			className,
+		});
+	}
+	return buttonClass({
+		variant: emphasis ? BUTTON_LOOKS[look] : undefined,
+		size: size ? BUTTON_LOOK_SIZES[size] : undefined,
+		block,
+		className,
+	});
+}
 
 export const pillClass = variants("wg-kit-pill wg-kit-inked", PILL_WORDS, {
 	tone: "neutral",

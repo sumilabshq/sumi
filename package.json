@@ -53,6 +53,7 @@
 		"test:plugin-layout": "node --single-threaded --import ./tools/loader/register.mts tools/plugin-layout-test.ts",
 		"test:kit-styles": "node --single-threaded --import ./tools/loader/register.mts tools/kit-styles-test.ts",
 		"test:kit-base": "node --single-threaded --import ./tools/loader/register.mts tools/kit-base-test.ts",
+		"test:kit-button": "node --single-threaded --import ./tools/loader/register.mts tools/kit-button-test.ts",
 		"test:memory-store": "node --single-threaded --import ./tools/loader/register.mts tools/memory-store-checks.ts",
 		"test:tauri-boundary": "node --single-threaded --import ./tools/loader/register.mts tools/tauri-boundary-test.ts",
 		"test:single-react": "node --single-threaded --import ./tools/loader/register.mts tools/single-react-checks.ts",

@@ -9,6 +9,7 @@ type KitProp =
 	| "surface"
 	| "lift"
 	| "shape"
+	| "emphasis"
 	| "lines"
 	| "asChild"
 	| "className"
@@ -28,6 +29,7 @@ export function domPropsOf<P extends object>(props: P & Partial<Record<KitProp, 
 		surface,
 		lift,
 		shape,
+		emphasis,
 		lines,
 		asChild,
 		className,
