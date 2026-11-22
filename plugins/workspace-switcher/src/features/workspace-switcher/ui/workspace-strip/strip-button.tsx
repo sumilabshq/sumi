@@ -26,6 +26,7 @@ export const StripButton = memo(function StripButton({
 			<PopoverAnchor asChild>
 				<IconButton
 					variant="ghost"
+					size="xs"
 					className="sumi-ws-strip-icon"
 					label={row.name}
 					aria-current={row.isCurrent ? "true" : undefined}

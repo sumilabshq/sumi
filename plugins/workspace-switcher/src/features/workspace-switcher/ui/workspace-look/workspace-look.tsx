@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { Button, Icon } from "@widgetarium/kit";
+import { Button, Icon, Input } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
@@ -19,18 +19,19 @@ export function WorkspaceLook({ workspace }: { readonly workspace: WorkspaceRow 
 		<div className="sumi-ws-look" role="group" aria-label={LOOK_LABEL} data-ws-look="">
 			<LookName workspace={workspace} />
 			<div className="sumi-ws-look-find">
-				<label className="sumi-ws-look-search">
-					<Icon name="search" size={SEARCH_ICON_PX} />
-					<input
-						type="search"
-						value={typed}
-						placeholder={SEARCH_ICONS}
-						aria-label={SEARCH_ICONS}
-						onInput={(event) => setTyped(event.currentTarget.value)}
-					/>
-				</label>
+				<Input
+					className="sumi-ws-look-search"
+					variant="outlined"
+					type="search"
+					icon={<Icon name="search" size={SEARCH_ICON_PX} />}
+					value={typed}
+					placeholder={SEARCH_ICONS}
+					aria-label={SEARCH_ICONS}
+					onValueChange={setTyped}
+				/>
 				<Button
 					variant="ghost"
+					size="s"
 					className="sumi-ws-look-remove"
 					disabled={workspace.icon === null}
 					data-ws-remove-icon=""

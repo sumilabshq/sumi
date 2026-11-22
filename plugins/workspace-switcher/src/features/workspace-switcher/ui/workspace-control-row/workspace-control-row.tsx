@@ -9,6 +9,7 @@ import { WorkspaceSubmenu } from "./workspace-submenu.js";
 const WORKSPACE = "Workspace: {name}";
 const CHEVRON_PX = 14;
 const SUBMENU_GAP_PX = 8;
+const MENU_INSET_PX = -4;
 
 export function WorkspaceControlRow(): ReactNode {
 	const shown = useOptionalQuery(workspaces.workspaces.all).data ?? null;
@@ -38,7 +39,13 @@ export function WorkspaceControlRow(): ReactNode {
 						</span>
 					</PopoverItem>
 				</PopoverAnchor>
-				<PopoverContent side="left" align="start" sideOffset={SUBMENU_GAP_PX} className="sumi-ws-submenu">
+				<PopoverContent
+					side="left"
+					align="start"
+					sideOffset={SUBMENU_GAP_PX}
+					alignOffset={MENU_INSET_PX}
+					className="sumi-ws-submenu"
+				>
 					<WorkspaceSubmenu shown={shown} />
 				</PopoverContent>
 			</Popover>

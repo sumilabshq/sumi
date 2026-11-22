@@ -1,6 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
+import { Input } from "@widgetarium/kit";
 import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
@@ -21,17 +22,16 @@ export function LookName({ workspace }: { readonly workspace: WorkspaceRow }): R
 			<span className="sumi-ws-look-now">
 				<WorkspaceGlyph icon={workspace.icon} />
 			</span>
-			<label className="sumi-ws-look-name">
-				<input
-					type="text"
-					value={typed}
-					aria-label={NAME_LABEL}
-					autoFocus
-					spellCheck={false}
-					onInput={(event) => typedName(event.currentTarget.value)}
-					onBlur={() => setTyped(workspace.name)}
-				/>
-			</label>
+			<Input
+				className="sumi-ws-look-name"
+				variant="filled"
+				value={typed}
+				aria-label={NAME_LABEL}
+				autoFocus
+				spellCheck={false}
+				onValueChange={typedName}
+				onBlur={() => setTyped(workspace.name)}
+			/>
 		</div>
 	);
 }

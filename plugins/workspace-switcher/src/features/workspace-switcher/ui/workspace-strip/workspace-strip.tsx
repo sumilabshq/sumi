@@ -43,9 +43,10 @@ function NewWorkspaceButton(): ReactElement {
 	return (
 		<IconButton
 			variant="ghost"
+			size="xs"
 			className="sumi-ws-strip-icon is-new"
 			label={NEW_WORKSPACE}
-			data-running={createWorkspace.isRunning ? "" : undefined}
+			isLoading={createWorkspace.isRunning}
 			onClick={() => void createWorkspace.run()}
 			{...NEW_WORKSPACE_TIP}
 		>
