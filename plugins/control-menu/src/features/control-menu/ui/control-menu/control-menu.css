@@ -1,39 +1,9 @@
-:is(.wg-root, .wg-portal) .sumi-control-menu-button {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	box-sizing: border-box;
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	padding: 0;
-	border: none;
-	border-radius: 0;
-	background: none;
-	box-shadow: none;
-	color: var(--sumi-text);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .sumi-control-menu-button:hover {
-	background: var(--sumi-hover);
-}
-
-:is(.wg-root, .wg-portal) .sumi-control-menu-button[data-state="open"] {
-	background: var(--sumi-soft);
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.sumi-control-menu-pop {
-	width: 290px;
-	min-width: 0;
-}
-
 .sumi-control-menu-list {
 	display: flex;
 	flex-direction: column;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .sumi-control-menu-row {
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .sumi-control-menu-row {
 	gap: var(--sumi-sp-4);
 	height: var(--sumi-h-md);
 	min-height: var(--sumi-h-md);
@@ -64,4 +34,9 @@
 	margin-inline-start: auto;
 	color: var(--sumi-text-3);
 	font-size: var(--sumi-fs-13);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .sumi-control-menu-pop {
+	width: 290px;
+	min-width: 0;
 }

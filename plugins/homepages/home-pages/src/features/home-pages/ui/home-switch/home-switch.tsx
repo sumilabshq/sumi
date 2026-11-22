@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { homePages } from "@sumi/home-pages/contract";
 import type { HomePageFace } from "@sumi/home-pages/contract";
@@ -17,16 +18,15 @@ export function HomeSwitch({ pages, chosen }: HomeSwitchProps): ReactElement {
 		<div className="sumi-home-switch" role="group" aria-label={LABEL}>
 			<span className="sumi-home-switch-label">{LABEL}</span>
 			{pages.map((page) => (
-				<button
+				<Pressable
 					key={page.id}
-					type="button"
 					className="sumi-home-switch-option"
 					aria-pressed={page.id === chosen}
 					onMouseDown={(event) => event.preventDefault()}
 					onClick={() => void choose.run({ id: page.id })}
 				>
 					{page.title}
-				</button>
+				</Pressable>
 			))}
 		</div>
 	);

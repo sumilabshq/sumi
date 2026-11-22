@@ -1,5 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { ChangeNums } from "../change-nums/change-nums.js";
 import { StatusLetter } from "../status-letter/status-letter.js";
 import type { FileDiff } from "@sumi/git/contract";
@@ -24,17 +25,19 @@ export function ChangeRows({ files, onOpen }: ChangeRowsProps): ReactElement {
 	return (
 		<div className="sumi-changes-card-rows">
 			{files.slice(0, shown).map((file) => (
-				<button key={file.path} type="button" className="wg-git-row sumi-changes-card-row" onClick={() => onOpen(file)}>
+				<Pressable key={file.path} className="wg-git-row sumi-changes-card-row" onClick={() => onOpen(file)}>
 					<StatusLetter status={file.status} />
 					<span className="wg-git-nm">{file.path.slice(file.path.lastIndexOf("/") + 1)}</span>
-					<span className="wg-git-dim">{file.path.includes("/") ? file.path.slice(0, file.path.lastIndexOf("/")) : ""}</span>
+					<span className="wg-git-dim">
+						{file.path.includes("/") ? file.path.slice(0, file.path.lastIndexOf("/")) : ""}
+					</span>
 					<ChangeNums added={file.added} removed={file.removed} hidesZero={true} />
-				</button>
+				</Pressable>
 			))}
 			{left > 0 ? (
-				<button type="button" className="wg-git-row sumi-changes-card-more" onClick={() => setShown(shown + PAGE)}>
+				<Pressable tone="muted" className="wg-git-row sumi-changes-card-more" onClick={() => setShown(shown + PAGE)}>
 					{MORE.replace("{count}", String(left))}
-				</button>
+				</Pressable>
 			) : null}
 		</div>
 	);

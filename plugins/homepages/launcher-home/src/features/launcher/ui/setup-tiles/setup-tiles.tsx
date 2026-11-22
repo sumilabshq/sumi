@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { setups } from "@sumi/setups/contract";
 import type { Row } from "@sumi/command-menu/contract";
@@ -26,9 +27,8 @@ export function SetupTiles({ appRows, homeTabId }: SetupTilesProps): ReactElemen
 			<div className="sumi-launcher-label">{LABEL}</div>
 			<div className="sumi-launcher-setups">
 				{listed.map((setup) => (
-					<button
+					<Pressable
 						key={setup.id}
-						type="button"
 						className="sumi-launcher-setup"
 						onMouseDown={(event) => event.preventDefault()}
 						onClick={() => void open.run({ id: setup.id, homeTabId })}
@@ -38,7 +38,7 @@ export function SetupTiles({ appRows, homeTabId }: SetupTilesProps): ReactElemen
 						<span className="sumi-launcher-setup-apps">
 							{[CHAT, ...setup.panes.map(({ title }) => title)].join(", ")}
 						</span>
-					</button>
+					</Pressable>
 				))}
 			</div>
 		</section>

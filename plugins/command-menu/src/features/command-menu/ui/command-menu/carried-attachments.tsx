@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, tooltipMarks } from "@widgetarium/kit";
+import { Icon, Pressable, tooltipMarks } from "@widgetarium/kit";
 import type { AttachmentKind } from "@widgetarium/assistant/contract";
 import type { Carried } from "../../lib/carried.js";
 
@@ -25,10 +25,10 @@ export function CarriedAttachments({ carried, onOpen }: CarriedAttachmentsProps)
 
 	const said = carried.count === 1 ? ONE_WAITS : MANY_WAIT.replace("{count}", String(carried.count));
 	return (
-		<button
-			type="button"
+		<Pressable
+			tone="muted"
 			className="wg-cm-carried"
-			aria-label={said}
+			label={said}
 			data-cm-carried={carried.count}
 			onMouseDown={(event) => event.preventDefault()}
 			onClick={onOpen}
@@ -42,6 +42,6 @@ export function CarriedAttachments({ carried, onOpen }: CarriedAttachmentsProps)
 				))}
 			</span>
 			<span className="wg-cm-carried-count">{carried.count}</span>
-		</button>
+		</Pressable>
 	);
 }

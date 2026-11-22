@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, IconButton, Input } from "@widgetarium/kit";
 
 export interface NewTabPageProps {
 	readonly onOpen: (typed: string) => void;
@@ -26,7 +26,9 @@ export function NewTabPage({ onOpen }: NewTabPageProps): ReactElement {
 			<h2 className="wg-browser-state-title">{WHERE_TO}</h2>
 			<form role="search" className="wg-browser-field" onSubmit={submit} data-browser-new-tab-field="">
 				<Icon name="search" size={18} />
-				<input
+				<Input
+					variant="bare"
+					block
 					className="wg-browser-field-input"
 					aria-label={TYPE_AN_ADDRESS}
 					placeholder={TYPE_AN_ADDRESS}
@@ -35,9 +37,9 @@ export function NewTabPage({ onOpen }: NewTabPageProps): ReactElement {
 					autoFocus
 					onChange={(event) => setTyped(event.target.value)}
 				/>
-				<button type="submit" className="wg-browser-field-go" aria-label={GO_LABEL}>
+				<IconButton type="submit" variant="ghost" size="xs" className="wg-browser-field-go" label={GO_LABEL}>
 					<Icon name="corner-down-left" size={16} />
-				</button>
+				</IconButton>
 			</form>
 		</section>
 	);

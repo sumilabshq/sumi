@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Input } from "@widgetarium/kit";
 import { Glyph } from "../glyph/glyph.js";
 
 export interface SearchFieldProps {
@@ -13,7 +14,9 @@ export function SearchField({ value, placeholder, isFocused, onChange }: SearchF
 	return (
 		<label className="wg-git-field">
 			<Glyph name="search" />
-			<input
+			<Input
+				variant="bare"
+				block
 				autoFocus={isFocused}
 				autoComplete="off"
 				autoCorrect="off"

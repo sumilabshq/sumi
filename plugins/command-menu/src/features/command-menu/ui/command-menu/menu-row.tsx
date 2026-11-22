@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import type { Row } from "@sumi/command-menu/contract";
 import type { MenuMoves } from "../../lib/use-menu-moves.js";
 import { useScrollsIntoViewWhen } from "../../lib/use-scrolls-into-view-when.js";
@@ -17,9 +18,8 @@ export function MenuRow({ row, at, moves }: MenuRowProps): ReactElement {
 	const isPicked = at === moves.pickedAt;
 	const button = useScrollsIntoViewWhen(isPicked);
 	return (
-		<button
+		<Pressable
 			ref={button}
-			type="button"
 			role="option"
 			className="wg-cm-row"
 			aria-selected={isPicked}
@@ -33,6 +33,6 @@ export function MenuRow({ row, at, moves }: MenuRowProps): ReactElement {
 			<RowTitle title={row.title} match={row.match} />
 			{row.place === null ? null : <span className="wg-cm-place">{row.place}</span>}
 			<RowEnd shortcut={row.shortcut} isPicked={isPicked} />
-		</button>
+		</Pressable>
 	);
 }

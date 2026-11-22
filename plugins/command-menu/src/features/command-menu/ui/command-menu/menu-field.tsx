@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ClipboardEvent, DragEvent, ReactElement, ReactNode } from "react";
+import { Input } from "@widgetarium/kit";
 import { useSelectsFieldOnMount } from "../../lib/use-selects-field-on-mount.js";
 
 export interface MenuFieldAsk {
@@ -41,7 +42,9 @@ export function MenuField({
 					<span className="wg-cm-ghost-typed">{text}</span>
 					{ghost}
 				</span>
-				<input
+				<Input
+					variant="bare"
+					block
 					ref={field}
 					className="wg-cm-input"
 					value={text}

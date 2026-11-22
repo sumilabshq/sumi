@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import type { Row } from "@sumi/command-menu/contract";
 import type { MenuMoves } from "../../lib/use-menu-moves.js";
 
@@ -15,9 +16,8 @@ export function RowActions({ row, moves }: RowActionsProps): ReactElement {
 		<div className="wg-cm-actions" role="menu" aria-label={ACTIONS}>
 			<div className="wg-cm-actions-head">{row.title}</div>
 			{row.actions.map((action) => (
-				<button
+				<Pressable
 					key={action.label}
-					type="button"
 					role="menuitem"
 					className="wg-cm-action"
 					data-danger={action.isDanger ? "" : undefined}
@@ -35,7 +35,7 @@ export function RowActions({ row, moves }: RowActionsProps): ReactElement {
 				>
 					<span className="wg-cm-action-said">{action.label}</span>
 					{action.shortcut === null ? null : <kbd className="wg-cm-kbd">{action.shortcut}</kbd>}
-				</button>
+				</Pressable>
 			))}
 		</div>
 	);

@@ -12,13 +12,15 @@ const HOME_HINTS: readonly string[] = ["Tab completes", "↑↓ moves", "↵ ope
 export function HomeFoot({ moves }: HomeFootProps): ReactElement {
 	return (
 		<div className="wg-cm-foot">
-			{moves.toast === ""
-				? HOME_HINTS.map((hint) => (
-						<span key={hint} className="wg-cm-hint">
-							{hint}
-						</span>
-					))
-				: <MenuToast moves={moves} />}
+			{moves.toast === "" ? (
+				HOME_HINTS.map((hint) => (
+					<span key={hint} className="wg-cm-hint">
+						{hint}
+					</span>
+				))
+			) : (
+				<MenuToast moves={moves} />
+			)}
 		</div>
 	);
 }

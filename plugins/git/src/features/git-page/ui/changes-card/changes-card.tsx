@@ -1,5 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
+import { IconButton, Pressable } from "@widgetarium/kit";
 import { git } from "@sumi/git/contract";
 import type { FileDiff } from "@sumi/git/contract";
 import { ShownChangesSchema } from "@sumi/git-work/contract";
@@ -42,11 +43,18 @@ export function ChangesCard({ result }: McpAppViewProps<z.output<typeof ShownCha
 				<div className="sumi-mcp-head">
 					<div className="sumi-mcp-tag">
 						{shown !== null && !isOne ? (
-							<button type="button" className="sumi-mcp-tag-button" aria-label={BACK_LABEL} title={BACK_LABEL} onClick={() => open(null)}>
+							<IconButton
+								variant="ghost"
+								size="xxs"
+								className="sumi-mcp-tag-button"
+								label={BACK_LABEL}
+								title={BACK_LABEL}
+								onClick={() => open(null)}
+							>
 								<svg viewBox="0 0 12 12" aria-hidden="true">
 									<path d="M7.5 2.5L4 6l3.5 3.5" />
 								</svg>
-							</button>
+							</IconButton>
 						) : (
 							<img className="sumi-mcp-tag-glyph" src={GIT_ICON_SOURCE} alt="" />
 						)}
@@ -60,11 +68,13 @@ export function ChangesCard({ result }: McpAppViewProps<z.output<typeof ShownCha
 							hidesZero={true}
 						/>
 					</div>
-					<a className="sumi-mcp-square" href={result.link} aria-label={OPEN_LABEL} title={OPEN_LABEL}>
-						<svg viewBox="0 0 12 12" aria-hidden="true">
-							<path d="M4 2h6v6M10 2L3 9" />
-						</svg>
-					</a>
+					<Pressable asChild tone="muted">
+						<a className="sumi-mcp-square" href={result.link} aria-label={OPEN_LABEL} title={OPEN_LABEL}>
+							<svg viewBox="0 0 12 12" aria-hidden="true">
+								<path d="M4 2h6v6M10 2L3 9" />
+							</svg>
+						</a>
+					</Pressable>
 				</div>
 				<div className="sumi-changes-card-body">{bodyOf()}</div>
 			</div>

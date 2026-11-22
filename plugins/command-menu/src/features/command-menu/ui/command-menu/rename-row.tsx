@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Input } from "@widgetarium/kit";
 import type { Row } from "@sumi/command-menu/contract";
 import type { MenuMoves } from "../../lib/use-menu-moves.js";
 import { useSelectsFieldOnMount } from "../../lib/use-selects-field-on-mount.js";
@@ -19,7 +20,9 @@ export function RenameRow({ row, moves }: RenameRowProps): ReactElement {
 	return (
 		<div className="wg-cm-row" role="option" aria-selected="true" data-cm-renaming="">
 			<RowIcon icon={row.icon} />
-			<input
+			<Input
+				size="s"
+				block
 				ref={field}
 				className="wg-cm-rename"
 				value={moves.rename.name}

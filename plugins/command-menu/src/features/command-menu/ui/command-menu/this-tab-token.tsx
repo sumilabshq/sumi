@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, IconButton } from "@widgetarium/kit";
 
 export interface ThisTabTokenProps {
 	readonly onDrop: () => void;
@@ -14,15 +14,16 @@ export function ThisTabToken({ onDrop }: ThisTabTokenProps): ReactElement {
 	return (
 		<span className="wg-cm-token">
 			{IN_THIS_TAB}
-			<button
-				type="button"
+			<IconButton
+				variant="ghost"
+				size="xxs"
 				className="wg-cm-token-drop"
-				aria-label={SEARCH_EVERYTHING}
+				label={SEARCH_EVERYTHING}
 				onMouseDown={(event) => event.preventDefault()}
 				onClick={onDrop}
 			>
 				<Icon name="x" size={DROP_ICON_PX} />
-			</button>
+			</IconButton>
 		</span>
 	);
 }

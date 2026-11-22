@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import type { RepoRow } from "@sumi/git/contract";
 import { LAST_COMMIT } from "../../lib/git-address.js";
 import type { GitAddress } from "../../lib/git-address.js";
@@ -32,17 +33,17 @@ export function NoRepo({ title, said, repos, go }: NoRepoProps): ReactElement {
 				<p>{said}</p>
 				{repos.length === 0 ? null : <div className="wg-git-mlabel">{INSIDE}</div>}
 				{repos.map((repo) => (
-					<button key={repo.path} className="wg-git-row" onClick={() => open(repo.path)}>
+					<Pressable key={repo.path} className="wg-git-row" onClick={() => open(repo.path)}>
 						<Glyph name="folder" />
 						<span className="wg-git-nm">{repo.name}</span>
 						<span className="wg-git-dim">{repo.branch ?? ""}</span>
 						{repo.changed > 0 ? <span className="wg-git-dot" /> : null}
-					</button>
+					</Pressable>
 				))}
-				<button className="wg-git-row is-quiet" onClick={() => void openPicked()}>
+				<Pressable tone="muted" className="wg-git-row is-quiet" onClick={() => void openPicked()}>
 					<Glyph name="plus" />
 					<span className="wg-git-nm">{OPEN_FOLDER}</span>
-				</button>
+				</Pressable>
 			</div>
 		</section>
 	);

@@ -77,11 +77,6 @@
 	transition: background-color var(--sumi-dur-hover) var(--sumi-ease);
 }
 
-.sumi-launcher-setup:hover .sumi-launcher-pane {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-}
-
 .sumi-launcher-setup-name {
 	margin-top: 8px;
 	font-size: var(--sumi-fs-13);
@@ -111,13 +106,7 @@
 	justify-content: center;
 	gap: 8px;
 	font-size: var(--sumi-fs-13);
-	color: var(--sumi-text);
 	text-align: center;
-	transition: background-color var(--sumi-dur-hover) var(--sumi-ease);
-}
-
-.sumi-launcher-app:hover {
-	background: var(--sumi-hover);
 }
 
 .sumi-launcher-app-name {
@@ -126,10 +115,6 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-
-.sumi-launcher-row:hover {
-	background: var(--sumi-hover);
 }
 
 .sumi-launcher-row-title {

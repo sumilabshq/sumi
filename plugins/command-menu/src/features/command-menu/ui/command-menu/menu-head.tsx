@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import type { Door, MenuDoor } from "@sumi/command-menu/contract";
 
 export interface MenuHeadProps {
@@ -14,9 +15,10 @@ export function MenuHead({ door, doors, foundCount, onDoor }: MenuHeadProps): Re
 		<div className="wg-cm-head">
 			{doors.map((mode) =>
 				mode.label === null ? null : (
-					<button
+					<Pressable
+						variant="quiet"
+						tone="muted"
 						key={mode.id}
-						type="button"
 						className="wg-cm-mode"
 						data-cm-mode={mode.id}
 						aria-pressed={mode.id === door}
@@ -26,7 +28,7 @@ export function MenuHead({ door, doors, foundCount, onDoor }: MenuHeadProps): Re
 						{mode.label}
 						{mode.id === door && foundCount !== null ? <span className="wg-cm-mode-count">{foundCount}</span> : null}
 						<kbd className="wg-cm-mode-keys">{mode.keys}</kbd>
-					</button>
+					</Pressable>
 				),
 			)}
 		</div>

@@ -1,5 +1,6 @@
 import { createElement as h, useEffect, useRef } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { ShownFileSchema } from "@sumi/code-work/contract";
 import { fileSystem } from "@sumi/contract";
 import { McpAppCard } from "@sumi/mcp-apps-plugin";
@@ -29,7 +30,9 @@ export function FileCard({ result }: McpAppViewProps<z.output<typeof ShownFileSc
 		}
 
 		const shown = shownCodeOf(result.path, read.data, false);
-		node.replaceChildren(createCodeLines(node.ownerDocument, { body: shown.body, language: shown.language, wraps: false }));
+		node.replaceChildren(
+			createCodeLines(node.ownerDocument, { body: shown.body, language: shown.language, wraps: false }),
+		);
 		const first = linesMarked(node, result.marks);
 		node.scrollTop = first === null ? 0 : Math.max(0, first.offsetTop - first.offsetHeight * 2);
 		return () => node.replaceChildren();
@@ -44,19 +47,23 @@ export function FileCard({ result }: McpAppViewProps<z.output<typeof ShownFileSc
 						<span className="sumi-mcp-tag-title">{result.name}</span>
 						<span className="sumi-mcp-tag-meta">{result.folder}</span>
 						{count === 0 ? null : (
-							<span className="sumi-mcp-tag-meta">{count === 1 ? ONE_MARK : MARKS.replace("{count}", String(count))}</span>
+							<span className="sumi-mcp-tag-meta">
+								{count === 1 ? ONE_MARK : MARKS.replace("{count}", String(count))}
+							</span>
 						)}
 					</div>
-					<a
-						className="sumi-mcp-square"
-						href={FILE_LINK.replace("{path}", result.path)}
-						aria-label={OPEN_LABEL}
-						title={OPEN_LABEL}
-					>
-						<svg viewBox="0 0 12 12" aria-hidden="true">
-							<path d="M4 2h6v6M10 2L3 9" />
-						</svg>
-					</a>
+					<Pressable asChild tone="muted">
+						<a
+							className="sumi-mcp-square"
+							href={FILE_LINK.replace("{path}", result.path)}
+							aria-label={OPEN_LABEL}
+							title={OPEN_LABEL}
+						>
+							<svg viewBox="0 0 12 12" aria-hidden="true">
+								<path d="M4 2h6v6M10 2L3 9" />
+							</svg>
+						</a>
+					</Pressable>
 				</div>
 				{read.failure === null ? (
 					<div ref={holder} className="wg-chat-app sumi-file-card-body" />
