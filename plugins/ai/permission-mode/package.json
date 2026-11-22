@@ -11,9 +11,6 @@
 	},
 	"dependencies": {
 		"@sumi/chat-plugin": "0.1.0",
-		"@widgetarium/assistant": "0.1.0",
-		"@widgetarium/data-framework": "0.1.0",
-		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0"
 	},
 	"peerDependencies": {

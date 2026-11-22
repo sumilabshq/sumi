@@ -3,6 +3,7 @@ import type { SlotComponent } from "../packages/shared/plugin-framework/src/ui-s
 import type { ComposerOptionProps } from "../plugins/ai/chat/src/index.ts";
 import { FolderButton } from "../plugins/ai/working-folder/src/features/working-folder/ui/folder-button/folder-button.tsx";
 import { ModeButton } from "../plugins/ai/permission-mode/src/features/permission-mode/ui/mode-button/mode-button.tsx";
+import { SandboxButton } from "../plugins/ai/sandbox-mode/src/features/sandbox-mode/ui/sandbox-button/sandbox-button.tsx";
 import { UsageButton } from "../plugins/ai/plan-usage/src/features/plan-usage/ui/usage-button/usage-button.tsx";
 import { ModelButton } from "../plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-button.tsx";
 import { EffortButton } from "../plugins/ai/effort-picker/src/features/effort-picker/ui/effort-button/effort-button.tsx";
@@ -24,6 +25,7 @@ export const COMPOSER_OPTION_FILLS = new SlotFills([
 	fillOf("chat.options-start", "model-picker", ModelButton),
 	fillOf("chat.options-start", "effort-picker", EffortButton),
 	fillOf("chat.options-start", "permission-mode", ModeButton),
+	fillOf("chat.options-start", "sandbox-mode", SandboxButton),
 	fillOf("chat.options-start", "working-folder", FolderButton),
 	fillOf("chat.options-end", "plan-usage", UsageButton),
 	{
