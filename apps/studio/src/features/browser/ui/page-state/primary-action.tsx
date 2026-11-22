@@ -1,7 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
-import { BUTTON_RESET } from "../../lib/page-state-look.js";
+import { Button, Icon } from "@widgetarium/kit";
+
+const PRIMARY = "cv:h-[52px] cv:gap-2.5 cv:px-6 cv:text-[15px] cv:font-medium";
 
 export interface PrimaryActionProps {
 	readonly icon: string;
@@ -10,13 +11,11 @@ export interface PrimaryActionProps {
 	readonly iconSize?: number;
 }
 
-const PRIMARY = `${BUTTON_RESET} cv:h-[52px] cv:gap-2.5 cv:rounded-none cv:bg-primary cv:px-6 cv:shadow-none cv:text-[15px] cv:text-primary-foreground`;
-
 export function PrimaryAction({ icon, label, onPress, iconSize = 16 }: PrimaryActionProps): ReactElement {
 	return (
-		<button type="button" className={PRIMARY} onClick={onPress} data-browser-primary-action="">
+		<Button variant="primary" className={PRIMARY} onClick={onPress} data-browser-primary-action="">
 			<Icon name={icon} size={iconSize} />
 			{label}
-		</button>
+		</Button>
 	);
 }

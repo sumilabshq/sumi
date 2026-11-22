@@ -1,17 +1,14 @@
 import { createElement as h, useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, IconButton, Input } from "@widgetarium/kit";
 
 export interface NewTabFieldProps {
 	readonly onOpen: (address: string) => void;
 }
 
-const FIELD =
-	"cv:mt-[26px] cv:box-border cv:flex cv:h-[52px] cv:w-[560px] cv:max-w-full cv:flex-none cv:items-center cv:gap-3 cv:rounded-none cv:border cv:border-edge cv:bg-raise cv:ps-[19px] cv:pe-[5px] cv:text-[16px] cv:text-muted-foreground cv:focus-within:shadow-[0_0_0_2px_var(--brand),0_0_0_6px_var(--accent-wash)]";
-const INPUT =
-	"cv:h-10 cv:min-w-0 cv:flex-1 cv:border-0 cv:bg-transparent cv:p-0 cv:font-[inherit] cv:text-[16px] cv:text-ink cv:caret-brand cv:shadow-none cv:outline-none cv:placeholder:text-muted-foreground/67";
-const GO =
-	"cv:grid cv:size-10 cv:flex-none cv:cursor-pointer cv:place-items-center cv:rounded-none cv:border-0 cv:bg-primary cv:p-0 cv:text-[16px] cv:text-primary-foreground cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
+const FORM = "cv:mt-[26px] cv:flex cv:w-[560px] cv:max-w-full cv:flex-none";
+const FIELD = "cv:box-border cv:h-[52px] cv:gap-3 cv:ps-[19px] cv:pe-[5px] cv:text-[16px]";
+const GO = "cv:size-10";
 const TYPE_AN_ADDRESS = "Search or type an address";
 const GO_LABEL = "Go";
 
@@ -27,10 +24,17 @@ export function NewTabField({ onOpen }: NewTabFieldProps): ReactElement {
 		onOpen(typed);
 	};
 	return (
-		<form role="search" className={FIELD} onSubmit={submit} data-browser-new-tab-field="">
-			<Icon name="search" size={18} className="cv:flex-none" />
-			<input
-				className={INPUT}
+		<form role="search" className={FORM} onSubmit={submit} data-browser-new-tab-field="">
+			<Input
+				variant="raised"
+				className={FIELD}
+				block
+				icon={<Icon name="search" size={18} className="cv:flex-none" />}
+				end={
+					<IconButton type="submit" variant="primary" className={GO} label={GO_LABEL}>
+						<Icon name="corner-down-left" size={16} />
+					</IconButton>
+				}
 				aria-label={TYPE_AN_ADDRESS}
 				placeholder={TYPE_AN_ADDRESS}
 				value={typed}
@@ -38,9 +42,6 @@ export function NewTabField({ onOpen }: NewTabFieldProps): ReactElement {
 				autoFocus
 				onChange={(event) => setTyped(event.target.value)}
 			/>
-			<button type="submit" className={GO} aria-label={GO_LABEL}>
-				<Icon name="corner-down-left" size={16} />
-			</button>
 		</form>
 	);
 }

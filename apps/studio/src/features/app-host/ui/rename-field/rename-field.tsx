@@ -1,5 +1,6 @@
 import { createElement as h, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
+import { Input } from "@widgetarium/kit";
 import { useSelectsOnMount } from "../../lib/use-selects-on-mount.js";
 
 export interface RenameFieldProps {
@@ -11,8 +12,7 @@ export interface RenameFieldProps {
 	readonly className?: string | undefined;
 }
 
-export const ROW_RENAME_FIELD =
-	"cv:h-6 cv:min-w-0 cv:flex-1 cv:-mx-1.5 cv:rounded-none cv:border-0 cv:bg-(--sumi-soft) cv:px-1.5 cv:font-[inherit] cv:text-[13px] cv:text-(--sumi-text) cv:shadow-none cv:outline-none cv:caret-(--sumi-accent)";
+export const ROW_RENAME_FIELD = "cv:min-w-0 cv:flex-1 cv:-mx-1.5 cv:text-[13px]";
 
 export function RenameField({
 	name,
@@ -40,9 +40,9 @@ export function RenameField({
 		onDone();
 	};
 	return (
-		<input
+		<Input
 			ref={field}
-			type="text"
+			size="s"
 			value={typed}
 			aria-label={label}
 			className={className}

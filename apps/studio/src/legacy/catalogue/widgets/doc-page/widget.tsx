@@ -3,7 +3,7 @@ import { ICommand, IQuery } from "@widgetarium/core/gateway/queries.js";
 import { defineLayout, defineMetadata, IHost } from "@widgetarium/core/gateway/declared.js";
 import { createWidget } from "@widgetarium/core/widget-api.js";
 import { z } from "zod";
-import { Button, Icon, RenderedMarkdown } from "@widgetarium/kit";
+import { Button, Icon, Pressable, RenderedMarkdown } from "@widgetarium/kit";
 
 const PageSchema = z.object({
 	id: z.string(),
@@ -41,17 +41,13 @@ const DocPage = createWidget({
 					</Button>
 				) : null}
 				{page.next ? (
-					<button
-						type="button"
-						className="wg-studio-catalogue-doc-next"
-						onClick={() => page.next && void openPage(page.next.id)}
-					>
+					<Pressable className="wg-studio-catalogue-doc-next" onClick={() => page.next && void openPage(page.next.id)}>
 						<span className="wg-studio-catalogue-doc-next-said">
 							<span className="wg-studio-catalogue-doc-next-lead">{NEXT}</span>
 							<span className="wg-studio-catalogue-doc-next-name">{page.next.title}</span>
 						</span>
 						<Icon name="chevron-right" />
-					</button>
+					</Pressable>
 				) : null}
 				<span className="wg-studio-catalogue-doc-source">{page.source}</span>
 			</article>

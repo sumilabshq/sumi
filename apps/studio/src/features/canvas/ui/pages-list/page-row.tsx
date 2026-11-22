@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import type { OutputOf } from "@widgetarium/data-framework";
 import type { canvas } from "@widgetarium/canvas/contract";
 import { PAGE_ROW } from "../../lib/panel-row-look.js";
@@ -11,14 +12,14 @@ export interface PageRowProps {
 	readonly onPick: (from: Element, page: string) => void;
 }
 
-const DOT = "cv:size-1.5 cv:flex-none cv:rounded-none";
+const DOT = "cv:size-1.5 cv:flex-none";
 const RESTING_DOT = `${DOT} cv:bg-page-dot`;
 const SHOWN_DOT = `${DOT} cv:bg-brand`;
 const RUNNING_DOT = `${SHOWN_DOT} cv:motion-safe:animate-canvas-pulse`;
 
 export function PageRow({ row, onPick }: PageRowProps): ReactElement {
 	return (
-		<div
+		<Pressable
 			className={PAGE_ROW}
 			role="option"
 			aria-selected={row.isShown}
@@ -28,7 +29,7 @@ export function PageRow({ row, onPick }: PageRowProps): ReactElement {
 		>
 			<span className={dotOf(row)} aria-hidden data-canvas-page-dot="" />
 			<span className="cv:truncate">{row.page}</span>
-		</div>
+		</Pressable>
 	);
 }
 

@@ -3,17 +3,17 @@ import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import type { AskAnswer } from "@widgetarium/browser/contract";
 import { browser } from "@widgetarium/browser/contract";
+import { Button } from "@widgetarium/kit";
 import { AskChips } from "./ask-chips.js";
 
 const CARD =
-	"cv:absolute cv:bottom-6 cv:left-1/2 cv:z-[3] cv:flex cv:w-[min(32rem,calc(100%-2rem))] cv:-translate-x-1/2 cv:flex-col cv:gap-4 cv:rounded-none cv:border cv:border-edge cv:bg-raise cv:p-5";
+	"cv:absolute cv:bottom-6 cv:left-1/2 cv:z-[3] cv:flex cv:w-[min(32rem,calc(100%-2rem))] cv:-translate-x-1/2 cv:flex-col cv:gap-4 cv:border cv:border-edge cv:bg-raise cv:p-5";
 const TITLE = "cv:m-0 cv:text-lg cv:font-medium cv:text-ink";
 const SUBTITLE = "cv:m-0 cv:text-sm cv:break-all cv:text-muted-foreground";
 const ANSWERS = "cv:flex cv:gap-2";
-const ANSWER =
-	"cv:h-13 cv:flex-1 cv:cursor-pointer cv:rounded-none cv:border-0 cv:px-5 cv:font-[inherit] cv:text-sm cv:font-medium cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
-const PRIMARY = `${ANSWER} cv:flex-[1.6] cv:bg-primary cv:text-primary-foreground cv:hover:bg-primary/85`;
-const SECONDARY = `${ANSWER} cv:bg-fill cv:text-ink cv:hover:bg-fill-hover`;
+const ANSWER = "cv:h-13 cv:px-5 cv:text-sm cv:font-medium";
+const PRIMARY = `${ANSWER} cv:flex-[1.6]`;
+const SECONDARY = `${ANSWER} cv:flex-1`;
 const FOOTNOTE = "cv:m-0 cv:text-xs cv:text-muted-foreground";
 const READ_TITLE = "Let Sumi read {site}?";
 const OPEN_TITLE = "Let Sumi open {site}?";
@@ -37,15 +37,15 @@ export function AskCard(): ReactElement | null {
 			</div>
 			{asked.isNavigation ? null : <AskChips />}
 			<div className={ANSWERS}>
-				<button type="button" className={PRIMARY} onClick={answer("site")}>
+				<Button variant="primary" className={PRIMARY} onClick={answer("site")}>
 					Allow for this site
-				</button>
-				<button type="button" className={SECONDARY} onClick={answer("once")}>
+				</Button>
+				<Button className={SECONDARY} onClick={answer("once")}>
 					Once
-				</button>
-				<button type="button" className={SECONDARY} onClick={answer("no")}>
+				</Button>
+				<Button className={SECONDARY} onClick={answer("no")}>
 					No
-				</button>
+				</Button>
 			</div>
 			<p className={FOOTNOTE}>{DATA_NOT_ORDERS}</p>
 		</section>

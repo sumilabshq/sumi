@@ -11,7 +11,7 @@ export interface PageAreaProps {
 	readonly children?: ReactNode;
 }
 
-const AREA = "cv:@container/page cv:relative cv:min-h-0 cv:flex-1 cv:overflow-hidden cv:rounded-none";
+const AREA = "cv:@container/page cv:relative cv:min-h-0 cv:flex-1 cv:overflow-hidden";
 const READING = "cv:outline-2 cv:outline-offset-[-2px] cv:outline-brand";
 const PAGES = "cv:absolute cv:inset-0";
 

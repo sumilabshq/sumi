@@ -29,7 +29,6 @@ export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(fun
 				keys: keys ?? null,
 			})}
 			aria-disabled={isOff || isInert ? true : undefined}
-			data-off={isOff ? "" : undefined}
 			isLoading={isBusy}
 			{...pressed}
 		>

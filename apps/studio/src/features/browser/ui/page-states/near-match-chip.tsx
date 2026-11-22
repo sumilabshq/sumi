@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { BUTTON_RESET, WASH_INK } from "../../lib/page-state-look.js";
+import { Button } from "@widgetarium/kit";
 
 export interface NearMatchChipProps {
 	readonly host: string;
@@ -8,17 +8,17 @@ export interface NearMatchChipProps {
 }
 
 const ROW = "cv:mt-[18px] cv:flex cv:justify-center";
-const CHIP = `${BUTTON_RESET} ${WASH_INK} cv:h-10 cv:gap-2 cv:rounded-none cv:px-4 cv:shadow-none cv:text-[13px]`;
+const CHIP = "cv:h-10 cv:gap-2 cv:px-4 cv:text-[13px] cv:font-medium";
 const MATCH = "cv:font-bold";
 
 export function NearMatchChip({ host, onOpen }: NearMatchChipProps): ReactElement {
 	return (
 		<div className={ROW}>
-			<button type="button" className={CHIP} onClick={() => onOpen(host)} data-browser-near-match={host}>
+			<Button variant="wash" className={CHIP} onClick={() => onOpen(host)} data-browser-near-match={host}>
 				<span>
 					Did you mean <b className={MATCH}>{host}</b>?
 				</span>
-			</button>
+			</Button>
 		</div>
 	);
 }

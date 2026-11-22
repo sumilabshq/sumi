@@ -12,7 +12,7 @@ export interface SiteRowProps {
 
 const ROW = "cv:flex cv:items-center cv:gap-3 cv:py-1.5";
 const AVATAR =
-	"cv:grid cv:size-9 cv:flex-none cv:place-items-center cv:rounded-none cv:bg-brand-wash cv:text-sm cv:font-medium cv:text-brand";
+	"cv:grid cv:size-9 cv:flex-none cv:place-items-center cv:bg-brand-wash cv:text-sm cv:font-medium cv:text-brand";
 const NAMES = "cv:flex cv:min-w-0 cv:flex-1 cv:flex-col";
 const SITE = "cv:truncate cv:text-sm cv:font-medium cv:text-ink";
 const SAID = "cv:truncate cv:text-xs cv:text-muted-foreground";

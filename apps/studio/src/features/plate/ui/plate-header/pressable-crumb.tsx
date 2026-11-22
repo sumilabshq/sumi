@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { OPENS_LAYER_MARK } from "@sumi/sumi-host-plugin";
 import { useTogglesMenuOnShown } from "../../lib/use-toggles-menu-on-shown.js";
 import { CrumbSaid } from "./crumb-said.js";
@@ -15,8 +16,7 @@ export interface PressableCrumbProps {
 export function PressableCrumb({ words, pageId }: PressableCrumbProps): ReactElement {
 	const openMenuOnShown = useTogglesMenuOnShown(words.first, pageId);
 	return (
-		<button
-			type="button"
+		<Pressable
 			className="wg-plate-crumb is-pressable"
 			aria-label={`${CRUMB_LABEL} ${words.first}`}
 			data-plate-crumb=""
@@ -24,6 +24,6 @@ export function PressableCrumb({ words, pageId }: PressableCrumbProps): ReactEle
 			onClick={openMenuOnShown}
 		>
 			<CrumbSaid words={words} />
-		</button>
+		</Pressable>
 	);
 }

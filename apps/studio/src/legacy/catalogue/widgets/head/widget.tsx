@@ -3,7 +3,7 @@ import { ICommand, IQuery } from "@widgetarium/core/gateway/queries.js";
 import { createWidget } from "@widgetarium/core/widget-api.js";
 import { defineLayout, defineMetadata } from "@widgetarium/core/gateway/declared.js";
 import { z } from "zod";
-import { Icon } from "@widgetarium/kit";
+import { Icon, Pressable } from "@widgetarium/kit";
 
 const SaidSchema = z.object({
 	title: z.string(),
@@ -34,9 +34,8 @@ const CatalogueHead = createWidget({
 				</div>
 				<div className="wg-studio-catalogue-head-switch" role="tablist" aria-label="Catalogue or documentation">
 					{VIEWS.map((one) => (
-						<button
+						<Pressable
 							key={one.value}
-							type="button"
 							role="tab"
 							title={one.label}
 							aria-label={one.label}
@@ -45,7 +44,7 @@ const CatalogueHead = createWidget({
 							onClick={() => view !== one.value && void openView({ view: one.value })}
 						>
 							<Icon name={one.icon} size={15} />
-						</button>
+						</Pressable>
 					))}
 				</div>
 			</div>

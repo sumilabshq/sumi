@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Spinner, useNow } from "@widgetarium/kit";
+import { Pressable, Spinner, useNow } from "@widgetarium/kit";
 import { doingOf } from "@widgetarium/core/job-words.js";
 import type { Job } from "@widgetarium/canvas/contract";
 
@@ -44,13 +44,13 @@ export function JobLine({ job, spent = job.spent, isInline = false, onStop }: Jo
 			>
 				<span>{[...meta, ""].join(" · ")}</span>
 				{onStop ? (
-					<button
-						type="button"
-						className="cv:-mx-2 cv:-my-[3px] cv:cursor-pointer cv:rounded-none cv:border-0 cv:bg-transparent cv:px-2 cv:py-[3px] cv:font-[inherit] cv:text-[length:inherit] cv:font-semibold cv:text-muted-foreground cv:shadow-none cv:transition-colors cv:hover:bg-fill cv:hover:text-ink cv:focus-visible:bg-fill cv:focus-visible:outline-none cv:active:scale-[0.96]"
+					<Pressable
+						tone="muted"
+						className="cv:-mx-2 cv:-my-[3px] cv:px-2 cv:py-[3px] cv:font-semibold cv:active:scale-[0.96]"
 						onClick={onStop}
 					>
 						{PAUSE}
-					</button>
+					</Pressable>
 				) : null}
 			</div>
 		</div>

@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { MouseEvent, PointerEvent, ReactElement } from "react";
 import { Collapsible } from "radix-ui";
-import { Icon } from "@widgetarium/kit";
+import { Icon, Row as KitRow } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { treeRowProps } from "@widgetarium/behaviors";
 import type { TreeDrag } from "@widgetarium/behaviors";
@@ -16,9 +16,9 @@ export interface LayerRowProps {
 	readonly onHover: (depth: number) => void;
 }
 
-const LAYER_ROW = `${LAYER_ROW_BASE} cv:data-[kind=widget]:cursor-grab cv:data-[kind=widget]:text-brand cv:group-data-[dragging]/tree:transition-transform cv:data-[lifted]:z-[2] cv:data-[lifted]:bg-group cv:data-[lifted]:shadow-[0_8px_20px_-8px_var(--wg-overlay-scrim)] cv:data-[lifted]:transition-none`;
+const LAYER_ROW = `${LAYER_ROW_BASE} cv:data-[kind=widget]:cursor-grab cv:group-data-[dragging]/tree:transition-transform cv:data-[lifted]:transition-none`;
 const OPENER =
-	"cv:absolute cv:top-1/2 cv:grid cv:size-3 cv:-translate-y-1/2 cv:cursor-pointer cv:place-items-center cv:border-0 cv:bg-transparent cv:p-0 cv:text-muted-foreground cv:opacity-0 cv:shadow-none cv:transition-opacity cv:group-hover/row:opacity-100 cv:hover:text-ink cv:focus-visible:opacity-100 cv:data-[state=closed]:opacity-100";
+	"cv:absolute cv:top-1/2 cv:grid cv:size-3 cv:-translate-y-1/2 cv:cursor-pointer cv:place-items-center cv:border-0 cv:bg-transparent cv:p-0 cv:text-muted-foreground cv:opacity-0 cv:shadow-none cv:transition-opacity cv:group-hover/row:opacity-100 cv:focus-visible:opacity-100 cv:data-[state=closed]:opacity-100";
 
 export function LayerRow({ row, drag, onHover }: LayerRowProps): ReactElement {
 	const pick = useCommand(canvas.layers.pickLayer);
@@ -26,12 +26,13 @@ export function LayerRow({ row, drag, onHover }: LayerRowProps): ReactElement {
 	const hasChildren = row.children.length > 0;
 	return (
 		<Collapsible.Root open={row.isOpen} onOpenChange={() => void fold.run({ id: row.id })}>
-			<div
+			<KitRow
+				pressable
 				className={LAYER_ROW}
 				style={{ paddingLeft: row.depth * PANEL_ROW_INDENT_PX + PANEL_ROW_INSET_PX }}
 				{...treeRowProps(row)}
 				data-kind={row.kind}
-				data-picked={row.isPicked ? "" : undefined}
+				aria-selected={row.isPicked}
 				onMouseEnter={() => onHover(row.depth)}
 				onPointerDown={(event: PointerEvent) => drag.onPointerDown(event, row.id, row.canDrag)}
 				onClick={() => {
@@ -52,9 +53,11 @@ export function LayerRow({ row, drag, onHover }: LayerRowProps): ReactElement {
 						/>
 					</Collapsible.Trigger>
 				) : null}
-				<LayerName title={row.title} isHeld={row.isHeld} />
+				<span className={row.kind === "widget" ? "cv:contents cv:text-brand" : "cv:contents"}>
+					<LayerName title={row.title} isHeld={row.isHeld} />
+				</span>
 				{row.repeats > 1 ? <span className="cv:text-sm cv:text-muted-foreground">{`×${row.repeats}`}</span> : null}
-			</div>
+			</KitRow>
 			{hasChildren ? (
 				<Collapsible.Content className="cv:w-full cv:overflow-hidden cv:group-data-[dragging]/tree:overflow-visible cv:data-[state=open]:animate-canvas-fold-open cv:data-[state=closed]:animate-canvas-fold-shut">
 					{row.children.map((child) => (

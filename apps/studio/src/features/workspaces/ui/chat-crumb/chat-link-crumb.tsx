@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { commandMenu } from "@sumi/command-menu/contract";
 import { linkOf } from "@widgetarium/core/engine/sumi-link.js";
@@ -29,8 +30,7 @@ export function ChatLinkCrumb({ chatId, words }: ChatLinkCrumbProps): ReactEleme
 						shownName: words.second ?? words.first,
 					});
 	return (
-		<button
-			type="button"
+		<Pressable
 			className="wg-plate-crumb is-pressable"
 			aria-label={`${GO_TO} ${words.second ?? words.first}`}
 			aria-disabled={openMenuWithLink === undefined ? true : undefined}
@@ -40,6 +40,6 @@ export function ChatLinkCrumb({ chatId, words }: ChatLinkCrumbProps): ReactEleme
 			onClick={openMenuWithLink}
 		>
 			<CrumbSaid words={words} />
-		</button>
+		</Pressable>
 	);
 }

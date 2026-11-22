@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ChangeEvent, ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { FilePicker, Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
 import { canvas } from "@widgetarium/canvas/contract";
@@ -38,12 +38,10 @@ export function AddPhoto(): ReactElement {
 			>
 				<Icon name="image-plus" size={15} />
 			</RoundButton>
-			<input
+			<FilePicker
 				ref={picker}
-				type="file"
 				accept="image/*"
 				multiple
-				hidden
 				onChange={(event: ChangeEvent<HTMLInputElement>) => {
 					void add.run({ photos: filesOfType(event.currentTarget.files, IMAGES) });
 					event.currentTarget.value = "";

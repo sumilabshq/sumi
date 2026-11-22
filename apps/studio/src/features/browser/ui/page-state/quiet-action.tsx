@@ -1,7 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
-import { BUTTON_RESET, EDGED } from "../../lib/page-state-look.js";
+import { Button, Icon } from "@widgetarium/kit";
 
 export type QuietTone = "ink" | "success" | "error";
 
@@ -12,7 +11,7 @@ export interface QuietActionProps {
 	readonly onPress: () => void;
 }
 
-const QUIET = `${BUTTON_RESET} ${EDGED} cv:h-12 cv:gap-2 cv:rounded-none cv:px-5 cv:text-[14px]`;
+const QUIET = "cv:h-12 cv:gap-2 cv:px-5 cv:text-[14px] cv:font-medium";
 const TEXT_OF_TONE: Readonly<Record<QuietTone, string>> = {
 	ink: "cv:text-ink",
 	success: "cv:text-success",
@@ -21,9 +20,11 @@ const TEXT_OF_TONE: Readonly<Record<QuietTone, string>> = {
 
 export function QuietAction({ icon, label, tone = "ink", onPress }: QuietActionProps): ReactElement {
 	return (
-		<button type="button" className={`${QUIET} ${TEXT_OF_TONE[tone]}`} onClick={onPress} data-browser-quiet-action="">
-			{icon === undefined ? null : <Icon name={icon} size={16} />}
-			{label}
-		</button>
+		<Button variant="outline" className={QUIET} onClick={onPress} data-browser-quiet-action="">
+			<span className={`cv:inline-flex cv:items-center cv:gap-2 ${TEXT_OF_TONE[tone]}`}>
+				{icon === undefined ? null : <Icon name={icon} size={16} />}
+				{label}
+			</span>
+		</Button>
 	);
 }

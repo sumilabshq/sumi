@@ -51,7 +51,7 @@ export function ChatMenu({ at, row, onClose, onRename }: ChatMenuProps): ReactEl
 				<PopoverAnchor className="wg-ws-menu-spot" style={{ left: spot.x, top: spot.y }} aria-hidden="true" />
 			)}
 			<PopoverAnchorAt element={spot !== null && "under" in spot ? spot.under : null} />
-			<PopoverContent>
+			<PopoverContent size="s">
 				{shown === null ? null : (
 					<div role="menu" aria-label={MENU_LABEL} data-ws-chat-menu={shown.id}>
 						<PopoverItem role="menuitem" onClick={chose(() => onRename(shown.id))}>

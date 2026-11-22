@@ -115,7 +115,6 @@
 		bottom: 0;
 		z-index: 2;
 		overflow: hidden;
-		border-radius: 0;
 		background: var(--sumi-plate);
 		box-shadow: var(--sumi-shadow-pop);
 	}
@@ -133,7 +132,6 @@
 	min-width: var(--sumi-plate-min);
 	min-height: 0;
 	overflow: hidden;
-	border-radius: 0;
 	background: var(--wg-plate-fill, var(--sumi-plate));
 	box-shadow: var(--sumi-shadow-plate);
 	transition: background-color var(--sumi-dur-base) var(--sumi-ease);
@@ -273,68 +271,6 @@ body:has([data-browser-pages-live]),
 	min-width: 0;
 }
 
-.wg-plate-head .wg-plate-button.wg-kit-icon {
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	margin: 0;
-	padding: 0;
-	color: var(--sumi-text-3);
-	font: inherit;
-}
-
-.wg-plate-head .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible) {
-	color: var(--sumi-text);
-}
-
-.wg-plate-head .wg-plate-button.wg-kit-icon::before {
-	border-radius: 0;
-	background: transparent;
-	transition: background-color var(--sumi-dur-fast) var(--sumi-ease);
-}
-
-.wg-plate-head .wg-plate-button.wg-kit-icon:not([data-off]):is(:hover, :focus-visible)::before {
-	background: var(--sumi-hover);
-	transition-duration: 0ms;
-}
-
-.wg-plate-head .wg-plate-button.wg-kit-icon svg {
-	width: var(--sumi-icon);
-	height: var(--sumi-icon);
-}
-
-.wg-plate-head .wg-plate-button.wg-kit-icon[data-off] {
-	color: var(--sumi-text-3);
-	cursor: default;
-}
-
-.wg-plate-head .wg-plate-button.wg-kit-icon[data-off]:active {
-	transform: none;
-}
-
-.wg-plate-button:focus-visible,
-.wg-plate-crumb:focus-visible {
-	outline: none;
-}
-
-.wg-plate-crumb:focus-visible {
-	background: var(--sumi-hover);
-}
-
-.wg-plate-head .wg-plate-button .wg-kit-icon-glyph.is-lucide {
-	width: var(--sumi-icon);
-	height: var(--sumi-icon);
-	stroke-width: 1.3;
-}
-
-.wg-plate-head .wg-plate-button .wg-kit-spinner {
-	width: var(--sumi-icon);
-	height: var(--sumi-icon);
-}
-
-.wg-plate-head .wg-plate-button .wg-kit-spinner circle {
-	stroke-width: 1.6;
-}
-
 .wg-plate-crumb {
 	display: inline-flex;
 	align-items: center;
@@ -344,15 +280,8 @@ body:has([data-browser-pages-live]),
 	margin: 0 0 0 calc(-1 * var(--sumi-sp-3));
 	padding: 0 var(--sumi-sp-3);
 	gap: var(--sumi-sp-2);
-	border: 0;
-	border-radius: 0;
-	box-shadow: none;
-	background: transparent;
-	color: var(--sumi-text);
 	font: inherit;
 	white-space: nowrap;
-	appearance: none;
-	transition: background-color var(--sumi-dur-fast) var(--sumi-ease);
 }
 
 .wg-plate-head.is-app .wg-plate-crumb {
@@ -368,7 +297,7 @@ body:has([data-browser-pages-live]),
 }
 
 .wg-pane[data-pane-dimmed] .wg-plate-head,
-.wg-pane[data-pane-dimmed] .wg-plate-head :is(.wg-plate-crumb, .wg-plate-crumb-first, .wg-plate-button) {
+.wg-pane[data-pane-dimmed] .wg-plate-head .wg-plate-crumb-first {
 	color: var(--sumi-text-3);
 }
 
@@ -382,11 +311,6 @@ body:has([data-browser-pages-live]),
 
 .wg-pane[data-pane-moving] {
 	visibility: hidden;
-}
-
-.wg-plate-crumb.is-pressable:hover {
-	background: var(--sumi-hover);
-	transition-duration: 0ms;
 }
 
 .wg-plate-crumb-first {
@@ -451,8 +375,7 @@ body:has([data-browser-pages-live]),
 
 .wg-pane-group {
 	position: absolute;
-	border-radius: 0;
-	background: linear-gradient(var(--sumi-line), var(--sumi-line)), var(--sumi-plate);
+	background: linear-gradient(var(--sumi-divider), var(--sumi-divider)), var(--sumi-plate);
 	box-shadow: var(--sumi-shadow-plate);
 	pointer-events: none;
 }
@@ -462,7 +385,6 @@ body:has([data-browser-pages-live]),
 }
 
 .wg-pane[data-pane-grouped] > .wg-shell-plate {
-	border-radius: 0;
 	box-shadow: none;
 }
 
@@ -494,8 +416,7 @@ body:has([data-browser-pages-live]),
 .wg-pane-preview {
 	position: absolute;
 	box-sizing: border-box;
-	border-radius: 0;
-	background: var(--sumi-active);
+	background: var(--wg-kit-control-open);
 	pointer-events: none;
 	transition:
 		left var(--sumi-dur-base) var(--sumi-ease-out),
@@ -513,14 +434,14 @@ body:has([data-browser-pages-live]),
 .wg-pane-edge[data-pane-edge-dir="row"] {
 	width: 9px;
 	margin-left: -4.5px;
-	background: linear-gradient(transparent, var(--sumi-line) calc(2 * var(--sumi-sp-9))) center / 1px 100% no-repeat;
+	background: linear-gradient(transparent, var(--sumi-divider) calc(2 * var(--sumi-sp-9))) center / 1px 100% no-repeat;
 	cursor: col-resize;
 }
 
 .wg-pane-edge[data-pane-edge-dir="column"] {
 	height: 9px;
 	margin-top: -4.5px;
-	background: linear-gradient(var(--sumi-line), var(--sumi-line)) center / 100% 1px no-repeat;
+	background: linear-gradient(var(--sumi-divider), var(--sumi-divider)) center / 100% 1px no-repeat;
 	cursor: row-resize;
 }
 
@@ -530,7 +451,6 @@ body:has([data-browser-pages-live]),
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: 0;
 	background: var(--sumi-sunken);
 }
 

@@ -19,7 +19,7 @@ export interface StudioFrameProps {
 	readonly panel: ReactNode;
 }
 
-const FRAME_CLASS = "wg-studio wg-shell is-flat";
+const FRAME_CLASS = "wg-studio wg-root wg-shell is-flat";
 
 export function StudioFrame({ frame, chromeLeftPx, panes, panel }: StudioFrameProps): ReactElement {
 	const widths = useQuery(layout.frameWidths.frameWidths).data;
