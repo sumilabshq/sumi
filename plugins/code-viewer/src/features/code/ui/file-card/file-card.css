@@ -6,7 +6,7 @@
 .sumi-file-card-body {
 	flex: 1;
 	min-height: 0;
-	margin-top: 8px;
+	margin-top: var(--space-2);
 	overflow: auto;
 	background: none;
 }
@@ -19,8 +19,8 @@
 .sumi-file-card-mark-note {
 	width: max-content;
 	max-width: calc(100% - 77px);
-	margin: 2px 0 6px 61px;
-	padding: 3px 10px;
+	margin: var(--space-0-5) var(--space-none) var(--space-1-5) var(--space-15);
+	padding: var(--space-1) var(--space-2-5);
 	border-left: 2px solid var(--hue-amber);
 	background: color-mix(in oklch, var(--hue-amber) 8%, transparent);
 	color: var(--text);
@@ -29,7 +29,7 @@
 }
 
 .sumi-file-card-note {
-	margin: 12px;
+	margin: var(--space-3);
 	color: var(--muted-foreground);
 	font-size: 13px;
 }

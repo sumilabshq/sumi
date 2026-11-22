@@ -41,7 +41,7 @@
 }
 
 .sumi-canvas-home-head h2 {
-	margin: 0;
+	margin: var(--space-none);
 	font-size: var(--fs-15);
 	font-weight: var(--fw-semi);
 }
@@ -51,7 +51,7 @@
 	align-items: center;
 	gap: var(--space-1);
 	height: var(--h-xs);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	cursor: pointer;
 }
@@ -65,7 +65,7 @@
 	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 	grid-template-rows: 232px;
 	grid-auto-rows: 0;
-	column-gap: 16px;
+	column-gap: var(--space-4);
 	overflow: hidden;
 }
 
@@ -90,7 +90,7 @@
 	flex-direction: column;
 	gap: var(--space-1);
 	min-width: 0;
-	padding: 0;
+	padding: var(--space-none);
 	font: inherit;
 	text-align: start;
 	cursor: pointer;
@@ -127,7 +127,7 @@
 	gap: var(--space-1-5);
 	max-width: 100%;
 	height: var(--h-xs);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-12);
 	cursor: pointer;
@@ -153,7 +153,7 @@
 	gap: var(--space-2);
 	width: 240px;
 	height: var(--h-sm);
-	padding: 0 var(--space-3);
+	padding: var(--space-none) var(--space-3);
 	background: var(--soft);
 	color: var(--text-3);
 	cursor: text;
@@ -162,7 +162,7 @@
 .sumi-canvas-search-field {
 	flex: 1;
 	min-width: 0;
-	padding: 0;
+	padding: var(--space-none);
 	font: inherit;
 	font-size: var(--fs-13);
 	user-select: text;
@@ -184,7 +184,7 @@
 	align-items: center;
 	gap: var(--space-1-5);
 	height: var(--h-sm);
-	padding: 0 var(--space-3);
+	padding: var(--space-none) var(--space-3);
 	font: inherit;
 	font-size: var(--fs-13);
 	font-weight: var(--fw-medium);
@@ -206,19 +206,19 @@
 }
 
 .sumi-canvas-home-empty h2 {
-	margin: 0;
+	margin: var(--space-none);
 	font-size: var(--fs-17);
 	font-weight: var(--fw-semi);
 }
 
 .sumi-canvas-home-empty p {
 	max-width: 380px;
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text-3);
 }
 
 .sumi-canvas-home-none {
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text-3);
 }
 

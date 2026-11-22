@@ -22,7 +22,7 @@
 html,
 body {
 	height: 100%;
-	margin: 0;
+	margin: var(--space-none);
 	background: var(--plate);
 	color: var(--text);
 	font-family: var(--font-ui);

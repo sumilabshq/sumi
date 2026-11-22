@@ -21,9 +21,9 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--space-3, 12px);
+	gap: var(--space-3);
 	height: 56px;
-	padding: 0 var(--space-3, 12px) 0 var(--space-5, 20px);
+	padding: var(--space-none) var(--space-3) var(--space-none) var(--space-5);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-name {
@@ -51,7 +51,7 @@
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	padding: 0;
+	padding: var(--space-none);
 	cursor: pointer;
 }
 
@@ -59,9 +59,9 @@
 	display: flex;
 	flex: 1 1 auto;
 	align-items: center;
-	gap: var(--space-3, 12px);
+	gap: var(--space-3);
 	min-height: 0;
-	padding: 0 var(--space-3, 12px);
+	padding: var(--space-none) var(--space-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-frame {
@@ -85,8 +85,8 @@
 	display: flex;
 	flex: none;
 	justify-content: center;
-	gap: var(--space-2, 8px);
-	padding: var(--space-4, 16px) var(--space-3, 12px) var(--space-5, 20px);
+	gap: var(--space-2);
+	padding: var(--space-4) var(--space-3) var(--space-5);
 	overflow-x: auto;
 }
 
@@ -94,7 +94,7 @@
 	flex: none;
 	width: 56px;
 	height: 56px;
-	padding: 0;
+	padding: var(--space-none);
 	overflow: hidden;
 	opacity: 0.5;
 	cursor: pointer;

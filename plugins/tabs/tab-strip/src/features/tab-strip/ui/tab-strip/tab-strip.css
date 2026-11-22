@@ -42,7 +42,7 @@
 	box-sizing: border-box;
 	max-width: 220px;
 	height: var(--h-sm);
-	padding: 0 10px;
+	padding: var(--space-none) var(--space-2-5);
 	color: var(--text-3);
 	font: var(--fw-regular) var(--fs-13) / 1 var(--font-ui);
 	white-space: nowrap;
@@ -110,7 +110,7 @@
 }
 
 .sumi-strip-tab:is(:hover, :focus-visible) > .sumi-tab-status {
-	margin-inline-end: calc(18px + var(--space-0-5));
+	margin-inline-end: calc(var(--space-4-5) + var(--space-0-5));
 }
 
 .sumi-strip-tab-close {
@@ -122,8 +122,8 @@
 	justify-content: center;
 	width: 18px;
 	height: 18px;
-	margin: 0;
-	padding: 0;
+	margin: var(--space-none);
+	padding: var(--space-none);
 	opacity: 0;
 	transform: translateY(-50%);
 	pointer-events: none;
@@ -200,9 +200,9 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: 0;
+	gap: var(--space-none);
 	height: var(--h-sm);
-	margin: 0 var(--space-1);
+	margin: var(--space-none) var(--space-1);
 }
 
 .sumi-strip-group::after {
@@ -220,8 +220,8 @@
 	flex: none;
 	align-items: center;
 	height: 100%;
-	margin: 0;
-	padding: 0 var(--space-2);
+	margin: var(--space-none);
+	padding: var(--space-none) var(--space-2);
 	font: var(--fw-medium, 500) var(--fs-12) / 1 var(--font-ui);
 	white-space: nowrap;
 	cursor: default;
@@ -313,7 +313,7 @@
 }
 
 .sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)) {
-	padding-right: calc(var(--space-1-5) + 18px + var(--space-0-5));
+	padding-right: calc(var(--space-1-5) + var(--space-4-5) + var(--space-0-5));
 }
 
 .sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)):is(:hover, :focus-visible) .sumi-strip-tab-title {
@@ -322,14 +322,14 @@
 
 .sumi-strip-chip {
 	height: 100%;
-	padding: 0;
+	padding: var(--space-none);
 }
 
 .sumi-strip-chip-face {
 	display: flex;
 	align-items: center;
 	height: 100%;
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	border-radius: inherit;
 	background: var(--group-legacy);
 	color: var(--frame);

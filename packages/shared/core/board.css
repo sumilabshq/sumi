@@ -396,15 +396,27 @@
 		--fw-medium: 500;
 		--fw-semi: 600;
 
+		--space-none: 0px;
+		--space-px: 1px;
 		--space-0-5: 2px;
 		--space-1: 4px;
 		--space-1-5: 6px;
 		--space-2: 8px;
+		--space-2-5: 10px;
 		--space-3: 12px;
+		--space-3-5: 14px;
 		--space-4: 16px;
+		--space-4-5: 18px;
 		--space-5: 20px;
+		--space-5-5: 22px;
 		--space-6: 24px;
+		--space-6-5: 26px;
+		--space-7: 28px;
 		--space-8: 32px;
+		--space-10: 40px;
+		--space-12: 48px;
+		--space-15: 60px;
+		--space-30: 120px;
 
 		--r-xs: 4px;
 		--r-sm: 6px;
@@ -15600,8 +15612,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:mx-px {
 		margin-inline: 1px !important;
 	}
-	.cv\:-my-\[3px\] {
-		margin-block: calc(3px * -1) !important;
+	.cv\:-my-\[var\(--space-1\)\] {
+		margin-block: calc(var(--space-1) * -1) !important;
 	}
 	.cv\:my-1 {
 		margin-block: var(--cv-spacing) !important;
@@ -15858,17 +15870,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:gap-14 {
 		gap: calc(var(--cv-spacing) * 14) !important;
 	}
-	.cv\:gap-\[13px\] {
-		gap: 13px !important;
-	}
-	.cv\:gap-\[120px\] {
-		gap: 120px !important;
-	}
 	.cv\:gap-\[var\(--plate-pad\,6px\)\] {
 		gap: var(--plate-pad, 6px) !important;
 	}
 	.cv\:gap-\[var\(--space-0-5\)\] {
 		gap: var(--space-0-5) !important;
+	}
+	.cv\:gap-\[var\(--space-3\)\] {
+		gap: var(--space-3) !important;
+	}
+	.cv\:gap-\[var\(--space-30\)\] {
+		gap: var(--space-30) !important;
 	}
 	.cv\:self-start {
 		align-self: flex-start !important;
@@ -16102,8 +16114,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:py-3\.5 {
 		padding-block: calc(var(--cv-spacing) * 3.5) !important;
 	}
-	.cv\:py-\[3px\] {
-		padding-block: 3px !important;
+	.cv\:py-\[var\(--space-1\)\] {
+		padding-block: var(--space-1) !important;
 	}
 	.cv\:ps-1 {
 		padding-inline-start: var(--cv-spacing) !important;
@@ -16114,8 +16126,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:ps-4 {
 		padding-inline-start: calc(var(--cv-spacing) * 4) !important;
 	}
-	.cv\:ps-\[31px\] {
-		padding-inline-start: 31px !important;
+	.cv\:ps-\[var\(--space-8\)\] {
+		padding-inline-start: var(--space-8) !important;
 	}
 	.cv\:pe-1\.5 {
 		padding-inline-end: calc(var(--cv-spacing) * 1.5) !important;
@@ -16123,8 +16135,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:pe-3 {
 		padding-inline-end: calc(var(--cv-spacing) * 3) !important;
 	}
-	.cv\:pe-\[18px\] {
-		padding-inline-end: 18px !important;
+	.cv\:pe-\[var\(--space-4-5\)\] {
+		padding-inline-end: var(--space-4-5) !important;
 	}
 	.cv\:pt-2 {
 		padding-top: calc(var(--cv-spacing) * 2) !important;
@@ -16609,10 +16621,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-ws-crumb {
 	height: 28px;
-	padding: 0 8px;
+	padding: var(--space-none) var(--space-2);
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: var(--space-1-5);
 	white-space: nowrap;
 	min-width: 0;
 	font-family: var(--font-ui);
@@ -16646,7 +16658,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	background: var(--accent-soft);
 }
 .wg-studio.wg-shell.is-flat {
-	padding: 0;
+	padding: var(--space-none);
 }
 .wg-pane {
 	--corner-start: 0px;
@@ -16724,7 +16736,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 }
 .wg-shell-panel > .wg-studio-sidebar {
-	padding: 0;
+	padding: var(--space-none);
 }
 .wg-shell-plate {
 	position: relative;
@@ -16799,7 +16811,7 @@ body:has([data-browser-pages-live]),
 	flex: 1;
 	flex-direction: column;
 	min-height: 0;
-	padding: 0;
+	padding: var(--space-none);
 }
 .wg-plate-head {
 	position: relative;
@@ -16822,7 +16834,7 @@ body:has([data-browser-pages-live]),
 	align-items: center;
 	box-sizing: border-box;
 	height: 100%;
-	padding: 0 var(--space-3) 0 var(--pad);
+	padding: var(--space-none) var(--space-3) var(--space-none) var(--pad);
 	gap: var(--space-1);
 	transition:
 		padding-left var(--shell-slide),
@@ -16834,7 +16846,7 @@ body:has([data-browser-pages-live]),
 .wg-plate-head-row.wg-root {
 	container-type: inline-size;
 	width: auto;
-	padding-top: 0;
+	padding-top: var(--space-none);
 	color: inherit;
 	font-family: inherit;
 }
@@ -16859,8 +16871,8 @@ body:has([data-browser-pages-live]),
 	box-sizing: border-box;
 	min-width: 0;
 	height: var(--h-sm);
-	margin: 0 0 0 calc(-1 * var(--space-1-5));
-	padding: 0 var(--space-1-5);
+	margin: var(--space-none) var(--space-none) var(--space-none) calc(-1 * var(--space-1-5));
+	padding: var(--space-none) var(--space-1-5);
 	gap: var(--space-1);
 	font: inherit;
 	white-space: nowrap;
@@ -16910,7 +16922,7 @@ body:has([data-browser-pages-live]),
 }
 .wg-app-crumb .wg-plate-crumb + .wg-plate-crumb-slash + .wg-plate-crumb,
 .wg-app-crumb .wg-plate-crumb:has(+ .wg-plate-crumb-slash) {
-	padding: 0 var(--space-1);
+	padding: var(--space-none) var(--space-1);
 }
 .wg-app-crumb .wg-plate-crumb:last-child {
 	min-width: 0;
@@ -16989,13 +17001,13 @@ body:has([data-browser-pages-live]),
 }
 .wg-pane-edge[data-pane-edge-dir="row"] {
 	width: 9px;
-	margin-left: -4.5px;
+	margin-left: calc(var(--space-1) * -1);
 	background: linear-gradient(transparent, var(--divider) calc(2 * var(--space-8))) center / 1px 100% no-repeat;
 	cursor: col-resize;
 }
 .wg-pane-edge[data-pane-edge-dir="column"] {
 	height: 9px;
-	margin-top: -4.5px;
+	margin-top: calc(var(--space-1) * -1);
 	background: linear-gradient(var(--divider), var(--divider)) center / 100% 1px no-repeat;
 	cursor: row-resize;
 }
@@ -17035,11 +17047,11 @@ body:has([data-browser-pages-live]),
 	text-align: center;
 }
 .wg-app-missing-said {
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text);
 }
 .wg-app-missing-problem {
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text-3);
 }
 .wg-cm-layer,
@@ -17070,8 +17082,8 @@ body:has([data-browser-pages-live]),
 	color: inherit;
 	border: 0;
 	background: none;
-	margin: 0;
-	padding: 0;
+	margin: var(--space-none);
+	padding: var(--space-none);
 	cursor: pointer;
 	text-align: left;
 }
@@ -17102,12 +17114,12 @@ body:has([data-browser-pages-live]),
 	.wg-cm-column,
 	.wg-cm-foot {
 		width: auto;
-		margin-inline: 20px;
+		margin-inline: var(--space-5);
 	}
 }
 .wg-cm-profile {
 	height: 20px;
-	padding: 0 var(--cm-inset);
+	padding: var(--space-none) var(--cm-inset);
 	font-size: var(--fs-13);
 	line-height: 20px;
 	color: var(--text-3);
@@ -17121,7 +17133,7 @@ body:has([data-browser-pages-live]),
 	display: flex;
 	align-items: center;
 	gap: var(--cm-inset);
-	padding: 0 var(--cm-inset);
+	padding: var(--space-none) var(--cm-inset);
 	font-size: var(--fs-20);
 	color: var(--text);
 }
@@ -17157,14 +17169,14 @@ body:has([data-browser-pages-live]),
 	position: absolute;
 	inset: 0;
 	width: 100%;
-	padding: 0;
-	margin: 0;
+	padding: var(--space-none);
+	margin: var(--space-none);
 }
 .wg-cm-token {
 	flex: none;
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: var(--space-1-5);
 	font-size: var(--fs-13);
 	color: var(--text-3);
 	white-space: nowrap;
@@ -17180,14 +17192,14 @@ body:has([data-browser-pages-live]),
 	flex: none;
 	display: flex;
 	align-items: center;
-	gap: 28px;
+	gap: var(--space-7);
 	height: 30px;
-	padding: 0 var(--cm-inset);
+	padding: var(--space-none) var(--cm-inset);
 }
 .wg-cm-mode {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: var(--space-1-5);
 	font-size: var(--fs-13);
 }
 .wg-cm-mode-count,
@@ -17211,7 +17223,7 @@ body:has([data-browser-pages-live]),
 }
 .wg-cm-label {
 	flex: none;
-	padding: 18px var(--cm-inset) 6px;
+	padding: var(--space-4-5) var(--cm-inset) var(--space-1-5);
 	font-size: var(--fs-12);
 	line-height: 16px;
 	color: var(--text-3);
@@ -17221,7 +17233,7 @@ body:has([data-browser-pages-live]),
 	height: 30px;
 	display: flex;
 	align-items: center;
-	padding: 0 var(--cm-inset);
+	padding: var(--space-none) var(--cm-inset);
 	color: var(--text-3);
 }
 .wg-cm-row {
@@ -17230,8 +17242,8 @@ body:has([data-browser-pages-live]),
 	flex: none;
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 0 var(--cm-inset);
+	gap: var(--space-2-5);
+	padding: var(--space-none) var(--cm-inset);
 	font-size: var(--fs-13);
 }
 .wg-cm-icon {
@@ -17283,15 +17295,15 @@ body:has([data-browser-pages-live]),
 	flex: 1;
 	min-width: 0;
 	height: 24px;
-	padding: 0;
+	padding: var(--space-none);
 	font: inherit;
 }
 .wg-cm-foot {
 	flex: none;
 	display: flex;
 	align-items: center;
-	gap: 28px;
-	padding: 24px var(--cm-inset);
+	gap: var(--space-7);
+	padding: var(--space-6) var(--cm-inset);
 	font-size: var(--fs-13);
 	color: var(--text-3);
 	white-space: nowrap;
@@ -17300,7 +17312,7 @@ body:has([data-browser-pages-live]),
 .wg-cm-hint {
 	display: inline-flex;
 	align-items: baseline;
-	gap: 6px;
+	gap: var(--space-1-5);
 }
 .wg-cm-kbd {
 	font-family: inherit;
@@ -17321,14 +17333,14 @@ body:has([data-browser-pages-live]),
 	right: 20px;
 	bottom: 64px;
 	width: 250px;
-	padding: 4px;
+	padding: var(--space-1);
 	display: flex;
 	flex-direction: column;
 	background: var(--plate);
 	border: 1px solid var(--line-strong);
 }
 .wg-cm-actions-head {
-	padding: 6px 8px 4px;
+	padding: var(--space-1-5) var(--space-2) var(--space-1);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -17340,8 +17352,8 @@ body:has([data-browser-pages-live]),
 	height: 32px;
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	padding: 0 8px;
+	gap: var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font-size: var(--fs-13);
 }
 .wg-cm-action-said {
@@ -17352,20 +17364,20 @@ body:has([data-browser-pages-live]),
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-0-5);
-	padding: 0 var(--cm-inset) 4px;
+	padding: var(--space-none) var(--cm-inset) var(--space-1);
 }
 .wg-cm-carried {
 	height: 24px;
 	flex: none;
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: var(--space-1-5);
 	font-size: var(--fs-13);
 }
 .wg-cm-carried-stack {
 	display: inline-flex;
 	align-items: center;
-	gap: 2px;
+	gap: var(--space-0-5);
 }
 .wg-cm-carried-kind {
 	width: 16px;
@@ -17404,18 +17416,18 @@ body:has(.wg-cm-layer) {
 	bottom: var(--space-4);
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: var(--space-0-5);
 	font-family: var(--font-ui);
 	font-size: var(--fs-12);
 	line-height: 24px;
 	color: var(--text-3);
 }
 .sumi-home-switch-label {
-	margin-right: 8px;
+	margin-right: var(--space-2);
 }
 .sumi-home-switch-option {
 	height: 24px;
-	padding: 0 8px;
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	cursor: pointer;
 }
@@ -17431,12 +17443,12 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: 20px;
-	padding: 0 var(--cm-inset) 20px;
+	gap: var(--space-5);
+	padding: var(--space-none) var(--cm-inset) var(--space-5);
 	color: var(--text);
 }
 .sumi-launcher-question {
-	margin: 0;
+	margin: var(--space-none);
 	font: var(--fw-medium) 22px / 1.3 var(--font-ui);
 	letter-spacing: -0.01em;
 	color: var(--text);
@@ -17448,7 +17460,7 @@ body:has(.wg-cm-layer) {
 	padding-bottom: var(--space-6);
 }
 .sumi-launcher-label {
-	padding: 24px var(--cm-inset) 8px;
+	padding: var(--space-6) var(--cm-inset) var(--space-2);
 	font-size: var(--fs-12);
 	line-height: 16px;
 	color: var(--text-3);
@@ -17457,7 +17469,7 @@ body:has(.wg-cm-layer) {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
 	gap: var(--space-4);
-	padding: 0 var(--cm-inset);
+	padding: var(--space-none) var(--cm-inset);
 }
 .sumi-launcher-setup {
 	display: flex;
@@ -17468,14 +17480,14 @@ body:has(.wg-cm-layer) {
 .sumi-launcher-thumb {
 	height: 92px;
 	display: flex;
-	gap: 2px;
+	gap: var(--space-0-5);
 }
 .sumi-launcher-column {
 	flex: 1.6;
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: var(--space-0-5);
 }
 .sumi-launcher-pane {
 	flex: 1;
@@ -17488,7 +17500,7 @@ body:has(.wg-cm-layer) {
 	transition: background-color var(--dur-hover) var(--ease-emphasized);
 }
 .sumi-launcher-setup-name {
-	margin-top: 8px;
+	margin-top: var(--space-2);
 	font-size: var(--fs-13);
 	color: var(--text);
 }
@@ -17502,7 +17514,7 @@ body:has(.wg-cm-layer) {
 .sumi-launcher-apps {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4px;
+	gap: var(--space-1);
 }
 .sumi-launcher-app {
 	width: 88px;
@@ -17511,13 +17523,13 @@ body:has(.wg-cm-layer) {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 8px;
+	gap: var(--space-2);
 	font-size: var(--fs-13);
 	text-align: center;
 }
 .sumi-launcher-app-name {
 	max-width: 100%;
-	padding: 0 4px;
+	padding: var(--space-none) var(--space-1);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -17538,7 +17550,7 @@ body:has(.wg-cm-layer) {
 	flex-direction: column;
 	height: 100%;
 	min-height: 0;
-	gap: 8px;
+	gap: var(--space-2);
 	-webkit-user-select: none;
 	user-select: none;
 }
@@ -17559,8 +17571,8 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-head {
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	padding: var(--ai-gutter) var(--ai-gutter) 0;
+	gap: var(--space-2);
+	padding: var(--ai-gutter) var(--ai-gutter) var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-title {
 	font-size: var(--font-ui-small, 14px);
@@ -17589,11 +17601,11 @@ body:has(.wg-cm-layer) {
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
-	padding: 4px var(--ai-gutter);
+	padding: var(--space-1) var(--ai-gutter);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-scroll-content {
-	gap: 12px;
-	padding: 0;
+	gap: var(--space-3);
+	padding: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-row {
 	gap: inherit;
@@ -17601,7 +17613,7 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: var(--space-1-5);
 	align-items: flex-start;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-mine {
@@ -17620,7 +17632,7 @@ body:has(.wg-cm-layer) {
 	right: 0;
 	display: flex;
 	align-items: center;
-	gap: var(--space-0-5, 4px);
+	gap: var(--space-0-5);
 	height: 24px;
 	white-space: nowrap;
 	-webkit-user-select: none;
@@ -17635,7 +17647,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-mine-time::before {
 	content: "·";
-	margin-right: var(--space-0-5, 4px);
+	margin-right: var(--space-0-5);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-mine-line .wg-studio-ai-round {
 	width: 24px;
@@ -17646,7 +17658,7 @@ body:has(.wg-cm-layer) {
 	padding-block-end: var(--studio-ai-hover-line-room);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-answer .wg-studio-ai-said.is-markdown > :last-child > :last-child {
-	margin-bottom: 0;
+	margin-bottom: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-answer-line {
 	position: absolute;
@@ -17654,7 +17666,7 @@ body:has(.wg-cm-layer) {
 	left: 0;
 	display: flex;
 	align-items: center;
-	gap: var(--space-0-5, 4px);
+	gap: var(--space-0-5);
 	height: 24px;
 	white-space: nowrap;
 	-webkit-user-select: none;
@@ -17670,13 +17682,13 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-answer-line .wg-studio-ai-round {
 	width: 24px;
 	height: 24px;
-	margin-inline: -5px;
+	margin-inline: calc(var(--space-1) * -1);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-pictures {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: flex-end;
-	gap: var(--space-1-5, 6px);
+	gap: var(--space-1-5);
 	max-width: min(560px, 100%);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-picture {
@@ -17685,7 +17697,7 @@ body:has(.wg-cm-layer) {
 	height: 140px;
 	min-width: 56px;
 	max-width: 240px;
-	padding: 0;
+	padding: var(--space-none);
 	overflow: hidden;
 	cursor: zoom-in;
 }
@@ -17694,9 +17706,9 @@ body:has(.wg-cm-layer) {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: var(--space-1-5, 6px);
+	gap: var(--space-1-5);
 	width: 140px;
-	padding: 0 var(--space-3, 12px);
+	padding: var(--space-none) var(--space-3);
 	box-sizing: border-box;
 	cursor: default;
 }
@@ -17719,7 +17731,7 @@ body:has(.wg-cm-layer) {
 	position: absolute;
 	inset-inline: 6px;
 	bottom: 6px;
-	padding: 4px 6px;
+	padding: var(--space-1) var(--space-1-5);
 	border-radius: var(--control-corner);
 	background: var(--overlay, var(--background));
 	-webkit-backdrop-filter: var(--blur-pop, none);
@@ -17738,7 +17750,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said {
 	max-width: 92%;
-	padding: 0 4px;
+	padding: var(--space-none) var(--space-1);
 	background: none;
 	color: var(--foreground);
 	font-size: var(--font-ui-small, 14px);
@@ -17752,7 +17764,7 @@ body:has(.wg-cm-layer) {
 	white-space: normal;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-tail {
-	margin: 0;
+	margin: var(--space-none);
 	font-size: var(--font-ui-small, 14px);
 	line-height: 1.55;
 	color: var(--foreground);
@@ -17760,53 +17772,53 @@ body:has(.wg-cm-layer) {
 	overflow-wrap: anywhere;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown > :first-child {
-	margin-top: 0;
+	margin-top: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown > :last-child {
-	margin-bottom: 0;
+	margin-bottom: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown p {
-	margin: 0 0 8px;
+	margin: var(--space-none) var(--space-none) var(--space-2);
 	line-height: 1.55;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown :is(h1, h2, h3, h4, h5, h6) {
-	margin: 14px 0 6px;
+	margin: var(--space-3-5) var(--space-none) var(--space-1-5);
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
 	line-height: 1.3;
 	color: var(--foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown :is(ul, ol) {
-	margin: 0 0 8px;
-	padding-left: 20px;
+	margin: var(--space-none) var(--space-none) var(--space-2);
+	padding-left: var(--space-5);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown li {
-	margin: 2px 0;
+	margin: var(--space-0-5) var(--space-none);
 	line-height: 1.5;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown pre {
-	margin: 0 0 8px;
-	padding: 10px 12px;
+	margin: var(--space-none) var(--space-none) var(--space-2);
+	padding: var(--space-2-5) var(--space-3);
 	border-radius: var(--item);
 	background: var(--fill);
 	overflow-x: auto;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown :not(pre) > code {
-	padding: 1px 5px;
+	padding: var(--space-px) var(--space-1);
 	border-radius: var(--control-corner);
 	background: var(--fill);
 	font-size: var(--font-ui-smaller, 12px);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown blockquote {
-	margin: 0 0 8px;
-	padding: 2px 0 2px 12px;
+	margin: var(--space-none) var(--space-none) var(--space-2);
+	padding: var(--space-0-5) var(--space-none) var(--space-0-5) var(--space-3);
 	border-left: 2px solid var(--card-edge);
 	color: var(--muted-foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown table {
 	display: block;
 	width: 100%;
-	margin: 0 0 8px;
+	margin: var(--space-none) var(--space-none) var(--space-2);
 	overflow-x: auto;
 	font-size: var(--font-ui-smaller, 12px);
 }
@@ -17815,7 +17827,7 @@ body:has(.wg-cm-layer) {
 	border-radius: var(--item);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown hr {
-	margin: 12px 0;
+	margin: var(--space-3) var(--space-none);
 	border: none;
 	border-top: 1px solid var(--card-edge);
 }
@@ -17823,7 +17835,7 @@ body:has(.wg-cm-layer) {
 	font-size: var(--font-ui-smaller, 12px);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
-	padding: 10px 12px;
+	padding: var(--space-2-5) var(--space-3);
 	background: var(--fill);
 	box-shadow: none;
 }
@@ -17836,7 +17848,7 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: var(--space-0-5);
 	width: 100%;
 	min-width: 0;
 }
@@ -17847,7 +17859,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-2);
 	max-width: 100%;
 	height: var(--h-row);
-	padding: 0;
+	padding: var(--space-none);
 	font: var(--fw-regular) var(--fs-13) var(--font-ui);
 	text-align: start;
 	cursor: pointer;
@@ -17884,7 +17896,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-round {
 	width: 32px;
-	padding: 0;
+	padding: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-round.is-button {
 	cursor: pointer;
@@ -17892,25 +17904,25 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-list {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: var(--space-0-5);
 	width: 100%;
 	min-width: 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: var(--space-1);
 	min-width: 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-head {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	gap: 8px;
+	gap: var(--space-2);
 	width: 100%;
 	height: 28px;
 	min-width: 0;
-	padding: 0 4px;
+	padding: var(--space-none) var(--space-1);
 	font: 400 13px var(--font-sans, inherit);
 	text-align: start;
 	cursor: pointer;
@@ -17936,7 +17948,7 @@ body:has(.wg-cm-layer) {
 	flex: none;
 	align-items: center;
 	height: 26px;
-	padding: 0 10px;
+	padding: var(--space-none) var(--space-2-5);
 	border-radius: var(--control-corner);
 	font-size: 12px;
 	white-space: nowrap;
@@ -17952,20 +17964,20 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-open {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	margin-left: 28px;
-	padding: 10px 12px;
+	gap: var(--space-2);
+	margin-left: var(--space-7);
+	padding: var(--space-2-5) var(--space-3);
 	border-radius: var(--control-corner);
 	background: var(--group-fill);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-open:has(> .wg-studio-ai-diff) {
-	padding: 0;
+	padding: var(--space-none);
 	overflow: hidden;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-part {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: var(--space-0-5);
 	min-width: 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-part-label {
@@ -17975,8 +17987,8 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-head {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 12px 18px 10px;
+	gap: var(--space-2-5);
+	padding: var(--space-3) var(--space-4-5) var(--space-2-5);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-file {
 	flex-grow: 1;
@@ -17988,14 +18000,14 @@ body:has(.wg-cm-layer) {
 	white-space: nowrap;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-lines {
-	padding-bottom: 10px;
+	padding-bottom: var(--space-2-5);
 	overflow-x: auto;
 	font-family: var(--font-mono);
 	font-size: 12px;
 	line-height: 1.75;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-line {
-	padding: 0 18px;
+	padding: var(--space-none) var(--space-4-5);
 	white-space: pre;
 	color: var(--muted-foreground);
 }
@@ -18008,22 +18020,22 @@ body:has(.wg-cm-layer) {
 	color: var(--error-ink);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-pill {
-	padding: 0 12px;
+	padding: var(--space-none) var(--space-3);
 	font-family: inherit;
 	font-size: 12px;
 	cursor: pointer;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-pill.is-l {
 	height: 52px;
-	padding: 0 20px;
+	padding: var(--space-none) var(--space-5);
 	font-size: 13px;
 	font-weight: var(--font-medium, 500);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-card {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 6px;
+	gap: var(--space-3);
+	padding: var(--space-1-5);
 	border-radius: var(--plate-radius);
 	background: var(--error-wash);
 }
@@ -18041,7 +18053,7 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
-	gap: 2px;
+	gap: var(--space-0-5);
 	min-width: 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-title {
@@ -18073,11 +18085,11 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-title {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
-	padding: 0 var(--size-4-1, 4px);
+	gap: var(--space-0-5);
+	padding: var(--space-none) var(--space-1);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-title h3 {
-	margin: 0;
+	margin: var(--space-none);
 	font-size: var(--h3-size, 1.25em);
 	font-weight: var(--font-bold, 700);
 	color: var(--foreground);
@@ -18090,10 +18102,10 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-group {
 	display: flex;
 	flex-direction: column;
-	gap: var(--size-4-2, 8px);
+	gap: var(--space-2);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-label {
-	padding: 0 var(--size-4-1, 4px);
+	padding: var(--space-none) var(--space-1);
 	font-size: var(--text-s);
 	font-weight: var(--font-semibold, 600);
 	color: var(--muted-foreground);
@@ -18101,10 +18113,10 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-label.is-fold {
 	display: inline-flex;
 	align-items: center;
-	gap: var(--size-4-1, 4px);
+	gap: var(--space-1);
 	align-self: flex-start;
 	height: auto;
-	margin: 0;
+	margin: var(--space-none);
 	border: 0;
 	background: none;
 	box-shadow: none;
@@ -18131,7 +18143,7 @@ body:has(.wg-cm-layer) {
 	flex: 1;
 	min-width: 0;
 	flex-direction: column;
-	gap: 1px;
+	gap: var(--space-px);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-name {
 	font-size: var(--text-l);
@@ -18140,7 +18152,7 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-buttons {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: var(--size-4-2, 8px);
+	gap: var(--space-2);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-target.is-attached {
 	background: var(--accent-wash);
@@ -18149,15 +18161,15 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-attached-clear {
 	display: flex;
-	padding: 2px;
+	padding: var(--space-0-5);
 	cursor: pointer;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: 8px;
-	padding: 10px 12px;
+	gap: var(--space-2);
+	padding: var(--space-2-5) var(--space-3);
 	border-radius: var(--item);
 	background: var(--error-wash);
 }
@@ -18165,8 +18177,8 @@ body:has(.wg-cm-layer) {
 	flex: none;
 	width: auto;
 	max-width: none;
-	margin: 0 max(var(--ai-gutter), calc((100% - var(--studio-chat-content, 100%)) / 2));
-	padding: 6px 10px;
+	margin: var(--space-none) max(var(--ai-gutter), calc((100% - var(--studio-chat-content, 100%)) / 2));
+	padding: var(--space-1-5) var(--space-2-5);
 	border-radius: var(--item);
 	font-size: var(--font-ui-smaller, 12px);
 	color: var(--error-ink);
@@ -18177,19 +18189,19 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 8px;
-	padding: 24px 16px;
+	gap: var(--space-2);
+	padding: var(--space-6) var(--space-4);
 	text-align: center;
 	color: var(--muted-foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-empty-lead {
-	margin: 0;
+	margin: var(--space-none);
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
 	color: var(--foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-empty-said {
-	margin: 0;
+	margin: var(--space-none);
 	font-size: var(--font-ui-smaller, 12px);
 	line-height: 1.5;
 }
@@ -18197,7 +18209,7 @@ body:has(.wg-cm-layer) {
 	min-height: 24px;
 	max-height: 120px;
 	resize: none;
-	padding: 0 6px 0 0;
+	padding: var(--space-none) var(--space-1-5) var(--space-none) var(--space-none);
 	font-family: inherit;
 	font-size: var(--font-ui-small, 14px);
 	line-height: 1.6;
@@ -18206,9 +18218,9 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-target {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
+	gap: var(--space-1);
 	min-width: 0;
-	padding: 3px 8px;
+	padding: var(--space-1) var(--space-2);
 	border-radius: var(--control-corner);
 	background: var(--fill);
 	color: var(--muted-foreground);
@@ -18222,8 +18234,8 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-jobs-app {
 	display: flex;
 	align-items: center;
-	gap: var(--size-4-2, 8px);
-	padding: var(--size-4-2, 8px) var(--size-4-3, 12px);
+	gap: var(--space-2);
+	padding: var(--space-2) var(--space-3);
 	border-radius: var(--plate-radius);
 	background: var(--group-fill);
 	font-size: var(--text-s);
@@ -18244,11 +18256,11 @@ body:has(.wg-cm-layer) {
 .wg-studio-ai-host {
 	height: 100%;
 	min-height: 0;
-	padding: 0;
+	padding: var(--space-none);
 	background: transparent;
 }
 .wg-studio-ai-quiet {
-	margin: 0;
+	margin: var(--space-none);
 	padding: var(--studio-edge);
 	font-size: var(--text-s);
 	color: var(--muted-foreground);
@@ -18259,10 +18271,10 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai-scroll {
 	--studio-ai-end-room: 28px;
 	overflow-x: hidden;
-	padding: calc(14px + var(--corner-top, 0px)) 24px var(--studio-ai-end-room);
+	padding: calc(var(--space-3-5) + var(--corner-top, 0px)) var(--space-6) var(--studio-ai-end-room);
 }
 .wg-chat-app .wg-studio-ai-scroll-content {
-	gap: 14px;
+	gap: var(--space-3-5);
 }
 .wg-chat-app .wg-studio-ai-row {
 	--studio-ai-line-overhang: 12px;
@@ -18270,62 +18282,62 @@ body:has(.wg-cm-layer) {
 	margin-block-end: calc(-1 * var(--studio-ai-line-overhang));
 }
 .wg-chat-app .wg-studio-ai-said {
-	padding: 0;
+	padding: var(--space-none);
 	color: var(--text);
 	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
 }
 .wg-chat-app .wg-studio-ai-turn {
-	gap: 14px;
+	gap: var(--space-3-5);
 }
 .wg-chat-app .wg-studio-ai-turn.is-mine {
 	gap: var(--space-1-5);
 }
 .wg-chat-app .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
 	max-width: 80%;
-	padding: 8px 12px;
+	padding: var(--space-2) var(--space-3);
 	border-radius: var(--plate-radius);
 	background: var(--soft);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(h1, h2) {
-	margin: 16px 0 8px;
+	margin: var(--space-4) var(--space-none) var(--space-2);
 	font-size: 22px;
 	font-weight: var(--font-semibold, 600);
 	letter-spacing: -0.02em;
 	line-height: 1.2;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(h3, h4, h5, h6) {
-	margin: 14px 0 6px;
+	margin: var(--space-3-5) var(--space-none) var(--space-1-5);
 	font-size: 16px;
 	font-weight: var(--font-semibold, 600);
 	line-height: 1.3;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :not(pre) > code {
-	padding: 1px 4px;
+	padding: var(--space-px) var(--space-1);
 	background: var(--soft);
 	font-size: 12.5px;
 	-webkit-box-decoration-break: clone;
 	box-decoration-break: clone;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown blockquote {
-	padding: 12px 16px;
+	padding: var(--space-3) var(--space-4);
 	border-left: none;
 	border-radius: var(--control-corner);
 	background: var(--highlight-wash);
 	color: var(--highlight-ink);
 }
 .wg-chat-app .wg-studio-ai-failure {
-	padding: 12px 18px;
+	padding: var(--space-3) var(--space-4-5);
 	border-radius: var(--item);
 }
 .wg-chat-app .wg-studio-ai-failure.is-quiet {
 	border-radius: var(--item);
 }
 .wg-chat-app .wg-studio-ai-spec-title {
-	padding: 12px 12px 6px;
+	padding: var(--space-3) var(--space-3) var(--space-1-5);
 }
 .wg-chat-app .wg-studio-ai-target {
 	height: 32px;
-	padding: 0 12px;
+	padding: var(--space-none) var(--space-3);
 	background: var(--raise);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-composer {
@@ -18333,7 +18345,7 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex: none;
 	flex-direction: column;
-	padding: 0;
+	padding: var(--space-none);
 	font-family: var(--font-ui);
 	--chat-gutter: max(var(--space-6), calc(50% - var(--read-w) / 2));
 }
@@ -18346,7 +18358,7 @@ body:has(.wg-cm-layer) {
 	box-sizing: border-box;
 	flex-direction: column;
 	gap: var(--space-2);
-	margin: 0 var(--chat-gutter) var(--space-1);
+	margin: var(--space-none) var(--chat-gutter) var(--space-1);
 	padding: var(--space-3);
 	border-radius: var(--plate-radius);
 	isolation: isolate;
@@ -18397,7 +18409,7 @@ body:has(.wg-cm-layer) {
 	min-width: 0;
 	min-height: 20px;
 	max-height: 200px;
-	padding: 0;
+	padding: var(--space-none);
 	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box::placeholder {
@@ -18413,14 +18425,14 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar {
 	display: flex;
 	align-items: center;
-	gap: 0;
+	gap: var(--space-none);
 	margin-top: auto;
 	min-width: 0;
 	white-space: nowrap;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field:has(.sumi-slash-menu:not([aria-hidden="true"])) {
-	border-start-start-radius: 0;
-	border-start-end-radius: 0;
+	border-start-start-radius: var(--radius-none);
+	border-start-end-radius: var(--radius-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-under .sumi-composer-expand-toggle {
 	margin-inline-start: auto;
@@ -18437,9 +18449,9 @@ body:has(.wg-cm-layer) {
 	position: relative;
 	display: flex;
 	align-items: center;
-	gap: 0;
+	gap: var(--space-none);
 	min-width: 0;
-	margin: 0 var(--chat-gutter) var(--space-3);
+	margin: var(--space-none) var(--chat-gutter) var(--space-3);
 	white-space: nowrap;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-bar-space,
@@ -18454,9 +18466,9 @@ body:has(.wg-cm-layer) {
 	justify-content: center;
 	width: var(--h-sm);
 	height: var(--h-sm);
-	padding: 0;
+	padding: var(--space-none);
 	cursor: pointer;
-	margin: 0 var(--space-1) 0 0;
+	margin: var(--space-none) var(--space-1) var(--space-none) var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-chevron {
 	display: inline-flex;
@@ -18469,7 +18481,7 @@ body:has(.wg-cm-layer) {
 	justify-content: center;
 	width: var(--h-sm);
 	height: var(--h-sm);
-	padding: 0;
+	padding: var(--space-none);
 	cursor: pointer;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle {
@@ -18483,7 +18495,7 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-send-play {
 	width: 9px;
 	height: 10px;
-	margin-left: 2px;
+	margin-left: var(--space-0-5);
 	background: currentColor;
 	clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
@@ -18491,13 +18503,13 @@ body:has(.wg-cm-layer) {
 	display: contents;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-strip > :first-child {
-	margin-inline-start: 0;
+	margin-inline-start: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar .sumi-usage-button {
 	justify-content: center;
 	width: var(--h-sm);
 	margin-right: var(--space-1);
-	padding: 0;
+	padding: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments {
 	position: relative;
@@ -18512,7 +18524,7 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	gap: var(--space-1);
 	margin-inline: calc(-1 * var(--space-3));
-	padding: 2px var(--space-3);
+	padding: var(--space-0-5) var(--space-3);
 	overflow-x: auto;
 	scroll-padding-inline: var(--space-3);
 	scrollbar-width: none;
@@ -18541,9 +18553,9 @@ body:has(.wg-cm-layer) {
 	outline: none;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-card.is-file {
-	gap: 10px;
+	gap: var(--space-2-5);
 	width: 184px;
-	padding: 0 var(--space-3);
+	padding: var(--space-none) var(--space-3);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image {
 	width: 56px;
@@ -18561,7 +18573,7 @@ body:has(.wg-cm-layer) {
 	display: block;
 	width: 100%;
 	height: 100%;
-	padding: 0;
+	padding: var(--space-none);
 	cursor: zoom-in;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-card-glyph {
@@ -18598,7 +18610,7 @@ body:has(.wg-cm-layer) {
 	justify-content: center;
 	width: 16px;
 	height: 16px;
-	padding: 0;
+	padding: var(--space-none);
 	cursor: pointer;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-card-remove svg {
@@ -18637,16 +18649,16 @@ body:has(.wg-cm-layer) {
 .wg-studio-ai-menu-body {
 	display: flex;
 	flex-direction: column;
-	gap: 1px;
+	gap: var(--space-px);
 	min-width: 0;
 }
 .wg-studio-ai-menu-label {
-	padding: 6px var(--space-2) var(--space-1);
+	padding: var(--space-1-5) var(--space-2) var(--space-1);
 	color: var(--text-2);
 	font: var(--fw-regular) var(--fs-12) / 1.4 var(--font-ui);
 }
 .wg-studio-ai-menu-label.is-note {
-	padding: var(--space-1) var(--space-2) 6px;
+	padding: var(--space-1) var(--space-2) var(--space-1-5);
 	color: var(--text-3);
 	white-space: normal;
 }
@@ -18703,14 +18715,14 @@ body:has(.wg-cm-layer) {
 	box-sizing: border-box;
 	flex-direction: column;
 	align-items: center;
-	gap: 20px;
+	gap: var(--space-5);
 	width: 100%;
-	margin: 0 auto;
-	padding: 0 var(--space-6) 28px;
+	margin: var(--space-none) auto;
+	padding: var(--space-none) var(--space-6) var(--space-7);
 	color: var(--text);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-greet {
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text);
 	font: var(--fw-medium) 22px / 1.3 var(--font-ui);
 	letter-spacing: -0.01em;
@@ -18719,7 +18731,7 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai.is-empty {
 	--chat-gutter: max(var(--space-6), calc(50% - var(--read-w) / 2));
-	gap: 0;
+	gap: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai.is-empty > .wg-studio-ai-scroll-frame {
 	flex: none;
@@ -18728,7 +18740,7 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai.is-empty .wg-studio-ai-scroll {
 	flex: none;
 	overflow: visible;
-	padding-bottom: 0;
+	padding-bottom: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai.is-empty .wg-studio-ai-composer {
 	margin-bottom: auto;
@@ -18739,13 +18751,13 @@ body:has(.wg-cm-layer) {
 	box-shadow: 0 0 0 var(--studio-edge) var(--group-fill);
 }
 .wg-chat-app .wg-studio-ai-head {
-	gap: 10px;
+	gap: var(--space-2-5);
 	min-height: 48px;
-	padding-inline-start: 6px;
+	padding-inline-start: var(--space-1-5);
 }
 .wg-chat-app .wg-studio-ai-head > .wg-mascot {
 	flex: none;
-	margin-block-end: 7px;
+	margin-block-end: var(--space-2);
 }
 .wg-chat-app .wg-studio-ai-title {
 	overflow: hidden;
@@ -18757,14 +18769,14 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(ul, ol) {
 	display: block;
-	margin: 0;
-	padding-left: 0;
+	margin: var(--space-none);
+	padding-left: var(--space-none);
 	line-height: 1.65;
 	list-style: none;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(ul, ol) > li {
 	position: relative;
-	padding-left: 26px;
+	padding-left: var(--space-6-5);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown ol {
 	counter-reset: wg-item;
@@ -18784,16 +18796,16 @@ body:has(.wg-cm-layer) {
 	left: 0;
 	width: 4px;
 	height: 5px;
-	margin-top: -2.5px;
+	margin-top: calc(var(--space-0-5) * -1);
 	border-radius: var(--round);
 	background: var(--text-3);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown li :is(ul, ol) {
-	margin-top: 0;
+	margin-top: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown li {
 	display: block;
-	margin: 0;
+	margin: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown p {
 	line-height: 1.6;
@@ -18808,8 +18820,8 @@ body:has(.wg-cm-layer) {
 }
 .wg-mark-meter {
 	display: inline-flex;
-	gap: 2px;
-	margin: 0 6px;
+	gap: var(--space-0-5);
+	margin: var(--space-none) var(--space-1-5);
 	vertical-align: -1px;
 }
 .wg-mark-meter i {
@@ -18829,7 +18841,7 @@ body:has(.wg-cm-layer) {
 	display: inline-block;
 	width: 120px;
 	height: 6px;
-	margin: 0 8px;
+	margin: var(--space-none) var(--space-2);
 	background: var(--soft);
 	vertical-align: 2px;
 }
@@ -18843,9 +18855,9 @@ body:has(.wg-cm-layer) {
 .wg-mark-trend {
 	display: inline-flex;
 	align-items: flex-end;
-	gap: 2px;
+	gap: var(--space-0-5);
 	height: 14px;
-	margin: 0 6px;
+	margin: var(--space-none) var(--space-1-5);
 	vertical-align: -2px;
 }
 .wg-mark-trend i {
@@ -18859,7 +18871,7 @@ body:has(.wg-cm-layer) {
 	display: inline-block;
 	width: 7px;
 	height: 7px;
-	margin-right: 8px;
+	margin-right: var(--space-2);
 	vertical-align: 1px;
 }
 .wg-mark-status.is-ok {
@@ -18878,7 +18890,7 @@ body:has(.wg-cm-layer) {
 	box-shadow: inset 0 0 0 1px var(--text-3);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown ul > li:has(> .wg-mark-status:first-child) {
-	padding-left: 0;
+	padding-left: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown ul > li:has(> .wg-mark-status:first-child)::before {
 	display: none;
@@ -18891,7 +18903,7 @@ body:has(.wg-cm-layer) {
 	color: var(--foreground);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown kbd {
-	padding: 1px 6px;
+	padding: var(--space-px) var(--space-1-5);
 	border: 1px solid var(--border);
 	border-bottom-width: 2px;
 	border-radius: var(--control-corner);
@@ -18901,31 +18913,31 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown hr {
 	height: 1px;
-	margin: var(--space-1) 0;
+	margin: var(--space-1) var(--space-none);
 	border: none;
 	background: var(--line);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > * {
-	margin-block: 0;
+	margin-block: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > * + * {
-	margin-top: 12px;
+	margin-top: var(--space-3);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > * + :is(h1, h2, h3, h4, h5, h6) {
-	margin-top: 20px;
+	margin-top: var(--space-5);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > :is(h1, h2, h3, h4, h5, h6) + * {
-	margin-top: 8px;
+	margin-top: var(--space-2);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > hr,
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > hr + * {
-	margin-top: 16px;
+	margin-top: var(--space-4);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-link-icon {
 	display: none;
 	width: 14px;
 	height: 14px;
-	margin-right: 4px;
+	margin-right: var(--space-1);
 	vertical-align: -2px;
 	object-fit: contain;
 }
@@ -18955,13 +18967,13 @@ body:has(.wg-cm-layer) {
 .wg-studio-ai-compact-block {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: var(--space-3);
 }
 .wg-studio-ai-compact {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 0 var(--studio-edge, 8px);
+	gap: var(--space-3);
+	padding: var(--space-none) var(--studio-edge, 8px);
 	color: var(--muted-foreground);
 	font: 500 13px var(--font-sans, inherit);
 }
@@ -18975,14 +18987,14 @@ body:has(.wg-cm-layer) {
 .wg-studio-ai-compact-said {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	gap: var(--space-2);
 	height: 32px;
-	padding: 0 12px;
+	padding: var(--space-none) var(--space-3);
 	font: inherit;
 	white-space: nowrap;
 }
 .wg-studio-ai-compact-said.is-button {
-	padding: 0 10px 0 12px;
+	padding: var(--space-none) var(--space-2-5) var(--space-none) var(--space-3);
 	cursor: pointer;
 }
 .wg-studio-ai-compact-spin {
@@ -18993,14 +19005,14 @@ body:has(.wg-cm-layer) {
 	animation: wg-studio-ai-compact-spin 0.9s linear infinite;
 }
 .wg-studio-ai-compact-summary {
-	margin: 0 var(--studio-edge, 8px);
-	padding: 14px 18px;
+	margin: var(--space-none) var(--studio-edge, 8px);
+	padding: var(--space-3-5) var(--space-4-5);
 	border-radius: var(--item);
 	background: var(--group-fill);
 	font-size: 13px;
 }
 .wg-studio-ai-compact-summary .wg-studio-ai-said {
-	padding: 0;
+	padding: var(--space-none);
 	font-size: 13px;
 }
 @keyframes wg-studio-ai-thinking {
@@ -19059,8 +19071,8 @@ body:has(.wg-cm-layer) {
 	border: 0;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock pre {
-	margin: 0;
-	padding: calc(var(--code-pad-block) + 1px) var(--code-pad-inline) var(--code-pad-block);
+	margin: var(--space-none);
+	padding: calc(var(--code-pad-block) + var(--space-px)) var(--code-pad-inline) var(--code-pad-block);
 	overflow-x: auto;
 	color: var(--code-foreground);
 	font-size: var(--code-size);
@@ -19076,7 +19088,7 @@ body:has(.wg-cm-layer) {
 	overflow-wrap: normal;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock pre > code {
-	padding: 0;
+	padding: var(--space-none);
 	background: none;
 	font-size: inherit;
 	white-space: inherit;
@@ -19091,9 +19103,9 @@ body:has(.wg-cm-layer) {
 	z-index: 1;
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: var(--space-0-5);
 	height: calc(2 * var(--code-pad-block) + var(--code-line) * var(--code-size));
-	padding: 0 var(--space-1-5);
+	padding: var(--space-none) var(--space-1-5);
 	background: var(--soft);
 	opacity: 0;
 	transition: opacity var(--dur-fast) var(--ease-emphasized);
@@ -19105,7 +19117,7 @@ body:has(.wg-cm-layer) {
 	opacity: 1;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-lang {
-	padding: 0 6px;
+	padding: var(--space-none) var(--space-1-5);
 	font-family: var(--font-ui);
 	font-size: var(--fs-11);
 	color: var(--text-3);
@@ -19116,7 +19128,7 @@ body:has(.wg-cm-layer) {
 	justify-content: center;
 	width: var(--h-xs);
 	height: var(--h-xs);
-	padding: 0;
+	padding: var(--space-none);
 	cursor: pointer;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tool svg {
@@ -19127,9 +19139,9 @@ body:has(.wg-cm-layer) {
 	display: inline-flex;
 	align-self: flex-start;
 	align-items: center;
-	gap: 4px;
+	gap: var(--space-1);
 	height: var(--h-xs);
-	padding: 0;
+	padding: var(--space-none);
 	font: var(--fw-regular) var(--fs-13) var(--font-ui);
 	cursor: pointer;
 }
@@ -19163,7 +19175,7 @@ body:has(.wg-cm-layer) {
 	bottom: var(--space-2);
 	left: var(--code-pad-inline);
 	z-index: 1;
-	margin: 0;
+	margin: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table {
 	overflow-x: auto;
@@ -19173,7 +19185,7 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table table {
 	display: table;
 	width: max-content;
-	margin: 0;
+	margin: var(--space-none);
 	min-width: 100%;
 	border-collapse: collapse;
 	font-size: var(--fs-14);
@@ -19181,7 +19193,7 @@ body:has(.wg-cm-layer) {
 	background: none;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table :is(th, td) {
-	padding: 0 var(--space-6) 0 0;
+	padding: var(--space-none) var(--space-6) var(--space-none) var(--space-none);
 	border-bottom: none;
 	text-align: start;
 	vertical-align: middle;
@@ -19195,7 +19207,7 @@ body:has(.wg-cm-layer) {
 	border-bottom: 1px solid var(--line);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table :is(th, td):last-child {
-	padding-right: 0;
+	padding-right: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table :is(th, td).is-number {
 	text-align: end;
@@ -19233,7 +19245,7 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	align-items: center;
 	height: var(--h-row);
-	padding: 0 0 0 var(--space-1-5);
+	padding: var(--space-none) var(--space-none) var(--space-none) var(--space-1-5);
 	border-radius: var(--control-corner);
 	background: var(--plate);
 	opacity: 0;
@@ -19266,8 +19278,8 @@ body:has(.wg-cm-layer) {
 	color: var(--hue-red);
 }
 .wg-chat-app .wg-studio-ai-tools-list {
-	margin-left: 0;
-	padding-left: 0;
+	margin-left: var(--space-none);
+	padding-left: var(--space-none);
 	border-left: 0;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table.is-cut .is-past-cut {
@@ -19279,7 +19291,7 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai-call-head {
 	gap: var(--space-2);
 	height: var(--h-md);
-	padding: 0;
+	padding: var(--space-none);
 	font: var(--fw-regular) var(--fs-14) var(--font-ui);
 	position: relative;
 	isolation: isolate;
@@ -19313,7 +19325,7 @@ body:has(.wg-cm-layer) {
 	transition: color var(--dur-base) var(--ease-emphasized);
 }
 .wg-chat-app .wg-studio-ai-call-open {
-	margin-left: 0;
+	margin-left: var(--space-none);
 	border-radius: var(--control-corner);
 	padding-bottom: var(--space-2);
 }
@@ -19323,7 +19335,7 @@ body:has(.wg-cm-layer) {
 	transition: color var(--dur-base) var(--ease-emphasized);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown > div:not(:empty) + .wg-studio-ai-codeblock {
-	margin-top: 12px;
+	margin-top: var(--space-3);
 }
 .wg-chat-app .wg-studio-ai-call-name.is-failed .wg-studio-ai-call-verb {
 	color: var(--danger);
@@ -19335,14 +19347,14 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai-tools-list {
 	box-sizing: border-box;
 	width: auto;
-	gap: 0;
-	padding-top: 0;
+	gap: var(--space-none);
+	padding-top: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai-tools {
-	gap: 0;
+	gap: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai-call-open:not(:has(> .wg-studio-ai-diff)) {
-	padding: 0;
+	padding: var(--space-none);
 	background: none;
 }
 .wg-chat-app .wg-studio-ai-call-part-label {
@@ -19380,13 +19392,13 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-2);
 	min-width: var(--h-md);
 	height: var(--h-md);
-	padding: 0;
+	padding: var(--space-none);
 	font: var(--fw-regular) var(--fs-13) / 1 var(--font-ui);
 	white-space: nowrap;
 	cursor: pointer;
 }
 .wg-chat-app .wg-studio-ai-to-end-button:has(.wg-studio-ai-to-end-label:not(:empty)) {
-	padding: 0 var(--space-3) 0 var(--space-2);
+	padding: var(--space-none) var(--space-3) var(--space-none) var(--space-2);
 }
 .wg-chat-app .wg-studio-ai-to-end-label:empty {
 	display: none;
@@ -19481,7 +19493,7 @@ body:has(.wg-cm-layer) {
 	flex: none;
 	margin-left: auto;
 	align-items: center;
-	gap: 3px;
+	gap: var(--space-1);
 	color: var(--text-3);
 	font-size: var(--fs-12);
 	font-variant-numeric: tabular-nums;
@@ -19513,7 +19525,7 @@ body:has(.wg-cm-layer) {
 	grid-row: 2 / 4;
 	grid-column: 1;
 	max-width: none;
-	margin-block-end: 0;
+	margin-block-end: var(--space-none);
 }
 .wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-scroll {
 	padding-block-end: calc(var(--studio-ai-dock-height, 0px) + var(--studio-ai-end-room));
@@ -19534,9 +19546,9 @@ body:has(.wg-cm-layer) {
 	grid-column: 1;
 	display: flex;
 	flex-direction: column;
-	gap: 0;
+	gap: var(--space-none);
 	max-width: none;
-	padding-block-start: 0;
+	padding-block-start: var(--space-none);
 }
 @layer theme {
 	:root,
@@ -19752,7 +19764,7 @@ body:has(.wg-cm-layer) {
 	white-space: nowrap;
 }
 :is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-send, .wg-studio-ai-queued-more, .wg-studio-ai-edit-cancel) {
-	padding: 0 var(--space-1);
+	padding: var(--space-none) var(--space-1);
 	font: var(--fw-medium) var(--fs-12) / 1.4 var(--font-ui);
 	text-underline-offset: 3px;
 	cursor: pointer;
@@ -19762,7 +19774,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued-more {
 	margin-top: var(--space-1);
-	padding: 0;
+	padding: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued-act {
 	cursor: pointer;
@@ -19786,7 +19798,7 @@ body:has(.wg-cm-layer) {
 	flex-direction: column;
 	align-items: flex-start;
 	max-width: 80%;
-	padding: 8px 12px;
+	padding: var(--space-2) var(--space-3);
 	border: 1px dashed var(--line-strong);
 	border-radius: var(--plate-radius);
 	color: var(--text-2);
@@ -19819,7 +19831,7 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	gap: var(--space-1);
 	height: 26px;
-	padding: 0 var(--space-1-5);
+	padding: var(--space-none) var(--space-1-5);
 	font: var(--fw-medium) var(--fs-12) / 1 var(--font-ui);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-edit-bar {
@@ -19845,7 +19857,7 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: 10px;
+	gap: var(--space-2-5);
 }
 :is(.wg-root, .wg-portal) .wg-questions-block-head b {
 	font-weight: var(--fw-semi);
@@ -19862,13 +19874,13 @@ body:has(.wg-cm-layer) {
 	flex-direction: column;
 }
 :is(.wg-root, .wg-portal) .wg-questions-card-question {
-	margin: 0;
+	margin: var(--space-none);
 	padding-top: var(--space-3);
 	font-weight: var(--fw-semi);
 }
 :is(.wg-root, .wg-portal) .wg-questions-card-detail {
-	margin: 0;
-	padding: var(--space-0-5) 0 var(--space-3);
+	margin: var(--space-none);
+	padding: var(--space-0-5) var(--space-none) var(--space-3);
 	color: var(--text-3);
 }
 :is(.wg-root, .wg-portal) .wg-questions-option {
@@ -19877,8 +19889,8 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	gap: var(--space-3);
 	height: 34px;
-	margin: 0 calc(-1 * var(--space-4));
-	padding: 0 var(--space-4);
+	margin: var(--space-none) calc(-1 * var(--space-4));
+	padding: var(--space-none) var(--space-4);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
@@ -19909,7 +19921,7 @@ body:has(.wg-cm-layer) {
 	align-self: flex-start;
 	height: var(--h-sm);
 	margin-top: var(--space-1);
-	padding: 0 var(--space-3);
+	padding: var(--space-none) var(--space-3);
 	font: inherit;
 	cursor: pointer;
 }
@@ -19919,14 +19931,14 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	gap: var(--space-2);
 	height: var(--h-lg);
-	margin: var(--space-1) 0 0;
+	margin: var(--space-1) var(--space-none) var(--space-none);
 	color: var(--text-3);
 }
 :is(.wg-root, .wg-portal) .wg-questions-own-field {
 	flex: 1;
 	min-width: 120px;
 	height: 100%;
-	padding: 0;
+	padding: var(--space-none);
 	font: inherit;
 }
 :is(.wg-root, .wg-portal) .wg-questions-own-field::placeholder {
@@ -19954,7 +19966,7 @@ body:has(.wg-cm-layer) {
 	text-overflow: ellipsis;
 }
 .wg-chat-app .wg-studio-ai-scroll-frame {
-	margin-block-end: 0;
+	margin-block-end: var(--space-none);
 }
 .wg-chat-app {
 	--studio-edge: var(--plate-pad);
@@ -20004,8 +20016,8 @@ body:has(.wg-cm-layer) {
 	padding-block-start: var(--chat-head-h);
 }
 .wg-chat-app-none {
-	margin: 0;
-	padding: calc(24px + var(--corner-top, 0px)) 24px 24px;
+	margin: var(--space-none);
+	padding: calc(var(--space-6) + var(--corner-top, 0px)) var(--space-6) var(--space-6);
 	color: var(--text-muted-legacy);
 }
 .sumi-composer-expand {
@@ -20163,7 +20175,7 @@ body:has(.wg-cm-layer) {
 	left: calc(-1 * var(--space-3));
 	box-sizing: border-box;
 	width: calc(100% + 2 * var(--space-3));
-	padding: var(--space-1) 0;
+	padding: var(--space-1) var(--space-none);
 	border: 1px solid var(--divider);
 	border-bottom: 0;
 	border-start-start-radius: var(--plate-radius);
@@ -20180,8 +20192,8 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	align-items: center;
 	height: var(--h-sm);
-	margin: 0;
-	padding: 0 var(--space-3);
+	margin: var(--space-none);
+	padding: var(--space-none) var(--space-3);
 	color: var(--text-3);
 	font-size: var(--fs-12);
 }
@@ -20191,8 +20203,8 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-3);
 	width: calc(100% - 2 * var(--space-1));
 	height: var(--h-md);
-	margin: 0 var(--space-1);
-	padding: 0 var(--space-2);
+	margin: var(--space-none) var(--space-1);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
@@ -20217,24 +20229,24 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	gap: var(--space-4);
 	height: var(--h-sm);
-	margin: 0;
-	padding: 0;
+	margin: var(--space-none);
+	padding: var(--space-none);
 	color: var(--text-3);
 	font-size: var(--fs-12);
 }
 .sumi-model-panes {
 	display: flex;
 	max-height: min(360px, calc(100vh - 160px));
-	margin: calc(-1 * var(--space-1)) 0;
+	margin: calc(-1 * var(--space-1)) var(--space-none);
 }
 .sumi-model-pane {
 	display: flex;
 	flex: 1;
 	flex-direction: column;
-	gap: 0;
+	gap: var(--space-none);
 	min-width: 0;
 	min-height: 0;
-	padding: var(--space-1) 0;
+	padding: var(--space-1) var(--space-none);
 }
 .sumi-model-pane.is-providers {
 	flex: none;
@@ -20256,7 +20268,7 @@ body:has(.wg-cm-layer) {
 	justify-content: space-between;
 	gap: var(--space-1);
 	height: var(--h-sm);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	color: var(--text-3);
 	font: var(--fw-regular) var(--fs-12) / 1.4 var(--font-ui);
 }
@@ -20267,14 +20279,14 @@ body:has(.wg-cm-layer) {
 	justify-content: center;
 	width: var(--h-xs);
 	height: var(--h-xs);
-	padding: 0;
+	padding: var(--space-none);
 	cursor: pointer;
 }
 .sumi-pane-list {
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: 0;
+	gap: var(--space-none);
 	min-height: 0;
 	overflow-y: auto;
 	overscroll-behavior: contain;
@@ -20295,7 +20307,7 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex-direction: column;
 	grid-area: 1 / 1;
-	gap: 0;
+	gap: var(--space-none);
 }
 .sumi-model-list[data-hidden] {
 	visibility: hidden;
@@ -20335,7 +20347,7 @@ body:has(.wg-cm-layer) {
 .sumi-usage-meter-bar {
 	position: relative;
 	height: var(--space-1);
-	margin: 6px 0 var(--space-1);
+	margin: var(--space-1-5) var(--space-none) var(--space-1);
 	overflow: hidden;
 	border-radius: var(--round);
 	background: var(--fill);
@@ -20366,11 +20378,11 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: 10px;
+	gap: var(--space-2-5);
 	width: 100%;
 	min-width: 0;
 	height: var(--h-row);
-	padding: 0 var(--side-pad);
+	padding: var(--space-none) var(--side-pad);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
@@ -20378,7 +20390,7 @@ body:has(.wg-cm-layer) {
 	user-select: none;
 }
 :is(.wg-root, .wg-portal) .sumi-new-chat-row > svg {
-	margin: 0 1px;
+	margin: var(--space-none) var(--space-px);
 }
 .sumi-figure {
 	position: relative;
@@ -20455,7 +20467,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-1);
 	box-sizing: border-box;
 	height: var(--header-h);
-	padding: 0 var(--space-1-5);
+	padding: var(--space-none) var(--space-1-5);
 	background: var(--frame);
 }
 .sumi-title-bar-tabs {
@@ -20580,7 +20592,7 @@ body:has(.wg-cm-layer) {
 	box-sizing: border-box;
 	min-width: var(--h-sm);
 	height: var(--h-sm);
-	padding: 0 var(--space-0-5);
+	padding: var(--space-none) var(--space-0-5);
 	font-size: var(--fs-13);
 	cursor: pointer;
 }
@@ -20605,9 +20617,9 @@ body:has(.wg-cm-layer) {
 	min-width: 0;
 	max-width: 420px;
 	height: var(--h-sm);
-	margin: 0;
+	margin: var(--space-none);
 	margin-inline-start: calc(-1 * var(--space-1));
-	padding: 0 var(--space-1);
+	padding: var(--space-none) var(--space-1);
 	overflow: hidden;
 	font-family: var(--font-ui);
 	font-size: var(--fs-14);
@@ -20636,8 +20648,8 @@ body:has(.wg-cm-layer) {
 	box-sizing: border-box;
 	width: 100%;
 	min-width: 0;
-	margin: 0;
-	padding: 0;
+	margin: var(--space-none);
+	padding: var(--space-none);
 	font: inherit;
 	letter-spacing: inherit;
 }
@@ -20680,7 +20692,7 @@ body:has(.wg-cm-layer) {
 	box-sizing: border-box;
 	max-width: 220px;
 	height: var(--h-sm);
-	padding: 0 10px;
+	padding: var(--space-none) var(--space-2-5);
 	color: var(--text-3);
 	font: var(--fw-regular) var(--fs-13) / 1 var(--font-ui);
 	white-space: nowrap;
@@ -20736,7 +20748,7 @@ body:has(.wg-cm-layer) {
 	background: var(--status-blocked);
 }
 .sumi-strip-tab:is(:hover, :focus-visible) > .sumi-tab-status {
-	margin-inline-end: calc(18px + var(--space-0-5));
+	margin-inline-end: calc(var(--space-4-5) + var(--space-0-5));
 }
 .sumi-strip-tab-close {
 	position: absolute;
@@ -20747,8 +20759,8 @@ body:has(.wg-cm-layer) {
 	justify-content: center;
 	width: 18px;
 	height: 18px;
-	margin: 0;
-	padding: 0;
+	margin: var(--space-none);
+	padding: var(--space-none);
 	opacity: 0;
 	transform: translateY(-50%);
 	pointer-events: none;
@@ -20815,9 +20827,9 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: 0;
+	gap: var(--space-none);
 	height: var(--h-sm);
-	margin: 0 var(--space-1);
+	margin: var(--space-none) var(--space-1);
 }
 .sumi-strip-group::after {
 	content: "";
@@ -20833,8 +20845,8 @@ body:has(.wg-cm-layer) {
 	flex: none;
 	align-items: center;
 	height: 100%;
-	margin: 0;
-	padding: 0 var(--space-2);
+	margin: var(--space-none);
+	padding: var(--space-none) var(--space-2);
 	font: var(--fw-medium, 500) var(--fs-12) / 1 var(--font-ui);
 	white-space: nowrap;
 	cursor: default;
@@ -20913,26 +20925,26 @@ body:has(.wg-cm-layer) {
 	display: none;
 }
 .sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)) {
-	padding-right: calc(var(--space-1-5) + 18px + var(--space-0-5));
+	padding-right: calc(var(--space-1-5) + var(--space-4-5) + var(--space-0-5));
 }
 .sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)):is(:hover, :focus-visible) .sumi-strip-tab-title {
 	mask-image: none;
 }
 .sumi-strip-chip {
 	height: 100%;
-	padding: 0;
+	padding: var(--space-none);
 }
 .sumi-strip-chip-face {
 	display: flex;
 	align-items: center;
 	height: 100%;
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	border-radius: inherit;
 	background: var(--group-legacy);
 	color: var(--frame);
 }
 .sumi-pin-tab {
-	padding-right: calc(var(--space-1-5) + 22px);
+	padding-right: calc(var(--space-1-5) + var(--space-5-5));
 }
 .sumi-strip-tab .sumi-pin-end {
 	opacity: 1;
@@ -20961,10 +20973,10 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-1);
-	padding-top: 0;
+	padding-top: var(--space-none);
 }
 .sumi-group-editor .sumi-group-editor-name {
-	margin-inline: 0;
+	margin-inline: var(--space-none);
 }
 .sumi-group-hues {
 	display: flex;
@@ -21005,7 +21017,7 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	align-items: center;
 	height: 24px;
-	padding: 0 var(--space-3);
+	padding: var(--space-none) var(--space-3);
 	color: var(--text-3);
 	font-size: var(--fs-12);
 }
@@ -21076,7 +21088,7 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex: 1;
 	align-items: center;
-	gap: 2px;
+	gap: var(--space-0-5);
 	min-width: 0;
 	overflow-x: auto;
 	overflow-y: hidden;
@@ -21496,8 +21508,8 @@ body:has(.wg-cm-layer) {
 	flex: 1;
 	min-width: 0;
 	height: 24px;
-	margin: 0;
-	padding: 0;
+	margin: var(--space-none);
+	padding: var(--space-none);
 	border: 0;
 	outline: none;
 	background: none;
@@ -21506,7 +21518,7 @@ body:has(.wg-cm-layer) {
 	user-select: text;
 }
 .sumi-canvas-board-field {
-	padding: 0;
+	padding: var(--space-none);
 	font-family: inherit;
 	user-select: text;
 }
@@ -21539,7 +21551,7 @@ body:has(.wg-cm-layer) {
 	position: absolute;
 	bottom: 100%;
 	left: 0;
-	margin: 0 0 calc(10px / var(--canvas-zoom, 1));
+	margin: var(--space-none) var(--space-none) calc(var(--space-2-5) / var(--canvas-zoom, 1));
 	color: var(--text-3);
 	font-size: calc(12px / var(--canvas-zoom, 1));
 	line-height: 1.3;
@@ -21623,7 +21635,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-1-5);
 	min-width: 0;
 	height: var(--h-sm);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-13);
 	white-space: nowrap;
@@ -21644,7 +21656,7 @@ body:has(.wg-cm-layer) {
 .sumi-canvas-top-button.is-square {
 	justify-content: center;
 	width: var(--h-sm);
-	padding: 0;
+	padding: var(--space-none);
 }
 .sumi-canvas-crumb-slash {
 	color: var(--text-3);
@@ -21652,7 +21664,7 @@ body:has(.wg-cm-layer) {
 .sumi-canvas-title-field {
 	width: 220px;
 	height: var(--h-sm);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-13);
 	font-weight: var(--fw-medium);
@@ -21704,7 +21716,7 @@ body:has(.wg-cm-layer) {
 	margin-bottom: var(--space-3);
 }
 .sumi-canvas-home-head h2 {
-	margin: 0;
+	margin: var(--space-none);
 	font-size: var(--fs-15);
 	font-weight: var(--fw-semi);
 }
@@ -21713,7 +21725,7 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	gap: var(--space-1);
 	height: var(--h-xs);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	cursor: pointer;
 }
@@ -21725,7 +21737,7 @@ body:has(.wg-cm-layer) {
 	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 	grid-template-rows: 232px;
 	grid-auto-rows: 0;
-	column-gap: 16px;
+	column-gap: var(--space-4);
 	overflow: hidden;
 }
 .sumi-canvas-grid {
@@ -21746,7 +21758,7 @@ body:has(.wg-cm-layer) {
 	flex-direction: column;
 	gap: var(--space-1);
 	min-width: 0;
-	padding: 0;
+	padding: var(--space-none);
 	font: inherit;
 	text-align: start;
 	cursor: pointer;
@@ -21779,7 +21791,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-1-5);
 	max-width: 100%;
 	height: var(--h-xs);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-12);
 	cursor: pointer;
@@ -21802,7 +21814,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-2);
 	width: 240px;
 	height: var(--h-sm);
-	padding: 0 var(--space-3);
+	padding: var(--space-none) var(--space-3);
 	background: var(--soft);
 	color: var(--text-3);
 	cursor: text;
@@ -21810,7 +21822,7 @@ body:has(.wg-cm-layer) {
 .sumi-canvas-search-field {
 	flex: 1;
 	min-width: 0;
-	padding: 0;
+	padding: var(--space-none);
 	font: inherit;
 	font-size: var(--fs-13);
 	user-select: text;
@@ -21829,7 +21841,7 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	gap: var(--space-1-5);
 	height: var(--h-sm);
-	padding: 0 var(--space-3);
+	padding: var(--space-none) var(--space-3);
 	font: inherit;
 	font-size: var(--fs-13);
 	font-weight: var(--fw-medium);
@@ -21848,17 +21860,17 @@ body:has(.wg-cm-layer) {
 	text-align: center;
 }
 .sumi-canvas-home-empty h2 {
-	margin: 0;
+	margin: var(--space-none);
 	font-size: var(--fs-17);
 	font-weight: var(--fw-semi);
 }
 .sumi-canvas-home-empty p {
 	max-width: 380px;
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text-3);
 }
 .sumi-canvas-home-none {
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text-3);
 }
 @container (max-width: 760px) {
@@ -21895,8 +21907,8 @@ body:has(.wg-cm-layer) {
 	flex: none;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 8px;
-	padding: 8px 8px 0;
+	gap: var(--space-2);
+	padding: var(--space-2) var(--space-2) var(--space-none);
 	color: var(--text);
 	font-family: var(--font-ui);
 	font-size: 13px;
@@ -21929,9 +21941,9 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex: 0 1 auto;
 	align-items: center;
-	gap: 8px;
+	gap: var(--space-2);
 	min-width: 0;
-	padding: 0 10px;
+	padding: var(--space-none) var(--space-2-5);
 	overflow-x: auto;
 	overflow-y: hidden;
 	overscroll-behavior-x: contain;
@@ -21972,7 +21984,7 @@ body:has(.wg-cm-layer) {
 	flex: none;
 	width: 24px;
 	height: 24px;
-	margin-left: -6px;
+	margin-left: calc(var(--space-1-5) * -1);
 }
 .sumi-mcp-square svg,
 .sumi-mcp-tag-button svg {
@@ -21990,9 +22002,9 @@ body:has(.wg-cm-layer) {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	align-items: start;
-	gap: var(--space-2, 8px);
+	gap: var(--space-2);
 	max-width: 100%;
-	margin: var(--space-2, 8px) 0;
+	margin: var(--space-2) var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery[data-count="1"] {
 	grid-template-columns: minmax(0, 1fr);
@@ -22004,12 +22016,12 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: var(--space-1, 4px);
+	gap: var(--space-1);
 	min-width: 0;
 	max-width: 100%;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said p .wg-studio-ai-figure {
-	margin: var(--space-2, 8px) 0;
+	margin: var(--space-2) var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-caption {
 	color: var(--text-3, var(--muted-foreground));
@@ -22086,7 +22098,7 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery[data-bento] > .wg-studio-ai-figure {
 	position: absolute;
 	display: block;
-	margin: 0;
+	margin: var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery[data-bento] .wg-studio-ai-image {
 	width: 100%;
@@ -22163,9 +22175,9 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--space-3, 12px);
+	gap: var(--space-3);
 	height: 56px;
-	padding: 0 var(--space-3, 12px) 0 var(--space-5, 20px);
+	padding: var(--space-none) var(--space-3) var(--space-none) var(--space-5);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-name {
 	min-width: 0;
@@ -22189,16 +22201,16 @@ body:has(.wg-cm-layer) {
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	padding: 0;
+	padding: var(--space-none);
 	cursor: pointer;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-stage {
 	display: flex;
 	flex: 1 1 auto;
 	align-items: center;
-	gap: var(--space-3, 12px);
+	gap: var(--space-3);
 	min-height: 0;
-	padding: 0 var(--space-3, 12px);
+	padding: var(--space-none) var(--space-3);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-frame {
 	display: flex;
@@ -22219,15 +22231,15 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex: none;
 	justify-content: center;
-	gap: var(--space-2, 8px);
-	padding: var(--space-4, 16px) var(--space-3, 12px) var(--space-5, 20px);
+	gap: var(--space-2);
+	padding: var(--space-4) var(--space-3) var(--space-5);
 	overflow-x: auto;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-thumb {
 	flex: none;
 	width: 56px;
 	height: 56px;
-	padding: 0;
+	padding: var(--space-none);
 	overflow: hidden;
 	opacity: 0.5;
 	cursor: pointer;
@@ -22256,7 +22268,7 @@ body:has(.wg-cm-layer) {
 .sumi-file-card-body {
 	flex: 1;
 	min-height: 0;
-	margin-top: 8px;
+	margin-top: var(--space-2);
 	overflow: auto;
 	background: none;
 }
@@ -22270,8 +22282,8 @@ body:has(.wg-cm-layer) {
 .sumi-file-card-mark-note {
 	width: max-content;
 	max-width: calc(100% - 77px);
-	margin: 2px 0 6px 61px;
-	padding: 3px 10px;
+	margin: var(--space-0-5) var(--space-none) var(--space-1-5) var(--space-15);
+	padding: var(--space-1) var(--space-2-5);
 	border-left: 2px solid var(--hue-amber);
 	background: var(--hue-amber);
 	@supports (color: color-mix(in lab, red, red)) {
@@ -22282,7 +22294,7 @@ body:has(.wg-cm-layer) {
 	white-space: normal;
 }
 .sumi-file-card-note {
-	margin: 12px;
+	margin: var(--space-3);
 	color: var(--muted-foreground);
 	font-size: 13px;
 }
@@ -22295,16 +22307,16 @@ body:has(.wg-cm-layer) {
 .sumi-changes-card-body {
 	flex: 1;
 	min-height: 0;
-	margin-top: 8px;
+	margin-top: var(--space-2);
 	overflow: auto;
 }
 .sumi-changes-card-rows {
 	display: flex;
 	flex-direction: column;
-	padding: 0 4px 8px;
+	padding: var(--space-none) var(--space-1) var(--space-2);
 }
 .sumi-changes-card-note {
-	margin: 12px;
+	margin: var(--space-3);
 	color: var(--muted-foreground);
 	font-size: 13px;
 }
@@ -22325,11 +22337,11 @@ body:has(.wg-cm-layer) {
 }
 .sumi-mini-canvas-pages {
 	display: flex;
-	gap: 2px;
+	gap: var(--space-0-5);
 }
 .sumi-mini-canvas-page {
 	flex: none;
-	padding: 3px 8px;
+	padding: var(--space-1) var(--space-2);
 	font: inherit;
 	font-size: 12px;
 	cursor: pointer;
@@ -22338,7 +22350,7 @@ body:has(.wg-cm-layer) {
 	position: fixed;
 	z-index: 2147483646;
 	margin-left: calc(var(--caret-w) + var(--space-1-5));
-	padding: 2px var(--space-1);
+	padding: var(--space-0-5) var(--space-1);
 	border: 1px solid var(--line-strong);
 	border-radius: var(--control-corner);
 	background: var(--plate);

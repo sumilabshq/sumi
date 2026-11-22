@@ -8,18 +8,18 @@
 .sumi-changes-card-body {
 	flex: 1;
 	min-height: 0;
-	margin-top: 8px;
+	margin-top: var(--space-2);
 	overflow: auto;
 }
 
 .sumi-changes-card-rows {
 	display: flex;
 	flex-direction: column;
-	padding: 0 4px 8px;
+	padding: var(--space-none) var(--space-1) var(--space-2);
 }
 
 .sumi-changes-card-note {
-	margin: 12px;
+	margin: var(--space-3);
 	color: var(--muted-foreground);
 	font-size: 13px;
 }

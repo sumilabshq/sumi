@@ -16,7 +16,7 @@ import { useGridFollowsCamera } from "../../lib/use-grid-follows-camera.js";
 const FIELD =
 	"cv:relative cv:h-full cv:touch-none cv:overflow-hidden cv:bg-board cv:bg-[radial-gradient(var(--border)_var(--canvas-grid-dot,1px),transparent_var(--canvas-grid-dot,1px))] cv:bg-[length:var(--canvas-grid-pitch,18px)_var(--canvas-grid-pitch,18px)] cv:bg-[position:var(--canvas-grid-x,0px)_var(--canvas-grid-y,0px)]";
 const LAYER =
-	"cv:absolute cv:top-0 cv:left-0 cv:flex cv:w-max cv:origin-top-left cv:flex-col cv:items-start cv:gap-[120px] cv:p-20 cv:motion-safe:animate-canvas-fade-in";
+	"cv:absolute cv:top-0 cv:left-0 cv:flex cv:w-max cv:origin-top-left cv:flex-col cv:items-start cv:gap-[var(--space-30)] cv:p-20 cv:motion-safe:animate-canvas-fade-in";
 
 export function FieldStage(): ReactElement {
 	const layerRef = useRef<HTMLDivElement | null>(null);

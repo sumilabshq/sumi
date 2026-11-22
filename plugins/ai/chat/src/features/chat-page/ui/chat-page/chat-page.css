@@ -1,5 +1,5 @@
 .wg-chat-app .wg-studio-ai-scroll-frame {
-	margin-block-end: 0;
+	margin-block-end: var(--space-none);
 }
 
 .wg-chat-app {
@@ -58,7 +58,7 @@
 }
 
 .wg-chat-app-none {
-	margin: 0;
-	padding: calc(24px + var(--corner-top, 0px)) 24px 24px;
+	margin: var(--space-none);
+	padding: calc(var(--space-6) + var(--corner-top, 0px)) var(--space-6) var(--space-6);
 	color: var(--text-muted-legacy);
 }

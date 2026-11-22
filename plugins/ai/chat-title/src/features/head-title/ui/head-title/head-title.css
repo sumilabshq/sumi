@@ -6,9 +6,9 @@
 	min-width: 0;
 	max-width: 420px;
 	height: var(--h-sm);
-	margin: 0;
+	margin: var(--space-none);
 	margin-inline-start: calc(-1 * var(--space-1));
-	padding: 0 var(--space-1);
+	padding: var(--space-none) var(--space-1);
 	overflow: hidden;
 	font-family: var(--font-ui);
 	font-size: var(--fs-14);
@@ -40,8 +40,8 @@
 	box-sizing: border-box;
 	width: 100%;
 	min-width: 0;
-	margin: 0;
-	padding: 0;
+	margin: var(--space-none);
+	padding: var(--space-none);
 	font: inherit;
 	letter-spacing: inherit;
 }

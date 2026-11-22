@@ -51,7 +51,7 @@
 	gap: var(--space-1-5);
 	min-width: 0;
 	height: var(--h-sm);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-13);
 	white-space: nowrap;
@@ -76,7 +76,7 @@
 .sumi-canvas-top-button.is-square {
 	justify-content: center;
 	width: var(--h-sm);
-	padding: 0;
+	padding: var(--space-none);
 }
 
 .sumi-canvas-crumb-slash {
@@ -86,7 +86,7 @@
 .sumi-canvas-title-field {
 	width: 220px;
 	height: var(--h-sm);
-	padding: 0 var(--space-2);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-13);
 	font-weight: var(--fw-medium);

@@ -7,7 +7,7 @@ export interface NearMatchChipProps {
 	readonly onOpen: (address: string) => void;
 }
 
-const ROW = "cv:mt-[18px] cv:flex cv:justify-center";
+const ROW = "cv:mt-[var(--space-4-5)] cv:flex cv:justify-center";
 const CHIP = "cv:h-10 cv:gap-2 cv:px-4 cv:text-[13px] cv:font-medium";
 const MATCH = "cv:font-bold";
 

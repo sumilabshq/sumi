@@ -1,5 +1,5 @@
 .sumi-pin-tab {
-	padding-right: calc(var(--space-1-5) + 22px);
+	padding-right: calc(var(--space-1-5) + var(--space-5-5));
 }
 
 .sumi-strip-tab .sumi-pin-end {

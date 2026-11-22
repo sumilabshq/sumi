@@ -5,11 +5,11 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: 10px;
+	gap: var(--space-2-5);
 	width: 100%;
 	min-width: 0;
 	height: var(--h-row);
-	padding: 0 var(--side-pad);
+	padding: var(--space-none) var(--side-pad);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
@@ -18,5 +18,5 @@
 }
 
 :is(.wg-root, .wg-portal) .sumi-new-chat-row > svg {
-	margin: 0 1px;
+	margin: var(--space-none) var(--space-px);
 }

@@ -21,7 +21,7 @@
 	left: calc(-1 * var(--space-3));
 	box-sizing: border-box;
 	width: calc(100% + 2 * var(--space-3));
-	padding: var(--space-1) 0;
+	padding: var(--space-1) var(--space-none);
 	border: 1px solid var(--divider);
 	border-bottom: 0;
 	border-start-start-radius: var(--plate-radius);
@@ -39,8 +39,8 @@
 	display: flex;
 	align-items: center;
 	height: var(--h-sm);
-	margin: 0;
-	padding: 0 var(--space-3);
+	margin: var(--space-none);
+	padding: var(--space-none) var(--space-3);
 	color: var(--text-3);
 	font-size: var(--fs-12);
 }
@@ -51,8 +51,8 @@
 	gap: var(--space-3);
 	width: calc(100% - 2 * var(--space-1));
 	height: var(--h-md);
-	margin: 0 var(--space-1);
-	padding: 0 var(--space-2);
+	margin: var(--space-none) var(--space-1);
+	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
@@ -80,8 +80,8 @@
 	align-items: center;
 	gap: var(--space-4);
 	height: var(--h-sm);
-	margin: 0;
-	padding: 0;
+	margin: var(--space-none);
+	padding: var(--space-none);
 	color: var(--text-3);
 	font-size: var(--fs-12);
 }

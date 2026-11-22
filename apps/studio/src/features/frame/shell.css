@@ -28,7 +28,7 @@
 }
 
 .wg-studio.wg-shell.is-flat {
-	padding: 0;
+	padding: var(--space-none);
 }
 
 .wg-pane {
@@ -121,7 +121,7 @@
 }
 
 .wg-shell-panel > .wg-studio-sidebar {
-	padding: 0;
+	padding: var(--space-none);
 }
 
 .wg-shell-plate {
@@ -206,7 +206,7 @@ body:has([data-browser-pages-live]),
 	flex: 1;
 	flex-direction: column;
 	min-height: 0;
-	padding: 0;
+	padding: var(--space-none);
 }
 
 .wg-plate-head {
@@ -231,7 +231,7 @@ body:has([data-browser-pages-live]),
 	align-items: center;
 	box-sizing: border-box;
 	height: 100%;
-	padding: 0 var(--space-3) 0 var(--pad);
+	padding: var(--space-none) var(--space-3) var(--space-none) var(--pad);
 	gap: var(--space-1);
 	transition:
 		padding-left var(--shell-slide),
@@ -245,7 +245,7 @@ body:has([data-browser-pages-live]),
 .wg-plate-head-row.wg-root {
 	container-type: inline-size;
 	width: auto;
-	padding-top: 0;
+	padding-top: var(--space-none);
 	color: inherit;
 	font-family: inherit;
 }
@@ -275,8 +275,8 @@ body:has([data-browser-pages-live]),
 	box-sizing: border-box;
 	min-width: 0;
 	height: var(--h-sm);
-	margin: 0 0 0 calc(-1 * var(--space-1-5));
-	padding: 0 var(--space-1-5);
+	margin: var(--space-none) var(--space-none) var(--space-none) calc(-1 * var(--space-1-5));
+	padding: var(--space-none) var(--space-1-5);
 	gap: var(--space-1);
 	font: inherit;
 	white-space: nowrap;
@@ -338,7 +338,7 @@ body:has([data-browser-pages-live]),
 
 .wg-app-crumb .wg-plate-crumb + .wg-plate-crumb-slash + .wg-plate-crumb,
 .wg-app-crumb .wg-plate-crumb:has(+ .wg-plate-crumb-slash) {
-	padding: 0 var(--space-1);
+	padding: var(--space-none) var(--space-1);
 }
 
 .wg-app-crumb .wg-plate-crumb:last-child {
@@ -431,14 +431,14 @@ body:has([data-browser-pages-live]),
 
 .wg-pane-edge[data-pane-edge-dir="row"] {
 	width: 9px;
-	margin-left: -4.5px;
+	margin-left: calc(var(--space-1) * -1);
 	background: linear-gradient(transparent, var(--divider) calc(2 * var(--space-8))) center / 1px 100% no-repeat;
 	cursor: col-resize;
 }
 
 .wg-pane-edge[data-pane-edge-dir="column"] {
 	height: 9px;
-	margin-top: -4.5px;
+	margin-top: calc(var(--space-1) * -1);
 	background: linear-gradient(var(--divider), var(--divider)) center / 100% 1px no-repeat;
 	cursor: row-resize;
 }
@@ -485,11 +485,11 @@ body:has([data-browser-pages-live]),
 }
 
 .wg-app-missing-said {
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text);
 }
 
 .wg-app-missing-problem {
-	margin: 0;
+	margin: var(--space-none);
 	color: var(--text-3);
 }

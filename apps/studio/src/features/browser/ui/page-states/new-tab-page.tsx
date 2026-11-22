@@ -14,7 +14,7 @@ export interface NewTabPageProps {
 	readonly recentSites: readonly RecentSite[];
 }
 
-const RECENT = "cv:mt-[22px] cv:flex cv:flex-col cv:items-center cv:gap-2.5";
+const RECENT = "cv:mt-[var(--space-5-5)] cv:flex cv:flex-col cv:items-center cv:gap-2.5";
 const RECENT_LABEL = "cv:text-[13px] cv:font-medium cv:text-muted-foreground";
 const CHIPS = "cv:flex cv:flex-wrap cv:justify-center cv:gap-2";
 const ASK_SPACE = "cv:mt-1.5";

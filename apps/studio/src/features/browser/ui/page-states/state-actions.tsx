@@ -6,7 +6,7 @@ export interface StateActionsProps {
 }
 
 const ACTIONS =
-	"cv:mt-6 cv:flex cv:flex-wrap cv:items-center cv:justify-center cv:gap-2 cv:@max-[600px]/page:mt-[18px]";
+	"cv:mt-6 cv:flex cv:flex-wrap cv:items-center cv:justify-center cv:gap-2 cv:@max-[600px]/page:mt-[var(--space-4-5)]";
 
 export function StateActions({ children }: StateActionsProps): ReactElement {
 	return <div className={ACTIONS}>{children}</div>;

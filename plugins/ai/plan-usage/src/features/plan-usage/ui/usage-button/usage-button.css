@@ -42,7 +42,7 @@
 .sumi-usage-meter-bar {
 	position: relative;
 	height: var(--space-1);
-	margin: 6px 0 var(--space-1);
+	margin: var(--space-1-5) var(--space-none) var(--space-1);
 	overflow: hidden;
 	border-radius: var(--round);
 	background: var(--fill);

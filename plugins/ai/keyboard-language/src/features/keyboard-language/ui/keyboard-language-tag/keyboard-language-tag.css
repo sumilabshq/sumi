@@ -2,7 +2,7 @@
 	position: fixed;
 	z-index: 2147483646;
 	margin-left: calc(var(--caret-w) + var(--space-1-5));
-	padding: 2px var(--space-1);
+	padding: var(--space-0-5) var(--space-1);
 	border: 1px solid var(--line-strong);
 	border-radius: var(--control-corner);
 	background: var(--plate);

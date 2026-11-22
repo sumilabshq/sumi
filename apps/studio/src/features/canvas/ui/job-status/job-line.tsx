@@ -35,18 +35,18 @@ export function JobLine({ job, spent = job.spent, isInline = false, onStop }: Jo
 			data-wg-job={job.id}
 			data-canvas-job-line={isInline ? "inline" : "block"}
 		>
-			<div className="cv:flex cv:items-center cv:gap-[13px] cv:text-ink">
+			<div className="cv:flex cv:items-center cv:gap-[var(--space-3)] cv:text-ink">
 				<Spinner size={18} />
 				<span>{doingOf(job)}</span>
 			</div>
 			<div
-				className={`cv:flex cv:items-baseline cv:gap-2 cv:text-[15px] cv:text-muted-foreground cv:tabular-nums ${isInline ? "" : "cv:ps-[31px]"}`}
+				className={`cv:flex cv:items-baseline cv:gap-2 cv:text-[15px] cv:text-muted-foreground cv:tabular-nums ${isInline ? "" : "cv:ps-[var(--space-8)]"}`}
 			>
 				<span>{[...meta, ""].join(" · ")}</span>
 				{onStop ? (
 					<Pressable
 						tone="muted"
-						className="cv:-mx-2 cv:-my-[3px] cv:px-2 cv:py-[3px] cv:font-semibold cv:active:scale-[0.96]"
+						className="cv:-mx-2 cv:-my-[var(--space-1)] cv:px-2 cv:py-[var(--space-1)] cv:font-semibold cv:active:scale-[0.96]"
 						onClick={onStop}
 					>
 						{PAUSE}

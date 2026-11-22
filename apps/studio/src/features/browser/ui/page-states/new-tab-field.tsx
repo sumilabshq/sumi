@@ -6,8 +6,8 @@ export interface NewTabFieldProps {
 	readonly onOpen: (address: string) => void;
 }
 
-const FORM = "cv:mt-[26px] cv:flex cv:w-[560px] cv:max-w-full cv:flex-none";
-const FIELD = "cv:box-border cv:h-[52px] cv:gap-3 cv:ps-[19px] cv:pe-[5px] cv:text-[16px]";
+const FORM = "cv:mt-[var(--space-6-5)] cv:flex cv:w-[560px] cv:max-w-full cv:flex-none";
+const FIELD = "cv:box-border cv:h-[52px] cv:gap-3 cv:ps-[var(--space-5)] cv:pe-[var(--space-1)] cv:text-[16px]";
 const GO = "cv:size-10";
 const TYPE_AN_ADDRESS = "Search or type an address";
 const GO_LABEL = "Go";

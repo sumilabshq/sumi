@@ -16,8 +16,8 @@ export interface NotFoundActionsProps {
 }
 
 const ACTIONS = "cv:flex cv:flex-wrap cv:items-center cv:justify-center cv:gap-2";
-const UNDER_MATCH = "cv:mt-[14px]";
-const UNDER_REASON = "cv:mt-6 cv:@max-[600px]/page:mt-[18px]";
+const UNDER_MATCH = "cv:mt-[var(--space-3-5)]";
+const UNDER_REASON = "cv:mt-6 cv:@max-[600px]/page:mt-[var(--space-4-5)]";
 const TRY_AGAIN = "Try again";
 const ASK_INK = "Ask Sumi";
 

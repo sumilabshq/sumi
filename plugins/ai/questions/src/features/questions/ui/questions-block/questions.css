@@ -11,7 +11,7 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: 10px;
+	gap: var(--space-2-5);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-block-head b {
@@ -33,14 +33,14 @@
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-card-question {
-	margin: 0;
+	margin: var(--space-none);
 	padding-top: var(--space-3);
 	font-weight: var(--fw-semi);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-card-detail {
-	margin: 0;
-	padding: var(--space-0-5) 0 var(--space-3);
+	margin: var(--space-none);
+	padding: var(--space-0-5) var(--space-none) var(--space-3);
 	color: var(--text-3);
 }
 
@@ -50,8 +50,8 @@
 	align-items: center;
 	gap: var(--space-3);
 	height: 34px;
-	margin: 0 calc(-1 * var(--space-4));
-	padding: 0 var(--space-4);
+	margin: var(--space-none) calc(-1 * var(--space-4));
+	padding: var(--space-none) var(--space-4);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
@@ -86,7 +86,7 @@
 	align-self: flex-start;
 	height: var(--h-sm);
 	margin-top: var(--space-1);
-	padding: 0 var(--space-3);
+	padding: var(--space-none) var(--space-3);
 	font: inherit;
 	cursor: pointer;
 }
@@ -97,7 +97,7 @@
 	align-items: center;
 	gap: var(--space-2);
 	height: var(--h-lg);
-	margin: var(--space-1) 0 0;
+	margin: var(--space-1) var(--space-none) var(--space-none);
 	color: var(--text-3);
 }
 
@@ -105,7 +105,7 @@
 	flex: 1;
 	min-width: 120px;
 	height: 100%;
-	padding: 0;
+	padding: var(--space-none);
 	font: inherit;
 }
 
