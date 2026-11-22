@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { TaskView } from "@widgetarium/tasks/contract";
-import { Badge, Popover, PopoverContent, PopoverTrigger } from "@widgetarium/kit";
+import { Badge, Popover, PopoverContent, PopoverTrigger, Pressable } from "@widgetarium/kit";
 import { KIND_WORDS } from "../../lib/task-words.js";
 import { workingChatOf } from "../../lib/working-chat.js";
 import { StatusGlyph } from "../status-glyph/status-glyph.js";
@@ -36,9 +36,9 @@ export function TaskChips({ view }: TaskChipsProps): ReactElement {
 			<Popover>
 				<PopoverTrigger asChild>
 					<Badge asChild variant="chip">
-						<button type="button" aria-label={ALL_PROPERTIES} data-tasks-more-props="">
+						<Pressable label={ALL_PROPERTIES} data-tasks-more-props="">
 							{MORE.replace("{count}", String(restCountOf(view)))}
-						</button>
+						</Pressable>
 					</Badge>
 				</PopoverTrigger>
 				<PopoverContent side="bottom" align="start" aria-label={ALL_PROPERTIES}>

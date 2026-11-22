@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import type { TaskCard } from "@widgetarium/tasks/contract";
 import { countSaid } from "../../lib/task-counts.js";
 import { ageOf } from "../../lib/task-times.js";
@@ -15,7 +16,7 @@ const CRITERIA = "{done}/{total} criteria";
 
 export function TaskRow({ card, openTask }: TaskRowProps): ReactElement {
 	return (
-		<button type="button" className="wg-tasks-row" data-tasks-row={card.id} onClick={() => openTask(card.id)}>
+		<Pressable className="wg-tasks-row" data-tasks-row={card.id} onClick={() => openTask(card.id)}>
 			<StatusGlyph status={card.status} />
 			<span className="wg-tasks-mono wg-tasks-t2">{card.id}</span>
 			<span className="wg-tasks-ell">
@@ -31,6 +32,6 @@ export function TaskRow({ card, openTask }: TaskRowProps): ReactElement {
 				{card.branch === null ? null : <span className="wg-tasks-chip wg-tasks-mono">{card.branch}</span>}
 			</span>
 			<span className="wg-tasks-t3">{ageOf(card.updatedAt, Date.now())}</span>
-		</button>
+		</Pressable>
 	);
 }

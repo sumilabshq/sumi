@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import type { BoardColumn, ClosedWithin } from "@widgetarium/tasks/contract";
 import { CLOSED_WITHIN_WORDS } from "../../lib/task-words.js";
 import { StatusGlyph } from "../status-glyph/status-glyph.js";
@@ -14,12 +15,12 @@ const UNFOLD = "Unfold {status}";
 
 export function FoldedStrip({ column, closedWithin, unfold }: FoldedStripProps): ReactElement {
 	return (
-		<button
-			type="button"
+		<Pressable
+			variant="soft"
 			className="wg-tasks-strip"
 			data-tasks-strip={column.status}
 			data-tasks-glide={`strip:${column.status}`}
-			aria-label={UNFOLD.replace("{status}", column.label)}
+			label={UNFOLD.replace("{status}", column.label)}
 			onClick={unfold}
 		>
 			<StatusGlyph status={column.status} />
@@ -27,6 +28,6 @@ export function FoldedStrip({ column, closedWithin, unfold }: FoldedStripProps):
 				<b>{column.label}</b> {column.count}
 				{column.isClosed ? ` · ${CLOSED_WITHIN_WORDS[closedWithin].toLowerCase()}` : ""}
 			</span>
-		</button>
+		</Pressable>
 	);
 }

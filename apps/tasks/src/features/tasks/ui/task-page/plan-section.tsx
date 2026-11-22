@@ -23,8 +23,8 @@ export function PlanList({ plan }: PlanListProps): ReactElement {
 	return (
 		<Fragment>
 			{plan.map((step) => (
-				<div key={step.id} className="wg-tasks-li" data-state={step.state}>
-					<span className="wg-tasks-dot" data-state={step.state} />
+				<div key={step.id} className="wg-tasks-li" data-status={step.state}>
+					<span className="wg-tasks-dot" data-status={step.state} />
 					<span className={QUIET_STATES.has(step.state) ? "wg-tasks-t2" : undefined}>
 						{step.text}
 						{step.note === null ? null : <span className="wg-tasks-t3">{` · ${step.note}`}</span>}

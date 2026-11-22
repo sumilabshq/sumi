@@ -22,8 +22,8 @@ export function CriteriaList({ criteria }: CriteriaListProps): ReactElement {
 	return (
 		<Fragment>
 			{criteria.map((criterion) => (
-				<div key={criterion.id} className="wg-tasks-li" data-state={criterion.state}>
-					<span className="wg-tasks-box" data-state={criterion.state} />
+				<div key={criterion.id} className="wg-tasks-li" data-status={criterion.state}>
+					<span className="wg-tasks-box" data-status={criterion.state} />
 					<div className={criterion.state === "dropped" ? "wg-tasks-t2" : undefined}>
 						<span className="wg-tasks-li-text">{criterion.text}</span>
 						{criterion.evidence === null ? null : <div className="wg-tasks-ev">Evidence: {criterion.evidence}</div>}

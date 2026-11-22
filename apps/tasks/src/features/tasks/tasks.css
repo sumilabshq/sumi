@@ -1,14 +1,3 @@
-:is(.wg-tasks, .wg-tasks-line) {
-	--wg-tasks-blocked-ink: color-mix(in srgb, var(--sumi-danger) 82%, var(--sumi-text));
-	--wg-tasks-blocked-wash: color-mix(in srgb, var(--sumi-danger) 8%, transparent);
-	--wg-tasks-paused-ink: color-mix(in srgb, var(--sumi-warning) 70%, var(--sumi-text));
-	--wg-tasks-paused-wash: color-mix(in srgb, var(--sumi-warning) 10%, transparent);
-	--wg-tasks-wash: color-mix(in srgb, var(--sumi-accent) 6%, transparent);
-	--wg-tasks-turn: color-mix(in srgb, var(--sumi-accent) 8%, transparent);
-	--wg-tasks-chip: color-mix(in srgb, var(--sumi-text) 4.5%, transparent);
-	--wg-tasks-underline: color-mix(in srgb, var(--sumi-text) 30%, transparent);
-}
-
 .wg-tasks {
 	container-type: inline-size;
 	box-sizing: border-box;
@@ -23,8 +12,7 @@
 }
 
 .wg-tasks *,
-.wg-tasks-head *,
-.wg-tasks-line * {
+.wg-tasks-head * {
 	box-sizing: border-box;
 }
 
@@ -92,7 +80,6 @@
 	width: 12px;
 	height: 12px;
 	border: 1.5px solid currentColor;
-	border-radius: 0;
 	color: var(--sumi-text-2);
 }
 
@@ -251,7 +238,6 @@
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
 	padding: 4px;
-	border-radius: 0;
 }
 
 .wg-tasks-col[data-tasks-column="ready_to_test"] {
@@ -282,17 +268,9 @@
 	align-self: stretch;
 	min-height: 160px;
 	padding: 10px 0 0;
-	border: 0;
-	border-radius: 0;
-	background: var(--sumi-hover);
-	color: var(--sumi-text-2);
 	font: var(--sumi-fs-12) var(--sumi-font-ui);
 	cursor: pointer;
 	scroll-snap-align: start;
-}
-
-.wg-tasks-strip:hover {
-	background: var(--sumi-active);
 }
 
 .wg-tasks-strip-said {
@@ -313,7 +291,6 @@
 	min-height: 72px;
 	padding: 12px;
 	border: 1px dashed var(--sumi-line-strong);
-	border-radius: 0;
 	color: var(--sumi-text-3);
 	font-size: var(--sumi-fs-12);
 }
@@ -324,24 +301,7 @@
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
 	padding: 12px;
-	border-radius: 0;
-	background: var(--sumi-hover);
-	color: inherit;
-	text-decoration: none;
 	cursor: pointer;
-	outline: none;
-}
-
-.wg-tasks-card:hover {
-	background: var(--sumi-active);
-}
-
-.wg-tasks-card:focus-visible {
-	box-shadow: 0 0 0 2px var(--sumi-text-3);
-}
-
-.wg-tasks-col[data-tasks-column="ready_to_test"] .wg-tasks-card {
-	background: var(--sumi-plate);
 }
 
 .wg-tasks-card-title {
@@ -362,14 +322,12 @@
 	min-width: 24px;
 	height: 3px;
 	overflow: hidden;
-	border-radius: 0;
 	background: var(--sumi-line);
 }
 
 .wg-tasks-bar i {
 	display: block;
 	height: 100%;
-	border-radius: 0;
 	background: var(--sumi-text);
 }
 
@@ -381,7 +339,6 @@
 	height: 20px;
 	padding: 0 6px;
 	overflow: hidden;
-	border-radius: 0;
 	background: var(--wg-tasks-chip);
 	color: var(--sumi-text-2);
 	font-size: var(--sumi-fs-11);
@@ -394,7 +351,6 @@
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
 	padding: 6px 8px;
-	border-radius: 0;
 	font-size: var(--sumi-fs-12);
 	line-height: 1.4;
 }
@@ -414,7 +370,7 @@
 }
 
 .wg-tasks-note[data-tone="wait"] {
-	background: var(--sumi-active);
+	background: var(--wg-kit-fill-hover);
 	color: var(--sumi-text-2);
 }
 
@@ -482,7 +438,6 @@
 
 	.wg-tasks-waiting .wg-tasks-card {
 		gap: var(--sumi-sp-3);
-		background: var(--wg-tasks-turn);
 	}
 
 	.wg-tasks-pills {
@@ -526,17 +481,9 @@
 	width: 100%;
 	height: 36px;
 	padding: 0 8px;
-	border: 0;
-	border-radius: 0;
-	background: transparent;
-	color: var(--sumi-text);
 	font: var(--sumi-fs-13) var(--sumi-font-ui);
 	text-align: left;
 	cursor: pointer;
-}
-
-.wg-tasks-row:hover {
-	background: var(--sumi-hover);
 }
 
 .wg-tasks-row > :last-child {
@@ -694,8 +641,7 @@
 	align-items: center;
 	gap: var(--sumi-sp-3);
 	padding: 12px 14px;
-	border-radius: 0;
-	background: var(--sumi-hover);
+	background: var(--wg-kit-fill);
 }
 
 .wg-tasks-banner[data-your-turn] {
@@ -719,8 +665,7 @@
 	flex-direction: column;
 	gap: var(--sumi-sp-4);
 	padding: 12px;
-	border-radius: 0;
-	background: var(--sumi-hover);
+	background: var(--wg-kit-fill);
 }
 
 .wg-tasks-send-back-acts {
@@ -763,7 +708,7 @@
 	border-top: 0;
 }
 
-.wg-tasks-li[data-state="dropped"] .wg-tasks-li-text {
+.wg-tasks-li[data-status="dropped"] .wg-tasks-li-text {
 	text-decoration: line-through;
 }
 
@@ -773,10 +718,9 @@
 	height: 14px;
 	margin-top: 2px;
 	border: 1.5px solid var(--sumi-text-3);
-	border-radius: 0;
 }
 
-.wg-tasks-box[data-state="met"] {
+.wg-tasks-box[data-status="met"] {
 	border-color: var(--sumi-text);
 	background: var(--sumi-text);
 }
@@ -793,7 +737,7 @@
 	content: "";
 }
 
-.wg-tasks-box[data-state="dropped"] {
+.wg-tasks-box[data-status="dropped"] {
 	border-style: dashed;
 }
 
@@ -808,28 +752,26 @@
 	height: 8px;
 	margin-top: 5px;
 	border: 1.5px solid var(--sumi-text-3);
-	border-radius: 0;
 }
 
-.wg-tasks-dot[data-state="done"] {
+.wg-tasks-dot[data-status="done"] {
 	border-color: var(--sumi-text);
 	background: var(--sumi-text);
 }
 
-.wg-tasks-dot[data-state="active"] {
+.wg-tasks-dot[data-status="active"] {
 	border-color: var(--sumi-text);
 	background: conic-gradient(var(--sumi-text) 0 50%, transparent 0);
 }
 
-.wg-tasks-dot[data-state="blocked"] {
+.wg-tasks-dot[data-status="blocked"] {
 	border-color: var(--sumi-danger);
 	background: var(--sumi-danger);
 }
 
 .wg-tasks-tp {
 	padding: 4px;
-	border-radius: 0;
-	background: var(--sumi-hover);
+	background: var(--wg-kit-fill);
 }
 
 .wg-tasks-tph,
@@ -863,7 +805,6 @@
 	gap: var(--sumi-sp-3);
 	margin-bottom: 2px;
 	padding: 12px;
-	border-radius: 0;
 	background: var(--sumi-plate);
 }
 
@@ -896,8 +837,7 @@
 .wg-tasks-fail {
 	margin-top: 8px;
 	padding: 8px 10px;
-	border-radius: 0;
-	background: var(--sumi-hover);
+	background: var(--wg-kit-fill);
 	font-family: var(--sumi-font-mono);
 	font-size: var(--sumi-fs-12);
 	white-space: pre-wrap;
@@ -914,8 +854,7 @@
 	grid-template-columns: 36px minmax(0, 1fr);
 	gap: var(--sumi-sp-3);
 	padding: 14px;
-	border-radius: 0;
-	background: var(--sumi-hover);
+	background: var(--wg-kit-fill);
 }
 
 .wg-tasks-doc-tile {
@@ -924,7 +863,6 @@
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	border-radius: 0;
 	background: var(--sumi-plate);
 	color: var(--sumi-text-2);
 }
@@ -971,8 +909,7 @@
 	min-width: 260px;
 	max-width: 340px;
 	padding: 16px;
-	border-radius: 0;
-	background: var(--sumi-hover);
+	background: var(--wg-kit-fill);
 }
 
 .wg-tasks-prop {
@@ -1036,38 +973,6 @@
 	}
 }
 
-.wg-tasks-line {
-	container-type: inline-size;
-	display: flex;
-	align-items: center;
-	gap: var(--sumi-sp-4);
-	width: 100%;
-	height: 32px;
-	margin: 0 0 6px;
-	padding: 0 10px;
-	border: 0;
-	border-radius: 0;
-	background: transparent;
-	color: var(--sumi-text);
-	font: var(--sumi-fs-13) var(--sumi-font-ui);
-	text-align: left;
-	cursor: pointer;
-}
-
-.wg-tasks-line:hover {
-	background: var(--sumi-hover);
-}
-
-.wg-tasks-line[data-tasks-line="blocked"] {
-	background: var(--wg-tasks-blocked-wash);
-}
-
-.wg-tasks-line[data-your-turn] {
-	background: var(--wg-tasks-turn);
-}
-
-.wg-tasks-line .wg-tasks-st,
-.wg-tasks-line .wg-tasks-mono,
 .wg-tasks-line-lead {
 	flex: none;
 }
@@ -1124,15 +1029,10 @@
 
 .wg-tasks-card,
 .wg-tasks-strip,
-.wg-tasks-row,
-.wg-tasks-line {
+.wg-tasks-row {
 	transition:
 		background-color var(--sumi-dur-fast) var(--sumi-ease),
 		color var(--sumi-dur-fast) var(--sumi-ease);
-}
-
-:is(.wg-tasks-card, .wg-tasks-strip, .wg-tasks-row, .wg-tasks-line):hover {
-	transition-duration: 0ms;
 }
 
 .wg-tasks-card,
@@ -1190,6 +1090,6 @@
 	transition: opacity var(--sumi-dur-base) var(--sumi-ease-out);
 }
 
-.wg-tasks-box[data-state="met"]::after {
+.wg-tasks-box[data-status="met"]::after {
 	opacity: 1;
 }
