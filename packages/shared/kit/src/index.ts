@@ -194,6 +194,7 @@ export {
 
 export { LAYOUT_KINDS } from "./constants/layout";
 export { SHADCN_TOKENS } from "./constants/shadcn-tokens";
+export { KIT_TOKENS } from "./constants/kit-tokens";
 export {
 	BRAND_EXTENSION_TOKENS,
 	CONTRACT_TOKENS,

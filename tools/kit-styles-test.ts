@@ -3,7 +3,7 @@ import { KIT_STYLE_ROOTS, kitClassesOf, kitStyleRefusalsOf, kitStyleRefusalsUnde
 
 check(
 	"a sheet that reads kit tokens only passes",
-	kitStyleRefusalsOf("a.css", ".row { border-radius: var(--wg-kit-item); }"),
+	kitStyleRefusalsOf("a.css", ".row { border-radius: var(--item); }"),
 	[],
 );
 check("inherit radius passes", kitStyleRefusalsOf("a.css", ".row { border-radius: inherit; }"), []);
@@ -17,20 +17,20 @@ check("a kit selector is refused", kitStyleRefusalsOf("a.css", ".strip .wg-kit-i
 	"a.css:1 kit-selector: restyles a kit component from outside the kit; give the kit the state or variant",
 ]);
 check("a zero radius is refused", kitStyleRefusalsOf("a.css", ".row {\n\tborder-radius: 0;\n}"), [
-	"a.css:2 radius-literal: border-radius: 0; only var(--wg-kit-*) radii",
+	"a.css:2 radius-literal: border-radius: 0; only kit radius tokens",
 ]);
 check(
 	"a theme radius is refused as a radius",
-	kitStyleRefusalsOf("a.css", ".row { border-top-left-radius: var(--sumi-r-sm); }"),
-	["a.css:1 radius-literal: border-top-left-radius: var(--sumi-r-sm); only var(--wg-kit-*) radii"],
+	kitStyleRefusalsOf("a.css", ".row { border-top-left-radius: var(--r-sm); }"),
+	["a.css:1 radius-literal: border-top-left-radius: var(--r-sm); only kit radius tokens"],
 );
 check(
 	"a theme radius carried in a variable is refused",
-	kitStyleRefusalsOf("a.css", ":root { --corner: var(--sumi-r-md); }"),
-	["a.css:1 sumi-radius: --corner: var(--sumi-r-md); --sumi-r-* is a theme primitive, read a --wg-kit-* radius"],
+	kitStyleRefusalsOf("a.css", ":root { --corner: var(--r-md); }"),
+	["a.css:1 sumi-radius: --corner: var(--r-md); --r-* is a theme primitive, read a kit radius token"],
 );
-check("a state colour is refused", kitStyleRefusalsOf("a.css", ".row { background: var(--sumi-hover); }"), [
-	"a.css:1 state-token: background: var(--sumi-hover); hover, active, selected and glyph colours are the kit's states",
+check("a state colour is refused", kitStyleRefusalsOf("a.css", ".row { background: var(--hover); }"), [
+	"a.css:1 state-token: background: var(--hover); hover, active, selected and glyph colours are the kit's states",
 ]);
 check("a colour literal is refused", kitStyleRefusalsOf("a.css", ".row { color: rgba(0, 0, 0, 0.5); }"), [
 	"a.css:1 color-literal: color: rgba(0, 0, 0, 0.5); read a colour token",
@@ -80,12 +80,12 @@ check(
 );
 check(
 	"a custom element painting its own hover is refused",
-	kitStyleRefusalsOf("a.css", ".row:hover { background: var(--wg-kit-control-hover); }"),
+	kitStyleRefusalsOf("a.css", ".row:hover { background: var(--control-fill-hover); }"),
 	["a.css:1 custom-state: .row:hover paints a state (background); states are drawn by kit components"],
 );
 check(
 	"a selected row painted through a variable is refused",
-	kitStyleRefusalsOf("a.css", '.row[aria-current="true"] { --row-fill: var(--wg-kit-control-open); }'),
+	kitStyleRefusalsOf("a.css", '.row[aria-current="true"] { --row-fill: var(--control-fill-open); }'),
 	[
 		'a.css:1 custom-state: .row[aria-current="true"] paints a state (--row-fill); states are drawn by kit components',
 		"a.css:1 local-variable: --row-fill is declared off :root; custom properties are global, declared on :root",
@@ -94,12 +94,12 @@ check(
 check("revealing tools on hover passes", kitStyleRefusalsOf("a.css", ".row:hover .tools { opacity: 1; }"), []);
 check(
 	"a spacing variable on a kit component is refused as local, never as paint",
-	kitStyleRefusalsOf("a.css", ".strip-icon { --end-room: var(--sumi-sp-5); }", KIT_CLASSES),
+	kitStyleRefusalsOf("a.css", ".strip-icon { --end-room: var(--space-3); }", KIT_CLASSES),
 	["a.css:1 local-variable: --end-room is declared off :root; custom properties are global, declared on :root"],
 );
 check(
 	"a colour variable on a kit component is refused",
-	kitStyleRefusalsOf("a.css", ".strip-icon { --tint: var(--sumi-text-3); }", KIT_CLASSES),
+	kitStyleRefusalsOf("a.css", ".strip-icon { --tint: var(--text-3); }", KIT_CLASSES),
 	[
 		"a.css:1 kit-restyle: .strip-icon is a class on a kit component and this rule paints it; give the kit the state or variant",
 		"a.css:1 local-variable: --tint is declared off :root; custom properties are global, declared on :root",
@@ -154,7 +154,7 @@ check(
 );
 check(
 	"a text size is not paint",
-	kitStyleRefusalsOf("a.ts", 'const A = "cv:hover:text-sm cv:text-[length:var(--sumi-fs-13)]";'),
+	kitStyleRefusalsOf("a.ts", 'const A = "cv:hover:text-sm cv:text-[length:var(--fs-13)]";'),
 	[],
 );
 
@@ -177,7 +177,7 @@ check(
 
 check(
 	"an explicit none radius passes",
-	kitStyleRefusalsOf("a.css", ".row { border-start-start-radius: var(--wg-kit-radius-none); }"),
+	kitStyleRefusalsOf("a.css", ".row { border-start-start-radius: var(--radius-none); }"),
 	[],
 );
 check("a zero corner is refused", kitStyleRefusalsOf("a.css", ".row { border-start-start-radius: 0; }").length, 1);
@@ -185,24 +185,24 @@ check(
 	"spacing from variables passes",
 	kitStyleRefusalsOf(
 		"a.css",
-		".row { padding: var(--sumi-sp-2) var(--wg-kit-space-none); margin: 0 auto; gap: calc(-1 * var(--sumi-sp-1)); }",
+		".row { padding: var(--space-1) var(--space-none); margin: 0 auto; gap: calc(-1 * var(--space-0-5)); }",
 	).length,
 	1,
 );
 check("spacing in pixels is refused", kitStyleRefusalsOf("a.css", ".row { padding: 12px; }"), [
-	"a.css:1 spacing-literal: padding: 12px; spacing comes from a :root variable, var(--wg-kit-space-none) for none",
+	"a.css:1 spacing-literal: padding: 12px; spacing comes from a :root variable, var(--space-none) for none",
 ]);
-check("a literal fallback is refused", kitStyleRefusalsOf("a.css", ".row { gap: var(--sumi-sp-4, 8px); }").length, 1);
+check("a literal fallback is refused", kitStyleRefusalsOf("a.css", ".row { gap: var(--space-2, 8px); }").length, 1);
 check("a named colour is refused", kitStyleRefusalsOf("a.css", ".row { color: white; }").length, 1);
 check(
 	"a variable declared on a component is refused",
-	kitStyleRefusalsOf("a.css", ".row { --row-gap: var(--sumi-sp-2); }"),
+	kitStyleRefusalsOf("a.css", ".row { --row-gap: var(--space-1); }"),
 	["a.css:1 local-variable: --row-gap is declared off :root; custom properties are global, declared on :root"],
 );
-check("a variable declared on :root passes", kitStyleRefusalsOf("a.css", ":root { --row-gap: var(--sumi-sp-2); }"), []);
+check("a variable declared on :root passes", kitStyleRefusalsOf("a.css", ":root { --row-gap: var(--space-1); }"), []);
 check(
 	"a scale spacing utility passes",
-	kitStyleRefusalsOf("a.ts", 'const A = "cv:p-2 cv:gap-[var(--sumi-sp-1)] cv:rounded-none";'),
+	kitStyleRefusalsOf("a.ts", 'const A = "cv:p-2 cv:gap-[var(--space-0-5)] cv:rounded-none";'),
 	[],
 );
 check(

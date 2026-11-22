@@ -3,6 +3,7 @@ import path from "node:path";
 import { parse } from "@babel/parser";
 import postcss from "postcss";
 import type { Rule } from "postcss";
+import { KIT_TOKENS } from "../packages/shared/kit/src/constants/kit-tokens.ts";
 
 export const KIT_STYLE_ROOTS: readonly string[] = ["plugins", "apps/studio/src", "apps/tasks/src"];
 
@@ -30,9 +31,9 @@ const NAMED_COLOR =
 const ROOT_SELECTOR = /^:root(?:\.[\w-]+|\[[^\]]+\])*$/;
 const UTILITY_SPACING = /^-?(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])-\[(.*)\]$/;
 const UTILITY_ARBITRARY_PAINT = /^(?:bg|text|border|fill|stroke|outline|ring|decoration|caret)-\[(.*)\]$/;
-const KIT_TOKEN = /var\(--wg-kit-[a-z0-9-]+\)/g;
-const SUMI_RADIUS = /var\(--sumi-r-[a-z0-9-]+\)/;
-const SUMI_STATE = /var\(--sumi-(?:hover|active|selected|glyph-[a-z0-9-]+)\)/;
+const KIT_TOKEN = new RegExp(`var\\(--(?:${KIT_TOKENS.join("|")})\\)`, "g");
+const SUMI_RADIUS = /var\(--r-[a-z0-9-]+\)/;
+const SUMI_STATE = /var\(--(?:hover|active|selected|glyph-[a-z0-9-]+)\)/;
 const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|lab|lch|hwb|color)\((?!\s*from\s)/;
 const MASK_PROPERTY = /^(?:-webkit-)?mask(?:-image)?$/;
 const SKIN_PROPERTY =
@@ -242,13 +243,11 @@ function declarationRefusalsOf(at: string, property: string, value: string): rea
 	const refusals: string[] = [];
 
 	if (RADIUS_PROPERTY.test(property) && !isKitRadius(value)) {
-		refusals.push(`${at} radius-literal: ${property}: ${value}; only var(--wg-kit-*) radii`);
+		refusals.push(`${at} radius-literal: ${property}: ${value}; only kit radius tokens`);
 	}
 
 	if (!RADIUS_PROPERTY.test(property) && SUMI_RADIUS.test(value)) {
-		refusals.push(
-			`${at} sumi-radius: ${property}: ${value}; --sumi-r-* is a theme primitive, read a --wg-kit-* radius`,
-		);
+		refusals.push(`${at} sumi-radius: ${property}: ${value}; --r-* is a theme primitive, read a kit radius token`);
 	}
 
 	if (SUMI_STATE.test(value)) {
@@ -259,7 +258,7 @@ function declarationRefusalsOf(at: string, property: string, value: string): rea
 
 	if (SPACING_PROPERTY.test(property) && !isTokenSpacing(value)) {
 		refusals.push(
-			`${at} spacing-literal: ${property}: ${value}; spacing comes from a :root variable, var(--wg-kit-space-none) for none`,
+			`${at} spacing-literal: ${property}: ${value}; spacing comes from a :root variable, var(--space-none) for none`,
 		);
 	}
 

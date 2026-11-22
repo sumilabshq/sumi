@@ -1,4 +1,4 @@
-import { SHADCN_TOKENS } from "@widgetarium/kit";
+import { KIT_TOKENS, SHADCN_TOKENS } from "@widgetarium/kit";
 import { TAILWIND_PALETTE_CLASS, draftBlockFindings, sheetFindings } from "./widget-check-tailwind.js";
 import { inlineInjectFindings } from "./widget-check-inject.js";
 import { reachCheckFindings } from "./widget-check-reach.js";
@@ -10,10 +10,13 @@ const PLATE_PROPERTY = /(background[a-z-]*|border[a-z-]*|box-shadow|outline[a-z-
 const SHAPE_PROPERTY = /(?:radius|collapse|spacing|offset|repeat|position|size|clip|origin|attachment|width|style)/;
 const NAMED_FAMILY = /font-family\s*:\s*(?![^;]*var\()/g;
 const COMPUTED_FONT_SIZE = /font-size\s*:\s*(?:\d|calc\()/g;
-const BARE_PAINT = /^(?:transparent|none|inherit|currentColor|unset|initial|0)$|^1px solid var\(--wg-kit-/;
+const KIT_TOKEN_NAME = `--(?:${KIT_TOKENS.join("|")})(?![a-z0-9-])`;
+const KIT_TOKEN = new RegExp(KIT_TOKEN_NAME);
+const BARE_PAINT = new RegExp(
+	`^(?:transparent|none|inherit|currentColor|unset|initial|0)$|^1px solid var\\(${KIT_TOKEN_NAME}`,
+);
 const HAS_MAP_CALL = /\.map\s*\(/;
 const USE_DATA_LIST = /useData\s*\(\s*([A-Za-z_$][\w$]*)\.list\s*\)/g;
-const KIT_TOKEN_PREFIX = "--wg-kit-";
 const SHADCN_TOKEN = new RegExp(`var\\(--(?:${SHADCN_TOKENS.join("|")})\\)`);
 const RENAMED_CLASS = /(?<![\w-])text-(muted|accent)(?![\w-])/g;
 const RENAMED_TO: Readonly<Record<string, string>> = { muted: "text-muted-foreground", accent: "text-brand" };
@@ -204,7 +207,7 @@ function colourFindings(text: string): Finding[] {
 	return [
 		{
 			rule: "colour",
-			message: `a plate painted from outside the kit (${said[0]}); a background, a border and a shadow come from a ${KIT_TOKEN_PREFIX}* or shadcn token (var(--card), var(--border)), because the surface laws measure those and a person's theme repaints them — ink may still come from the host's own text colours`,
+			message: `a plate painted from outside the kit (${said[0]}); a background, a border and a shadow come from a kit or shadcn token (var(--card), var(--border)), because the surface laws measure those and a person's theme repaints them — ink may still come from the host's own text colours`,
 		},
 	];
 }
@@ -283,5 +286,5 @@ function lineNamesToken(text: string, at: number): boolean {
 }
 
 function namesKitToken(text: string): boolean {
-	return text.includes(KIT_TOKEN_PREFIX) || SHADCN_TOKEN.test(text);
+	return KIT_TOKEN.test(text) || SHADCN_TOKEN.test(text);
 }
