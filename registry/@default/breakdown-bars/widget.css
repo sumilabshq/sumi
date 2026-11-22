@@ -1,9 +1,9 @@
 .breakdown-track {
 	height: 8px;
-	background: var(--wg-kit-plate);
+	background: var(--plate-radius);
 }
 
 .breakdown-fill {
 	height: 8px;
-	background: var(--wg-kit-accent);
+	background: var(--brand);
 }

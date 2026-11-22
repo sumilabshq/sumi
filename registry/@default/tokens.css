@@ -1,69 +1,69 @@
 .wg-metric,
 .wg-metric-ink {
-	--wg-metric-up: var(--text-success);
-	--wg-metric-down: var(--text-error);
-	--wg-metric-flat: var(--wg-kit-text-muted);
-	--wg-metric-tone: var(--wg-metric-flat);
-	--wg-metric-plate: color-mix(in srgb, var(--text-normal) 4.5%, transparent);
+	--metric-up: var(--text-success);
+	--metric-down: var(--text-error);
+	--metric-flat: var(--muted-foreground);
+	--metric-tone: var(--metric-flat);
+	--metric-plate: color-mix(in srgb, var(--text-normal) 4.5%, transparent);
 	/* TRADE-OFF: lighter than the kit's 40px glass — a plate lying ON the chart must let the curve tint it, and 40 flattened the colour to grey */
-	--wg-metric-plate-blur: blur(22px) saturate(150%);
-	--wg-metric-dot: color-mix(in srgb, var(--text-normal) 11%, transparent);
+	--metric-plate-blur: blur(22px) saturate(150%);
+	--metric-dot: color-mix(in srgb, var(--text-normal) 11%, transparent);
 }
 
 .wg-metric[data-tone="up"],
 .wg-metric-ink[data-tone="up"] {
-	--wg-metric-tone: var(--wg-metric-up);
+	--metric-tone: var(--metric-up);
 }
 
 .wg-metric[data-tone="down"],
 .wg-metric-ink[data-tone="down"] {
-	--wg-metric-tone: var(--wg-metric-down);
+	--metric-tone: var(--metric-down);
 }
 
 .habit-sub {
 	font-size: var(--font-ui-smaller, 12px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wg-rank {
-	--wg-rank-tone: var(--wg-kit-neutral);
+	--rank-tone: var(--neutral);
 	/* TRADE-OFF: 65% and not a rounder number — orange on white falls to 4.13:1 at 78%, and it is the worst of the eight */
-	--wg-rank-toward-ink: 65%;
-	--wg-rank-toward-ground: 20%;
-	--wg-rank-ink: var(--background-primary);
-	--wg-rank-ground: var(--wg-kit-raise);
-	--wg-rank-card: 64px;
-	--wg-rank-gap: var(--size-2-3, 6px);
-	--wg-rank-fog: 28px;
-	--wg-rank-rail-width: 58px;
+	--rank-toward-ink: 65%;
+	--rank-toward-ground: 20%;
+	--rank-ink: var(--background-primary);
+	--rank-ground: var(--raise);
+	--rank-card: 64px;
+	--rank-gap: var(--size-2-3, 6px);
+	--rank-fog: 28px;
+	--rank-rail-width: 58px;
 }
 
 .wg-rank .is-accent {
-	--wg-rank-tone: var(--wg-kit-accent);
+	--rank-tone: var(--brand);
 }
 
 .wg-rank .is-ok {
-	--wg-rank-tone: var(--wg-kit-success);
+	--rank-tone: var(--success);
 }
 
 .wg-rank .is-warn {
-	--wg-rank-tone: var(--wg-kit-warning);
+	--rank-tone: var(--warning);
 }
 
 .wg-rank .is-err {
-	--wg-rank-tone: var(--wg-kit-error);
+	--rank-tone: var(--error);
 }
 
 .wg-rank .is-info {
-	--wg-rank-tone: var(--wg-kit-info);
+	--rank-tone: var(--info);
 }
 
 .wg-rank .is-note {
-	--wg-rank-tone: var(--wg-kit-note);
+	--rank-tone: var(--note);
 }
 
 .wg-rank .is-standout {
-	--wg-rank-tone: var(--wg-kit-standout);
+	--rank-tone: var(--standout);
 }
 
 /* OrbiTask speaks the kit, and the kit speaks the vault.
@@ -127,9 +127,9 @@
 	/* SURFACES — three levels and no more: the note, a plate, a card standing on it. */
 	--orbi-canvas: var(--background-primary, #ffffff);
 	/* CONTEXT: the kit owns the plate fill — two var() fallbacks for one colour drifted apart */
-	--orbi-plate: var(--wg-kit-fill);
+	--orbi-plate: var(--fill);
 	/* CONTEXT: a card on a plate must lift — the note's own colour sank once the plate rose */
-	--orbi-card: var(--wg-kit-raise);
+	--orbi-card: var(--raise);
 
 	/* TYPE — Obsidian's interface font and its own size steps, so a vault that sets a bigger
 	   UI size gets one. The weights and line heights stay ours because the design needs them
@@ -147,27 +147,27 @@
 	/* CONTEXT: these are ALIASES. The kit owns the geometry, the motion and the glass; a second
 	   copy of the numbers here drifted once already — the note beside them still said the plate
 	   padding was 12 after it had become 8, so every radius it explained was wrong. */
-	--orbi-plate-pad: var(--wg-kit-plate-pad);
-	--orbi-radius-plate: var(--wg-kit-plate);
-	--orbi-radius-sm: var(--wg-kit-item);
+	--orbi-plate-pad: var(--plate-pad);
+	--orbi-radius-plate: var(--plate-radius);
+	--orbi-radius-sm: var(--item);
 	--orbi-radius-md: 16px;
-	--orbi-radius-lg: var(--wg-kit-plate);
-	--orbi-radius-chip: var(--wg-kit-pill);
-	--orbi-radius-bar: var(--wg-kit-pill);
-	--orbi-radius-full: var(--wg-kit-pill);
+	--orbi-radius-lg: var(--plate-radius);
+	--orbi-radius-chip: var(--pill);
+	--orbi-radius-bar: var(--pill);
+	--orbi-radius-full: var(--pill);
 
-	--orbi-spring: var(--wg-spring);
-	--orbi-ease: var(--wg-ease);
-	--orbi-press: var(--wg-press);
-	--orbi-quick: var(--wg-quick);
-	--orbi-grow: var(--wg-grow);
+	--orbi-spring: var(--spring);
+	--orbi-ease: var(--ease-standard);
+	--orbi-press: var(--press);
+	--orbi-quick: var(--quick);
+	--orbi-grow: var(--grow);
 
 	/* TODO: --orbi-glass-tint aliased the kit's PANEL, not its tint — 78% where the kit's tint is 42% */
-	--orbi-glass-tint: var(--wg-kit-glass-panel);
-	--orbi-glass-blur: var(--wg-kit-glass-blur);
-	--orbi-glass-edge: var(--wg-kit-glass-edge);
+	--orbi-glass-tint: var(--glass-panel);
+	--orbi-glass-blur: var(--glass-blur);
+	--orbi-glass-edge: var(--glass-edge);
 
-	--orbi-shadow-low: var(--wg-kit-shadow);
+	--orbi-shadow-low: var(--shadow-raise);
 	--orbi-shadow-high: 0 8px 24px rgba(0, 0, 0, 0.12), 0 24px 64px rgba(0, 0, 0, 0.16);
 
 	font-family: var(--orbi-font);

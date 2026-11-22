@@ -3,7 +3,7 @@ export const CSS = `
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 	min-height: 0;
 	overflow: auto;
@@ -18,11 +18,11 @@ export const CSS = `
 .flow-project-grid-cell {
 	display: flex;
 	min-width: 0;
-	border-radius: var(--wg-kit-plate);
+	border-radius: var(--plate-radius);
 	cursor: pointer;
 	transition:
-		box-shadow var(--wg-quick) var(--wg-ease),
-		transform var(--wg-press) var(--wg-ease);
+		box-shadow var(--quick) var(--ease-standard),
+		transform var(--press) var(--ease-standard);
 }
 
 .flow-project-grid-cell > * {
@@ -35,11 +35,11 @@ export const CSS = `
 }
 
 .flow-project-grid-cell.is-picked {
-	box-shadow: 0 0 0 2px var(--wg-kit-accent);
+	box-shadow: 0 0 0 2px var(--brand);
 }
 
 .flow-project-grid-cell:focus-visible {
-	outline: 2px solid var(--wg-kit-accent);
+	outline: 2px solid var(--brand);
 	outline-offset: 2px;
 }
 
@@ -51,6 +51,6 @@ export const CSS = `
 .flow-project-grid-said {
 	margin: 0;
 	font-size: var(--font-ui-small);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 `;

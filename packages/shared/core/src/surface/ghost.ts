@@ -6,7 +6,7 @@ export const LANDING_MS = 190;
 
 type CarriedGhostBox = NonNullable<Carry["ghost"]>;
 
-type GhostStyle = CSSProperties & { readonly "--wg-ghost-lifted-from": number };
+type GhostStyle = CSSProperties & { readonly "--ghost-lifted-from": number };
 
 export function ghostElement(
 	carry: Carry | null | undefined,
@@ -44,6 +44,6 @@ function ghostBox(ghost: CarriedGhostBox): GhostStyle {
 		top: `${ghost.top}px`,
 		width: `${ghost.across}px`,
 		height: `${ghost.down}px`,
-		"--wg-ghost-lifted-from": ghost.liftedFrom,
+		"--ghost-lifted-from": ghost.liftedFrom,
 	};
 }

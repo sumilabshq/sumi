@@ -13,9 +13,9 @@
 	gap: 0.5rem;
 }
 .variant-bleed .wg-cat-stage {
-	background: var(--wg-kit-raise);
+	background: var(--raise);
 	border-radius: 14px;
-	box-shadow: inset 0 0 0 1px var(--wg-kit-card-edge);
+	box-shadow: inset 0 0 0 1px var(--card-edge);
 	overflow: hidden;
 }
 .variant-bleed .wg-cat-foot {
@@ -27,8 +27,8 @@
    A white card with a hairline, the preview inset on the card's own ground. The grey the
    tile used to carry is gone; the only edge in the design is the one that ends the card. */
 .variant-framed .wg-cat-tile {
-	background: var(--wg-kit-raise);
-	box-shadow: inset 0 0 0 1px var(--wg-kit-card-edge);
+	background: var(--raise);
+	box-shadow: inset 0 0 0 1px var(--card-edge);
 	border-radius: 16px;
 	padding: 10px 10px 0;
 	gap: 0;
@@ -47,8 +47,8 @@
    The preview takes the whole tile and the name floats on it as a small chip. Densest of
    the four, and the one that lets a widget be recognised by its shape before its name. */
 .variant-over .wg-cat-tile {
-	background: var(--wg-kit-raise);
-	box-shadow: inset 0 0 0 1px var(--wg-kit-card-edge);
+	background: var(--raise);
+	box-shadow: inset 0 0 0 1px var(--card-edge);
 	border-radius: 16px;
 	position: relative;
 	overflow: hidden;
@@ -64,10 +64,10 @@
 	width: auto;
 	padding: 5px 10px;
 	border-radius: 999px;
-	background: var(--wg-kit-glass-panel);
-	backdrop-filter: var(--wg-kit-glass-blur);
-	-webkit-backdrop-filter: var(--wg-kit-glass-blur);
-	box-shadow: var(--wg-kit-glass-edge);
+	background: var(--glass-panel);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+	box-shadow: var(--glass-edge);
 }
 
 /* ── D · plate ──────────────────────────────────────────────────────────────────────────
@@ -76,16 +76,16 @@
    listing of widgets. The one place a tint is allowed, because it is what makes the
    preview sit down rather than float. */
 .variant-plate .wg-cat-tile {
-	background: var(--wg-kit-raise);
+	background: var(--raise);
 	box-shadow:
-		inset 0 0 0 1px var(--wg-kit-card-edge),
+		inset 0 0 0 1px var(--card-edge),
 		0 1px 2px rgba(0, 0, 0, 0.04);
 	border-radius: 18px;
 	padding: 8px;
 	gap: 0;
 }
 .variant-plate .wg-cat-stage {
-	background: var(--wg-kit-fill);
+	background: var(--fill);
 	border-radius: 12px;
 	overflow: hidden;
 }

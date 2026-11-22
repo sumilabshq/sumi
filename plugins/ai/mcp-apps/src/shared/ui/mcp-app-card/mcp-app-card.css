@@ -1,17 +1,17 @@
 .sumi-mcp-card {
-	--sumi-mcp-card-fill: var(--sumi-plate);
+	--mcp-card-fill: var(--plate);
 	position: relative;
 	overflow: hidden;
-	border-radius: var(--wg-kit-plate);
-	background: var(--sumi-mcp-card-fill);
+	border-radius: var(--plate-radius);
+	background: var(--mcp-card-fill);
 }
 
 .sumi-mcp-card.is-border {
-	border: 1px solid var(--sumi-line);
+	border: 1px solid var(--line);
 }
 
 .sumi-mcp-card.is-tile {
-	--sumi-mcp-card-fill: var(--wg-kit-group-fill);
+	--mcp-card-fill: var(--group-fill);
 }
 
 .sumi-mcp-card.is-none {
@@ -26,8 +26,8 @@
 	justify-content: space-between;
 	gap: 8px;
 	padding: 8px 8px 0;
-	color: var(--sumi-text);
-	font-family: var(--sumi-font-ui);
+	color: var(--text);
+	font-family: var(--font-ui);
 	font-size: 13px;
 	line-height: 1.3;
 }
@@ -44,14 +44,14 @@
 .sumi-mcp-tag,
 .sumi-mcp-square {
 	height: 32px;
-	border-radius: var(--wg-kit-item);
-	background: var(--sumi-plate);
+	border-radius: var(--item);
+	background: var(--plate);
 	pointer-events: auto;
 }
 
 .sumi-mcp-head.is-over .sumi-mcp-tag,
 .sumi-mcp-head.is-over .sumi-mcp-square {
-	background: color-mix(in oklch, var(--sumi-plate) 88%, transparent);
+	background: color-mix(in oklch, var(--plate) 88%, transparent);
 	backdrop-filter: blur(8px);
 }
 
@@ -89,7 +89,7 @@
 }
 
 .sumi-mcp-tag-meta {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: 12px;
 	white-space: nowrap;
 }

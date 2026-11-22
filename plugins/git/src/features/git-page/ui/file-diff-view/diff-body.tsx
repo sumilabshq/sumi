@@ -29,7 +29,7 @@ export function DiffBody({ file }: DiffBodyProps): ReactElement {
 
 	return (
 		<Fragment>
-			<div className="wg-git-rows" style={{ "--wg-git-digits": digits } as CSSProperties}>
+			<div className="wg-git-rows" style={{ "--git-digits": digits } as CSSProperties}>
 				{rows.map((row, index) =>
 					row.kind === "gap" ? (
 						<div key={index} className="wg-git-hidden">

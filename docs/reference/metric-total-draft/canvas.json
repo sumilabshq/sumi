@@ -55,7 +55,7 @@
 			"x": -360,
 			"y": 0,
 			"w": 300,
-			"text": "The tile is the plugin's own frame, not the reference's.\n16px radius, 8px pad, --wg-kit-raise fill, the widget shadow.\nThe inner surface takes 8px — outer minus pad, the concentric law."
+			"text": "The tile is the plugin's own frame, not the reference's.\n16px radius, 8px pad, --raise fill, the widget shadow.\nThe inner surface takes 8px — outer minus pad, the concentric law."
 		},
 		{
 			"id": "plates",

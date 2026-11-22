@@ -4,7 +4,7 @@
 
 The Widgetarium kit's own look: the system every app and the Obsidian plugin get when none is chosen. The page is the theme's colour; a group of things that answer one question stands on a faint grey plate with no edge; type and space do the rest. Quiet, because almost nothing is coloured or outlined; strict, because every colour, gap and corner comes from the kit and none is written by hand.
 
-The practice is taken from Material 3 Expressive and Apple's current system, never their look: **maximalist, physical, answering.** Big controls, large corners, generous spacing; shape carries the accent as much as colour; motion is the answer to a press. Their runtimes, colour roles and base components are refused: colours come from `--wg-kit-*`.
+The practice is taken from Material 3 Expressive and Apple's current system, never their look: **maximalist, physical, answering.** Big controls, large corners, generous spacing; shape carries the accent as much as colour; motion is the answer to a press. Their runtimes, colour roles and base components are refused: colours come from `--*`.
 
 A system chosen for an app replaces this one; everything here also holds under it unless that system says otherwise, because `docs/ai/clean-ui.md` and the kit's plate laws are shared.
 
@@ -33,11 +33,11 @@ Each role is the token name the system binds, and the step of the Colour algorit
 | `destructive`, `success`, `warning`, `info`, `note`, `standout`, `highlight`                                                        | red, green, orange, blue, cyan, pink, yellow |
 | `chart-2`, `chart-3`, `chart-4`, `chart-5`                                                                                          | blue, cyan, orange, pink                     |
 
-The primary is ink, not the brand: a primary button is the kit's `variant="primary"`, never a hand-painted black, which disappears in dark mode. Two text colours carry everything: `--wg-kit-text` and `--wg-kit-text-muted`.
+The primary is ink, not the brand: a primary button is the kit's `variant="primary"`, never a hand-painted black, which disappears in dark mode. Two text colours carry everything: `--foreground` and `--muted-foreground`.
 
 ## Typography Rules
 
-The host's interface font, on the kit's four text sizes: `--wg-kit-text-xs|s|m|l`, 11px and the host's three UI steps.
+The host's interface font, on the kit's four text sizes: `--text-xs|s|m|l`, 11px and the host's three UI steps.
 
 | Step    | Use                                     | Size                              |
 | ------- | --------------------------------------- | --------------------------------- |
@@ -84,7 +84,7 @@ Three surfaces, and most of the screen wears the first: none, `apart` (one 1px l
 - **Only a repeat earns a plate**: the same widget beside it again, or a box of several of the same thing. A single thing stands bare. A grid gives every cell its own plate; the grid wears nothing.
 - **A tone replaces the plate's grey** for a state: warning, error, success or the accent.
 - **Corners are concentric:** a plate's radius is 14px at the tile and steps inward by the padding between them, re-laid on every change; never written by a widget.
-- **Raise** lifts 12% toward white, with an edge and no cast shadow: popovers, collapsed boxes drawn as drawers and sheets over a `--wg-overlay-scrim`.
+- **Raise** lifts 12% toward white, with an edge and no cast shadow: popovers, collapsed boxes drawn as drawers and sheets over a `--overlay-scrim`.
 - **A line divides; it never outlines.** It stands between a sidebar and the content, between sections, between the items of an `ItemGroup`; inside a plate it runs to the plate's edges. The only outline is a control's.
 - There is no line between regions: the gutter is the boundary.
 
@@ -148,7 +148,7 @@ OKLCH. Light first, dark beside it.
 
 ## Never
 
-- a colour written by hand instead of a `--wg-kit-*` token
+- a colour written by hand instead of a `--*` token
 - a border on a group plate, or a line around a card, a cell or a picture
 - a cast shadow on a plate
 - an unchosen violet as a product's accent: the brand hue is the kit's until a product picks its own

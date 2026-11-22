@@ -9,19 +9,19 @@ const MANY_TRACKS = "{count} tracks";
 const BETWEEN_PARTS = " · ";
 
 const CSS = `
-.wg-album { display: flex; flex-direction: column; gap: var(--wg-gap-parts); min-width: 0; }
-.wg-album.is-beside { flex-direction: row; align-items: center; gap: var(--wg-gap-items); }
+.wg-album { display: flex; flex-direction: column; gap: var(--gap-parts); min-width: 0; }
+.wg-album.is-beside { flex-direction: row; align-items: center; gap: var(--gap-items); }
 
 .wg-album-art {
 	overflow: hidden;
 	flex: none;
 	width: 100%;
 	aspect-ratio: 1 / 1;
-	border-radius: var(--wg-kit-plate);
-	background: var(--wg-kit-fill);
+	border-radius: var(--plate-radius);
+	background: var(--fill);
 }
 
-.wg-album.is-beside .wg-album-art { width: 56px; border-radius: var(--wg-kit-item); }
+.wg-album.is-beside .wg-album-art { width: 56px; border-radius: var(--item); }
 
 .wg-album-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .wg-album-art .internal-embed { display: block; width: 100%; height: 100%; }

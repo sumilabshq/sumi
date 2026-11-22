@@ -4,8 +4,8 @@
 	height: 100%;
 	box-sizing: border-box;
 	padding: 16px;
-	background: var(--wg-kit-page);
-	color: var(--wg-kit-text);
+	background: var(--page);
+	color: var(--foreground);
 }
 
 .ink-unopened-card {
@@ -18,11 +18,11 @@
 
 .ink-unopened-title {
 	margin: 0;
-	font-size: var(--wg-kit-text-l);
+	font-size: var(--text-l);
 }
 
 .ink-unopened-text {
 	margin: 0;
-	font-size: var(--wg-kit-text-m);
-	color: var(--wg-kit-text-muted);
+	font-size: var(--text-m);
+	color: var(--muted-foreground);
 }

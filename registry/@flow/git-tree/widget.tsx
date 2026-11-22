@@ -10,7 +10,7 @@ const CSS = `
 .fgt {
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 }
 
@@ -21,7 +21,7 @@ const CSS = `
 	text-overflow: ellipsis;
 	font-family: var(--font-monospace);
 	font-size: var(--font-ui-smaller, 12px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .fgt-graph {
@@ -33,7 +33,7 @@ const CSS = `
 
 .fgt-line {
 	fill: none;
-	stroke: var(--wg-kit-accent);
+	stroke: var(--brand);
 	stroke-width: 1.5;
 	stroke-linecap: round;
 	vector-effect: non-scaling-stroke;
@@ -49,7 +49,7 @@ const CSS = `
 }
 
 .fgt-dot {
-	fill: var(--wg-kit-accent);
+	fill: var(--brand);
 }
 
 .fgt-dot.is-aside {
@@ -57,15 +57,15 @@ const CSS = `
 }
 
 .fgt-tip {
-	fill: var(--wg-kit-card-fill);
-	stroke: var(--wg-kit-accent);
+	fill: var(--card-fill);
+	stroke: var(--brand);
 	stroke-width: 2.5;
 	vector-effect: non-scaling-stroke;
 }
 
 .fgt-said {
 	margin: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 `;
 

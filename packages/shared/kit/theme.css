@@ -49,13 +49,13 @@
 
 	--color-brand-wash: var(--accent-wash);
 	--color-accent-wash: var(--accent-wash);
-	--color-success-wash: var(--wg-kit-success-wash);
-	--color-warning-wash: var(--wg-kit-warning-wash);
-	--color-error-wash: var(--wg-kit-error-wash);
-	--color-info-wash: var(--wg-kit-info-wash);
-	--color-note-wash: var(--wg-kit-note-wash);
-	--color-standout-wash: var(--wg-kit-standout-wash);
-	--color-highlight-wash: var(--wg-kit-highlight-wash);
+	--color-success-wash: var(--success-wash);
+	--color-warning-wash: var(--warning-wash);
+	--color-error-wash: var(--error-wash);
+	--color-info-wash: var(--info-wash);
+	--color-note-wash: var(--note-wash);
+	--color-standout-wash: var(--standout-wash);
+	--color-highlight-wash: var(--highlight-wash);
 
 	--color-red: var(--red);
 	--color-orange: var(--orange);
@@ -77,18 +77,18 @@
 	--text-sm: var(--type-s);
 	--text-base: var(--type-m);
 	--text-lg: var(--type-l);
-	--text-h6: var(--wg-kit-h6-size);
-	--text-h6--line-height: var(--wg-kit-h6-line);
-	--text-h5: var(--wg-kit-h5-size);
-	--text-h5--line-height: var(--wg-kit-h5-line);
-	--text-h4: var(--wg-kit-h4-size);
-	--text-h4--line-height: var(--wg-kit-h4-line);
-	--text-h3: var(--wg-kit-h3-size);
-	--text-h3--line-height: var(--wg-kit-h3-line);
-	--text-h2: var(--wg-kit-h2-size);
-	--text-h2--line-height: var(--wg-kit-h2-line);
-	--text-h1: var(--wg-kit-h1-size);
-	--text-h1--line-height: var(--wg-kit-h1-line);
+	--text-h6: var(--h6-size);
+	--text-h6--line-height: var(--h6-line);
+	--text-h5: var(--h5-size);
+	--text-h5--line-height: var(--h5-line);
+	--text-h4: var(--h4-size);
+	--text-h4--line-height: var(--h4-line);
+	--text-h3: var(--h3-size-fixed);
+	--text-h3--line-height: var(--h3-line);
+	--text-h2: var(--h2-size);
+	--text-h2--line-height: var(--h2-line);
+	--text-h1: var(--h1-size);
+	--text-h1--line-height: var(--h1-line);
 
 	--font-sans: var(--font-interface);
 	--font-mono: var(--font-monospace);
@@ -102,22 +102,20 @@
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
 	--radius-plate: var(--radius);
-	--radius-item: var(--wg-kit-item);
-	--radius-control: var(--wg-kit-control-radius);
+	--radius-item: var(--item);
+	--radius-control: var(--control-corner);
 	/* TODO: drop rounded-pill, vault widgets still use it */
-	--radius-pill: var(--wg-kit-control-radius);
+	--radius-pill: var(--control-corner);
 
-	--spacing-items: var(--wg-gap-items);
-	--spacing-parts: var(--wg-gap-parts);
-	--spacing-cards: var(--wg-gap-cards);
+	--spacing-items: var(--gap-items);
+	--spacing-parts: var(--gap-parts);
+	--spacing-cards: var(--gap-cards);
 	--spacing-sections: var(--gap-section);
-	--spacing-plate: var(--wg-group-pad);
+	--spacing-plate: var(--group-pad);
 
-	--shadow-raise: var(--wg-kit-shadow);
-	--shadow-glass: var(--wg-kit-glass-edge);
+	--shadow-glass: var(--glass-edge);
 
-	--ease-spring: var(--wg-spring);
-	--ease-standard: var(--wg-ease);
+	--ease-spring: var(--spring);
 }
 
 @custom-variant data-open {

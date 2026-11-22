@@ -351,10 +351,10 @@ const css = fs.readFileSync(BOARD_SHEET, "utf8");
 fs.writeFileSync(
 	OUT,
 	`<!doctype html><html><head><meta charset="utf-8"><title>cell size playground</title><style>
-:root{--wg-radius-s:4px;--wg-radius-m:8px;--wg-radius-l:12px;--wg-radius-xl:16px;--wg-radius-full:999px;
---wg-widget-radius-s:1rem;--wg-widget-radius-m:1.5rem;--wg-widget-radius-l:1.875rem;--wg-widget-radius-xl:2.5rem;
---wg-widget-radius-full:999px;--wg-widget-radius:1.875rem;--wg-board-pad:1rem;--wg-board-bg:transparent;
---wg-widget-shadow:0 0.1875rem 0.875rem rgba(0,0,0,.08);
+:root{--corner-s:4px;--corner-m:8px;--corner-l:12px;--corner-xl:16px;--radius-full:999px;
+--widget-radius-s:1rem;--widget-radius-m:1.5rem;--widget-radius-l:1.875rem;--widget-radius-xl:2.5rem;
+--widget-radius-full:999px;--widget-radius:1.875rem;--board-pad:1rem;--board-bg:transparent;
+--widget-shadow:0 0.1875rem 0.875rem rgba(0,0,0,.08);
 --background-primary:#fff;--background-primary-alt:#F2F2F2;--background-secondary:#f2f3f5;
 --background-modifier-hover:#F2F2F2;--background-modifier-active-hover:#EAEAEA;--background-modifier-border:#e0e0e0;
 --text-normal:#000;--text-muted:#707070;--text-faint:rgba(0,0,0,.3);--text-on-accent:#000;
@@ -386,8 +386,8 @@ grid-auto-rows:var(--cell);gap:var(--gap)}
 .item{position:relative;min-width:0;min-height:0}
 .tag{position:absolute;left:2px;top:-15px;font:500 10px Inter,sans-serif;color:#999;
 white-space:nowrap;pointer-events:none}
-.abstract{width:100%;height:100%;background:#fff;border-radius:var(--wg-widget-radius);
-box-shadow:var(--wg-widget-shadow);display:flex;align-items:center;justify-content:center}
+.abstract{width:100%;height:100%;background:#fff;border-radius:var(--widget-radius);
+box-shadow:var(--widget-shadow);display:flex;align-items:center;justify-content:center}
 .abstract .dot{width:40%;height:40%;max-width:26px;max-height:26px;border-radius:22%;background:#111}
 
 ${css}

@@ -16,7 +16,7 @@ export interface CanvasAppZoneProps {
 
 const ZONE: Readonly<Record<TopBarLook, string>> = {
 	raised: "cv:flex cv:min-w-0 cv:items-center cv:gap-1.5",
-	ghost: "cv:flex cv:min-w-0 cv:shrink-[100] cv:items-center cv:gap-[var(--sumi-sp-1)] cv:overflow-hidden",
+	ghost: "cv:flex cv:min-w-0 cv:shrink-[100] cv:items-center cv:gap-[var(--space-0-5)] cv:overflow-hidden",
 };
 
 export function CanvasAppZone({ look = "raised" }: CanvasAppZoneProps): ReactElement {

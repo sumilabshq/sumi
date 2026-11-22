@@ -6,22 +6,22 @@
 .sumi-background-agents-head {
 	display: flex;
 	align-items: center;
-	gap: var(--sumi-sp-4);
-	height: var(--sumi-h-md);
-	font: var(--sumi-fw-regular) var(--sumi-fs-14) var(--sumi-font-ui);
+	gap: var(--space-2);
+	height: var(--h-md);
+	font: var(--fw-regular) var(--fs-14) var(--font-ui);
 }
 
 .sumi-background-agents-took,
 .sumi-background-agents-chevron {
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 .sumi-background-agents-not-done {
-	color: var(--sumi-danger);
+	color: var(--danger);
 }
 
 .sumi-background-agents-chevron {
-	transition: rotate var(--sumi-dur-base) var(--sumi-ease);
+	transition: rotate var(--dur-base) var(--ease-emphasized);
 }
 
 .sumi-background-agents[data-state="open"] .sumi-background-agents-chevron {

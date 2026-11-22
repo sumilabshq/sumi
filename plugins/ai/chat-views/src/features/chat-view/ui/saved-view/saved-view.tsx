@@ -19,7 +19,7 @@ export function SavedView({ path, id, title, parts }: SavedViewProps): ReactElem
 	const read = useOptionalQuery(fileSystem.files.read, { path });
 
 	if (read.failure !== null) {
-		return <p style={{ margin: 0, color: "var(--sumi-text-3)" }}>{read.failure}</p>;
+		return <p style={{ margin: 0, color: "var(--text-3)" }}>{read.failure}</p>;
 	}
 
 	if (read.data === null) {
@@ -29,7 +29,7 @@ export function SavedView({ path, id, title, parts }: SavedViewProps): ReactElem
 	const stored = StoredViewSchema.safeParse(jsonOf(read.data));
 
 	if (!stored.success) {
-		return <p style={{ margin: 0, color: "var(--sumi-text-3)" }}>{NOT_A_VIEW}</p>;
+		return <p style={{ margin: 0, color: "var(--text-3)" }}>{NOT_A_VIEW}</p>;
 	}
 
 	return <ViewFrame id={id} title={title} html={stored.data.html} parts={parts} />;

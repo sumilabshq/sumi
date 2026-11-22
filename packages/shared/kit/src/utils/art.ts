@@ -10,8 +10,8 @@ export function artInksOf(tones: readonly BadgeColor[] | undefined, size: number
 	const first = tones?.[0] ?? "purple";
 	const second = tones?.[1] ?? first;
 	return {
-		"--wg-art-a": `var(--wg-kit-${first})`,
-		"--wg-art-b": `var(--wg-kit-${second})`,
-		"--wg-art-size": `${size}px`,
+		"--art-a": `var(--${first})`,
+		"--art-b": `var(--${second})`,
+		"--art-size": `${size}px`,
 	};
 }

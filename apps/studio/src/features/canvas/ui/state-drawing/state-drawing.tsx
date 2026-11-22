@@ -34,7 +34,7 @@ export function StateDrawing({ picture, registry }: StateDrawingProps): ReactEle
 	);
 	return (
 		<Contained instead={instead}>
-			<div className="wg-studio-drawn cv:@container cv:min-w-0 cv:[--wg-gap-cards:8px] cv:[--wg-gap-items:16px] cv:[--wg-gap-parts:8px]">
+			<div className="wg-studio-drawn cv:@container cv:min-w-0 cv:[--gap-cards:8px] cv:[--gap-items:16px] cv:[--gap-parts:8px]">
 				<PictureContext.Provider value={true}>{h(component, props)}</PictureContext.Provider>
 			</div>
 		</Contained>

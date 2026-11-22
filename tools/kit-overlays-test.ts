@@ -720,7 +720,7 @@ async function hoverCardLayer(): Promise<void> {
 	await settle();
 	check(
 		"A FLOATING PANEL SAYS WHERE IT MAY GROW IN THE POPOVER'S OWN WORDS",
-		styleVar(found(document, '[data-slot="hover-card-content"]'), "--wg-kit-pop-available-width") !== "",
+		styleVar(found(document, '[data-slot="hover-card-content"]'), "--pop-available-width") !== "",
 		true,
 	);
 	key(document.body, "Escape");
@@ -781,7 +781,7 @@ async function drawer(): Promise<void> {
 	await settle();
 	fire(handle, "pointermove", { clientY: 150 });
 	await settle();
-	check("A DRAWER FOLLOWS THE FINGER DOWN", styleVar(panel, "--wg-kit-drawer-drag"), "50px");
+	check("A DRAWER FOLLOWS THE FINGER DOWN", styleVar(panel, "--drawer-drag"), "50px");
 	await wait(150);
 	fire(handle, "pointerup");
 	await settle();
@@ -832,19 +832,15 @@ async function drawerSnaps(): Promise<void> {
 	);
 	check(
 		"A SNAPPED DRAWER OPENS AT ITS FIRST SNAP, THE REST OF ITS HEIGHT BELOW THE EDGE",
-		styleVar(panel, "--wg-kit-drawer-drag"),
+		styleVar(panel, "--drawer-drag"),
 		"350px",
 	);
-	check("and is as tall as its top snap", styleVar(panel, "--wg-kit-drawer-height"), "750px");
+	check("and is as tall as its top snap", styleVar(panel, "--drawer-height"), "750px");
 	check("and holds its content still while it is low", panel.classList.contains("is-held-low"), true);
 	const handle = found(document, ".wg-kit-drawer-handle");
 	key(handle, "ArrowUp");
 	await settle();
-	check(
-		"ARROW UP ON THE GRIP GROWS IT TO THE NEXT SNAP",
-		[picked, styleVar(panel, "--wg-kit-drawer-drag")],
-		[[0.75], "0px"],
-	);
+	check("ARROW UP ON THE GRIP GROWS IT TO THE NEXT SNAP", [picked, styleVar(panel, "--drawer-drag")], [[0.75], "0px"]);
 	check("and its content scrolls at the top snap", panel.classList.contains("is-held-low"), false);
 	key(handle, "ArrowDown");
 	await settle();
@@ -887,7 +883,7 @@ async function undismissibleDrawer(): Promise<void> {
 	await settle();
 	check(
 		"and a fling down only lands it on its lowest snap",
-		[stateOf("drawer-content"), styleVar(panel, "--wg-kit-drawer-drag")],
+		[stateOf("drawer-content"), styleVar(panel, "--drawer-drag")],
 		["open", "350px"],
 	);
 	await draw(null);
@@ -971,7 +967,7 @@ async function leavingToast(): Promise<void> {
 	const leaving = [...document.querySelectorAll('[data-slot="toast"]')].find((toast) => toast.textContent === "Older");
 	check(
 		"A TOAST LEAVING FROM BEHIND THE FRONT KEEPS ITS PLACE IN THE STACK",
-		leaving ? styleVar(leaving, "--wg-kit-toast-index") : "gone",
+		leaving ? styleVar(leaving, "--toast-index") : "gone",
 		"1",
 	);
 	kit.toast.dismiss();

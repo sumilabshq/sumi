@@ -1,5 +1,5 @@
 .sumi-sessions-chevron svg {
-	transition: transform var(--sumi-dur-base) var(--sumi-ease);
+	transition: transform var(--dur-base) var(--ease-emphasized);
 }
 
 .sumi-sessions-chevron[data-state="open"] svg {

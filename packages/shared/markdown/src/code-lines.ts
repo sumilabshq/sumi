@@ -14,10 +14,10 @@ const SAID = "sumi-code-said";
 const WRAPPED = "is-wrapped";
 const SHEET_ID = "sumi-code-lines-sheet";
 const SHEET = `
-.${LINES} { box-sizing: border-box; min-width: max-content; padding: 4px 0 12px; color: var(--sumi-code-foreground, var(--sumi-text)); font: 400 12.5px / 22px var(--sumi-font-mono); tab-size: 4; }
+.${LINES} { box-sizing: border-box; min-width: max-content; padding: 4px 0 12px; color: var(--code-foreground, var(--text)); font: 400 12.5px / 22px var(--font-code); tab-size: 4; }
 .${LINES}.${WRAPPED} { min-width: 0; }
 .${LINE} { display: flex; min-height: 22px; }
-.${NUMBER} { flex: none; width: 44px; box-sizing: border-box; padding-right: 10px; margin-right: 17px; text-align: right; color: var(--sumi-text-3); font-size: 11.5px; -webkit-user-select: none; user-select: none; }
+.${NUMBER} { flex: none; width: 44px; box-sizing: border-box; padding-right: 10px; margin-right: 17px; text-align: right; color: var(--text-3); font-size: 11.5px; -webkit-user-select: none; user-select: none; }
 .${SAID} { flex: 1; min-width: 0; padding-right: 16px; white-space: pre; }
 .${WRAPPED} .${SAID} { white-space: pre-wrap; overflow-wrap: anywhere; }
 `;

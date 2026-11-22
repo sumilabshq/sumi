@@ -23,7 +23,7 @@ export function chatViewOf(
 		const template = templates.find(({ id }) => id === result.id);
 
 		if (template === undefined) {
-			return <p style={{ margin: 0, color: "var(--sumi-text-3)" }}>{NO_BUILT_IN}</p>;
+			return <p style={{ margin: 0, color: "var(--text-3)" }}>{NO_BUILT_IN}</p>;
 		}
 
 		return <ViewFrame id={template.id} title={template.title} html={template.html} parts={parts} />;

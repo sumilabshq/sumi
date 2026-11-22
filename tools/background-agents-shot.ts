@@ -7,7 +7,7 @@ const SHOTS_AT = process.argv[2] ?? "/tmp";
 const THEME = process.argv[3] ?? "theme-dark";
 const SHEETS = ["packages/shared/core/board.css", "apps/studio/dist/studio.css"];
 const LAYOUT =
-	"body { margin: 0; background: var(--sumi-plate); } .demo { width: 720px; padding: 24px 32px; display: flex; flex-direction: column; gap: 8px; } .demo-label { margin-top: 16px; color: var(--sumi-text-3); font: 13px var(--sumi-font-ui); }";
+	"body { margin: 0; background: var(--plate); } .demo { width: 720px; padding: 24px 32px; display: flex; flex-direction: column; gap: 8px; } .demo-label { margin-top: 16px; color: var(--text-3); font: 13px var(--font-ui); }";
 const bundle = await bundleOf("tools/background-agents-page.tsx");
 const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</style>`).join("");
 const PAGE = `<!doctype html><html class="${THEME}"><head><meta charset="utf-8">${styles}<style>${LAYOUT}</style></head><body class="wg-studio wg-root ${THEME}"><div id="root"></div><pre id="boom"></pre><script>${bundle}</script></body></html>`;

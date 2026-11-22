@@ -39,7 +39,7 @@ export function HtmlFile({ path }: HtmlFileProps): ReactElement | null {
 				width: "100%",
 				height: "100%",
 				border: "none",
-				background: "var(--sumi-plate)",
+				background: "var(--plate)",
 			}}
 		/>
 	);

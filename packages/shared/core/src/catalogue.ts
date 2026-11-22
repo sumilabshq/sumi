@@ -46,7 +46,7 @@ type CatalogueScreen = CatalogueView &
 		readonly mode: CatalogueMode;
 	};
 
-type ColumnsStyle = CSSProperties & { readonly "--wg-cat-columns": number };
+type ColumnsStyle = CSSProperties & { readonly "--cat-columns": number };
 
 const NO_TEMPLATE = "No template answers to that.";
 const NOTHING_ANSWERS = "Nothing here answers to that.";
@@ -110,7 +110,7 @@ function catalogueBody(view: CatalogueScreen): ReactElement | null {
 			onUse: view.onUseTemplate,
 		});
 	if (width <= 0) return null;
-	const style: ColumnsStyle = { "--wg-cat-columns": view.cards.columns };
+	const style: ColumnsStyle = { "--cat-columns": view.cards.columns };
 	return h(
 		"div",
 		{ className: "wg-cat-grid", style },

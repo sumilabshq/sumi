@@ -3,7 +3,7 @@ export const PROPERTIES_CSS = `
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 /* CONTEXT: the kit's anchor stands between plate and row, so the row cannot reach full width without it */
@@ -27,7 +27,7 @@ export const PROPERTIES_CSS = `
 	box-shadow: none;
 	font-family: inherit;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	text-align: left;
 	cursor: pointer;
 }
@@ -37,8 +37,8 @@ export const PROPERTIES_CSS = `
 	position: absolute;
 	inset: 0;
 	z-index: -1;
-	border-radius: var(--wg-kit-item);
-	transition: background var(--wg-quick) var(--wg-ease);
+	border-radius: var(--item);
+	transition: background var(--quick) var(--ease-standard);
 }
 
 .orbi-task-dialog .otd-row:hover::before { background: var(--background-modifier-hover); }
@@ -49,7 +49,7 @@ export const PROPERTIES_CSS = `
 .orbi-task-dialog .otd-row.is-open::before,
 .orbi-task-dialog .otd-row:focus-within::before {
 	background-color: var(--background-primary);
-	box-shadow: inset 0 0 0 1px var(--wg-kit-card-edge), var(--wg-kit-shadow);
+	box-shadow: inset 0 0 0 1px var(--card-edge), var(--shadow-raise);
 }
 
 .orbi-task-dialog .otd-row .wg-kit-row-label {
@@ -63,7 +63,7 @@ export const PROPERTIES_CSS = `
 	text-overflow: ellipsis;
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-medium, 500);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .orbi-task-dialog .otd-row.is-unset .wg-kit-row-label { color: var(--text-faint); }
@@ -86,15 +86,15 @@ export const PROPERTIES_CSS = `
 	min-width: 0;
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-medium, 500);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .orbi-task-dialog .otd-value.is-empty { color: var(--text-faint); }
 
 /* CONTEXT: a neutral pill is the plate's own fill, so on the plate it has to lift to be seen */
 .orbi-task-dialog .otd-value .wg-kit-pill:not(.is-accent):not(.is-ok):not(.is-warn):not(.is-err) {
-	background: var(--wg-kit-raise);
-	color: var(--wg-kit-text);
+	background: var(--raise);
+	color: var(--foreground);
 }
 
 .orbi-task-dialog .otd-glyph {
@@ -126,7 +126,7 @@ export const PROPERTIES_CSS = `
 	background: none;
 	font: inherit;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	text-align: right;
 }
 
@@ -147,8 +147,8 @@ export const PROPERTIES_CSS = `
 	width: 28px;
 	height: 28px;
 	margin-left: -5px;
-	border-radius: var(--wg-kit-pill);
-	box-shadow: 0 0 0 2px var(--wg-kit-fill);
+	border-radius: var(--pill);
+	box-shadow: 0 0 0 2px var(--fill);
 	font-size: 11px;
 	font-weight: var(--font-semibold, 600);
 	letter-spacing: -0.01em;
@@ -159,7 +159,7 @@ export const PROPERTIES_CSS = `
 
 .orbi-task-dialog .otd-avatar-add {
 	background: none;
-	box-shadow: 0 0 0 2px var(--wg-kit-fill), inset 0 0 0 1.4px var(--wg-line);
+	box-shadow: 0 0 0 2px var(--fill), inset 0 0 0 1.4px var(--line-faint);
 	color: var(--text-faint);
 }
 
@@ -172,17 +172,17 @@ export const PROPERTIES_CSS = `
 	padding: var(--size-4-2, 8px);
 	appearance: none;
 	border: none;
-	border-radius: var(--wg-kit-item);
+	border-radius: var(--item);
 	background: none;
 	font-family: inherit;
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-medium, 500);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	text-align: left;
 	cursor: pointer;
 }
 
-.orbi-task-dialog .otd-add:hover { background: var(--background-modifier-hover); color: var(--wg-kit-text); }
+.orbi-task-dialog .otd-add:hover { background: var(--background-modifier-hover); color: var(--foreground); }
 
 .orbi-task-dialog .otd-pop-field { padding: var(--size-2-2, 4px) var(--size-2-3, 6px) var(--size-4-2, 8px); }
 
@@ -199,7 +199,7 @@ export const PROPERTIES_CSS = `
 	gap: var(--size-4-2, 8px);
 	padding: var(--size-2-3, 6px) var(--size-4-3, 12px);
 	font-size: var(--font-ui-smaller, 12px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 @container taskdialog (width < 760px) {

@@ -93,17 +93,17 @@ function pageFor(theme: keyof typeof THEMES, script: string, name: string, sheet
 const KIT_SURFACE_SCRIPT = `
 const host = document.getElementById("host");
 host.innerHTML = '<div class="wg-tree-page">'
-  + '<div class="wg-tile wg-tree-cell" data-surface="group" style="--wg-plate-corner:18px;--wg-kit-plate:14px;--wg-kit-item:6px">'
-  + '<div class="wg-tile-body"><div class="wg-kit-surface" id="in-group" data-surface="group" style="--wg-surface-corner: var(--wg-kit-plate)">deep</div></div>'
+  + '<div class="wg-tile wg-tree-cell" data-surface="group" style="--plate-corner:18px;--plate-radius:14px;--item:6px">'
+  + '<div class="wg-tile-body"><div class="wg-kit-surface" id="in-group" data-surface="group" style="--surface-corner: var(--plate-radius)">deep</div></div>'
   + '</div>'
-  + '<div class="wg-tile wg-tree-cell" style="--wg-kit-plate:14px;--wg-kit-item:6px">'
-  + '<div class="wg-tile-body"><div class="wg-kit-surface" id="on-page" data-surface="group" style="--wg-surface-corner: var(--wg-kit-plate)">alone</div></div>'
+  + '<div class="wg-tile wg-tree-cell" style="--plate-radius:14px;--item:6px">'
+  + '<div class="wg-tile-body"><div class="wg-kit-surface" id="on-page" data-surface="group" style="--surface-corner: var(--plate-radius)">alone</div></div>'
   + '</div>'
-  + '<div id="token-fill" style="background: var(--wg-kit-group-fill)"></div>'
-  + '<div id="token-raise" style="background: var(--wg-kit-group-inset)"></div>'
+  + '<div id="token-fill" style="background: var(--group-fill)"></div>'
+  + '<div id="token-raise" style="background: var(--group-inset)"></div>'
   + '</div>'
-  + '<div class="wg-kit-surface" id="off-board" data-surface="group" style="--wg-surface-corner: var(--wg-kit-plate)">off</div>'
-  + '<div class="wg-kit-surface wg-kit-tone is-warn" id="toned" data-surface="group" style="--wg-surface-corner: var(--wg-kit-plate)">warned</div>'
+  + '<div class="wg-kit-surface" id="off-board" data-surface="group" style="--surface-corner: var(--plate-radius)">off</div>'
+  + '<div class="wg-kit-surface wg-kit-tone is-warn" id="toned" data-surface="group" style="--surface-corner: var(--plate-radius)">warned</div>'
   + '<div style="width:200px"><div class="wg-kit-surface" id="line-below" data-surface="apart" data-side="end" data-across="column">above the line</div>'
   + '<div class="wg-kit-surface" id="line-left" data-surface="apart" data-side="start" data-across="row">beside the line</div></div>';
 `;
@@ -131,13 +131,13 @@ const KIT_SURFACE_ASK = `(() => {
 		raise: paintOf("token-raise").backgroundColor,
 		offBoard: paintOf("off-board").backgroundColor,
 		toned: paintOf("toned").backgroundColor,
-		warningWash: token("--wg-kit-warning-wash", "backgroundColor"),
+		warningWash: token("--warning-wash", "backgroundColor"),
 		corner: inGroup.borderTopLeftRadius,
 		pad: inGroup.paddingTop,
 		lineBelow: lineOf("line-below"),
 		lineLeft: lineOf("line-left"),
-		plateCornerPx: token("--wg-kit-plate"),
-		itemCornerPx: token("--wg-kit-item"),
+		plateCornerPx: token("--plate-radius"),
+		itemCornerPx: token("--item"),
 	};
 })()`;
 
@@ -187,8 +187,8 @@ const PLATE_ASK = `(() => {
 		onPageSecond: paintIn("onPage", "probe-second"),
 		onGroupFirst: paintIn("onGroup", "probe-first"),
 		onGroupSecond: paintIn("onGroup", "probe-second"),
-		fill: token("--wg-kit-group-fill"),
-		raise: token("--wg-kit-group-inset"),
+		fill: token("--group-fill"),
+		raise: token("--group-inset"),
 		clear: "rgba(0, 0, 0, 0)",
 	};
 })()`;
@@ -203,13 +203,13 @@ const style = document.createElement("style");
 style.textContent = sheetOf("@default/kanban-board");
 document.head.appendChild(style);
 const host = document.getElementById("host");
-host.innerHTML = '<div class="wg-tree-page"><div class="wg-tile wg-tree-cell" style="--wg-kit-plate:14px;--wg-kit-item:6px">'
+host.innerHTML = '<div class="wg-tree-page"><div class="wg-tile wg-tree-cell" style="--plate-radius:14px;--item:6px">'
   + '<div class="wg-tile-body"><div class="orbi-kanban"><div class="ok-board">'
-  + '<div class="wg-kit-surface ok-list" id="column" data-surface="group" style="--wg-surface-corner: var(--wg-kit-plate)">'
-  + '<div class="ok-card-slot"><div class="wg-kit-surface" id="card" data-surface="group" style="--wg-surface-corner: var(--wg-kit-item)">'
+  + '<div class="wg-kit-surface ok-list" id="column" data-surface="group" style="--surface-corner: var(--plate-radius)">'
+  + '<div class="ok-card-slot"><div class="wg-kit-surface" id="card" data-surface="group" style="--surface-corner: var(--item)">'
   + '<span class="ok-card-title">Write the brief</span></div></div>'
   + '</div>'
-  + '<button type="button" class="wg-kit-surface ok-add-list-rest" id="add-list" data-surface="group" style="--wg-surface-corner: var(--wg-kit-plate)">Add List</button>'
+  + '<button type="button" class="wg-kit-surface ok-add-list-rest" id="add-list" data-surface="group" style="--surface-corner: var(--plate-radius)">Add List</button>'
   + '</div></div></div></div></div>';
 `;
 
@@ -233,8 +233,8 @@ const KANBAN_PLATE_ASK = `(() => {
 		card: read("card"),
 		addList,
 		behind,
-		fill: token("--wg-kit-group-fill"),
-		raise: token("--wg-kit-group-inset"),
+		fill: token("--group-fill"),
+		raise: token("--group-inset"),
 		clear: "rgba(0, 0, 0, 0)",
 	};
 })()`;
@@ -408,17 +408,17 @@ render(
 		]),
 		h("div", { key: "plate", id: "plain-card", className: cardClass({}), style: { width: "240px", height: "80px" } }, "A plain light card"),
 		h("div", { key: "lifted", id: "lifted-card", className: cardClass({ lift: true }), style: { width: "240px", height: "80px" } }, "A lifted card"),
-		h("div", { key: "raise", id: "raise-swatch", style: { width: "8px", height: "8px", background: "var(--wg-kit-raise)" } }),
-		h("div", { key: "fill", id: "fill-swatch", style: { width: "8px", height: "8px", background: "var(--wg-kit-fill)" } }),
-		h("div", { key: "hover", id: "hover-swatch", style: { width: "8px", height: "8px", background: "var(--wg-kit-fill-hover)" } }),
+		h("div", { key: "raise", id: "raise-swatch", style: { width: "8px", height: "8px", background: "var(--raise)" } }),
+		h("div", { key: "fill", id: "fill-swatch", style: { width: "8px", height: "8px", background: "var(--fill)" } }),
+		h("div", { key: "hover", id: "hover-swatch", style: { width: "8px", height: "8px", background: "var(--fill-hover)" } }),
 		h("div", { key: "marks", style: { display: "flex", gap: "24px", alignItems: "center" } }, [
 			marked("mark-cover", { size: 240 }),
 			marked("mark-avatar", { size: 24 }),
 			marked("mark-named", { size: 48, shape: "ring", tone: "info" }),
 		]),
-		h("div", { key: "seededwash", id: "seeded-wash-swatch", style: { width: "8px", height: "8px", background: "var(--wg-kit-" + markOf(MARK_SEED).tone + "-wash)" } }),
-		h("div", { key: "seededink", id: "seeded-ink-swatch", style: { width: "8px", height: "8px", color: "var(--wg-kit-" + markOf(MARK_SEED).tone + ")" } }),
-		h("div", { key: "namedwash", id: "named-wash-swatch", style: { width: "8px", height: "8px", background: "var(--wg-kit-info-wash)" } }),
+		h("div", { key: "seededwash", id: "seeded-wash-swatch", style: { width: "8px", height: "8px", background: "var(--" + markOf(MARK_SEED).tone + "-wash)" } }),
+		h("div", { key: "seededink", id: "seeded-ink-swatch", style: { width: "8px", height: "8px", color: "var(--" + (markOf(MARK_SEED).tone === "accent" ? "brand" : markOf(MARK_SEED).tone) + ")" } }),
+		h("div", { key: "namedwash", id: "named-wash-swatch", style: { width: "8px", height: "8px", background: "var(--info-wash)" } }),
 	]),
 	document.getElementById("host"),
 );
@@ -995,8 +995,8 @@ const SHEET_ASK = `(() => {
 const DRAWER_SCRIPT = `document.getElementById("host").innerHTML =
 	'<div class="wg-drawer-over is-open">' +
 	'<div class="wg-drawer-scrim"></div>' +
-	'<div class="wg-drawer is-left" style="--wg-drawer-width: 280px"><div class="wg-tree-region is-left"></div></div>' +
-	'</div><div id="raised" style="background: var(--wg-kit-raise)"></div>';`;
+	'<div class="wg-drawer is-left" style="--drawer-width: 280px"><div class="wg-tree-region is-left"></div></div>' +
+	'</div><div id="raised" style="background: var(--raise)"></div>';`;
 
 const DRAWER_ASK = `(() => {
 	const over = document.querySelector(".wg-drawer-over");

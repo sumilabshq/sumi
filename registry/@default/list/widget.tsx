@@ -31,7 +31,7 @@ const CSS = `
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 	min-height: 0;
 }
@@ -47,7 +47,7 @@ const CSS = `
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 	min-height: 0;
 	overflow: auto;
@@ -56,7 +56,7 @@ const CSS = `
 .wg-list-pick {
 	position: relative;
 	min-width: 0;
-	border-radius: var(--wg-kit-plate);
+	border-radius: var(--plate-radius);
 	cursor: pointer;
 }
 
@@ -67,12 +67,12 @@ const CSS = `
 	inset-block: 25%;
 	inset-inline-start: 0;
 	width: 3px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-accent);
+	border-radius: var(--pill);
+	background: var(--brand);
 }
 
 .wg-list-pick:focus-visible {
-	outline: 2px solid var(--wg-kit-accent);
+	outline: 2px solid var(--brand);
 	outline-offset: 2px;
 }
 
@@ -80,7 +80,7 @@ const CSS = `
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	color: var(--text-faint);
 	font-size: var(--font-ui-smaller, 12px);
 }
@@ -89,9 +89,9 @@ const CSS = `
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	margin: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wg-list-said p {

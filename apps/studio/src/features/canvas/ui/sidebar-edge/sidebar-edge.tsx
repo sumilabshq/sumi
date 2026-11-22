@@ -8,7 +8,7 @@ import { SIDEBAR_HAIRLINE_PX } from "../../lib/sidebar-hairline.js";
 
 const EDGE_LABEL = "Sidebar width";
 const EDGE =
-	"wg-studio-edge-line cv:relative cv:z-[2] cv:-mx-[calc((var(--wg-studio-edge,6px)_-_1px)_/_2)] cv:w-[var(--wg-studio-edge,6px)] cv:flex-none cv:cursor-col-resize cv:touch-none cv:outline-none cv:before:absolute cv:before:inset-y-0 cv:before:left-[calc((var(--wg-studio-edge,6px)_-_1px)_/_2)] cv:before:w-px cv:before:bg-line cv:before:content-['']";
+	"wg-studio-edge-line cv:relative cv:z-[2] cv:-mx-[calc((var(--studio-edge,6px)_-_1px)_/_2)] cv:w-[var(--studio-edge,6px)] cv:flex-none cv:cursor-col-resize cv:touch-none cv:outline-none cv:before:absolute cv:before:inset-y-0 cv:before:left-[calc((var(--studio-edge,6px)_-_1px)_/_2)] cv:before:w-px cv:before:bg-line cv:before:content-['']";
 
 export function SidebarEdge(): ReactElement | null {
 	const edge = useRef<HTMLDivElement | null>(null);

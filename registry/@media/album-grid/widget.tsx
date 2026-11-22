@@ -42,12 +42,12 @@ const CSS = `
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(${MIN_CELL_PX}px, 1fr));
 	align-items: start;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 }
 
 .wg-albums[data-narrow] .wg-albums-shelf { grid-template-columns: 1fr; }
 .wg-albums-more { flex: none; height: 1px; }
-.wg-albums-said { margin: 0; color: var(--wg-kit-text-muted); }
+.wg-albums-said { margin: 0; color: var(--muted-foreground); }
 `;
 
 const AlbumGrid = createWidget({

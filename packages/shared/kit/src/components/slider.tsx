@@ -16,7 +16,7 @@ import { SliderThumb } from "./slider-thumb";
 export interface SliderProps
 	extends Omit<HTMLAttributes<HTMLSpanElement>, "defaultValue" | "onChange" | "dir">, SliderSettings {}
 
-const THICKNESS: TokenStyle = { "--wg-slider-thickness": `${CURSOR_HEIGHT}px` };
+const THICKNESS: TokenStyle = { "--slider-thickness": `${CURSOR_HEIGHT}px` };
 
 export function Slider({ className, style, ...props }: SliderProps): ReactElement {
 	const { ask, rest } = sliderAskOf(props);

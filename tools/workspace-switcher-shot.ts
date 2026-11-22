@@ -7,17 +7,17 @@ import { bundleOf } from "./harness.ts";
 import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const SHOT_DIR = path.resolve(process.argv[2] ?? tmpdir());
-const LAYOUT = `body { margin: 0; background: var(--sumi-frame); }
-.demo-window { display: flex; flex-direction: column; width: 900px; height: 520px; margin: 24px; background: var(--sumi-frame); box-shadow: 0 0 0 1px var(--sumi-line); }
-.demo-header { display: flex; align-items: center; height: var(--sumi-header-h, 44px); padding: 0 8px 0 12px; border-bottom: 1px solid var(--sumi-line); }
-.demo-tab { display: flex; align-items: center; height: 28px; padding: 0 12px; font: var(--sumi-fs-13) var(--sumi-font-ui); color: var(--sumi-text-2); }
-.demo-tab.is-on { background: var(--sumi-selected); color: var(--sumi-text); }
+const LAYOUT = `body { margin: 0; background: var(--frame); }
+.demo-window { display: flex; flex-direction: column; width: 900px; height: 520px; margin: 24px; background: var(--frame); box-shadow: 0 0 0 1px var(--line); }
+.demo-header { display: flex; align-items: center; height: var(--header-h, 44px); padding: 0 8px 0 12px; border-bottom: 1px solid var(--line); }
+.demo-tab { display: flex; align-items: center; height: 28px; padding: 0 12px; font: var(--fs-13) var(--font-ui); color: var(--text-2); }
+.demo-tab.is-on { background: var(--selected); color: var(--text); }
 .demo-fill { flex: 1; }
 .demo-body { display: flex; flex: 1; min-height: 0; }
-.demo-sidebar { display: flex; flex-direction: column; justify-content: space-between; width: 260px; border-right: 1px solid var(--sumi-line); }
+.demo-sidebar { display: flex; flex-direction: column; justify-content: space-between; width: 260px; border-right: 1px solid var(--line); }
 .demo-rows { display: flex; flex-direction: column; padding: 12px 0; }
-.demo-row { padding: 6px 16px; font: var(--sumi-fs-13) var(--sumi-font-ui); color: var(--sumi-text-2); }
-.demo-row.is-on { background: var(--sumi-selected); color: var(--sumi-text); }
+.demo-row { padding: 6px 16px; font: var(--fs-13) var(--font-ui); color: var(--text-2); }
+.demo-row.is-on { background: var(--selected); color: var(--text); }
 .demo-main { flex: 1; }`;
 
 const bundle = await bundleOf("tools/workspace-switcher-page.tsx");

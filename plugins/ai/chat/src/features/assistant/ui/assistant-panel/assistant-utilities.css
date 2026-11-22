@@ -6,11 +6,11 @@
 		--cv-radius-2xl: 1rem;
 		--cv-default-transition-duration: 150ms;
 		--cv-default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-		--cv-animate-canvas-fade-in: canvas-fade-in var(--wg-quick) var(--wg-ease);
+		--cv-animate-canvas-fade-in: canvas-fade-in var(--quick) var(--ease-standard);
 		--cv-animate-canvas-pulse: canvas-pulse 1.4s ease-in-out infinite;
 		--cv-animate-canvas-wave: canvas-wave 2.2s ease-in-out infinite;
-		--cv-animate-canvas-fold-open: canvas-fold-open var(--wg-quick) var(--wg-ease);
-		--cv-animate-canvas-fold-shut: canvas-fold-shut var(--wg-quick) var(--wg-ease);
+		--cv-animate-canvas-fold-open: canvas-fold-open var(--quick) var(--ease-standard);
+		--cv-animate-canvas-fold-shut: canvas-fold-shut var(--quick) var(--ease-standard);
 	}
 }
 @layer utilities {
@@ -169,7 +169,7 @@
 			--tw-inset-ring-shadow: 0 0 transparent;
 			--tw-ring-inset: initial;
 			--tw-ring-offset-width: 0px;
-			--tw-ring-offset-color: var(--wg-kit-page);
+			--tw-ring-offset-color: var(--page);
 			--tw-ring-offset-shadow: 0 0 transparent;
 			--tw-backdrop-blur: initial;
 			--tw-backdrop-brightness: initial;

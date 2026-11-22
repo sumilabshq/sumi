@@ -5,7 +5,7 @@ import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/data-framework";
 import { SIDE_PANEL_MIN_WIDTH } from "@widgetarium/kit";
 
-export const FILE_LIST_WIDTH_VAR = "--wg-git-list-w";
+export const FILE_LIST_WIDTH_VAR = "--git-list-w";
 
 const DEFAULT_PX = 256;
 const LEAST_DIFFS_PX = 240;

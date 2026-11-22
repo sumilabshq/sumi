@@ -37,7 +37,7 @@ interface JellyShape {
 }
 
 export function wantsJelly(panel: HTMLElement): boolean {
-	return getComputedStyle(panel).getPropertyValue("--wg-kit-pop-motion").trim() === "jelly";
+	return getComputedStyle(panel).getPropertyValue("--pop-motion").trim() === "jelly";
 }
 
 export function liveJelly(panel: HTMLElement, from: DOMRect): (() => void) | undefined {

@@ -22,7 +22,7 @@ const FONT_PAIRS: Readonly<Record<string, FontPair>> = {
 const LIVE_RULES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
 	edges: {
 		outline:
-			"[data-canvas-screen] :is(.wg-kit-field, .wg-kit-input-group) { box-shadow: inset 0 0 0 1px var(--wg-kit-group-line); }",
+			"[data-canvas-screen] :is(.wg-kit-field, .wg-kit-input-group) { box-shadow: inset 0 0 0 1px var(--group-line); }",
 	},
 };
 
@@ -32,19 +32,19 @@ export function liveRulesOf(look: Look): string {
 
 const LIVE_TOKENS: Readonly<Record<string, Readonly<Record<string, Tokens>>>> = {
 	ground: {
-		grey: { "--wg-kit-page": GREY_PAGE, "--wg-kit-group-fill": "var(--background-primary)" },
+		grey: { "--page": GREY_PAGE, "--group-fill": "var(--background-primary)" },
 	},
 	edges: {
 		outline: {
-			"--wg-kit-group-fill": "transparent",
-			"--wg-kit-group-edge": "inset 0 0 0 1px var(--wg-kit-group-line)",
+			"--group-fill": "transparent",
+			"--group-edge": "inset 0 0 0 1px var(--group-line)",
 		},
 	},
 	density: {
-		compact: { "--wg-gap-scale": "0.75" },
+		compact: { "--gap-scale": "0.75" },
 	},
 	expression: {
-		sharp: expressionOf({ plate: 8, controlRadius: "8px", controls: [30, 34, 40], spring: "var(--wg-ease)" }),
+		sharp: expressionOf({ plate: 8, controlRadius: "8px", controls: [30, 34, 40], spring: "var(--ease-standard)" }),
 		soft: expressionOf({
 			plate: 12,
 			controlRadius: "12px",
@@ -90,11 +90,11 @@ interface Expression {
 
 function expressionOf({ plate, controlRadius, controls: [small, medium, large], spring }: Expression): Tokens {
 	return {
-		"--wg-kit-plate": `${plate}px`,
-		"--wg-kit-control-radius": controlRadius,
-		"--wg-kit-control-s": `${small}px`,
-		"--wg-kit-control-m": `${medium}px`,
-		"--wg-kit-control-l": `${large}px`,
-		"--wg-spring": spring,
+		"--plate-radius": `${plate}px`,
+		"--control-corner": controlRadius,
+		"--control-s": `${small}px`,
+		"--control-m": `${medium}px`,
+		"--control-l": `${large}px`,
+		"--spring": spring,
 	};
 }

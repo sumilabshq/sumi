@@ -29,7 +29,7 @@ export function RegionDrawer({ name, isOpen, pressAt, width, onClose, children }
 	const portal = useDrawerPortal(markerRef, onClose);
 	useGrowthFromPress(panelRef, isOpen, pressAt);
 	const placed = name === "menu" ? menuPlace(pressAt, width, boundsOf(portal?.pane ?? null)) : {};
-	const style: CSSProperties & CssVariables = { "--wg-drawer-width": `${width}px`, ...placed };
+	const style: CSSProperties & CssVariables = { "--drawer-width": `${width}px`, ...placed };
 	const over = h(
 		"div",
 		{ className: `wg-drawer-over${isOpen ? " is-open" : ""}` },
@@ -65,7 +65,7 @@ function menuPlace(pressAt: PressAt | null | undefined, width: number, bounds: B
 	const y = pressAt.y - bounds.top;
 	const left = Math.min(Math.max(x - width / 2, MENU_GAP_PX), bounds.width - width - MENU_GAP_PX);
 	const top = Math.min(y + MENU_GAP_PX, bounds.height - MENU_SHORTEST_PX);
-	return { "--wg-menu-left": `${Math.round(left)}px`, "--wg-menu-top": `${Math.round(Math.max(top, MENU_GAP_PX))}px` };
+	return { "--menu-left": `${Math.round(left)}px`, "--menu-top": `${Math.round(Math.max(top, MENU_GAP_PX))}px` };
 }
 
 function boundsOf(pane: HTMLElement | null): Bounds {

@@ -29,9 +29,9 @@ export interface Plate {
 }
 
 interface GapVars {
-	readonly "--wg-gap-items": string;
-	readonly "--wg-gap-parts": string;
-	readonly "--wg-gap-cards": string;
+	readonly "--gap-items": string;
+	readonly "--gap-parts": string;
+	readonly "--gap-cards": string;
 }
 
 type Worn = { readonly surface?: string | undefined } | null | undefined;
@@ -45,9 +45,9 @@ export const stepOf = (level: number): number =>
 
 export function gapVarsOf(level: number): GapVars {
 	return {
-		"--wg-gap-items": `${stepOf(level)}px`,
-		"--wg-gap-parts": `${stepOf(level + 1)}px`,
-		"--wg-gap-cards": `${cardsGapOf(stepOf(level))}px`,
+		"--gap-items": `${stepOf(level)}px`,
+		"--gap-parts": `${stepOf(level + 1)}px`,
+		"--gap-cards": `${cardsGapOf(stepOf(level))}px`,
 	};
 }
 

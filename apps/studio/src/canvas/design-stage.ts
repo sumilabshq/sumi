@@ -39,7 +39,7 @@ export const CANVAS_OPENED_ON: CanvasOpening = {
 	mode: "hand",
 };
 
-const STAGE = "wg-root cv:overflow-hidden cv:p-0 cv:[--wg-board-pad:0px] cv:[--wg-root-head:0px]";
+const STAGE = "wg-root cv:overflow-hidden cv:p-0 cv:[--board-pad:0px] cv:[--root-head:0px]";
 
 export function DesignStage({
 	size,

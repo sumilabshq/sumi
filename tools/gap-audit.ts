@@ -10,7 +10,7 @@ export interface LiteralGap {
 const WIDGETS = "registry";
 const SHEET = "widget.css";
 const LITERAL_GAP = /(?:^|[\s;{])((?:row-|column-)?gap)\s*:\s*([^;}\n]*\d[^;}\n]*)/g;
-const ENGINE_GAP = /var\(--wg-gap-(items|parts|cards)\)/;
+const ENGINE_GAP = /var\(--gap-(items|parts|cards)\)/;
 
 export function literalGapsIn(text: string): LiteralGap[] {
 	return text.split("\n").flatMap((line, at) =>
@@ -47,7 +47,7 @@ function report(): void {
 	}
 	const total = found.reduce((sum, one) => sum + one.gaps.length, 0);
 	console.log(
-		`\ngap audit: ${total} gap(s) written as a number in ${found.length} widget file(s); the engine's are var(--wg-gap-items), var(--wg-gap-parts) and var(--wg-gap-cards)`,
+		`\ngap audit: ${total} gap(s) written as a number in ${found.length} widget file(s); the engine's are var(--gap-items), var(--gap-parts) and var(--gap-cards)`,
 	);
 }
 

@@ -1,245 +1,245 @@
 :root {
-	--sumi-invert: #ffffff;
-	--sumi-frame: #ffffff;
-	--sumi-plate: #ffffff;
-	--sumi-soft: #f5f5f5;
-	--sumi-sunken: rgba(21, 21, 19, 0.045);
-	--sumi-overlay: #ffffff;
-	--sumi-text: #151513;
-	--sumi-text-2: rgba(21, 21, 19, 0.76);
-	--sumi-text-3: rgba(21, 21, 19, 0.62);
-	--sumi-hover: rgba(21, 21, 19, 0.045);
-	--sumi-active: rgba(21, 21, 19, 0.12);
-	--sumi-line: #d0d0d0;
-	--sumi-divider: #ebebeb;
-	--sumi-line-strong: #bdbdbd;
-	--sumi-tree: #bdbdbd;
-	--sumi-group-plain: rgba(21, 21, 19, 0.08);
-	--sumi-group-glass: transparent;
-	--sumi-accent: #a84a06;
-	--sumi-on-accent: #ffffff;
-	--sumi-accent-soft: rgba(168, 74, 6, 0.12);
+	--invert: #ffffff;
+	--frame: #ffffff;
+	--plate: #ffffff;
+	--soft: #f5f5f5;
+	--sunken: rgba(21, 21, 19, 0.045);
+	--overlay: #ffffff;
+	--text: #151513;
+	--text-2: rgba(21, 21, 19, 0.76);
+	--text-3: rgba(21, 21, 19, 0.62);
+	--hover: rgba(21, 21, 19, 0.045);
+	--active: rgba(21, 21, 19, 0.12);
+	--line: #d0d0d0;
+	--divider: #ebebeb;
+	--line-strong: #bdbdbd;
+	--tree: #bdbdbd;
+	--group-plain: rgba(21, 21, 19, 0.08);
+	--group-glass: transparent;
+	--accent-base: #a84a06;
+	--on-accent: #ffffff;
+	--accent-soft: rgba(168, 74, 6, 0.12);
 
-	--sumi-accent-text: #a84a06;
-	--sumi-focus-ring: rgba(21, 21, 19, 0.62);
-	--sumi-success: #2f6b3a;
-	--sumi-warning: #a84a06;
-	--sumi-danger: #a63a28;
-	--sumi-progress: #2b5fc4;
-	--sumi-code-keyword: #8a4b08;
-	--sumi-code-string: #2f6b3a;
-	--sumi-success-wash: rgba(47, 107, 58, 0.1);
-	--sumi-danger-wash: rgba(166, 58, 40, 0.1);
-	--sumi-status-done: oklch(0.63 0.2 148);
-	--sumi-status-question: oklch(0.8 0.17 85);
-	--sumi-status-blocked: oklch(0.58 0.24 25);
-	--sumi-shadow-plate: none;
-	--sumi-shadow-pop: 0 0 0 1px var(--sumi-line);
-	--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
-	--sumi-shadow-float: none;
-	--sumi-blur-pop: none;
-	--sumi-blur-corner: blur(10px);
-	--sumi-viewer-ground: rgba(15, 15, 14, 0.94);
-	--sumi-viewer-ink: #e9e6de;
-	--sumi-viewer-ink-2: rgba(233, 230, 222, 0.7);
-	--sumi-viewer-hover: rgba(233, 230, 222, 0.13);
-	--sumi-viewer-thumb: rgba(233, 230, 222, 0.09);
+	--accent-text: #a84a06;
+	--focus-ring: rgba(21, 21, 19, 0.62);
+	--success-text: #2f6b3a;
+	--warning-text: #a84a06;
+	--danger: #a63a28;
+	--progress: #2b5fc4;
+	--code-keyword: #8a4b08;
+	--code-string: #2f6b3a;
+	--success-text-wash: rgba(47, 107, 58, 0.1);
+	--danger-wash: rgba(166, 58, 40, 0.1);
+	--status-done: oklch(0.63 0.2 148);
+	--status-question: oklch(0.8 0.17 85);
+	--status-blocked: oklch(0.58 0.24 25);
+	--shadow-plate: none;
+	--shadow-pop: 0 0 0 1px var(--line);
+	--shadow-lift: 0 0 0 1px var(--line);
+	--shadow-float: none;
+	--blur-pop: none;
+	--blur-corner: blur(10px);
+	--viewer-ground: rgba(15, 15, 14, 0.94);
+	--viewer-ink: #e9e6de;
+	--viewer-ink-2: rgba(233, 230, 222, 0.7);
+	--viewer-hover: rgba(233, 230, 222, 0.13);
+	--viewer-thumb: rgba(233, 230, 222, 0.09);
 
-	--sumi-hue-red: #dc2626;
-	--sumi-hue-orange: #ea580c;
-	--sumi-hue-amber: #b45309;
-	--sumi-hue-green: #15803d;
-	--sumi-hue-teal: #0f766e;
-	--sumi-hue-blue: #2563eb;
-	--sumi-hue-purple: #7c3aed;
-	--sumi-hue-pink: #db2777;
-	--sumi-hue-slate: #64748b;
-	--sumi-group-tint: 0%;
-	--sumi-icon-tint: 0%;
+	--hue-red: #dc2626;
+	--hue-orange: #ea580c;
+	--hue-amber: #b45309;
+	--hue-green: #15803d;
+	--hue-teal: #0f766e;
+	--hue-blue: #2563eb;
+	--hue-purple: #7c3aed;
+	--hue-pink: #db2777;
+	--hue-slate: #64748b;
+	--group-tint: 0%;
+	--icon-tint: 0%;
 
-	--sumi-font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-	--sumi-font-accent: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-	--sumi-font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
-	--sumi-font-voice: "IBM Plex Serif", Georgia, "Times New Roman", serif;
-	--sumi-fs-voice: 30px;
-	--sumi-font-features: normal;
-	--sumi-fs-11: 11px;
-	--sumi-fs-12: 12px;
-	--sumi-fs-13: 13px;
-	--sumi-fs-14: 14px;
-	--sumi-fs-16: 16px;
-	--sumi-fs-20: 20px;
-	--sumi-fs-28: 24px;
-	--sumi-fw-regular: 400;
-	--sumi-fw-medium: 500;
-	--sumi-fw-semi: 600;
+	--font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	--font-accent: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	--font-code: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+	--font-voice: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+	--fs-voice: 30px;
+	--font-features: normal;
+	--fs-11: 11px;
+	--fs-12: 12px;
+	--fs-13: 13px;
+	--fs-14: 14px;
+	--fs-16: 16px;
+	--fs-20: 20px;
+	--fs-28: 24px;
+	--fw-regular: 400;
+	--fw-medium: 500;
+	--fw-semi: 600;
 
-	--sumi-sp-1: 2px;
-	--sumi-sp-2: 4px;
-	--sumi-sp-3: 6px;
-	--sumi-sp-4: 8px;
-	--sumi-sp-5: 12px;
-	--sumi-sp-6: 16px;
-	--sumi-sp-7: 20px;
-	--sumi-sp-8: 24px;
-	--sumi-sp-9: 32px;
+	--space-0-5: 2px;
+	--space-1: 4px;
+	--space-1-5: 6px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
 
-	--sumi-r-xs: 4px;
-	--sumi-r-sm: 6px;
-	--sumi-r-md: 8px;
-	--sumi-r-lg: 12px;
-	--sumi-r-group: 14px;
-	--sumi-r-xl: 16px;
-	--sumi-r-full: 999px;
+	--r-xs: 4px;
+	--r-sm: 6px;
+	--r-md: 8px;
+	--r-lg: 12px;
+	--r-group: 14px;
+	--r-xl: 16px;
+	--r-full: 999px;
 
-	--sumi-h-xs: 24px;
-	--sumi-h-sm: 28px;
-	--sumi-h-row: 30px;
-	--sumi-h-md: 32px;
-	--sumi-h-lg: 36px;
-	--sumi-icon: 16px;
-	--sumi-icon-sm: 14px;
-	--sumi-header-h: 44px;
-	--sumi-sidebar-w: 280px;
-	--sumi-sidebar-min: 200px;
-	--sumi-sidebar-max: 420px;
-	--sumi-gap: 0px;
-	--sumi-pad: 20px;
-	--sumi-side-pad: 16px;
-	--sumi-caret-w: 8px;
-	--sumi-caret-h: 18px;
+	--h-xs: 24px;
+	--h-sm: 28px;
+	--h-row: 30px;
+	--h-md: 32px;
+	--h-lg: 36px;
+	--icon: 16px;
+	--icon-sm: 14px;
+	--header-h: 44px;
+	--sidebar-w: 280px;
+	--sidebar-min: 200px;
+	--sidebar-max: 420px;
+	--frame-gap: 0px;
+	--pad: 20px;
+	--side-pad: 16px;
+	--caret-w: 8px;
+	--caret-h: 18px;
 
-	--sumi-dur-instant: 0ms;
-	--sumi-dur-hover: 100ms;
-	--sumi-dur-fast: 100ms;
-	--sumi-dur-base: 120ms;
-	--sumi-dur-slow: 180ms;
-	--sumi-ease: cubic-bezier(0.2, 0, 0, 1);
-	--sumi-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-	--sumi-dur-press: 80ms;
-	--sumi-dur-release: 180ms;
-	--sumi-ease-touch: cubic-bezier(0.2, 0.8, 0.2, 1);
-	--sumi-press-scale: 0.97;
-	--sumi-selection: rgba(168, 74, 6, 0.2);
-	--sumi-grain-opacity: 0.07;
-	--sumi-top-light: rgba(21, 21, 19, 0.022);
+	--dur-instant: 0ms;
+	--dur-hover: 100ms;
+	--dur-fast: 100ms;
+	--dur-base: 120ms;
+	--dur-slow: 180ms;
+	--ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+	--dur-press: 80ms;
+	--dur-release: 180ms;
+	--ease-touch: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--press-scale: 0.97;
+	--selection: rgba(168, 74, 6, 0.2);
+	--grain-opacity: 0.07;
+	--top-light: rgba(21, 21, 19, 0.022);
 
-	--sumi-selected: var(--sumi-soft);
-	--sumi-glyph-rest: var(--sumi-text-3);
-	--sumi-glyph-hover: var(--sumi-text-2);
-	--sumi-glyph-on: var(--sumi-text);
-	--sumi-menu-glyph: var(--sumi-text-3);
-	--sumi-menu-glyph-on: var(--sumi-text);
-	--sumi-pick: #ffffff;
-	--sumi-pick-edge: 0 0 0 0 transparent;
-	--sumi-blur-pick: none;
-	--sumi-tip-kbd: rgba(127, 127, 127, 0.35);
-	--sumi-fs-tip: 12px;
-	--sumi-h-tip: 28px;
-	--sumi-r-tip: var(--sumi-r-sm);
-	--sumi-tip-arrow: 8px;
-	--sumi-dur-out: 100ms;
-	--sumi-fs-15: 15px;
-	--sumi-fs-glyph: 18px;
-	--sumi-fs-glyph-lg: 22px;
-	--sumi-fs-17: 15px;
+	--selected: var(--soft);
+	--glyph-rest: var(--text-3);
+	--glyph-hover: var(--text-2);
+	--glyph-on: var(--text);
+	--menu-glyph: var(--text-3);
+	--menu-glyph-on: var(--text);
+	--pick: #ffffff;
+	--pick-edge: 0 0 0 0 transparent;
+	--blur-pick: none;
+	--tip-kbd: rgba(127, 127, 127, 0.35);
+	--fs-tip: 12px;
+	--h-tip: 28px;
+	--r-tip: var(--r-sm);
+	--tip-arrow: 8px;
+	--dur-out: 100ms;
+	--fs-15: 15px;
+	--fs-glyph: 18px;
+	--fs-glyph-lg: 22px;
+	--fs-17: 15px;
 
-	--sumi-chats-w: 280px;
-	--sumi-chat-w: 560px;
-	--sumi-read-w: 768px;
-	--sumi-plate-min: 240px;
+	--chats-w: 280px;
+	--chat-w: 560px;
+	--read-w: 768px;
+	--plate-min: 240px;
 }
 
 :root.dark,
 .dark,
 .theme-dark {
-	--sumi-frame: #000000;
-	--sumi-plate: #000000;
-	--sumi-soft: #0e0e0e;
-	--sumi-sunken: rgba(233, 230, 222, 0.05);
-	--sumi-overlay: #000000;
-	--sumi-text: #e9e6de;
-	--sumi-text-2: rgba(233, 230, 222, 0.7);
-	--sumi-text-3: rgba(233, 230, 222, 0.5);
-	--sumi-hover: rgba(233, 230, 222, 0.05);
-	--sumi-active: rgba(233, 230, 222, 0.13);
-	--sumi-line: #32312f;
-	--sumi-divider: #1a1a1a;
-	--sumi-line-strong: #434240;
-	--sumi-tree: #484644;
-	--sumi-group-plain: rgba(233, 230, 222, 0.09);
-	--sumi-accent: #e6c36f;
-	--sumi-on-accent: #000000;
-	--sumi-accent-soft: rgba(230, 195, 111, 0.14);
-	--sumi-accent-text: #e6c36f;
-	--sumi-focus-ring: rgba(233, 230, 222, 0.5);
-	--sumi-success: #9dbf8a;
-	--sumi-warning: #e8b84a;
-	--sumi-danger: #e39a8b;
-	--sumi-progress: #6a9be8;
-	--sumi-code-keyword: #d8b46a;
-	--sumi-code-string: #9dbf8a;
-	--sumi-success-wash: rgba(157, 191, 138, 0.1);
-	--sumi-danger-wash: rgba(227, 154, 139, 0.1);
-	--sumi-status-done: oklch(0.74 0.21 148);
-	--sumi-status-question: oklch(0.86 0.18 92);
-	--sumi-status-blocked: oklch(0.64 0.25 25);
-	--sumi-shadow-pop: 0 0 0 1px var(--sumi-line);
-	--sumi-shadow-lift: 0 0 0 1px var(--sumi-line);
-	--sumi-shadow-float: none;
+	--frame: #000000;
+	--plate: #000000;
+	--soft: #0e0e0e;
+	--sunken: rgba(233, 230, 222, 0.05);
+	--overlay: #000000;
+	--text: #e9e6de;
+	--text-2: rgba(233, 230, 222, 0.7);
+	--text-3: rgba(233, 230, 222, 0.5);
+	--hover: rgba(233, 230, 222, 0.05);
+	--active: rgba(233, 230, 222, 0.13);
+	--line: #32312f;
+	--divider: #1a1a1a;
+	--line-strong: #434240;
+	--tree: #484644;
+	--group-plain: rgba(233, 230, 222, 0.09);
+	--accent-base: #e6c36f;
+	--on-accent: #000000;
+	--accent-soft: rgba(230, 195, 111, 0.14);
+	--accent-text: #e6c36f;
+	--focus-ring: rgba(233, 230, 222, 0.5);
+	--success-text: #9dbf8a;
+	--warning-text: #e8b84a;
+	--danger: #e39a8b;
+	--progress: #6a9be8;
+	--code-keyword: #d8b46a;
+	--code-string: #9dbf8a;
+	--success-text-wash: rgba(157, 191, 138, 0.1);
+	--danger-wash: rgba(227, 154, 139, 0.1);
+	--status-done: oklch(0.74 0.21 148);
+	--status-question: oklch(0.86 0.18 92);
+	--status-blocked: oklch(0.64 0.25 25);
+	--shadow-pop: 0 0 0 1px var(--line);
+	--shadow-lift: 0 0 0 1px var(--line);
+	--shadow-float: none;
 
-	--sumi-selected: var(--sumi-soft);
-	--sumi-pick: #000000;
-	--sumi-selection: rgba(230, 195, 111, 0.26);
-	--sumi-grain-opacity: 0.05;
-	--sumi-top-light: rgba(233, 230, 222, 0.035);
-	--sumi-hue-red: #f87171;
-	--sumi-hue-orange: #fb923c;
-	--sumi-hue-amber: #fbbf24;
-	--sumi-hue-green: #4ade80;
-	--sumi-hue-teal: #2dd4bf;
-	--sumi-hue-blue: #60a5fa;
-	--sumi-hue-purple: #a78bfa;
-	--sumi-hue-pink: #f472b6;
-	--sumi-hue-slate: #94a3b8;
+	--selected: var(--soft);
+	--pick: #000000;
+	--selection: rgba(230, 195, 111, 0.26);
+	--grain-opacity: 0.05;
+	--top-light: rgba(233, 230, 222, 0.035);
+	--hue-red: #f87171;
+	--hue-orange: #fb923c;
+	--hue-amber: #fbbf24;
+	--hue-green: #4ade80;
+	--hue-teal: #2dd4bf;
+	--hue-blue: #60a5fa;
+	--hue-purple: #a78bfa;
+	--hue-pink: #f472b6;
+	--hue-slate: #94a3b8;
 }
 
 .sumi-ink-ember {
-	--sumi-ink-hue: 42;
-	--sumi-ink-chroma: 0.15;
+	--ink-hue: 42;
+	--ink-chroma: 0.15;
 }
 
 .sumi-ink-moss {
-	--sumi-ink-hue: 145;
-	--sumi-ink-chroma: 0.12;
+	--ink-hue: 145;
+	--ink-chroma: 0.12;
 }
 
 .sumi-ink-tide {
-	--sumi-ink-hue: 225;
-	--sumi-ink-chroma: 0.11;
+	--ink-hue: 225;
+	--ink-chroma: 0.11;
 }
 
 .sumi-ink-iris {
-	--sumi-ink-hue: 285;
-	--sumi-ink-chroma: 0.13;
+	--ink-hue: 285;
+	--ink-chroma: 0.13;
 }
 
 .sumi-ink-rose {
-	--sumi-ink-hue: 355;
-	--sumi-ink-chroma: 0.13;
+	--ink-hue: 355;
+	--ink-chroma: 0.13;
 }
 
 :is(.sumi-ink-ember, .sumi-ink-moss, .sumi-ink-tide, .sumi-ink-iris, .sumi-ink-rose) {
-	--sumi-accent: oklch(0.52 var(--sumi-ink-chroma) var(--sumi-ink-hue));
-	--sumi-accent-text: var(--sumi-accent);
-	--sumi-accent-soft: color-mix(in srgb, var(--sumi-accent) 12%, transparent);
-	--sumi-selection: color-mix(in srgb, var(--sumi-accent) 20%, transparent);
+	--accent-base: oklch(0.52 var(--ink-chroma) var(--ink-hue));
+	--accent-text: var(--accent-base);
+	--accent-soft: color-mix(in srgb, var(--accent-base) 12%, transparent);
+	--selection: color-mix(in srgb, var(--accent-base) 20%, transparent);
 }
 
 :is(.dark, .theme-dark) :is(.sumi-ink-ember, .sumi-ink-moss, .sumi-ink-tide, .sumi-ink-iris, .sumi-ink-rose) {
-	--sumi-accent: oklch(0.8 var(--sumi-ink-chroma) var(--sumi-ink-hue));
-	--sumi-accent-soft: color-mix(in srgb, var(--sumi-accent) 14%, transparent);
-	--sumi-selection: color-mix(in srgb, var(--sumi-accent) 26%, transparent);
+	--accent-base: oklch(0.8 var(--ink-chroma) var(--ink-hue));
+	--accent-soft: color-mix(in srgb, var(--accent-base) 14%, transparent);
+	--selection: color-mix(in srgb, var(--accent-base) 26%, transparent);
 }
 
 body:has(.wg-studio)::before,
@@ -252,27 +252,27 @@ body:has(.wg-studio)::after {
 }
 
 body:has(.wg-studio)::before {
-	background: radial-gradient(60% 420px at 50% 0, var(--sumi-top-light), transparent 72%);
+	background: radial-gradient(60% 420px at 50% 0, var(--top-light), transparent 72%);
 }
 
 body:has(.wg-studio)::after {
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-	opacity: var(--sumi-grain-opacity);
+	opacity: var(--grain-opacity);
 }
 
 .wg-studio ::selection {
-	background: var(--sumi-selection);
+	background: var(--selection);
 }
 
 .wg-studio button:not(:disabled, [draggable="true"]) {
 	transition:
-		background-color var(--sumi-dur-release) var(--sumi-ease-touch),
-		transform var(--sumi-dur-release) var(--sumi-ease-touch);
+		background-color var(--dur-release) var(--ease-touch),
+		transform var(--dur-release) var(--ease-touch);
 }
 
 .wg-studio button:not(:disabled, [draggable="true"]):active {
-	transform: scale(var(--sumi-press-scale));
-	transition-duration: var(--sumi-dur-press);
+	transform: scale(var(--press-scale));
+	transition-duration: var(--dur-press);
 }
 
 @keyframes sumi-sweep {
@@ -302,30 +302,30 @@ body:has(.wg-studio)::after {
 }
 
 .sumi-ink-dark {
-	--sumi-text: #151513;
-	--sumi-text-2: rgba(21, 21, 19, 0.76);
-	--sumi-text-3: rgba(21, 21, 19, 0.62);
-	--sumi-hover: rgba(21, 21, 19, 0.045);
-	--sumi-active: rgba(21, 21, 19, 0.12);
+	--text: #151513;
+	--text-2: rgba(21, 21, 19, 0.76);
+	--text-3: rgba(21, 21, 19, 0.62);
+	--hover: rgba(21, 21, 19, 0.045);
+	--active: rgba(21, 21, 19, 0.12);
 }
 
 .sumi-ink-light {
-	--sumi-text: #e9e6de;
-	--sumi-text-2: rgba(233, 230, 222, 0.7);
-	--sumi-text-3: rgba(233, 230, 222, 0.5);
-	--sumi-hover: rgba(233, 230, 222, 0.05);
-	--sumi-active: rgba(233, 230, 222, 0.13);
+	--text: #e9e6de;
+	--text-2: rgba(233, 230, 222, 0.7);
+	--text-3: rgba(233, 230, 222, 0.5);
+	--hover: rgba(233, 230, 222, 0.05);
+	--active: rgba(233, 230, 222, 0.13);
 }
 
 @media (prefers-reduced-motion: reduce) {
 	:root {
-		--sumi-dur-hover: 0ms;
-		--sumi-dur-fast: 0ms;
-		--sumi-dur-base: 0ms;
-		--sumi-dur-slow: 0ms;
-		--sumi-dur-out: 0ms;
-		--sumi-dur-press: 0ms;
-		--sumi-dur-release: 0ms;
-		--sumi-press-scale: 1;
+		--dur-hover: 0ms;
+		--dur-fast: 0ms;
+		--dur-base: 0ms;
+		--dur-slow: 0ms;
+		--dur-out: 0ms;
+		--dur-press: 0ms;
+		--dur-release: 0ms;
+		--press-scale: 1;
 	}
 }

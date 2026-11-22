@@ -478,8 +478,8 @@ that needs a title stands in `@default/section`; a widget that draws rows draws 
 
 ## Spacing inside a widget
 
-Never write a gap as a number. Every cell carries `var(--wg-gap-items)` (bare items, sections),
-`var(--wg-gap-parts)` (the parts of one item) and `var(--wg-gap-cards)` (items that each wear a plate);
+Never write a gap as a number. Every cell carries `var(--gap-items)` (bare items, sections),
+`var(--gap-parts)` (the parts of one item) and `var(--gap-cards)` (items that each wear a plate);
 Tailwind names them `gap-items`, `gap-parts`, `gap-cards`. `SlotList` from the kit picks the right one.
 
 ## A picture: `Emblem`
@@ -573,7 +573,7 @@ Take these from `widgetarium/kit` rather than drawing them:
 ```
 
 A badge is drawn from one ink: `color` names one of `red orange yellow green cyan blue purple pink`
-(Obsidian's own palette through `--wg-kit-<name>`, which the theme repaints for light and dark), any
+(Obsidian's own palette through `--<name>`, which the theme repaints for light and dark), any
 colour, or a pair `{ light, dark }` when one colour cannot serve both themes; `tone` names a role instead
 (`neutral accent success warning error info note standout highlight`). The wash behind it and the
 text on it are both mixed from that ink. `variant` is `soft` (the default), `solid`, `outline`, `dot`
@@ -581,7 +581,7 @@ or `text`; `size` is `m` or `s`.
 
 `Heading` draws `h1`–`h6`: `level` is the outline, `size` is the look and defaults to the level. In a
 widget it is an `h3` unless asked; `level` or `size` 1 and 2 are a region's title, which `check`
-refuses outside a `text` or `layout` widget. Every size comes from `--wg-kit-h<n>-*`, so a design
+refuses outside a `text` or `layout` widget. Every size comes from `--h<n>-*`, so a design
 system restyles all of them at once.
 
 `ShowMore` is the full-width button under a list that reads a page at a time, draws nothing when
@@ -666,8 +666,8 @@ fieldState }) => …} />`, `form.handleSubmit(send)`. The schema is your zod obj
   in `Calendar` (PageUp/PageDown turn the month); Escape closes a Popover and hands focus back.
 - **State is on the element**: `data-state="open|closed|checked|unchecked|active|inactive"`,
   `data-disabled`, `data-highlighted`, `data-loading`, `data-selected`, `data-today`.
-- An open `PopoverContent`, menu, tooltip or hover card carries `--wg-kit-anchor-width`,
-  `--wg-kit-pop-available-width`, `--wg-kit-pop-available-height` and `--wg-kit-pop-origin`, and
+- An open `PopoverContent`, menu, tooltip or hover card carries `--anchor-width`,
+  `--pop-available-width`, `--pop-available-height` and `--pop-origin`, and
   `data-side`/`data-align` for where it landed, so content can match its trigger and stop at the
   screen's edge in plain CSS.
 
@@ -788,7 +788,7 @@ names the kit item it stands in for: `block` (sized by its class), `text` (`line
 `emblem` (`size`, `shape`, as `Emblem` takes them), `button` (`size`, `block`), `field` (`size`),
 `row`, `sparkline` (`height`), `chart` and `card`. It is hidden from a screen reader; the thing
 that is loading says `aria-busy` itself. A button, a field, an icon button and their skeletons read
-one height per size, `--wg-kit-control-s|m|l`, so a theme that changes one changes all of them.
+one height per size, `--control-s|m|l`, so a theme that changes one changes all of them.
 
 `<CodeBlock code={source} label="Usage" />` shows code as it is written: monospace, on the kit's
 fill, scrolling sideways rather than wrapping. It draws text only, never markup.
@@ -827,7 +827,7 @@ const config = { notes: { label: "Notes" }, links: { label: "Links", color: 2 } 
 ```
 
 `config` names every series once: `label` is what the tooltip and the legend say, `color` is a
-number from 1 to 5 (`--wg-kit-chart-1…5`), a palette name (`purple`) or a tone (`success`), and
+number from 1 to 5 (`--chart-1…5`), a palette name (`purple`) or a tone (`success`), and
 left out it is the series' place in the config. The container turns each key into
 `--color-<key>`, and a mark paints with that variable, never with a colour of its own: a hex or an
 `rgb()` is refused and the place's colour drawn instead. The container is 16:9 unless its class

@@ -1,14 +1,14 @@
 .wg-pane[data-pane-tools] {
-	--sumi-pane-tools-w: calc(2 * var(--sumi-h-sm) + var(--sumi-sp-1) + 2 * var(--sumi-sp-3));
-	--sumi-pane-tools-end: 0px;
-	--sumi-corner-top: var(--sumi-header-h);
-	--sumi-corner-end: var(--sumi-pane-tools-w);
+	--pane-tools-w: calc(2 * var(--h-sm) + var(--space-0-5) + 2 * var(--space-1-5));
+	--pane-tools-end: 0px;
+	--corner-top: var(--header-h);
+	--corner-end: var(--pane-tools-w);
 	z-index: 0;
 }
 
 .wg-shell:has([data-title-floats]) .wg-pane[data-pane-tools][data-corner-end] {
-	--sumi-pane-tools-end: calc(var(--sumi-corner-end-w) - 2 * var(--sumi-sp-3) + var(--sumi-sp-1));
-	--sumi-corner-end: calc(var(--sumi-pane-tools-w) + var(--sumi-corner-end-w));
+	--pane-tools-end: calc(var(--corner-end-w) - 2 * var(--space-1-5) + var(--space-0-5));
+	--corner-end: calc(var(--pane-tools-w) + var(--corner-end-w));
 }
 
 .wg-pane[data-pane-expanded] {
@@ -18,13 +18,13 @@
 .wg-pane > .sumi-pane-tools {
 	position: absolute;
 	top: 0;
-	right: var(--sumi-pane-tools-end);
+	right: var(--pane-tools-end);
 	z-index: 4;
 	display: flex;
 	align-items: center;
-	gap: var(--sumi-sp-1);
+	gap: var(--space-0-5);
 	box-sizing: border-box;
 	width: auto;
-	height: var(--sumi-corner-top);
-	padding-inline: var(--sumi-sp-3);
+	height: var(--corner-top);
+	padding-inline: var(--space-1-5);
 }

@@ -24,12 +24,12 @@ type Arrangement = z.infer<typeof ArrangementSchema>;
 const KIND_OF: Readonly<Record<Arrangement, LayoutKind>> = { column: "stack", row: "row", grid: "grid" };
 
 const STYLE = `
-.wg-section { display: flex; flex-direction: column; gap: var(--wg-gap-parts, 12px); }
-.wg-section-head { display: flex; align-items: center; gap: var(--wg-gap-items, 8px); }
+.wg-section { display: flex; flex-direction: column; gap: var(--gap-parts, 12px); }
+.wg-section-head { display: flex; align-items: center; gap: var(--gap-items, 8px); }
 .wg-section-title { margin: 0; font-size: var(--font-ui-large, 18px); font-weight: 600; }
-.wg-section-controls { margin-left: auto; display: flex; align-items: center; gap: var(--wg-gap-items, 8px); }
+.wg-section-controls { margin-left: auto; display: flex; align-items: center; gap: var(--gap-items, 8px); }
 .wg-section-stands { min-width: 0; }
-.wg-section-empty { font-size: var(--font-ui-small, 13px); color: var(--wg-kit-text-muted); }
+.wg-section-empty { font-size: var(--font-ui-small, 13px); color: var(--muted-foreground); }
 `;
 
 const SectionWidget = createWidget({

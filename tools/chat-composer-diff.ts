@@ -43,27 +43,10 @@ const GEIST_FACES = (
 const GEIST_LOADED = `(async (faces) => { if (faces !== "") { const sheet = document.createElement("style"); sheet.textContent = faces; document.head.append(sheet); } await Promise.all(["400 13px Geist", "500 13px Geist", "600 16px Geist", "400 15px Geist", "500 28px Geist"].map((face) => document.fonts.load(face))); await document.fonts.ready; return document.fonts.check("500 13px Geist"); })`;
 const SETTLE_MS = 400;
 const SUMI_SHEET = readFileSync(path.join(REPO, "design-systems/sumi/sumi.css"), "utf8");
-const SUMI_ROLES = [
-	"frame",
-	"plate",
-	"text",
-	"text-2",
-	"text-3",
-	"hover",
-	"active",
-	"line",
-	"line-strong",
-	"success",
-	"accent",
-	"on-accent",
-	"focus-ring",
-	"overlay",
-	"accent-text",
-	"sunken",
-];
-const SUMI_RENAMED = "--shadow-popover: var(--sumi-shadow-pop);";
+const SUMI_RENAMED =
+	"--success: var(--success-text); --accent: var(--accent-base); --shadow-popover: var(--shadow-pop);";
 const IN_SUMI_PALETTE = `((sheet, isDark) => {
-	const roles = ${JSON.stringify(SUMI_ROLES)}.map((role) => "--" + role + ": var(--sumi-" + role + ");").join("") + ${JSON.stringify(SUMI_RENAMED)};
+	const roles = ${JSON.stringify(SUMI_RENAMED)};
 	const style = document.createElement("style");
 	style.textContent = sheet + " .ink.ink { " + roles + " }";
 	document.head.append(style);

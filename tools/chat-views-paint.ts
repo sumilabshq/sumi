@@ -69,14 +69,17 @@ const page = join(folder, "page.html");
 writeFileSync(
 	page,
 	`<!doctype html><html class="dark"><head><meta charset="utf-8"><style>${readFileSync(join(ROOT, "design-systems/sumi/sumi.css"), "utf8")}</style>
-<style>body{margin:0;background:var(--sumi-plate);color:var(--sumi-text);font:14px/1.6 var(--sumi-font-ui)}.column{width:768px;margin:0 auto;padding:32px 0;display:flex;flex-direction:column;gap:12px}</style></head>
+<style>body{margin:0;background:var(--plate);color:var(--text);font:14px/1.6 var(--font-ui)}.column{width:768px;margin:0 auto;padding:32px 0;display:flex;flex-direction:column;gap:12px}</style></head>
 <body><div class="column wg-chat-app"><p>Here are three laptops and last year's spend.</p><div id="host"></div><p>Prices are from the stores' pages today.</p></div>
 <script>${await bundleOf(entry)}</script></body></html>`,
 );
 
 function chatCodeTokens(): string {
-	const sheet = readFileSync(join(ROOT, "plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant.css"), "utf8");
-	const opened = sheet.indexOf(".wg-chat-app {\n\t--sumi-code-foreground");
+	const sheet = readFileSync(
+		join(ROOT, "plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant.css"),
+		"utf8",
+	);
+	const opened = sheet.indexOf(".wg-chat-app {\n\t--code-foreground");
 	return sheet.slice(opened, sheet.indexOf("}", opened) + 1);
 }
 
@@ -86,26 +89,56 @@ const asked = await paged(page, "chat-views", {
 });
 await waited(1500);
 const probe = async (expression: string): Promise<unknown> => asked.ask(expression);
-const heights = (await probe("JSON.stringify(window.chatViewProbe.heard.filter((m) => m.sumiView === 'height').map((m) => m.height))")) as string;
+const heights = (await probe(
+	"JSON.stringify(window.chatViewProbe.heard.filter((m) => m.sumiView === 'height').map((m) => m.height))",
+)) as string;
 const reported: number[] = JSON.parse(heights);
 check("the frame reports its height to the chat", reported.length > 0 && (reported.at(-1) ?? 0) > 300, true);
-check("the frame is as tall as its view", await probe("Math.round(window.chatViewProbe.frame.getBoundingClientRect().height)"), reported.at(-1));
-check("the view reads Sumi's tokens", (await probe("window.chatViewProbe.tokenNames.includes('--sumi-text') && window.chatViewProbe.tokenNames.includes('--sumi-accent-text')")) as boolean, true);
-check("highlighted code reads the chat's code colours", (await probe("window.chatViewProbe.tokenNames.includes('--sumi-code-token-keyword')")) as boolean, true);
-check("the frame sits on the chat's left edge", await probe("Math.round(window.chatViewProbe.frame.getBoundingClientRect().left - document.querySelector('.column p').getBoundingClientRect().left)"), 0);
+check(
+	"the frame is as tall as its view",
+	await probe("Math.round(window.chatViewProbe.frame.getBoundingClientRect().height)"),
+	reported.at(-1),
+);
+check(
+	"the view reads Sumi's tokens",
+	(await probe(
+		"window.chatViewProbe.tokenNames.includes('--text') && window.chatViewProbe.tokenNames.includes('--accent-text')",
+	)) as boolean,
+	true,
+);
+check(
+	"highlighted code reads the chat's code colours",
+	(await probe("window.chatViewProbe.tokenNames.includes('--code-token-keyword')")) as boolean,
+	true,
+);
+check(
+	"the frame sits on the chat's left edge",
+	await probe(
+		"Math.round(window.chatViewProbe.frame.getBoundingClientRect().left - document.querySelector('.column p').getBoundingClientRect().left)",
+	),
+	0,
+);
 writeFileSync(SHOT, await asked.shoot());
 const inFrame = (expression: string): Promise<unknown> => asked.askInFrame("srcdoc", expression);
 const panelsShown = "JSON.stringify([...document.querySelectorAll('.tab-panel')].map((panel) => !panel.hidden))";
 check("the first tab shows its panel at start", await inFrame(panelsShown), "[true,false]");
 await inFrame("document.querySelectorAll('.tab-list > button')[1].click()");
 check("pressing the second tab shows its panel only", await inFrame(panelsShown), "[false,true]");
-check("the pressed tab is the selected one", await inFrame("document.querySelectorAll('.tab-list > button')[1].getAttribute('aria-selected')"), "true");
-await inFrame("document.querySelectorAll('.tab-list > button')[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))");
+check(
+	"the pressed tab is the selected one",
+	await inFrame("document.querySelectorAll('.tab-list > button')[1].getAttribute('aria-selected')"),
+	"true",
+);
+await inFrame(
+	"document.querySelectorAll('.tab-list > button')[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))",
+);
 check("the right arrow wraps to the first tab", await inFrame(panelsShown), "[true,false]");
 await probe("window.chatViewProbe.switchToLight()");
 await waited(400);
 writeFileSync(SHOT.replace(/\.png$/, "-light.png"), await asked.shoot());
 asked.close();
 console.log(`shots: ${SHOT}`);
-console.log(tally.failed === 0 ? "chat views paint: all checks passed" : `chat views paint: ${tally.failed} checks failed`);
+console.log(
+	tally.failed === 0 ? "chat views paint: all checks passed" : `chat views paint: ${tally.failed} checks failed`,
+);
 process.exit(tally.failed === 0 ? 0 : 1);

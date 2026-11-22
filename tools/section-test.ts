@@ -147,7 +147,7 @@ await drawn({
 });
 const grid = found(host, ".wg-kit-layout");
 check("a grid body is a grid", grid.className.includes("is-grid"), true);
-check("and wraps once a cell would go under its narrowest", grid.getAttribute("style"), "--wg-kit-layout-min: 320px;");
+check("and wraps once a cell would go under its narrowest", grid.getAttribute("style"), "--layout-min: 320px;");
 
 await drawn({ getArrangement: soloGateway("row", {}, "section-test:row") });
 check("a row body stands across", found(host, ".wg-kit-layout").className.includes("is-row"), true);

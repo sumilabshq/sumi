@@ -8,7 +8,7 @@ import { previewProps, previewSize } from "../packages/shared/core/src/preview.j
 import { GRID } from "../packages/shared/core/src/paths.js";
 import { PAGE_HOST, boom, filesAdapter, pageFiles, pageGlobal, reportsFailures, stackOf } from "./page-harness.ts";
 
-type LatticeStyle = CSSProperties & { readonly "--wg-cell": string; readonly "--wg-gap": string };
+type LatticeStyle = CSSProperties & { readonly "--widget-cell": string; readonly "--widget-gap": string };
 
 const WANTED = String(pageGlobal("__WANTED__"));
 const adapter = filesAdapter(pageFiles());
@@ -46,7 +46,7 @@ function Card(): ReactNode {
 	}
 
 	const size = previewSize(definition.manifest, GRID.cellPx, GRID.gapPx);
-	const lattice: LatticeStyle = { "--wg-cell": `${GRID.cellPx}px`, "--wg-gap": `${GRID.gapPx}px` };
+	const lattice: LatticeStyle = { "--widget-cell": `${GRID.cellPx}px`, "--widget-gap": `${GRID.gapPx}px` };
 	const sized = { width: `${size.width}px`, height: `${size.height}px` };
 
 	return h(

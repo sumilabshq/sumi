@@ -8,7 +8,7 @@ const STYLE = `
 	border-radius: 999px;
 	border: 1px solid var(--background-modifier-border);
 	background: var(--background-primary);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	font: inherit;
 	cursor: pointer;
 }
@@ -23,12 +23,12 @@ const STYLE = `
 
 .wgi-link-state {
 	font-size: 11px;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wgi-link.is-missing .wgi-link-name {
 	text-decoration: line-through;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 `;
 

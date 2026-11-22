@@ -17,7 +17,7 @@ decision needs to be right.
 
 1. **Fill, never outline.** A surface is told apart by its fill. The one exception is arithmetic:
    on a light theme nothing is lighter than white, so a card on a container separates by
-   \`--wg-kit-card-edge\` instead. A window's own border is the other exception — it has to end
+   \`--card-edge\` instead. A window's own border is the other exception — it has to end
    somewhere a person can see.
 
 2. **Every surface steps clear of the one under it.** Measured, in both themes:
@@ -44,7 +44,7 @@ decision needs to be right.
 5. **A tick marks a choice, and the kit draws it** — never the caller, or two lists disagree.
 
 6. **Glass is for reading, not for looking through.** A panel somebody reads takes
-   \`--wg-kit-glass-panel\` (0.94) and 40px of blur. \`--wg-kit-glass-tint\` (0.82) is for small
+   \`--glass-panel\` (0.94) and 40px of blur. \`--glass-tint\` (0.82) is for small
    floating chrome only.
 
 ## Tokens

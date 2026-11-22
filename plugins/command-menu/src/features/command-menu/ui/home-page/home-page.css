@@ -4,5 +4,5 @@
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
-	background: var(--sumi-plate);
+	background: var(--plate);
 }

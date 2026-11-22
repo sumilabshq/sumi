@@ -3,18 +3,18 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--sumi-sp-2);
+	gap: var(--space-1);
 	min-width: 0;
 }
 
 .sumi-ws-strip.is-sidebar {
-	padding: var(--sumi-sp-5) var(--sumi-sp-5) var(--sumi-sp-2);
+	padding: var(--space-3) var(--space-3) var(--space-1);
 }
 
 .sumi-ws-strip.is-header {
 	height: 100%;
-	margin-right: var(--sumi-sp-3);
-	padding-right: var(--sumi-sp-3);
+	margin-right: var(--space-1-5);
+	padding-right: var(--space-1-5);
 }
 
 .sumi-ws-strip.is-header::after {
@@ -24,7 +24,7 @@
 	right: 0;
 	width: 1px;
 	height: 16px;
-	background: var(--sumi-line);
+	background: var(--line);
 	transform: translateY(-50%);
 }
 

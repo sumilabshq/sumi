@@ -4,7 +4,7 @@ import { highlightedLinesOf, languageOf } from "@widgetarium/markdown";
 const CODE_GUIDE = `Code inside a view: <pre data-language="ts">the code</pre>. Sumi colours it like the chat's code and sets it in the mono font, with no box around it. Use it only when code is one piece of a bigger view, a cheatsheet or an API answer; code alone goes in your text as a code block.`;
 
 const CODE_SHEET = `
-pre.code { margin: 0; overflow-x: auto; color: var(--sumi-code-foreground, var(--sumi-text)); font-size: var(--sumi-fs-13); line-height: 1.6; white-space: pre; tab-size: 4; }
+pre.code { margin: 0; overflow-x: auto; color: var(--code-foreground, var(--text)); font-size: var(--fs-13); line-height: 1.6; white-space: pre; tab-size: 4; }
 `;
 
 const LANGUAGED = "pre[data-language]";
@@ -32,7 +32,9 @@ async function codeBlockFor(page: Document, pre: Element): Promise<void> {
 
 	if (language !== null) {
 		const lines = await highlightedLinesOf(page, body, language);
-		code.replaceChildren(...lines.flatMap((line, at) => (at === lines.length - 1 ? [...line] : [...line, page.createTextNode("\n")])));
+		code.replaceChildren(
+			...lines.flatMap((line, at) => (at === lines.length - 1 ? [...line] : [...line, page.createTextNode("\n")])),
+		);
 	}
 
 	pre.replaceWith(coloured);

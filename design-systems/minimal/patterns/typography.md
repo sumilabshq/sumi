@@ -15,4 +15,4 @@ Font pairs this system offers. One pair per product, chosen once; the roles (dis
 - **Serif display + sans text** (Editorial, Bookish, Contrast) reads as considered and print-like; **sans + sans** (Neutral, Grotesk, Native) reads as a tool.
 - Never more than these three families in one product.
 - Every family needs a fallback stack: a serif display falls back to `Georgia, serif`, a sans to `system-ui, sans-serif`.
-- TODO: the kit has `--font-sans` and `--font-mono` only; a pair can switch at runtime once `--wg-kit-font-display` and `--wg-kit-font-heading` exist.
+- TODO: the kit has `--font-sans` and `--font-mono` only; a pair can switch at runtime once `--font-display` and `--font-heading` exist.

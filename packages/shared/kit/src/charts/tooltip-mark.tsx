@@ -10,6 +10,6 @@ export interface TooltipMarkProps {
 
 export function TooltipMark({ mark, ink }: TooltipMarkProps): ReactElement | null {
 	if (mark === null) return null;
-	const inked: TokenStyle = { "--wg-kit-chart-mark": typeof ink === "string" ? ink : undefined };
+	const inked: TokenStyle = { "--chart-mark": typeof ink === "string" ? ink : undefined };
 	return <i className="wg-kit-chart-mark" data-indicator={mark} style={inked} />;
 }

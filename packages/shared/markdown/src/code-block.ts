@@ -55,7 +55,7 @@ function appendCutToggle(page: Document, block: HTMLElement, body: string): void
 		return;
 	}
 
-	block.style.setProperty("--wg-code-lines-when-cut", String(LINES_WHEN_CUT));
+	block.style.setProperty("--code-lines-when-cut", String(LINES_WHEN_CUT));
 	block.append(
 		createMoreToggle(page, {
 			target: block,

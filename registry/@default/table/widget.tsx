@@ -56,11 +56,11 @@ const TableWidget = createWidget({
 
 		if (read.failure !== null) return <Line tone="var(--text-error)" text={read.failure} />;
 		if (read.isLoading && read.data.length === 0) return <Line tone="var(--text-faint)" text={READING} />;
-		if (read.data.length === 0) return <Line tone="var(--wg-kit-text-muted)" text={NO_RECORDS} />;
+		if (read.data.length === 0) return <Line tone="var(--muted-foreground)" text={NO_RECORDS} />;
 
 		const shownColumns = shownColumnsOf(declared, read.data, titleProperty);
 		if (shownColumns.length === 0 && titleProperty === "")
-			return <Line tone="var(--wg-kit-text-muted)" text={NO_COLUMNS} />;
+			return <Line tone="var(--muted-foreground)" text={NO_COLUMNS} />;
 
 		return (
 			<div className="wg-tbl">

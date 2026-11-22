@@ -14,11 +14,11 @@ export function GpuScreen(asked: GpuScreenProps): ReactElement {
 		return <div className="cv:relative" ref={node} style={{ minHeight: asked.minHeight }} data-canvas-gpu-frame="" />;
 	return (
 		<div
-			className="cv:flex cv:items-center cv:justify-center cv:border-2 cv:border-dashed cv:border-[var(--wg-kit-error-ink)] cv:p-6"
+			className="cv:flex cv:items-center cv:justify-center cv:border-2 cv:border-dashed cv:border-[var(--error-ink)] cv:p-6"
 			style={{ minHeight: asked.minHeight }}
 			data-canvas-not-drawn={notDrawn}
 		>
-			<p className="cv:m-0 cv:max-w-[80%] cv:text-center cv:text-lg cv:text-[var(--wg-kit-error-ink)]">
+			<p className="cv:m-0 cv:max-w-[80%] cv:text-center cv:text-lg cv:text-[var(--error-ink)]">
 				{NOT_DRAWN_SAID.replace("{why}", notDrawn)}
 			</p>
 		</div>

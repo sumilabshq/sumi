@@ -5,7 +5,7 @@ export type { IconDrawing } from "./glyphs";
 
 const SVG_SPACE = "http://www.w3.org/2000/svg";
 const ICON_PX = 16;
-// TRADE-OFF: repeats --wg-kit-icon-stroke, for pages the kit sheet never reaches
+// TRADE-OFF: repeats --icon-stroke, for pages the kit sheet never reaches
 const STROKE_WIDTH = "2";
 
 function lookOf(viewBox: string, size: number): Readonly<Record<string, string>> {

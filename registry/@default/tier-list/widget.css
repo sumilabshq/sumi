@@ -15,13 +15,13 @@
 .wg-rank .wr-rail,
 .wg-rank .wr-swatch,
 .wg-rank .wr-preset-chip {
-	background: color-mix(in srgb, var(--wg-rank-tone) var(--wg-rank-toward-ink), var(--text-normal));
-	color: var(--wg-rank-ink);
+	background: color-mix(in srgb, var(--rank-tone) var(--rank-toward-ink), var(--text-normal));
+	color: var(--rank-ink);
 }
 
 .wg-rank .wr-face {
-	background: color-mix(in srgb, var(--wg-rank-tone) var(--wg-rank-toward-ground), var(--background-primary));
-	color: color-mix(in srgb, var(--wg-rank-tone) var(--wg-rank-toward-ink), var(--text-normal));
+	background: color-mix(in srgb, var(--rank-tone) var(--rank-toward-ground), var(--background-primary));
+	color: color-mix(in srgb, var(--rank-tone) var(--rank-toward-ink), var(--text-normal));
 }
 
 .wg-rank .wr-head {
@@ -35,7 +35,7 @@
 .wg-rank .wr-title {
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -60,7 +60,7 @@
 	content: "";
 	position: absolute;
 	inset-inline: 0;
-	height: var(--wg-rank-fog);
+	height: var(--rank-fog);
 	z-index: 2;
 	pointer-events: none;
 }
@@ -68,13 +68,13 @@
 .wg-rank .wr-fog::before {
 	top: 0;
 	opacity: var(--wr-fog-top, 0);
-	background: linear-gradient(to bottom, var(--wg-rank-ground), transparent);
+	background: linear-gradient(to bottom, var(--rank-ground), transparent);
 }
 
 .wg-rank .wr-fog::after {
 	bottom: 0;
 	opacity: var(--wr-fog-bottom, 0);
-	background: linear-gradient(to top, var(--wg-rank-ground), transparent);
+	background: linear-gradient(to top, var(--rank-ground), transparent);
 }
 
 .wg-rank .wr-rack {
@@ -83,7 +83,7 @@
 	overflow-x: hidden;
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-rank-gap);
+	gap: var(--rank-gap);
 	padding-block: var(--size-4-2, 8px);
 	scrollbar-width: none;
 }
@@ -95,18 +95,18 @@
 .wg-rank .wr-tier {
 	display: flex;
 	align-items: stretch;
-	gap: var(--wg-rank-gap);
+	gap: var(--rank-gap);
 	min-width: 0;
 }
 
 .wg-rank .wr-rail {
 	position: relative;
-	flex: 0 0 var(--wg-rank-rail-width);
+	flex: 0 0 var(--rank-rail-width);
 	display: grid;
 	place-items: center;
-	border-radius: var(--wg-kit-plate);
+	border-radius: var(--plate-radius);
 	padding: var(--size-4-3, 12px) var(--size-4-2, 8px);
-	min-height: calc(var(--wg-rank-card) + 30px);
+	min-height: calc(var(--rank-card) + 30px);
 	cursor: grab;
 	touch-action: none;
 	user-select: none;
@@ -134,7 +134,7 @@
 	position: absolute;
 	inset: 0;
 	opacity: 0;
-	transition: opacity var(--wg-quick, 200ms) var(--wg-ease, ease);
+	transition: opacity var(--quick, 200ms) var(--ease-standard, ease);
 }
 
 .wg-rank .wr-tier:hover .wr-grips,
@@ -149,15 +149,15 @@
 	width: 20px;
 	height: 20px;
 	border: 0;
-	border-radius: var(--wg-kit-pill);
-	background: color-mix(in srgb, var(--wg-rank-ink) 24%, transparent);
-	color: var(--wg-rank-ink);
+	border-radius: var(--pill);
+	background: color-mix(in srgb, var(--rank-ink) 24%, transparent);
+	color: var(--rank-ink);
 	cursor: pointer;
 	padding: 0;
 }
 
 .wg-rank .wr-grip:hover {
-	background: color-mix(in srgb, var(--wg-rank-ink) 42%, transparent);
+	background: color-mix(in srgb, var(--rank-ink) 42%, transparent);
 }
 
 .wg-rank .wr-grip:disabled {
@@ -186,10 +186,10 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-content: flex-start;
-	gap: var(--wg-rank-gap);
-	background: var(--wg-kit-fill);
-	border-radius: var(--wg-kit-plate);
-	padding: var(--wg-kit-plate-pad);
+	gap: var(--rank-gap);
+	background: var(--fill);
+	border-radius: var(--plate-radius);
+	padding: var(--plate-pad);
 }
 
 .wg-rank .wr-pen.is-target {
@@ -198,7 +198,7 @@
 
 .wg-rank .wr-card {
 	position: relative;
-	width: var(--wg-rank-card);
+	width: var(--rank-card);
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
@@ -225,14 +225,14 @@
 }
 
 .wg-rank .wr-face {
-	width: var(--wg-rank-card);
-	height: var(--wg-rank-card);
-	border-radius: var(--wg-kit-item);
+	width: var(--rank-card);
+	height: var(--rank-card);
+	border-radius: var(--item);
 	display: grid;
 	place-items: center;
 	overflow: hidden;
-	box-shadow: inset 0 0 0 1px var(--wg-kit-card-edge);
-	font-size: calc(var(--wg-rank-card) * 0.34);
+	box-shadow: inset 0 0 0 1px var(--card-edge);
+	font-size: calc(var(--rank-card) * 0.34);
 	font-weight: var(--font-bold, 700);
 	letter-spacing: 0.01em;
 	user-select: none;
@@ -263,7 +263,7 @@
 .wg-rank .wr-cap {
 	font-size: 10.5px;
 	line-height: 1.25;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	overflow: hidden;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
@@ -281,12 +281,12 @@
 	height: 22px;
 	border: 0;
 	padding: 0;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	background: color-mix(in srgb, var(--background-primary) 74%, transparent);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	opacity: 0;
 	cursor: pointer;
-	transition: opacity var(--wg-quick, 200ms) var(--wg-ease, ease);
+	transition: opacity var(--quick, 200ms) var(--ease-standard, ease);
 }
 
 .wg-rank .wr-card:hover .wr-edit,
@@ -295,31 +295,31 @@
 }
 
 .wg-rank .wr-slot {
-	width: var(--wg-rank-card);
-	height: calc(var(--wg-rank-card) + 16px);
-	border-radius: var(--wg-kit-item);
+	width: var(--rank-card);
+	height: calc(var(--rank-card) + 16px);
+	border-radius: var(--item);
 	border: 2px dashed color-mix(in srgb, var(--text-normal) 22%, transparent);
 	background: color-mix(in srgb, var(--text-normal) 4%, transparent);
 }
 
 .wg-rank .wr-add-card {
-	width: var(--wg-rank-card);
-	height: calc(var(--wg-rank-card) + 16px);
+	width: var(--rank-card);
+	height: calc(var(--rank-card) + 16px);
 	display: grid;
 	place-items: center;
 	border: 1px dashed color-mix(in srgb, var(--text-normal) 24%, transparent);
-	border-radius: var(--wg-kit-item);
+	border-radius: var(--item);
 	background: none;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	cursor: pointer;
 	padding: 0;
 	transition:
-		color var(--wg-quick, 200ms) var(--wg-ease, ease),
-		border-color var(--wg-quick, 200ms) var(--wg-ease, ease);
+		color var(--quick, 200ms) var(--ease-standard, ease),
+		border-color var(--quick, 200ms) var(--ease-standard, ease);
 }
 
 .wg-rank .wr-add-card:hover {
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	border-color: color-mix(in srgb, var(--text-normal) 42%, transparent);
 }
 
@@ -330,19 +330,19 @@
 	gap: var(--size-4-2, 8px);
 	width: 100%;
 	border: 1px dashed color-mix(in srgb, var(--text-normal) 18%, transparent);
-	border-radius: var(--wg-kit-plate);
+	border-radius: var(--plate-radius);
 	background: none;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: var(--font-ui-smaller, 12px);
 	padding: var(--size-4-3, 12px);
 	cursor: pointer;
 	transition:
-		color var(--wg-quick, 200ms) var(--wg-ease, ease),
-		border-color var(--wg-quick, 200ms) var(--wg-ease, ease);
+		color var(--quick, 200ms) var(--ease-standard, ease),
+		border-color var(--quick, 200ms) var(--ease-standard, ease);
 }
 
 .wg-rank .wr-add-tier:hover {
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	border-color: color-mix(in srgb, var(--text-normal) 36%, transparent);
 }
 
@@ -351,9 +351,9 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--size-4-2, 8px);
-	border-radius: var(--wg-kit-plate);
-	background: var(--wg-kit-fill);
-	padding: var(--wg-kit-plate-pad);
+	border-radius: var(--plate-radius);
+	background: var(--fill);
+	padding: var(--plate-pad);
 	margin-bottom: var(--size-4-2, 8px);
 }
 
@@ -367,7 +367,7 @@
 .wg-rank .wr-tray-label {
 	font-size: var(--font-ui-smaller, 12px);
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	letter-spacing: 0.01em;
 }
 
@@ -375,8 +375,8 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: flex-start;
-	gap: var(--wg-rank-gap);
-	max-height: calc((var(--wg-rank-card) + 22px) * 2 + var(--wg-rank-gap));
+	gap: var(--rank-gap);
+	max-height: calc((var(--rank-card) + 22px) * 2 + var(--rank-gap));
 	overflow-y: auto;
 	scrollbar-width: none;
 }
@@ -395,9 +395,9 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--size-4-2, 8px);
-	border-radius: var(--wg-kit-item);
-	background: var(--wg-kit-error-wash);
-	padding: var(--wg-kit-plate-pad);
+	border-radius: var(--item);
+	background: var(--error-wash);
+	padding: var(--plate-pad);
 }
 
 .wg-rank .wr-orphan-head {
@@ -423,7 +423,7 @@
 
 .wg-rank .wr-empty-note {
 	font-size: var(--font-ui-smaller, 12px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	max-width: 34ch;
 	line-height: 1.45;
 }
@@ -452,7 +452,7 @@
 .wg-rank .wr-pop-hint {
 	margin: 0;
 	font-size: var(--font-ui-smaller, 12px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	line-height: 1.45;
 }
 
@@ -468,7 +468,7 @@
 	height: 26px;
 	border: 0;
 	padding: 0;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	cursor: pointer;
 }
 
@@ -476,7 +476,7 @@
 	content: "";
 	position: absolute;
 	inset: -4px;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	box-shadow: 0 0 0 2px var(--interactive-accent);
 }
 
@@ -493,8 +493,8 @@
 	flex-direction: column;
 	gap: var(--size-4-2, 8px);
 	border: 0;
-	border-radius: var(--wg-kit-item);
-	background: var(--wg-kit-fill);
+	border-radius: var(--item);
+	background: var(--fill);
 	padding: var(--size-4-3, 12px);
 	cursor: pointer;
 	text-align: start;
@@ -503,13 +503,13 @@
 }
 
 .wg-rank .wr-preset:hover {
-	background: var(--wg-kit-fill-hover);
+	background: var(--fill-hover);
 }
 
 .wg-rank .wr-preset-name {
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .wg-rank .wr-preset-mini {
@@ -547,9 +547,9 @@
 
 @container widget (width < 420px) {
 	.wg-rank {
-		--wg-rank-card: 46px;
-		--wg-rank-rail-width: 42px;
-		--wg-rank-gap: 5px;
+		--rank-card: 46px;
+		--rank-rail-width: 42px;
+		--rank-gap: 5px;
 	}
 
 	.wg-rank .wr-rail-label {

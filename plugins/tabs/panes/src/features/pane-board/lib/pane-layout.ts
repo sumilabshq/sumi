@@ -116,7 +116,7 @@ export function cornersOf(rect: PaneRect | undefined, group: PaneRect | undefine
 	const isRight = Math.abs(rect.left + rect.width - group.left - group.width) < 1;
 	const isBottom = Math.abs(rect.top + rect.height - group.top - group.height) < 1;
 	return [isTop && isLeft, isTop && isRight, isBottom && isRight, isBottom && isLeft]
-		.map((isRound) => (isRound ? "var(--sumi-r-group)" : "0"))
+		.map((isRound) => (isRound ? "var(--r-group)" : "0"))
 		.join(" ");
 }
 

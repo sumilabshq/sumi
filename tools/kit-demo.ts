@@ -13,7 +13,7 @@ const HOST = `--font-interface: Inter, -apple-system, "Segoe UI", system-ui, san
 	--font-ui-smaller: 12px; --font-ui-small: 14px; --font-ui-medium: 16px;
 	--font-normal: 400; --font-medium: 500; --font-semibold: 600; --font-bold: 700;`;
 
-const DEMO_CHROME = `body { margin: 0; background: var(--wg-kit-page); color: var(--wg-kit-text); font-family: var(--font-interface); }
+const DEMO_CHROME = `body { margin: 0; background: var(--page); color: var(--foreground); font-family: var(--font-interface); }
 .demo-page { box-sizing: border-box; max-width: 1180px; margin: 0 auto; padding-block: 40px 72px; padding-inline: 16px; }
 .demo-head { flex-wrap: wrap; justify-content: space-between; }`;
 

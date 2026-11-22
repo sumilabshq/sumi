@@ -47,11 +47,11 @@ const STYLE = `
 }
 
 .hh-cell {
-	fill: var(--wg-kit-fill-hover);
+	fill: var(--fill-hover);
 }
 
 .hh-cell.is-done {
-	fill: var(--wg-kit-accent);
+	fill: var(--brand);
 	cursor: pointer;
 }
 
@@ -64,7 +64,7 @@ const STYLE = `
 .hh-empty {
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 `;
 

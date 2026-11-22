@@ -46,7 +46,7 @@ const ROW_GAP_PX = 10;
 const CARD_GAP_PX = 6;
 const PAINT_PROPERTIES = ["fill", "stroke", "color", "opacity", "background-color"] as const;
 const ID_REFERRING_ATTRIBUTES = ["mask", "clip-path", "fill", "stroke", "filter", "href"] as const;
-const LIFTED_FILL = "color-mix(in srgb, var(--sumi-text) 9%, var(--sumi-frame))";
+const LIFTED_FILL = "color-mix(in srgb, var(--text) 9%, var(--frame))";
 const GHOST_ID_SUFFIX = "-ghost";
 const CARD_ART_SCALE = 0.75;
 const PART = "ghostPart";
@@ -70,9 +70,9 @@ const ROOT_STYLE: Partial<CSSStyleDeclaration> = {
 	flexDirection: "column",
 	overflow: "hidden",
 	whiteSpace: "nowrap",
-	fontFamily: "var(--sumi-font-ui)",
-	fontWeight: "var(--sumi-fw-medium)",
-	color: "var(--sumi-text)",
+	fontFamily: "var(--font-ui)",
+	fontWeight: "var(--fw-medium)",
+	color: "var(--text)",
 	transition: SHAPE_MOTION,
 };
 const HEAD_STYLE: Partial<CSSStyleDeclaration> = {
@@ -85,7 +85,7 @@ const HEAD_STYLE: Partial<CSSStyleDeclaration> = {
 const CONTENT_STYLE: Partial<CSSStyleDeclaration> = {
 	flex: "1 1 0",
 	minHeight: "0",
-	background: "color-mix(in srgb, var(--sumi-text) 4%, transparent)",
+	background: "color-mix(in srgb, var(--text) 4%, transparent)",
 	transition: SHAPE_MOTION,
 };
 const FOOTER_STYLE: Partial<CSSStyleDeclaration> = {
@@ -95,9 +95,9 @@ const FOOTER_STYLE: Partial<CSSStyleDeclaration> = {
 	overflow: "hidden",
 	textOverflow: "ellipsis",
 	padding: `0 ${PAD_PX}px`,
-	fontSize: "var(--sumi-fs-11)",
-	fontWeight: "var(--sumi-fw-regular)",
-	color: "var(--sumi-text-2)",
+	fontSize: "var(--fs-11)",
+	fontWeight: "var(--fw-regular)",
+	color: "var(--text-2)",
 	transition: SHAPE_MOTION,
 };
 const WORDS_STYLE: Partial<CSSStyleDeclaration> = {
@@ -254,7 +254,7 @@ export class DragGhost {
 }
 
 function motionOf(property: string): string {
-	return `${property} var(--sumi-dur-base) var(--sumi-ease-out)`;
+	return `${property} var(--dur-base) var(--ease-out-expo)`;
 }
 
 function partOf<Part extends HTMLElement>(element: Part, name: string, style: Partial<CSSStyleDeclaration>): Part {
@@ -326,7 +326,7 @@ function rootStyleOf(shape: GhostShape, { width, height }: GhostSize): Partial<C
 	return {
 		width: `${width}px`,
 		height: `${height}px`,
-		background: shape === "card" ? "var(--sumi-plate)" : LIFTED_FILL,
+		background: shape === "card" ? "var(--plate)" : LIFTED_FILL,
 	};
 }
 
@@ -337,8 +337,8 @@ function headStyleOf(shape: GhostShape, contentStart: number): Partial<CSSStyleD
 			padding: `0 ${PAD_PX}px`,
 			gap: `${CARD_GAP_PX}px`,
 			justifyContent: "flex-start",
-			fontSize: "var(--sumi-fs-11)",
-			color: "var(--sumi-text-2)",
+			fontSize: "var(--fs-11)",
+			color: "var(--text-2)",
 		};
 	}
 
@@ -347,7 +347,7 @@ function headStyleOf(shape: GhostShape, contentStart: number): Partial<CSSStyleD
 		padding: shape === "tile" ? "0" : `0 ${PAD_PX}px 0 ${contentStart}px`,
 		gap: shape === "tile" ? "0" : `${ROW_GAP_PX}px`,
 		justifyContent: shape === "tile" ? "center" : "flex-start",
-		fontSize: "var(--sumi-fs-13)",
-		color: "var(--sumi-text)",
+		fontSize: "var(--fs-13)",
+		color: "var(--text)",
 	};
 }

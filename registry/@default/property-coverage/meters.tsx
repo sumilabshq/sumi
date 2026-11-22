@@ -15,11 +15,11 @@ type MetersProps = {
 const NO_PROPERTIES = "None of these notes carries a property.";
 
 export function Meters({ coverage, shown, step, onMore, counted, total }: MetersProps) {
-	if (coverage.length === 0) return <Line tone="var(--wg-kit-text-muted)" text={NO_PROPERTIES} />;
+	if (coverage.length === 0) return <Line tone="var(--muted-foreground)" text={NO_PROPERTIES} />;
 	const top = coverage.slice(0, shown);
 
 	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: "var(--wg-gap-items)" }}>
+		<div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-items)" }}>
 			{top.map((property) => (
 				<Meter key={property.key} coverage={property} counted={counted} />
 			))}

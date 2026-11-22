@@ -11,7 +11,7 @@ const CSS = `
 .orbi-task-card {
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -27,13 +27,13 @@ const CSS = `
 	flex: none;
 	width: 32px;
 	height: 4px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill-hover);
+	border-radius: var(--pill);
+	background: var(--fill-hover);
 }
 
 .orbi-task-card-stripe.is-accent { background: var(--interactive-accent); }
 .orbi-task-card-stripe.is-ok { background: var(--text-success); }
-.orbi-task-card-stripe.is-warn { background: var(--wg-kit-warning); }
+.orbi-task-card-stripe.is-warn { background: var(--warning); }
 .orbi-task-card-stripe.is-err { background: var(--text-error); }
 
 .orbi-task-card-head {
@@ -84,14 +84,14 @@ const CSS = `
 	overflow: hidden;
 	flex: 1;
 	height: 6px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--pill);
+	background: var(--fill);
 }
 
 .orbi-task-card-bar-fill {
 	display: block;
 	height: 100%;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	background: var(--interactive-accent);
 }
 
@@ -99,7 +99,7 @@ const CSS = `
 	flex: none;
 	font-family: var(--font-monospace);
 	font-size: var(--font-ui-smaller, 12px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .orbi-task-card-meta {
@@ -139,7 +139,7 @@ const CSS = `
 	width: 28px;
 	height: 28px;
 	margin-left: -8px;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	box-shadow: 0 0 0 2px var(--background-primary);
 	font-size: var(--font-ui-smaller, 12px);
 	font-weight: var(--font-semibold, 600);
@@ -151,8 +151,8 @@ const CSS = `
 
 /* CONTEXT: the count is not a person, so it carries the neutral pill's tone */
 .orbi-task-card-avatar-rest {
-	background: var(--wg-kit-fill);
-	color: var(--wg-kit-text-muted);
+	background: var(--fill);
+	color: var(--muted-foreground);
 }
 
 /* CONTEXT: the row used to vanish whole below 220px, which is most of a 258px column */

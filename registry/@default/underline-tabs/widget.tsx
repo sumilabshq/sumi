@@ -18,13 +18,13 @@ const CSS = `
 	display: flex;
 	align-items: flex-end;
 	min-width: 0;
-	border-bottom: 1px solid var(--wg-kit-group-line);
+	border-bottom: 1px solid var(--group-line);
 }
 
 .wg-underline-tabs .wg-ult-row {
 	display: flex;
 	align-items: stretch;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 	max-width: 100%;
 	overflow-x: auto;
@@ -49,17 +49,17 @@ const CSS = `
 	font-family: var(--font-interface);
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-normal, 400);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	transition: color var(--wg-quick) var(--wg-ease);
+	transition: color var(--quick) var(--ease-standard);
 }
 
-.wg-underline-tabs button:hover { color: var(--wg-kit-text); }
+.wg-underline-tabs button:hover { color: var(--foreground); }
 
 .wg-underline-tabs button[aria-selected="true"] {
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	font-weight: var(--font-semibold, 600);
 }
 
@@ -70,10 +70,10 @@ const CSS = `
 	right: 0;
 	bottom: -1px;
 	height: 2px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-accent);
+	border-radius: var(--pill);
+	background: var(--brand);
 	transform: scaleX(0);
-	transition: transform var(--wg-grow) var(--wg-spring);
+	transition: transform var(--grow) var(--spring);
 }
 
 .wg-underline-tabs button[aria-selected="true"]::after { transform: scaleX(1); }

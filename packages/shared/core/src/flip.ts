@@ -83,7 +83,7 @@ function holdWhereTheyWere<Root>(
 
 function release(played: readonly HeldMove[]): void {
 	for (const { node, across } of played) {
-		node.style.setProperty("--wg-move-ms", `${across}ms`);
+		node.style.setProperty("--move-ms", `${across}ms`);
 		node.style.transition = "";
 		node.style.transform = "";
 	}

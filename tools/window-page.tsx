@@ -164,7 +164,7 @@ const DARK: ThemeTokens = {
 	"--interactive-accent": "#8b6cef",
 };
 
-const LEVELS = ["--wg-kit-page", "--wg-cell-fill", "--wg-kit-fill", "--wg-kit-raise"];
+const LEVELS = ["--page", "--cell-fill", "--fill", "--raise"];
 
 function levelsUnder(theme: ThemeTokens): Record<string, string> {
 	const under = document.createElement("div");

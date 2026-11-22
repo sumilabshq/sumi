@@ -10,6 +10,6 @@
 	flex: none;
 	width: 6px;
 	height: 6px;
-	border-radius: var(--wg-kit-round);
+	border-radius: var(--round);
 	background: currentColor;
 }

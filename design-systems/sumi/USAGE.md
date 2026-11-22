@@ -6,7 +6,7 @@
 2. `DESIGN.md`, whole.
 3. The canvas "Sumi — paper directions": https://claude.ai/artifact/H8ZPbB1u4ALCSWcqciU268. Every rule here is drawn there; `references/README.md` says which board shows what.
 4. `tokens.css` — copy it with `data-framework system use sumi`; change parameters, never formulas.
-5. `sumi.css` — the studio's runtime names (`--sumi-*`); studio chrome paints with these only.
+5. `sumi.css` — the studio's runtime names (`--*`); studio chrome paints with these only.
 
 ## Design Highlights
 

@@ -24,7 +24,7 @@
 
 .wg-markdown-preview-clip {
 	overflow: hidden;
-	transition: max-height 360ms var(--wg-spread);
+	transition: max-height 360ms var(--spread);
 }
 
 .wg-markdown-preview-clip[data-cut="true"] {

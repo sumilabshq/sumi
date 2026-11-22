@@ -14,9 +14,9 @@
 }
 
 .sumi-ws-submenu .sumi-ws-submenu-row {
-	gap: var(--sumi-sp-4);
-	height: var(--sumi-h-md);
-	min-height: var(--sumi-h-md);
+	gap: var(--space-2);
+	height: var(--h-md);
+	min-height: var(--h-md);
 }
 
 .sumi-ws-submenu-glyph {
@@ -32,7 +32,7 @@
 	flex: 1 1 auto;
 	min-width: 0;
 	overflow: hidden;
-	font-size: var(--sumi-fs-13);
+	font-size: var(--fs-13);
 	text-align: start;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -41,8 +41,8 @@
 .sumi-ws-submenu-key {
 	flex: none;
 	margin-inline-start: auto;
-	color: var(--sumi-text-3);
-	font-size: var(--sumi-fs-13);
+	color: var(--text-3);
+	font-size: var(--fs-13);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-kit-portal-layer) .sumi-ws-submenu {

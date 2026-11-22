@@ -69,7 +69,7 @@ const A_COMPILER_THAT_ANSWERS_LIKE_TAILWIND = `export async function compile(css
 }
 `;
 
-const THEME = ":root { --wg-served-theme: 1; }";
+const THEME = ":root { --served-theme: 1; }";
 const UTILITIES = "@layer utilities { --utility-text-3xl: 1; --utility-font-bold: 1; }";
 const PREFLIGHT = "* { --preflight-reached-the-build: 1; }";
 
@@ -147,7 +147,7 @@ async function sheetsWornBy(vault: FakeVault): Promise<(string | null)[]> {
 
 const styled = await installedFrom(
 	`@import "tailwindcss";\n@import "../tokens.css";\n.clock { color: red; }\n`,
-	":root { --wg-kit-accent: red; }",
+	":root { --brand: red; }",
 );
 check("a widget whose sheet asks for tailwind installs", [styled.done.ok, styled.done.failure], [true, null]);
 
@@ -155,8 +155,8 @@ const built = styled.shelf.files.get(builtSheetPath(INSTALLED));
 check("and the build folder holds a sheet", typeof built, "string");
 check("which carries a rule for the class the widget uses", String(built).includes(".text-3xl { --built: 1; }"), true);
 check("and none for a utility nothing in the widget names", String(built).includes(".font-bold"), false);
-check("and the theme the package serves", String(built).includes("--wg-served-theme"), true);
-check("and the scope file the sheet imported", String(built).includes("--wg-kit-accent"), true);
+check("and the theme the package serves", String(built).includes("--served-theme"), true);
+check("and the scope file the sheet imported", String(built).includes("--brand"), true);
 check("and the widget's own rules", String(built).includes(".clock { color: red; }"), true);
 check("no preflight reaches it", String(built).includes("--preflight-reached-the-build"), false);
 check(
@@ -220,7 +220,7 @@ check("A SHEET MAY IMPORT THE KIT'S THEME, and it installs", [themed.done.ok, th
 const themedBuild = String(themed.shelf.files.get(builtSheetPath(INSTALLED)));
 check(
 	"the build carries the kit's tokens, so a widget names them without repeating them",
-	[themedBuild.includes("--color-group: var(--wg-kit-group-fill)"), themedBuild.includes("--radius-plate")],
+	[themedBuild.includes("--color-group: var(--group-fill)"), themedBuild.includes("--radius-plate")],
 	[true, true],
 );
 check(
@@ -254,7 +254,7 @@ check(
 	check("THE CLASS MERGER KNOWS EVERY NAME THE THEME DECLARES, and no other", THEME_SCALES, declared);
 }
 check(
-	"THE KIT'S THEME IS INLINE, because a plain @theme resolves var(--wg-kit-*) on :root, where no kit token lives",
+	"THE KIT'S THEME IS INLINE, because a plain @theme resolves var(--*) on :root, where no kit token lives",
 	KIT_THEME_FILE.trimStart().startsWith("@theme inline {"),
 	true,
 );
@@ -322,12 +322,12 @@ check(
 	false,
 );
 
-styled.shelf.files.set(`${WIDGETS_DIR}/@demo/tokens.css`, ":root { --wg-kit-accent: blue; }");
+styled.shelf.files.set(`${WIDGETS_DIR}/@demo/tokens.css`, ":root { --brand: blue; }");
 const afterTheScope = await styled.installer.rebuildDrifted();
 check("a scope file the sheet imports is an input like any other", afterTheScope.rebuilt, [ID]);
 check(
 	"and the built sheet carries what it now says",
-	String(styled.shelf.files.get(builtSheetPath(INSTALLED))).includes("--wg-kit-accent: blue"),
+	String(styled.shelf.files.get(builtSheetPath(INSTALLED))).includes("--brand: blue"),
 	true,
 );
 

@@ -26,9 +26,9 @@
 						--up: #4ec97f;
 						--down: #e06c5f;
 						--warn: #d9822b;
-						--wg-kit-fill: color-mix(in srgb, var(--ink) 5.5%, var(--ground));
-						--wg-kit-raise: color-mix(in srgb, #ffffff 12%, var(--ground));
-						--wg-kit-card-edge: color-mix(in srgb, var(--ink) 9%, transparent);
+						--fill: color-mix(in srgb, var(--ink) 5.5%, var(--ground));
+						--raise: color-mix(in srgb, #ffffff 12%, var(--ground));
+						--card-edge: color-mix(in srgb, var(--ink) 9%, transparent);
 						--hairline: color-mix(in srgb, var(--ink) 10%, transparent);
 						--muted: color-mix(in srgb, var(--ink) 58%, var(--ground));
 						--faint: color-mix(in srgb, var(--ink) 38%, var(--ground));
@@ -54,9 +54,9 @@
 						width: 100%;
 						padding: 18px;
 						border-radius: 16px;
-						background: var(--wg-kit-raise);
+						background: var(--raise);
 						box-shadow:
-							inset 0 0 0 1px var(--wg-kit-card-edge),
+							inset 0 0 0 1px var(--card-edge),
 							0 24px 60px rgba(0, 0, 0, 0.45);
 					}
 
@@ -71,7 +71,7 @@
 						justify-content: center;
 						border: none;
 						border-radius: 999px;
-						background: var(--wg-kit-fill);
+						background: var(--fill);
 						color: var(--ink);
 						cursor: pointer;
 					}
@@ -99,7 +99,7 @@
 						display: flex;
 						flex-direction: column;
 						border-radius: 14px;
-						background: var(--wg-kit-fill);
+						background: var(--fill);
 						overflow: hidden;
 					}
 					.row {
@@ -152,8 +152,8 @@
 						justify-content: center;
 						border: none;
 						border-radius: 999px;
-						background: var(--wg-kit-raise);
-						box-shadow: inset 0 0 0 1px var(--wg-kit-card-edge);
+						background: var(--raise);
+						box-shadow: inset 0 0 0 1px var(--card-edge);
 						color: var(--ink);
 						cursor: pointer;
 					}

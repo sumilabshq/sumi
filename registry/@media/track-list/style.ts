@@ -10,14 +10,14 @@ export const CSS = `
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 	min-height: 0;
 }
 
 /* TRADE-OFF: the kit row's own 12px 16px is dropped and the item plate's inset written back, so the labels stand over the rows rather than 16px inside them */
 :is(.wg-root, .wg-portal) .mt-head {
-	padding: 0 var(--wg-group-pad);
+	padding: 0 var(--group-pad);
 	color: var(--text-faint);
 	font-size: var(--font-ui-smaller);
 }
@@ -48,7 +48,7 @@ export const CSS = `
 	position: relative;
 	min-width: 0;
 	cursor: pointer;
-	border-radius: var(--wg-kit-plate);
+	border-radius: var(--plate-radius);
 }
 
 .mt-pick[data-picked]::before {
@@ -57,19 +57,19 @@ export const CSS = `
 	inset-block: 25%;
 	inset-inline-start: 0;
 	width: 3px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-accent);
+	border-radius: var(--pill);
+	background: var(--brand);
 }
 
 .mt-pick:focus-visible {
-	outline: 2px solid var(--wg-kit-accent);
+	outline: 2px solid var(--brand);
 	outline-offset: 2px;
 }
 
 .mt-foot {
 	display: flex;
 	align-items: center;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	color: var(--text-faint);
 	font-size: var(--font-ui-smaller);
 }
@@ -78,9 +78,9 @@ export const CSS = `
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	margin: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .mt-said-error { color: var(--text-error); }

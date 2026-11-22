@@ -21,7 +21,7 @@ export interface TreeRegionProps extends TreeDraw {
 export function TreeRegion({ node, insets, onCarry, overlay, ...draw }: TreeRegionProps): ReactElement {
 	const rootRef = useRef<HTMLDivElement | null>(null);
 	useSettlesCells(rootRef, insets);
-	const style: NodeStyle = { "--wg-tree-gap": `${GAP_PX}px` };
+	const style: NodeStyle = { "--tree-gap": `${GAP_PX}px` };
 
 	return h(
 		"div",

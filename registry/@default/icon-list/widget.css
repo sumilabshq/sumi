@@ -1,16 +1,16 @@
 .wg-icon-list {
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
-	--wg-icon-list-mark: 30px;
-	--wg-icon-list-line: 1.5;
+	--icon-list-mark: 30px;
+	--icon-list-line: 1.5;
 }
 
 .wg-icon-list-row {
 	display: flex;
 	align-items: flex-start;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -18,9 +18,9 @@
 	flex: none;
 	display: grid;
 	place-items: center;
-	width: var(--wg-icon-list-mark);
-	height: var(--wg-icon-list-mark);
-	border-radius: var(--wg-kit-pill);
+	width: var(--icon-list-mark);
+	height: var(--icon-list-mark);
+	border-radius: var(--pill);
 }
 
 .wg-icon-list-number {
@@ -35,10 +35,10 @@
 .wg-icon-list-text {
 	flex: 1 1 auto;
 	min-width: 0;
-	padding-top: calc((var(--wg-icon-list-mark) - 1em * var(--wg-icon-list-line)) / 2);
+	padding-top: calc((var(--icon-list-mark) - 1em * var(--icon-list-line)) / 2);
 	font-size: var(--font-ui-small, 14px);
-	line-height: var(--wg-icon-list-line);
-	color: var(--wg-kit-text);
+	line-height: var(--icon-list-line);
+	color: var(--foreground);
 	overflow-wrap: anywhere;
 }
 
@@ -55,7 +55,7 @@
 }
 
 .wg-icon-list-text.markdown-rendered p + p {
-	margin-top: var(--wg-gap-parts);
+	margin-top: var(--gap-parts);
 }
 
 .wg-icon-list-more {
@@ -64,6 +64,6 @@
 
 .wg-icon-list-said {
 	margin: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: var(--font-ui-small, 14px);
 }

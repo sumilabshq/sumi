@@ -10,7 +10,7 @@ export function Bars({ groups, shown, step, onMore, total }: BarsProps) {
 	const widest = top[0]?.count ?? 1;
 
 	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: "var(--wg-gap-items)" }}>
+		<div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-items)" }}>
 			{top.map((group) => (
 				<Bar key={group.key} group={group} widest={widest} />
 			))}

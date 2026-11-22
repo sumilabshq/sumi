@@ -46,14 +46,14 @@ export const Pill = Badge;
 
 function badgeInksOf(color: BadgeProps["color"]): TokenStyle {
 	if (!color) return {};
-	if (typeof color !== "object") return { "--wg-badge-ink": inkNamed(color) };
+	if (typeof color !== "object") return { "--badge-ink": inkNamed(color) };
 	return {
-		"--wg-badge-ink-light": inkNamed(color.light),
-		"--wg-badge-ink-dark": inkNamed(color.dark ?? color.light),
+		"--badge-ink-light": inkNamed(color.light),
+		"--badge-ink-dark": inkNamed(color.dark ?? color.light),
 	};
 }
 
 function inkNamed(color: string | undefined): string | undefined {
-	if (color !== undefined && BADGE_COLORS.some((named) => named === color)) return `var(--wg-kit-${color})`;
+	if (color !== undefined && BADGE_COLORS.some((named) => named === color)) return `var(--${color})`;
 	return color;
 }

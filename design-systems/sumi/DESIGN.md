@@ -14,7 +14,7 @@ Sumi is a quiet tool that gives the screen to the work. Five aims, in this order
 
 Today's answers to the aims. Each may change when a better answer serves the same aims; none is a direction to push further.
 
-- **Soft corners from one scale.** A frame takes its corner from `--sumi-r-*` (4, 6, 8, 12, 14, 16px): a plate 14, a control 8, a chip 6. The mascot stays square: the clover is drawn in square cells. A corner written as a number in a sheet is debt; many frames still carry a literal 0 and move to the scale as they are touched.
+- **Soft corners from one scale.** A frame takes its corner from `--r-*` (4, 6, 8, 12, 14, 16px): a plate 14, a control 8, a chip 6. The mascot stays square: the clover is drawn in square cells. A corner written as a number in a sheet is debt; many frames still carry a literal 0 and move to the scale as they are touched.
 - **One surface, no shadows, lines edge to edge.** Depth and boxes compete with content.
 - **Icons in one colour.** An icon's margin lives in the icon itself, so an author can draw it to the box's full size.
 
@@ -77,7 +77,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 
 ## Component Stylings
 
-- **Row** (sidebar, menu, list): 30px, a 6px corner (`--sumi-r-sm`), hover by the menu glide, a 16px solid icon, 10px gap. Hover and keyboard focus: one light fill. Pressed: a stronger fill. Selected: the soft fill and 500.
+- **Row** (sidebar, menu, list): 30px, a 6px corner (`--r-sm`), hover by the menu glide, a 16px solid icon, 10px gap. Hover and keyboard focus: one light fill. Pressed: a stronger fill. Selected: the soft fill and 500.
 - **Icons**: Sumi's own apps use solid drawn icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
 - **Code block**: filled with the soft step, no border, mono 13px, syntax in muted colours, copy and wrap icons at the right.
 - **Inline code**: the soft fill, mono 13px, square, padding 2px 5px.
@@ -186,7 +186,7 @@ The mascot, a square with an eye, is the alphabet: a few signs taken from it rep
 ## Never
 
 - A plate, a card around a message, a white pill on grey, a second surface level.
-- A corner outside the `--sumi-r-*` scale.
+- A corner outside the `--r-*` scale.
 - A divider cut short of its pane's edges, or a line under a chat pane's header.
 - An ellipsis written into text, or `·` used as a separator.
 - A tick inside a box or a circle: a done state is the bare tick, a picked option the mascot mark.

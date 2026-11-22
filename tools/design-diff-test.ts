@@ -39,7 +39,7 @@ const MUTATIONS: readonly PartMutation[] = [
 		name: "blur",
 		part: "plate",
 		what: "backdrop",
-		from: "backdrop-filter: var(--wg-plate-blur)",
+		from: "backdrop-filter: var(--plate-blur)",
 		to: "backdrop-filter: none",
 	},
 	{
@@ -56,8 +56,8 @@ const MUTATIONS: readonly PartMutation[] = [
 		name: "alpha",
 		part: "plate",
 		what: "background",
-		from: "--wg-plate: color-mix(in srgb, var(--ink) 4.5%, transparent)",
-		to: "--wg-plate: color-mix(in srgb, var(--ink) 4.5%, rgba(0, 0, 0, 0.5))",
+		from: "--plate-wash: color-mix(in srgb, var(--ink) 4.5%, transparent)",
+		to: "--plate-wash: color-mix(in srgb, var(--ink) 4.5%, rgba(0, 0, 0, 0.5))",
 	},
 	{
 		name: "typeface",

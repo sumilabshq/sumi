@@ -66,11 +66,11 @@ export function useDrawerMotion(settings: DrawerSettings, { isOpen, setOpen }: D
 			stop.index < stop.heights.length - 1 && "is-held-low",
 		),
 		panelStyle: {
-			"--wg-kit-drawer-drag": `${Math.max(0, topPx - shownPx)}px`,
-			"--wg-kit-drawer-height": settings.snaps ? `${Math.max(0, topPx - geometry.insetPx)}px` : undefined,
+			"--drawer-drag": `${Math.max(0, topPx - shownPx)}px`,
+			"--drawer-height": settings.snaps ? `${Math.max(0, topPx - geometry.insetPx)}px` : undefined,
 		},
 		scrimStyle: settings.snaps
-			? { "--wg-kit-scrim-fade": isOpen ? fadeAt(stop.heights, settings.snaps.fadeFromIndex, shownPx) : 0 }
+			? { "--scrim-fade": isOpen ? fadeAt(stop.heights, settings.snaps.fadeFromIndex, shownPx) : 0 }
 			: undefined,
 	};
 }

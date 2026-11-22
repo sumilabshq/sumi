@@ -25,7 +25,7 @@ const STYLE = `
 
 .oac-board {
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .oac-restore {
@@ -38,7 +38,7 @@ const STYLE = `
 	gap: var(--size-4-2, 8px);
 	padding: var(--size-4-4, 16px);
 	border: 1px dashed var(--background-modifier-border);
-	border-radius: var(--wg-kit-item);
+	border-radius: var(--item);
 }
 
 .oac-soon-line {
@@ -47,7 +47,7 @@ const STYLE = `
 	gap: var(--size-4-2, 8px);
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .oac-soon-line svg {

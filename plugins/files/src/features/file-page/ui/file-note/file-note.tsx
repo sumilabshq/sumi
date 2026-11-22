@@ -11,8 +11,8 @@ export function FileNote({ said }: FileNoteProps): ReactElement {
 			style={{
 				margin: 0,
 				padding: "24px",
-				color: "var(--sumi-text-3)",
-				font: "var(--sumi-fw-regular) var(--sumi-fs-13) var(--sumi-font-ui)",
+				color: "var(--text-3)",
+				font: "var(--fw-regular) var(--fs-13) var(--font-ui)",
 			}}
 		>
 			{said}

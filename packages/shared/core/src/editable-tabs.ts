@@ -16,7 +16,7 @@ const STYLE = `
 
 .wg-tabs-more svg { width: 15px; height: 15px; }
 
-.wg-tabs-archive .wg-tabs-empty { margin: 0; font-size: var(--font-ui-small, 14px); color: var(--wg-kit-text-muted); }
+.wg-tabs-archive .wg-tabs-empty { margin: 0; font-size: var(--font-ui-small, 14px); color: var(--muted-foreground); }
 .wg-tabs-archive .wg-tabs-act { flex: none; }
 `;
 

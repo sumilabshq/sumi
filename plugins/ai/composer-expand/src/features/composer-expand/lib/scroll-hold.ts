@@ -1,4 +1,4 @@
-const SCROLL_END_PIN = "--sumi-composer-expand-scroll-end";
+const SCROLL_END_PIN = "--composer-expand-scroll-end";
 const SCROLL_HELD = "data-scroll-held";
 
 export function holdChatScroll(frame: HTMLElement): void {

@@ -1,12 +1,12 @@
 export const TERMINAL_SHEET = `
-.wg-terminal { position: relative; display: flex; flex-direction: column; flex: 1; gap: 8px; height: 100%; min-height: 0; box-sizing: border-box; margin: 0; padding: 12px 16px; background: var(--sumi-plate); color: var(--sumi-text); overflow: hidden; }
-.wg-terminal-note { margin: 0; color: var(--sumi-text-2); font-family: var(--sumi-font-mono); font-size: 13px; }
+.wg-terminal { position: relative; display: flex; flex-direction: column; flex: 1; gap: 8px; height: 100%; min-height: 0; box-sizing: border-box; margin: 0; padding: 12px 16px; background: var(--plate); color: var(--text); overflow: hidden; }
+.wg-terminal-note { margin: 0; color: var(--text-2); font-family: var(--font-code); font-size: 13px; }
 .wg-terminal-screen { position: relative; flex: 1; min-height: 0; overflow: hidden; }
 .xterm { cursor: text; position: relative; user-select: none; -webkit-user-select: none; height: 100%; }
 .xterm.focus, .xterm:focus { outline: none; }
 .xterm .xterm-helpers { position: absolute; top: 0; z-index: 5; }
 .xterm .xterm-helper-textarea { padding: 0; border: 0; margin: 0; position: absolute; opacity: 0; left: -9999em; top: 0; width: 0; height: 0; z-index: -5; white-space: nowrap; overflow: hidden; resize: none; }
-.xterm .composition-view { background: var(--sumi-plate); color: var(--sumi-text); display: none; position: absolute; white-space: nowrap; z-index: 1; }
+.xterm .composition-view { background: var(--plate); color: var(--text); display: none; position: absolute; white-space: nowrap; z-index: 1; }
 .xterm .composition-view.active { display: block; }
 .xterm .xterm-viewport { background-color: transparent; overflow-y: scroll; cursor: default; position: absolute; right: 0; left: 0; top: 0; bottom: 0; }
 .xterm .xterm-screen { position: relative; }
@@ -29,7 +29,7 @@ export const TERMINAL_SHEET = `
 .xterm-screen .xterm-decoration-container .xterm-decoration { z-index: 6; position: absolute; }
 .xterm-decoration-overview-ruler { z-index: 8; position: absolute; top: 0; right: 0; pointer-events: none; }
 .xterm .xterm-scrollable-element > .scrollbar { cursor: default; }
-.xterm .xterm-scrollable-element > .scrollbar > .slider { background: var(--sumi-active); border-radius: 4px; }
+.xterm .xterm-scrollable-element > .scrollbar > .slider { background: var(--active); border-radius: 4px; }
 .xterm .xterm-scrollable-element > .visible { opacity: 1; transition: opacity 100ms linear; z-index: 11; }
 .xterm .xterm-scrollable-element > .invisible { opacity: 0; pointer-events: none; }
 .xterm .xterm-scrollable-element > .invisible.fade { transition: opacity 800ms linear; }

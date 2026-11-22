@@ -39,7 +39,7 @@ const sheets =
 const font = readFileSync("packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2");
 const FONT_FACE = `@font-face { font-family: "Inter Variable"; src: url(/inter.woff2) format("woff2"); font-weight: 100 900; }`;
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${FONT_FACE}</style><style>${sheets}</style>
-<style>body { margin: 0; background: var(--sumi-frame); }</style></head><body><div id="root"></div><pre id="boom"></pre>
+<style>body { margin: 0; background: var(--frame); }</style></head><body><div id="root"></div><pre id="boom"></pre>
 <script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`;
 
 let failed = 0;

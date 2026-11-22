@@ -10,7 +10,7 @@ const script = await bundleOf("tools/kit-inputs-shot-page.tsx");
 
 const DEMO_CHROME = `<style>
 .demo-page { box-sizing: border-box; max-width: 1240px; display: flex; flex-direction: column; gap: 24px;
-	--wg-gap-cards: 24px; --wg-gap-items: 16px; --wg-gap-parts: 8px; }
+	--gap-cards: 24px; --gap-items: 16px; --gap-parts: 8px; }
 </style>`;
 
 for (const theme of THEMES) {

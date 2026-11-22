@@ -23,7 +23,7 @@ const STYLE = `
 
 .hs-cap {
 	font-size: var(--font-ui-smaller, 12px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -35,14 +35,14 @@ const STYLE = `
 	gap: 6px;
 	font-size: calc(var(--font-ui-medium, 15px) * 1.7);
 	font-weight: var(--font-bold, 700);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	line-height: 1.1;
 }
 
 .hs-unit {
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-normal, 400);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .hs-bar {
@@ -85,7 +85,7 @@ const STYLE = `
 
 .is-stat1 .hs-cap {
 	font-size: var(--font-ui-medium, 15px);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .is-stat1 .hs-value {
@@ -307,11 +307,11 @@ const TARGET =
 	"M12 1.5a10.5 10.5 0 1 0 0 21 10.5 10.5 0 0 0 0-21Zm0 2.7a7.8 7.8 0 1 1 0 15.6 7.8 7.8 0 0 1 0-15.6Zm0 2.9a4.9 4.9 0 1 0 0 9.8 4.9 4.9 0 0 0 0-9.8Z";
 
 const METRICS = {
-	streak: { caption: "Streak", glyph: FLAME, tone: "var(--wg-kit-error)" },
-	best: { caption: "Best streak", glyph: TROPHY, tone: "var(--color-yellow, var(--wg-kit-warning))" },
-	total: { caption: "Total check-ins", glyph: BOLT, tone: "var(--wg-kit-info)" },
-	rate: { caption: "Check-in rate", glyph: PERCENT, tone: "var(--wg-kit-warning)" },
-	goal: { caption: "Goal", glyph: TARGET, tone: "var(--wg-kit-success)" },
+	streak: { caption: "Streak", glyph: FLAME, tone: "var(--error)" },
+	best: { caption: "Best streak", glyph: TROPHY, tone: "var(--color-yellow, var(--warning))" },
+	total: { caption: "Total check-ins", glyph: BOLT, tone: "var(--info)" },
+	rate: { caption: "Check-in rate", glyph: PERCENT, tone: "var(--warning)" },
+	goal: { caption: "Goal", glyph: TARGET, tone: "var(--success)" },
 } satisfies Record<string, Metric>;
 
 type MetricKey = keyof typeof METRICS;

@@ -59,7 +59,7 @@ const PILL_LOOK = `(() => {
 		(node) => getComputedStyle(node).backdropFilter !== "none" || getComputedStyle(node, "::before").backdropFilter !== "none",
 	).length;
 	return {
-		header: { active: sumi("--sumi-active").fill, rest: "rgba(0, 0, 0, 0)", corner: sumi("--sumi-r-sm").radius },
+		header: { active: sumi("--active").fill, rest: "rgba(0, 0, 0, 0)", corner: sumi("--r-sm").radius },
 		toggleFill: look(document.querySelector("[data-canvas-sidebar-toggle]"), "::before"),
 		pictureFill: look(document.querySelector("[data-canvas-title] [aria-label='Add photo']"), "::before"),
 		view: getComputedStyle(view).padding,

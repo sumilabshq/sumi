@@ -46,10 +46,10 @@
 	--accent-wash: color-mix(in srgb, var(--tint) var(--wash), var(--background));
 	--accent-wash-hover: color-mix(in srgb, var(--tint) var(--wash-hover), var(--background));
 	--control-rest: oklch(var(--l-wash-ink) 0 0 / 0);
-	--control-hover: var(--sumi-hover, oklch(var(--l-wash-ink) 0 0 / var(--a-control-hover)));
-	--control-open: var(--sumi-selected, oklch(var(--l-wash-ink) 0 0 / var(--a-control-open)));
-	--control-ink: var(--sumi-glyph-rest, oklch(var(--l-wash-ink) 0 0 / var(--a-control-ink)));
-	--control-ink-on: var(--sumi-glyph-on, var(--foreground));
+	--control-hover: var(--hover, oklch(var(--l-wash-ink) 0 0 / var(--a-control-hover)));
+	--control-open: var(--selected, oklch(var(--l-wash-ink) 0 0 / var(--a-control-open)));
+	--control-ink: var(--glyph-rest, oklch(var(--l-wash-ink) 0 0 / var(--a-control-ink)));
+	--control-ink-on: var(--glyph-on, var(--foreground));
 	--on-wash: color-mix(in oklch, var(--tint) 72%, var(--foreground));
 
 	--card: var(--group);
@@ -69,9 +69,9 @@
 	--border: oklch(var(--l-edge) var(--neutral-chroma) var(--hue));
 	--input: var(--border);
 	--ring: oklch(var(--l-ring) var(--neutral-chroma) var(--hue));
-	--radius: var(--sumi-r-group);
-	--control-radius: var(--sumi-r-sm);
-	--control-icon-radius: var(--sumi-r-sm);
+	--radius: var(--r-group);
+	--control-radius: var(--r-sm);
+	--control-icon-radius: var(--r-sm);
 
 	--chart-1: var(--brand);
 	--chart-2: var(--cyan);
@@ -166,10 +166,10 @@
 	--accent-wash: color-mix(in srgb, var(--tint) var(--wash), var(--background));
 	--accent-wash-hover: color-mix(in srgb, var(--tint) var(--wash-hover), var(--background));
 	--control-rest: oklch(var(--l-wash-ink) 0 0 / 0);
-	--control-hover: var(--sumi-hover, oklch(var(--l-wash-ink) 0 0 / var(--a-control-hover)));
-	--control-open: var(--sumi-selected, oklch(var(--l-wash-ink) 0 0 / var(--a-control-open)));
-	--control-ink: var(--sumi-glyph-rest, oklch(var(--l-wash-ink) 0 0 / var(--a-control-ink)));
-	--control-ink-on: var(--sumi-glyph-on, var(--foreground));
+	--control-hover: var(--hover, oklch(var(--l-wash-ink) 0 0 / var(--a-control-hover)));
+	--control-open: var(--selected, oklch(var(--l-wash-ink) 0 0 / var(--a-control-open)));
+	--control-ink: var(--glyph-rest, oklch(var(--l-wash-ink) 0 0 / var(--a-control-ink)));
+	--control-ink-on: var(--glyph-on, var(--foreground));
 	--on-wash: color-mix(in oklch, var(--tint) 72%, var(--foreground));
 
 	--card: var(--group);
@@ -189,9 +189,9 @@
 	--border: oklch(var(--l-edge) var(--neutral-chroma) var(--hue));
 	--input: var(--border);
 	--ring: oklch(var(--l-ring) var(--neutral-chroma) var(--hue));
-	--radius: var(--sumi-r-group);
-	--control-radius: var(--sumi-r-sm);
-	--control-icon-radius: var(--sumi-r-sm);
+	--radius: var(--r-group);
+	--control-radius: var(--r-sm);
+	--control-icon-radius: var(--r-sm);
 
 	--chart-1: var(--brand);
 	--chart-2: var(--cyan);

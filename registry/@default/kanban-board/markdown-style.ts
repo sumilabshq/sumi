@@ -17,7 +17,7 @@ export const MARKDOWN_CSS = `
 .orbi-task-dialog .otd-md {
 	font-size: var(--font-ui-small, 14px);
 	line-height: 1.62;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 /* CONTEXT: a diagram arrives as wide as it likes and with no scroller of its own */
@@ -39,15 +39,15 @@ export const MARKDOWN_CSS = `
 	font-weight: var(--font-semibold, 600);
 	line-height: 1.3;
 	letter-spacing: -0.01em;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
-.orbi-task-dialog .otd-md p { max-width: 66ch; color: var(--wg-kit-text-muted); }
+.orbi-task-dialog .otd-md p { max-width: 66ch; color: var(--muted-foreground); }
 
 .orbi-task-dialog .otd-md ul,
 .orbi-task-dialog .otd-md ol {
 	padding-left: 1.15em;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .orbi-task-dialog .otd-md li::marker { color: var(--text-faint); }
@@ -66,15 +66,15 @@ export const MARKDOWN_CSS = `
 .orbi-task-dialog .otd-md th,
 .orbi-task-dialog .otd-md td {
 	padding: var(--size-2-3, 6px) var(--size-4-3, 12px);
-	border-bottom: 1px solid var(--wg-line);
+	border-bottom: 1px solid var(--line-faint);
 	text-align: left;
 	vertical-align: top;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .orbi-task-dialog .otd-md th {
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	white-space: nowrap;
 }
 
@@ -85,8 +85,8 @@ export const MARKDOWN_CSS = `
 	position: relative;
 	max-width: 100%;
 	padding: var(--size-4-3, 12px) var(--size-4-4, 16px);
-	border-radius: var(--wg-kit-item);
-	background: var(--wg-kit-fill);
+	border-radius: var(--item);
+	background: var(--fill);
 }
 
 /* CONTEXT: the padding is the room the copy button stands in */
@@ -97,7 +97,7 @@ export const MARKDOWN_CSS = `
 	font-family: var(--font-monospace);
 	font-size: var(--font-ui-smaller, 12px);
 	line-height: 1.7;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	white-space: pre;
 }
 
@@ -111,10 +111,10 @@ export const MARKDOWN_CSS = `
 .orbi-task-dialog .otd-md :not(pre) > code {
 	padding: 1px 5px;
 	border-radius: 6px;
-	background: var(--wg-kit-fill);
+	background: var(--fill);
 	font-family: var(--font-monospace);
 	font-size: 0.85em;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .orbi-task-dialog .otd-md a {
@@ -145,7 +145,7 @@ export const MARKDOWN_CSS = `
 	margin: 0;
 	font-size: var(--font-ui-smaller, 12px);
 	line-height: 1.45;
-	color: var(--wg-kit-warning);
+	color: var(--warning);
 }
 
 /* THE PANEL IS WHITE WITH AN EDGE; the grey belongs to the GROUP inside it, and the group holds

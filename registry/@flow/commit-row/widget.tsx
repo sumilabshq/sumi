@@ -18,14 +18,14 @@ const CSS = `
 }
 
 .fcr .fcr-glyph.is-merge {
-	color: var(--wg-kit-accent);
+	color: var(--brand);
 }
 
 .fcr-body {
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -50,14 +50,14 @@ const CSS = `
 	display: flex;
 	align-items: baseline;
 	overflow: hidden;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	font-size: var(--font-ui-smaller, 12px);
 	color: var(--text-faint);
 }
 
 .fcr-meta > * + *::before {
 	content: "·";
-	padding-inline-end: var(--wg-gap-parts);
+	padding-inline-end: var(--gap-parts);
 }
 
 .fcr-sha {
@@ -80,11 +80,11 @@ const CSS = `
 }
 
 .fcr-added {
-	color: var(--wg-kit-success);
+	color: var(--success);
 }
 
 .fcr-removed {
-	color: var(--wg-kit-error);
+	color: var(--error);
 }
 
 .fcr-bar {
@@ -94,16 +94,16 @@ const CSS = `
 	width: 40px;
 	height: 6px;
 	margin-top: 4px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--pill);
+	background: var(--fill);
 }
 
 .fcr-bar-added {
-	background: var(--wg-kit-success);
+	background: var(--success);
 }
 
 .fcr-bar-removed {
-	background: var(--wg-kit-error);
+	background: var(--error);
 }
 
 @container widget (width < 340px) {

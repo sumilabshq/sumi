@@ -41,7 +41,7 @@ export function ChartLegendContent({
 
 function legendItemOf({ config, item, nameKey, hideIcon }: LegendItemAsk): ReactElement {
 	const entry = entryOf(config, item, firstKey(nameKey, item.dataKey));
-	const mark: TokenStyle = { "--wg-kit-chart-mark": item.color };
+	const mark: TokenStyle = { "--chart-mark": item.color };
 	return (
 		<span key={String(item.value)} className="wg-kit-chart-legend-item">
 			{!hideIcon && entry?.icon ? (

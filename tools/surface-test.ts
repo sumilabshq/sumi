@@ -820,14 +820,14 @@ check(
 	["none", "group", "none", "none"],
 );
 check("a widget one level under its region reads its gaps from the same steps the board is laid by", gapVarsOf(1), {
-	"--wg-gap-items": `${STEP_PX[1]}px`,
-	"--wg-gap-parts": `${STEP_PX[2]}px`,
-	"--wg-gap-cards": `${Math.max(STEP_PX[1] - SURFACE_PAD_PX, MIN_GAP_PX)}px`,
+	"--gap-items": `${STEP_PX[1]}px`,
+	"--gap-parts": `${STEP_PX[2]}px`,
+	"--gap-cards": `${Math.max(STEP_PX[1] - SURFACE_PAD_PX, MIN_GAP_PX)}px`,
 });
 check(
 	"the gap audit names a gap written as a number and passes the engine's variables and other tokens",
 	literalGapsIn(
-		".a { gap: 8px; }\n.b { gap: var(--wg-gap-cards); }\n.c { row-gap: 1rem }\n.d { gap: var(--size-4-2, 8px) }",
+		".a { gap: 8px; }\n.b { gap: var(--gap-cards); }\n.c { row-gap: 1rem }\n.d { gap: var(--size-4-2, 8px) }",
 	).map((one) => `${one.line} ${one.said}`),
 	["1 gap: 8px", "3 row-gap: 1rem"],
 );
@@ -1060,7 +1060,7 @@ check(
 );
 check(
 	"the padding the stylesheet paints is the padding the layout subtracts",
-	Number(/--wg-group-pad:\s*(\d+)px/.exec(readFileSync(BOARD_SHEET, "utf8"))?.[1]),
+	Number(/--group-pad:\s*(\d+)px/.exec(readFileSync(BOARD_SHEET, "utf8"))?.[1]),
 	SURFACE_PAD_PX,
 );
 
@@ -1204,8 +1204,8 @@ check(
 		fieldAt(slots, "bare", "surface"),
 	],
 	[
-		parseFloat(String(fieldAt(slots, "steps", "--wg-gap-cards"))),
-		parseFloat(String(fieldAt(slots, "steps", "--wg-gap-items"))),
+		parseFloat(String(fieldAt(slots, "steps", "--gap-cards"))),
+		parseFloat(String(fieldAt(slots, "steps", "--gap-items"))),
 		null,
 	],
 );

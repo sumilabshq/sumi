@@ -38,7 +38,7 @@ export function fullStepsIn(plate: Element): FullStep[] {
 }
 
 function isShortenedAt(style: CSSStyleDeclaration, side: Side): boolean {
-	const full = parseFloat(style.getPropertyValue("--wg-group-pad"));
+	const full = parseFloat(style.getPropertyValue("--group-pad"));
 	return parseFloat(style.getPropertyValue(`padding-${side}`)) < full;
 }
 

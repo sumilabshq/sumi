@@ -66,7 +66,7 @@ function check(what: string, isOk: boolean, got: unknown): void {
 
 function pageFileOf(theme: Theme): string {
 	const html = `<!doctype html><html class="${theme === "dark" ? "dark theme-dark" : ""}"><head><meta charset="utf-8"><style>${sheets}</style>
-<style>html,body{margin:0;background:var(--sumi-frame)}</style></head>
+<style>html,body{margin:0;background:var(--frame)}</style></head>
 <body><div id="root"></div><script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`;
 	const file = path.join(shotsAt, `site-icons-${theme}.html`);
 	writeFileSync(file, html);

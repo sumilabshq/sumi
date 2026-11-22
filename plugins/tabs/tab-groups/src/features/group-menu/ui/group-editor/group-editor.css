@@ -1,7 +1,7 @@
 .sumi-group-editor {
 	display: flex;
 	flex-direction: column;
-	gap: var(--sumi-sp-2);
+	gap: var(--space-1);
 	padding-top: 0;
 }
 
@@ -11,20 +11,20 @@
 
 .sumi-group-hues {
 	display: flex;
-	gap: var(--sumi-sp-2);
-	padding: var(--sumi-sp-2) var(--sumi-sp-3);
+	gap: var(--space-1);
+	padding: var(--space-1) var(--space-1-5);
 }
 
 .sumi-group-hue {
 	flex: none;
 	justify-content: center;
-	width: var(--wg-kit-control-xxs);
-	height: var(--wg-kit-control-xxs);
+	width: var(--control-xxs);
+	height: var(--control-xxs);
 }
 
 .sumi-group-hue-dot {
 	width: 12px;
 	height: 12px;
-	border-radius: var(--wg-kit-round);
-	background: var(--sumi-group);
+	border-radius: var(--round);
+	background: var(--group-legacy);
 }

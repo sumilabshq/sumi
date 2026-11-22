@@ -3,7 +3,7 @@ export const CSS = `
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 	min-height: 0;
 	overflow: auto;
@@ -12,7 +12,7 @@ export const CSS = `
 .flow-inflight-said {
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .flow-inflight-more {
@@ -23,12 +23,12 @@ export const CSS = `
 
 .flow-inflight-pick {
 	position: relative;
-	border-radius: var(--wg-kit-plate);
+	border-radius: var(--plate-radius);
 	cursor: pointer;
 }
 
 .flow-inflight-pick[aria-pressed="true"] {
-	outline: 2px solid var(--wg-kit-accent);
+	outline: 2px solid var(--brand);
 	outline-offset: -2px;
 }
 
@@ -40,12 +40,12 @@ export const CSS = `
 	bottom: 25%;
 	left: 0;
 	width: 3px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-accent);
+	border-radius: var(--pill);
+	background: var(--brand);
 }
 
 .flow-inflight-pick:focus-visible {
-	outline: 2px solid var(--wg-kit-accent);
+	outline: 2px solid var(--brand);
 	outline-offset: 2px;
 }
 `;

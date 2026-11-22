@@ -9,7 +9,7 @@ const CSS = `
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 }
 
@@ -20,7 +20,7 @@ const CSS = `
 .wg-plan-qa-said {
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 `;
 

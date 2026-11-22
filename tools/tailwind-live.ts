@@ -29,11 +29,11 @@ export default createWidget({ draw: () => <b className="text-3xl bg-brand hover:
 const SHEET = `@import "tailwindcss";
 @import "../tokens.css";
 
-.clock { color: var(--wg-kit-accent); }
+.clock { color: var(--brand); }
 `;
 
-const TOKENS = `:root { --wg-kit-accent: oklch(0.72 0.11 221.19); }
-@theme { --color-brand: var(--wg-kit-accent); }
+const TOKENS = `:root { --brand: oklch(0.72 0.11 221.19); }
+@theme { --color-brand: var(--brand); }
 `;
 
 const onMachineOver = (files: ReadonlyMap<string, string>): SourceDisk => ({

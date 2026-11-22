@@ -12,7 +12,7 @@ const SHEETS = [
 	"plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
 	"plugins/tabs/tabs-sidebar/src/features/tabs-sidebar/ui/tabs-sidebar/tabs-sidebar.css",
 ];
-const LAYOUT = `body { margin: 0; } .demo { padding: 24px; min-height: 100vh; box-sizing: border-box; background: var(--sumi-frame, #0b0b0a); }`;
+const LAYOUT = `body { margin: 0; } .demo { padding: 24px; min-height: 100vh; box-sizing: border-box; background: var(--frame, #0b0b0a); }`;
 
 const bundle = await bundleOf("tools/sub-pages-page.tsx");
 const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</style>`).join("");

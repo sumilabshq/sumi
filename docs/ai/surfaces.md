@@ -60,8 +60,8 @@ names.
 
 ## Colour, size, motion
 
-Every colour is a `--wg-kit-*` token: a theme repaints a token and cannot repaint a hex. Two text
-colours, `--wg-kit-text` and `--wg-kit-text-muted`; a tone is a state of a plate, never a kind of
+Every colour is a `--*` token: a theme repaints a token and cannot repaint a hex. Two text
+colours, `--foreground` and `--muted-foreground`; a tone is a state of a plate, never a kind of
 one. No cast shadow on a plate, uppercase only as `clean-ui.md` allows, never colour alone.
 
 Big: large controls, large corners, generous spacing. One unusual shape per widget, on the thing the

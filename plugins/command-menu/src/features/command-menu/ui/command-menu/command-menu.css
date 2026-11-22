@@ -1,15 +1,15 @@
 .wg-cm-layer,
 .wg-cm-home {
-	font-family: var(--sumi-font-ui);
-	font-feature-settings: var(--sumi-font-features);
-	font-size: var(--sumi-fs-13);
+	font-family: var(--font-ui);
+	font-feature-settings: var(--font-features);
+	font-size: var(--fs-13);
 	line-height: 1.5;
 	letter-spacing: 0;
-	color: var(--sumi-text);
+	color: var(--text);
 	-webkit-font-smoothing: antialiased;
-	--wg-cm-column: 640px;
-	--wg-cm-top: 150px;
-	--wg-cm-inset: 10px;
+	--cm-column: 640px;
+	--cm-top: 150px;
+	--cm-inset: 10px;
 }
 
 .wg-cm-layer {
@@ -17,7 +17,7 @@
 	inset: 0;
 	z-index: 1000;
 	pointer-events: auto;
-	background: var(--sumi-plate);
+	background: var(--plate);
 }
 
 :is(.wg-cm-layer, .wg-cm-home) * {
@@ -38,7 +38,7 @@
 .wg-cm-panel {
 	position: absolute;
 	inset: 0;
-	background: var(--sumi-plate);
+	background: var(--plate);
 }
 
 .wg-cm-body {
@@ -50,7 +50,7 @@
 
 .wg-cm-column,
 .wg-cm-foot {
-	width: var(--wg-cm-column);
+	width: var(--cm-column);
 	margin-inline: auto;
 }
 
@@ -59,7 +59,7 @@
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
-	padding-top: var(--wg-cm-top);
+	padding-top: var(--cm-top);
 }
 
 @media (max-width: 800px) {
@@ -72,10 +72,10 @@
 
 .wg-cm-profile {
 	height: 20px;
-	padding: 0 var(--wg-cm-inset);
-	font-size: var(--sumi-fs-13);
+	padding: 0 var(--cm-inset);
+	font-size: var(--fs-13);
 	line-height: 20px;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -86,10 +86,10 @@
 	flex: none;
 	display: flex;
 	align-items: center;
-	gap: var(--wg-cm-inset);
-	padding: 0 var(--wg-cm-inset);
-	font-size: var(--sumi-fs-20);
-	color: var(--sumi-text);
+	gap: var(--cm-inset);
+	padding: 0 var(--cm-inset);
+	font-size: var(--fs-20);
+	color: var(--text);
 }
 
 .wg-cm-input-wrap {
@@ -102,14 +102,14 @@
 .wg-cm-ghost,
 .wg-cm-input {
 	font: inherit;
-	font-size: var(--sumi-fs-20);
+	font-size: var(--fs-20);
 	line-height: 28px;
 	letter-spacing: inherit;
 }
 
 .wg-cm-field[data-cm-link] :is(.wg-cm-ghost, .wg-cm-input) {
-	font-family: var(--sumi-font-mono);
-	font-size: var(--sumi-fs-15);
+	font-family: var(--font-code);
+	font-size: var(--fs-15);
 }
 
 .wg-cm-ghost {
@@ -117,7 +117,7 @@
 	left: 0;
 	top: 0;
 	white-space: pre;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 	pointer-events: none;
 }
 
@@ -138,8 +138,8 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	font-size: var(--sumi-fs-13);
-	color: var(--sumi-text-3);
+	font-size: var(--fs-13);
+	color: var(--text-3);
 	white-space: nowrap;
 }
 
@@ -157,21 +157,21 @@
 	align-items: center;
 	gap: 28px;
 	height: 30px;
-	padding: 0 var(--wg-cm-inset);
+	padding: 0 var(--cm-inset);
 }
 
 .wg-cm-mode {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	font-size: var(--sumi-fs-13);
+	font-size: var(--fs-13);
 }
 
 .wg-cm-mode-count,
 .wg-cm-mode-keys {
 	font-family: inherit;
-	font-size: var(--sumi-fs-13);
-	color: var(--sumi-text-3);
+	font-size: var(--fs-13);
+	color: var(--text-3);
 }
 
 .wg-cm-list {
@@ -180,21 +180,21 @@
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
-	padding-bottom: var(--sumi-sp-6);
-	transition: opacity var(--sumi-dur-base) var(--sumi-ease);
+	padding-bottom: var(--space-4);
+	transition: opacity var(--dur-base) var(--ease-emphasized);
 }
 
 [data-cm-leaving] .wg-cm-list {
 	opacity: 0;
-	transition-duration: var(--sumi-dur-out);
+	transition-duration: var(--dur-out);
 }
 
 .wg-cm-label {
 	flex: none;
-	padding: 18px var(--wg-cm-inset) 6px;
-	font-size: var(--sumi-fs-12);
+	padding: 18px var(--cm-inset) 6px;
+	font-size: var(--fs-12);
 	line-height: 16px;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 .wg-cm-nothing {
@@ -202,19 +202,19 @@
 	height: 30px;
 	display: flex;
 	align-items: center;
-	padding: 0 var(--wg-cm-inset);
-	color: var(--sumi-text-3);
+	padding: 0 var(--cm-inset);
+	color: var(--text-3);
 }
 
 .wg-cm-row {
 	width: 100%;
-	height: var(--sumi-h-row);
+	height: var(--h-row);
 	flex: none;
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 0 var(--wg-cm-inset);
-	font-size: var(--sumi-fs-13);
+	padding: 0 var(--cm-inset);
+	font-size: var(--fs-13);
 }
 
 .wg-cm-icon {
@@ -224,7 +224,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--sumi-text);
+	color: var(--text);
 }
 
 .wg-cm-letter {
@@ -233,10 +233,10 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--sumi-text);
-	color: var(--sumi-plate);
-	font-size: var(--sumi-fs-11);
-	font-weight: var(--sumi-fw-semi);
+	background: var(--text);
+	color: var(--plate);
+	font-size: var(--fs-11);
+	font-weight: var(--fw-semi);
 }
 
 .wg-cm-title {
@@ -248,23 +248,23 @@
 }
 
 .wg-cm-matched {
-	font-weight: var(--sumi-fw-semi);
+	font-weight: var(--fw-semi);
 }
 
 .wg-cm-place {
 	flex: none;
 	max-width: 40%;
 	overflow: hidden;
-	font-size: var(--sumi-fs-13);
-	color: var(--sumi-text-3);
+	font-size: var(--fs-13);
+	color: var(--text-3);
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
 
 .wg-cm-end {
 	flex: none;
-	font-size: var(--sumi-fs-13);
-	color: var(--sumi-text-3);
+	font-size: var(--fs-13);
+	color: var(--text-3);
 	white-space: nowrap;
 }
 
@@ -281,9 +281,9 @@
 	display: flex;
 	align-items: center;
 	gap: 28px;
-	padding: 24px var(--wg-cm-inset);
-	font-size: var(--sumi-fs-13);
-	color: var(--sumi-text-3);
+	padding: 24px var(--cm-inset);
+	font-size: var(--fs-13);
+	color: var(--text-3);
 	white-space: nowrap;
 	overflow: hidden;
 }
@@ -304,11 +304,11 @@
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	color: var(--sumi-text);
+	color: var(--text);
 }
 
 .wg-cm-toast[data-warning] {
-	color: var(--sumi-danger);
+	color: var(--danger);
 }
 
 .wg-cm-actions {
@@ -319,8 +319,8 @@
 	padding: 4px;
 	display: flex;
 	flex-direction: column;
-	background: var(--sumi-plate);
-	border: 1px solid var(--sumi-line-strong);
+	background: var(--plate);
+	border: 1px solid var(--line-strong);
 }
 
 .wg-cm-actions-head {
@@ -328,8 +328,8 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: var(--sumi-fs-12);
-	color: var(--sumi-text-3);
+	font-size: var(--fs-12);
+	color: var(--text-3);
 }
 
 .wg-cm-action {
@@ -339,7 +339,7 @@
 	align-items: center;
 	gap: 8px;
 	padding: 0 8px;
-	font-size: var(--sumi-fs-13);
+	font-size: var(--fs-13);
 }
 
 .wg-cm-action-said {
@@ -350,8 +350,8 @@
 [data-cm-mode="ask"] .wg-cm-ask {
 	display: flex;
 	flex-direction: column;
-	gap: var(--sumi-sp-1);
-	padding: 0 var(--wg-cm-inset) 4px;
+	gap: var(--space-0-5);
+	padding: 0 var(--cm-inset) 4px;
 }
 
 .wg-cm-carried {
@@ -360,7 +360,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	font-size: var(--sumi-fs-13);
+	font-size: var(--fs-13);
 }
 
 .wg-cm-carried-stack {
@@ -378,7 +378,7 @@
 }
 
 body:has(.wg-cm-layer) {
-	--wg-kit-float-z: 1001;
+	--float-z: 1001;
 }
 
 @media (prefers-reduced-motion: reduce) {

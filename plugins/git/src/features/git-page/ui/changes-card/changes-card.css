@@ -20,6 +20,6 @@
 
 .sumi-changes-card-note {
 	margin: 12px;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: 13px;
 }

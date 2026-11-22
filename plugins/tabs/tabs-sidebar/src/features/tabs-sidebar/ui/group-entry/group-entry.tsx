@@ -37,8 +37,8 @@ export function GroupEntry({ group, list, acts, draggedId, depth, isLifted, onMe
 	const isPlaceholder = isLifted || sortId === draggedId;
 	const isOpen = group.isOpen || group.items.some((item) => sortIdOf(item) === draggedId);
 	const Holder = depth === 0 ? SidebarMenuItem : SidebarMenuSubItem;
-	const inner: CSSProperties & Readonly<Record<"--wg-kit-side-depth", number>> = {
-		"--wg-kit-side-depth": depth + 1,
+	const inner: CSSProperties & Readonly<Record<"--side-depth", number>> = {
+		"--side-depth": depth + 1,
 	};
 	return (
 		<Holder role="presentation" data-sort-block={sortId}>

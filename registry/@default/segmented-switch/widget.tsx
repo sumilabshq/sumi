@@ -35,7 +35,7 @@ const CSS = `
 	white-space: nowrap;
 }
 
-.wg-segmented-switch .wg-sgs-caret { transform: rotate(90deg); transition: transform var(--wg-press) var(--wg-ease); }
+.wg-segmented-switch .wg-sgs-caret { transform: rotate(90deg); transition: transform var(--press) var(--ease-standard); }
 .wg-segmented-switch .wg-sgs-pick.is-open .wg-sgs-caret { transform: rotate(-90deg); }
 `;
 

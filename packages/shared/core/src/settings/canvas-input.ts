@@ -27,7 +27,7 @@ export interface PanHandlers {
 	readonly onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
 }
 
-type CellsStyle = CSSProperties & { readonly "--wg-set-across": number };
+type CellsStyle = CSSProperties & { readonly "--set-across": number };
 
 export function clamp(value: number, low: number, high: number): number {
 	return Math.max(low, Math.min(value, high));
@@ -47,7 +47,7 @@ export function cellLayer(box: Size, at: Point, scale: number, cell: number, gap
 		top: `${top}px`,
 		width: `${across * pitch - gap}px`,
 		transform: `scale(${scale})`,
-		"--wg-set-across": across,
+		"--set-across": across,
 	};
 	return h("div", { className: "wg-set-cells", key: "cells", style }, held);
 }

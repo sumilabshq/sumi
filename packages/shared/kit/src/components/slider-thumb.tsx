@@ -36,5 +36,5 @@ export function SliderThumb({ value, at, ask, isGrabbed, onKeyDown, onFocusVisib
 }
 
 function thumbStyleOf(at: BarCursor | undefined): TokenStyle {
-	return { "--wg-slider-at": `${at ? at.x + at.width / 2 : 0}px` };
+	return { "--slider-at": `${at ? at.x + at.width / 2 : 0}px` };
 }

@@ -1,5 +1,5 @@
 .sumi-sub-pages-chevron svg {
-	transition: transform var(--sumi-dur-base) var(--sumi-ease-out);
+	transition: transform var(--dur-base) var(--ease-out-expo);
 }
 
 .sumi-sub-pages-chevron[aria-expanded="true"] svg {
@@ -24,7 +24,7 @@
 	display: flex;
 	align-items: center;
 	height: 24px;
-	padding: 0 var(--sumi-sp-5);
-	color: var(--sumi-text-3);
-	font-size: var(--sumi-fs-12);
+	padding: 0 var(--space-3);
+	color: var(--text-3);
+	font-size: var(--fs-12);
 }

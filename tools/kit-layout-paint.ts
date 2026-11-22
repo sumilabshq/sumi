@@ -145,7 +145,7 @@ const SLIDER_DRAG = `(async () => {
 	const thumb = slider.querySelector("[role='slider']");
 	const knob = document.querySelector(".settable-progress .wg-kit-progress-knob");
 	const progressTrack = document.querySelector(".settable-progress .wg-kit-progress-track");
-	const thumbPx = () => parseFloat(thumb.style.getPropertyValue("--wg-slider-at"));
+	const thumbPx = () => parseFloat(thumb.style.getPropertyValue("--slider-at"));
 	const knobPercent = () => parseFloat(knob.style.left);
 	const send = (target, type, share) => {
 		const box = target.getBoundingClientRect();

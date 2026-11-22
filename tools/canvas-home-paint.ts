@@ -27,7 +27,7 @@ const sheets = [
 const DEMO_SHEET = `
 html, body, #root, .canvas-home-demo { height: 100%; margin: 0; }
 .canvas-home-demo { display: flex; }
-body { background: var(--sumi-plate); font-family: var(--sumi-font-ui); color: var(--sumi-text); }
+body { background: var(--plate); font-family: var(--font-ui); color: var(--text); }
 `;
 const html = `<!doctype html><html><head><meta charset="utf-8">
 <style>${sheets}</style><style>${DEMO_SHEET}</style></head>

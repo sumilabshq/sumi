@@ -12,8 +12,8 @@
 }
 
 .sumi-file-card-body .sumi-code-line.is-marked {
-	background: color-mix(in oklch, var(--sumi-hue-amber) 14%, transparent);
-	box-shadow: inset 2px 0 var(--sumi-hue-amber);
+	background: color-mix(in oklch, var(--hue-amber) 14%, transparent);
+	box-shadow: inset 2px 0 var(--hue-amber);
 }
 
 .sumi-file-card-mark-note {
@@ -21,15 +21,15 @@
 	max-width: calc(100% - 77px);
 	margin: 2px 0 6px 61px;
 	padding: 3px 10px;
-	border-left: 2px solid var(--sumi-hue-amber);
-	background: color-mix(in oklch, var(--sumi-hue-amber) 8%, transparent);
-	color: var(--sumi-text);
-	font: 12.5px / 1.4 var(--sumi-font-ui);
+	border-left: 2px solid var(--hue-amber);
+	background: color-mix(in oklch, var(--hue-amber) 8%, transparent);
+	color: var(--text);
+	font: 12.5px / 1.4 var(--font-ui);
 	white-space: normal;
 }
 
 .sumi-file-card-note {
 	margin: 12px;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: 13px;
 }

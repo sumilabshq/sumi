@@ -13,7 +13,7 @@ const LETTER_TYPE: Readonly<Record<TabArtSize, string>> = {
 	tile: "cv:text-[11px]",
 };
 const LETTER =
-	"cv:mx-px cv:inline-flex cv:flex-none cv:items-center cv:justify-center cv:bg-(--sumi-text-2) cv:font-semibold cv:leading-none cv:text-(--sumi-plate)";
+	"cv:mx-px cv:inline-flex cv:flex-none cv:items-center cv:justify-center cv:bg-(--text-2) cv:font-semibold cv:leading-none cv:text-(--plate)";
 
 export function SiteLetter({ letter, size, px }: SiteLetterProps): ReactElement {
 	return (

@@ -34,9 +34,9 @@ export function Shape({
 	);
 	const body = tones?.[0] ?? pickedBySeed(SHAPE_TONES, seed, SHAPE_TONE_STREAM, "purple");
 	const inked: TokenStyle = {
-		"--wg-shape-a": inkOf(body),
-		"--wg-shape-b": inkOf(tones?.[1] ?? body),
-		"--wg-shape-size": `${size}px`,
+		"--shape-a": inkOf(body),
+		"--shape-b": inkOf(tones?.[1] ?? body),
+		"--shape-size": `${size}px`,
 	};
 	const isLit = look === "3d";
 	return (
@@ -47,7 +47,7 @@ export function Shape({
 		>
 			<svg viewBox={SHAPE_VIEW_BOX} focusable="false">
 				{isLit ? <ShapeLight id={id} light={light} /> : null}
-				<path d={outline} fill={isLit ? `url(#${id}-body)` : "var(--wg-shape-a)"} />
+				<path d={outline} fill={isLit ? `url(#${id}-body)` : "var(--shape-a)"} />
 				{isLit ? <path d={outline} fill={`url(#${id}-bounce)`} /> : null}
 				{isLit ? <path d={outline} fill={`url(#${id}-shine)`} /> : null}
 			</svg>
@@ -57,5 +57,5 @@ export function Shape({
 }
 
 function inkOf(tone: ShapeTone): string {
-	return tone === "ink" ? "var(--wg-kit-text)" : `var(--wg-kit-${tone})`;
+	return tone === "ink" ? "var(--foreground)" : `var(--${tone})`;
 }

@@ -14,7 +14,7 @@ const SHEETS = [
 	"plugins/ai/sessions/src/features/sessions/ui/sessions-popover/sessions-popover.css",
 ];
 const LAYOUT =
-	"body { margin: 0; } .demo-chat { height: 420px; overflow: hidden; } .demo-chat .wg-studio-ai { position: relative; height: 100%; display: flex; flex-direction: column; } .demo-scroll { flex: 1; padding: 30px 24px 0; overflow: hidden; } .demo-composer { margin: 0 24px 16px; padding: 8px; border-radius: 12px; background: var(--sumi-soft); }";
+	"body { margin: 0; } .demo-chat { height: 420px; overflow: hidden; } .demo-chat .wg-studio-ai { position: relative; height: 100%; display: flex; flex-direction: column; } .demo-scroll { flex: 1; padding: 30px 24px 0; overflow: hidden; } .demo-composer { margin: 0 24px 16px; padding: 8px; border-radius: 12px; background: var(--soft); }";
 const bundle = await bundleOf("tools/scratch-chat-head-page.tsx");
 const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</style>`).join("");
 const PAGE = `<!doctype html><html><head><meta charset="utf-8">${styles}<style>${LAYOUT}</style></head><body class="wg-studio"><div id="root"></div><pre id="boom"></pre><script>${bundle}</script></body></html>`;

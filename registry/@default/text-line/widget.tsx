@@ -22,11 +22,11 @@ const CSS = `
 }
 
 .wgi-text-line.is-label {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wgi-text-line.is-value {
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .wgi-text-line.is-caption {

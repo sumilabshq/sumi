@@ -24,12 +24,12 @@ const sheets = [
 	.join("\n");
 const DEMO_SHEET = `
 html, body, #root { height: 100%; margin: 0; }
-body { background: var(--sumi-frame); font-family: var(--sumi-font-ui); color: var(--sumi-text); }
+body { background: var(--frame); font-family: var(--font-ui); color: var(--text); }
 .wg-cm-demo { display: flex; height: 100%; padding: 8px; gap: 8px; box-sizing: border-box; }
 .wg-cm-demo-side { width: 268px; display: flex; flex-direction: column; gap: 8px; }
 .wg-cm-demo-top { display: flex; justify-content: flex-end; padding: 12px 8px 0; }
-.wg-cm-demo-new { margin-top: auto; height: 40px; border: 0; border-radius: 12px; background: var(--sumi-active); text-align: left; padding: 0 14px; font: inherit; }
-.wg-cm-demo-plate { flex: 1; border-radius: 14px; background: var(--sumi-plate); padding: 10px 16px; }
+.wg-cm-demo-new { margin-top: auto; height: 40px; border: 0; border-radius: 12px; background: var(--active); text-align: left; padding: 0 14px; font: inherit; }
+.wg-cm-demo-plate { flex: 1; border-radius: 14px; background: var(--plate); padding: 10px 16px; }
 .wg-cm-demo-crumb { border: 0; background: none; font: inherit; font-size: 15px; padding: 6px 8px; border-radius: 8px; }
 `;
 

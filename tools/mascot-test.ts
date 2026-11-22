@@ -247,10 +247,10 @@ const FILLS = `(() => {
 	const ink = (variable) => { const probe = document.createElement("span"); probe.style.color = "var(" + variable + ")"; document.querySelector(".mascot-page").append(probe); const colour = getComputedStyle(probe).color; probe.remove(); return colour; };
 	const body = (at) => getComputedStyle(document.querySelector(at + " .sumi-figure-body")).fill;
 	return {
-		rest: body("[data-row=rest]") === ink("--sumi-text"),
-		waits: body("[data-row=waits]") === ink("--sumi-accent"),
-		done: body("[data-row=done]") === ink("--sumi-success"),
-		error: body("[data-row=error]") === ink("--sumi-danger"),
+		rest: body("[data-row=rest]") === ink("--text"),
+		waits: body("[data-row=waits]") === ink("--accent-base"),
+		done: body("[data-row=done]") === ink("--success-text"),
+		error: body("[data-row=error]") === ink("--danger"),
 		dark: body("#dark") !== body("[data-row=rest]"),
 		cells: document.querySelectorAll("[data-row=rest] .sumi-figure-cell").length,
 	};

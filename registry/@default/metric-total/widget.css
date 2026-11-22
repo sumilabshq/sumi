@@ -1,7 +1,7 @@
 .mt3-root {
 	--mt3-muted: color-mix(in srgb, var(--text-normal) 55%, var(--background-primary));
 	--mt3-plate: color-mix(in srgb, var(--text-normal) 6.5%, transparent);
-	--mt3-tone: var(--wg-metric-tone);
+	--mt3-tone: var(--metric-tone);
 }
 
 .mt3-surface {
@@ -23,7 +23,7 @@
 	content: "";
 	position: absolute;
 	inset: 0;
-	background-image: radial-gradient(circle at 1px 1px, var(--wg-metric-dot) 1px, transparent 1px);
+	background-image: radial-gradient(circle at 1px 1px, var(--metric-dot) 1px, transparent 1px);
 	background-size: 14px 14px;
 	background-repeat: repeat;
 	mask-image: linear-gradient(to right, transparent 0%, #000000 55%);
@@ -53,8 +53,8 @@
 }
 
 .mt3-surface .mt3-tip {
-	--wg-kit-card-corner: 16px;
-	--wg-kit-card-pad: 10px 15px;
+	--card-corner: 16px;
+	--card-pad: 10px 15px;
 	position: absolute;
 	left: clamp(0px, var(--mt3-tip-at), 100% - var(--mt3-tip-wide-by, 0px));
 	top: clamp(0px, 128px, 100% - var(--mt3-tip-tall-by, 0px));
@@ -126,7 +126,7 @@
 }
 
 .mt3-root .wg-kit-seg.mt3-seg button[aria-selected="true"] {
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .mt3-seg .wg-kit-seg-thumb {
@@ -183,7 +183,7 @@
 	height: 30px;
 	padding: 0 12px;
 	font-size: 13px;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .mt3-headline {
@@ -208,14 +208,14 @@
 }
 
 .mt3-plates .wg-kit-card.mt3-plate {
-	--wg-kit-card-fill: var(--mt3-plate);
-	--wg-kit-card-corner: 22px;
-	--wg-kit-card-pad: 14px 16px 13px;
+	--card-fill: var(--mt3-plate);
+	--card-corner: 22px;
+	--card-pad: 14px 16px 13px;
 	aspect-ratio: 1;
 	justify-content: space-between;
 	gap: 0;
-	backdrop-filter: var(--wg-metric-plate-blur);
-	-webkit-backdrop-filter: var(--wg-metric-plate-blur);
+	backdrop-filter: var(--metric-plate-blur);
+	-webkit-backdrop-filter: var(--metric-plate-blur);
 }
 
 .mt3-plate-value {
@@ -262,8 +262,8 @@
 
 .mt3-root .mt3-open-list::before {
 	background: var(--mt3-plate);
-	backdrop-filter: var(--wg-metric-plate-blur);
-	-webkit-backdrop-filter: var(--wg-metric-plate-blur);
+	backdrop-filter: var(--metric-plate-blur);
+	-webkit-backdrop-filter: var(--metric-plate-blur);
 }
 
 .mt3-list-icon {
@@ -354,8 +354,8 @@
 	}
 
 	.mt3-plates .wg-kit-card.mt3-plate {
-		--wg-kit-card-corner: 19px;
-		--wg-kit-card-pad: 11px 13px 10px;
+		--card-corner: 19px;
+		--card-pad: 11px 13px 10px;
 	}
 
 	.mt3-plate-value {
@@ -436,7 +436,7 @@
 	}
 
 	.mt3-plates .wg-kit-card.mt3-plate {
-		--wg-kit-card-corner: 18px;
+		--card-corner: 18px;
 	}
 
 	.mt3-plate-value {
@@ -500,7 +500,7 @@
 	flex-direction: column;
 	padding: 6px 8px 8px;
 	border-radius: 14px;
-	background: var(--wg-kit-fill);
+	background: var(--fill);
 	flex: 1 1 auto;
 }
 
@@ -515,7 +515,7 @@
 .mt3-calendar .wg-kit-cal-month {
 	font-size: 13px;
 	font-weight: 600;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .mt3-calendar .wg-kit-cal-head .wg-kit-icon {
@@ -566,7 +566,7 @@
 }
 
 .mt3-calendar .wg-kit-cal-day.is-today {
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-normal) 26%, transparent);
 }
 
@@ -605,7 +605,7 @@
 }
 
 .mt3-add-dialog .wg-kit-seg.mt3-sign button[aria-selected="true"] {
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	font-weight: 600;
 }
 
@@ -642,7 +642,7 @@
 	gap: 8px;
 	padding: 13px 18px;
 	border-radius: 22px;
-	background: var(--wg-kit-fill);
+	background: var(--fill);
 }
 
 /* TRADE-OFF: scoped like the kit's own rules — the host styles a bare textarea at the same weight and repaints its border and fill */
@@ -661,7 +661,7 @@
 	resize: none;
 	font: inherit;
 	font-size: 14px;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	outline: none;
 }
 
@@ -742,8 +742,8 @@
 	gap: 10px;
 	padding: 10px 14px;
 	border-radius: 14px;
-	background: var(--wg-kit-warning-wash);
-	color: var(--wg-kit-warning);
+	background: var(--warning-wash);
+	color: var(--warning);
 	font-size: 13px;
 	font-weight: 500;
 }

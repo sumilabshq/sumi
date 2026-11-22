@@ -119,7 +119,7 @@ function tokenColour(token: string): string {
 
 function gapItemsOf(cell: HTMLElement): string {
 	return getComputedStyle(cell.querySelector(".wg-widget-root") ?? cell)
-		.getPropertyValue("--wg-gap-items")
+		.getPropertyValue("--gap-items")
 		.trim();
 }
 
@@ -133,7 +133,7 @@ function readPaint(): Readonly<Record<string, unknown>> {
 		fill: {
 			surface: filled.dataset["surface"],
 			background: getComputedStyle(filled).backgroundColor,
-			token: tokenColour("--wg-kit-group-fill"),
+			token: tokenColour("--group-fill"),
 			padding: getComputedStyle(filled).paddingTop,
 			corner: getComputedStyle(filled).borderTopLeftRadius,
 			box: rectOf(filled),
@@ -141,7 +141,7 @@ function readPaint(): Readonly<Record<string, unknown>> {
 		},
 		lower: {
 			gap: rectOf(cellOf("g")).top - rectOf(cellOf("f")).bottom,
-			kitPlate: getComputedStyle(lower).getPropertyValue("--wg-kit-plate").trim(),
+			kitPlate: getComputedStyle(lower).getPropertyValue("--plate-radius").trim(),
 			nestedCorner: getComputedStyle(cellOf("g")).borderTopLeftRadius,
 		},
 		gaps: {
@@ -192,8 +192,8 @@ function readSlots(): Readonly<Record<string, unknown>> {
 	return {
 		cards: listedSlots("cards"),
 		bare: listedSlots("bare"),
-		inset: tokenColour("--wg-kit-group-inset"),
-		fill: tokenColour("--wg-kit-group-fill"),
+		inset: tokenColour("--group-inset"),
+		fill: tokenColour("--group-fill"),
 		steps: gapVarsOf(0),
 	};
 }

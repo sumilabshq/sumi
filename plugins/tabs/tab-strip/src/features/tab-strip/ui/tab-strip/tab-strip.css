@@ -2,7 +2,7 @@
 	display: flex;
 	flex: 0 1 auto;
 	align-items: center;
-	gap: var(--sumi-sp-1);
+	gap: var(--space-0-5);
 	min-width: 0;
 	height: 100%;
 }
@@ -15,7 +15,7 @@
 	display: flex;
 	flex: 0 1 auto;
 	align-items: center;
-	gap: var(--sumi-sp-1);
+	gap: var(--space-0-5);
 	min-width: 0;
 	height: 100%;
 	overflow-x: auto;
@@ -38,18 +38,18 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--sumi-sp-4);
+	gap: var(--space-2);
 	box-sizing: border-box;
 	max-width: 220px;
-	height: var(--sumi-h-sm);
+	height: var(--h-sm);
 	padding: 0 10px;
-	color: var(--sumi-text-3);
-	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1 var(--sumi-font-ui);
+	color: var(--text-3);
+	font: var(--fw-regular) var(--fs-13) / 1 var(--font-ui);
 	white-space: nowrap;
 	cursor: default;
 	user-select: none;
 	-webkit-user-select: none;
-	transition: background-color var(--sumi-dur-out) var(--sumi-ease-touch);
+	transition: background-color var(--dur-out) var(--ease-touch);
 }
 
 .sumi-strip-tab[data-lifted] {
@@ -60,7 +60,7 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--sumi-sp-1);
+	gap: var(--space-0-5);
 }
 
 .sumi-strip-tab-icons:empty {
@@ -93,30 +93,30 @@
 
 .sumi-tab-status {
 	flex: none;
-	width: var(--sumi-sp-4);
-	height: var(--sumi-sp-4);
+	width: var(--space-2);
+	height: var(--space-2);
 }
 
 .sumi-tab-status[data-mark="unread"] {
-	background: var(--sumi-status-done);
+	background: var(--status-done);
 }
 
 .sumi-tab-status[data-mark="asking"] {
-	background: var(--sumi-status-question);
+	background: var(--status-question);
 }
 
 .sumi-tab-status[data-mark="failed"] {
-	background: var(--sumi-status-blocked);
+	background: var(--status-blocked);
 }
 
 .sumi-strip-tab:is(:hover, :focus-visible) > .sumi-tab-status {
-	margin-inline-end: calc(18px + var(--sumi-sp-1));
+	margin-inline-end: calc(18px + var(--space-0-5));
 }
 
 .sumi-strip-tab-close {
 	position: absolute;
 	top: 50%;
-	right: var(--sumi-sp-3);
+	right: var(--space-1-5);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -145,24 +145,24 @@
 	right: 0;
 	display: flex;
 	flex: none;
-	background: var(--sumi-frame);
+	background: var(--frame);
 }
 
 .sumi-strip-lifted {
 	position: fixed;
 	z-index: 90;
-	background: var(--sumi-soft);
-	outline: 1px solid var(--sumi-line-strong);
+	background: var(--soft);
+	outline: 1px solid var(--line-strong);
 	outline-offset: -1px;
-	color: var(--sumi-text);
+	color: var(--text);
 	pointer-events: none;
-	transform: translate(calc(-1 * var(--sumi-sp-6)), -50%);
+	transform: translate(calc(-1 * var(--space-4)), -50%);
 }
 
 .sumi-strip-landing {
 	position: fixed;
 	z-index: 90;
-	background: var(--sumi-text);
+	background: var(--text);
 	pointer-events: none;
 }
 
@@ -172,13 +172,13 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--sumi-soft);
+	background: var(--soft);
 	pointer-events: none;
 }
 
 .sumi-strip-split-label {
-	color: var(--sumi-text);
-	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1 var(--sumi-font-ui);
+	color: var(--text);
+	font: var(--fw-regular) var(--fs-13) / 1 var(--font-ui);
 }
 
 .sumi-tab-menu-spot {
@@ -201,8 +201,8 @@
 	flex: none;
 	align-items: center;
 	gap: 0;
-	height: var(--sumi-h-sm);
-	margin: 0 var(--sumi-sp-2);
+	height: var(--h-sm);
+	margin: 0 var(--space-1);
 }
 
 .sumi-strip-group::after {
@@ -212,7 +212,7 @@
 	bottom: -2px;
 	left: 0;
 	height: 2px;
-	background: var(--sumi-group);
+	background: var(--group-legacy);
 }
 
 .sumi-strip-chip {
@@ -221,8 +221,8 @@
 	align-items: center;
 	height: 100%;
 	margin: 0;
-	padding: 0 var(--sumi-sp-4);
-	font: var(--sumi-fw-medium, 500) var(--sumi-fs-12) / 1 var(--sumi-font-ui);
+	padding: 0 var(--space-2);
+	font: var(--fw-medium, 500) var(--fs-12) / 1 var(--font-ui);
 	white-space: nowrap;
 	cursor: default;
 }
@@ -233,20 +233,20 @@
 	height: 100%;
 	opacity: 1;
 	transition:
-		grid-template-columns var(--sumi-dur-slow) var(--sumi-ease-out),
-		opacity var(--sumi-dur-base) var(--sumi-ease);
+		grid-template-columns var(--dur-slow) var(--ease-out-expo),
+		opacity var(--dur-base) var(--ease-emphasized);
 }
 
 .sumi-strip-group-track {
 	display: flex;
 	align-items: center;
-	gap: var(--sumi-sp-1);
+	gap: var(--space-0-5);
 	min-width: 0;
 	overflow: hidden;
 }
 
 .sumi-strip-group-track > :first-child {
-	margin-left: var(--sumi-sp-1);
+	margin-left: var(--space-0-5);
 }
 
 .sumi-strip-group:not([data-open]) > .sumi-strip-group-tabs {
@@ -263,13 +263,13 @@
 .sumi-split-member > .sumi-split-row {
 	flex: 1 1 auto;
 	min-width: 0;
-	padding-inline-end: calc(2 * var(--sumi-h-sm) + var(--sumi-sp-4));
+	padding-inline-end: calc(2 * var(--h-sm) + var(--space-2));
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .sumi-split-row {
-	gap: var(--sumi-sp-4);
-	height: var(--sumi-h-md);
-	min-height: var(--sumi-h-md);
+	gap: var(--space-2);
+	height: var(--h-md);
+	min-height: var(--h-md);
 }
 
 .sumi-split-row-icon {
@@ -279,14 +279,14 @@
 	justify-content: center;
 	width: 16px;
 	height: 16px;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 .sumi-split-row-label {
 	flex: 1 1 auto;
 	min-width: 0;
 	overflow: hidden;
-	font-size: var(--sumi-fs-13);
+	font-size: var(--fs-13);
 	text-overflow: ellipsis;
 	text-align: start;
 	white-space: nowrap;
@@ -295,11 +295,11 @@
 .sumi-split-member-acts {
 	position: absolute;
 	top: 0;
-	right: var(--sumi-sp-2);
+	right: var(--space-1);
 	bottom: 0;
 	display: flex;
 	align-items: center;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 .sumi-strip-tab-tools {
@@ -313,7 +313,7 @@
 }
 
 .sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)) {
-	padding-right: calc(var(--sumi-sp-3) + 18px + var(--sumi-sp-1));
+	padding-right: calc(var(--space-1-5) + 18px + var(--space-0-5));
 }
 
 .sumi-strip-tab:has(.sumi-strip-tab-tools:not(:empty)):is(:hover, :focus-visible) .sumi-strip-tab-title {
@@ -329,8 +329,8 @@
 	display: flex;
 	align-items: center;
 	height: 100%;
-	padding: 0 var(--sumi-sp-4);
+	padding: 0 var(--space-2);
 	border-radius: inherit;
-	background: var(--sumi-group);
-	color: var(--sumi-frame);
+	background: var(--group-legacy);
+	color: var(--frame);
 }

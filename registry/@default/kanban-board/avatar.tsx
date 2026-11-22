@@ -1,8 +1,8 @@
 const AVATAR_TONES = [
-	{ background: "var(--wg-kit-accent-wash)", color: "var(--interactive-accent)" },
-	{ background: "var(--wg-kit-success-wash)", color: "var(--text-success)" },
-	{ background: "var(--wg-kit-warning-wash)", color: "var(--wg-kit-warning)" },
-	{ background: "var(--wg-kit-error-wash)", color: "var(--text-error)" },
+	{ background: "var(--accent-wash)", color: "var(--interactive-accent)" },
+	{ background: "var(--success-wash)", color: "var(--text-success)" },
+	{ background: "var(--warning-wash)", color: "var(--warning)" },
+	{ background: "var(--error-wash)", color: "var(--text-error)" },
 ];
 
 export function Avatar({ person }: { person: string }) {

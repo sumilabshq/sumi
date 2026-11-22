@@ -4,7 +4,7 @@ export const STYLE = `
 .habit-month {
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-parts, 16px);
+	gap: var(--gap-parts, 16px);
 	overflow: hidden;
 }
 
@@ -30,7 +30,7 @@ export const STYLE = `
 .hm-note {
 	max-width: 100%;
 	font-size: max(10px, min(var(--font-ui-smaller, 12px), calc(var(--hm-ring) * 0.46)));
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -92,7 +92,7 @@ export const STYLE = `
 	background: none;
 	box-shadow: none;
 	cursor: pointer;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .habit-month .hm-day[disabled] {
@@ -130,7 +130,7 @@ export const STYLE = `
 	justify-self: stretch;
 	align-self: center;
 	height: calc(var(--hm-ring) + ${2 * RUN_OVERHANG_PX}px);
-	background: var(--wg-kit-accent-wash);
+	background: var(--accent-wash);
 }
 
 .hm-run.is-run-start {
@@ -163,7 +163,7 @@ export const STYLE = `
 }
 
 .hm-ring.is-today {
-	border-color: var(--wg-kit-text);
+	border-color: var(--foreground);
 }
 
 .hm-flame {

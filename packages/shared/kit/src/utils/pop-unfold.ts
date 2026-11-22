@@ -9,7 +9,7 @@ interface BoxSize {
 }
 
 export function wantsUnfold(panel: HTMLElement): boolean {
-	return getComputedStyle(panel).getPropertyValue("--wg-kit-pop-motion").trim() === "unfold";
+	return getComputedStyle(panel).getPropertyValue("--pop-motion").trim() === "unfold";
 }
 
 export function unfoldIn(panel: HTMLElement): () => void {
@@ -48,7 +48,7 @@ function unfolding(panel: HTMLElement, direction: "normal" | "reverse"): Animati
 	const frame = panel.animate(
 		[
 			{
-				clipPath: foldedClipOf(panel.style.getPropertyValue("--wg-kit-pop-origin"), size, radius),
+				clipPath: foldedClipOf(panel.style.getPropertyValue("--pop-origin"), size, radius),
 				opacity: 1,
 			},
 			{

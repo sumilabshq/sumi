@@ -145,24 +145,24 @@ for (const theme of ["light", "dark"] as const) {
 		drifted.join("; "),
 	);
 
-	const swept = await evaluateIn(pageOf(theme, ""), probeOf(["--wg-kit-accent", "--wg-kit-text"], SWEPT_HUE));
+	const swept = await evaluateIn(pageOf(theme, ""), probeOf(["--brand", "--foreground"], SWEPT_HUE));
 	check(
 		`${theme}: --hue on the root repaints the brand`,
-		!isSameColour(swept["--wg-kit-accent"], drawn["--wg-kit-accent"]),
-		`accent stayed ${String(swept["--wg-kit-accent"])}`,
+		!isSameColour(swept["--brand"], drawn["--brand"]),
+		`accent stayed ${String(swept["--brand"])}`,
 	);
 	check(
 		`${theme}: --hue leaves an untinted ink alone`,
-		isSameColour(swept["--wg-kit-text"], drawn["--wg-kit-text"]),
-		`ink moved to ${String(swept["--wg-kit-text"])}`,
+		isSameColour(swept["--foreground"], drawn["--foreground"]),
+		`ink moved to ${String(swept["--foreground"])}`,
 	);
 }
 
-const classDark = await evaluateIn(pageOf("light", "dark"), probeOf(["--wg-kit-page"], null));
+const classDark = await evaluateIn(pageOf("light", "dark"), probeOf(["--page"], null));
 check(
 	".dark on the root selects the dark block as .theme-dark does",
-	isSameColour(classDark["--wg-kit-page"], baseline.dark["--wg-kit-page"]),
-	`page drew ${String(classDark["--wg-kit-page"])}, want ${String(baseline.dark["--wg-kit-page"])}`,
+	isSameColour(classDark["--page"], baseline.dark["--page"]),
+	`page drew ${String(classDark["--page"])}, want ${String(baseline.dark["--page"])}`,
 );
 
 console.log(failed === 0 ? "\nsystem tokens: all passed" : `\nsystem tokens: ${failed} failed`);

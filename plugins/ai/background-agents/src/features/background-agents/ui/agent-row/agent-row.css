@@ -1,33 +1,33 @@
 .sumi-background-agent {
 	display: flex;
 	align-items: center;
-	gap: var(--sumi-sp-4);
+	gap: var(--space-2);
 	width: 100%;
-	height: var(--sumi-h-md);
-	font: var(--sumi-fw-regular) var(--sumi-fs-14) var(--sumi-font-ui);
+	height: var(--h-md);
+	font: var(--fw-regular) var(--fs-14) var(--font-ui);
 	white-space: nowrap;
 }
 
 .sumi-background-agent-title {
-	color: var(--sumi-text);
+	color: var(--text);
 }
 
 .sumi-background-agent-said {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 .sumi-background-agent-took {
 	margin-left: auto;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 .sumi-background-agent-done {
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 .sumi-background-agent-stopped {
-	color: var(--sumi-danger);
+	color: var(--danger);
 }

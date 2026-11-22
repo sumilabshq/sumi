@@ -5,7 +5,7 @@ const STYLE = `
 .wgi-reminder {
 	display: flex;
 	align-items: flex-start;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 }
 
 .wgi-reminder-mark {

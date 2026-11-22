@@ -6,12 +6,12 @@ const CSS = `
 .flow-notice {
 	display: flex;
 	align-items: flex-start;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
 .flow-notice-icon {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wg-kit-tone .flow-notice-icon {
@@ -22,7 +22,7 @@ const CSS = `
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -36,7 +36,7 @@ const CSS = `
 	font-size: var(--font-ui-medium, 15px);
 	font-weight: var(--font-semibold, 600);
 	line-height: var(--line-height-tight, 1.25);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .flow-notice-empty {
@@ -53,7 +53,7 @@ const CSS = `
 	margin: 0;
 	min-width: 0;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .flow-notice .flow-notice-action {

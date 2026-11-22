@@ -23,7 +23,7 @@ const CLEAN_SOURCE = "const a = useData(rows.list, { limit: 20 });\nrows.map((r)
 const clean = {
 	id: "@x/ok",
 	source: "const a = useData(rows.list, { limit: 20 });\nrows.map((r) => r);",
-	styles: "color: var(--wg-kit-accent);",
+	styles: "color: var(--brand);",
 	card: { role: "collection" },
 };
 
@@ -107,8 +107,7 @@ check(
 	rulesIn(
 		checkWidget({
 			...draftClean,
-			styles:
-				'@import "tailwindcss";\n@import "widgetarium/theme.css";\n@theme {\n\t--color-brand: var(--wg-kit-accent);\n}',
+			styles: '@import "tailwindcss";\n@import "widgetarium/theme.css";\n@theme {\n\t--color-brand: var(--brand);\n}',
 		}),
 	),
 	[],
@@ -300,11 +299,7 @@ check(
 check("an rgb colour is a finding", rulesIn(checkWidget({ ...clean, styles: "background: rgba(0,0,0,0.4);" })), [
 	"colour",
 ]);
-check(
-	"a colour inside a token definition is not",
-	rulesIn(checkWidget({ ...clean, styles: "--wg-kit-mine: #ff8800;" })),
-	[],
-);
+check("a colour inside a token definition is not", rulesIn(checkWidget({ ...clean, styles: "--mine: #ff8800;" })), []);
 check(
 	"a plate painted from the host text ramp is a finding",
 	rulesIn(checkWidget({ ...clean, styles: "background: var(--text-faint);" })),
@@ -312,7 +307,7 @@ check(
 );
 check(
 	"a plate painted from a kit token is not",
-	rulesIn(checkWidget({ ...clean, styles: "background: var(--wg-kit-fill);" })),
+	rulesIn(checkWidget({ ...clean, styles: "background: var(--fill);" })),
 	[],
 );
 check(

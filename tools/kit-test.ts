@@ -573,7 +573,7 @@ check("and keeps that element's own props", host.querySelector("a")?.getAttribut
 	);
 	check(
 		"and the content says where it may grow, for plain CSS to read",
-		["--wg-kit-pop-available-height", "--wg-kit-pop-available-width", "--wg-kit-pop-origin"].every(
+		["--pop-available-height", "--pop-available-width", "--pop-origin"].every(
 			(name) => panel?.style.getPropertyValue(name) !== "",
 		),
 		true,
@@ -839,7 +839,7 @@ render(h(Kit.ArtObject, { shape: "orb", tones: ["green", "cyan"], size: 40 }), h
 check(
 	"an art object paints only kit colours, named by tone, at its size",
 	[found(host, ".wg-kit-art").className, found(host, ".wg-kit-art").getAttribute("style")],
-	["wg-kit-art is-orb", "--wg-art-a: var(--wg-kit-green); --wg-art-b: var(--wg-kit-cyan); --wg-art-size: 40px;"],
+	["wg-kit-art is-orb", "--art-a: var(--green); --art-b: var(--cyan); --art-size: 40px;"],
 );
 check("and is a drawing a reader skips", found(host, ".wg-kit-art").getAttribute("aria-hidden"), "true");
 render(h(Kit.ArtObject, { shape: "capsules", count: 99 }), host);
@@ -852,7 +852,7 @@ render(h(Kit.ArtObject, { shape: "discs", count: 9, tones: ["orange"] }), host);
 check(
 	"discs stack at most four, the first in the tone asked",
 	[host.querySelectorAll(".wg-kit-art i").length, host.querySelector(".wg-kit-art i")?.getAttribute("style")],
-	[4, "--wg-art-a: var(--wg-kit-orange); --wg-art-place: 0;"],
+	[4, "--art-a: var(--orange); --art-place: 0;"],
 );
 render(h(Kit.ArtObject, { shape: "coin" }, "€"), host);
 check("a coin carries its symbol", found(host, ".wg-kit-art b").textContent, "€");
@@ -860,7 +860,7 @@ render(h(Kit.Confetti, { pieces: 5 }), host);
 check(
 	"confetti scatters the pieces asked, each in a kit colour",
 	[...host.querySelectorAll(".wg-kit-confetti i")].map((piece) =>
-		(piece.getAttribute("style") ?? "").includes("var(--wg-kit-"),
+		(piece.getAttribute("style") ?? "").includes("var(--"),
 	),
 	[true, true, true, true, true],
 );
@@ -868,7 +868,7 @@ render(h(Kit.PhotoStack, { photos: ["a.jpg", "b.jpg", "c.jpg"], size: 48 }), hos
 check(
 	"a photo stack overlaps its photos at the size asked",
 	[host.querySelectorAll(".wg-kit-photo-stack img").length, found(host, ".wg-kit-photo-stack").getAttribute("style")],
-	[3, "--wg-photo-size: 48px;"],
+	[3, "--photo-size: 48px;"],
 );
 render(h(Kit.Shape, { name: "circle", tones: ["green", "cyan"], size: 40 }), host);
 check(
@@ -878,11 +878,7 @@ check(
 		found(host, ".wg-kit-shape").getAttribute("style"),
 		host.querySelectorAll(".wg-kit-shape path").length,
 	],
-	[
-		"wg-kit-shape is-3d",
-		"--wg-shape-a: var(--wg-kit-green); --wg-shape-b: var(--wg-kit-cyan); --wg-shape-size: 40px;",
-		3,
-	],
+	["wg-kit-shape is-3d", "--shape-a: var(--green); --shape-b: var(--cyan); --shape-size: 40px;", 3],
 );
 render(h(Kit.Shape, { name: "heart", look: "flat" }), host);
 check(
@@ -1011,8 +1007,8 @@ check("Surface is the same component, kept for widgets published before the rena
 render(h(Kit.Card, { type: "group" }, h(Kit.Card, { type: "group" }, h(Kit.Card, { type: "group" }))), host);
 check("on the page a group holds a group, and the third is refused", plated("data-surface"), ["group", "group", null]);
 check("the corner steps inward with each plate", plated("style"), [
-	"--wg-surface-corner: var(--wg-kit-plate);",
-	"--wg-surface-corner: var(--wg-kit-item);",
+	"--surface-corner: var(--plate-radius);",
+	"--surface-corner: var(--item);",
 	null,
 ]);
 
@@ -1229,7 +1225,7 @@ render(null, host);
 	check(
 		"the size is the kit's step, the shape a class",
 		[
-			mustHtmlOf(host.firstChild).style.getPropertyValue("--wg-emblem-size"),
+			mustHtmlOf(host.firstChild).style.getPropertyValue("--emblem-size"),
 			mustHtmlOf(host.firstChild).classList.contains("is-rounded"),
 		],
 		["64px", true],
@@ -1249,7 +1245,7 @@ check("and itself paints none", found(host, ".wg-kit-layout").getAttribute("data
 check(
 	"it wraps at the narrowest a cell may be",
 	found(host, ".wg-kit-layout").getAttribute("style"),
-	"--wg-kit-layout-min: 180px;",
+	"--layout-min: 180px;",
 );
 
 render(h(Kit.Layout, { kind: "row" }, h(Kit.LayoutItem, null, "a")), host);
@@ -1488,7 +1484,7 @@ check(
 	const tokens = fs.readFileSync("registry/@default/tokens.css", "utf8");
 	check(
 		"the plate fill has ONE owner, so no second fallback can drift",
-		/--orbi-plate:\s*var\(--wg-kit-fill\)/.test(tokens),
+		/--orbi-plate:\s*var\(--fill\)/.test(tokens),
 		true,
 	);
 
@@ -1830,7 +1826,7 @@ check(
 	check("the content fades out ahead of the panel", mustHtmlOf(mustHtmlOf(pop()).firstElementChild).style.opacity, "0");
 	check(
 		"and the closing curve is the ease, never the spring",
-		/--wg-spring/.test(mustHtmlOf(pop()).style.transition),
+		/--spring/.test(mustHtmlOf(pop()).style.transition),
 		false,
 	);
 
@@ -1841,7 +1837,7 @@ check(
 	check("SO IT HOLDS THE OPACITY UP BEFORE MEASURING", measured.opacity, "1");
 	check("because opacity is not in the curve still in force there", /opacity/.test(measured.transition), false);
 	check("only then is it sent to nothing", folding.opacity, "0");
-	check("on a curve that names opacity", /opacity var\(--wg-press\)/.test(folding.transition), true);
+	check("on a curve that names opacity", /opacity var\(--press\)/.test(folding.transition), true);
 
 	// A PANEL THAT EMPTIES CANNOT FOLD. A caller writes `{open ? … : null}` because it is the
 	// obvious thing to write; the panel then collapses to its padding and the fold plays from a
@@ -1969,7 +1965,7 @@ check(
 			translate: node.style.translate,
 			scale: node.style.scale,
 			origin: node.style.transformOrigin,
-			seed: `${node.style.getPropertyValue("--wg-kit-pop-seed-x")}|${node.style.getPropertyValue("--wg-kit-pop-seed-y")}`,
+			seed: `${node.style.getPropertyValue("--pop-seed-x")}|${node.style.getPropertyValue("--pop-seed-y")}`,
 			motion: node.style.animation,
 			width: node.style.width,
 			height: node.style.height,
@@ -2047,7 +2043,11 @@ check(
 	check("THE TRIGGER IS NOT TOUCHED — the fold is gone", seated.rowTouched, "||||");
 	check("it simply leaves, because the panel is the panel now", seated.gone, "hidden");
 
-	check("ONE ANIMATION CARRIES THE WHOLE GROWTH", growing.motion, `wg-kit-pop-bloom ${growMs}ms var(--wg-ease) both`);
+	check(
+		"ONE ANIMATION CARRIES THE WHOLE GROWTH",
+		growing.motion,
+		`wg-kit-pop-bloom ${growMs}ms var(--ease-standard) both`,
+	);
 	check("and the inline seed is handed over to it, so the two cannot disagree", growing.scale, "");
 	check(
 		"SCALING IS THE ONLY THING THAT MOVES: no position, no laid-out box",
@@ -2073,7 +2073,7 @@ check(
 	check(
 		"the content fades in while the panel grows",
 		growing.innerTransition,
-		`opacity ${contentMs}ms var(--wg-ease) ${contentDelayMs}ms`,
+		`opacity ${contentMs}ms var(--ease-standard) ${contentDelayMs}ms`,
 	);
 	check("to fully visible, at true size", `${growing.innerFade}|${growing.innerScale}`, "1|");
 	check("THE TRIGGER IS STILL NOT TOUCHED", growing.rowTouched, "||||");
@@ -2099,9 +2099,7 @@ check(
 	const peakStop = Number(captured(/(\d+)%\s*\{\s*scale:/, frames)) / 100;
 	const peak = stopAt(`${peakStop * 100}%`);
 	const rest = stopAt("to");
-	const seedStop = /from\s*\{\s*scale:\s*var\(--wg-kit-pop-seed-x,\s*1\)\s*var\(--wg-kit-pop-seed-y,\s*1\);\s*\}/.test(
-		frames,
-	);
+	const seedStop = /from\s*\{\s*scale:\s*var\(--pop-seed-x,\s*1\)\s*var\(--pop-seed-y,\s*1\);\s*\}/.test(frames);
 	console.log(
 		`   the curve: seed -> ${peak.join(" ")} at ${peakStop * 100}% (${peakStop * growMs}ms) -> ${rest.join(" ")}`,
 	);
@@ -2151,7 +2149,7 @@ check(
 	await pollUntil(() => mustHtmlOf(pop()).style.animation.includes("wg-kit-pop-bloom"));
 	shut();
 	check("A DISMISSAL MID-GROWTH TAKES THE ANIMATION OFF, or it fights the fold", mustHtmlOf(pop()).style.animation, "");
-	check("and the seed with it", mustHtmlOf(pop()).style.getPropertyValue("--wg-kit-pop-seed-x"), "");
+	check("and the seed with it", mustHtmlOf(pop()).style.getPropertyValue("--pop-seed-x"), "");
 	endExit(mustElement(pop()));
 	await settle();
 	check(
@@ -2240,7 +2238,7 @@ check(
 	);
 	check(
 		"the trigger's width is handed to the CSS",
-		mustHtmlOf(pop()).style.getPropertyValue("--wg-kit-anchor-width"),
+		mustHtmlOf(pop()).style.getPropertyValue("--anchor-width"),
 		"100px",
 	);
 
@@ -2476,8 +2474,8 @@ check(
 	render(h(Kit.Badge, { color: "purple", size: "s", className: "mine" }, "implementing"), host);
 	check(
 		"a palette colour becomes the ink both fills are mixed from",
-		mustHtmlOf(host.firstChild).style.getPropertyValue("--wg-badge-ink"),
-		"var(--wg-kit-purple)",
+		mustHtmlOf(host.firstChild).style.getPropertyValue("--badge-ink"),
+		"var(--purple)",
 	);
 	check(
 		"a caller's class rides along with the kit's",
@@ -2487,23 +2485,21 @@ check(
 	render(h(Kit.Badge, { color: "#123456" }, "own"), host);
 	check(
 		"any other colour is taken as it is",
-		mustHtmlOf(host.firstChild).style.getPropertyValue("--wg-badge-ink"),
+		mustHtmlOf(host.firstChild).style.getPropertyValue("--badge-ink"),
 		"#123456",
 	);
 	render(h(Kit.Badge, { color: { light: "#0a5c46", dark: "mint" } }, "brand"), host);
 	check(
 		"a pair names one ink per theme",
-		["--wg-badge-ink-light", "--wg-badge-ink-dark"].map((name) =>
-			mustHtmlOf(host.firstChild).style.getPropertyValue(name),
-		),
+		["--badge-ink-light", "--badge-ink-dark"].map((name) => mustHtmlOf(host.firstChild).style.getPropertyValue(name)),
 		["#0a5c46", "mint"],
 	);
 	check("and says it is themed", mustHtmlOf(host.firstChild).classList.contains("is-themed"), true);
 	render(h(Kit.Badge, { color: { light: "blue" } }, "one"), host);
 	check(
 		"a pair missing its dark half wears the light one in both",
-		mustHtmlOf(host.firstChild).style.getPropertyValue("--wg-badge-ink-dark"),
-		"var(--wg-kit-blue)",
+		mustHtmlOf(host.firstChild).style.getPropertyValue("--badge-ink-dark"),
+		"var(--blue)",
 	);
 
 	render(h(Kit.Heading, null, "Plain"), host);
@@ -2664,7 +2660,7 @@ check(
 		"on a line the value stands in its own room at the end",
 		[
 			host.querySelector(".wg-kit-bar-said")?.textContent,
-			htmlIn(host, ".wg-kit-bar")?.style.getPropertyValue("--wg-bar-value-room"),
+			htmlIn(host, ".wg-kit-bar")?.style.getPropertyValue("--bar-value-room"),
 		],
 		["30 of 100", "8px"],
 	);
@@ -2674,7 +2670,7 @@ check(
 		"WITH NO displayValue THE ROOM IS NOTHING, so the line runs the whole width",
 		[
 			found(host, ".wg-kit-bar").classList.contains("has-value"),
-			foundAs(host, ".wg-kit-bar", HTMLElement).style.getPropertyValue("--wg-bar-value-room"),
+			foundAs(host, ".wg-kit-bar", HTMLElement).style.getPropertyValue("--bar-value-room"),
 		],
 		[false, "0px"],
 	);
@@ -2685,7 +2681,7 @@ check(
 		"A displayValue THAT ANSWERS WITH NOTHING TAKES NO ROOM EITHER",
 		[
 			found(host, ".wg-kit-bar").classList.contains("has-value"),
-			foundAs(host, ".wg-kit-bar", HTMLElement).style.getPropertyValue("--wg-bar-value-room"),
+			foundAs(host, ".wg-kit-bar", HTMLElement).style.getPropertyValue("--bar-value-room"),
 		],
 		[false, "0px"],
 	);
@@ -2964,8 +2960,8 @@ check(
 			`<style>:root { --text-normal: #222; --text-muted: #707070; --text-faint: #ababab; --background-primary: #fff; --interactive-accent: #6d4ee0; --font-interface: -apple-system, "Segoe UI", sans-serif; --font-ui-small: 14px; --size-4-4: 16px; }` +
 			`body { margin: 0; } .wg-root { width: 380px; }</style>` +
 			`</head><body><div class="wg-root"></div><div class="wg-root wg-sides" style="width:300px"></div>` +
-			`<div class="wg-root wg-ground-light" style="width:300px;padding:20px;background:var(--wg-kit-raise)"></div>` +
-			`<div class="wg-root wg-ground-dark" style="width:300px;padding:20px;background:var(--wg-kit-raise);--background-primary:#1e1e1e;--text-normal:#dadada"></div>` +
+			`<div class="wg-root wg-ground-light" style="width:300px;padding:20px;background:var(--raise)"></div>` +
+			`<div class="wg-root wg-ground-dark" style="width:300px;padding:20px;background:var(--raise);--background-primary:#1e1e1e;--text-normal:#dadada"></div>` +
 			`<div class="wg-root wg-picked" style="width:300px"></div>` +
 			`<div class="wg-root wg-heights" style="width:300px"></div>` +
 			`<div class="wg-root wg-two" style="width:300px"></div>` +
@@ -3320,11 +3316,11 @@ check(
 		liftFile,
 		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync(BOARD_SHEET, "utf8")}</style>` +
 			`<style>html, body { margin: 0; padding: 0; } body { width: 400px; height: ${pageHeight}px; }` +
-			`.wg-ground { position: absolute; left: 0; width: 400px; height: ${BLOCK.slot}px; background: var(--wg-kit-raise); }` +
+			`.wg-ground { position: absolute; left: 0; width: 400px; height: ${BLOCK.slot}px; background: var(--raise); }` +
 			`.wg-ground .wg-kit-side { position: absolute; left: ${BLOCK.left}px; top: ${BLOCK.top}px; width: ${BLOCK.width}px; height: ${BLOCK.height}px; }</style>` +
 			`</head><body>` +
 			// CONTEXT: a custom property is computed where it is declared, so the ground carries BOTH
-			// the theme and .wg-root — on body, --wg-kit-raise would resolve once, against nothing
+			// the theme and .wg-root — on body, --raise would resolve once, against nothing
 			SLOTS.map(
 				({ ground, surfaceWord }, at) =>
 					`<div class="wg-root wg-ground" style="top:${at * BLOCK.slot}px;${ground}"><div class="${sidebarClass({ surface: surfaceWord })}"></div></div>`,
@@ -3761,7 +3757,7 @@ check(
 	check("THE LAST DRAWN BAR IS THE HIGHLIGHTED ONE", highlightedIndex([1, 2, null], "last"), 1);
 	check("A BAR AT ZERO STAYS VISIBLE", present(sparkBars([0, 4], 100, 40)[0]).height, 1.5);
 	check("A NUMBERED CHART COLOUR IS ITS TOKEN", chartColorOf(3, 0), "var(--chart-3)");
-	check("A PALETTE NAME IS THE KIT'S INK", chartColorOf("purple", 0), "var(--wg-kit-purple)");
+	check("A PALETTE NAME IS THE KIT'S INK", chartColorOf("purple", 0), "var(--purple)");
 	check("A SERIES WITH NO COLOUR TAKES ITS PLACE'S TOKEN", chartColorOf(undefined, 6), "var(--chart-2)");
 	check("A HAND-WRITTEN COLOUR IS REFUSED FOR THE PLACE'S TOKEN", chartColorOf("#ff0000", 0), "var(--chart-1)");
 	check("A SERIES KEY BECOMES A SAFE PROPERTY NAME", seriesColorName("notes per day"), "--color-notes-per-day");
@@ -3779,11 +3775,7 @@ check(
 	);
 	await settle();
 	const spark = htmlIn(host, ".wg-kit-spark");
-	check(
-		"A SPARKLINE WEARS ITS COLOUR AS A TOKEN",
-		spark?.style.getPropertyValue("--wg-kit-spark"),
-		"var(--wg-kit-green)",
-	);
+	check("A SPARKLINE WEARS ITS COLOUR AS A TOKEN", spark?.style.getPropertyValue("--spark"), "var(--green)");
 	check(
 		"A LABELLED SPARKLINE IS AN IMAGE WITH A NAME",
 		[spark?.querySelector("svg")?.getAttribute("role"), spark?.querySelector("svg")?.getAttribute("aria-label")],
@@ -3820,7 +3812,7 @@ check(
 	check(
 		"A CHART'S SERIES TAKE THEIR COLOURS FROM ITS CONFIG",
 		[chartBox?.style.getPropertyValue("--color-s0"), chartBox?.style.getPropertyValue("--color-s1")],
-		["var(--chart-1)", "var(--wg-kit-cyan)"],
+		["var(--chart-1)", "var(--cyan)"],
 	);
 	const tip = host.querySelector(".wg-kit-chart-tip");
 	check("THE CHART TOOLTIP IS THE KIT'S GLASS", tip?.classList.contains("wg-kit-glass"), true);
@@ -4061,13 +4053,13 @@ check(
 			heightOf('.wg-kit-skeleton[data-kind="field"]'),
 		],
 		[
-			"var(--wg-kit-control-s)",
-			"var(--wg-kit-control-s)",
-			"var(--wg-kit-control-s)",
-			"var(--wg-kit-control-s)",
-			"var(--wg-kit-control-m)",
-			"var(--wg-kit-control-m)",
-			"var(--wg-kit-control-m)",
+			"var(--control-s)",
+			"var(--control-s)",
+			"var(--control-s)",
+			"var(--control-s)",
+			"var(--control-m)",
+			"var(--control-m)",
+			"var(--control-m)",
 		],
 	);
 
@@ -4082,7 +4074,7 @@ check(
 	await settle();
 	check(
 		"AN EMBLEM SKELETON TAKES THE EMBLEM'S OWN SIZE",
-		htmlIn(host, ".wg-kit-skeleton")?.style.getPropertyValue("--wg-kit-skeleton-size"),
+		htmlIn(host, ".wg-kit-skeleton")?.style.getPropertyValue("--skeleton-size"),
 		"64px",
 	);
 	render(h(Skeleton, { kind: "button", size: "xl" }), host);

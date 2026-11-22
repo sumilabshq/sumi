@@ -9,7 +9,7 @@ export function chartColorOf(asked: unknown, place: number): string {
 	if (asked === undefined || asked === null || asked === "") return `var(--chart-${step})`;
 	const numbered = Number(asked);
 	if (Number.isInteger(numbered) && numbered >= 1 && numbered <= CHART_COLOR_COUNT) return `var(--chart-${numbered})`;
-	if (NAMED_INKS.includes(String(asked))) return `var(--wg-kit-${String(asked)})`;
+	if (NAMED_INKS.includes(String(asked))) return `var(--${asked === "accent" ? "brand" : String(asked)})`;
 	warnOnce(
 		`${String(asked)} is no chart colour, so chart colour ${step} was drawn instead: 1 to ${CHART_COLOR_COUNT}, ${NAMED_INKS.join(", ")}`,
 	);

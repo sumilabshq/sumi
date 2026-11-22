@@ -4,8 +4,8 @@ import type { RefObject } from "react";
 export type ControlSpaceSide = "start" | "end";
 
 const CHROME_VAR: Record<ControlSpaceSide, string> = {
-	start: "--wg-shell-chrome-left",
-	end: "--wg-shell-chrome-right",
+	start: "--shell-chrome-left",
+	end: "--shell-chrome-right",
 };
 const TOP_ROW_PX = 20;
 

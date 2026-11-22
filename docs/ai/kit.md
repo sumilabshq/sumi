@@ -133,7 +133,7 @@ is built that way, never by copying the card's code.
 
 Typography is components named after shadcn's typography page: `TypographyH1`, `TypographyH2`, `TypographyH3`, `TypographyH4`,
 `TypographyP`, `TypographyBlockquote`, `TypographyList`, `TypographyInlineCode`, `TypographyLead`,
-`TypographyLarge`, `TypographySmall`, `TypographyMuted`, on the `--wg-kit-h*` scale. A table is
+`TypographyLarge`, `TypographySmall`, `TypographyMuted`, on the `--h*` scale. A table is
 `Table`. A heading inside a widget that is not a `text` widget is still refused by `check`.
 
 Two effects come from shadcn's `shadcn/tailwind.css`, and `@import "widgetarium/theme.css"` brings

@@ -6,7 +6,7 @@ import { Region } from "./region.js";
 
 const DRAWING = "Being drawn";
 const WAVE =
-	"cv:bg-[linear-gradient(100deg,transparent_30%,color-mix(in_srgb,var(--wg-kit-text)_4%,transparent)_50%,transparent_70%)] cv:bg-[length:60%_100%] cv:bg-no-repeat cv:motion-safe:animate-canvas-wave";
+	"cv:bg-[linear-gradient(100deg,transparent_30%,color-mix(in_srgb,var(--foreground)_4%,transparent)_50%,transparent_70%)] cv:bg-[length:60%_100%] cv:bg-no-repeat cv:motion-safe:animate-canvas-wave";
 
 export function PlannedPageRegion({ region }: { readonly region: RegionOf<"planned"> }): ReactElement {
 	return (
@@ -17,7 +17,7 @@ export function PlannedPageRegion({ region }: { readonly region: RegionOf<"plann
 						<span className="wg-design-name cv:text-lg cv:font-semibold cv:text-muted-foreground">{region.page}</span>
 					</div>
 					<div
-						className={`cv:relative cv:box-border cv:flex cv:cursor-default cv:items-center cv:justify-center cv:bg-page cv:shadow-[inset_0_0_0_1px_var(--wg-kit-card-edge)] ${WAVE}`}
+						className={`cv:relative cv:box-border cv:flex cv:cursor-default cv:items-center cv:justify-center cv:bg-page cv:shadow-[inset_0_0_0_1px_var(--card-edge)] ${WAVE}`}
 						style={{ minHeight: region.height }}
 						data-canvas-job-frame=""
 					>

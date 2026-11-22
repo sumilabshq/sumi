@@ -24,7 +24,7 @@ export function useScreenIn(screen: RefObject<HTMLDivElement | null>): RefObject
 
 		layTerminalSheet(host.ownerDocument);
 		const started = new Terminal({
-			fontFamily: cssValueOf(host, "--sumi-font-mono"),
+			fontFamily: cssValueOf(host, "--font-code"),
 			fontSize: FONT_SIZE,
 			lineHeight: LINE_HEIGHT,
 			cursorBlink: false,

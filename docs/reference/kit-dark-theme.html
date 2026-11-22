@@ -369,17 +369,17 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 	--text-faint: var(--color-base-50);
 	--text-on-accent: #ffffff;
 
-	--wg-kit-pill: 999px;
-	--wg-kit-plate: 22px;
-	--wg-kit-plate-pad: 8px;
-	--wg-kit-item: calc(var(--wg-kit-plate) - var(--wg-kit-plate-pad));
-	--wg-kit-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.06);
-	--wg-kit-accent-wash: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-primary));
+	--pill: 999px;
+	--plate-radius: 22px;
+	--plate-pad: 8px;
+	--item: calc(var(--plate-radius) - var(--plate-pad));
+	--shadow-raise: 0 1px 3px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.06);
+	--accent-wash: color-mix(in srgb, var(--interactive-accent) 12%, var(--background-primary));
 
 	/* the token under trial — set per strip from the candidate table in JS */
-	--wg-kit-fill: var(--color-base-20);
-	--wg-kit-fill-hover: var(--color-base-25);
-	--wg-kit-raise: var(--background-primary);
+	--fill: var(--color-base-20);
+	--fill-hover: var(--color-base-25);
+	--raise: var(--background-primary);
 }
 
 .ob.is-light {
@@ -436,16 +436,16 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 
 /* ── kit controls, copied from styles.css ───────────────────────────────────── */
 .wg-kit-plate {
-	background: var(--wg-kit-fill);
-	border-radius: var(--wg-kit-plate);
-	padding: var(--wg-kit-plate-pad);
+	background: var(--fill);
+	border-radius: var(--plate-radius);
+	padding: var(--plate-pad);
 	display: flex;
 	flex-direction: column;
 	gap: var(--size-4-2);
 }
 .wg-kit-card {
-	background: var(--wg-kit-raise);
-	border-radius: var(--wg-kit-item);
+	background: var(--raise);
+	border-radius: var(--item);
 	padding: var(--size-4-4);
 	display: flex;
 	flex-direction: column;
@@ -454,8 +454,8 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 .card-top { display: flex; align-items: center; gap: 10px; }
 .card-top b { font-size: var(--font-ui-small); font-weight: var(--font-semibold); flex: 1; }
 .card-bar { display: flex; align-items: center; gap: 10px; }
-.bar-track { overflow: hidden; flex: 1; height: 6px; border-radius: var(--wg-kit-pill); background: var(--wg-kit-fill); display: block; }
-.bar-fill { display: block; height: 100%; border-radius: var(--wg-kit-pill); background: var(--interactive-accent); }
+.bar-track { overflow: hidden; flex: 1; height: 6px; border-radius: var(--pill); background: var(--fill); display: block; }
+.bar-fill { display: block; height: 100%; border-radius: var(--pill); background: var(--interactive-accent); }
 .bar-pct { flex: none; font-family: var(--font-monospace); font-size: var(--font-ui-smaller); color: var(--text-muted); }
 
 .wg-kit-btn, .wg-kit-icon, .wg-kit-seg button {
@@ -476,15 +476,15 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 	position: absolute;
 	inset: 0;
 	z-index: -1;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	background: none;
 	transition: background 160ms cubic-bezier(0.4, 0, 0.2, 1);
 }
-.wg-kit-btn::before, .wg-kit-icon::before { background: var(--wg-kit-fill); }
-.wg-kit-btn:hover::before, .wg-kit-icon:hover::before { background: var(--wg-kit-fill-hover); }
+.wg-kit-btn::before, .wg-kit-icon::before { background: var(--fill); }
+.wg-kit-btn:hover::before, .wg-kit-icon:hover::before { background: var(--fill-hover); }
 .wg-kit-btn.is-accent::before, .wg-kit-icon.is-accent::before { background: var(--interactive-accent); }
 .wg-kit-btn.is-plain::before { background: none; }
-.wg-kit-btn.is-plain:hover::before { background: var(--wg-kit-accent-wash); }
+.wg-kit-btn.is-plain:hover::before { background: var(--accent-wash); }
 .wg-kit-btn:active, .wg-kit-icon:active { transform: scale(0.955); }
 
 .wg-kit-btn {
@@ -505,8 +505,8 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 
 .wg-kit-seg {
 	display: inline-flex;
-	background: var(--wg-kit-fill);
-	border-radius: var(--wg-kit-pill);
+	background: var(--fill);
+	border-radius: var(--pill);
 	padding: 4px;
 	position: relative;
 	max-width: 100%;
@@ -516,7 +516,7 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 	font-size: var(--font-ui-small);
 	font-weight: var(--font-medium);
 	color: var(--text-muted);
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	padding: 0 var(--size-4-4);
 	height: 38px;
 	z-index: 1;
@@ -529,9 +529,9 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 	top: 4px;
 	bottom: 4px;
 	left: 0;
-	background: var(--wg-kit-raise);
-	border-radius: var(--wg-kit-pill);
-	box-shadow: var(--wg-kit-shadow);
+	background: var(--raise);
+	border-radius: var(--pill);
+	box-shadow: var(--shadow-raise);
 	z-index: 0;
 }
 
@@ -539,11 +539,11 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 	display: inline-flex;
 	align-items: center;
 	gap: var(--size-2-2);
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	padding: 3px var(--size-4-3);
 	font-size: var(--font-ui-smaller);
 	font-weight: var(--font-semibold);
-	background: var(--wg-kit-fill);
+	background: var(--fill);
 	color: var(--text-muted);
 }
 .wg-kit-pill.is-accent { background: var(--interactive-accent); color: var(--text-on-accent); }
@@ -555,8 +555,8 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 	min-width: 24px;
 	height: 24px;
 	padding: 0 7px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-raise);
+	border-radius: var(--pill);
+	background: var(--raise);
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
 	font-weight: var(--font-semibold);
@@ -568,8 +568,8 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 	gap: var(--size-4-2);
 	height: 42px;
 	padding: 0 var(--size-4-4);
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--pill);
+	background: var(--fill);
 	color: var(--text-muted);
 	width: 100%;
 }
@@ -716,16 +716,16 @@ a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--pg-accent);
 				<h3>The change, in styles.css</h3>
 <pre class="patch"><span class="cmt">/* a fill is a step from the surface toward the ink,
    never a position on a ramp that does not mirror */</span>
-<span class="del">- --wg-kit-fill: var(--color-base-20, var(--background-secondary));</span>
-<span class="del">- --wg-kit-fill-hover: var(--color-base-25, var(--background-modifier-hover));</span>
-<span class="add">+ --wg-kit-fill: color-mix(in srgb, var(--text-normal) 7%, var(--background-primary));</span>
-<span class="add">+ --wg-kit-fill-hover: color-mix(in srgb, var(--text-normal) 12%, var(--background-primary));</span>
+<span class="del">- --fill: var(--color-base-20, var(--background-secondary));</span>
+<span class="del">- --fill-hover: var(--color-base-25, var(--background-modifier-hover));</span>
+<span class="add">+ --fill: color-mix(in srgb, var(--text-normal) 7%, var(--background-primary));</span>
+<span class="add">+ --fill-hover: color-mix(in srgb, var(--text-normal) 12%, var(--background-primary));</span>
 <span class="cmt">/* and elevation is light in both themes, so a raised
    surface lifts instead of returning to the note */</span>
-<span class="add">+ --wg-kit-raise: color-mix(in srgb, #ffffff 12%, var(--background-primary));</span>
+<span class="add">+ --raise: color-mix(in srgb, #ffffff 12%, var(--background-primary));</span>
 
 <span class="cmt">  then .wg-kit-card, .wg-kit-seg-thumb and .wg-kit-count
-  take --wg-kit-raise where they take --background-primary today.</span></pre>
+  take --raise where they take --background-primary today.</span></pre>
 			</div>
 		</div>
 	</div>
@@ -850,7 +850,7 @@ const CANDIDATES = [
 		fill: "var(--color-base-20)",
 		fillHover: "var(--color-base-25)",
 		raise: "var(--background-primary)",
-		decl: "--wg-kit-fill: var(--color-base-20);",
+		decl: "--fill: var(--color-base-20);",
 		note: "The step the control was picked at, from a light-mode picker. It survives Obsidian's stock dark ramp untouched &mdash; and dies on the recorded one, where <b>base-20 is --background-secondary</b>, the surface behind the note and the darkest value in the group. The plate stops reading as a container and starts reading as a cut-out. One vault away from correct is the same as wrong.",
 		inTrials: true
 	},
@@ -862,7 +862,7 @@ const CANDIDATES = [
 		fill: "var(--color-base-10)",
 		fillHover: "var(--color-base-20)",
 		raise: "var(--background-primary)",
-		decl: "--wg-kit-fill: var(--color-base-10);",
+		decl: "--fill: var(--color-base-10);",
 		note: "The ramp step that happens to point the right way on all three grounds, and the value the reference page already uses. It is still a ramp position, so it is still the theme's to move. Watch the <b>segmented thumb and the card</b>: both are --background-primary, so on either dark ground they now sit below their own fill.",
 		inTrials: true
 	},
@@ -874,7 +874,7 @@ const CANDIDATES = [
 		fill: "var(--interactive-normal)",
 		fillHover: "var(--interactive-hover, var(--color-base-25))",
 		raise: "var(--background-primary)",
-		decl: "--wg-kit-fill: var(--interactive-normal);",
+		decl: "--fill: var(--interactive-normal);",
 		note: "Obsidian's own name for a control surface &mdash; the semantically right answer, and free. The catch is that the docs do not publish its default, so the value is whatever a theme made it: the two dark grounds here resolve it differently, and a theme is free to point it at the chrome colour that caused this in the first place. Correct in meaning, unbounded in value.",
 		inTrials: true
 	},
@@ -886,7 +886,7 @@ const CANDIDATES = [
 		fill: "color-mix(in srgb, var(--text-normal) 7%, var(--background-primary))",
 		fillHover: "color-mix(in srgb, var(--text-normal) 12%, var(--background-primary))",
 		raise: "var(--background-primary)",
-		decl: "--wg-kit-fill: color-mix(in srgb,\n    var(--text-normal) 7%, var(--background-primary));",
+		decl: "--fill: color-mix(in srgb,\n    var(--text-normal) 7%, var(--background-primary));",
 		note: "Defined by relationship, not position: always a small step from the surface toward the ink, so it cannot invert whatever the ramp does, and it needs no ramp step to exist. Fixes the fill outright on every ground &mdash; and leaves the raised surfaces still painted --background-primary.",
 		inTrials: true
 	},
@@ -898,7 +898,7 @@ const CANDIDATES = [
 		fill: "color-mix(in srgb, var(--text-normal) 7%, var(--background-primary))",
 		fillHover: "color-mix(in srgb, var(--text-normal) 12%, var(--background-primary))",
 		raise: "color-mix(in srgb, #ffffff 12%, var(--background-primary))",
-		decl: "--wg-kit-fill:  color-mix(in srgb,\n    var(--text-normal) 7%, var(--background-primary));\n--wg-kit-raise: color-mix(in srgb,\n    #ffffff 12%, var(--background-primary));",
+		decl: "--fill:  color-mix(in srgb,\n    var(--text-normal) 7%, var(--background-primary));\n--raise: color-mix(in srgb,\n    #ffffff 12%, var(--background-primary));",
 		note: "The fill goes toward the ink; the raised surface goes toward the light. In light the raise resolves to the note's own white and nothing moves. On both dark grounds the <b>card, the thumb and the count chip lift above the fill</b> instead of dropping back to the note &mdash; elevation reads the same way everywhere, and the three-level stack becomes three actual levels.",
 		inTrials: true,
 		pick: true
@@ -995,9 +995,9 @@ function buildStrips() {
 		host.appendChild(strip);
 
 		strip.querySelectorAll(".ob").forEach(cell => {
-			cell.style.setProperty("--wg-kit-fill", candidate.fill);
-			if (candidate.fillHover) cell.style.setProperty("--wg-kit-fill-hover", candidate.fillHover);
-			cell.style.setProperty("--wg-kit-raise", candidate.raise);
+			cell.style.setProperty("--fill", candidate.fill);
+			if (candidate.fillHover) cell.style.setProperty("--fill-hover", candidate.fillHover);
+			cell.style.setProperty("--raise", candidate.raise);
 		});
 	});
 }
@@ -1100,10 +1100,10 @@ function sampleFill(rig, themeClass, fillExpression) {
 	const note = document.createElement("div");
 	const swatch = document.createElement("div");
 	note.style.background = "var(--background-primary)";
-	swatch.style.background = "var(--wg-kit-fill)";
+	swatch.style.background = "var(--fill)";
 	swatch.style.width = "10px";
 	swatch.style.height = "10px";
-	cell.style.setProperty("--wg-kit-fill", fillExpression);
+	cell.style.setProperty("--fill", fillExpression);
 	note.appendChild(swatch);
 	cell.appendChild(note);
 	rig.appendChild(cell);

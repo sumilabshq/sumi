@@ -19,7 +19,7 @@ export function Confetti({ tones, pieces = CONFETTI_PIECES, className: cls }: Co
 					key={index}
 					className={`is-${index % 3}`}
 					style={{
-						background: `var(--wg-kit-${tones?.[index % tones.length] ?? toneOfIndex(index)})`,
+						background: `var(--${tones?.[index % tones.length] ?? toneOfIndex(index)})`,
 						left: `${(index * 37 + 8) % 92}%`,
 						top: `${(index * 53 + 12) % 84}%`,
 					}}

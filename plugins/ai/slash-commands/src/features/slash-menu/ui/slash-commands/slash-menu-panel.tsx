@@ -34,7 +34,7 @@ export function SlashMenuPanel({ slash, draft, isLeaving, onGone }: SlashMenuPan
 
 		const lift = (): void =>
 			node.style.setProperty(
-				"--sumi-slash-lift",
+				"--slash-lift",
 				`${frame.getBoundingClientRect().top - field.getBoundingClientRect().top}px`,
 			);
 		lift();

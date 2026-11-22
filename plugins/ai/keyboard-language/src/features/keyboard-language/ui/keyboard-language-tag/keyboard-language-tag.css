@@ -1,18 +1,18 @@
 .sumi-keyboard-language-tag {
 	position: fixed;
 	z-index: 2147483646;
-	margin-left: calc(var(--sumi-caret-w) + var(--sumi-sp-3));
-	padding: 2px var(--sumi-sp-2);
-	border: 1px solid var(--sumi-line-strong);
-	border-radius: var(--wg-kit-control-radius);
-	background: var(--sumi-plate);
-	color: var(--sumi-text);
-	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1.5 var(--sumi-font-ui);
+	margin-left: calc(var(--caret-w) + var(--space-1-5));
+	padding: 2px var(--space-1);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--control-corner);
+	background: var(--plate);
+	color: var(--text);
+	font: var(--fw-regular) var(--fs-12) / 1.5 var(--font-ui);
 	white-space: nowrap;
 	pointer-events: none;
 	opacity: 0;
 	transform: translateY(-50%);
-	transition: opacity var(--sumi-dur-release) var(--sumi-ease);
+	transition: opacity var(--dur-release) var(--ease-emphasized);
 }
 
 .sumi-keyboard-language-tag.is-shown {

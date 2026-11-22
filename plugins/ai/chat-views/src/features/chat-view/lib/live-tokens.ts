@@ -1,4 +1,4 @@
-const TOKEN_NAME = /--sumi-[a-z0-9-]+/g;
+const TOKEN_NAME = /--[a-z][a-z0-9-]*/g;
 const DARK_CLASSES = ["dark", "theme-dark"];
 const FONT_ADDRESS = /url\((["']?)([^"')]+)\1\)/g;
 
@@ -40,7 +40,12 @@ function fontFacesIn(sheet: CSSStyleSheet, base: string): readonly string[] {
 	const from = sheet.href ?? base;
 	return rules
 		.filter((rule): rule is CSSFontFaceRule => rule instanceof CSSFontFaceRule)
-		.map((rule) => rule.cssText.replace(FONT_ADDRESS, (_whole, quote: string, address: string) => `url(${quote}${new URL(address, from).href}${quote})`));
+		.map((rule) =>
+			rule.cssText.replace(
+				FONT_ADDRESS,
+				(_whole, quote: string, address: string) => `url(${quote}${new URL(address, from).href}${quote})`,
+			),
+		);
 }
 
 function rulesOf(sheet: CSSStyleSheet): readonly CSSRule[] {

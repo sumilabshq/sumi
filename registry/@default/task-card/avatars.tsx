@@ -1,10 +1,10 @@
 const AVATAR_CAP = 3;
 
 const AVATAR_TONE_STYLES = [
-	{ background: "var(--wg-kit-accent-wash)", color: "var(--interactive-accent)" },
-	{ background: "var(--wg-kit-success-wash)", color: "var(--text-success)" },
-	{ background: "var(--wg-kit-error-wash)", color: "var(--text-error)" },
-	{ background: "var(--wg-kit-warning-wash)", color: "var(--wg-kit-warning)" },
+	{ background: "var(--accent-wash)", color: "var(--interactive-accent)" },
+	{ background: "var(--success-wash)", color: "var(--text-success)" },
+	{ background: "var(--error-wash)", color: "var(--text-error)" },
+	{ background: "var(--warning-wash)", color: "var(--warning)" },
 ];
 
 export function Avatars({ initials }: { initials: string[] }) {

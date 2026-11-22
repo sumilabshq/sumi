@@ -31,7 +31,7 @@ export function ImageFile({ path }: ImageFileProps): ReactElement | null {
 				overflow: isActualSize ? "auto" : "hidden",
 				boxSizing: "border-box",
 				padding: "20px 32px 32px 40px",
-				background: "var(--sumi-plate)",
+				background: "var(--plate)",
 			}}
 		>
 			<img
@@ -42,7 +42,7 @@ export function ImageFile({ path }: ImageFileProps): ReactElement | null {
 					maxWidth: isActualSize ? "none" : "100%",
 					maxHeight: isActualSize ? "none" : "100%",
 					objectFit: "contain",
-					borderRadius: "var(--sumi-r-lg)",
+					borderRadius: "var(--r-lg)",
 				}}
 			/>
 		</div>

@@ -183,10 +183,10 @@ check("the grid does not run away at the floor zoom", num(floor, "grid.count") <
 
 console.log("\n— three levels, and the top one is the canvas —");
 for (const [theme, read] of Object.entries(isObject(levels) ? levels : {})) {
-	const canvas = level(at(read, "--wg-kit-page"), null);
-	const ground = level(at(read, "--wg-cell-fill"), canvas);
-	const control = level(at(read, "--wg-kit-fill"), canvas);
-	const card = level(at(read, "--wg-kit-raise"), canvas);
+	const canvas = level(at(read, "--page"), null);
+	const ground = level(at(read, "--cell-fill"), canvas);
+	const control = level(at(read, "--fill"), canvas);
+	const card = level(at(read, "--raise"), canvas);
 	const gridStep = Math.abs(canvas - ground);
 	const controlStep = Math.abs(canvas - control);
 	console.log(
@@ -203,7 +203,7 @@ for (const [theme, read] of Object.entries(isObject(levels) ? levels : {})) {
 check(
 	"the window's own ground is the canvas colour",
 	withColourBytes(at(arrival, "canvasFill")),
-	withColourBytes(at(at(levels, "light"), "--wg-kit-page")),
+	withColourBytes(at(at(levels, "light"), "--page")),
 );
 
 console.log("\n— the glass survives, because nothing above it is transformed —");

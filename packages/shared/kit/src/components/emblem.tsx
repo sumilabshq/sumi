@@ -41,7 +41,7 @@ export function Emblem({
 }: EmblemProps): ReactElement {
 	const [status, setStatus] = useState<EmblemStatus>("idle");
 	const px = emblemPx(size);
-	const sized: TokenStyle = { ...style, "--wg-emblem-size": typeof px === "number" ? `${px}px` : px };
+	const sized: TokenStyle = { ...style, "--emblem-size": typeof px === "number" ? `${px}px` : px };
 	return (
 		<EMBLEM_STATUS.Provider value={{ status, setStatus }}>
 			<span

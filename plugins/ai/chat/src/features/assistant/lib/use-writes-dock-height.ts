@@ -1,7 +1,7 @@
 import { useLayoutEffect } from "react";
 import type { RefObject } from "react";
 
-const DOCK_HEIGHT_PROPERTY = "--wg-studio-ai-dock-height";
+const DOCK_HEIGHT_PROPERTY = "--studio-ai-dock-height";
 
 export function useWritesDockHeight(dock: RefObject<HTMLDivElement | null>): void {
 	useLayoutEffect(() => {

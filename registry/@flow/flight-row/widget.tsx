@@ -23,31 +23,31 @@ const CSS = `
 	box-sizing: border-box;
 	width: 10px;
 	height: 10px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-neutral);
+	border-radius: var(--pill);
+	background: var(--neutral);
 }
 
-.flow-row-mark.is-running { background: var(--wg-kit-accent); }
+.flow-row-mark.is-running { background: var(--brand); }
 
 .flow-row-mark.is-waiting {
 	background: transparent;
-	border: 2px solid var(--wg-kit-info);
+	border: 2px solid var(--info);
 }
 
 .flow-row-mark.is-blocked {
 	border-radius: 0;
-	background: var(--wg-kit-warning);
+	background: var(--warning);
 }
 
 .flow-row-mark.is-failed {
 	border-radius: 0;
 	background: transparent;
-	border: 2px solid var(--wg-kit-error);
+	border: 2px solid var(--error);
 }
 
 .flow-row-mark.is-done {
 	border-radius: 0;
-	background: var(--wg-kit-success);
+	background: var(--success);
 	transform: rotate(45deg);
 }
 
@@ -106,8 +106,8 @@ const CSS = `
 	box-sizing: border-box;
 	width: var(--flow-face-w);
 	height: var(--flow-face-w);
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--pill);
+	background: var(--fill);
 	font-size: var(--font-ui-smaller, 12px);
 	font-weight: var(--font-semibold, 600);
 }

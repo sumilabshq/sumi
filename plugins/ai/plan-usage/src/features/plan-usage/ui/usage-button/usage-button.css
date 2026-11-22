@@ -8,44 +8,44 @@
 }
 
 .sumi-usage-ring .is-track {
-	stroke: var(--sumi-line-strong);
+	stroke: var(--line-strong);
 }
 
 .sumi-usage-ring .is-used {
-	stroke: var(--sumi-text-2);
+	stroke: var(--text-2);
 }
 
 .is-working .sumi-usage-ring .is-used {
-	stroke: var(--sumi-accent);
+	stroke: var(--accent-base);
 }
 
 .sumi-usage-meter {
 	display: flex;
 	flex-direction: column;
-	padding: var(--sumi-sp-2) var(--sumi-sp-5) var(--sumi-sp-3);
+	padding: var(--space-1) var(--space-3) var(--space-1-5);
 }
 
 .sumi-usage-meter-head {
 	display: flex;
 	justify-content: space-between;
-	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
+	font: var(--fw-regular) var(--fs-13) / 1.4 var(--font-ui);
 }
 
 .sumi-usage-meter-head b {
-	font-weight: var(--sumi-fw-regular);
+	font-weight: var(--fw-regular);
 }
 
 .sumi-usage-meter-head span {
-	color: var(--sumi-text-2);
+	color: var(--text-2);
 }
 
 .sumi-usage-meter-bar {
 	position: relative;
-	height: var(--sumi-sp-2);
-	margin: 6px 0 var(--sumi-sp-2);
+	height: var(--space-1);
+	margin: 6px 0 var(--space-1);
 	overflow: hidden;
-	border-radius: var(--wg-kit-round);
-	background: var(--wg-kit-fill);
+	border-radius: var(--round);
+	background: var(--fill);
 }
 
 .sumi-usage-meter-bar i {
@@ -53,20 +53,20 @@
 	top: 0;
 	bottom: 0;
 	left: 0;
-	border-radius: var(--wg-kit-round);
-	background: var(--sumi-text);
+	border-radius: var(--round);
+	background: var(--text);
 }
 
 .sumi-usage-meter small {
-	color: var(--sumi-text-3);
-	font-size: var(--sumi-fs-12);
+	color: var(--text-3);
+	font-size: var(--fs-12);
 	line-height: 1.4;
 }
 
 .sumi-usage-note {
 	max-width: 240px;
-	padding: var(--sumi-sp-2) var(--sumi-sp-5);
-	color: var(--sumi-text-2);
-	font-size: var(--sumi-fs-12);
+	padding: var(--space-1) var(--space-3);
+	color: var(--text-2);
+	font-size: var(--fs-12);
 	line-height: 1.4;
 }

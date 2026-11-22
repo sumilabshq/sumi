@@ -40,15 +40,15 @@ const DARK_ANSI: ITheme = {
 };
 
 export function themeOf(host: HTMLElement, isDark: boolean): ITheme {
-	const background = cssValueOf(host, "--sumi-plate");
-	const foreground = cssValueOf(host, "--sumi-text");
+	const background = cssValueOf(host, "--plate");
+	const foreground = cssValueOf(host, "--text");
 	return {
 		...(isDark ? DARK_ANSI : LIGHT_ANSI),
 		background,
 		foreground,
 		cursor: foreground,
 		cursorAccent: background,
-		selectionBackground: cssValueOf(host, "--sumi-accent-soft"),
+		selectionBackground: cssValueOf(host, "--accent-soft"),
 	};
 }
 

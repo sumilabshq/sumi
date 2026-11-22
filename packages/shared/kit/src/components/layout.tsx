@@ -40,7 +40,7 @@ export function Layout({
 	...rest
 }: LayoutProps): ReactElement {
 	const worn = wornKind(kind);
-	const wornStyle: StyleProp | undefined = worn === "grid" ? { "--wg-kit-layout-min": `${min}px`, ...style } : style;
+	const wornStyle: StyleProp | undefined = worn === "grid" ? { "--layout-min": `${min}px`, ...style } : style;
 	return (
 		<div {...rest} className={cn("wg-kit-layout", `is-${worn}`, cls)} style={wornStyle}>
 			<LAYOUT_KIND.Provider value={worn}>{children}</LAYOUT_KIND.Provider>

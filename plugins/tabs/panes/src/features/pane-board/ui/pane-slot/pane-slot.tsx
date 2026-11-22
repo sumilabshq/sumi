@@ -69,7 +69,7 @@ export const PaneSlot = memo(function PaneSlot({
 				top: place.top,
 				width: place.width,
 				height: place.height,
-				...(corners === undefined ? {} : { "--wg-pane-corners": corners }),
+				...(corners === undefined ? {} : { "--pane-corners": corners }),
 			}}
 			data-pane-id={leaf.id}
 			data-pane-grouped={corners === undefined ? undefined : ""}

@@ -16,16 +16,16 @@ const SHEETS = [
 ];
 const LAYOUT = `
 body { margin: 0; }
-.wg-shell { position: relative; width: 1100px; height: 360px; overflow: hidden; --wg-shell-chrome-left: 78px; background: var(--sumi-frame); }
-.demo-side { position: absolute; left: 0; top: 0; bottom: 0; width: 260px; border-right: 1px solid var(--sumi-line); background: var(--sumi-frame); }
-.demo-floats { position: absolute; left: 0; top: 0; z-index: 5; display: flex; align-items: center; gap: var(--sumi-sp-4); height: var(--sumi-header-h); padding-inline-start: 20px; }
+.wg-shell { position: relative; width: 1100px; height: 360px; overflow: hidden; --shell-chrome-left: 78px; background: var(--frame); }
+.demo-side { position: absolute; left: 0; top: 0; bottom: 0; width: 260px; border-right: 1px solid var(--line); background: var(--frame); }
+.demo-floats { position: absolute; left: 0; top: 0; z-index: 5; display: flex; align-items: center; gap: var(--space-2); height: var(--header-h); padding-inline-start: 20px; }
 .demo-lights { display: flex; gap: 8px; } .demo-lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; } .demo-lights i + i { background: #febc2e; } .demo-lights i + i + i { background: #28c840; }
-.demo-floats .demo-toggle { position: absolute; left: calc(var(--wg-shell-chrome-left) + var(--sumi-sp-3) + var(--sumi-sp-4)); top: 8px; } .demo-toggle { width: var(--sumi-h-sm); height: var(--sumi-h-sm); background: var(--sumi-hover); }
-.demo-menu { width: var(--sumi-h-sm); height: var(--sumi-h-sm); background: var(--sumi-text); }
-.demo-x { width: var(--sumi-h-xs); height: var(--sumi-h-xs); background: var(--sumi-hover); }
+.demo-floats .demo-toggle { position: absolute; left: calc(var(--shell-chrome-left) + var(--space-1-5) + var(--space-2)); top: 8px; } .demo-toggle { width: var(--h-sm); height: var(--h-sm); background: var(--hover); }
+.demo-menu { width: var(--h-sm); height: var(--h-sm); background: var(--text); }
+.demo-x { width: var(--h-xs); height: var(--h-xs); background: var(--hover); }
 .wg-pane { position: absolute; top: 0; bottom: 0; right: 0; } .wg-pane .wg-studio-chat { width: 100% !important; max-width: none !important; padding: 0 !important; } .demo-menu, .demo-x, .demo-toggle { display: block; flex: none; }
 .demo-chat { height: 100%; overflow: hidden; } .demo-chat .wg-studio-ai { position: relative; height: 100%; display: flex; flex-direction: column; }
-.demo-scroll { flex: 1; padding: 70px 24px 0; overflow: hidden; } .demo-composer { margin: 0 24px 16px; padding: 8px; background: var(--sumi-soft); }
+.demo-scroll { flex: 1; padding: 70px 24px 0; overflow: hidden; } .demo-composer { margin: 0 24px 16px; padding: 8px; background: var(--soft); }
 `;
 const bundle = await bundleOf("tools/scratch-chat-head-page.tsx");
 const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</style>`).join("");

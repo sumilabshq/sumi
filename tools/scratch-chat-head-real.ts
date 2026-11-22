@@ -12,7 +12,7 @@ const SHEETS = [
 	"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
 ];
 const LAYOUT =
-	"body { margin: 0; } .wg-studio-chat { width: 1100px; height: 420px; padding: 0; } .demo-chat { height: 420px; overflow: hidden; } .demo-chat .wg-studio-ai { position: relative; height: 100%; display: flex; flex-direction: column; } .demo-scroll { flex: 1; padding: 70px 24px 0; overflow: hidden; } .demo-composer { margin: 0 auto 16px; padding: 8px; background: var(--sumi-soft); }";
+	"body { margin: 0; } .wg-studio-chat { width: 1100px; height: 420px; padding: 0; } .demo-chat { height: 420px; overflow: hidden; } .demo-chat .wg-studio-ai { position: relative; height: 100%; display: flex; flex-direction: column; } .demo-scroll { flex: 1; padding: 70px 24px 0; overflow: hidden; } .demo-composer { margin: 0 auto 16px; padding: 8px; background: var(--soft); }";
 const bundle = await bundleOf("tools/scratch-chat-head-page.tsx");
 const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</style>`).join("");
 const PAGE = `<!doctype html><html><head><meta charset="utf-8">${styles}<style>${LAYOUT}</style></head><body class="wg-studio"><div class="wg-studio-chat"><div id="root"></div></div><pre id="boom"></pre><script>${bundle}</script></body></html>`;

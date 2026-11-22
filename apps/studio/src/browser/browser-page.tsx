@@ -13,7 +13,7 @@ export interface BrowserPageProps {
 	readonly heldTabId: string | null;
 }
 
-const STAGE = "wg-root cv:h-full cv:overflow-hidden cv:p-0 cv:[--wg-board-pad:0px] cv:[--wg-root-head:0px]";
+const STAGE = "wg-root cv:h-full cv:overflow-hidden cv:p-0 cv:[--board-pad:0px] cv:[--root-head:0px]";
 
 export function BrowserPage({ browser, heldTabId }: BrowserPageProps): ReactElement {
 	return (

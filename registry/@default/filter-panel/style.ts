@@ -3,7 +3,7 @@ export const CSS = `
 
 .orbi-filter .ofp-open { gap: var(--size-4-2, 8px); }
 .orbi-filter .ofp-open.is-on { color: var(--interactive-accent); }
-.orbi-filter .ofp-open.is-on::before { background: var(--wg-kit-accent-wash); }
+.orbi-filter .ofp-open.is-on::before { background: var(--accent-wash); }
 .orbi-filter .ofp-open .ofp-icon { width: 17px; height: 17px; }
 .orbi-filter .ofp-count { flex: none; }
 
@@ -42,17 +42,17 @@ export const CSS = `
 	font-family: inherit;
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	text-align: left;
 	cursor: pointer;
 }
 
-.orbi-filter .ofp-group-head::before { border-radius: var(--wg-kit-item); }
+.orbi-filter .ofp-group-head::before { border-radius: var(--item); }
 .orbi-filter .ofp-group-head:hover::before { background: var(--background-modifier-hover); }
 
 .orbi-filter .ofp-chev {
 	color: var(--text-faint);
-	transition: transform var(--wg-quick) var(--wg-ease);
+	transition: transform var(--quick) var(--ease-standard);
 }
 
 .orbi-filter .ofp-group-head.is-on .ofp-chev { transform: rotate(90deg); }
@@ -65,15 +65,15 @@ export const CSS = `
 	flex: none;
 	width: 28px;
 	height: 28px;
-	border-radius: var(--wg-kit-pill, 999px);
+	border-radius: var(--pill, 999px);
 	font-size: var(--font-ui-smaller, 12px);
 	font-weight: var(--font-semibold, 600);
 }
 
-.orbi-filter .ofp-av.is-accent { background: var(--wg-kit-accent-wash); color: var(--interactive-accent); }
-.orbi-filter .ofp-av.is-ok { background: var(--wg-kit-success-wash); color: var(--text-success); }
-.orbi-filter .ofp-av.is-warn { background: var(--wg-kit-warning-wash); color: var(--wg-kit-warning); }
-.orbi-filter .ofp-av.is-err { background: var(--wg-kit-error-wash); color: var(--text-error); }
+.orbi-filter .ofp-av.is-accent { background: var(--accent-wash); color: var(--interactive-accent); }
+.orbi-filter .ofp-av.is-ok { background: var(--success-wash); color: var(--text-success); }
+.orbi-filter .ofp-av.is-warn { background: var(--warning-wash); color: var(--warning); }
+.orbi-filter .ofp-av.is-err { background: var(--error-wash); color: var(--text-error); }
 
 .orbi-filter .ofp-name {
 	flex: 1;

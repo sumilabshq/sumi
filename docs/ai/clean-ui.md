@@ -62,8 +62,8 @@ gap between the parts inside a plate  <  the plate's padding  ≤  gap between p
 | other plates (cards in a column, events in a calendar) | the gap between those plates, so they sit evenly inside |
 | a table, a list or a picture that fills it             | none on the sides it fills; its text keeps the inset    |
 
-- Never write a gap or a radius by hand. Inside a widget the steps arrive as `--wg-gap-items` (the
-  parts of one thing), `--wg-gap-parts` and `--wg-gap-cards` (between plates); the kit lays the
+- Never write a gap or a radius by hand. Inside a widget the steps arrive as `--gap-items` (the
+  parts of one thing), `--gap-parts` and `--gap-cards` (between plates); the kit lays the
   padding and the concentric corners (inner radius = outer radius − padding).
 
 ## Icons, emoji, pictures

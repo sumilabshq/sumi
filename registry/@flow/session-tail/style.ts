@@ -24,16 +24,16 @@ export const CSS = `
 
 .wg-tail-said {
 	margin: auto 0 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wg-tail-waiting {
 	display: flex;
 	align-items: center;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	margin: auto 0 0;
 	min-width: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wg-tail-turn {
@@ -41,9 +41,9 @@ export const CSS = `
 	box-sizing: border-box;
 	width: 18px;
 	height: 18px;
-	border: 2px solid var(--wg-kit-fill);
-	border-top-color: var(--wg-kit-accent);
-	border-radius: var(--wg-kit-pill);
+	border: 2px solid var(--fill);
+	border-top-color: var(--brand);
+	border-radius: var(--pill);
 	animation: wg-tail-turning 900ms linear infinite;
 }
 
@@ -52,16 +52,16 @@ export const CSS = `
 	flex: none;
 	width: 96px;
 	height: 4px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--pill);
+	background: var(--fill);
 }
 
 .wg-tail-sweep {
 	display: block;
 	width: 40%;
 	height: 100%;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-accent);
+	border-radius: var(--pill);
+	background: var(--brand);
 	animation: wg-tail-sweeping 1400ms ease-in-out infinite;
 }
 

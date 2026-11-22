@@ -23,9 +23,9 @@ html,
 body {
 	height: 100%;
 	margin: 0;
-	background: var(--sumi-plate);
-	color: var(--sumi-text);
-	font-family: var(--sumi-font-ui);
+	background: var(--plate);
+	color: var(--text);
+	font-family: var(--font-ui);
 }
 
 .wg-app-body {
@@ -35,8 +35,8 @@ body {
 	height: 100vh;
 	min-height: 0;
 	overflow: hidden;
-	background: var(--sumi-plate);
-	color: var(--sumi-text);
+	background: var(--plate);
+	color: var(--text);
 }
 
 .wg-app-body > .wg-tasks {

@@ -40,7 +40,7 @@ const STYLE = `
 	height: 22px;
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .hs-title {
@@ -88,7 +88,7 @@ const STYLE = `
 }
 
 .hs-edge.is-run {
-	background: var(--wg-kit-accent-wash);
+	background: var(--accent-wash);
 }
 
 /* TRADE-OFF: doubled selector for (0,2,0) — the host paints bare buttons at (0,1,1) and outranks one class */
@@ -107,7 +107,7 @@ const STYLE = `
 	background: none;
 	box-shadow: none;
 	cursor: pointer;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .habit-streak .hs-day[disabled] {
@@ -160,7 +160,7 @@ const STYLE = `
 }
 
 .hs-seat.is-run {
-	background: var(--wg-kit-accent-wash);
+	background: var(--accent-wash);
 }
 
 .hs-seat.is-run-start {
@@ -189,7 +189,7 @@ const STYLE = `
 }
 
 .hs-ring.is-today {
-	border-color: var(--wg-kit-text);
+	border-color: var(--foreground);
 }
 
 .hs-flame {

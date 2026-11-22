@@ -124,7 +124,7 @@ function bandElement(child: LaidChild, draw: TreeDraw): ReactElement {
 
 function scaledGapOf(px: number): string {
 	if (px === 0) return "0px";
-	return `max(${Math.min(px, MIN_GAP_PX)}px, calc(${px}px * var(--wg-gap-scale, 1)))`;
+	return `max(${Math.min(px, MIN_GAP_PX)}px, calc(${px}px * var(--gap-scale, 1)))`;
 }
 
 function alongElement(child: LaidChild): ReactElement {

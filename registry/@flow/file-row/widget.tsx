@@ -12,7 +12,7 @@ const CSS = `
 .ffr.wg-kit-row {
 	align-items: flex-start;
 	padding: 0;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 }
 
 .ffr-mark {
@@ -20,38 +20,38 @@ const CSS = `
 	place-content: center;
 	flex: none;
 	margin-top: 1px;
-	color: var(--wg-kit-neutral-ink);
+	color: var(--neutral-ink);
 }
 
 .ffr-mark.is-added {
-	color: var(--wg-kit-success);
+	color: var(--success);
 }
 
 .ffr-mark.is-modified {
-	color: var(--wg-kit-info);
+	color: var(--info);
 }
 
 .ffr-mark.is-renamed {
-	color: var(--wg-kit-note);
+	color: var(--note);
 }
 
 .ffr-mark.is-deleted {
-	color: var(--wg-kit-error);
+	color: var(--error);
 }
 
 .ffr-mark.is-binary {
-	color: var(--wg-kit-standout);
+	color: var(--standout);
 }
 
 .ffr-mark.is-untold {
-	color: var(--wg-kit-neutral-ink);
+	color: var(--neutral-ink);
 }
 
 .ffr-label.wg-kit-row-label {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	white-space: normal;
 }
 
@@ -82,7 +82,7 @@ const CSS = `
 .ffr-name {
 	flex: 0 0 auto;
 	white-space: nowrap;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	font-weight: var(--font-medium, 500);
 }
 
@@ -96,7 +96,7 @@ const CSS = `
 .ffr-was {
 	display: flex;
 	align-items: baseline;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 	font-size: var(--font-ui-smaller, 12px);
 	color: var(--text-faint);
@@ -112,18 +112,18 @@ const CSS = `
 
 .ffr-stat.wg-kit-row-value {
 	align-items: center;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	white-space: nowrap;
 	font-family: var(--font-monospace);
 	font-size: var(--font-ui-smaller, 12px);
 }
 
 .ffr-added {
-	color: var(--wg-kit-success);
+	color: var(--success);
 }
 
 .ffr-removed {
-	color: var(--wg-kit-error);
+	color: var(--error);
 }
 
 .ffr-said {
@@ -138,16 +138,16 @@ const CSS = `
 	flex: none;
 	width: 44px;
 	height: 6px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--pill);
+	background: var(--fill);
 }
 
 .ffr-bar-added {
-	background: var(--wg-kit-success);
+	background: var(--success);
 }
 
 .ffr-bar-removed {
-	background: var(--wg-kit-error);
+	background: var(--error);
 }
 
 @container widget (width < 320px) {

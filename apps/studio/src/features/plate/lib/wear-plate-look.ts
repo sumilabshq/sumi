@@ -4,8 +4,8 @@ import { inkOn } from "./plate-ink.js";
 import type { PlateInk } from "./plate-ink.js";
 import type { PlateLook } from "./plate-header-store.js";
 
-const FILL = "--wg-plate-fill";
-const INK_TEXT = "var(--sumi-text)";
+const FILL = "--plate-fill";
+const INK_TEXT = "var(--text)";
 export const INK_CLASSES: Readonly<Record<PlateInk, string>> = {
 	dark: "sumi-ink-dark",
 	light: "sumi-ink-light",

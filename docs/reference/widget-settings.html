@@ -88,111 +88,111 @@
 	}
 
 	/* -- layer 2 . the kit, copied from styles.css so the page paints what the plugin does.
-	   --wg-raise is the recent rebase: white is a no-op in light and a real step in dark,
+	   --raise is the recent rebase: white is a no-op in light and a real step in dark,
 	   so a floating panel LIFTS in dark instead of matching the note. */
 	:root, .theme-light, .theme-dark {
-		--wg-canvas: var(--background-secondary);
-		--wg-surface: var(--background-primary);
-		--wg-raise: color-mix(in srgb, #ffffff 12%, var(--background-primary));
-		--wg-fill: color-mix(in srgb, var(--text-normal) 7%, var(--background-primary));
-		--wg-fill-hover: color-mix(in srgb, var(--text-normal) 12%, var(--background-primary));
-		--wg-line: color-mix(in srgb, var(--text-normal) 14%, transparent);
-		--wg-ink: var(--text-normal); --wg-ink-muted: var(--text-muted); --wg-ink-faint: var(--text-faint);
-		--wg-accent: var(--interactive-accent); --wg-accent-hover: var(--interactive-accent-hover);
-		--wg-on-accent: var(--text-on-accent);
-		--wg-accent-wash: color-mix(in srgb, var(--wg-accent) 12%, var(--background-primary));
-		--wg-success: var(--text-success); --wg-error: var(--text-error); --wg-warning: var(--color-orange);
-		--wg-success-wash: color-mix(in srgb, var(--wg-success) 14%, var(--background-primary));
-		--wg-error-wash: color-mix(in srgb, var(--wg-error) 14%, var(--background-primary));
-		--wg-warning-wash: color-mix(in srgb, var(--wg-warning) 16%, var(--background-primary));
-		--wg-radius-tile: 22px; --wg-radius-card: 28px; --wg-radius-pill: 999px;
-		--wg-plate-pad: 8px;
-		--wg-radius-item: calc(var(--wg-radius-tile) - var(--wg-plate-pad));
-		--wg-spring: cubic-bezier(0.34, 1.42, 0.64, 1);
-		--wg-ease: cubic-bezier(0.4, 0, 0.2, 1);
-		--wg-dur-press: 120ms; --wg-dur-s: 200ms; --wg-dur-m: 320ms;
-		--wg-press-scale: 0.955;
+		--canvas: var(--background-secondary);
+		--surface: var(--background-primary);
+		--raise: color-mix(in srgb, #ffffff 12%, var(--background-primary));
+		--fill: color-mix(in srgb, var(--text-normal) 7%, var(--background-primary));
+		--fill-hover: color-mix(in srgb, var(--text-normal) 12%, var(--background-primary));
+		--line-faint: color-mix(in srgb, var(--text-normal) 14%, transparent);
+		--tone-ink: var(--text-normal); --ink-muted: var(--text-muted); --ink-faint: var(--text-faint);
+		--brand: var(--interactive-accent); --accent-hover: var(--interactive-accent-hover);
+		--on-accent-widget: var(--text-on-accent);
+		--accent-wash: color-mix(in srgb, var(--brand) 12%, var(--background-primary));
+		--success: var(--text-success); --error: var(--text-error); --warning: var(--color-orange);
+		--success-wash: color-mix(in srgb, var(--success) 14%, var(--background-primary));
+		--error-wash: color-mix(in srgb, var(--error) 14%, var(--background-primary));
+		--warning-wash: color-mix(in srgb, var(--warning) 16%, var(--background-primary));
+		--radius-tile: 22px; --radius-card: 28px; --radius-pill-widget: 999px;
+		--plate-pad: 8px;
+		--radius-item: calc(var(--radius-tile) - var(--plate-pad));
+		--spring: cubic-bezier(0.34, 1.42, 0.64, 1);
+		--ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+		--dur-press: 120ms; --dur-s: 200ms; --dur-m: 320ms;
+		--press-scale: 0.955;
 
 		/* the kit's glass, verbatim from styles.css:104-107 */
-		--wg-glass-tint: color-mix(in srgb, var(--background-primary) 42%, transparent);
-		--wg-glass-panel: color-mix(in srgb, var(--wg-raise) 78%, transparent);
-		--wg-glass-blur: blur(24px) saturate(180%);
-		--wg-glass-edge: inset 0 0 0 1px color-mix(in srgb, var(--wg-ink) 12%, transparent);
+		--glass-tint: color-mix(in srgb, var(--background-primary) 42%, transparent);
+		--glass-panel: color-mix(in srgb, var(--raise) 78%, transparent);
+		--glass-blur: blur(24px) saturate(180%);
+		--glass-edge: inset 0 0 0 1px color-mix(in srgb, var(--tone-ink) 12%, transparent);
 		/* NO EDGE AND NO SHADOW INSIDE ANYTHING. Law one of the kit: a surface is a FILL, and
 		   a line only ever divides two rows of one group. The single exception is
-		   --wg-glass-edge on the OUTERMOST floating panel, because a translucent surface over
+		   --glass-edge on the OUTERMOST floating panel, because a translucent surface over
 		   moving content dissolves into it without one. Nothing that panel contains gets a
 		   second edge: if two surfaces looked alike and wanted a border, one had the wrong fill. */
-		/* A GROUP ON GLASS. --wg-fill is a step from --background-primary, and inside a
+		/* A GROUP ON GLASS. --fill is a step from --background-primary, and inside a
 		   translucent panel there is no solid background to step from -- over a white canvas
 		   the panel and the fill are both white and the group vanishes. So the group steps
 		   toward the INK instead, from the panel's own raised colour: darker in light,
 		   lighter in dark, a constant step either way. Opaque, because it carries text. */
-		--wg-glass-group: color-mix(in srgb, var(--wg-ink) 6%, var(--wg-raise));
+		--glass-group: color-mix(in srgb, var(--tone-ink) 6%, var(--raise));
 
 		/* the board's own numbers, from src/paths.js GRID */
 		--cell: 54px; --gap: 12px; --pitch: 66px;
 	}
 
-	.theme-light, .theme-dark { background: var(--wg-canvas); color: var(--wg-ink); }
+	.theme-light, .theme-dark { background: var(--canvas); color: var(--tone-ink); }
 
 	/* -- page shell ------------------------------------------------------------ */
 	*, *::before, *::after { box-sizing: border-box; }
 	button { border: none; background: none; font: inherit; color: inherit; padding: 0; margin: 0; appearance: none; -webkit-appearance: none; }
 	body {
-		background: var(--wg-canvas); color: var(--wg-ink);
+		background: var(--canvas); color: var(--tone-ink);
 		font-family: var(--font-interface); font-size: var(--font-ui-medium);
 		line-height: var(--line-height-normal); -webkit-font-smoothing: antialiased; margin: 0;
 	}
 	p { margin: 0; }
 	code, .mono { font-family: var(--font-monospace); font-size: var(--font-ui-smaller); }
-	*:focus-visible { outline: 2px solid var(--wg-accent); outline-offset: 3px; border-radius: var(--radius-m); }
+	*:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: var(--radius-m); }
 
 	.sheet { max-width: 1240px; margin: 0 auto; padding: 0 var(--size-4-5) var(--size-4-16); display: flex; flex-direction: column; gap: var(--size-4-12); }
 	.masthead { padding: var(--size-4-16) 0 0; display: flex; flex-direction: column; gap: var(--size-4-4); }
 	.masthead h1 { font-size: clamp(34px, 5.5vw, 54px); font-weight: var(--font-bold); letter-spacing: -0.03em; line-height: 1.03; margin: 0; text-wrap: balance; }
-	.lede { max-width: 66ch; color: var(--wg-ink-muted); font-size: 17px; }
-	.lede strong { color: var(--wg-ink); font-weight: var(--font-semibold); }
+	.lede { max-width: 66ch; color: var(--ink-muted); font-size: 17px; }
+	.lede strong { color: var(--tone-ink); font-weight: var(--font-semibold); }
 
 	section { display: flex; flex-direction: column; gap: var(--size-4-5); }
 	.head { display: flex; flex-direction: column; gap: var(--size-2-2); }
 	.head h2 { font-size: 28px; font-weight: var(--font-semibold); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
 	.head h3 { font-size: var(--font-ui-large); font-weight: var(--font-semibold); letter-spacing: -0.01em; margin: 0; }
-	.note { font-size: var(--font-ui-small); color: var(--wg-ink-muted); max-width: 68ch; }
-	.note b { color: var(--wg-ink); font-weight: var(--font-semibold); }
-	.note code, .open code, .lede code, .cost code, .why code { background: var(--wg-fill); border-radius: var(--radius-s); padding: 1px 5px; }
+	.note { font-size: var(--font-ui-small); color: var(--ink-muted); max-width: 68ch; }
+	.note b { color: var(--tone-ink); font-weight: var(--font-semibold); }
+	.note code, .open code, .lede code, .cost code, .why code { background: var(--fill); border-radius: var(--radius-s); padding: 1px 5px; }
 
 	/* THE PLAIN LABEL. It replaces the kit's mono, tracked, uppercase caption: same job,
 	   said in the page's own voice instead of shouted in a second typeface. */
-	.lbl { font-size: var(--font-ui-smaller); font-weight: var(--font-medium); color: var(--wg-ink-faint); }
-	.lbl.step { color: var(--wg-accent); }
+	.lbl { font-size: var(--font-ui-smaller); font-weight: var(--font-medium); color: var(--ink-faint); }
+	.lbl.step { color: var(--brand); }
 
 	.scrollx { overflow-x: auto; padding-bottom: var(--size-4-2); }
 	.stack { display: flex; flex-direction: column; gap: var(--size-4-3); }
-	.pressable { transition: transform var(--wg-dur-press) var(--wg-ease), background var(--wg-dur-s) var(--wg-ease), color var(--wg-dur-s) var(--wg-ease); }
-	.pressable:active { transform: scale(var(--wg-press-scale)); }
+	.pressable { transition: transform var(--dur-press) var(--ease-standard), background var(--dur-s) var(--ease-standard), color var(--dur-s) var(--ease-standard); }
+	.pressable:active { transform: scale(var(--press-scale)); }
 	@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .pressable:active { transform: none; } }
 
 	/* -- kit atoms ------------------------------------------------------------- */
-	.btn { font-weight: var(--font-semibold); line-height: 1; cursor: pointer; border-radius: var(--wg-radius-pill); display: inline-flex; align-items: center; justify-content: center; gap: var(--size-4-2); background: var(--wg-fill); color: var(--wg-ink); }
+	.btn { font-weight: var(--font-semibold); line-height: 1; cursor: pointer; border-radius: var(--radius-pill-widget); display: inline-flex; align-items: center; justify-content: center; gap: var(--size-4-2); background: var(--fill); color: var(--tone-ink); }
 	.btn-m { font-size: var(--font-ui-small); padding: 0 var(--size-4-5); height: 42px; }
 	.btn-s { font-size: var(--font-ui-small); padding: 0 var(--size-4-4); height: 34px; }
-	.btn:hover { background: var(--wg-fill-hover); }
-	.btn-accent { background: var(--wg-accent); color: var(--wg-on-accent); }
-	.btn-accent:hover { background: var(--wg-accent-hover); }
-	.btn-plain { background: transparent; color: var(--wg-accent); }
-	.btn-plain:hover { background: var(--wg-accent-wash); }
+	.btn:hover { background: var(--fill-hover); }
+	.btn-accent { background: var(--brand); color: var(--on-accent-widget); }
+	.btn-accent:hover { background: var(--accent-hover); }
+	.btn-plain { background: transparent; color: var(--brand); }
+	.btn-plain:hover { background: var(--accent-wash); }
 
-	.iconbtn { border-radius: var(--wg-radius-pill); display: inline-flex; align-items: center; justify-content: center; background: var(--wg-fill); color: var(--wg-ink-muted); cursor: pointer; flex: none; }
+	.iconbtn { border-radius: var(--radius-pill-widget); display: inline-flex; align-items: center; justify-content: center; background: var(--fill); color: var(--ink-muted); cursor: pointer; flex: none; }
 	.iconbtn-xs { width: 26px; height: 26px; }
 	.iconbtn-s { width: 32px; height: 32px; }
-	.iconbtn:hover { background: var(--wg-fill-hover); color: var(--wg-ink); }
+	.iconbtn:hover { background: var(--fill-hover); color: var(--tone-ink); }
 
-	.pilltag { display: inline-flex; align-items: center; gap: var(--size-2-2); border-radius: var(--wg-radius-pill); padding: 3px var(--size-4-3); font-size: var(--font-ui-smaller); font-weight: var(--font-semibold); background: var(--wg-fill); color: var(--wg-ink-muted); white-space: nowrap; }
-	.pilltag.err { background: var(--wg-error-wash); color: var(--wg-error); }
-	.pilltag.warn { background: var(--wg-warning-wash); color: var(--wg-warning); }
-	.pilltag.ok { background: var(--wg-success-wash); color: var(--wg-success); }
-	.pilltag.accent { background: var(--wg-accent-wash); color: var(--wg-accent); }
+	.pilltag { display: inline-flex; align-items: center; gap: var(--size-2-2); border-radius: var(--radius-pill-widget); padding: 3px var(--size-4-3); font-size: var(--font-ui-smaller); font-weight: var(--font-semibold); background: var(--fill); color: var(--ink-muted); white-space: nowrap; }
+	.pilltag.err { background: var(--error-wash); color: var(--error); }
+	.pilltag.warn { background: var(--warning-wash); color: var(--warning); }
+	.pilltag.ok { background: var(--success-wash); color: var(--success); }
+	.pilltag.accent { background: var(--accent-wash); color: var(--brand); }
 	.pilltag.tiny { font-size: 10px; padding: 2px var(--size-2-3); }
 
 	.icon { width: 16px; height: 16px; flex: none; }
@@ -205,10 +205,10 @@
 	   is the hover ground every kit control paints on, and it is INSET past the
 	   badge so the line starts under the label.
 	   ========================================================================== */
-	.list { display: flex; flex-direction: column; width: 100%; background: var(--wg-surface); border-radius: var(--wg-radius-tile); overflow: hidden; }
+	.list { display: flex; flex-direction: column; width: 100%; background: var(--surface); border-radius: var(--radius-tile); overflow: hidden; }
 	/* Inside a glass panel the group is structure, not a second floating object: it takes
 	   the panel's own group fill and NO edge. An edge is what made these read as cards. */
-	.list.on-glass { background: var(--wg-glass-group); box-shadow: none; }
+	.list.on-glass { background: var(--glass-group); box-shadow: none; }
 
 	/* A GROUP'S HEADING SITS OUTSIDE THE BLOCK, as macOS System Settings does it: small,
 	   muted, indented to the block's own text column. The block then holds rows and nothing
@@ -216,11 +216,11 @@
 	   half the lines gone before we start. The footnote goes outside for the same reason. */
 	.group { display: flex; flex-direction: column; gap: var(--size-2-3); position: relative; }
 	.group > .lbl { padding: 0 var(--size-4-4); }
-	.group > .lbl .n { color: var(--wg-ink-faint); font-weight: var(--font-medium); }
+	.group > .lbl .n { color: var(--ink-faint); font-weight: var(--font-medium); }
 	.group > .lbl .n::before { content: "\00b7"; padding: 0 var(--size-2-2); }
-	.under { padding: 0 var(--size-4-4); font-size: 11px; color: var(--wg-ink-faint); line-height: 1.45; }
-	.under b { color: var(--wg-ink-muted); font-weight: var(--font-semibold); }
-	.under a { color: var(--wg-accent); text-decoration: none; font-weight: var(--font-medium); cursor: pointer; }
+	.under { padding: 0 var(--size-4-4); font-size: 11px; color: var(--ink-faint); line-height: 1.45; }
+	.under b { color: var(--ink-muted); font-weight: var(--font-semibold); }
+	.under a { color: var(--brand); text-decoration: none; font-weight: var(--font-medium); cursor: pointer; }
 
 	.row {
 		--hairline: var(--size-4-4);
@@ -228,113 +228,113 @@
 		display: flex; align-items: center; gap: var(--size-4-3); width: 100%;
 		padding: var(--size-4-3) var(--size-4-4);
 		border: none; background: none; font-family: inherit;
-		font-size: var(--font-ui-small); color: var(--wg-ink); text-align: left;
+		font-size: var(--font-ui-small); color: var(--tone-ink); text-align: left;
 	}
 	/* padding + badge + gap: the inset that reads as iOS and not as a table */
 	.row:has(.badge) { --hairline: calc(var(--size-4-4) + 30px + var(--size-4-3)); }
 	/* a row is a control, so it never paints its own background: the ground is ::before */
-	.row::before { content: ""; position: absolute; inset: 0; z-index: -1; background: none; transition: background var(--wg-dur-s) var(--wg-ease); }
+	.row::before { content: ""; position: absolute; inset: 0; z-index: -1; background: none; transition: background var(--dur-s) var(--ease-standard); }
 	/* THE ONLY LINE. Opt-in, because a group holding two or three unlike controls is
 	   already separated by its fill and its spacing -- lines pushed in there read as stuffy.
 	   .divided is for a genuine list of like rows, which is the macOS pattern. */
-	.list.divided .row + .row::after { content: ""; position: absolute; top: 0; left: var(--hairline); right: 0; height: 1px; background: var(--wg-line); }
+	.list.divided .row + .row::after { content: ""; position: absolute; top: 0; left: var(--hairline); right: 0; height: 1px; background: var(--line-faint); }
 	.row.press { cursor: pointer; }
 	.row.press:hover::before { background: var(--background-modifier-hover); }
 	.row.tall { padding-top: var(--size-4-2); padding-bottom: var(--size-4-2); }
 
-	.badge { display: grid; place-content: center; flex: none; width: 30px; height: 30px; border-radius: var(--radius-m); background: var(--wg-accent); color: var(--wg-on-accent); }
-	.badge.quiet { background: var(--wg-fill-hover); color: var(--wg-ink-muted); }
-	.badge.ok { background: var(--wg-success-wash); color: var(--wg-success); }
-	.badge.off { background: var(--wg-fill-hover); color: var(--wg-ink-faint); }
-	.badge.grab { background: none; color: var(--wg-ink-faint); cursor: grab; }
+	.badge { display: grid; place-content: center; flex: none; width: 30px; height: 30px; border-radius: var(--radius-m); background: var(--brand); color: var(--on-accent-widget); }
+	.badge.quiet { background: var(--fill-hover); color: var(--ink-muted); }
+	.badge.ok { background: var(--success-wash); color: var(--success); }
+	.badge.off { background: var(--fill-hover); color: var(--ink-faint); }
+	.badge.grab { background: none; color: var(--ink-faint); cursor: grab; }
 
 	.rlabel { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: var(--font-medium); }
 	.rlabel.two { display: flex; flex-direction: column; gap: 1px; white-space: normal; overflow: visible; }
 	.rlabel.two > .line { display: flex; align-items: center; gap: var(--size-4-2); }
-	.rlabel .sub { font-size: 11px; color: var(--wg-ink-faint); font-weight: var(--font-medium); }
+	.rlabel .sub { font-size: 11px; color: var(--ink-faint); font-weight: var(--font-medium); }
 	.rlabel .sub.mono { font-family: var(--font-monospace); }
-	.rvalue { flex: none; display: inline-flex; align-items: center; gap: var(--size-4-2); color: var(--wg-ink); font-weight: var(--font-medium); }
-	.rvalue.muted { color: var(--wg-ink-muted); }
-	.rvalue.unset { color: var(--wg-ink-faint); }
+	.rvalue { flex: none; display: inline-flex; align-items: center; gap: var(--size-4-2); color: var(--tone-ink); font-weight: var(--font-medium); }
+	.rvalue.muted { color: var(--ink-muted); }
+	.rvalue.unset { color: var(--ink-faint); }
 	.rvalue .path { font-family: var(--font-monospace); font-size: 11px; }
-	.row.is-unset .rlabel { color: var(--wg-ink-faint); }
-	.row > .chev { flex: none; color: var(--wg-ink-faint); width: 14px; height: 14px; }
+	.row.is-unset .rlabel { color: var(--ink-faint); }
+	.row > .chev { flex: none; color: var(--ink-faint); width: 14px; height: 14px; }
 	/* the group's own fill IS the neutral button's fill, so a control inside a row raises */
-	.row .iconbtn { background: var(--wg-raise); }
-	.row .iconbtn:hover { background: var(--wg-fill-hover); }
-	.row.add { color: var(--wg-ink-muted); font-weight: var(--font-medium); }
-	.row.add:hover { color: var(--wg-ink); }
+	.row .iconbtn { background: var(--raise); }
+	.row .iconbtn:hover { background: var(--fill-hover); }
+	.row.add { color: var(--ink-muted); font-weight: var(--font-medium); }
+	.row.add:hover { color: var(--tone-ink); }
 	/* mid-edit: the row lifts off the group onto the panel's own surface */
 
 	/* -- glass . one rule, the kit's, and it casts nothing --------------------- */
-	.glass { background: var(--wg-glass-panel); backdrop-filter: var(--wg-glass-blur); -webkit-backdrop-filter: var(--wg-glass-blur); box-shadow: var(--wg-glass-edge); }
+	.glass { background: var(--glass-panel); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); box-shadow: var(--glass-edge); }
 
-	.pop { border-radius: var(--wg-radius-tile); background: var(--wg-glass-panel); backdrop-filter: var(--wg-glass-blur); -webkit-backdrop-filter: var(--wg-glass-blur); box-shadow: var(--wg-glass-edge); overflow: hidden; min-width: 216px; }
+	.pop { border-radius: var(--radius-tile); background: var(--glass-panel); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); box-shadow: var(--glass-edge); overflow: hidden; min-width: 216px; }
 	.pop-inner { padding: var(--size-4-2); display: flex; flex-direction: column; }
 	.pop-item { display: flex; align-items: center; gap: var(--size-4-3); padding: var(--size-4-2) var(--size-4-3); border-radius: var(--radius-l); cursor: pointer; font-size: var(--font-ui-small); font-weight: var(--font-medium); text-align: left; width: 100%; }
 	.pop-item:hover { background: var(--background-modifier-hover); }
-	.pop-item .tickmark { margin-left: auto; color: var(--wg-accent); opacity: 0; }
+	.pop-item .tickmark { margin-left: auto; color: var(--brand); opacity: 0; }
 	.pop-item[aria-checked="true"] .tickmark { opacity: 1; }
-	.pop-sep { height: 1px; background: var(--wg-line); margin: var(--size-2-2) var(--size-4-3); }
-	.pop-field { display: flex; align-items: center; gap: var(--size-4-2); background: var(--wg-surface); border-radius: var(--wg-radius-pill); padding: 0 var(--size-4-3); height: 36px; margin: var(--size-2-3) var(--size-2-3) var(--size-4-2); font-size: var(--font-ui-small); box-shadow: inset 0 0 0 2px var(--wg-accent); }
+	.pop-sep { height: 1px; background: var(--line-faint); margin: var(--size-2-2) var(--size-4-3); }
+	.pop-field { display: flex; align-items: center; gap: var(--size-4-2); background: var(--surface); border-radius: var(--radius-pill-widget); padding: 0 var(--size-4-3); height: 36px; margin: var(--size-2-3) var(--size-2-3) var(--size-4-2); font-size: var(--font-ui-small); box-shadow: inset 0 0 0 2px var(--brand); }
 	/* the kit takes the TRIGGER'S place (showPop hides the anchor and grows from its
 	   corner), so the panel starts where the row was rather than beside it */
 	.pop-anchored { position: absolute; z-index: 8; left: 0; right: 0; }
 	.pop-foot { display: flex; align-items: center; gap: var(--size-4-2); padding: var(--size-4-2) var(--size-2-3) var(--size-2-3); }
 	.pop-foot .btn { flex: 1; }
 	.pop-foot .btn:last-child { flex: 2; }
-	.pop-field .ph { color: var(--wg-ink-faint); }
+	.pop-field .ph { color: var(--ink-faint); }
 	.pop-item .pname { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 	/* -- page furniture -------------------------------------------------------- */
 	.frame { display: flex; flex-direction: column; gap: var(--size-4-2); }
-	.stage { background: var(--wg-canvas); border-radius: var(--wg-radius-card); padding: var(--size-4-5); }
-	.theme-light .stage, .theme-dark .stage { background: var(--wg-canvas); }
+	.stage { background: var(--canvas); border-radius: var(--radius-card); padding: var(--size-4-5); }
+	.theme-light .stage, .theme-dark .stage { background: var(--canvas); }
 	.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--size-4-4); align-items: start; }
 	.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--size-4-3); align-items: start; }
-	.panel { background: var(--wg-surface); border-radius: var(--wg-radius-tile); padding: var(--size-4-5); display: flex; flex-direction: column; gap: var(--size-4-3); }
+	.panel { background: var(--surface); border-radius: var(--radius-tile); padding: var(--size-4-5); display: flex; flex-direction: column; gap: var(--size-4-3); }
 	.panel h4 { margin: 0; font-size: var(--font-ui-small); font-weight: var(--font-semibold); display: flex; align-items: center; gap: var(--size-4-2); }
 	.panel h4 .lbl, .panel h4 .verdict { margin-left: auto; }
-	.panel .why { font-size: var(--font-ui-smaller); color: var(--wg-ink-muted); line-height: 1.55; }
-	.panel .why b { color: var(--wg-ink); font-weight: var(--font-semibold); }
-	.callout { background: var(--wg-surface); border-radius: var(--wg-radius-tile); padding: var(--size-4-4) var(--size-4-5); display: flex; gap: var(--size-4-3); align-items: flex-start; font-size: var(--font-ui-small); color: var(--wg-ink-muted); line-height: 1.55; }
-	.callout .icon { margin-top: 2px; color: var(--wg-accent); width: 18px; height: 18px; }
-	.callout b { color: var(--wg-ink); font-weight: var(--font-semibold); }
-	.callout.warn .icon { color: var(--wg-warning); }
-	.callout.pick { background: var(--wg-accent-wash); }
-	.flow { font-family: var(--font-monospace); font-size: var(--font-ui-smaller); line-height: 1.75; color: var(--wg-ink-muted); background: var(--wg-surface); border-radius: var(--wg-radius-tile); padding: var(--size-4-5); overflow-x: auto; white-space: pre; }
-	.flow b { color: var(--wg-ink); font-weight: var(--font-medium); }
-	.flow em { color: var(--wg-accent); font-style: normal; }
-	.flow i { color: var(--wg-ink-faint); font-style: normal; }
+	.panel .why { font-size: var(--font-ui-smaller); color: var(--ink-muted); line-height: 1.55; }
+	.panel .why b { color: var(--tone-ink); font-weight: var(--font-semibold); }
+	.callout { background: var(--surface); border-radius: var(--radius-tile); padding: var(--size-4-4) var(--size-4-5); display: flex; gap: var(--size-4-3); align-items: flex-start; font-size: var(--font-ui-small); color: var(--ink-muted); line-height: 1.55; }
+	.callout .icon { margin-top: 2px; color: var(--brand); width: 18px; height: 18px; }
+	.callout b { color: var(--tone-ink); font-weight: var(--font-semibold); }
+	.callout.warn .icon { color: var(--warning); }
+	.callout.pick { background: var(--accent-wash); }
+	.flow { font-family: var(--font-monospace); font-size: var(--font-ui-smaller); line-height: 1.75; color: var(--ink-muted); background: var(--surface); border-radius: var(--radius-tile); padding: var(--size-4-5); overflow-x: auto; white-space: pre; }
+	.flow b { color: var(--tone-ink); font-weight: var(--font-medium); }
+	.flow em { color: var(--brand); font-style: normal; }
+	.flow i { color: var(--ink-faint); font-style: normal; }
 	.opens { display: flex; flex-direction: column; gap: var(--size-2-3); }
-	.open { background: var(--wg-surface); border-radius: var(--wg-radius-tile); padding: var(--size-4-3) var(--size-4-4); display: flex; gap: var(--size-4-3); align-items: baseline; font-size: var(--font-ui-small); color: var(--wg-ink-muted); line-height: 1.55; }
-	.open b { color: var(--wg-ink); font-weight: var(--font-semibold); flex: none; min-width: 196px; }
-	.opt { background: var(--wg-surface); border-radius: var(--wg-radius-tile); padding: var(--size-4-4) var(--size-4-5); display: flex; flex-direction: column; gap: var(--size-4-3); }
+	.open { background: var(--surface); border-radius: var(--radius-tile); padding: var(--size-4-3) var(--size-4-4); display: flex; gap: var(--size-4-3); align-items: baseline; font-size: var(--font-ui-small); color: var(--ink-muted); line-height: 1.55; }
+	.open b { color: var(--tone-ink); font-weight: var(--font-semibold); flex: none; min-width: 196px; }
+	.opt { background: var(--surface); border-radius: var(--radius-tile); padding: var(--size-4-4) var(--size-4-5); display: flex; flex-direction: column; gap: var(--size-4-3); }
 	.opt h4 { margin: 0; font-size: var(--font-ui-small); font-weight: var(--font-semibold); display: flex; align-items: center; gap: var(--size-4-2); }
 	.opt .verdict { margin-left: auto; }
-	.opt .cost { font-size: var(--font-ui-smaller); color: var(--wg-ink-muted); line-height: 1.55; }
-	.opt .cost b { color: var(--wg-ink); font-weight: var(--font-semibold); }
-	.opt-demo { background: var(--wg-canvas); border-radius: var(--wg-radius-tile); height: 128px; position: relative; overflow: hidden; }
+	.opt .cost { font-size: var(--font-ui-smaller); color: var(--ink-muted); line-height: 1.55; }
+	.opt .cost b { color: var(--tone-ink); font-weight: var(--font-semibold); }
+	.opt-demo { background: var(--canvas); border-radius: var(--radius-tile); height: 128px; position: relative; overflow: hidden; }
 
 	/* ==========================================================================
 	   THE WINDOW. One surface: the playground, edge to edge. The header and the
 	   sidebar FLOAT on it -- the grid runs underneath both and does not stop.
 	   ========================================================================== */
-	.win { position: relative; background: var(--wg-surface); border-radius: var(--wg-radius-card); overflow: hidden; }
+	.win { position: relative; background: var(--surface); border-radius: var(--radius-card); overflow: hidden; }
 	.win-cells { position: absolute; top: -22px; left: -26px; right: -20px; bottom: -20px; display: grid; grid-template-columns: repeat(auto-fill, var(--cell)); grid-auto-rows: var(--cell); gap: var(--gap); pointer-events: none; }
-	.win-cells i { display: block; border-radius: var(--radius-m); background: color-mix(in srgb, var(--wg-ink) 5%, transparent); }
+	.win-cells i { display: block; border-radius: var(--radius-m); background: color-mix(in srgb, var(--tone-ink) 5%, transparent); }
 
-	.wgt { position: absolute; background: var(--wg-surface); border-radius: var(--wg-radius-tile); overflow: hidden; display: flex; flex-direction: column; }
+	.wgt { position: absolute; background: var(--surface); border-radius: var(--radius-tile); overflow: hidden; display: flex; flex-direction: column; }
 	/* the one accent ring left: it marks the PLACE a widget occupies on the grid, in the
 	   re-root figure where the target is a 4x2 card inside a much larger canvas. It is the
 	   kit's selection vocabulary (.wg-kit-card.is-selected), not a separating border. */
-	.wgt.place { box-shadow: 0 0 0 2px var(--wg-accent); }
+	.wgt.place { box-shadow: 0 0 0 2px var(--brand); }
 
 	/* a capsule that hugs its content -- a bar spanning the window reads as a strip in a
 	   costume, and it is the width that made the glass look like an opaque header */
-	.win-head { position: absolute; z-index: 6; left: var(--size-4-4); top: var(--size-4-4); width: max-content; max-width: calc(100% - var(--size-4-8)); height: 46px; border-radius: var(--wg-radius-pill); display: flex; align-items: center; gap: var(--size-4-3); padding: 0 var(--size-2-3) 0 var(--size-4-4); }
+	.win-head { position: absolute; z-index: 6; left: var(--size-4-4); top: var(--size-4-4); width: max-content; max-width: calc(100% - var(--size-4-8)); height: 46px; border-radius: var(--radius-pill-widget); display: flex; align-items: center; gap: var(--size-4-3); padding: 0 var(--size-2-3) 0 var(--size-4-4); }
 	.win-head .right { margin-left: var(--size-4-2); display: flex; align-items: center; gap: var(--size-2-3); }
-	.win-side { position: absolute; z-index: 6; right: var(--size-4-4); top: var(--size-4-4); bottom: var(--size-4-4); width: 288px; border-radius: var(--wg-radius-card); padding: var(--size-4-2); display: flex; flex-direction: column; gap: var(--size-4-2); overflow: hidden; }
+	.win-side { position: absolute; z-index: 6; right: var(--size-4-4); top: var(--size-4-4); bottom: var(--size-4-4); width: 288px; border-radius: var(--radius-card); padding: var(--size-4-2); display: flex; flex-direction: column; gap: var(--size-4-2); overflow: hidden; }
 	/* a flex child shrinks by default, and a .list clips -- so an uncompressed group is
 	   the difference between a trailing note and a trailing note cut in half */
 	.win-side-scroll { display: flex; flex-direction: column; gap: var(--size-4-4); overflow-y: auto; flex: 1; min-height: 0; }
@@ -343,28 +343,28 @@
 	.win-foot { display: flex; align-items: center; padding: var(--size-2-2) var(--size-4-3) 0; }
 	.win-foot .lbl { font-family: var(--font-monospace); font-size: 11px; }
 
-	.crumbs { display: flex; align-items: center; gap: var(--size-2-2); font-size: var(--font-ui-smaller); color: var(--wg-ink-faint); min-width: 0; }
-	.crumbs button { display: inline-flex; align-items: center; gap: var(--size-2-2); padding: 3px var(--size-2-3); border-radius: var(--wg-radius-pill); cursor: pointer; color: var(--wg-ink-faint); font-size: var(--font-ui-smaller); font-weight: var(--font-medium); }
-	.crumbs button:hover { background: var(--background-modifier-hover); color: var(--wg-ink); }
-	.crumbs .here { color: var(--wg-ink); font-weight: var(--font-semibold); font-size: var(--font-ui-small); }
-	.crumbs .sep { color: var(--wg-ink-faint); }
+	.crumbs { display: flex; align-items: center; gap: var(--size-2-2); font-size: var(--font-ui-smaller); color: var(--ink-faint); min-width: 0; }
+	.crumbs button { display: inline-flex; align-items: center; gap: var(--size-2-2); padding: 3px var(--size-2-3); border-radius: var(--radius-pill-widget); cursor: pointer; color: var(--ink-faint); font-size: var(--font-ui-smaller); font-weight: var(--font-medium); }
+	.crumbs button:hover { background: var(--background-modifier-hover); color: var(--tone-ink); }
+	.crumbs .here { color: var(--tone-ink); font-weight: var(--font-semibold); font-size: var(--font-ui-small); }
+	.crumbs .sep { color: var(--ink-faint); }
 
-	.tabbar { display: flex; background: var(--wg-fill); border-radius: var(--wg-radius-pill); padding: 3px; flex: none; }
-	.win-side .tabbar, .ph-sheet .tabbar, .dside .tabbar { background: var(--wg-glass-group); }
-	.win-side .tabbar button[aria-selected="true"], .ph-sheet .tabbar button[aria-selected="true"] { background: var(--wg-raise); box-shadow: none; }
-	.tabbar button { flex: 1; font-size: var(--font-ui-smaller); font-weight: var(--font-medium); color: var(--wg-ink-muted); border-radius: var(--wg-radius-pill); height: 30px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: color var(--wg-dur-s) var(--wg-ease); }
-	.tabbar button[aria-selected="true"] { color: var(--wg-ink); font-weight: var(--font-semibold); background: var(--wg-raise); }
+	.tabbar { display: flex; background: var(--fill); border-radius: var(--radius-pill-widget); padding: 3px; flex: none; }
+	.win-side .tabbar, .ph-sheet .tabbar, .dside .tabbar { background: var(--glass-group); }
+	.win-side .tabbar button[aria-selected="true"], .ph-sheet .tabbar button[aria-selected="true"] { background: var(--raise); box-shadow: none; }
+	.tabbar button { flex: 1; font-size: var(--font-ui-smaller); font-weight: var(--font-medium); color: var(--ink-muted); border-radius: var(--radius-pill-widget); height: 30px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: color var(--dur-s) var(--ease-standard); }
+	.tabbar button[aria-selected="true"] { color: var(--tone-ink); font-weight: var(--font-semibold); background: var(--raise); }
 
-	.win-bar { position: absolute; z-index: 6; left: var(--size-4-4); bottom: var(--size-4-4); display: flex; align-items: center; gap: var(--size-2-3); border-radius: var(--wg-radius-pill); padding: var(--size-2-2); }
-	.win-bar button { display: inline-flex; align-items: center; justify-content: center; height: 28px; min-width: 28px; padding: 0 var(--size-4-2); border-radius: var(--wg-radius-pill); font-size: 11px; font-weight: var(--font-semibold); color: var(--wg-ink-muted); cursor: pointer; }
-	.win-bar button:hover { background: var(--background-modifier-hover); color: var(--wg-ink); }
-	.win-bar button[aria-pressed="true"] { background: var(--wg-raise); color: var(--wg-ink); }
-	.win-bar .div { width: 1px; height: 16px; background: var(--wg-line); }
-	.win-bar .said { padding: 0 var(--size-4-2); font-size: 11px; color: var(--wg-ink-faint); font-weight: var(--font-medium); }
+	.win-bar { position: absolute; z-index: 6; left: var(--size-4-4); bottom: var(--size-4-4); display: flex; align-items: center; gap: var(--size-2-3); border-radius: var(--radius-pill-widget); padding: var(--size-2-2); }
+	.win-bar button { display: inline-flex; align-items: center; justify-content: center; height: 28px; min-width: 28px; padding: 0 var(--size-4-2); border-radius: var(--radius-pill-widget); font-size: 11px; font-weight: var(--font-semibold); color: var(--ink-muted); cursor: pointer; }
+	.win-bar button:hover { background: var(--background-modifier-hover); color: var(--tone-ink); }
+	.win-bar button[aria-pressed="true"] { background: var(--raise); color: var(--tone-ink); }
+	.win-bar .div { width: 1px; height: 16px; background: var(--line-faint); }
+	.win-bar .said { padding: 0 var(--size-4-2); font-size: 11px; color: var(--ink-faint); font-weight: var(--font-medium); }
 
 	/* the measured rectangle, drawn where the page has to show what fit is computed against */
-	.freebox { position: absolute; z-index: 5; border-radius: var(--wg-radius-tile); box-shadow: inset 0 0 0 1.6px var(--wg-accent); pointer-events: none; }
-	.freetag { position: absolute; z-index: 7; font-size: 10px; font-weight: 600; color: var(--wg-accent); }
+	.freebox { position: absolute; z-index: 5; border-radius: var(--radius-tile); box-shadow: inset 0 0 0 1.6px var(--brand); pointer-events: none; }
+	.freetag { position: absolute; z-index: 7; font-size: 10px; font-weight: 600; color: var(--brand); }
 
 	/* -- the kanban drawn inside the widget ------------------------------------ */
 	.kb { font-size: var(--font-ui-small); display: flex; flex-direction: column; height: 100%; }
@@ -372,69 +372,69 @@
 	.kb-top h5 { margin: 0; font-size: var(--font-ui-medium); font-weight: var(--font-semibold); letter-spacing: -0.01em; }
 	.kb-top .right { margin-left: auto; display: flex; align-items: center; gap: var(--size-4-2); }
 	.kb-cols { display: flex; gap: var(--size-4-2); padding: 0 var(--size-4-3) var(--size-4-3); flex: 1; min-height: 0; }
-	.kcol { flex: 1; background: var(--wg-fill); border-radius: var(--wg-radius-tile); padding: var(--wg-plate-pad); display: flex; flex-direction: column; gap: var(--size-2-3); min-width: 0; }
+	.kcol { flex: 1; background: var(--fill); border-radius: var(--radius-tile); padding: var(--plate-pad); display: flex; flex-direction: column; gap: var(--size-2-3); min-width: 0; }
 	.kcol-head { display: flex; align-items: center; gap: var(--size-4-2); padding: var(--size-2-2) var(--size-4-2); font-size: var(--font-ui-smaller); font-weight: var(--font-semibold); }
-	.kcol-head .n { margin-left: auto; color: var(--wg-ink-faint); font-weight: var(--font-medium); }
-	.kcol.new { box-shadow: inset 0 0 0 2px var(--wg-accent); }
-	.kcard { background: var(--wg-surface); border-radius: var(--wg-radius-item); padding: var(--size-4-2) var(--size-4-3); display: flex; flex-direction: column; gap: var(--size-2-3); }
+	.kcol-head .n { margin-left: auto; color: var(--ink-faint); font-weight: var(--font-medium); }
+	.kcol.new { box-shadow: inset 0 0 0 2px var(--brand); }
+	.kcard { background: var(--surface); border-radius: var(--radius-item); padding: var(--size-4-2) var(--size-4-3); display: flex; flex-direction: column; gap: var(--size-2-3); }
 	.kcard .t { font-size: var(--font-ui-smaller); font-weight: var(--font-semibold); line-height: 1.3; }
 	.kcard .m { display: flex; align-items: center; gap: var(--size-2-3); }
-	.kghost { border-radius: var(--wg-radius-item); background: var(--background-modifier-hover); height: 46px; }
+	.kghost { border-radius: var(--radius-item); background: var(--background-modifier-hover); height: 46px; }
 	.avatars { display: flex; align-items: center; flex: none; }
-	.avatar { width: 22px; height: 22px; border-radius: var(--wg-radius-pill); display: grid; place-content: center; font-size: 10px; font-weight: var(--font-semibold); box-shadow: 0 0 0 2px var(--wg-surface); margin-left: -5px; flex: none; }
+	.avatar { width: 22px; height: 22px; border-radius: var(--radius-pill-widget); display: grid; place-content: center; font-size: 10px; font-weight: var(--font-semibold); box-shadow: 0 0 0 2px var(--surface); margin-left: -5px; flex: none; }
 	.avatar:first-child { margin-left: 0; }
-	.av-a { background: var(--wg-accent-wash); color: var(--wg-accent); }
-	.av-b { background: var(--wg-success-wash); color: var(--wg-success); }
-	.av-c { background: var(--wg-warning-wash); color: var(--wg-warning); }
+	.av-a { background: var(--accent-wash); color: var(--brand); }
+	.av-b { background: var(--success-wash); color: var(--success); }
+	.av-c { background: var(--warning-wash); color: var(--warning); }
 
 	/* -- the motion, drawn as frames ------------------------------------------- */
 	.seq { display: flex; gap: var(--size-4-3); min-width: 1180px; }
 	.seqcard { flex: 1; display: flex; flex-direction: column; gap: var(--size-4-2); }
-	.mini { position: relative; background: var(--wg-canvas); border-radius: var(--wg-radius-tile); height: 158px; overflow: hidden; }
+	.mini { position: relative; background: var(--canvas); border-radius: var(--radius-tile); height: 158px; overflow: hidden; }
 	.mini .dim { position: absolute; inset: 0; background: rgba(0,0,0,0.28); opacity: 0; }
 	.mini.lit .dim { opacity: 1; }
-	.mtile { position: absolute; background: var(--wg-surface); border-radius: 10px; display: flex; flex-direction: column; gap: 3px; padding: 6px; overflow: hidden; }
-	.mtile .bar { height: 4px; border-radius: 999px; background: var(--wg-fill-hover); }
+	.mtile { position: absolute; background: var(--surface); border-radius: 10px; display: flex; flex-direction: column; gap: 3px; padding: 6px; overflow: hidden; }
+	.mtile .bar { height: 4px; border-radius: 999px; background: var(--fill-hover); }
 	.mtile .bar.w6 { width: 60%; } .mtile .bar.w4 { width: 40%; } .mtile .bar.w8 { width: 80%; }
 	.mtile.hero { z-index: 3; }
-	.mtile .gear { position: absolute; top: 4px; right: 4px; width: 14px; height: 14px; border-radius: 999px; background: var(--wg-fill); color: var(--wg-ink-muted); display: grid; place-content: center; }
+	.mtile .gear { position: absolute; top: 4px; right: 4px; width: 14px; height: 14px; border-radius: 999px; background: var(--fill); color: var(--ink-muted); display: grid; place-content: center; }
 	.mtile .gear .icon { width: 9px; height: 9px; }
-	.mtile .gear.pressed { background: var(--wg-accent); color: var(--wg-on-accent); transform: scale(0.955); }
-	.mtile .side { position: absolute; top: 6px; right: 6px; bottom: 6px; width: 62px; border-radius: 8px; background: var(--wg-fill); display: flex; flex-direction: column; gap: 4px; padding: 5px; }
-	.mtile .side .r { height: 7px; border-radius: 999px; background: var(--wg-surface); }
-	.mtile .side .r.tabs { background: var(--wg-fill-hover); height: 11px; }
-	.seqcard .why { font-size: var(--font-ui-smaller); color: var(--wg-ink-muted); line-height: 1.5; }
-	.seqcard .why b { color: var(--wg-ink); font-weight: var(--font-semibold); }
+	.mtile .gear.pressed { background: var(--brand); color: var(--on-accent-widget); transform: scale(0.955); }
+	.mtile .side { position: absolute; top: 6px; right: 6px; bottom: 6px; width: 62px; border-radius: 8px; background: var(--fill); display: flex; flex-direction: column; gap: 4px; padding: 5px; }
+	.mtile .side .r { height: 7px; border-radius: 999px; background: var(--surface); }
+	.mtile .side .r.tabs { background: var(--fill-hover); height: 11px; }
+	.seqcard .why { font-size: var(--font-ui-smaller); color: var(--ink-muted); line-height: 1.5; }
+	.seqcard .why b { color: var(--tone-ink); font-weight: var(--font-semibold); }
 
 	/* -- live demo -------------------------------------------------------------- */
-	.demo { position: relative; background: var(--wg-canvas); border-radius: var(--wg-radius-tile); height: 300px; overflow: hidden; }
-	.demo .dim { position: absolute; inset: 0; background: rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: opacity var(--wg-dur-m) var(--wg-ease); z-index: 2; }
+	.demo { position: relative; background: var(--canvas); border-radius: var(--radius-tile); height: 300px; overflow: hidden; }
+	.demo .dim { position: absolute; inset: 0; background: rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: opacity var(--dur-m) var(--ease-standard); z-index: 2; }
 	.demo.open .dim { opacity: 1; }
-	.dtile { position: absolute; top: 0; left: 0; background: var(--wg-surface); border-radius: var(--wg-radius-tile); overflow: hidden; display: flex; flex-direction: column; padding: var(--size-4-2); gap: var(--size-2-3); }
-	.dtile .bar { height: 6px; border-radius: 999px; background: var(--wg-fill-hover); }
+	.dtile { position: absolute; top: 0; left: 0; background: var(--surface); border-radius: var(--radius-tile); overflow: hidden; display: flex; flex-direction: column; padding: var(--size-4-2); gap: var(--size-2-3); }
+	.dtile .bar { height: 6px; border-radius: 999px; background: var(--fill-hover); }
 	.dtile .bar.w6 { width: 60%; } .dtile .bar.w4 { width: 40%; }
 	/* THE BOX MOVES, NOT A SCALE -- transform + width + height, as styles.css:287 already
 	   does for a tile. A scaled ancestor would break every fixed-position popover inside
 	   the widget AND the backdrop-filter on both floating panels. */
-	.dtile.travels { transition: transform var(--wg-dur-m) var(--wg-spring), width var(--wg-dur-m) var(--wg-spring), height var(--wg-dur-m) var(--wg-spring), border-radius var(--wg-dur-m) var(--wg-spring); z-index: 3; }
-	.demo.open .dtile.travels { border-radius: var(--wg-radius-card); }
+	.dtile.travels { transition: transform var(--dur-m) var(--spring), width var(--dur-m) var(--spring), height var(--dur-m) var(--spring), border-radius var(--dur-m) var(--spring); z-index: 3; }
+	.demo.open .dtile.travels { border-radius: var(--radius-card); }
 	.dtile .gear { position: absolute; top: 8px; right: 8px; z-index: 2; }
-	.dtile .dside { position: absolute; top: var(--size-4-2); right: var(--size-4-2); bottom: var(--size-4-2); width: 172px; border-radius: var(--wg-radius-tile); padding: var(--size-4-2); display: flex; flex-direction: column; gap: var(--size-4-2); opacity: 0; pointer-events: none; transition: opacity var(--wg-dur-s) var(--wg-ease); }
+	.dtile .dside { position: absolute; top: var(--size-4-2); right: var(--size-4-2); bottom: var(--size-4-2); width: 172px; border-radius: var(--radius-tile); padding: var(--size-4-2); display: flex; flex-direction: column; gap: var(--size-4-2); opacity: 0; pointer-events: none; transition: opacity var(--dur-s) var(--ease-standard); }
 	.demo.open .dtile .dside { opacity: 1; pointer-events: auto; transition-delay: 80ms; }
-	.dside .r { height: 26px; border-radius: var(--wg-radius-item); background: var(--wg-glass-group); }
+	.dside .r { height: 26px; border-radius: var(--radius-item); background: var(--glass-group); }
 
 	/* -- phone ------------------------------------------------------------------ */
 	.phone { width: 340px; flex: none; }
-	.phone-win { position: relative; height: 560px; background: var(--wg-surface); border-radius: var(--wg-radius-card); overflow: hidden; }
-	.ph-head { position: absolute; z-index: 6; left: var(--size-4-2); right: var(--size-4-2); top: var(--size-4-2); height: 40px; border-radius: var(--wg-radius-pill); display: flex; align-items: center; gap: var(--size-4-2); padding: 0 var(--size-2-3) 0 var(--size-4-3); }
-	.ph-sheet { position: absolute; z-index: 6; left: var(--size-4-2); right: var(--size-4-2); bottom: var(--size-4-2); border-radius: var(--wg-radius-card); padding: var(--size-4-2); display: flex; flex-direction: column; gap: var(--size-4-3); }
-	.ph-grip { width: 36px; height: 4px; border-radius: 999px; background: var(--wg-ink-faint); opacity: 0.4; margin: 2px auto var(--size-2-2); }
-	.ph-bar { position: absolute; z-index: 5; left: var(--size-4-2); border-radius: var(--wg-radius-pill); padding: var(--size-2-2); display: flex; gap: var(--size-2-3); }
-	.ph-bar button { height: 26px; min-width: 26px; padding: 0 var(--size-4-2); border-radius: var(--wg-radius-pill); font-size: 11px; font-weight: var(--font-semibold); color: var(--wg-ink-muted); display: inline-flex; align-items: center; justify-content: center; }
-	.ph-bar button[aria-pressed="true"] { background: var(--wg-raise); color: var(--wg-ink); }
+	.phone-win { position: relative; height: 560px; background: var(--surface); border-radius: var(--radius-card); overflow: hidden; }
+	.ph-head { position: absolute; z-index: 6; left: var(--size-4-2); right: var(--size-4-2); top: var(--size-4-2); height: 40px; border-radius: var(--radius-pill-widget); display: flex; align-items: center; gap: var(--size-4-2); padding: 0 var(--size-2-3) 0 var(--size-4-3); }
+	.ph-sheet { position: absolute; z-index: 6; left: var(--size-4-2); right: var(--size-4-2); bottom: var(--size-4-2); border-radius: var(--radius-card); padding: var(--size-4-2); display: flex; flex-direction: column; gap: var(--size-4-3); }
+	.ph-grip { width: 36px; height: 4px; border-radius: 999px; background: var(--ink-faint); opacity: 0.4; margin: 2px auto var(--size-2-2); }
+	.ph-bar { position: absolute; z-index: 5; left: var(--size-4-2); border-radius: var(--radius-pill-widget); padding: var(--size-2-2); display: flex; gap: var(--size-2-3); }
+	.ph-bar button { height: 26px; min-width: 26px; padding: 0 var(--size-4-2); border-radius: var(--radius-pill-widget); font-size: 11px; font-weight: var(--font-semibold); color: var(--ink-muted); display: inline-flex; align-items: center; justify-content: center; }
+	.ph-bar button[aria-pressed="true"] { background: var(--raise); color: var(--tone-ink); }
 
 	.pairthemes { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--size-4-3); }
-	.pairthemes > div { border-radius: var(--wg-radius-card); padding: var(--size-4-4); display: flex; flex-direction: column; gap: var(--size-4-3); }
+	.pairthemes > div { border-radius: var(--radius-card); padding: var(--size-4-4); display: flex; flex-direction: column; gap: var(--size-4-3); }
 
 	@media (max-width: 1080px) {
 		.win-head { right: var(--size-4-4); }
@@ -494,7 +494,7 @@
 						<div class="mtile" style="left: 166px; top: 10px; width: 46px; height: 128px;"><span class="bar w8"></span><span class="bar w6"></span><span class="bar w8"></span></div>
 						<div class="dim"></div>
 					</div>
-					<p class="why">The gear answers under the finger &#8212; <code>scale(0.955)</code> over <code>--wg-dur-press</code>. Nothing else has happened yet.</p>
+					<p class="why">The gear answers under the finger &#8212; <code>scale(0.955)</code> over <code>--dur-press</code>. Nothing else has happened yet.</p>
 				</div>
 
 				<div class="seqcard">
@@ -524,7 +524,7 @@
 							</span>
 						</div>
 					</div>
-					<p class="why">The box has stopped, and the widget has been placed at the scale that fits the <b>free area</b>. Only now do the panels <b>fade</b> in &#8212; opacity on <code>--wg-ease</code>, delayed 80&nbsp;ms, the beat the kit's popover uses for <code>.pop-inner</code>.</p>
+					<p class="why">The box has stopped, and the widget has been placed at the scale that fits the <b>free area</b>. Only now do the panels <b>fade</b> in &#8212; opacity on <code>--ease-standard</code>, delayed 80&nbsp;ms, the beat the kit's popover uses for <code>.pop-inner</code>.</p>
 				</div>
 
 				<div class="seqcard">
@@ -539,7 +539,7 @@
 						<div class="mtile" style="left: 166px; top: 10px; width: 46px; height: 128px;"><span class="bar w8"></span><span class="bar w6"></span><span class="bar w8"></span></div>
 						<div class="dim"></div>
 					</div>
-					<p class="why">The panels fade first, then the box returns on <code>--wg-ease</code>, not the spring. The kit's rule: <b>a panel folding away that bounces reads as indecision.</b></p>
+					<p class="why">The panels fade first, then the box returns on <code>--ease-standard</code>, not the spring. The kit's rule: <b>a panel folding away that bounces reads as indecision.</b></p>
 				</div>
 
 			</div>
@@ -548,7 +548,7 @@
 		<div class="grid3">
 			<div class="panel">
 				<h4>The tile's own box transition<span class="lbl">reused</span></h4>
-				<p class="why"><code>styles.css:287</code> already transitions a tile's <b>transform, width and height</b>. That is the whole mechanism &#8212; the settings grow is the same transition given a bigger target. Two changes proposed: <b>320&nbsp;ms on <code>--wg-spring</code></b> instead of 170&nbsp;ms on a private curve, because this box travels much further than a resize does and should overshoot once on the way out.</p>
+				<p class="why"><code>styles.css:287</code> already transitions a tile's <b>transform, width and height</b>. That is the whole mechanism &#8212; the settings grow is the same transition given a bigger target. Two changes proposed: <b>320&nbsp;ms on <code>--spring</code></b> instead of 170&nbsp;ms on a private curve, because this box travels much further than a resize does and should overshoot once on the way out.</p>
 			</div>
 			<div class="panel">
 				<h4>Where it lands<span class="lbl">reused</span></h4>
@@ -725,7 +725,7 @@
 
 				<div class="pop" style="position: absolute; z-index: 8; left: 864px; top: 371px; width: 272px;">
 					<div class="pop-inner">
-						<div class="pop-field"><svg class="icon" viewBox="0 0 16 16" style="color: var(--wg-ink-faint)"><circle cx="7.4" cy="7.4" r="4.6"/><path d="M11 11l2.8 2.8"/></svg><span class="ph">Keyword</span></div>
+						<div class="pop-field"><svg class="icon" viewBox="0 0 16 16" style="color: var(--ink-faint)"><circle cx="7.4" cy="7.4" r="4.6"/><path d="M11 11l2.8 2.8"/></svg><span class="ph">Keyword</span></div>
 						<button class="pop-item" aria-checked="true"><span class="pname">To Do</span><svg class="icon tickmark" viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8"/></svg></button>
 						<button class="pop-item" aria-checked="true"><span class="pname">Doing</span><svg class="icon tickmark" viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8"/></svg></button>
 						<button class="pop-item" aria-checked="true"><span class="pname">Review</span><svg class="icon tickmark" viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8"/></svg></button>
@@ -944,22 +944,22 @@
 			</div>
 			<div class="panel">
 				<h4>The tint is a no&#8209;op in light, a real step in dark<span class="lbl">arithmetic</span></h4>
-				<p class="why"><code>--wg-glass-panel</code> is <code>color-mix(--wg-raise 78%, transparent)</code>, and <code>--wg-raise</code> is <code>#ffffff 12%</code> over the note's background. In a light vault that is white into white &#8212; deliberately, because the raise exists to <b>lift a panel in dark</b>. So in dark the sidebar visibly rises off the canvas with nothing added; in light it does not, and the next card is why that is survivable.</p>
+				<p class="why"><code>--glass-panel</code> is <code>color-mix(--raise 78%, transparent)</code>, and <code>--raise</code> is <code>#ffffff 12%</code> over the note's background. In a light vault that is white into white &#8212; deliberately, because the raise exists to <b>lift a panel in dark</b>. So in dark the sidebar visibly rises off the canvas with nothing added; in light it does not, and the next card is why that is survivable.</p>
 			</div>
 			<div class="panel">
 				<h4>The hairline never fails<span class="lbl">any theme</span></h4>
-				<p class="why"><code>--wg-glass-edge</code> is <code>inset 0 0 0 1px</code> of the <b>ink</b> at 12%, not of a background colour. An ink step survives a white canvas, a dark one and a themed one alike, which is why it is the one part of the recipe that holds everywhere &#8212; and why no drop shadow is needed to make a panel read as floating.</p>
+				<p class="why"><code>--glass-edge</code> is <code>inset 0 0 0 1px</code> of the <b>ink</b> at 12%, not of a background colour. An ink step survives a white canvas, a dark one and a themed one alike, which is why it is the one part of the recipe that holds everywhere &#8212; and why no drop shadow is needed to make a panel read as floating.</p>
 			</div>
 		</div>
 
 		<div class="callout pick">
 			<svg class="icon" viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8"/></svg>
-			<p><b>One panel, and the groups inside it are structure &#8212; which needs a fill the kit did not have.</b> A grouped list normally takes <code>--wg-fill</code>, a small step from <code>--background-primary</code>. Inside a translucent panel <b>there is no solid background to step from</b>: over a white canvas the panel and the fill are both white, the group loses its edge against the panel, and what is left is three cards floating independently &#8212; which is the thing that stopped it reading as our system. So a group on glass steps toward the <b>ink</b> instead, from the panel's own raised colour: <code>--wg-glass-group = color-mix(--wg-ink 6%, --wg-raise)</code>. Darker in light, lighter in dark, a constant step either way, and <b>opaque</b>, because it carries text and a 22% ghost of a passing card behind an 11&nbsp;px label is dirty (a 78% tint over a glyph is about <code>#c7c7c7</code>, 1.55:1). The panel keeps its real job &#8212; <b>the frame and the gutters between the groups</b>, where the widget shows through and tells you it is still moving under there.</p>
+			<p><b>One panel, and the groups inside it are structure &#8212; which needs a fill the kit did not have.</b> A grouped list normally takes <code>--fill</code>, a small step from <code>--background-primary</code>. Inside a translucent panel <b>there is no solid background to step from</b>: over a white canvas the panel and the fill are both white, the group loses its edge against the panel, and what is left is three cards floating independently &#8212; which is the thing that stopped it reading as our system. So a group on glass steps toward the <b>ink</b> instead, from the panel's own raised colour: <code>--glass-group = color-mix(--tone-ink 6%, --raise)</code>. Darker in light, lighter in dark, a constant step either way, and <b>opaque</b>, because it carries text and a 22% ghost of a passing card behind an 11&nbsp;px label is dirty (a 78% tint over a glyph is about <code>#c7c7c7</code>, 1.55:1). The panel keeps its real job &#8212; <b>the frame and the gutters between the groups</b>, where the widget shows through and tells you it is still moving under there.</p>
 		</div>
 
 		<div class="callout">
 			<svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6"/><path d="M8 5.2v3.4M8 10.8v.1"/></svg>
-			<p><b>One edge on the whole window, and no shadow anywhere.</b> The kit's first law is <b>fill, never outline</b> &#8212; a surface is told apart by what it is filled with, and a line only ever divides two rows of one group. So the panel carries <code>--wg-glass-edge</code> and <b>nothing inside it carries a second one</b>: the group is a different fill on the panel, a row is not a surface at all, and the only line in the sidebar is the hairline between two rows. A widget on the canvas is told from the canvas by the <b>grid it covers</b>, not by a ring. Where an earlier draft of this page reached for a border, the honest reading was that one of the two surfaces had the wrong fill &#8212; and that is what got fixed, not the border weight.</p>
+			<p><b>One edge on the whole window, and no shadow anywhere.</b> The kit's first law is <b>fill, never outline</b> &#8212; a surface is told apart by what it is filled with, and a line only ever divides two rows of one group. So the panel carries <code>--glass-edge</code> and <b>nothing inside it carries a second one</b>: the group is a different fill on the panel, a row is not a surface at all, and the only line in the sidebar is the hairline between two rows. A widget on the canvas is told from the canvas by the <b>grid it covers</b>, not by a ring. Where an earlier draft of this page reached for a border, the honest reading was that one of the two surfaces had the wrong fill &#8212; and that is what got fixed, not the border weight.</p>
 		</div>
 	</section>
 
@@ -1030,7 +1030,7 @@
 						</div>
 						<div class="wgt" style="left: 84px; top: 62px; width: 330px; height: 160px;"><div class="kb"><div class="kb-cols" style="padding: var(--size-4-2);"><div class="kcol"><div class="kcol-head">To Do<span class="n">6</span></div><div class="kcard"><span class="t">Rewrite the filter panel</span><span class="m"><span class="pilltag err tiny">P1</span></span></div></div><div class="kcol"><div class="kcol-head">Doing<span class="n">3</span></div><div class="kcard"><span class="t">Named paths</span><span class="m"><span class="pilltag warn tiny">P2</span></span></div></div><div class="kcol"><div class="kcol-head">Done<span class="n">15</span></div><div class="kcard"><span class="t">Release a claim</span><span class="m"><span class="pilltag ok tiny">Done</span></span></div></div></div></div></div>
 						<div class="win-head glass" style="left: 10px; top: 10px; right: 58px; height: 38px; padding: 0 var(--size-4-3);"><div class="crumbs"><span class="here">Kanban board</span></div></div>
-						<button class="iconbtn iconbtn-s glass" style="position: absolute; z-index: 6; right: 10px; top: 10px; width: 38px; height: 38px; background: var(--wg-glass-panel);" aria-label="Bring the settings back">
+						<button class="iconbtn iconbtn-s glass" style="position: absolute; z-index: 6; right: 10px; top: 10px; width: 38px; height: 38px; background: var(--glass-panel);" aria-label="Bring the settings back">
 							<svg class="icon" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4"/><path d="M3 3v10"/></svg>
 						</button>
 					</div>
@@ -1063,8 +1063,8 @@
 			<div class="opt">
 				<h4>1 &#183; Shrink to its minimum<span class="pilltag err verdict">Shows the wrong thing</span></h4>
 				<div class="opt-demo" style="display: grid; place-items: center;">
-					<div style="width: 84px; height: 84px; border-radius: var(--wg-radius-tile); background: var(--wg-surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-						<span style="width: 26px; height: 26px; border-radius: 999px; background: var(--wg-fill); color: var(--wg-ink-muted); display: grid; place-content: center; font-size: 13px; font-weight: 600;">K</span>
+					<div style="width: 84px; height: 84px; border-radius: var(--radius-tile); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+						<span style="width: 26px; height: 26px; border-radius: 999px; background: var(--fill); color: var(--ink-muted); display: grid; place-content: center; font-size: 13px; font-weight: 600;">K</span>
 						<span class="lbl">Open</span>
 					</div>
 				</div>
@@ -1074,10 +1074,10 @@
 			<div class="opt">
 				<h4>2 &#183; CSS scale<span class="pilltag warn verdict">Breaks the panels too</span></h4>
 				<div class="opt-demo" style="display: grid; place-items: center;">
-					<div style="width: 200px; height: 122px; transform: scale(0.55); background: var(--wg-surface); border-radius: var(--wg-radius-tile); padding: 10px; display: flex; flex-direction: column; gap: 6px;">
-						<span style="height: 8px; width: 60%; border-radius: 999px; background: var(--wg-fill-hover);"></span>
-						<span style="height: 8px; width: 80%; border-radius: 999px; background: var(--wg-fill-hover);"></span>
-						<span style="height: 8px; width: 45%; border-radius: 999px; background: var(--wg-fill-hover);"></span>
+					<div style="width: 200px; height: 122px; transform: scale(0.55); background: var(--surface); border-radius: var(--radius-tile); padding: 10px; display: flex; flex-direction: column; gap: 6px;">
+						<span style="height: 8px; width: 60%; border-radius: 999px; background: var(--fill-hover);"></span>
+						<span style="height: 8px; width: 80%; border-radius: 999px; background: var(--fill-hover);"></span>
+						<span style="height: 8px; width: 45%; border-radius: 999px; background: var(--fill-hover);"></span>
 					</div>
 				</div>
 				<p class="cost">The layout is untouched, which is the attraction. Two costs, and the second is not about legibility: <b>a transformed ancestor re&#8209;parents every <code>position: fixed</code> descendant to itself and disables <code>backdrop-filter</code></b>. In this window that hits twice &#8212; the widget's popovers land wrong, and the two floating panels stop being glass. At 0.55 a 42&nbsp;px control is also 23&nbsp;px, under any published touch target.</p>
@@ -1086,10 +1086,10 @@
 			<div class="opt">
 				<h4>3 &#183; Pan and zoom, like a canvas<span class="pilltag ok verdict">Recommended</span></h4>
 				<div class="opt-demo" style="position: relative;">
-					<div style="position: absolute; left: 14px; top: 12px; width: 210px; height: 104px; background: var(--wg-surface); border-radius: var(--wg-radius-tile); padding: 10px; display: flex; gap: 6px;">
-						<span style="flex:1; border-radius: 10px; background: var(--wg-fill);"></span>
-						<span style="flex:1; border-radius: 10px; background: var(--wg-fill);"></span>
-						<span style="flex:1; border-radius: 10px; background: var(--wg-fill);"></span>
+					<div style="position: absolute; left: 14px; top: 12px; width: 210px; height: 104px; background: var(--surface); border-radius: var(--radius-tile); padding: 10px; display: flex; gap: 6px;">
+						<span style="flex:1; border-radius: 10px; background: var(--fill);"></span>
+						<span style="flex:1; border-radius: 10px; background: var(--fill);"></span>
+						<span style="flex:1; border-radius: 10px; background: var(--fill);"></span>
 					</div>
 					<div style="position: absolute; right: 10px; bottom: 10px;" class="pilltag tiny">1:1</div>
 				</div>
@@ -1441,7 +1441,7 @@
 							<button class="pop-item" aria-checked="true"><span class="pname">OrbiTask &#183; Task card</span><svg class="icon tickmark" viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8"/></svg></button>
 							<button class="pop-item" aria-checked="false"><span class="pname">OrbiTask &#183; Compact card</span><svg class="icon tickmark" viewBox="0 0 16 16"><path d="M3.4 8.4l3 3 6.2-6.8"/></svg></button>
 							<div class="pop-sep"></div>
-							<button class="pop-item" style="color: var(--wg-ink-muted)"><span class="pname">Back to the widget's default</span></button>
+							<button class="pop-item" style="color: var(--ink-muted)"><span class="pname">Back to the widget's default</span></button>
 						</div>
 					</div>
 					<div class="list">
@@ -1744,7 +1744,7 @@
 		<div class="head">
 			<span class="lbl">Both themes, at once</span>
 			<h2>It holds either way round &#8212; and dark is where the glass wakes up</h2>
-			<p class="note">The same window in both, with a card passing under the sidebar in each. In light the panel's tint is a no&#8209;op and the hairline is carrying it; in dark <code>--wg-raise</code> is a real step, so the panel visibly <b>lifts</b> off the canvas with nothing added. The grid squares are 5% of the ink and invert on their own. Neither casts a shadow.</p>
+			<p class="note">The same window in both, with a card passing under the sidebar in each. In light the panel's tint is a no&#8209;op and the hairline is carrying it; in dark <code>--raise</code> is a real step, so the panel visibly <b>lifts</b> off the canvas with nothing added. The grid squares are 5% of the ink and invert on their own. Neither casts a shadow.</p>
 		</div>
 
 		<div class="pairthemes">
@@ -1845,9 +1845,9 @@
 			<div class="open"><b>Hairlines are opt-in, not default</b><span>Only a genuine list of like rows gets them: the four abilities, the filter clauses, the views, the board paths. A group of two or three unlike controls gets none. If that ever makes two rows hard to tell apart, the answer is a different fill, not the line back.</span></div>
 			<div class="open"><b>The value pickers are the filter panel's popover</b><span>Press a row and a panel takes its place with the choices in it, a keyword field, and Reset / Apply &#8212; the shape <code>widgets/@orbitask/filter-panel</code> already ships, on the kit's <code>Popover</code>. The earlier inline expansion is gone, and with it the row that changed material when it opened.</span></div>
 			<div class="open"><b>The header is a capsule, not a full-width bar</b><span>Same blur, same hairline, less canvas taken. macOS can afford the full width because its content scrolls on one axis past a fixed top edge; this canvas pans on two and has no such edge. Widening it back is one property.</span></div>
-			<div class="open"><b>Exactly one edge exists, on the panel</b><span>Law one is <b>fill, never outline</b>. An earlier draft of this page had the panel outlined, each group inside it outlined, and rows divided inside those &#8212; three edges stacked. All of them are gone except <code>--wg-glass-edge</code> on the outermost floating panel, which a translucent surface over moving content genuinely needs. Where a border was doing the separating, the fix was the fill underneath it, not a thinner line.</span></div>
-			<div class="open"><b>A group on glass gets a new token</b><span>The kit had no fill calibrated against a translucent surface. <code>--wg-glass-group</code> is <code>color-mix(--wg-ink 6%, --wg-raise)</code> &#8212; a step toward the ink from the panel's own colour, so it holds in both themes and over any canvas. It belongs in <code>styles.css</code> beside the other three glass tokens if this is approved. The percentage is the arguable part; that it must step from the ink and not from a background is not.</span></div>
-			<div class="open"><b>Text never sits on the glass</b><span>The floating panels are glass; every grouped list inside them is opaque <code>--wg-raise</code>. The arithmetic is in the glass section: a 78% tint over a glyph is a 1.55:1 ghost, fine behind a 14&nbsp;px label, dirty behind an 11&nbsp;px one.</span></div>
+			<div class="open"><b>Exactly one edge exists, on the panel</b><span>Law one is <b>fill, never outline</b>. An earlier draft of this page had the panel outlined, each group inside it outlined, and rows divided inside those &#8212; three edges stacked. All of them are gone except <code>--glass-edge</code> on the outermost floating panel, which a translucent surface over moving content genuinely needs. Where a border was doing the separating, the fix was the fill underneath it, not a thinner line.</span></div>
+			<div class="open"><b>A group on glass gets a new token</b><span>The kit had no fill calibrated against a translucent surface. <code>--glass-group</code> is <code>color-mix(--tone-ink 6%, --raise)</code> &#8212; a step toward the ink from the panel's own colour, so it holds in both themes and over any canvas. It belongs in <code>styles.css</code> beside the other three glass tokens if this is approved. The percentage is the arguable part; that it must step from the ink and not from a background is not.</span></div>
+			<div class="open"><b>Text never sits on the glass</b><span>The floating panels are glass; every grouped list inside them is opaque <code>--raise</code>. The arithmetic is in the glass section: a 78% tint over a glyph is a 1.55:1 ghost, fine behind a 14&nbsp;px label, dirty behind an 11&nbsp;px one.</span></div>
 			<div class="open"><b>The header stops short of the sidebar</b><span>Two floating panels that tile the top&#8209;right corner, rather than one bar running the full width behind the other. The Apple Maps alternative &#8212; a small title capsule left, a controls capsule right &#8212; is equally defensible and gives back more canvas.</span></div>
 			<div class="open"><b>The legibility floor is 0.7</b><span>You did not name one, and the fit arithmetic needs one or a wide widget opens at a scale nobody can read. 0.7 puts the kit's smallest 12&nbsp;px type at 8.4&nbsp;px. Below it the window starts <b>panned</b> instead, and says so in the bar. The number is arguable; that there must be one is not.</span></div>
 			<div class="open"><b>The canvas is look&#8209;only below 1:1</b><span>The strongest call on the page. It costs the ability to press a control in a zoomed&#8209;out widget; it buys a canvas where popovers, blurs and touch targets are never broken, and makes "press to go 1:1" one obvious gesture rather than a mode to find.</span></div>
@@ -1855,7 +1855,7 @@
 			<div class="open"><b>The sidebar folds to a capsule</b><span>An escape that costs one control in the zoom bar. Without it there is no way to see the whole of a widget that exactly fills the free area, and folding also grows the free area so Fit recomputes.</span></div>
 			<div class="open"><b>Remove stays on the tile, not in the header</b><span>Removing acts on the board, not on the configuration, and a bin beside a Done control in one small capsule is the one mis&#8209;press you cannot undo. If it must be here it goes alone at the foot of the last tab.</span></div>
 			<div class="open"><b>The phone gets a bottom sheet, not a sidebar</b><span>A right&#8209;hand panel and a 375&nbsp;px screen cannot both exist. The idea survives &#8212; one canvas, floating chrome &#8212; but the second panel moves to where a thumb is, the free area is measured against the sheet's peek height, and the clamp turns vertical.</span></div>
-			<div class="open"><b>The grow is 320&nbsp;ms on the spring</b><span>The tile transition is 170&nbsp;ms on a private curve today, tuned for a resize of a few cells. This box crosses the board, so it takes <code>--wg-dur-m</code> and <code>--wg-spring</code> &#8212; and closing takes <code>--wg-ease</code>, per the kit's rule about panels that bounce shut.</span></div>
+			<div class="open"><b>The grow is 320&nbsp;ms on the spring</b><span>The tile transition is 170&nbsp;ms on a private curve today, tuned for a resize of a few cells. This box crosses the board, so it takes <code>--dur-m</code> and <code>--spring</code> &#8212; and closing takes <code>--ease-standard</code>, per the kit's rule about panels that bounce shut.</span></div>
 			<div class="open"><b>"Link them" is offered, never required</b><span>The alternative was to make board paths a first&#8209;class thing you set up before adding widgets &#8212; a concept tax charged to everybody to solve a problem some boards never have. The promotion gesture charges only the boards that have it.</span></div>
 			<div class="open"><b>Board paths are per board</b><span>Not per vault. A board is the unit that gets copied and shared, and a vault&#8209;wide constant would make a copied board depend on something invisible that travelled with it.</span></div>
 			<div class="open"><b>Uppercase captions are gone</b><span>You asked for it and I took it further than the three you named: every mono, tracked, uppercase label on this page &#8212; section eyebrows and popover headers included &#8212; is plain sentence case in the interface font. Nothing is shouted.</span></div>

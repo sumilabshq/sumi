@@ -12,7 +12,7 @@ export function EmblemSkeleton({ size, shape, style, ...props }: SkeletonPartPro
 			{...props}
 			data-kind="emblem"
 			data-shape={wornWord(shape, EMBLEM_SHAPE_WORD)}
-			style={{ "--wg-kit-skeleton-size": `${px}px`, ...style }}
+			style={{ "--skeleton-size": `${px}px`, ...style }}
 		/>
 	);
 }

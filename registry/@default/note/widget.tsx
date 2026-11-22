@@ -3,7 +3,7 @@ import { Card } from "widgetarium/kit";
 
 const STYLE = `
 .wgi-note {
-	border-left: 3px solid var(--wg-kit-accent);
+	border-left: 3px solid var(--brand);
 }
 
 .wgi-note-line {

@@ -7,7 +7,7 @@ import type { CodeLanguage } from "./code-languages.js";
 const THEME_NAME = "sumi";
 const THEME = createCssVariablesTheme({
 	name: THEME_NAME,
-	variablePrefix: "--sumi-code-",
+	variablePrefix: "--code-",
 });
 const ITALIC = 1;
 const BOLD = 2;

@@ -43,8 +43,8 @@ export function SplitEntry({
 	const sortId = `${SPLIT_ROW}${split.id}`;
 	const isPlaceholder = isLifted || sortId === draggedId;
 	const Holder = isSub ? SidebarMenuSubItem : SidebarMenuItem;
-	const inner: CSSProperties & Readonly<Record<"--wg-kit-side-depth", number>> = {
-		"--wg-kit-side-depth": depth + 1,
+	const inner: CSSProperties & Readonly<Record<"--side-depth", number>> = {
+		"--side-depth": depth + 1,
 	};
 	const isOpen = split.isShown || split.members.some(({ item: member }) => member.tab.id === draggedId);
 	const map = (

@@ -16,7 +16,8 @@ const TOKEN = /var\(--[a-z0-9-]+\)/gi;
 const SPACING_PX: ReadonlySet<number> = new Set([0, 2, 4, 6, 8, 12, 16, 20, 24, 32]);
 const COLOR_PROPERTY =
 	/^(color|background|background-color|background-image|border|border-(top|right|bottom|left)|border(-(top|right|bottom|left))?-color|outline|outline-color|fill|stroke|accent-color|caret-color|stop-color|text-decoration|text-decoration-color|column-rule)$/;
-const SPACING_PROPERTY = /^(padding|margin|gap|row-gap|column-gap)(-(top|right|bottom|left|inline|block)(-(start|end))?)?$/;
+const SPACING_PROPERTY =
+	/^(padding|margin|gap|row-gap|column-gap)(-(top|right|bottom|left|inline|block)(-(start|end))?)?$/;
 const BANNED_PROPERTIES: ReadonlyMap<string, string> = new Map([
 	["font-family", "the font comes from Sumi: delete it"],
 	["font", "the font comes from Sumi: set font-weight alone"],
@@ -87,7 +88,7 @@ function lintStyles(page: Document, found: Found): void {
 			const value = painted.getAttribute(name);
 
 			if (value !== null && hasColorLiteral(value)) {
-				found(`<${painted.localName} ${name}>`, "colours only as currentColor or var(--sumi-…)", `${name}="${value}"`);
+				found(`<${painted.localName} ${name}>`, "colours only as currentColor or var(--…)", `${name}="${value}"`);
 			}
 		}
 	}
@@ -109,18 +110,18 @@ function declarationProblemOf(property: string, value: string): string | null {
 	}
 
 	if (COLOR_PROPERTY.test(property) && hasColorLiteral(value)) {
-		return "colours only as var(--sumi-…), currentColor or transparent";
+		return "colours only as var(--…), currentColor or transparent";
 	}
 
 	if (SPACING_PROPERTY.test(property) && !isSpacingScale(value)) {
 		return "spacing only 0, 4, 8, 12, 16, 24 or 32px";
 	}
 
-	if (property === "font-size" && !/^(var\(--sumi-fs-\d+\)|inherit)$/.test(value)) {
-		return "keep the chat's text size: no font-size, or var(--sumi-fs-12|13|16)";
+	if (property === "font-size" && !/^(var\(--fs-\d+\)|inherit)$/.test(value)) {
+		return "keep the chat's text size: no font-size, or var(--fs-12|13|16)";
 	}
 
-	if (property === "border-radius" && !/^((var\(--sumi-r-[a-z]+\)|0|50%)\s*)+$/.test(value)) {
+	if (property === "border-radius" && !/^((var\(--r-[a-z]+\)|0|50%)\s*)+$/.test(value)) {
 		return "corners are square: no border-radius, or 50% for a dot";
 	}
 
@@ -142,14 +143,18 @@ function declarationProblemOf(property: string, value: string): string | null {
 function lintScripts(page: Document, found: Found): void {
 	for (const script of page.querySelectorAll("script")) {
 		if (script.hasAttribute("src")) {
-			found("<script src>", "no libraries and no network: write plain JavaScript inline", script.getAttribute("src") ?? "");
+			found(
+				"<script src>",
+				"no libraries and no network: write plain JavaScript inline",
+				script.getAttribute("src") ?? "",
+			);
 		}
 
 		const body = script.textContent ?? "";
 		const literal = /["'`](#[0-9a-f]{3,8}|rgba?\([^"'`]*\)|hsla?\([^"'`]*\))["'`]/i.exec(body);
 
 		if (literal !== null) {
-			found("<script>", "no colours in scripts: toggle a class or use var(--sumi-…)", literal[0]);
+			found("<script>", "no colours in scripts: toggle a class or use var(--…)", literal[0]);
 		}
 
 		if (/fontFamily|\.style\.font\s*=/.test(body)) {
@@ -279,7 +284,11 @@ function lintChart(chart: Element, found: Found): void {
 	const rows = [...chart.querySelectorAll("tbody tr")];
 
 	if (rows.length === 0 || chart.querySelector("thead th") === null) {
-		found("table.chart", "a chart table has a <thead> row of series names and <tbody> rows of numbers", chart.outerHTML.slice(0, 60));
+		found(
+			"table.chart",
+			"a chart table has a <thead> row of series names and <tbody> rows of numbers",
+			chart.outerHTML.slice(0, 60),
+		);
 		return;
 	}
 

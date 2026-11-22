@@ -131,79 +131,79 @@
 	   ═══════════════════════════════════════════════════════════════════════════ */
 	:root {
 		/* SURFACES — a fill, never a border. Three levels and no more. */
-		--wg-canvas: var(--background-secondary);
-		--wg-surface: var(--background-primary);
+		--canvas: var(--background-secondary);
+		--surface: var(--background-primary);
 		/* one step lighter than --interactive-normal, chosen by looking at both */
-		--wg-fill: var(--color-base-10);
-		--wg-fill-hover: var(--color-base-20);
-		--wg-hairline: var(--background-modifier-border);
+		--fill: var(--color-base-10);
+		--fill-hover: var(--color-base-20);
+		--hairline: var(--background-modifier-border);
 
-		--wg-ink: var(--text-normal);
-		--wg-ink-muted: var(--text-muted);
-		--wg-ink-faint: var(--text-faint);
+		--tone-ink: var(--text-normal);
+		--ink-muted: var(--text-muted);
+		--ink-faint: var(--text-faint);
 
-		--wg-accent: var(--interactive-accent);
-		--wg-accent-hover: var(--interactive-accent-hover);
-		--wg-on-accent: var(--text-on-accent);
-		--wg-accent-wash: color-mix(in srgb, var(--wg-accent) 12%, var(--background-primary));
+		--brand: var(--interactive-accent);
+		--accent-hover: var(--interactive-accent-hover);
+		--on-accent-widget: var(--text-on-accent);
+		--accent-wash: color-mix(in srgb, var(--brand) 12%, var(--background-primary));
 
 		/* STATUS — three, named for what they mean. Obsidian ships success and error;
 		   it has no warning token, so that one is ours, mixed from --color-orange. */
-		--wg-success: var(--text-success);
-		--wg-error: var(--text-error);
-		--wg-warning: var(--color-orange);
-		--wg-success-wash: color-mix(in srgb, var(--wg-success) 14%, var(--background-primary));
-		--wg-error-wash: color-mix(in srgb, var(--wg-error) 14%, var(--background-primary));
-		--wg-warning-wash: color-mix(in srgb, var(--wg-warning) 16%, var(--background-primary));
+		--success: var(--text-success);
+		--error: var(--text-error);
+		--warning: var(--color-orange);
+		--success-wash: color-mix(in srgb, var(--success) 14%, var(--background-primary));
+		--error-wash: color-mix(in srgb, var(--error) 14%, var(--background-primary));
+		--warning-wash: color-mix(in srgb, var(--warning) 16%, var(--background-primary));
 
 		/* RADII — Obsidian stops at 16px and the look needs more, so the two big ones
 		   are ours. Every button is a capsule; that is the whole silhouette. */
-		--wg-radius-control: var(--radius-l);
-		--wg-radius-tile: 22px;
-		--wg-radius-card: 28px;
-		--wg-radius-pill: 999px;
+		--radius-control: var(--radius-l);
+		--radius-tile: 22px;
+		--radius-card: 28px;
+		--radius-pill-widget: 999px;
 
 		/* GRID — cells, and every widget-button is a whole number of them */
-		--wg-cell: 76px;
-		--wg-gap: var(--size-4-3);
+		--widget-cell: 76px;
+		--widget-gap: var(--size-4-3);
 
 		/* MOTION — one spring for anything that GROWS, one ease for anything that merely
 		   changes, and a press that answers under the finger. The spring carries past 100%
 		   and settles back: that overshoot is the whole difference between a thing that
 		   springs open and a thing that slides open. Closing uses the ease — a panel folding
 		   away that bounces reads as indecision. */
-		--wg-spring: cubic-bezier(0.34, 1.42, 0.64, 1);
-		--wg-ease: cubic-bezier(0.4, 0, 0.2, 1);
-		--wg-dur-press: 120ms;
-		--wg-dur-s: 200ms;
-		--wg-dur-m: 320ms;
-		--wg-dur-l: 480ms;
-		--wg-press-scale: 0.955;
-		--wg-slider-fill: 50%;
+		--spring: cubic-bezier(0.34, 1.42, 0.64, 1);
+		--ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+		--dur-press: 120ms;
+		--dur-s: 200ms;
+		--dur-m: 320ms;
+		--dur-l: 480ms;
+		--press-scale: 0.955;
+		--slider-fill: 50%;
 
 		/* GLASS — a material, not a component. Any surface can take it, and these three
 		   tokens are the whole of it. The tint must be weak or there is nothing to see
 		   through; the edge is what stops it dissolving into whatever is behind. */
-		--wg-glass-tint: color-mix(in srgb, var(--wg-surface) 42%, transparent);
+		--glass-tint: color-mix(in srgb, var(--surface) 42%, transparent);
 		/* heavier, for a surface that has to be read through rather than looked at */
-		--wg-glass-panel: color-mix(in srgb, var(--wg-raise) 78%, transparent);
-		--wg-glass-blur: blur(24px) saturate(180%);
-		--wg-glass-edge: inset 0 0 0 1px color-mix(in srgb, var(--wg-ink) 12%, transparent);
+		--glass-panel: color-mix(in srgb, var(--raise) 78%, transparent);
+		--glass-blur: blur(24px) saturate(180%);
+		--glass-edge: inset 0 0 0 1px color-mix(in srgb, var(--tone-ink) 12%, transparent);
 		/* inside glass there is no solid ground to step from, so a group steps toward the ink */
-		--wg-glass-group: color-mix(in srgb, var(--wg-ink) 6%, var(--wg-raise));
+		--glass-group: color-mix(in srgb, var(--tone-ink) 6%, var(--raise));
 
 		/* RAISE — the fourth surface, and the only one that means ABOVE. White is a no-op in
 		   light and a real step in dark, so one expression lifts a panel in both themes. */
-		--wg-raise: color-mix(in srgb, #ffffff 12%, var(--background-primary));
+		--raise: color-mix(in srgb, #ffffff 12%, var(--background-primary));
 
-		--wg-shadow-s: 0 1px 3px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.06);
+		--shadow-s: 0 1px 3px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.06);
 	}
 
 	/* ═══════════════ page shell ═══════════════ */
 
 	body {
-		background: var(--wg-canvas);
-		color: var(--wg-ink);
+		background: var(--canvas);
+		color: var(--tone-ink);
 		font-family: var(--font-interface);
 		font-size: var(--font-ui-medium);
 		line-height: var(--line-height-normal);
@@ -218,97 +218,97 @@
 	.sheet { max-width: 1040px; margin: 0 auto; padding: 0 var(--size-4-5) var(--size-4-16); display: flex; flex-direction: column; gap: var(--size-4-12); }
 	p { margin: 0; }
 	code, .mono { font-family: var(--font-monospace); font-size: var(--font-ui-smaller); }
-	*:focus-visible { outline: 2px solid var(--wg-accent); outline-offset: 3px; border-radius: var(--radius-m); }
+	*:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: var(--radius-m); }
 
 	.masthead { padding: var(--size-4-16) 0 0; display: flex; flex-direction: column; gap: var(--size-4-4); }
-	.eyebrow { font-family: var(--font-monospace); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--wg-ink-faint); }
+	.eyebrow { font-family: var(--font-monospace); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }
 	.masthead h1 { font-size: clamp(34px, 5.5vw, 56px); font-weight: var(--font-bold); letter-spacing: -0.03em; line-height: 1.02; margin: 0; }
-	.lede { max-width: 60ch; color: var(--wg-ink-muted); font-size: 17px; }
-	.lede strong { color: var(--wg-ink); font-weight: var(--font-semibold); }
+	.lede { max-width: 60ch; color: var(--ink-muted); font-size: 17px; }
+	.lede strong { color: var(--tone-ink); font-weight: var(--font-semibold); }
 
 	.laws { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--size-4-3); }
-	.laws div { background: var(--wg-surface); border-radius: var(--wg-radius-tile); padding: var(--size-4-4); display: flex; flex-direction: column; gap: var(--size-2-3); }
+	.laws div { background: var(--surface); border-radius: var(--radius-tile); padding: var(--size-4-4); display: flex; flex-direction: column; gap: var(--size-2-3); }
 	.laws b { font-size: var(--font-ui-small); font-weight: var(--font-semibold); }
-	.laws span { font-size: var(--font-ui-small); color: var(--wg-ink-muted); }
+	.laws span { font-size: var(--font-ui-small); color: var(--ink-muted); }
 
 	section { display: flex; flex-direction: column; gap: var(--size-4-5); }
 	.head { display: flex; flex-direction: column; gap: var(--size-2-2); }
 	.head h2 { font-size: 28px; font-weight: var(--font-semibold); letter-spacing: -0.02em; margin: 0; }
 
-	.group { background: var(--wg-surface); border-radius: var(--wg-radius-card); padding: var(--size-4-6); display: flex; flex-direction: column; gap: var(--size-4-5); }
+	.group { background: var(--surface); border-radius: var(--radius-card); padding: var(--size-4-6); display: flex; flex-direction: column; gap: var(--size-4-5); }
 	.row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--size-4-3); }
 	.row.top { align-items: flex-start; }
-	.cap { font-family: var(--font-monospace); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--wg-ink-faint); }
-	.note { font-size: var(--font-ui-small); color: var(--wg-ink-muted); max-width: 62ch; }
-	.note b { color: var(--wg-ink); font-weight: var(--font-semibold); }
-	.divide { height: 1px; background: var(--wg-hairline); margin: var(--size-2-2) 0; }
+	.cap { font-family: var(--font-monospace); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+	.note { font-size: var(--font-ui-small); color: var(--ink-muted); max-width: 62ch; }
+	.note b { color: var(--tone-ink); font-weight: var(--font-semibold); }
+	.divide { height: 1px; background: var(--hairline); margin: var(--size-2-2) 0; }
 
 	/* ═══════════════ foundations ═══════════════ */
 
 	.ramp { display: grid; grid-template-columns: repeat(auto-fit, minmax(66px, 1fr)); gap: var(--size-4-1); width: 100%; }
 	.ramp div { display: flex; flex-direction: column; gap: var(--size-2-2); }
 	.ramp i { height: 52px; border-radius: var(--radius-m); display: block; }
-	.ramp code { color: var(--wg-ink-faint); font-size: 10px; }
+	.ramp code { color: var(--ink-faint); font-size: 10px; }
 
 	.chips { display: flex; flex-wrap: wrap; gap: var(--size-4-2); }
-	.token { display: flex; align-items: center; gap: var(--size-4-2); background: var(--wg-fill); border-radius: var(--wg-radius-pill); padding: var(--size-2-3) var(--size-4-3); font-family: var(--font-monospace); font-size: 11px; color: var(--wg-ink-muted); }
-	.token i { width: 16px; height: 16px; border-radius: var(--wg-radius-pill); display: block; }
+	.token { display: flex; align-items: center; gap: var(--size-4-2); background: var(--fill); border-radius: var(--radius-pill-widget); padding: var(--size-2-3) var(--size-4-3); font-family: var(--font-monospace); font-size: 11px; color: var(--ink-muted); }
+	.token i { width: 16px; height: 16px; border-radius: var(--radius-pill-widget); display: block; }
 
 	.scale { display: flex; align-items: flex-end; gap: var(--size-4-4); flex-wrap: wrap; }
 	.scale div { display: flex; flex-direction: column; align-items: center; gap: var(--size-2-2); }
-	.scale i { display: block; background: var(--wg-accent-wash); }
-	.scale code { color: var(--wg-ink-faint); font-size: 10px; }
+	.scale i { display: block; background: var(--accent-wash); }
+	.scale code { color: var(--ink-faint); font-size: 10px; }
 
 	.typerow { display: flex; align-items: baseline; gap: var(--size-4-4); }
-	.typerow code { color: var(--wg-ink-faint); margin-left: auto; }
+	.typerow code { color: var(--ink-faint); margin-left: auto; }
 
 	/* ═══════════════ THE PRESS — everything answers under the finger ═══════════ */
 
 	.pressable {
-		transition: transform var(--wg-dur-press) var(--wg-ease), background var(--wg-dur-s) var(--wg-ease), color var(--wg-dur-s) var(--wg-ease), box-shadow var(--wg-dur-s) var(--wg-ease);
+		transition: transform var(--dur-press) var(--ease-standard), background var(--dur-s) var(--ease-standard), color var(--dur-s) var(--ease-standard), box-shadow var(--dur-s) var(--ease-standard);
 		will-change: transform;
 	}
-	.pressable:active { transform: scale(var(--wg-press-scale)); }
+	.pressable:active { transform: scale(var(--press-scale)); }
 
 	/* ═══════════════ BUTTON — a capsule, three sizes, four intents ═══════════ */
 
 	.btn {
 		font-family: inherit; font-weight: var(--font-semibold); line-height: 1;
-		border: none; cursor: pointer; border-radius: var(--wg-radius-pill);
+		border: none; cursor: pointer; border-radius: var(--radius-pill-widget);
 		display: inline-flex; align-items: center; justify-content: center; gap: var(--size-4-2);
-		color: var(--wg-ink);
+		color: var(--tone-ink);
 	}
 	.btn-l { font-size: var(--font-ui-medium); padding: 0 var(--size-4-6); height: 52px; }
 	.btn-m { font-size: var(--font-ui-small); padding: 0 var(--size-4-5); height: 42px; }
 	.btn-s { font-size: var(--font-ui-small); padding: 0 var(--size-4-4); height: 34px; }
 	.btn-block { width: 100%; }
-	.btn-accent { color: var(--wg-on-accent); }
-	.btn-plain { color: var(--wg-accent); }
-	.btn-danger { color: var(--wg-error); }
+	.btn-accent { color: var(--on-accent-widget); }
+	.btn-plain { color: var(--brand); }
+	.btn-danger { color: var(--error); }
 	.btn[disabled] { opacity: 0.4; cursor: not-allowed; }
 	.btn[disabled]:active { transform: none; }
 
 	/* ═══════════════ ICON BUTTON — a circle; glass only over something ═══════ */
 
 	.iconbtn {
-		border: none; cursor: pointer; border-radius: var(--wg-radius-pill);
+		border: none; cursor: pointer; border-radius: var(--radius-pill-widget);
 		display: inline-flex; align-items: center; justify-content: center;
-		color: var(--wg-ink); flex: none;
+		color: var(--tone-ink); flex: none;
 	}
 	.iconbtn-l { width: 52px; height: 52px; }
 	.iconbtn-m { width: 42px; height: 42px; }
 	.iconbtn-s { width: 32px; height: 32px; }
-	.iconbtn-accent { color: var(--wg-on-accent); }
+	.iconbtn-accent { color: var(--on-accent-widget); }
 	/* THE ONE GLASS RULE. Put it on anything: an icon button, a bar, a card, a group. */
 	.glass {
-		background: var(--wg-glass-tint);
-		backdrop-filter: var(--wg-glass-blur); -webkit-backdrop-filter: var(--wg-glass-blur);
-		box-shadow: var(--wg-glass-edge);
+		background: var(--glass-tint);
+		backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+		box-shadow: var(--glass-edge);
 	}
-	.glass-on-dark { --wg-glass-tint: rgba(255, 255, 255, 0.2); --wg-glass-edge: inset 0 0 0 1px rgba(255, 255, 255, 0.28); color: #fff; }
+	.glass-on-dark { --glass-tint: rgba(255, 255, 255, 0.2); --glass-edge: inset 0 0 0 1px rgba(255, 255, 255, 0.28); color: #fff; }
 
 	.photo {
-		border-radius: var(--wg-radius-tile); padding: var(--size-4-4);
+		border-radius: var(--radius-tile); padding: var(--size-4-4);
 		background: linear-gradient(135deg, #f0a33c 0%, #e0576b 42%, #7b4ee0 100%);
 		display: flex; justify-content: space-between; align-items: flex-start; gap: var(--size-4-3);
 		min-height: 132px; flex: 1 1 260px;
@@ -316,30 +316,30 @@
 
 	/* ═══════════════ WIDGET BUTTON — a whole number of cells ═════════════════ */
 
-	.cells { display: grid; grid-template-columns: repeat(4, var(--wg-cell)); gap: var(--wg-gap); }
+	.cells { display: grid; grid-template-columns: repeat(4, var(--widget-cell)); gap: var(--widget-gap); }
 	.wbtn {
 		border: none; cursor: pointer; font-family: inherit;
-		color: var(--wg-ink);
-		border-radius: var(--wg-radius-tile);
+		color: var(--tone-ink);
+		border-radius: var(--radius-tile);
 		display: flex; flex-direction: column; align-items: center; justify-content: center;
 		gap: var(--size-4-1); padding: var(--size-4-2);
 		font-size: var(--font-ui-smaller); font-weight: var(--font-semibold);
 	}
-	.wbtn-accent { color: var(--wg-on-accent); }
+	.wbtn-accent { color: var(--on-accent-widget); }
 	.wbtn span { text-align: center; line-height: var(--line-height-tight); }
 	.w1 { grid-column: span 1; } .w2 { grid-column: span 2; } .w3 { grid-column: span 3; } .w4 { grid-column: span 4; }
-	.h1 { height: var(--wg-cell); } .h2 { height: calc(var(--wg-cell) * 2 + var(--wg-gap)); }
+	.h1 { height: var(--widget-cell); } .h2 { height: calc(var(--widget-cell) * 2 + var(--widget-gap)); }
 	.wbtn.wide { flex-direction: row; gap: var(--size-4-2); font-size: var(--font-ui-small); }
 
 	/* ═══════════════ CONTROLS ═══════════════ */
 
-	.segmented { display: inline-flex; background: var(--wg-fill); border-radius: var(--wg-radius-pill); padding: 3px; gap: 2px; position: relative; }
-	.segmented button { font-family: inherit; font-size: var(--font-ui-small); font-weight: var(--font-medium); border: none; color: var(--wg-ink-muted); border-radius: var(--wg-radius-pill); padding: var(--size-2-3) var(--size-4-4); cursor: pointer; position: relative; z-index: 1; transition: color var(--wg-dur-s) var(--wg-ease); }
-	.segmented button[aria-selected="true"] { color: var(--wg-ink); }
-	.seg-thumb { position: absolute; top: 3px; bottom: 3px; background: var(--wg-surface); border-radius: var(--wg-radius-pill); box-shadow: var(--wg-shadow-s); transition: transform var(--wg-dur-m) var(--wg-spring), width var(--wg-dur-m) var(--wg-spring); z-index: 0; }
+	.segmented { display: inline-flex; background: var(--fill); border-radius: var(--radius-pill-widget); padding: 3px; gap: 2px; position: relative; }
+	.segmented button { font-family: inherit; font-size: var(--font-ui-small); font-weight: var(--font-medium); border: none; color: var(--ink-muted); border-radius: var(--radius-pill-widget); padding: var(--size-2-3) var(--size-4-4); cursor: pointer; position: relative; z-index: 1; transition: color var(--dur-s) var(--ease-standard); }
+	.segmented button[aria-selected="true"] { color: var(--tone-ink); }
+	.seg-thumb { position: absolute; top: 3px; bottom: 3px; background: var(--surface); border-radius: var(--radius-pill-widget); box-shadow: var(--shadow-s); transition: transform var(--dur-m) var(--spring), width var(--dur-m) var(--spring); z-index: 0; }
 
-	.switch { position: relative; width: 50px; height: 30px; border-radius: var(--wg-radius-pill); cursor: pointer; border: none; padding: 0; flex: none; }
-	.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: var(--wg-radius-pill); background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform var(--wg-dur-m) var(--wg-spring), width var(--wg-dur-press) var(--wg-ease); }
+	.switch { position: relative; width: 50px; height: 30px; border-radius: var(--radius-pill-widget); cursor: pointer; border: none; padding: 0; flex: none; }
+	.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: var(--radius-pill-widget); background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform var(--dur-m) var(--spring), width var(--dur-press) var(--ease-standard); }
 	.switch[aria-checked="true"]::after { transform: translateX(20px); }
 	.switch:active::after { width: 30px; }
 	.switch[aria-checked="true"]:active::after { transform: translateX(14px); }
@@ -347,97 +347,97 @@
 	.slider { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: none; cursor: pointer; }
 	/* A THIN LINE WITH A KNOB ON IT. The track was as tall as a button, which made the knob
 	   look like a hole punched in it. */
-	.slider::-webkit-slider-runnable-track { height: 6px; border-radius: var(--wg-radius-pill); background: linear-gradient(var(--wg-accent), var(--wg-accent)) no-repeat, var(--wg-fill); background-size: var(--wg-slider-fill) 100%; }
-	.slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: var(--wg-radius-pill); background: var(--wg-surface); box-shadow: 0 1px 4px rgba(0,0,0,0.22), var(--wg-glass-edge); transition: transform var(--wg-dur-press) var(--wg-ease); }
+	.slider::-webkit-slider-runnable-track { height: 6px; border-radius: var(--radius-pill-widget); background: linear-gradient(var(--brand), var(--brand)) no-repeat, var(--fill); background-size: var(--slider-fill) 100%; }
+	.slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: var(--radius-pill-widget); background: var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,0.22), var(--glass-edge); transition: transform var(--dur-press) var(--ease-standard); }
 	.slider:active::-webkit-slider-thumb { transform: scale(1.22); }
-	.slider::-moz-range-track { height: 6px; border-radius: var(--wg-radius-pill); background: var(--wg-fill); }
-	.slider::-moz-range-progress { height: 6px; border-radius: var(--wg-radius-pill); background: var(--wg-accent); }
-	.slider::-moz-range-thumb { width: 22px; height: 22px; border: none; border-radius: var(--wg-radius-pill); background: var(--wg-surface); box-shadow: 0 1px 4px rgba(0,0,0,0.22); }
+	.slider::-moz-range-track { height: 6px; border-radius: var(--radius-pill-widget); background: var(--fill); }
+	.slider::-moz-range-progress { height: 6px; border-radius: var(--radius-pill-widget); background: var(--brand); }
+	.slider::-moz-range-thumb { width: 22px; height: 22px; border: none; border-radius: var(--radius-pill-widget); background: var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,0.22); }
 
-	.stepper { display: inline-flex; align-items: center; background: var(--wg-fill); border-radius: var(--wg-radius-pill); }
-	.stepper button { font-family: inherit; border: none; color: var(--wg-ink); width: 42px; height: 42px; cursor: pointer; font-size: 18px; border-radius: var(--wg-radius-pill); }
+	.stepper { display: inline-flex; align-items: center; background: var(--fill); border-radius: var(--radius-pill-widget); }
+	.stepper button { font-family: inherit; border: none; color: var(--tone-ink); width: 42px; height: 42px; cursor: pointer; font-size: 18px; border-radius: var(--radius-pill-widget); }
 	.stepper span { min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; font-weight: var(--font-semibold); font-size: var(--font-ui-small); }
-	.stepper i { width: 1px; height: 20px; background: var(--wg-hairline); }
+	.stepper i { width: 1px; height: 20px; background: var(--hairline); }
 
-	.search { display: flex; align-items: center; gap: var(--size-4-2); background: var(--wg-fill); border-radius: var(--wg-radius-pill); padding: 0 var(--size-4-4); height: 42px; width: 100%; max-width: 320px; }
-	.search input { border: none; background: none; outline: none; font-family: inherit; font-size: var(--font-ui-small); color: var(--wg-ink); width: 100%; }
-	.search input::placeholder { color: var(--wg-ink-faint); }
+	.search { display: flex; align-items: center; gap: var(--size-4-2); background: var(--fill); border-radius: var(--radius-pill-widget); padding: 0 var(--size-4-4); height: 42px; width: 100%; max-width: 320px; }
+	.search input { border: none; background: none; outline: none; font-family: inherit; font-size: var(--font-ui-small); color: var(--tone-ink); width: 100%; }
+	.search input::placeholder { color: var(--ink-faint); }
 
-	.field { background: var(--wg-fill); border-radius: var(--wg-radius-control); padding: var(--size-4-2) var(--size-4-4); display: flex; flex-direction: column; gap: 2px; min-width: 200px; flex: 1 1 200px; transition: box-shadow var(--wg-dur-s) var(--wg-ease); }
-	.field label { font-size: 11px; color: var(--wg-ink-faint); font-weight: var(--font-medium); }
-	.field input { border: none; background: none; outline: none; font-family: inherit; font-size: var(--font-ui-small); color: var(--wg-ink); }
-	.field:focus-within { box-shadow: inset 0 0 0 2px var(--wg-accent); }
-	.field.bad { background: var(--wg-error-wash); }
-	.field.bad label { color: var(--wg-error); }
+	.field { background: var(--fill); border-radius: var(--radius-control); padding: var(--size-4-2) var(--size-4-4); display: flex; flex-direction: column; gap: 2px; min-width: 200px; flex: 1 1 200px; transition: box-shadow var(--dur-s) var(--ease-standard); }
+	.field label { font-size: 11px; color: var(--ink-faint); font-weight: var(--font-medium); }
+	.field input { border: none; background: none; outline: none; font-family: inherit; font-size: var(--font-ui-small); color: var(--tone-ink); }
+	.field:focus-within { box-shadow: inset 0 0 0 2px var(--brand); }
+	.field.bad { background: var(--error-wash); }
+	.field.bad label { color: var(--error); }
 
 	/* GROUPED LIST — the shape every reference uses for settings */
-	.list { background: var(--wg-fill); border-radius: var(--wg-radius-tile); overflow: hidden; width: 100%; max-width: 420px; }
-	.li { display: flex; align-items: center; gap: var(--size-4-3); padding: var(--size-4-3) var(--size-4-4); cursor: pointer; position: relative; transition: background var(--wg-dur-s) var(--wg-ease); }
+	.list { background: var(--fill); border-radius: var(--radius-tile); overflow: hidden; width: 100%; max-width: 420px; }
+	.li { display: flex; align-items: center; gap: var(--size-4-3); padding: var(--size-4-3) var(--size-4-4); cursor: pointer; position: relative; transition: background var(--dur-s) var(--ease-standard); }
 	.li:hover { background: var(--background-modifier-hover); }
-	.li + .li::before { content: ""; position: absolute; top: 0; left: calc(var(--size-4-4) + 30px + var(--size-4-3)); right: 0; height: 1px; background: var(--wg-hairline); }
+	.li + .li::before { content: ""; position: absolute; top: 0; left: calc(var(--size-4-4) + 30px + var(--size-4-3)); right: 0; height: 1px; background: var(--hairline); }
 	.li .badge-icon { width: 30px; height: 30px; border-radius: var(--radius-m); display: grid; place-content: center; color: #fff; flex: none; }
 	.li .label { font-size: var(--font-ui-small); font-weight: var(--font-medium); }
-	.li .value { margin-left: auto; font-size: var(--font-ui-small); color: var(--wg-ink-faint); }
-	.li .chev { color: var(--wg-ink-faint); flex: none; }
+	.li .value { margin-left: auto; font-size: var(--font-ui-small); color: var(--ink-faint); }
+	.li .chev { color: var(--ink-faint); flex: none; }
 
 	/* ═══════════════ SURFACES ═══════════════ */
 
-	.tile { border-radius: var(--wg-radius-tile); padding: var(--size-4-4); display: flex; flex-direction: column; gap: var(--size-4-2); cursor: pointer; }
+	.tile { border-radius: var(--radius-tile); padding: var(--size-4-4); display: flex; flex-direction: column; gap: var(--size-4-2); cursor: pointer; }
 	.tile h4 { margin: 0; font-size: var(--font-ui-small); font-weight: var(--font-semibold); }
-	.tile p { font-size: var(--font-ui-smaller); color: var(--wg-ink-muted); }
-	.tile.accent { color: var(--wg-on-accent); }
+	.tile p { font-size: var(--font-ui-smaller); color: var(--ink-muted); }
+	.tile.accent { color: var(--on-accent-widget); }
 	.tile.accent p { color: rgba(255, 255, 255, 0.78); }
 
-	.notice { display: flex; align-items: center; gap: var(--size-4-3); border-radius: var(--wg-radius-tile); padding: var(--size-4-3) var(--size-4-4); font-size: var(--font-ui-small); width: 100%; }
-	.notice.ok { background: var(--wg-success-wash); color: var(--wg-success); }
-	.notice.warn { background: var(--wg-warning-wash); color: var(--wg-warning); }
-	.notice.err { background: var(--wg-error-wash); color: var(--wg-error); }
+	.notice { display: flex; align-items: center; gap: var(--size-4-3); border-radius: var(--radius-tile); padding: var(--size-4-3) var(--size-4-4); font-size: var(--font-ui-small); width: 100%; }
+	.notice.ok { background: var(--success-wash); color: var(--success); }
+	.notice.warn { background: var(--warning-wash); color: var(--warning); }
+	.notice.err { background: var(--error-wash); color: var(--error); }
 	.notice b { font-weight: var(--font-semibold); }
 
-	.pilltag { display: inline-flex; align-items: center; gap: var(--size-2-2); border-radius: var(--wg-radius-pill); padding: var(--size-2-2) var(--size-4-3); font-size: var(--font-ui-smaller); font-weight: var(--font-semibold); background: var(--wg-fill); color: var(--wg-ink-muted); }
-	.pilltag.ok { background: var(--wg-success-wash); color: var(--wg-success); }
-	.pilltag.warn { background: var(--wg-warning-wash); color: var(--wg-warning); }
-	.pilltag.err { background: var(--wg-error-wash); color: var(--wg-error); }
-	.pilltag.accent { background: var(--wg-accent); color: var(--wg-on-accent); }
+	.pilltag { display: inline-flex; align-items: center; gap: var(--size-2-2); border-radius: var(--radius-pill-widget); padding: var(--size-2-2) var(--size-4-3); font-size: var(--font-ui-smaller); font-weight: var(--font-semibold); background: var(--fill); color: var(--ink-muted); }
+	.pilltag.ok { background: var(--success-wash); color: var(--success); }
+	.pilltag.warn { background: var(--warning-wash); color: var(--warning); }
+	.pilltag.err { background: var(--error-wash); color: var(--error); }
+	.pilltag.accent { background: var(--brand); color: var(--on-accent-widget); }
 
 	/* ═══════════════ THE SHEET — grows out of the thing you pressed ══════════ */
 
-	.scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity var(--wg-dur-m) var(--wg-ease); z-index: 40; }
+	.scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity var(--dur-m) var(--ease-standard); z-index: 40; }
 	.scrim.on { opacity: 1; pointer-events: auto; }
 	.sheet-wrap { position: fixed; inset: 0; display: grid; place-items: center; padding: var(--size-4-5); pointer-events: none; z-index: 41; }
 	/* MEASURED: over the scrim, glass read (227,227,229) against its own (240,240,240) plate —
 	   a raised surface rendering DARKER than what it sits on. It is an opaque raised fill with a
 	   hairline edge now: (255,255,255) over 240, and no shadow, like every other floating surface. */
-	.sheet-card { background: var(--wg-raise); border-radius: var(--wg-radius-card); box-shadow: var(--wg-glass-edge); width: min(440px, 100%); max-height: 82vh; overflow: hidden; transform-origin: top left; opacity: 0; pointer-events: none; display: flex; flex-direction: column; }
+	.sheet-card { background: var(--raise); border-radius: var(--radius-card); box-shadow: var(--glass-edge); width: min(440px, 100%); max-height: 82vh; overflow: hidden; transform-origin: top left; opacity: 0; pointer-events: none; display: flex; flex-direction: column; }
 	.sheet-card.on { opacity: 1; pointer-events: auto; }
 	.sheet-card header { display: flex; align-items: center; justify-content: space-between; gap: var(--size-4-3); padding: var(--size-4-5) var(--size-4-5) var(--size-4-3); }
 	.sheet-card header h3 { margin: 0; font-size: var(--font-ui-large); font-weight: var(--font-semibold); letter-spacing: -0.01em; }
 	.sheet-body { padding: 0 var(--size-4-5) var(--size-2-2); display: flex; flex-direction: column; gap: var(--size-4-3); overflow-y: auto; overflow-x: hidden; }
 	.sheet-body .row { flex-wrap: wrap; }
 	.sheet-foot { padding: var(--size-4-5); display: flex; gap: var(--size-4-2); }
-	.sheet-content { transition: opacity var(--wg-dur-s) var(--wg-ease); }
+	.sheet-content { transition: opacity var(--dur-s) var(--ease-standard); }
 
 
 	/* ═══════════════ EXPERIMENTS ═══════════════ */
 
 	/* one step lighter: the fill moves from base-20 to base-10, and nothing else changes */
 	.lighter {
-		--wg-fill: var(--color-base-10);
-		--wg-fill-hover: var(--color-base-20);
+		--fill: var(--color-base-10);
+		--fill-hover: var(--color-base-20);
 	}
 	.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--size-4-4); }
 	.compare > div { display: flex; flex-direction: column; gap: var(--size-4-3); }
 
 	/* glass, off the photograph: it needs something behind it, and these show how little */
-	.glass-bed { border-radius: var(--wg-radius-tile); padding: var(--size-4-4); display: flex; align-items: center; gap: var(--size-4-3); min-height: 92px; }
-	.bed-surface { background: var(--wg-surface); }
-	.bed-fill { background: var(--wg-fill); }
-	.bed-accent { background: var(--wg-accent); }
-	.bed-text { position: relative; background: var(--wg-surface); overflow: hidden; }
-	.bed-text .behind { position: absolute; inset: var(--size-4-3); font-size: var(--font-ui-small); color: var(--wg-ink-muted); line-height: 1.35; }
+	.glass-bed { border-radius: var(--radius-tile); padding: var(--size-4-4); display: flex; align-items: center; gap: var(--size-4-3); min-height: 92px; }
+	.bed-surface { background: var(--surface); }
+	.bed-fill { background: var(--fill); }
+	.bed-accent { background: var(--brand); }
+	.bed-text { position: relative; background: var(--surface); overflow: hidden; }
+	.bed-text .behind { position: absolute; inset: var(--size-4-3); font-size: var(--font-ui-small); color: var(--ink-muted); line-height: 1.35; }
 	.bed-text .glasscard, .bed-text .iconbtn { position: relative; }
 
-	.glasscard { border-radius: var(--wg-radius-pill); padding: var(--size-4-3) var(--size-4-4); font-size: var(--font-ui-small); font-weight: var(--font-semibold); }
+	.glasscard { border-radius: var(--radius-pill-widget); padding: var(--size-4-3) var(--size-4-4); font-size: var(--font-ui-small); font-weight: var(--font-semibold); }
 
 
 
@@ -447,44 +447,44 @@
 	   Any trigger works: an icon button, a field, a whole tile. */
 	.pop {
 		position: fixed; z-index: 60;
-		border-radius: var(--wg-radius-tile);
+		border-radius: var(--radius-tile);
 		/* A MENU IS NOT A CARD WITH A SHADOW. It is a pane of glass with a thin edge —
 		   the edge does the separating, the blur does the rest, and no shadow is cast.
 		   The tint is heavier than plain glass because a menu still has to be read. */
-		background: var(--wg-glass-panel);
-		backdrop-filter: var(--wg-glass-blur); -webkit-backdrop-filter: var(--wg-glass-blur);
-		box-shadow: var(--wg-glass-edge);
+		background: var(--glass-panel);
+		backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+		box-shadow: var(--glass-edge);
 		transform-origin: top left; opacity: 0; pointer-events: none;
 		overflow: hidden; min-width: 200px;
 	}
 	.pop.on { opacity: 1; pointer-events: auto; }
-	.pop-inner { padding: var(--size-4-2); display: flex; flex-direction: column; transition: opacity var(--wg-dur-s) var(--wg-ease); }
+	.pop-inner { padding: var(--size-4-2); display: flex; flex-direction: column; transition: opacity var(--dur-s) var(--ease-standard); }
 	.pop-item { display: flex; align-items: center; gap: var(--size-4-3); padding: var(--size-4-2) var(--size-4-3); border-radius: var(--radius-l); cursor: pointer; font-size: var(--font-ui-small); font-weight: var(--font-medium); text-align: left; width: 100%; }
-	.pop-item .tick { margin-left: auto; color: var(--wg-accent); opacity: 0; }
+	.pop-item .tick { margin-left: auto; color: var(--brand); opacity: 0; }
 	.pop-item[aria-checked="true"] .tick { opacity: 1; }
-	.pop-item.danger { color: var(--wg-error); }
-	.pop-sep { height: 1px; background: var(--wg-hairline); margin: var(--size-2-2) var(--size-4-3); }
-	.pop-head { padding: var(--size-4-3) var(--size-4-3) var(--size-4-2); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--wg-ink-faint); font-family: var(--font-monospace); }
+	.pop-item.danger { color: var(--error); }
+	.pop-sep { height: 1px; background: var(--hairline); margin: var(--size-2-2) var(--size-4-3); }
+	.pop-head { padding: var(--size-4-3) var(--size-4-3) var(--size-4-2); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); font-family: var(--font-monospace); }
 	.pop-wide { min-width: 280px; }
 	.pop-row { display: flex; align-items: center; gap: var(--size-4-3); padding: var(--size-4-2) var(--size-4-3); }
 	.pop-row .label { font-size: var(--font-ui-small); font-weight: var(--font-medium); }
 
 	/* the select trigger: a capsule that shows the current value */
-	.selectbtn { display: inline-flex; align-items: center; gap: var(--size-4-2); border-radius: var(--wg-radius-pill); height: 42px; padding: 0 var(--size-4-3) 0 var(--size-4-4); cursor: pointer; font-size: var(--font-ui-small); font-weight: var(--font-semibold); }
-	.selectbtn .caret { color: var(--wg-ink-faint); }
+	.selectbtn { display: inline-flex; align-items: center; gap: var(--size-4-2); border-radius: var(--radius-pill-widget); height: 42px; padding: 0 var(--size-4-3) 0 var(--size-4-4); cursor: pointer; font-size: var(--font-ui-small); font-weight: var(--font-semibold); }
+	.selectbtn .caret { color: var(--ink-faint); }
 
 	/* PLACEMENT — the same panel, two origins. `over` is the fold above: the trigger leaves and
 	   the panel takes its rectangle. `below` hangs it under a trigger that stays on screen, flips
 	   above when there is no room, and may take the trigger's MEASURED width — only the kit has
 	   measured it, so the kit hands it down as a custom property rather than forcing it. */
-	.pop.below { min-width: var(--wg-anchor-width, 200px); }
+	.pop.below { min-width: var(--anchor-width, 200px); }
 
 	/* SEARCH INSIDE THE PANEL — a keyword field that narrows the choices under it, not the board */
 	.pop-search { display: flex; flex-direction: column; gap: var(--size-2-2); padding: var(--size-2-2) var(--size-2-2) var(--size-4-2); }
-	.pop-search .search { background: var(--wg-glass-group); height: 34px; max-width: none; }
-	.pop-search .search:focus-within { box-shadow: inset 0 0 0 2px var(--wg-accent); }
-	.pop-search-hint { padding: 0 var(--size-4-2); font-size: var(--font-ui-smaller); color: var(--wg-ink-muted); }
-	.pop-empty { padding: var(--size-4-3) var(--size-4-3) var(--size-4-4); font-size: var(--font-ui-small); color: var(--wg-ink-faint); }
+	.pop-search .search { background: var(--glass-group); height: 34px; max-width: none; }
+	.pop-search .search:focus-within { box-shadow: inset 0 0 0 2px var(--brand); }
+	.pop-search-hint { padding: 0 var(--size-4-2); font-size: var(--font-ui-smaller); color: var(--ink-muted); }
+	.pop-empty { padding: var(--size-4-3) var(--size-4-3) var(--size-4-4); font-size: var(--font-ui-small); color: var(--ink-faint); }
 	/* a display value beats [hidden], so the narrowed-away rows have to be told again */
 	.pop-item[hidden], .pop-empty[hidden] { display: none; }
 
@@ -493,63 +493,63 @@
 	.cal-head { display: flex; align-items: center; justify-content: space-between; gap: var(--size-4-2); padding: var(--size-2-2) var(--size-2-3) var(--size-4-2); }
 	.cal-month { font-size: var(--font-ui-small); font-weight: var(--font-semibold); }
 	.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-	.cal-weekday { text-align: center; padding-bottom: var(--size-2-2); font-family: var(--font-monospace); font-size: 9px; letter-spacing: 0.06em; color: var(--wg-ink-faint); }
-	.cal-day { height: 28px; padding: 0; font-family: inherit; font-size: var(--font-ui-smaller); font-variant-numeric: tabular-nums; color: var(--wg-ink-muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-	.cal-day.off { color: var(--wg-ink-faint); opacity: 0.45; }
-	.cal-day.today { color: var(--wg-accent); font-weight: var(--font-semibold); }
+	.cal-weekday { text-align: center; padding-bottom: var(--size-2-2); font-family: var(--font-monospace); font-size: 9px; letter-spacing: 0.06em; color: var(--ink-faint); }
+	.cal-day { height: 28px; padding: 0; font-family: inherit; font-size: var(--font-ui-smaller); font-variant-numeric: tabular-nums; color: var(--ink-muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+	.cal-day.off { color: var(--ink-faint); opacity: 0.45; }
+	.cal-day.today { color: var(--brand); font-weight: var(--font-semibold); }
 	/* a day can be today AND picked — the doubled class says which wins, not the file order */
-	.cal-day.picked.picked { color: var(--wg-on-accent); font-weight: var(--font-semibold); opacity: 1; }
+	.cal-day.picked.picked { color: var(--on-accent-widget); font-weight: var(--font-semibold); opacity: 1; }
 	/* what renderDay put in the cell: a dot rail, drawn by the CALLER, not by the kit */
 	.cal-dots { display: flex; gap: 2px; height: 3px; }
-	.cal-dots i { width: 3px; height: 3px; border-radius: var(--wg-radius-pill); background: currentColor; display: block; }
+	.cal-dots i { width: 3px; height: 3px; border-radius: var(--radius-pill-widget); background: currentColor; display: block; }
 	.cal-roman { font-variant-numeric: normal; font-family: var(--font-monospace); font-size: 9px; letter-spacing: 0.02em; }
 
 	/* PROGRESS — a track and the digits, not a stepper: the plate is skimmed more than it is set */
 	.progress { display: flex; align-items: center; gap: var(--size-4-2); min-width: 0; outline: none; touch-action: none; }
-	.progress-track { position: relative; flex: 1 1 auto; min-width: 64px; height: 6px; border-radius: var(--wg-radius-pill); background: var(--wg-fill-hover); cursor: pointer; }
-	.progress-fill { display: block; height: 100%; border-radius: var(--wg-radius-pill); background: var(--wg-accent); }
+	.progress-track { position: relative; flex: 1 1 auto; min-width: 64px; height: 6px; border-radius: var(--radius-pill-widget); background: var(--fill-hover); cursor: pointer; }
+	.progress-fill { display: block; height: 100%; border-radius: var(--radius-pill-widget); background: var(--brand); }
 	/* a knob is not a floating surface — this is the same lift the slider thumb above carries */
-	.progress-knob { position: absolute; top: 50%; width: 16px; height: 16px; border-radius: var(--wg-radius-pill); background: var(--wg-raise); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22), var(--wg-glass-edge); transform: translate(-50%, -50%); transition: width var(--wg-dur-press) var(--wg-ease), height var(--wg-dur-press) var(--wg-ease); }
+	.progress-knob { position: absolute; top: 50%; width: 16px; height: 16px; border-radius: var(--radius-pill-widget); background: var(--raise); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.22), var(--glass-edge); transform: translate(-50%, -50%); transition: width var(--dur-press) var(--ease-standard), height var(--dur-press) var(--ease-standard); }
 	.progress.grabbed .progress-knob { width: 20px; height: 20px; }
 	.progress-num { flex: none; font-size: var(--font-ui-small); font-weight: var(--font-medium); font-variant-numeric: tabular-nums; }
-	.progress.grabbed .progress-num { color: var(--wg-accent); font-weight: var(--font-semibold); }
-	.progress:focus-visible .progress-track { box-shadow: 0 0 0 2px var(--wg-accent); }
+	.progress.grabbed .progress-num { color: var(--brand); font-weight: var(--font-semibold); }
+	.progress:focus-visible .progress-track { box-shadow: 0 0 0 2px var(--brand); }
 
 	/* MARKDOWN — a transparent textarea over a styled mirror. One scroller for both, so there is
 	   no pair of scroll offsets to keep in step, and every metric that decides where a character
 	   lands is declared ONCE and inherited by the two of them. */
-	.md { position: relative; overflow-y: auto; background: var(--wg-fill); border-radius: var(--wg-radius-tile); max-height: 260px; flex: 1 1 320px; }
+	.md { position: relative; overflow-y: auto; background: var(--fill); border-radius: var(--radius-tile); max-height: 260px; flex: 1 1 320px; }
 	.md-page { position: relative; }
 	.md-text { margin: 0; border: 0; padding: var(--size-4-4); font-family: var(--font-interface); font-size: var(--font-ui-small); font-weight: 400; font-style: normal; line-height: 1.62; letter-spacing: normal; word-spacing: normal; text-indent: 0; text-transform: none; white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; tab-size: 2; box-sizing: border-box; direction: ltr; }
-	.md-mirror { color: var(--wg-ink); }
+	.md-mirror { color: var(--tone-ink); }
 	/* a trailing newline draws no line box, and the caret would sit off the page */
 	.md-mirror::after { content: "\A"; white-space: pre-wrap; }
 	.md-mirror .is-heading { font-weight: var(--font-bold); }
 	.md-mirror .is-strong { font-weight: var(--font-semibold); }
 	.md-mirror .is-em { font-style: italic; }
-	.md-mirror .is-link { color: var(--wg-accent); }
-	textarea.md-input { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-appearance: none; appearance: none; background: none; border-radius: 0; box-shadow: none; outline: none; resize: none; overflow: hidden; color: transparent; caret-color: var(--wg-ink); }
-	textarea.md-input::selection { background: color-mix(in srgb, var(--wg-accent) 30%, transparent); }
+	.md-mirror .is-link { color: var(--brand); }
+	textarea.md-input { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-appearance: none; appearance: none; background: none; border-radius: 0; box-shadow: none; outline: none; resize: none; overflow: hidden; color: transparent; caret-color: var(--tone-ink); }
+	textarea.md-input::selection { background: color-mix(in srgb, var(--brand) 30%, transparent); }
 
 	/* HOW A PART IS CALLED — the kit is a component, so the page has to be able to show one */
-	.code { background: var(--wg-fill); border-radius: var(--wg-radius-tile); padding: var(--size-4-3) var(--size-4-4); margin: 0; overflow-x: auto; width: 100%; }
-	.code code { display: block; font-family: var(--font-monospace); font-size: var(--font-ui-smaller); line-height: 1.7; color: var(--wg-ink-muted); white-space: pre; }
-	.code b { color: var(--wg-ink); font-weight: var(--font-medium); }
+	.code { background: var(--fill); border-radius: var(--radius-tile); padding: var(--size-4-3) var(--size-4-4); margin: 0; overflow-x: auto; width: 100%; }
+	.code code { display: block; font-family: var(--font-monospace); font-size: var(--font-ui-smaller); line-height: 1.7; color: var(--ink-muted); white-space: pre; }
+	.code b { color: var(--tone-ink); font-weight: var(--font-medium); }
 
 	/* a specimen that must be seen open, and cannot be pressed to get there */
 	.pop.parked { position: static; opacity: 1; pointer-events: auto; min-width: 0; width: min(300px, 100%); flex: none; }
 
 	/* ═══════════════ GROUP BUTTON — separate entity, one capsule, many buttons ═ */
-	.group-btn { display: inline-flex; background: var(--wg-fill); border-radius: var(--wg-radius-pill); overflow: hidden; }
-	.group-btn.stack { flex-direction: column; border-radius: var(--wg-radius-tile); }
-	.group-btn button { width: 46px; height: 46px; display: grid; place-content: center; cursor: pointer; color: var(--wg-ink); position: relative; transition: transform var(--wg-dur-press) var(--wg-ease); }
+	.group-btn { display: inline-flex; background: var(--fill); border-radius: var(--radius-pill-widget); overflow: hidden; }
+	.group-btn.stack { flex-direction: column; border-radius: var(--radius-tile); }
+	.group-btn button { width: 46px; height: 46px; display: grid; place-content: center; cursor: pointer; color: var(--tone-ink); position: relative; transition: transform var(--dur-press) var(--ease-standard); }
 	.group-btn button:active { transform: scale(0.9); }
 	/* CONTEXT: ::before is the fill layer now, so the divider moved to ::after */
-	.group-btn button + button::after { content: ""; position: absolute; background: var(--wg-hairline); }
+	.group-btn button + button::after { content: ""; position: absolute; background: var(--hairline); }
 	.group-btn:not(.stack) button + button::after { left: 0; top: 25%; bottom: 25%; width: 1px; }
 	.group-btn.stack button + button::after { top: 0; left: 20%; right: 20%; height: 1px; }
-	.group-btn button[aria-pressed="true"] { color: var(--wg-accent); }
-	.map-bed { border-radius: var(--wg-radius-tile); padding: var(--size-4-4); background: linear-gradient(150deg, #cfe3d0 0%, #e8e2cc 45%, #a9d4e8 100%); display: flex; gap: var(--size-4-3); align-items: flex-start; flex: 1 1 260px; min-height: 150px; }
+	.group-btn button[aria-pressed="true"] { color: var(--brand); }
+	.map-bed { border-radius: var(--radius-tile); padding: var(--size-4-4); background: linear-gradient(150deg, #cfe3d0 0%, #e8e2cc 45%, #a9d4e8 100%); display: flex; gap: var(--size-4-3); align-items: flex-start; flex: 1 1 260px; min-height: 150px; }
 
 	.icon { width: 18px; height: 18px; flex: none; }
 	.icon path, .icon circle, .icon rect, .icon line { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
@@ -557,7 +557,7 @@
 
 	@media (max-width: 640px) {
 		.sheet { padding: 0 var(--size-4-4) var(--size-4-12); gap: var(--size-4-8); }
-		.group { padding: var(--size-4-4); border-radius: var(--wg-radius-tile); }
+		.group { padding: var(--size-4-4); border-radius: var(--radius-tile); }
 		.cells { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 	}
 	@media (prefers-reduced-motion: reduce) {
@@ -593,48 +593,48 @@
 		position: absolute;
 		inset: 0;
 		z-index: -1;
-		border-radius: var(--wg-radius-pill);
+		border-radius: var(--radius-pill-widget);
 		background: none;
-		transition: background var(--wg-dur-s) var(--wg-ease);
+		transition: background var(--dur-s) var(--ease-standard);
 	}
 
-	.btn::before, .iconbtn::before { background: var(--wg-fill); }
-	.btn:hover::before, .iconbtn:hover::before { background: var(--wg-fill-hover); }
-	.btn-accent::before, .iconbtn-accent::before { background: var(--wg-accent); }
-	.btn-accent:hover::before, .iconbtn-accent:hover::before { background: var(--wg-accent-hover); }
-	.btn-danger::before { background: var(--wg-error-wash); }
-	.btn-danger:hover::before { background: color-mix(in srgb, var(--wg-error) 22%, var(--background-primary)); }
+	.btn::before, .iconbtn::before { background: var(--fill); }
+	.btn:hover::before, .iconbtn:hover::before { background: var(--fill-hover); }
+	.btn-accent::before, .iconbtn-accent::before { background: var(--brand); }
+	.btn-accent:hover::before, .iconbtn-accent:hover::before { background: var(--accent-hover); }
+	.btn-danger::before { background: var(--error-wash); }
+	.btn-danger:hover::before { background: color-mix(in srgb, var(--error) 22%, var(--background-primary)); }
 	/* CONTEXT: blur and inset edge clip to their own box, so they follow the corner onto ::before */
 	.btn.glass, .iconbtn.glass {
 		backdrop-filter: none; -webkit-backdrop-filter: none;
 		box-shadow: none;
 	}
 	.btn.glass::before, .iconbtn.glass::before {
-		backdrop-filter: var(--wg-glass-blur); -webkit-backdrop-filter: var(--wg-glass-blur);
-		box-shadow: var(--wg-glass-edge);
+		backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+		box-shadow: var(--glass-edge);
 	}
-	.btn.glass::before, .iconbtn.glass::before { background: var(--wg-glass-tint); }
-	.iconbtn.glass:hover::before { background: color-mix(in srgb, var(--wg-surface) 58%, transparent); }
+	.btn.glass::before, .iconbtn.glass::before { background: var(--glass-tint); }
+	.iconbtn.glass:hover::before { background: color-mix(in srgb, var(--surface) 58%, transparent); }
 
 	/* transparent means transparent — at rest, and round on hover */
 	.btn-plain::before { background: none; }
-	.btn-plain:hover::before { background: var(--wg-accent-wash); }
+	.btn-plain:hover::before { background: var(--accent-wash); }
 
 	.pop-item::before { border-radius: var(--radius-l); }
-	.wbtn::before, .tile::before { border-radius: var(--wg-radius-tile); }
-	.wbtn::before, .tile::before, .selectbtn::before { background: var(--wg-fill); }
-	.wbtn:hover::before, .selectbtn:hover::before { background: var(--wg-fill-hover); }
-	.wbtn-accent::before, .tile.accent::before { background: var(--wg-accent); }
-	.wbtn-accent:hover::before { background: var(--wg-accent-hover); }
+	.wbtn::before, .tile::before { border-radius: var(--radius-tile); }
+	.wbtn::before, .tile::before, .selectbtn::before { background: var(--fill); }
+	.wbtn:hover::before, .selectbtn:hover::before { background: var(--fill-hover); }
+	.wbtn-accent::before, .tile.accent::before { background: var(--brand); }
+	.wbtn-accent:hover::before { background: var(--accent-hover); }
 	.group-btn button:hover::before { background: var(--background-modifier-hover); }
 	/* the group's own capsule and the stepper's own capsule still carry the fill, so their
 	   members stay transparent — a member that painted a pill would break the shared shape */
 	.group-btn button::before, .stepper button::before { border-radius: 0; }
-	.pop-item:hover::before { background: var(--wg-fill); }
+	.pop-item:hover::before { background: var(--fill); }
 	.cal-day:hover::before { background: var(--background-modifier-hover); }
-	.cal-day.picked.picked::before { background: var(--wg-accent); }
-	.switch::before { background: var(--wg-fill); }
-	.switch[aria-checked="true"]::before { background: var(--wg-success); }
+	.cal-day.picked.picked::before { background: var(--brand); }
+	.switch::before { background: var(--fill); }
+	.switch[aria-checked="true"]::before { background: var(--success); }
 
 	/* the real Obsidian light ramp — the stand-ins here had a blue bias and ran dark */
 	:root {
@@ -684,10 +684,10 @@
 			<div class="divide"></div>
 			<span class="cap">The only colours that are not grey</span>
 			<div class="chips">
-				<span class="token"><i style="background: var(--wg-accent)"></i>--interactive-accent</span>
-				<span class="token"><i style="background: var(--wg-success)"></i>--wg-success &#183; from --text-success</span>
-				<span class="token"><i style="background: var(--wg-warning)"></i>--wg-warning &#183; ours, no Obsidian token exists</span>
-				<span class="token"><i style="background: var(--wg-error)"></i>--wg-error &#183; from --text-error</span>
+				<span class="token"><i style="background: var(--brand)"></i>--interactive-accent</span>
+				<span class="token"><i style="background: var(--success)"></i>--success &#183; from --text-success</span>
+				<span class="token"><i style="background: var(--warning)"></i>--warning &#183; ours, no Obsidian token exists</span>
+				<span class="token"><i style="background: var(--error)"></i>--error &#183; from --text-error</span>
 			</div>
 			<p class="note">Three surfaces and no more: <b>canvas</b> is the note, <b>surface</b> is a card standing on it, <b>fill</b> is any control. Each is one Obsidian variable, so a theme moves all three together.</p>
 
@@ -696,9 +696,9 @@
 			<div class="scale">
 				<div><i style="width: 52px; height: 52px; border-radius: var(--radius-m)"></i><code>--radius-m 8</code></div>
 				<div><i style="width: 52px; height: 52px; border-radius: var(--radius-l)"></i><code>--radius-l 12</code></div>
-				<div><i style="width: 52px; height: 52px; border-radius: var(--wg-radius-tile)"></i><code>tile 22 &#183; ours</code></div>
-				<div><i style="width: 52px; height: 52px; border-radius: var(--wg-radius-card)"></i><code>card 28 &#183; ours</code></div>
-				<div><i style="width: 86px; height: 42px; border-radius: var(--wg-radius-pill)"></i><code>pill 999</code></div>
+				<div><i style="width: 52px; height: 52px; border-radius: var(--radius-tile)"></i><code>tile 22 &#183; ours</code></div>
+				<div><i style="width: 52px; height: 52px; border-radius: var(--radius-card)"></i><code>card 28 &#183; ours</code></div>
+				<div><i style="width: 86px; height: 42px; border-radius: var(--radius-pill-widget)"></i><code>pill 999</code></div>
 			</div>
 
 			<div class="divide"></div>
@@ -718,13 +718,13 @@
 			<div class="typerow"><span style="font-size: var(--font-ui-large); font-weight: var(--font-semibold)">Title</span><code>--font-ui-large &#183; semibold</code></div>
 			<div class="typerow"><span style="font-size: var(--font-ui-medium)">Body</span><code>--font-ui-medium</code></div>
 			<div class="typerow"><span style="font-size: var(--font-ui-small); font-weight: var(--font-medium)">Label and control text</span><code>--font-ui-small &#183; medium</code></div>
-			<div class="typerow"><span style="font-size: var(--font-ui-smaller); color: var(--wg-ink-muted)">Caption</span><code>--font-ui-smaller &#183; --text-muted</code></div>
+			<div class="typerow"><span style="font-size: var(--font-ui-smaller); color: var(--ink-muted)">Caption</span><code>--font-ui-smaller &#183; --text-muted</code></div>
 
 			<div class="divide"></div>
 			<span class="cap">Motion &#8212; one spring, one ease, one press</span>
 			<div class="chips">
-				<span class="token">--wg-spring cubic-bezier(.32,.72,0,1)</span>
-				<span class="token">--wg-ease cubic-bezier(.4,0,.2,1)</span>
+				<span class="token">--spring cubic-bezier(.32,.72,0,1)</span>
+				<span class="token">--ease-standard cubic-bezier(.4,0,.2,1)</span>
 				<span class="token">press 120ms &#183; scale .955</span>
 				<span class="token">s 200 &#183; m 320 &#183; l 480</span>
 			</div>
@@ -796,7 +796,7 @@
 			</div>
 			<div class="chips">
 				<span class="token">1&#215;1</span><span class="token">2&#215;1</span><span class="token">2&#215;2</span><span class="token">4&#215;1</span>
-				<span class="token">--wg-cell 76px</span><span class="token">--wg-gap 12px</span>
+				<span class="token">--widget-cell 76px</span><span class="token">--widget-gap 12px</span>
 			</div>
 		</div>
 	</section>
@@ -821,7 +821,7 @@
 			<div class="row">
 				<button class="switch" role="switch" aria-checked="true"></button>
 				<button class="switch" role="switch" aria-checked="false"></button>
-				<input class="slider" type="range" min="0" max="100" value="62" style="--wg-slider-fill: 62%; max-width: 240px;">
+				<input class="slider" type="range" min="0" max="100" value="62" style="--slider-fill: 62%; max-width: 240px;">
 				<div class="stepper">
 					<button class="pressable" data-step="-1">&#8722;</button><i></i><span id="count">3</span><i></i><button class="pressable" data-step="1">+</button>
 				</div>
@@ -849,7 +849,7 @@
 			<div class="divide"></div>
 			<span class="cap">Text entry</span>
 			<div class="row top">
-				<div class="search"><svg class="icon" viewBox="0 0 20 20" style="color: var(--wg-ink-faint)"><circle cx="9" cy="9" r="5.6"/><path d="M13 13l3.5 3.5"/></svg><input placeholder="Search"></div>
+				<div class="search"><svg class="icon" viewBox="0 0 20 20" style="color: var(--ink-faint)"><circle cx="9" cy="9" r="5.6"/><path d="M13 13l3.5 3.5"/></svg><input placeholder="Search"></div>
 				<div class="field"><label>Label</label><input value="A value"></div>
 				<div class="field bad"><label>Needs a number</label><input value="abc"></div>
 			</div>
@@ -857,9 +857,9 @@
 			<div class="divide"></div>
 			<span class="cap">Grouped list &#8212; icon, label, value, chevron, hairlines inside</span>
 			<div class="list">
-				<div class="li"><span class="badge-icon" style="background: var(--wg-accent)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><circle cx="10" cy="10" r="3"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2"/></svg></span><span class="label">First option</span><span class="value">On</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
-				<div class="li"><span class="badge-icon" style="background: var(--wg-success)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M4 10.5l4 4 8-9"/></svg></span><span class="label">Second option</span><span class="value">Enabled</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
-				<div class="li"><span class="badge-icon" style="background: var(--wg-warning)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M10 5v6M10 14v.5"/></svg></span><span class="label">Third option</span><span class="value">Two</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
+				<div class="li"><span class="badge-icon" style="background: var(--brand)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><circle cx="10" cy="10" r="3"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2"/></svg></span><span class="label">First option</span><span class="value">On</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
+				<div class="li"><span class="badge-icon" style="background: var(--success)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M4 10.5l4 4 8-9"/></svg></span><span class="label">Second option</span><span class="value">Enabled</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
+				<div class="li"><span class="badge-icon" style="background: var(--warning)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M10 5v6M10 14v.5"/></svg></span><span class="label">Third option</span><span class="value">Two</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
 				<div class="li"><span class="badge-icon" style="background: var(--color-base-50)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><rect x="4" y="4" width="12" height="12" rx="3"/></svg></span><span class="label">Fourth option</span><span class="value">Off</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
 			</div>
 
@@ -892,8 +892,8 @@
 
 			<div class="divide"></div>
 			<span class="cap">The dialog casts no shadow &#183; measured, not preferred</span>
-			<p class="note">The panel above used to sit on <code>--wg-shadow-l</code>. Sampled over the overlay's scrim it read <b>(227,&#8239;227,&#8239;229)</b> against its own <b>(240,&#8239;240,&#8239;240)</b> plate &#8212; <b>a raised surface rendering darker than the thing it sits on</b>, which is elevation backwards. It is an opaque raised fill with a hairline edge now, measured at <b>(255,&#8239;255,&#8239;255)</b> over 240.</p>
-			<p class="note"><b>Glass was rejected here specifically.</b> A blur needs something behind it worth blurring, and a uniform scrim gives it nothing &#8212; the same result the four beds at the bottom of this page show. So the dialog takes the fourth surface instead: <code>--wg-raise</code>, white mixed into the background, which is a no-op in light and a real step in dark. <b>This is the kit's own law applied</b>, not an exception written for the dialog: a floating surface is told apart by its edge, never by a cast shadow, and <code>--wg-shadow-l</code> no longer exists.</p>
+			<p class="note">The panel above used to sit on <code>--shadow-l</code>. Sampled over the overlay's scrim it read <b>(227,&#8239;227,&#8239;229)</b> against its own <b>(240,&#8239;240,&#8239;240)</b> plate &#8212; <b>a raised surface rendering darker than the thing it sits on</b>, which is elevation backwards. It is an opaque raised fill with a hairline edge now, measured at <b>(255,&#8239;255,&#8239;255)</b> over 240.</p>
+			<p class="note"><b>Glass was rejected here specifically.</b> A blur needs something behind it worth blurring, and a uniform scrim gives it nothing &#8212; the same result the four beds at the bottom of this page show. So the dialog takes the fourth surface instead: <code>--raise</code>, white mixed into the background, which is a no-op in light and a real step in dark. <b>This is the kit's own law applied</b>, not an exception written for the dialog: a floating surface is told apart by its edge, never by a cast shadow, and <code>--shadow-l</code> no longer exists.</p>
 		</div>
 	</section>
 
@@ -939,7 +939,7 @@
 		&lt;<b>PopoverItem</b> checked={name === value} onClick={() =&gt; pick(name)}&gt;{name}&lt;/PopoverItem&gt;
 	))}
 &lt;/Popover&gt;</code></pre>
-			<p class="note">A <code>below</code> panel is <b>at least as wide as its trigger</b>. Only the kit has measured that trigger, so it hands the number down as <code>--wg-anchor-width</code> and the stylesheet reads it as a <code>min-width</code> &#8212; a width offered, not forced, so a panel whose contents need more still takes more. Both placements fold out of, and back into, the trigger's rectangle: the origin changes, the motion does not.</p>
+			<p class="note">A <code>below</code> panel is <b>at least as wide as its trigger</b>. Only the kit has measured that trigger, so it hands the number down as <code>--anchor-width</code> and the stylesheet reads it as a <code>min-width</code> &#8212; a width offered, not forced, so a panel whose contents need more still takes more. Both placements fold out of, and back into, the trigger's rectangle: the origin changes, the motion does not.</p>
 
 			<div class="divide"></div>
 			<span class="cap">A keyword field in the panel &#183; PopoverSearch</span>
@@ -1001,8 +1001,8 @@
 					<div class="cal" id="cal-shortcuts"></div>
 					<div class="pop-inner" style="padding-top: 0;">
 						<div class="pop-sep"></div>
-						<button class="pop-item">Today<span style="margin-left: auto; color: var(--wg-ink-faint); font-size: var(--font-ui-smaller);">29 Aug</span></button>
-						<button class="pop-item">Next Monday<span style="margin-left: auto; color: var(--wg-ink-faint); font-size: var(--font-ui-smaller);">31 Aug</span></button>
+						<button class="pop-item">Today<span style="margin-left: auto; color: var(--ink-faint); font-size: var(--font-ui-smaller);">29 Aug</span></button>
+						<button class="pop-item">Next Monday<span style="margin-left: auto; color: var(--ink-faint); font-size: var(--font-ui-smaller);">31 Aug</span></button>
 					</div>
 				</div>
 				<p class="note" style="flex: 1 1 280px;">&#8220;Today&#8221; and &#8220;Next Monday&#8221; account for most dates anybody sets, and they are <b>ordinary <code>PopoverItem</code>s under a <code>PopoverSeparator</code></b> &#8212; composed at the call site, in the panel, beside the calendar. Not a <code>shortcuts</code> prop, not a <code>showToday</code> boolean. <b>That composability is the thing being demonstrated:</b> the next screen that needs &#8220;End of sprint&#8221; adds one more button and asks the kit for nothing.</p>
@@ -1084,7 +1084,7 @@ Inline `code` keeps its backticks and stays plain.
 					<span class="cap">Now &#183; --interactive-normal</span>
 					<button class="btn btn-m pressable">Neutral</button>
 					<div class="list" style="max-width: none;">
-						<div class="li"><span class="badge-icon" style="background: var(--wg-accent)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><circle cx="10" cy="10" r="3"/></svg></span><span class="label">An option</span><span class="value">On</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
+						<div class="li"><span class="badge-icon" style="background: var(--brand)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><circle cx="10" cy="10" r="3"/></svg></span><span class="label">An option</span><span class="value">On</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
 						<div class="li"><span class="badge-icon" style="background: var(--color-base-50)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><rect x="4" y="4" width="12" height="12" rx="3"/></svg></span><span class="label">Another</span><span class="value">Off</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
 					</div>
 					<div class="segmented"><span class="seg-thumb" style="width: 62px; transform: translateX(0)"></span><button aria-selected="true">Day</button><button aria-selected="false">Week</button></div>
@@ -1093,7 +1093,7 @@ Inline `code` keeps its backticks and stays plain.
 					<span class="cap">Lighter &#183; --color-base-10</span>
 					<button class="btn btn-m pressable">Neutral</button>
 					<div class="list" style="max-width: none;">
-						<div class="li"><span class="badge-icon" style="background: var(--wg-accent)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><circle cx="10" cy="10" r="3"/></svg></span><span class="label">An option</span><span class="value">On</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
+						<div class="li"><span class="badge-icon" style="background: var(--brand)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><circle cx="10" cy="10" r="3"/></svg></span><span class="label">An option</span><span class="value">On</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
 						<div class="li"><span class="badge-icon" style="background: var(--color-base-50)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><rect x="4" y="4" width="12" height="12" rx="3"/></svg></span><span class="label">Another</span><span class="value">Off</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
 					</div>
 					<div class="segmented"><span class="seg-thumb" style="width: 62px; transform: translateX(0)"></span><button aria-selected="true">Day</button><button aria-selected="false">Week</button></div>
@@ -1113,7 +1113,7 @@ Inline `code` keeps its backticks and stays plain.
 					<button class="iconbtn iconbtn-m glass pressable"><svg class="icon" viewBox="0 0 20 20"><circle cx="4.5" cy="10" r="1.3"/><circle cx="10" cy="10" r="1.3"/><circle cx="15.5" cy="10" r="1.3"/></svg></button>
 				</div>
 				<div class="glass-bed bed-accent">
-					<span class="glasscard" style="color: var(--wg-on-accent)">On the accent</span>
+					<span class="glasscard" style="color: var(--on-accent-widget)">On the accent</span>
 					<button class="iconbtn iconbtn-m glass glass-on-dark pressable"><svg class="icon" viewBox="0 0 20 20"><circle cx="4.5" cy="10" r="1.3"/><circle cx="10" cy="10" r="1.3"/><circle cx="15.5" cy="10" r="1.3"/></svg></button>
 				</div>
 				<div class="glass-bed bed-text">
@@ -1146,7 +1146,7 @@ Inline `code` keeps its backticks and stays plain.
 <div class="pop pop-wide" id="pop-panel"><div class="pop-inner">
 	<div class="pop-head">Anything fits</div>
 	<div class="pop-row"><span class="label">A switch</span><button class="switch" role="switch" aria-checked="true" style="margin-left:auto"></button></div>
-	<div class="pop-row"><span class="label">A slider</span><input class="slider" type="range" min="0" max="100" value="40" style="--wg-slider-fill: 40%"></div>
+	<div class="pop-row"><span class="label">A slider</span><input class="slider" type="range" min="0" max="100" value="40" style="--slider-fill: 40%"></div>
 	<div class="pop-row"><span class="pilltag accent">Selected</span><span class="pilltag ok">Success</span></div>
 	<div class="pop-row"><button class="btn btn-accent btn-m btn-block pressable">Confirm</button></div>
 </div></div>
@@ -1167,7 +1167,7 @@ Inline `code` keeps its backticks and stays plain.
      panel has a single content box and a single thing to fade on the way out -->
 <div class="pop" id="pop-search"><div class="pop-inner" data-haystack>
 	<div class="pop-search">
-		<div class="search"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px;color: var(--wg-ink-faint)"><circle cx="9" cy="9" r="5.4"/><path d="M13 13l3.5 3.5"/></svg><input placeholder="Find a person" data-needle></div>
+		<div class="search"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px;color: var(--ink-faint)"><circle cx="9" cy="9" r="5.4"/><path d="M13 13l3.5 3.5"/></svg><input placeholder="Find a person" data-needle></div>
 		<span class="pop-search-hint">Name or initials</span>
 	</div>
 	<button class="pop-item">Ada Lovelace</button>
@@ -1189,7 +1189,7 @@ Inline `code` keeps its backticks and stays plain.
 			<div class="sheet-body">
 				<p class="note">The same components, in the surface they grew into. Nothing here knows what the widget is for.</p>
 				<div class="list">
-					<div class="li"><span class="badge-icon" style="background: var(--wg-accent)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><circle cx="10" cy="10" r="3"/></svg></span><span class="label">An option</span><span class="value">On</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
+					<div class="li"><span class="badge-icon" style="background: var(--brand)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><circle cx="10" cy="10" r="3"/></svg></span><span class="label">An option</span><span class="value">On</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
 					<div class="li"><span class="badge-icon" style="background: var(--color-base-50)"><svg class="icon" viewBox="0 0 20 20" style="width:15px;height:15px"><rect x="4" y="4" width="12" height="12" rx="3"/></svg></span><span class="label">Another option</span><span class="value">Off</span><svg class="icon chev" viewBox="0 0 20 20" style="width:15px;height:15px"><path d="M8 5l5 5-5 5"/></svg></div>
 				</div>
 				<div class="row"><span class="pilltag accent">Selected</span><span class="pilltag">Neutral</span><span class="pilltag ok">Success</span></div>
@@ -1228,7 +1228,7 @@ Inline `code` keeps its backticks and stays plain.
 		toggle.addEventListener("click", () => toggle.setAttribute("aria-checked", toggle.getAttribute("aria-checked") === "true" ? "false" : "true"));
 	}
 	for (const slider of document.querySelectorAll(".slider")) {
-		slider.addEventListener("input", () => slider.style.setProperty("--wg-slider-fill", slider.value + "%"));
+		slider.addEventListener("input", () => slider.style.setProperty("--slider-fill", slider.value + "%"));
 	}
 	const count = document.getElementById("count");
 	for (const step of document.querySelectorAll("[data-step]")) {
@@ -1289,7 +1289,7 @@ Inline `code` keeps its backticks and stays plain.
 		pop.style.top = (top - zero.top) + "px";
 		// ONLY WE HAVE MEASURED THE TRIGGER, and a menu under a row usually wants to match it.
 		// Handed down as a min-width, so a panel that needs more still takes more.
-		pop.style.setProperty("--wg-anchor-width", rect.width + "px");
+		pop.style.setProperty("--anchor-width", rect.width + "px");
 		return { left, top, width: zero.width, height: zero.height };
 	}
 
@@ -1330,8 +1330,8 @@ Inline `code` keeps its backticks and stays plain.
 		pop.style.transform = "translate(" + (rect.left - box.left) + "px," + (rect.top - box.top) + "px) scale(" + (rect.width / box.width) + "," + (rect.height / box.height) + ")";
 		pop.style.borderRadius = startRadius(trigger, box, rect);
 		requestAnimationFrame(() => {
-			pop.style.transition = "transform var(--wg-dur-m) var(--wg-spring), border-radius var(--wg-dur-m) var(--wg-spring)";
-			inner.style.transition = "opacity var(--wg-dur-s) var(--wg-ease) 60ms";
+			pop.style.transition = "transform var(--dur-m) var(--spring), border-radius var(--dur-m) var(--spring)";
+			inner.style.transition = "opacity var(--dur-s) var(--ease-standard) 60ms";
 			pop.style.transform = "none";
 			pop.style.borderRadius = "";
 			inner.style.opacity = "1";
@@ -1348,8 +1348,8 @@ Inline `code` keeps its backticks and stays plain.
 		if (reduced || instant) { pop.classList.remove("on"); trigger.style.visibility = ""; return; }
 		const rect = trigger.getBoundingClientRect();
 		const box = pop.getBoundingClientRect();
-		pop.style.transition = "transform var(--wg-dur-s) var(--wg-ease), border-radius var(--wg-dur-s) var(--wg-ease), opacity var(--wg-dur-press) var(--wg-ease) 120ms";
-		inner.style.transition = "opacity var(--wg-dur-press) var(--wg-ease)";
+		pop.style.transition = "transform var(--dur-s) var(--ease-standard), border-radius var(--dur-s) var(--ease-standard), opacity var(--dur-press) var(--ease-standard) 120ms";
+		inner.style.transition = "opacity var(--dur-press) var(--ease-standard)";
 		inner.style.opacity = "0";
 		pop.style.transform = "translate(" + (rect.left - box.left) + "px," + (rect.top - box.top) + "px) scale(" + (rect.width / box.width) + "," + (rect.height / box.height) + ")";
 		pop.style.borderRadius = startRadius(trigger, box, rect);
@@ -1662,8 +1662,8 @@ Inline `code` keeps its backticks and stays plain.
 		content.style.opacity = "0";
 
 		requestAnimationFrame(() => {
-			card.style.transition = "transform var(--wg-dur-l) var(--wg-spring), border-radius var(--wg-dur-l) var(--wg-spring)";
-			content.style.transition = "opacity var(--wg-dur-m) var(--wg-ease) 80ms";
+			card.style.transition = "transform var(--dur-l) var(--spring), border-radius var(--dur-l) var(--spring)";
+			content.style.transition = "opacity var(--dur-m) var(--ease-standard) 80ms";
 			card.style.transform = "none";
 			card.style.borderRadius = "";
 			content.style.opacity = "1";
@@ -1675,8 +1675,8 @@ Inline `code` keeps its backticks and stays plain.
 		if (reduced) { card.classList.remove("on"); scrim.classList.remove("on"); origin = null; return; }
 		const from = origin.getBoundingClientRect();
 		const to = card.getBoundingClientRect();
-		card.style.transition = "transform var(--wg-dur-m) var(--wg-ease), border-radius var(--wg-dur-m) var(--wg-ease), opacity var(--wg-dur-s) var(--wg-ease) 120ms";
-		content.style.transition = "opacity var(--wg-dur-s) var(--wg-ease)";
+		card.style.transition = "transform var(--dur-m) var(--ease-standard), border-radius var(--dur-m) var(--ease-standard), opacity var(--dur-s) var(--ease-standard) 120ms";
+		content.style.transition = "opacity var(--dur-s) var(--ease-standard)";
 		content.style.opacity = "0";
 		card.style.transform = "translate(" + (from.left - to.left) + "px," + (from.top - to.top) + "px) scale(" + (from.width / to.width) + "," + (from.height / to.height) + ")";
 		card.style.borderRadius = startRadius(origin, to, from);

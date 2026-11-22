@@ -136,9 +136,9 @@ function inksOf(canvas: HTMLCanvasElement): CloverInks {
 	const style = getComputedStyle(canvas);
 	return {
 		ink: style.color,
-		danger: style.getPropertyValue("--sumi-danger"),
-		warning: style.getPropertyValue("--sumi-warning"),
-		accent: style.getPropertyValue("--sumi-accent"),
-		quiet: style.getPropertyValue("--sumi-text-3"),
+		danger: style.getPropertyValue("--danger"),
+		warning: style.getPropertyValue("--warning-text"),
+		accent: style.getPropertyValue("--accent-base"),
+		quiet: style.getPropertyValue("--text-3"),
 	};
 }

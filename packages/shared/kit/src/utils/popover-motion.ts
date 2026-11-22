@@ -70,18 +70,18 @@ export function exitPanel(panel: HTMLElement, anchor: HTMLElement, done: () => v
 	const inner = styledChildOf(panel);
 	if (inner) {
 		// TRADE-OFF: the fold's own duration — at 120ms the content blinked out ahead of the box
-		inner.style.transition = "opacity var(--wg-quick) var(--wg-ease)";
+		inner.style.transition = "opacity var(--quick) var(--ease-standard)";
 		inner.style.opacity = "0";
 	}
 	panel.style.transition =
-		"transform var(--wg-quick) var(--wg-ease), border-radius var(--wg-quick) var(--wg-ease), opacity var(--wg-press) var(--wg-ease) 80ms";
+		"transform var(--quick) var(--ease-standard), border-radius var(--quick) var(--ease-standard), opacity var(--press) var(--ease-standard) 80ms";
 	panel.style.opacity = "0";
 	fold(panel, anchor);
 	return whenTransitionEnds(panel, "transform", done);
 }
 
 function fadePanel(panel: HTMLElement, done: () => void): StopMotion {
-	panel.style.transition = "opacity var(--wg-quick) var(--wg-ease)";
+	panel.style.transition = "opacity var(--quick) var(--ease-standard)";
 	panel.style.opacity = "0";
 	return whenTransitionEnds(panel, "opacity", done);
 }
@@ -172,8 +172,8 @@ function unstage(panel: HTMLElement): void {
 	panel.style.translate = "";
 	panel.style.scale = "";
 	panel.style.transformOrigin = "";
-	panel.style.removeProperty("--wg-kit-pop-seed-x");
-	panel.style.removeProperty("--wg-kit-pop-seed-y");
+	panel.style.removeProperty("--pop-seed-x");
+	panel.style.removeProperty("--pop-seed-y");
 }
 
 function clearMotion(panel: HTMLElement): void {
@@ -233,20 +233,20 @@ function wearPaint(panel: HTMLElement, paint: Paint): void {
 
 function enterTransition(): string {
 	return ["border-radius", "background-color", "box-shadow"]
-		.map((name) => `${name} ${GROW_MS}ms var(--wg-ease)`)
+		.map((name) => `${name} ${GROW_MS}ms var(--ease-standard)`)
 		.join(", ");
 }
 
 function contentTransition(): string {
-	return `opacity ${CONTENT_MS}ms var(--wg-ease) ${CONTENT_DELAY_MS}ms`;
+	return `opacity ${CONTENT_MS}ms var(--ease-standard) ${CONTENT_DELAY_MS}ms`;
 }
 
 function sitOnAnchor(panel: HTMLElement, seat: Seat, paint: Paint, origin: string): void {
 	panel.style.transition = "none";
 	panel.style.animation = "none";
 	panel.style.transformOrigin = origin;
-	panel.style.setProperty("--wg-kit-pop-seed-x", `${seat.scaleX}`);
-	panel.style.setProperty("--wg-kit-pop-seed-y", `${seat.scaleY}`);
+	panel.style.setProperty("--pop-seed-x", `${seat.scaleX}`);
+	panel.style.setProperty("--pop-seed-y", `${seat.scaleY}`);
 	panel.style.scale = `${seat.scaleX} ${seat.scaleY}`;
 	panel.style.borderRadius = seat.radius;
 	wearPaint(panel, paint);
@@ -262,7 +262,7 @@ function commitSeat(panel: HTMLElement): void {
 
 function growPanel(panel: HTMLElement, paint: Paint): void {
 	panel.style.transition = enterTransition();
-	panel.style.animation = `wg-kit-pop-bloom ${GROW_MS}ms var(--wg-ease) both`;
+	panel.style.animation = `wg-kit-pop-bloom ${GROW_MS}ms var(--ease-standard) both`;
 	panel.style.scale = "";
 	panel.style.borderRadius = "";
 	wearPaint(panel, paint);

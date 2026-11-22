@@ -8,10 +8,20 @@ const SHEETS = [
 	"apps/studio/dist/studio.css",
 	"plugins/ai/chat-images/src/features/said-images/ui/said-image/said-image.css",
 ];
-const HUES: Record<string, number> = { A: 210, B: 28, Desktop: 210, Phone: 28, Chart: 150, Table: 280, Banner: 350, Shot: 190, Icon: 60 };
+const HUES: Record<string, number> = {
+	A: 210,
+	B: 28,
+	Desktop: 210,
+	Phone: 28,
+	Chart: 150,
+	Table: 280,
+	Banner: 350,
+	Shot: 190,
+	Icon: 60,
+};
 const bundle = await bundleOf("tools/scratch-bento-page.tsx");
 const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</style>`).join("");
-const PAGE = `<!doctype html><html><head><meta charset="utf-8">${styles}<style>body{margin:0;background:var(--sumi-plate)} h4{margin:16px 0 6px;font:600 13px var(--sumi-font-ui)}</style></head><body class="wg-studio"><div id="root"></div><script>${bundle}</script></body></html>`;
+const PAGE = `<!doctype html><html><head><meta charset="utf-8">${styles}<style>body{margin:0;background:var(--plate)} h4{margin:16px 0 6px;font:600 13px var(--font-ui)}</style></head><body class="wg-studio"><div id="root"></div><script>${bundle}</script></body></html>`;
 
 function svgOf(name: string, width: number, height: number): string {
 	const hue = HUES[name] ?? 0;

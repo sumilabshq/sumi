@@ -15,10 +15,10 @@ export interface TemplateGridProps {
 	readonly onUse: OnUseTemplate | null | undefined;
 }
 
-type ColumnsStyle = CSSProperties & { readonly "--wg-cat-columns": number };
+type ColumnsStyle = CSSProperties & { readonly "--cat-columns": number };
 
 export function TemplateGrid({ templates, columns, nameOf, onUse }: TemplateGridProps): ReactElement {
-	const style: ColumnsStyle = { "--wg-cat-columns": columns };
+	const style: ColumnsStyle = { "--cat-columns": columns };
 	return h(
 		"div",
 		{ className: "wg-tpl-grid", style },

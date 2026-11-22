@@ -57,5 +57,5 @@ function hoverHandlersOf(setHovered: (isHovered: boolean) => void): HoverHandler
 }
 
 function frontHeightStyle(heightPx: number): TokenStyle {
-	return { "--wg-kit-toast-front-height": `${heightPx}px` };
+	return { "--toast-front-height": `${heightPx}px` };
 }

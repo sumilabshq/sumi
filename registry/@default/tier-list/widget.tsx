@@ -95,7 +95,7 @@ const TierList = createWidget({
 		const isBroken = Boolean(listedCards.failure || listedTiers.failure);
 
 		return (
-			<div className="wg-rank" ref={rootRef} style={{ "--wg-rank-card": `${size}px` } as Record<string, string>}>
+			<div className="wg-rank" ref={rootRef} style={{ "--rank-card": `${size}px` } as Record<string, string>}>
 				<Renderer.Provider value={host?.can?.renderMarkdown ? (host.ui.renderMarkdown as RenderMarkdown) : null}>
 					{isBroken ? <span className="wr-failure">{COULD_NOT_READ}</span> : <Board heading={title} {...board} />}
 					<Windows held={held} opened={opened} write={write} may={may} cards={cardRows.length} rows={tierRows.length} />

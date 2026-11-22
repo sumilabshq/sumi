@@ -7,7 +7,7 @@
 
 .sumi-mini-canvas .sumi-mini-canvas-field {
 	height: 100%;
-	background: var(--sumi-mcp-card-fill, var(--wg-kit-group-fill));
+	background: var(--mcp-card-fill, var(--group-fill));
 }
 
 .sumi-mini-canvas-cover {

@@ -31,7 +31,7 @@ export function ProgressLine({
 	const valueRef = useRef<HTMLSpanElement>(null);
 	const roomForValue = useWidthOf(valueRef);
 	const valueRoom: TokenStyle = {
-		"--wg-bar-value-room": said === null ? "0px" : `${roomForValue + VALUE_GAP_PX}px`,
+		"--bar-value-room": said === null ? "0px" : `${roomForValue + VALUE_GAP_PX}px`,
 	};
 	return (
 		<div

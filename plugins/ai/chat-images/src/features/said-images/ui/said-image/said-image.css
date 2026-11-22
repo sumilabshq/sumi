@@ -2,9 +2,9 @@
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	align-items: start;
-	gap: var(--sumi-sp-4, 8px);
+	gap: var(--space-2, 8px);
 	max-width: 100%;
-	margin: var(--sumi-sp-4, 8px) 0;
+	margin: var(--space-2, 8px) 0;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-gallery[data-count="1"] {
@@ -19,18 +19,18 @@
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: var(--sumi-sp-2, 4px);
+	gap: var(--space-1, 4px);
 	min-width: 0;
 	max-width: 100%;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-said p .wg-studio-ai-figure {
-	margin: var(--sumi-sp-4, 8px) 0;
+	margin: var(--space-2, 8px) 0;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-caption {
-	color: var(--sumi-text-3, var(--muted-foreground));
-	font-size: var(--sumi-fs-12, 12px);
+	color: var(--text-3, var(--muted-foreground));
+	font-size: var(--fs-12, 12px);
 	line-height: 1.4;
 }
 
@@ -40,9 +40,9 @@
 	width: fit-content;
 	max-width: 100%;
 	overflow: hidden;
-	border-radius: var(--wg-kit-item);
+	border-radius: var(--item);
 	background: none;
-	outline: 1px solid var(--sumi-line, var(--background-modifier-border));
+	outline: 1px solid var(--line, var(--background-modifier-border));
 	outline-offset: -1px;
 }
 
@@ -81,7 +81,7 @@
 }
 
 :is(.wg-root, .wg-portal) .sumi-said-image-state.is-failed {
-	color: var(--sumi-text-3, var(--muted-foreground));
+	color: var(--text-3, var(--muted-foreground));
 	cursor: default;
 }
 
@@ -140,7 +140,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	outline: 1px solid var(--sumi-line);
+	outline: 1px solid var(--line);
 	outline-offset: -1px;
 }
 
@@ -173,9 +173,9 @@
 	right: 0;
 	bottom: 0;
 	left: 0;
-	padding: var(--sumi-sp-2) var(--sumi-sp-3);
+	padding: var(--space-1) var(--space-1-5);
 	overflow: hidden;
-	background: var(--sumi-overlay);
+	background: var(--overlay);
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }

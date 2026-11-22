@@ -48,8 +48,8 @@ export function StripRun({ run, acts, drag, liftedId, onMenu }: StripRunProps): 
 
 	const { group } = run;
 	const label = (group.isOpen ? FOLD : UNFOLD).replace("{name}", group.name);
-	const colour: CSSProperties & Readonly<Record<"--sumi-group", string>> = {
-		"--sumi-group": groupColourOf(group.hue),
+	const colour: CSSProperties & Readonly<Record<"--group-legacy", string>> = {
+		"--group-legacy": groupColourOf(group.hue),
 	};
 	return (
 		<div className="sumi-strip-group" data-open={group.isOpen ? "" : undefined} style={colour}>

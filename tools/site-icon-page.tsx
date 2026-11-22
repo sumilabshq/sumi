@@ -92,12 +92,12 @@ function IconCases(): ReactElement {
 		{ name: "live-swap", favicon: null, size: "row", address: `${SWAPPED}/inbox` },
 	];
 	return (
-		<div className="cv:w-[248px] cv:bg-(--sumi-frame) cv:p-2">
+		<div className="cv:w-[248px] cv:bg-(--frame) cv:p-2">
 			{cases.map(({ name, favicon, size, address = "https://mail.example/" }) => (
 				<div
 					key={name}
 					data-case={name}
-					className="cv:flex cv:h-8 cv:items-center cv:gap-2 cv:px-2 cv:text-[13px] cv:text-(--sumi-text)"
+					className="cv:flex cv:h-8 cv:items-center cv:gap-2 cv:px-2 cv:text-[13px] cv:text-(--text)"
 				>
 					<TabArt icon="site" favicon={favicon} title="Mail" address={address} size={size} />
 					<span>{name}</span>

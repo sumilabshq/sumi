@@ -23,13 +23,13 @@ const THEMES: Readonly<Record<Theme, string>> = {
 const TONES = TONE_NAMES.map((name) => [name, toneClass(name)] as const);
 
 const SURFACES = [
-	["page", "var(--wg-kit-page)"],
-	["grid", "var(--wg-cell-fill)"],
-	["column", "var(--wg-kit-fill)"],
-	["card", "var(--wg-kit-raise)"],
-	["cardEdge", "var(--wg-kit-card-edge)"],
-	["inDialog", "var(--wg-kit-glass-group)"],
-	["hover", "var(--wg-kit-fill-hover)"],
+	["page", "var(--page)"],
+	["grid", "var(--cell-fill)"],
+	["column", "var(--fill)"],
+	["card", "var(--raise)"],
+	["cardEdge", "var(--card-edge)"],
+	["inDialog", "var(--glass-group)"],
+	["hover", "var(--fill-hover)"],
 ];
 
 function levels(theme: Theme): unknown {

@@ -60,7 +60,7 @@ const STYLE = `
 .ovg-empty-note {
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .ovg-fill { margin-top: var(--size-4-1, 4px); }

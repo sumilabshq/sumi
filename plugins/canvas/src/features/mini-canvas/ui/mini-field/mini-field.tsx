@@ -26,7 +26,7 @@ const UNKEPT = {
 	camera: null,
 	onKept: (): void => undefined,
 };
-const ZOOM_VAR = "--sumi-canvas-zoom";
+const ZOOM_VAR = "--canvas-zoom";
 const FIELD_MARGIN_PX = 80;
 
 export function MiniField({ boards, background }: MiniFieldProps): ReactElement {

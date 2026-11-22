@@ -21,5 +21,5 @@ export function PhotoStack({ photos = [], size = 56, isRound = false, className:
 }
 
 function sizedOf(size: number): TokenStyle {
-	return { "--wg-photo-size": `${size}px` };
+	return { "--photo-size": `${size}px` };
 }

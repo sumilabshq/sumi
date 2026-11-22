@@ -6,8 +6,8 @@ import { useLingeringSpot } from "../../lib/use-lingering-spot.js";
 export type SpotTone = "hover" | "picked";
 
 const TONE: Readonly<Record<SpotTone, string>> = {
-	hover: "cv:bg-[color-mix(in_srgb,var(--wg-kit-accent)_8%,transparent)]",
-	picked: "cv:bg-[color-mix(in_srgb,var(--wg-kit-accent)_16%,transparent)]",
+	hover: "cv:bg-[color-mix(in_srgb,var(--brand)_8%,transparent)]",
+	picked: "cv:bg-[color-mix(in_srgb,var(--brand)_16%,transparent)]",
 };
 
 export function Highlight({

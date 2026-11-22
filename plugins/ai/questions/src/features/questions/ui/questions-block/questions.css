@@ -1,10 +1,10 @@
 :is(.wg-root, .wg-portal) .wg-questions-block {
 	display: flex;
 	flex-direction: column;
-	padding: var(--sumi-sp-6) var(--sumi-sp-6) var(--sumi-sp-4);
-	background: var(--sumi-soft);
-	color: var(--sumi-text);
-	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.6 var(--sumi-font-ui);
+	padding: var(--space-4) var(--space-4) var(--space-2);
+	background: var(--soft);
+	color: var(--text);
+	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-block-head {
@@ -15,7 +15,7 @@
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-block-head b {
-	font-weight: var(--sumi-fw-semi);
+	font-weight: var(--fw-semi);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-block-head .wg-mascot {
@@ -23,7 +23,7 @@
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-place {
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-card {
@@ -34,24 +34,24 @@
 
 :is(.wg-root, .wg-portal) .wg-questions-card-question {
 	margin: 0;
-	padding-top: var(--sumi-sp-5);
-	font-weight: var(--sumi-fw-semi);
+	padding-top: var(--space-3);
+	font-weight: var(--fw-semi);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-card-detail {
 	margin: 0;
-	padding: var(--sumi-sp-1) 0 var(--sumi-sp-5);
-	color: var(--sumi-text-3);
+	padding: var(--space-0-5) 0 var(--space-3);
+	color: var(--text-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-option {
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--sumi-sp-5);
+	gap: var(--space-3);
 	height: 34px;
-	margin: 0 calc(-1 * var(--sumi-sp-6));
-	padding: 0 var(--sumi-sp-6);
+	margin: 0 calc(-1 * var(--space-4));
+	padding: 0 var(--space-4);
 	font: inherit;
 	text-align: start;
 	white-space: nowrap;
@@ -65,9 +65,9 @@
 	justify-content: center;
 	width: 20px;
 	height: 20px;
-	background: var(--wg-kit-fill-hover);
-	color: var(--sumi-text-3);
-	font: var(--sumi-fw-medium) var(--sumi-fs-11) / 1 var(--sumi-font-mono);
+	background: var(--fill-hover);
+	color: var(--text-3);
+	font: var(--fw-medium) var(--fs-11) / 1 var(--font-code);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-option-label {
@@ -79,14 +79,14 @@
 :is(.wg-root, .wg-portal) .wg-questions-option-detail {
 	flex: none;
 	margin-left: auto;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-answer {
 	align-self: flex-start;
-	height: var(--sumi-h-sm);
-	margin-top: var(--sumi-sp-2);
-	padding: 0 var(--sumi-sp-5);
+	height: var(--h-sm);
+	margin-top: var(--space-1);
+	padding: 0 var(--space-3);
 	font: inherit;
 	cursor: pointer;
 }
@@ -95,10 +95,10 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--sumi-sp-4);
-	height: var(--sumi-h-lg);
-	margin: var(--sumi-sp-2) 0 0;
-	color: var(--sumi-text-3);
+	gap: var(--space-2);
+	height: var(--h-lg);
+	margin: var(--space-1) 0 0;
+	color: var(--text-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-own-field {
@@ -117,16 +117,16 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--sumi-sp-5);
+	gap: var(--space-3);
 	height: 34px;
-	color: var(--sumi-text-3);
+	color: var(--text-3);
 	white-space: nowrap;
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-next-num {
 	width: 20px;
 	flex: none;
-	font: var(--sumi-fw-regular) var(--sumi-fs-11) / 1 var(--sumi-font-mono);
+	font: var(--fw-regular) var(--fs-11) / 1 var(--font-code);
 	text-align: center;
 }
 

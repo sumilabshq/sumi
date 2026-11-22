@@ -21,7 +21,7 @@ const CSS = `
 	flex: none;
 	place-content: center;
 	width: var(--mt-w-index, 30px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -29,12 +29,12 @@ const CSS = `
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
 :is(.wg-root, .wg-portal) .mt-row .mt-artist {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: var(--font-ui-smaller);
 	font-weight: var(--font-normal);
 }
@@ -94,8 +94,8 @@ const CSS = `
 	display: block;
 	width: 3px;
 	height: 100%;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-accent);
+	border-radius: var(--pill);
+	background: var(--brand);
 	transform-origin: bottom center;
 	animation: mt-eq-bar 900ms ease-in-out infinite alternate;
 }
@@ -118,7 +118,7 @@ const CSS = `
 @container widget (width < ${NARROW_PX}px) {
 	:is(.wg-root, .wg-portal) .mt-row {
 		flex-wrap: wrap;
-		row-gap: var(--wg-gap-parts);
+		row-gap: var(--gap-parts);
 	}
 
 	.mt-row .mt-index { order: 0; }

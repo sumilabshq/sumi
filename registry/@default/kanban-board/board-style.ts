@@ -21,7 +21,7 @@ export const BOARD_CSS = `
 /* CONTEXT: the reference's 268 plus 10% — a two-line title and four circles need the room */
 .orbi-kanban .ok-list {
 	flex: 0 0 296px;
-	gap: var(--wg-gap-cards);
+	gap: var(--gap-cards);
 }
 
 .orbi-kanban .ok-list.is-over { box-shadow: inset 0 0 0 2px var(--interactive-accent); }
@@ -47,7 +47,7 @@ export const BOARD_CSS = `
 	min-width: 0;
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -66,23 +66,23 @@ export const BOARD_CSS = `
 	width: 24px;
 	height: 24px;
 	margin-left: auto;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	opacity: 0;
 	transition: opacity var(--orbi-quick) var(--orbi-ease);
 }
 
-.orbi-kanban .ok-list-remove::before { border-radius: var(--wg-kit-pill); }
+.orbi-kanban .ok-list-remove::before { border-radius: var(--pill); }
 
 .orbi-kanban .ok-list:hover .ok-list-remove,
 .orbi-kanban .ok-list-remove:focus-visible { opacity: 1; }
 
-.orbi-kanban .ok-list-remove:hover { color: var(--wg-kit-text); }
+.orbi-kanban .ok-list-remove:hover { color: var(--foreground); }
 .orbi-kanban .ok-list-remove:hover::before { background: var(--background-modifier-hover); }
 
 .orbi-kanban .ok-card-slot {
-	--wg-slot-corner: var(--wg-kit-item);
+	--slot-corner: var(--item);
 	cursor: grab;
-	border-radius: var(--wg-kit-item);
+	border-radius: var(--item);
 	transition: transform var(--orbi-press) var(--orbi-ease);
 }
 .orbi-kanban .ok-card-slot:active { cursor: grabbing; transform: scale(0.955); }
@@ -100,13 +100,13 @@ export const BOARD_CSS = `
 	padding: var(--size-4-2, 8px);
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-medium, 500);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	cursor: pointer;
 }
 
-.orbi-kanban .ok-add-task::before { border-radius: var(--wg-kit-item); }
+.orbi-kanban .ok-add-task::before { border-radius: var(--item); }
 
-.orbi-kanban .ok-add-task:hover { color: var(--wg-kit-text); }
+.orbi-kanban .ok-add-task:hover { color: var(--foreground); }
 
 /* the composer stands where the button stood, inside the column, not in a plate of its own */
 .orbi-kanban .ok-add-task-open {
@@ -121,12 +121,12 @@ export const BOARD_CSS = `
 	padding: 0 var(--size-4-3, 12px);
 	appearance: none;
 	border: none;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	background: var(--background-primary);
 	box-shadow: none;
 	font-family: inherit;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	outline: none;
 }
 
@@ -138,7 +138,7 @@ export const BOARD_CSS = `
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-semibold, 600);
 	line-height: var(--line-height-tight, 1.25);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 /* TRADE-OFF: the plate shape at rest, so the place a new list lands is already drawn */
@@ -158,7 +158,7 @@ export const BOARD_CSS = `
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
 	font-weight: var(--font-medium, 500);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	cursor: pointer;
 }
 
@@ -169,7 +169,7 @@ export const BOARD_CSS = `
 	z-index: -1;
 }
 
-.orbi-kanban .ok-add-list-rest:hover { color: var(--wg-kit-text); }
+.orbi-kanban .ok-add-list-rest:hover { color: var(--foreground); }
 
 .orbi-kanban .ok-add-list { flex: 0 0 296px; }
 
@@ -179,12 +179,12 @@ export const BOARD_CSS = `
 	padding: 0 var(--size-4-3, 12px);
 	appearance: none;
 	border: none;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	background: var(--background-primary);
 	box-shadow: none;
 	font-family: inherit;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	outline: none;
 }
 

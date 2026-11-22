@@ -24,8 +24,8 @@ export interface TreeBoardProps extends Omit<TreeDraw, "tileOf" | "pressAt" | "c
 export function TreeBoard(props: TreeBoardProps): ReactElement {
 	const page = useTreePage(props);
 	const chrome = useTreeChrome(props, page);
-	const pageStyle: NodeStyle = { "--wg-tree-gap": `${GAP_PX}px`, ...gapVarsOf(1) };
-	const columnsStyle: NodeStyle = { "--wg-tree-edge-gap": `${REGION_GAP_PX}px` };
+	const pageStyle: NodeStyle = { "--tree-gap": `${GAP_PX}px`, ...gapVarsOf(1) };
+	const columnsStyle: NodeStyle = { "--tree-edge-gap": `${REGION_GAP_PX}px` };
 	return h(
 		"div",
 		{ className: "wg-tree-page", ref: page.pageRef, style: pageStyle },

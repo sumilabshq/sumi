@@ -19,7 +19,7 @@ const APP_SCOPES_IN_STUDIO: readonly string[] = [
 	".wg-studio:not(.is-canvas) > .wg-studio-outlet",
 	".wg-shell-route",
 ];
-const STUDIO_TYPE_FEATURES = `${STUDIO_SHELL_SCOPES.join(",\n")} {\n\tfont-feature-settings: var(--sumi-font-features);\n}\n\n`;
+const STUDIO_TYPE_FEATURES = `${STUDIO_SHELL_SCOPES.join(",\n")} {\n\tfont-feature-settings: var(--font-features);\n}\n\n`;
 const TOKEN_RULE = /([^{}]+)\{([^{}]*)\}/g;
 const FONTS_FOLDER = "packages/shared/kit/assets/fonts";
 

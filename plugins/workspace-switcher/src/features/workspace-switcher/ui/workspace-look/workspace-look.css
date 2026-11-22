@@ -1,26 +1,26 @@
 :root {
-	--sumi-ws-look-field-inset: 10px;
-	--sumi-ws-look-cell-gap: 2px;
-	--sumi-ws-look-note-block: 12px;
+	--ws-look-field-inset: 10px;
+	--ws-look-cell-gap: 2px;
+	--ws-look-note-block: 12px;
 }
 
 .sumi-ws-look {
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
-	gap: var(--sumi-sp-4);
+	gap: var(--space-2);
 	width: 320px;
-	padding: var(--sumi-sp-4);
-	font-family: var(--sumi-font-ui);
-	font-size: var(--sumi-fs-13);
-	color: var(--sumi-text);
+	padding: var(--space-2);
+	font-family: var(--font-ui);
+	font-size: var(--fs-13);
+	color: var(--text);
 }
 
 .sumi-ws-look-head,
 .sumi-ws-look-find {
 	display: flex;
 	align-items: center;
-	gap: var(--sumi-sp-4);
+	gap: var(--space-2);
 }
 
 .sumi-ws-look-now {
@@ -30,9 +30,9 @@
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	border-radius: var(--wg-kit-control-radius);
-	background: var(--wg-kit-wash);
-	color: var(--wg-kit-control-ink-on);
+	border-radius: var(--control-corner);
+	background: var(--wash-active);
+	color: var(--control-glyph-on);
 }
 
 .sumi-ws-look-now .sumi-ws-filled,
@@ -48,19 +48,19 @@
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-kit-portal-layer) .sumi-ws-look .sumi-ws-look-name {
-	gap: var(--sumi-sp-4);
+	gap: var(--space-2);
 	height: 36px;
 	min-height: 36px;
-	padding-inline: var(--sumi-ws-look-field-inset);
-	font-size: var(--sumi-fs-15);
-	font-weight: var(--sumi-fw-semi);
+	padding-inline: var(--ws-look-field-inset);
+	font-size: var(--fs-15);
+	font-weight: var(--fw-semi);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-kit-portal-layer) .sumi-ws-look .sumi-ws-look-search {
-	gap: var(--sumi-sp-4);
+	gap: var(--space-2);
 	height: 32px;
 	min-height: 32px;
-	padding-inline: var(--sumi-ws-look-field-inset);
+	padding-inline: var(--ws-look-field-inset);
 }
 
 .sumi-ws-look-remove {
@@ -70,7 +70,7 @@
 .sumi-ws-look-grid {
 	display: grid;
 	grid-template-columns: repeat(8, 1fr);
-	gap: var(--sumi-ws-look-cell-gap);
+	gap: var(--ws-look-cell-gap);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-kit-portal-layer) .sumi-ws-look .sumi-ws-look-cell {
@@ -79,7 +79,7 @@
 }
 
 .sumi-ws-look-none {
-	margin: var(--wg-kit-space-none);
-	padding: var(--sumi-ws-look-note-block) var(--sumi-ws-look-field-inset);
-	color: var(--sumi-text-3);
+	margin: var(--space-none);
+	padding: var(--ws-look-note-block) var(--ws-look-field-inset);
+	color: var(--text-3);
 }

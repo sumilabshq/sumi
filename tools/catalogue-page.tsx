@@ -82,8 +82,8 @@ function Harness(): ReactElement {
 const hostNode = document.getElementById("host");
 if (hostNode) render(h(Harness), hostNode);
 
-const LATTICE_CELL_VAR = "--wg-cell";
-const LATTICE_GAP_VAR = "--wg-gap";
+const LATTICE_CELL_VAR = "--widget-cell";
+const LATTICE_GAP_VAR = "--widget-gap";
 
 function spanOn(stage: Element, px: number): number {
 	const style = getComputedStyle(stage);

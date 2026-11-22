@@ -5,7 +5,7 @@ export const CSS = `
 		[wide-start measure-start] minmax(0, var(--flow-report-measure, 68ch))
 		[measure-end] minmax(0, 1fr) [wide-end];
 	align-content: start;
-	row-gap: var(--wg-gap-items);
+	row-gap: var(--gap-items);
 	flex: 1 1 auto;
 	min-width: 0;
 	min-height: 0;
@@ -37,13 +37,13 @@ export const CSS = `
 
 .flow-report-said {
 	margin: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .flow-report-part {
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -55,7 +55,7 @@ export const CSS = `
 .flow-report-fixes {
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -66,8 +66,8 @@ export const CSS = `
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr);
 	align-items: start;
-	column-gap: var(--wg-gap-parts);
-	row-gap: var(--wg-gap-parts);
+	column-gap: var(--gap-parts);
+	row-gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -76,7 +76,7 @@ export const CSS = `
 }
 
 .flow-report-step[data-done] .wg-kit-icon-glyph {
-	color: var(--wg-kit-success);
+	color: var(--success);
 }
 
 .flow-report-step-what {
@@ -87,7 +87,7 @@ export const CSS = `
 .flow-report-step-expected {
 	grid-column: 2;
 	min-width: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	overflow-wrap: anywhere;
 }
 
@@ -95,7 +95,7 @@ export const CSS = `
 	display: flex;
 	flex-wrap: wrap;
 	align-items: baseline;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -105,7 +105,7 @@ export const CSS = `
 }
 
 .flow-report-fix-where {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	overflow-wrap: anywhere;
 }
 
@@ -113,12 +113,12 @@ export const CSS = `
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
 .flow-report-pager-said {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 @container widget (width < 360px) {

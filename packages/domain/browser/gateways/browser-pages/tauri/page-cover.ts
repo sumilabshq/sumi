@@ -22,7 +22,7 @@ const CAPTURED = true;
 const DRAG_ENDS = ["dragend", "drop", "pointermove"] as const;
 const LIVE = "data-browser-pages-live";
 const SHELL = ".wg-shell";
-const FRAME_TOKEN = "var(--sumi-frame)";
+const FRAME_TOKEN = "var(--frame)";
 const NO_HOLES = "[]";
 const NO_HOLES_SENT = "";
 

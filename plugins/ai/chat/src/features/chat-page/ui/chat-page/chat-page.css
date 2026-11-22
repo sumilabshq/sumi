@@ -3,23 +3,23 @@
 }
 
 .wg-chat-app {
-	--wg-studio-edge: var(--wg-kit-plate-pad);
-	--wg-studio-chat-content: var(--sumi-read-w);
-	--wg-studio-container-corner: calc(var(--radius) + var(--gap-plate));
-	--wg-studio-bubble-corner: calc(var(--radius) - 4px);
+	--studio-edge: var(--plate-pad);
+	--studio-chat-content: var(--read-w);
+	--studio-container-corner: calc(var(--radius) + var(--gap-plate));
+	--studio-bubble-corner: calc(var(--radius) - 4px);
 	display: flex;
 	flex-direction: column;
 	flex: 1;
 	min-height: 0;
-	background: var(--sumi-plate);
-	color: var(--sumi-text);
-	font-family: var(--sumi-font-ui);
-	font-feature-settings: var(--sumi-font-features);
-	font-size: var(--sumi-fs-13);
+	background: var(--plate);
+	color: var(--text);
+	font-family: var(--font-ui);
+	font-feature-settings: var(--font-features);
+	font-size: var(--fs-13);
 	line-height: 1.4;
 	letter-spacing: -0.006em;
-	--wg-kit-fill: var(--sumi-soft);
-	--wg-kit-group-fill: var(--sumi-soft);
+	--fill: var(--soft);
+	--group-fill: var(--soft);
 }
 
 .wg-chat-app,
@@ -32,9 +32,9 @@
 }
 
 .wg-chat-app {
-	--wg-chat-head-line: var(--sumi-header-h);
-	--wg-chat-head-fade: var(--sumi-sp-5);
-	--wg-chat-head-h: calc(var(--wg-chat-head-line) + var(--wg-chat-head-fade));
+	--chat-head-line: var(--header-h);
+	--chat-head-fade: var(--space-3);
+	--chat-head-h: calc(var(--chat-head-line) + var(--chat-head-fade));
 }
 
 .wg-chat-head {
@@ -44,21 +44,21 @@
 	z-index: 3;
 	display: flex;
 	align-items: center;
-	gap: var(--sumi-sp-1);
+	gap: var(--space-0-5);
 	box-sizing: border-box;
-	height: var(--wg-chat-head-h);
-	padding-block-end: var(--wg-chat-head-fade);
-	padding-inline-start: max(var(--sumi-corner-start, 0px), var(--sumi-sp-6));
-	padding-inline-end: max(var(--sumi-corner-end, 0px), var(--sumi-sp-6));
-	background: linear-gradient(var(--wg-plate-fill, var(--sumi-plate)) var(--wg-chat-head-line), transparent);
+	height: var(--chat-head-h);
+	padding-block-end: var(--chat-head-fade);
+	padding-inline-start: max(var(--corner-start, 0px), var(--space-4));
+	padding-inline-end: max(var(--corner-end, 0px), var(--space-4));
+	background: linear-gradient(var(--plate-fill, var(--plate)) var(--chat-head-line), transparent);
 }
 
 .wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-scroll {
-	padding-block-start: var(--wg-chat-head-h);
+	padding-block-start: var(--chat-head-h);
 }
 
 .wg-chat-app-none {
 	margin: 0;
-	padding: calc(24px + var(--sumi-corner-top, 0px)) 24px 24px;
-	color: var(--sumi-text-muted);
+	padding: calc(24px + var(--corner-top, 0px)) 24px 24px;
+	color: var(--text-muted-legacy);
 }

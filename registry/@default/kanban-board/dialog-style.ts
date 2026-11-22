@@ -54,8 +54,8 @@ export const DIALOG_CSS = `
 	gap: var(--size-4-5, 20px);
 	min-height: 0;
 	overflow: auto;
-	margin: calc(-1 * var(--wg-kit-lift-room));
-	padding: var(--wg-kit-lift-room);
+	margin: calc(-1 * var(--lift-room));
+	padding: var(--lift-room);
 }
 
 .orbi-task-dialog .otd-left {
@@ -71,13 +71,13 @@ export const DIALOG_CSS = `
 .orbi-task-dialog .otd-title {
 	margin: 0;
 	padding: var(--size-2-3, 6px) var(--size-4-2, 8px);
-	border-radius: var(--wg-kit-item);
+	border-radius: var(--item);
 	font-size: 27px;
 	font-weight: var(--font-bold, 700);
 	/* 1.18 cut the descenders of a title that wrapped; the box has to hold the whole line box */
 	line-height: 1.3;
 	letter-spacing: -0.022em;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	cursor: text;
 	/* a long title wraps inside the column and never reaches past the window's edge */
 	overflow-wrap: anywhere;
@@ -103,7 +103,7 @@ export const DIALOG_CSS = `
 	touch-action: none;
 }
 
-.orbi-task-dialog button.otd-tag:hover { box-shadow: inset 0 0 0 1.4px var(--wg-line); }
+.orbi-task-dialog button.otd-tag:hover { box-shadow: inset 0 0 0 1.4px var(--line-faint); }
 
 .orbi-task-dialog button.otd-tag.is-held {
 	cursor: grabbing;
@@ -126,19 +126,19 @@ export const DIALOG_CSS = `
 	padding: 0;
 	appearance: none;
 	border: none;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill-hover);
+	border-radius: var(--pill);
+	background: var(--fill-hover);
 	box-shadow: none;
 	cursor: pointer;
 }
 
 .orbi-task-dialog .otd-tone.is-accent { background: var(--interactive-accent); }
 .orbi-task-dialog .otd-tone.is-ok { background: var(--text-success); }
-.orbi-task-dialog .otd-tone.is-warn { background: var(--wg-kit-warning); }
+.orbi-task-dialog .otd-tone.is-warn { background: var(--warning); }
 .orbi-task-dialog .otd-tone.is-err { background: var(--text-error); }
-.orbi-task-dialog .otd-tone.is-info { background: var(--wg-kit-info); }
-.orbi-task-dialog .otd-tone.is-note { background: var(--wg-kit-note); }
-.orbi-task-dialog .otd-tone.is-standout { background: var(--wg-kit-standout); }
+.orbi-task-dialog .otd-tone.is-info { background: var(--info); }
+.orbi-task-dialog .otd-tone.is-note { background: var(--note); }
+.orbi-task-dialog .otd-tone.is-standout { background: var(--standout); }
 
 .orbi-task-dialog .otd-tone.is-picked { box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 4px var(--interactive-accent); }
 
@@ -169,7 +169,7 @@ export const DIALOG_CSS = `
 	gap: var(--size-2-2, 4px);
 	padding: 3px var(--size-4-2, 8px) 3px var(--size-2-3, 6px);
 	border: none;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 	background: none;
 	font-family: inherit;
 	font-size: 11px;
@@ -178,7 +178,7 @@ export const DIALOG_CSS = `
 	cursor: pointer;
 }
 
-.orbi-task-dialog .otd-tag-add:hover { background: var(--wg-kit-fill); color: var(--wg-kit-text-muted); }
+.orbi-task-dialog .otd-tag-add:hover { background: var(--fill); color: var(--muted-foreground); }
 
 .orbi-task-dialog .otd-desc {
 	display: flex;

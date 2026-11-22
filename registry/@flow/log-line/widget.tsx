@@ -6,7 +6,7 @@ const CSS = `
 .wg-log-line {
 	display: flex;
 	align-items: flex-start;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -17,18 +17,18 @@ const CSS = `
 	justify-content: center;
 	width: 20px;
 	height: 20px;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 }
 
 .wg-log-line-mark.is-neutral { color: var(--text-faint); }
-.wg-log-line-mark.is-accent { background: var(--wg-kit-accent-wash); color: var(--wg-kit-accent); }
-.wg-log-line-mark.is-success { background: var(--wg-kit-success-wash); color: var(--wg-kit-success); }
-.wg-log-line-mark.is-error { background: var(--wg-kit-error-wash); color: var(--wg-kit-error); }
+.wg-log-line-mark.is-accent { background: var(--accent-wash); color: var(--brand); }
+.wg-log-line-mark.is-success { background: var(--success-wash); color: var(--success); }
+.wg-log-line-mark.is-error { background: var(--error-wash); color: var(--error); }
 
 .wg-log-line-body {
 	display: flex;
 	flex: 1 1 auto;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 

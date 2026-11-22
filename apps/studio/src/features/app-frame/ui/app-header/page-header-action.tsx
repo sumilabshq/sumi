@@ -4,7 +4,7 @@ import type { HeaderActionProps } from "@sumi/sumi-host-plugin";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 
 const DONE_LOOK = {
-	color: "var(--sumi-hue-green)",
+	color: "var(--hue-green)",
 };
 const DONE_ICON = "tick";
 

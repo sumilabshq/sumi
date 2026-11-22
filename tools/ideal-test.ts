@@ -29,7 +29,7 @@ const px = (css: string, sel: string, prop: string): string | null => {
 		"var(--size-4-4)": "16px",
 		"var(--size-4-5)": "20px",
 		"var(--size-2-3)": "6px",
-		"var(--wg-radius-pill)": "999px",
+		"var(--radius-pill-widget)": "999px",
 	};
 	const bare = raw.replace(/var\((--[\w-]+),[^)]*\)/g, "var($1)");
 	return named[bare] ?? bare;
@@ -100,8 +100,8 @@ const tok = (css: string, name: string): string | null => {
 	const alias = ALIAS.exec(value ?? "")?.[1];
 	return alias === undefined ? value : (tok(css, alias) ?? value);
 };
-same("plate radius", tok(ours, "--wg-kit-plate"), "14px");
-same("plate padding (tight)", tok(ours, "--wg-kit-plate-pad"), "8px");
+same("plate radius", tok(ours, "--plate-radius"), "14px");
+same("plate padding (tight)", tok(ours, "--plate-pad"), "8px");
 const relational = (name: string, toward: string): number => {
 	const value = tok(ours, name) ?? "";
 	const mixed = value.match(/^color-mix\(in srgb,\s*(.+?)\s+([\d.]+)%,\s*var\(--background\)\)$/);
@@ -109,9 +109,9 @@ const relational = (name: string, toward: string): number => {
 	same(`${name} names no ramp step`, /--color-base-\d/.test(value) ? value : 0, 0);
 	return mixed ? Number(mixed[2]) : 0;
 };
-const restPercent = relational("--wg-kit-fill", "var(--foreground)");
-const hoverPercent = relational("--wg-kit-fill-hover", "var(--foreground)");
-const raisePercent = relational("--wg-kit-raise", "oklch(1 0 0)");
+const restPercent = relational("--fill", "var(--foreground)");
+const hoverPercent = relational("--fill-hover", "var(--foreground)");
+const raisePercent = relational("--raise", "oklch(1 0 0)");
 
 same("hover travels further toward the ink than rest", hoverPercent > restPercent, true);
 same("and by a step that can be seen", hoverPercent - restPercent >= 5, true);
@@ -125,7 +125,7 @@ for (const needle of [
 	".wg-kit-row .wg-kit-btn::before",
 	".wg-kit-row .wg-kit-icon::before",
 ]) {
-	same(`${needle} takes the raise`, backgroundsOf(needle).join(" | ") || "nothing", "var(--wg-kit-raise)");
+	same(`${needle} takes the raise`, backgroundsOf(needle).join(" | ") || "nothing", "var(--raise)");
 }
 
 {
@@ -227,8 +227,8 @@ same(
 			offenders.push(`${selectors.join(", ")} → ${(declared[1] ?? "").trim()}`);
 	}
 	same("no floating panel drops a shadow", offenders.join(" | ") || 0, 0);
-	same("the popover is separated by its edge", px(ours, ".wg-kit-pop", "box-shadow"), "var(--wg-kit-glass-edge)");
-	same("and so is the dialog", px(ours, ".wg-dialog", "box-shadow"), "var(--wg-kit-glass-edge)");
+	same("the popover is separated by its edge", px(ours, ".wg-kit-pop", "box-shadow"), "var(--glass-edge)");
+	same("and so is the dialog", px(ours, ".wg-dialog", "box-shadow"), "var(--glass-edge)");
 }
 
 console.log(bad ? `\n${bad} deviations from the ideal` : "\nno deviation from the ideal in any measured value");

@@ -6,7 +6,7 @@ type ListProps = { items: Items; Drawn: Drawn; hasMore: boolean; onMore: () => v
 const CSS = `
 .wg-feed { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; min-height: 0; overflow: auto; }
 .wg-feed-more { flex: none; height: 1px; }
-.wg-feed-said { margin: 0; color: var(--wg-kit-text-muted); }
+.wg-feed-said { margin: 0; color: var(--muted-foreground); }
 `;
 
 export function FeedList({ items, Drawn, hasMore, onMore }: ListProps) {

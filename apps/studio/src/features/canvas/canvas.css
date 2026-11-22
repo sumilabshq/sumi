@@ -4,11 +4,11 @@
 }
 
 @theme {
-	--animate-canvas-fade-in: canvas-fade-in var(--wg-quick) var(--wg-ease);
+	--animate-canvas-fade-in: canvas-fade-in var(--quick) var(--ease-standard);
 	--animate-canvas-pulse: canvas-pulse 1.4s ease-in-out infinite;
 	--animate-canvas-wave: canvas-wave 2.2s ease-in-out infinite;
-	--animate-canvas-fold-open: canvas-fold-open var(--wg-quick) var(--wg-ease);
-	--animate-canvas-fold-shut: canvas-fold-shut var(--wg-quick) var(--wg-ease);
+	--animate-canvas-fold-open: canvas-fold-open var(--quick) var(--ease-standard);
+	--animate-canvas-fold-shut: canvas-fold-shut var(--quick) var(--ease-standard);
 
 	@keyframes canvas-fold-open {
 		from {

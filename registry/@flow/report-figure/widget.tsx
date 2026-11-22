@@ -8,7 +8,7 @@ const CSS = `
 .flow-report-figure {
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	margin: 0;
 	min-width: 0;
 }
@@ -45,8 +45,8 @@ const CSS = `
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: var(--wg-gap-parts);
-	color: var(--wg-kit-text-muted);
+	gap: var(--gap-parts);
+	color: var(--muted-foreground);
 	min-width: 0;
 }
 
@@ -69,7 +69,7 @@ const CSS = `
 	overflow: hidden;
 	margin: 0;
 	min-width: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 `;
 

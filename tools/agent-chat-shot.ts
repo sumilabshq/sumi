@@ -7,7 +7,7 @@ const TRANSCRIPT = process.argv[2] ?? "";
 const SHOT = process.argv[3] ?? "/tmp/agent-chat.png";
 const SHEETS = ["packages/shared/core/board.css", "apps/studio/dist/studio.css"];
 const LAYOUT =
-	"body { margin: 0; background: var(--sumi-plate); } .sumi-agent-chat { width: 760px; height: 560px; } .wg-studio-ai-host, .wg-studio-ai { height: 100%; }";
+	"body { margin: 0; background: var(--plate); } .sumi-agent-chat { width: 760px; height: 560px; } .wg-studio-ai-host, .wg-studio-ai { height: 100%; }";
 const bundle = await bundleOf("tools/agent-chat-page.tsx");
 const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</style>`).join("");
 const said = JSON.stringify(readFileSync(TRANSCRIPT, "utf8")).replaceAll("</", "<\\/");

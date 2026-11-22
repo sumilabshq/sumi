@@ -9,5 +9,5 @@ export interface RefusedDrawingProps {
 
 export function RefusedDrawing({ said, failure }: RefusedDrawingProps): ReactElement {
 	useReportsDrawFailure(failure);
-	return <p className="wg-studio-refused cv:m-0 cv:text-base cv:text-[var(--wg-kit-error-ink)]">{said}</p>;
+	return <p className="wg-studio-refused cv:m-0 cv:text-base cv:text-[var(--error-ink)]">{said}</p>;
 }

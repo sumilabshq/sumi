@@ -22,7 +22,7 @@ const CSS = `
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 	min-height: 0;
 	overflow: auto;
@@ -32,7 +32,7 @@ const CSS = `
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -47,11 +47,11 @@ const CSS = `
 .ffl-said {
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .ffl-pick {
-	border-radius: var(--wg-slot-corner, var(--wg-kit-plate));
+	border-radius: var(--slot-corner, var(--plate-radius));
 }
 
 .ffl-pick.is-pressable {
@@ -59,11 +59,11 @@ const CSS = `
 }
 
 .ffl-pick.is-picked {
-	box-shadow: inset 0 0 0 2px var(--wg-kit-accent);
+	box-shadow: inset 0 0 0 2px var(--brand);
 }
 
 .ffl-pick:focus-visible {
-	outline: 2px solid var(--wg-kit-accent);
+	outline: 2px solid var(--brand);
 	outline-offset: 2px;
 }
 

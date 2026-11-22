@@ -67,8 +67,8 @@ export function enterDialog(node: ParentNode | null | undefined): void {
 	const start = (): void => {
 		if (grown) return;
 		grown = true;
-		overlay.style.transition = `background-color ${GROW_MS}ms var(--wg-ease)`;
-		overlay.style.backgroundColor = "var(--wg-dialog-scrim)";
+		overlay.style.transition = `background-color ${GROW_MS}ms var(--ease-standard)`;
+		overlay.style.backgroundColor = "var(--dialog-scrim)";
 		growPastItsSize(panel);
 		beats.push(
 			setTimeout(() => {
@@ -105,9 +105,9 @@ export function exitDialog(node: HTMLElement, done: () => void): void {
 
 	const seat = seatPulledTowardPress(box, pressItGrewFrom(panel));
 	node.style.pointerEvents = "none";
-	overlay.style.transition = `background-color ${EXIT_MS}ms var(--wg-ease)`;
+	overlay.style.transition = `background-color ${EXIT_MS}ms var(--ease-standard)`;
 	overlay.style.backgroundColor = "transparent";
-	panel.style.transition = `translate ${EXIT_MS}ms var(--wg-ease), scale ${EXIT_MS}ms var(--wg-ease), opacity ${EXIT_MS}ms var(--wg-ease)`;
+	panel.style.transition = `translate ${EXIT_MS}ms var(--ease-standard), scale ${EXIT_MS}ms var(--ease-standard), opacity ${EXIT_MS}ms var(--ease-standard)`;
 	panel.style.transformOrigin = seat.origin;
 	panel.style.translate = `${seat.left}px ${seat.top}px`;
 	panel.style.scale = String(START_SCALE);
@@ -197,14 +197,14 @@ function sitAtPress(panel: HTMLElement, seat: Seat): void {
 }
 
 function growPastItsSize(panel: HTMLElement): void {
-	panel.style.transition = `translate ${GROW_MS}ms var(--wg-ease), scale ${GROW_MS}ms var(--wg-spread), opacity ${GROW_MS}ms var(--wg-ease)`;
+	panel.style.transition = `translate ${GROW_MS}ms var(--ease-standard), scale ${GROW_MS}ms var(--spread), opacity ${GROW_MS}ms var(--ease-standard)`;
 	panel.style.translate = "0px 0px";
 	panel.style.scale = String(OVERSHOOT_SCALE);
 	panel.style.opacity = "1";
 }
 
 function takeBackOvershoot(panel: HTMLElement): void {
-	panel.style.transition = `scale ${SETTLE_MS}ms var(--wg-ease)`;
+	panel.style.transition = `scale ${SETTLE_MS}ms var(--ease-standard)`;
 	panel.style.scale = "1";
 }
 

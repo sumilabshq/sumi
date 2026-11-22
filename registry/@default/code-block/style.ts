@@ -40,7 +40,7 @@ export const STYLE = `
 .wgc-needle {
 	margin-left: 6px;
 	font-family: var(--font-monospace);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wgc-body {
@@ -52,7 +52,7 @@ export const STYLE = `
 	margin: 0;
 	padding: 0;
 	min-height: 0;
-	border-radius: var(--wg-kit-item, 14px);
+	border-radius: var(--item, 14px);
 	background: transparent;
 }
 
@@ -64,7 +64,7 @@ export const STYLE = `
 	font-size: var(--font-ui-small, 13px);
 	line-height: 1.5;
 	white-space: pre;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .wgc-more {
@@ -76,7 +76,7 @@ export const STYLE = `
 }
 
 .wgc-left {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: var(--font-ui-smaller, 12px);
 }
 
@@ -88,11 +88,11 @@ export const STYLE = `
 
 .wgc-what {
 	font-weight: 600;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .wgc-why {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: var(--font-ui-small, 13px);
 	overflow-wrap: anywhere;
 }

@@ -13,15 +13,15 @@ export function laidFrameOf(panel: HTMLElement): LaidFrame {
 }
 
 export function wearAnchorWidth(panel: HTMLElement, anchor: AnchorBox, frame: LaidFrame = VIEWPORT_FRAME): void {
-	panel.style.setProperty("--wg-kit-anchor-width", `${anchor.width / frame.scale}px`);
+	panel.style.setProperty("--anchor-width", `${anchor.width / frame.scale}px`);
 }
 
 export function wearSpot(panel: HTMLElement, spot: FloatingSpot, frame: LaidFrame = VIEWPORT_FRAME): void {
 	panel.style.left = `${(spot.left - frame.left) / frame.scale}px`;
 	panel.style.top = `${(spot.top - frame.top) / frame.scale}px`;
-	panel.style.setProperty("--wg-kit-pop-origin", spot.origin);
-	panel.style.setProperty("--wg-kit-pop-available-width", `${Math.round(spot.availableWidth / frame.scale)}px`);
-	panel.style.setProperty("--wg-kit-pop-available-height", `${Math.round(spot.availableHeight / frame.scale)}px`);
+	panel.style.setProperty("--pop-origin", spot.origin);
+	panel.style.setProperty("--pop-available-width", `${Math.round(spot.availableWidth / frame.scale)}px`);
+	panel.style.setProperty("--pop-available-height", `${Math.round(spot.availableHeight / frame.scale)}px`);
 	panel.dataset["side"] = spot.side;
 	panel.dataset["align"] = spot.align;
 }

@@ -1,7 +1,7 @@
 .sumi-model-panes {
 	display: flex;
 	max-height: min(360px, calc(100vh - 160px));
-	margin: calc(-1 * var(--sumi-sp-2)) 0;
+	margin: calc(-1 * var(--space-1)) 0;
 }
 
 .sumi-model-pane {
@@ -11,23 +11,23 @@
 	gap: 0;
 	min-width: 0;
 	min-height: 0;
-	padding: var(--sumi-sp-2) 0;
+	padding: var(--space-1) 0;
 }
 
 .sumi-model-pane.is-providers {
 	flex: none;
 	width: 196px;
-	padding-inline-end: var(--sumi-sp-2);
+	padding-inline-end: var(--space-1);
 }
 
 .sumi-model-pane-divider + .sumi-model-pane {
-	padding-inline-start: var(--sumi-sp-2);
+	padding-inline-start: var(--space-1);
 }
 
 .sumi-model-pane-divider {
 	flex: none;
 	width: 1px;
-	background: var(--sumi-line);
+	background: var(--line);
 }
 
 .sumi-pane-head {
@@ -35,11 +35,11 @@
 	flex: none;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--sumi-sp-2);
-	height: var(--sumi-h-sm);
-	padding: 0 var(--sumi-sp-4);
-	color: var(--sumi-text-3);
-	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1.4 var(--sumi-font-ui);
+	gap: var(--space-1);
+	height: var(--h-sm);
+	padding: 0 var(--space-2);
+	color: var(--text-3);
+	font: var(--fw-regular) var(--fs-12) / 1.4 var(--font-ui);
 }
 
 :is(.wg-root, .wg-portal) .sumi-pane-head-button {
@@ -47,8 +47,8 @@
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: var(--sumi-h-xs);
-	height: var(--sumi-h-xs);
+	width: var(--h-xs);
+	height: var(--h-xs);
 	padding: 0;
 	cursor: pointer;
 }

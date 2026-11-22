@@ -8,25 +8,25 @@ import { useProgress } from "./use-progress";
 
 const CSS = `
 .wg-task-progress {
-	--wg-task-progress-mark: 28px;
-	--wg-task-progress-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-	--wg-task-progress-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+	--task-progress-mark: 28px;
+	--task-progress-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--task-progress-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 	interpolate-size: allow-keywords;
 	display: flex;
 	flex-direction: column;
 	width: fit-content;
 	max-width: 100%;
 	min-width: 0;
-	transition: width 360ms var(--wg-task-progress-ease), border-radius 360ms var(--wg-task-progress-ease), padding 360ms var(--wg-task-progress-ease);
+	transition: width 360ms var(--task-progress-ease), border-radius 360ms var(--task-progress-ease), padding 360ms var(--task-progress-ease);
 }
 
 .wg-root .wg-task-progress.wg-kit-surface[data-surface] {
 	padding: 6px 12px 6px 6px;
 }
 
-/* TRADE-OFF: the folded pill rounds to half its own height, not --wg-kit-pill: 999px has no smooth path to the plate corner */
+/* TRADE-OFF: the folded pill rounds to half its own height, not --pill: 999px has no smooth path to the plate corner */
 .wg-root .wg-task-progress.wg-kit-surface[data-surface]:not([data-open]) {
-	border-radius: calc(var(--wg-task-progress-mark) / 2 + 6px);
+	border-radius: calc(var(--task-progress-mark) / 2 + 6px);
 }
 
 .wg-root .wg-task-progress.wg-kit-surface[data-surface][data-open] {
@@ -45,7 +45,7 @@ const CSS = `
 	border: 0;
 	background: transparent;
 	box-shadow: none;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	font: inherit;
 	text-align: start;
 	cursor: pointer;
@@ -56,40 +56,40 @@ const CSS = `
 }
 
 .wg-task-progress-head:focus-visible {
-	outline: 2px solid var(--wg-kit-accent);
+	outline: 2px solid var(--brand);
 	outline-offset: 4px;
-	border-radius: var(--wg-kit-item);
+	border-radius: var(--item);
 }
 
 .wg-task-progress-mark {
 	display: grid;
 	flex: none;
 	place-items: center;
-	width: var(--wg-task-progress-mark);
-	height: var(--wg-task-progress-mark);
+	width: var(--task-progress-mark);
+	height: var(--task-progress-mark);
 	border-radius: 50%;
-	background: var(--wg-kit-accent);
+	background: var(--brand);
 	color: var(--text-on-accent);
 	transition: background 240ms ease;
 }
 
 [data-state="running"] .wg-task-progress-mark {
-	animation: wg-task-progress-morph 2400ms var(--wg-task-progress-ease) infinite;
+	animation: wg-task-progress-morph 2400ms var(--task-progress-ease) infinite;
 }
 
 [data-state="done"] .wg-task-progress-mark {
-	background: var(--wg-kit-success);
-	animation: wg-task-progress-pop 480ms var(--wg-task-progress-spring);
+	background: var(--success);
+	animation: wg-task-progress-pop 480ms var(--task-progress-spring);
 }
 
 [data-state="failed"] .wg-task-progress-mark {
-	background: var(--wg-kit-error);
-	animation: wg-task-progress-shake 420ms var(--wg-task-progress-ease);
+	background: var(--error);
+	animation: wg-task-progress-shake 420ms var(--task-progress-ease);
 }
 
 [data-state="stopped"] .wg-task-progress-mark {
-	background: var(--wg-kit-fill);
-	color: var(--wg-kit-text-muted);
+	background: var(--fill);
+	color: var(--muted-foreground);
 }
 
 @keyframes wg-task-progress-morph {
@@ -131,7 +131,7 @@ const CSS = `
 .wg-task-progress-now {
 	display: grid;
 	grid-template-rows: 1fr;
-	transition: grid-template-rows 360ms var(--wg-task-progress-ease), opacity 240ms ease;
+	transition: grid-template-rows 360ms var(--task-progress-ease), opacity 240ms ease;
 }
 
 [data-open] .wg-task-progress-now {
@@ -142,11 +142,11 @@ const CSS = `
 .wg-task-progress-now > span {
 	overflow: hidden;
 	min-height: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-size: var(--font-ui-smaller, 12px);
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	animation: wg-task-progress-arrive 420ms var(--wg-task-progress-spring);
+	animation: wg-task-progress-arrive 420ms var(--task-progress-spring);
 }
 
 @keyframes wg-task-progress-arrive {
@@ -166,7 +166,7 @@ const CSS = `
 	flex: none;
 	color: var(--text-faint);
 	transform: rotate(0deg);
-	transition: transform 360ms var(--wg-task-progress-spring);
+	transition: transform 360ms var(--task-progress-spring);
 }
 
 [data-open] .wg-task-progress-chevron {
@@ -177,7 +177,7 @@ const CSS = `
 	display: grid;
 	grid-template-rows: 0fr;
 	opacity: 0;
-	transition: grid-template-rows 360ms var(--wg-task-progress-ease), opacity 240ms ease;
+	transition: grid-template-rows 360ms var(--task-progress-ease), opacity 240ms ease;
 }
 
 [data-open] .wg-task-progress-fold {
@@ -208,12 +208,12 @@ const CSS = `
 	gap: 0 10px;
 	align-items: center;
 	padding: 6px 8px 6px 4px;
-	border-radius: var(--wg-kit-item);
+	border-radius: var(--item);
 	transition: background 240ms ease;
 }
 
 .wg-task-progress-step[data-status="active"] {
-	background: var(--wg-kit-group-inset);
+	background: var(--group-inset);
 }
 
 .wg-task-progress-dot {
@@ -224,24 +224,24 @@ const CSS = `
 	width: 20px;
 	height: 20px;
 	margin-top: 1px;
-	border: 1.5px solid color-mix(in srgb, var(--wg-kit-text-muted) 45%, transparent);
+	border: 1.5px solid color-mix(in srgb, var(--muted-foreground) 45%, transparent);
 	border-radius: 50%;
 	color: var(--text-on-accent);
-	transition: background 240ms ease, border-color 240ms ease, transform 360ms var(--wg-task-progress-spring);
+	transition: background 240ms ease, border-color 240ms ease, transform 360ms var(--task-progress-spring);
 }
 
 [data-status="done"] > .wg-task-progress-dot {
-	border-color: var(--wg-kit-success);
-	background: var(--wg-kit-success);
+	border-color: var(--success);
+	background: var(--success);
 }
 
 [data-status="failed"] > .wg-task-progress-dot {
-	border-color: var(--wg-kit-error);
-	background: var(--wg-kit-error);
+	border-color: var(--error);
+	background: var(--error);
 }
 
 [data-status="active"] > .wg-task-progress-dot {
-	border-color: var(--wg-kit-accent);
+	border-color: var(--brand);
 	border-top-color: transparent;
 	animation: wg-task-progress-spin 800ms linear infinite;
 }
@@ -260,18 +260,18 @@ const CSS = `
 }
 
 [data-status="done"] > .wg-task-progress-label {
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-weight: var(--font-normal, 400);
 }
 
 [data-status="active"] > .wg-task-progress-label,
 [data-status="failed"] > .wg-task-progress-label {
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 .wg-task-progress-hint {
 	overflow: hidden;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	font-family: var(--font-monospace);
 	font-size: var(--font-ui-smaller, 12px);
 	white-space: nowrap;

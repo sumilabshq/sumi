@@ -54,7 +54,7 @@ export async function pageFor(
 <script>${script}</script></body></html>`;
 }
 
-// TRADE-OFF: host tokens on :root, not body; styles.css builds --wg-widget-edge from --text-normal there.
+// TRADE-OFF: host tokens on :root, not body; styles.css builds --widget-edge from --text-normal there.
 function groundFor(asked: V2Frame): string {
 	return `:root { ${THEMES[asked.theme]} ${fontsOf(AS_THE_DESIGN_IS_DRAWN)} }
 *, *::before, *::after { box-sizing: border-box; }

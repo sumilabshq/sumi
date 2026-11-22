@@ -212,7 +212,7 @@ const HEAD_INK = `(() => {
 	const plate = document.querySelector(".wg-shell-plate.is-app");
 	const crumb = document.querySelector(".wg-plate-head.is-app .wg-plate-crumb-first");
 	return {
-		fill: plate.style.getPropertyValue("--wg-plate-fill"),
+		fill: plate.style.getPropertyValue("--plate-fill"),
 		head: getComputedStyle(head).backgroundColor,
 		inkClass: [...head.classList].find((name) => name.startsWith("sumi-ink")) ?? null,
 		text: getComputedStyle(head).color,
@@ -463,7 +463,7 @@ async function walk(theme: Theme): Promise<void> {
 			await page.ask(
 				timedUntilPainted(
 					`window.__PAGES__.showLook({ fill: ${JSON.stringify(PINK)} })`,
-					`document.querySelector(".wg-shell-plate.is-app").style.getPropertyValue("--wg-plate-fill") === ${JSON.stringify(PINK)}`,
+					`document.querySelector(".wg-shell-plate.is-app").style.getPropertyValue("--plate-fill") === ${JSON.stringify(PINK)}`,
 				),
 			),
 		);
@@ -494,7 +494,7 @@ async function walk(theme: Theme): Promise<void> {
 			await page.ask(
 				timedUntilPainted(
 					`window.__STUDIO__.state.show("canvas")`,
-					`document.querySelector(".wg-shell-plate.is-app").style.getPropertyValue("--wg-plate-fill") === ""`,
+					`document.querySelector(".wg-shell-plate.is-app").style.getPropertyValue("--plate-fill") === ""`,
 				),
 			),
 		);

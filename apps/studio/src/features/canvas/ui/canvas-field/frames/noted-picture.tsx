@@ -34,7 +34,7 @@ export function NotedPicture({ reference }: { readonly reference: ReferenceShown
 				{laid?.lines.map((line, at) => (
 					<line
 						key={at}
-						className="cv:stroke-[var(--wg-kit-text-muted)] cv:[stroke-dasharray:4_4] cv:[stroke-width:1.5]"
+						className="cv:stroke-[var(--muted-foreground)] cv:[stroke-dasharray:4_4] cv:[stroke-width:1.5]"
 						x1={line.from[0]}
 						y1={line.from[1]}
 						x2={line.to[0]}

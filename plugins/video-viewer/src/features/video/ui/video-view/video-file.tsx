@@ -29,7 +29,7 @@ export function VideoFile({ path }: VideoFileProps): ReactElement | null {
 				height: "100%",
 				boxSizing: "border-box",
 				padding: "20px 32px 32px 40px",
-				background: "var(--sumi-plate)",
+				background: "var(--plate)",
 			}}
 		>
 			<video
@@ -38,7 +38,7 @@ export function VideoFile({ path }: VideoFileProps): ReactElement | null {
 				style={{
 					maxWidth: "100%",
 					maxHeight: "100%",
-					borderRadius: "var(--sumi-r-lg)",
+					borderRadius: "var(--r-lg)",
 				}}
 			/>
 		</div>

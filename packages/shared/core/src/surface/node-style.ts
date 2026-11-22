@@ -5,7 +5,7 @@ import type { Axis, SurfaceWord } from "../tree-nodes.js";
 import type { Plate } from "../tree-spacing.js";
 import type { RegionSurface } from "../tree-collapse.js";
 
-const PLATE_EDGES_PX = "2 * var(--wg-group-pad)";
+const PLATE_EDGES_PX = "2 * var(--group-pad)";
 
 export type NodeStyle = CSSProperties & Readonly<Record<`--${string}`, string>>;
 
@@ -27,7 +27,7 @@ export function styleOfNode(node: LaidChild): NodeStyle {
 		minWidth: 0,
 		...(node.kind === "leaf" ? preferredSizeStyle(node) : {}),
 		...measureOf(node),
-		...(node.kind === "box" ? { "--wg-tree-gap": `${node.gap}px` } : {}),
+		...(node.kind === "box" ? { "--tree-gap": `${node.gap}px` } : {}),
 		...(node.kind === "leaf" ? gapVarsOf(node.level) : {}),
 		...dividerReach(node),
 		...(node.kind === "collapsed" ? {} : plateVars(node)),
@@ -37,9 +37,9 @@ export function styleOfNode(node: LaidChild): NodeStyle {
 export function plateVars(plate: Partial<Plate> | null | undefined): NodeStyle {
 	if (!plate?.corner) return {};
 	return {
-		"--wg-plate-corner": `${plate.corner}px`,
-		"--wg-kit-plate": `${plate.kitPlate}px`,
-		"--wg-kit-item": `${plate.kitItem}px`,
+		"--plate-corner": `${plate.corner}px`,
+		"--plate-radius": `${plate.kitPlate}px`,
+		"--item": `${plate.kitItem}px`,
 	};
 }
 
@@ -79,8 +79,8 @@ function withPlateEdges(node: LaidLeaf, px: number): string {
 function dividerReach(node: LaidChild): NodeStyle {
 	if (!node.dividerAxis) return {};
 	return {
-		"--wg-divider-before": `${node.dividerBefore ?? 0}px`,
-		"--wg-divider-after": `${node.dividerAfter ?? 0}px`,
-		"--wg-divider-half": `${node.dividerHalf}px`,
+		"--divider-before": `${node.dividerBefore ?? 0}px`,
+		"--divider-after": `${node.dividerAfter ?? 0}px`,
+		"--divider-half": `${node.dividerHalf}px`,
 	};
 }

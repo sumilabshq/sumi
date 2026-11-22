@@ -2,11 +2,11 @@
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: var(--sumi-sp-2);
+	gap: var(--space-1);
 	box-sizing: border-box;
-	height: var(--sumi-header-h);
-	padding: 0 var(--sumi-sp-3);
-	background: var(--sumi-frame);
+	height: var(--header-h);
+	padding: 0 var(--space-1-5);
+	background: var(--frame);
 }
 
 .sumi-title-bar-tabs {
@@ -18,11 +18,11 @@
 }
 
 .sumi-title-bar-start {
-	margin-inline-end: calc(var(--sumi-sp-3) + var(--sumi-sp-4) - var(--sumi-sp-2));
+	margin-inline-end: calc(var(--space-1-5) + var(--space-2) - var(--space-1));
 }
 
 .sumi-title-bar-end {
-	gap: var(--sumi-sp-1);
+	gap: var(--space-0-5);
 }
 
 .wg-shell:has([data-title-floats]) > .sumi-title-bar {

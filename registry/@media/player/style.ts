@@ -2,7 +2,7 @@ export const CSS = `
 .wgm-player {
 	display: flex;
 	align-items: center;
-	gap: var(--wg-gap-items);
+	gap: var(--gap-items);
 	min-width: 0;
 }
 
@@ -13,8 +13,8 @@ export const CSS = `
 	overflow: hidden;
 	width: 96px;
 	height: 96px;
-	border-radius: var(--wg-kit-card-corner);
-	background: var(--wg-kit-fill);
+	border-radius: var(--card-corner);
+	background: var(--fill);
 	color: var(--text-faint);
 }
 
@@ -28,7 +28,7 @@ export const CSS = `
 	display: flex;
 	flex: 1;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -62,7 +62,7 @@ export const CSS = `
 .wgm-artist {
 	font-size: var(--font-ui-small, 14px);
 	line-height: var(--line-height-tight, 1.25);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wgm-idle {
@@ -74,7 +74,7 @@ export const CSS = `
 }
 
 .wgm-fav.is-on {
-	color: var(--wg-kit-highlight);
+	color: var(--highlight);
 }
 
 .wgm-fav.is-on .wg-kit-icon-glyph {
@@ -97,7 +97,7 @@ export const CSS = `
 }
 
 .wgm-player .wgm-play-disc::before {
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--pill);
 }
 
 .wgm-volume {
@@ -107,7 +107,7 @@ export const CSS = `
 	grid-column: 3;
 	gap: var(--size-4-2, 8px);
 	min-width: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wgm-volume-bar {
@@ -153,7 +153,7 @@ export const CSS = `
 	align-items: center;
 	gap: var(--size-4-2, 8px);
 	min-width: 0;
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .wgm-none-line {

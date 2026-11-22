@@ -14,7 +14,7 @@ export function Carried({ carry, size }: { carry: Carry; size: number }) {
 				{
 					left: `${carry.x - carry.offX}px`,
 					top: `${carry.y - carry.offY}px`,
-					"--wg-rank-card": `${size}px`,
+					"--rank-card": `${size}px`,
 				} as Record<string, string>
 			}
 		>

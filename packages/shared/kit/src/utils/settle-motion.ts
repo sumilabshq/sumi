@@ -1,6 +1,6 @@
-const SETTLE_DURATION = "--wg-grow";
+const SETTLE_DURATION = "--grow";
 
-const SETTLE_EASING = "--wg-spring";
+const SETTLE_EASING = "--spring";
 
 const FALLBACK_MS = 320;
 

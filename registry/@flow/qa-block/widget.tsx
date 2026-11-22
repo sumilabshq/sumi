@@ -8,14 +8,14 @@ const CSS = `
 .wg-qa-block {
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
 .wg-qa-block-said {
 	margin: 0;
 	font-size: var(--font-ui-small, 14px);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 /* TRADE-OFF: max-height repeats the three lines for engines without -webkit-box — no ellipsis there */
@@ -30,7 +30,7 @@ const CSS = `
 	font-size: var(--font-ui-medium, 15px);
 	font-weight: var(--font-semibold, 600);
 	line-height: var(--line-height-tight, 1.3);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 	overflow-wrap: anywhere;
 }
 
@@ -38,7 +38,7 @@ const CSS = `
 	display: flex;
 	flex-wrap: wrap;
 	align-items: flex-start;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -50,8 +50,8 @@ const CSS = `
 	max-width: 100%;
 	min-width: 0;
 	padding: var(--size-2-2, 4px) var(--size-4-2, 8px);
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--pill);
+	background: var(--fill);
 	font-size: var(--font-ui-smaller, 12px);
 	line-height: var(--line-height-tight, 1.3);
 	color: var(--text-faint);
@@ -68,19 +68,19 @@ const CSS = `
 }
 
 .wg-qa-block-option[data-chosen="yes"] {
-	background: var(--wg-kit-accent-wash);
+	background: var(--accent-wash);
 	font-weight: var(--font-semibold, 600);
-	color: var(--wg-kit-text);
+	color: var(--foreground);
 }
 
 /* TRADE-OFF: an inset ring and not a border — a real border moves the chip 1px off the others' line */
 .wg-qa-block-option[data-offered="no"] {
-	box-shadow: inset 0 0 0 1px var(--wg-kit-card-edge);
+	box-shadow: inset 0 0 0 1px var(--card-edge);
 }
 
 .wg-qa-block-mark {
 	flex: none;
-	color: var(--wg-kit-accent);
+	color: var(--brand);
 }
 
 .wg-qa-block-reason-box {
@@ -96,7 +96,7 @@ const CSS = `
 	min-width: 0;
 	font-size: var(--font-ui-small, 14px);
 	line-height: var(--line-height-normal, 1.5);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 	overflow-wrap: anywhere;
 }
 

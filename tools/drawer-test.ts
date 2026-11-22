@@ -230,7 +230,7 @@ check(
 check(
 	"and it is as wide as a share of the screen, not as wide as the region was dragged to",
 	foundAs(present(drawerOver(), "the drawer"), ".wg-drawer", dom.window.HTMLElement).style.getPropertyValue(
-		"--wg-drawer-width",
+		"--drawer-width",
 	),
 	"344px",
 );

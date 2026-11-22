@@ -5,8 +5,8 @@
 }
 
 .wg-ws-pop {
-	font-family: var(--sumi-font-ui);
-	font-feature-settings: var(--sumi-font-features);
+	font-family: var(--font-ui);
+	font-feature-settings: var(--font-features);
 	font-optical-sizing: auto;
 	letter-spacing: 0;
 	-webkit-font-smoothing: antialiased;
@@ -36,7 +36,7 @@
 	gap: 6px;
 	white-space: nowrap;
 	min-width: 0;
-	font-family: var(--sumi-font-ui);
-	font-size: var(--sumi-fs-13);
-	color: var(--sumi-text);
+	font-family: var(--font-ui);
+	font-size: var(--fs-13);
+	color: var(--text);
 }

@@ -3,8 +3,8 @@ import type { RefObject } from "react";
 
 const GLIDED = "[data-tasks-glide]";
 const GLIDE_ID = "wg-tasks-glide";
-const GLIDE_DURATION = "--sumi-dur-slow";
-const GLIDE_EASE = "--sumi-ease-out";
+const GLIDE_DURATION = "--dur-slow";
+const GLIDE_EASE = "--ease-out-expo";
 const SETTLED_PX = 1;
 
 interface Point {

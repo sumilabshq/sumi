@@ -24,7 +24,7 @@ export function Container({ width = 1040, className, style, children, ...rest }:
 			{
 				...dataAttributesOf(rest),
 				className: cn("wg-kit-container", className),
-				style: { ...style, "--wg-kit-container-width": widthSaid },
+				style: { ...style, "--container-width": widthSaid },
 				"data-width": width,
 			},
 			children,

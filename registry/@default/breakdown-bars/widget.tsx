@@ -46,7 +46,7 @@ const BreakdownBars = createWidget({
 
 		if (read.failure !== null) return <Line tone="var(--text-error)" text={read.failure} />;
 		if (read.isLoading && read.data.length === 0) return <Line tone="var(--text-faint)" text={READING} />;
-		if (read.data.length === 0) return <Line tone="var(--wg-kit-text-muted)" text={NO_NOTES} />;
+		if (read.data.length === 0) return <Line tone="var(--muted-foreground)" text={NO_NOTES} />;
 
 		return (
 			<Bars

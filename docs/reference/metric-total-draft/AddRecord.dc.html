@@ -24,9 +24,9 @@
 						--ink: #222222;
 						--accent: #6d4ee0;
 						--tone: #1f8a4c;
-						--wg-kit-fill: color-mix(in srgb, var(--ink) 5.5%, var(--ground));
-						--wg-kit-raise: color-mix(in srgb, #ffffff 12%, var(--ground));
-						--wg-kit-card-edge: color-mix(in srgb, var(--ink) 9%, transparent);
+						--fill: color-mix(in srgb, var(--ink) 5.5%, var(--ground));
+						--raise: color-mix(in srgb, #ffffff 12%, var(--ground));
+						--card-edge: color-mix(in srgb, var(--ink) 9%, transparent);
 						--muted: color-mix(in srgb, var(--ink) 58%, var(--ground));
 						--faint: color-mix(in srgb, var(--ink) 36%, var(--ground));
 						box-sizing: border-box;
@@ -51,9 +51,9 @@
 						width: 100%;
 						padding: 18px;
 						border-radius: 16px;
-						background: var(--wg-kit-raise);
+						background: var(--raise);
 						box-shadow:
-							inset 0 0 0 1px var(--wg-kit-card-edge),
+							inset 0 0 0 1px var(--card-edge),
 							0 24px 60px rgba(0, 0, 0, 0.14);
 					}
 
@@ -68,7 +68,7 @@
 						justify-content: center;
 						border: none;
 						border-radius: 999px;
-						background: var(--wg-kit-fill);
+						background: var(--fill);
 						color: var(--ink);
 						cursor: pointer;
 					}
@@ -103,7 +103,7 @@
 						flex-direction: column;
 						padding: 6px 8px 8px;
 						border-radius: 14px;
-						background: var(--wg-kit-fill);
+						background: var(--fill);
 						flex: 1 1 auto;
 					}
 					.cal-head {
@@ -187,7 +187,7 @@
 						display: inline-flex;
 						padding: 2px;
 						border-radius: 999px;
-						background: var(--wg-kit-fill);
+						background: var(--fill);
 						position: relative;
 					}
 					.sign button {
@@ -218,7 +218,7 @@
 						left: 2px;
 						width: calc(50% - 2px);
 						border-radius: 999px;
-						background: var(--wg-kit-raise);
+						background: var(--raise);
 						box-shadow:
 							0 1px 2px rgba(0, 0, 0, 0.09),
 							0 3px 8px rgba(0, 0, 0, 0.05);
@@ -231,7 +231,7 @@
 						height: 44px;
 						padding: 0 16px;
 						border-radius: 999px;
-						background: var(--wg-kit-fill);
+						background: var(--fill);
 					}
 					.field.is-area {
 						flex: 1 1 auto;
@@ -270,7 +270,7 @@
 						padding: 0 18px;
 						border: none;
 						border-radius: 999px;
-						background: var(--wg-kit-fill);
+						background: var(--fill);
 						color: var(--ink);
 						font: inherit;
 						font-size: 14px;

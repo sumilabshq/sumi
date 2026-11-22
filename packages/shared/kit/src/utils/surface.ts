@@ -104,5 +104,5 @@ function plateAttrs(surface: SurfaceName, side: unknown, across: unknown): Plate
 
 function plateStyle(above: PlatesAbove, surface: SurfaceName): TokenStyle | null {
 	if (!isPainted({ surface })) return null;
-	return { "--wg-surface-corner": above.ownPlates === 0 ? "var(--wg-kit-plate)" : "var(--wg-kit-item)" };
+	return { "--surface-corner": above.ownPlates === 0 ? "var(--plate-radius)" : "var(--item)" };
 }

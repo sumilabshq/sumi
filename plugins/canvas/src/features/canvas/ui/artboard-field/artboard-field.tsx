@@ -13,7 +13,7 @@ const GRIPS = {
 	pressable: "[data-artboard-name]",
 	ownScroll: null,
 };
-const ZOOM_VAR = "--sumi-canvas-zoom";
+const ZOOM_VAR = "--canvas-zoom";
 const FIELD_MARGIN_PX = 240;
 
 export function ArtboardField(): ReactElement {

@@ -3,7 +3,7 @@
 	display: inline-flex;
 	flex: none;
 	vertical-align: middle;
-	color: var(--sumi-text);
+	color: var(--text);
 }
 
 .sumi-figure-art,
@@ -14,33 +14,33 @@
 }
 
 .sumi-figure-body {
-	fill: var(--sumi-text);
+	fill: var(--text);
 	transition: fill 420ms ease;
 }
 
 .sumi-figure.is-waits {
-	color: var(--sumi-accent);
+	color: var(--accent-base);
 }
 
 .sumi-figure.is-waits .sumi-figure-body {
-	fill: var(--sumi-accent);
+	fill: var(--accent-base);
 }
 
 .sumi-figure.is-done {
-	color: var(--sumi-success);
+	color: var(--success-text);
 }
 
 .sumi-figure.is-done .sumi-figure-body {
-	fill: var(--sumi-success);
+	fill: var(--success-text);
 	transition-duration: 120ms;
 }
 
 .sumi-figure.is-error {
-	color: var(--sumi-danger);
+	color: var(--danger);
 }
 
 .sumi-figure.is-error .sumi-figure-body {
-	fill: var(--sumi-danger);
+	fill: var(--danger);
 	transition-duration: 120ms;
 }
 

@@ -101,7 +101,7 @@ export function ViewFrame({ id, title, html, parts }: ViewFrameProps): ReactElem
 	}, [built]);
 
 	if (failed) {
-		return <p style={{ margin: 0, color: "var(--sumi-text-3)" }}>{NOT_BUILT}</p>;
+		return <p style={{ margin: 0, color: "var(--text-3)" }}>{NOT_BUILT}</p>;
 	}
 
 	return (

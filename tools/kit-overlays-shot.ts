@@ -27,7 +27,7 @@ for (const theme of THEME_ORDER) {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
 <style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>body { margin: 0; padding: 32px; ${THEMES[theme]} ${HOST} color-scheme: ${theme};
-	background: var(--wg-kit-page); color: var(--wg-kit-text); font-family: var(--font-interface); }
+	background: var(--page); color: var(--foreground); font-family: var(--font-interface); }
 :is(*) { transition: none !important; animation: none !important; }</style>
 </head><body class="wg-root theme-${theme}"><div id="demo"></div>
 <script>${script}</script><script>${OPEN_THE_CONTEXT_MENU}</script>

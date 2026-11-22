@@ -12,7 +12,7 @@ interface DialogOptions {
 	readonly widget: ReactNode;
 }
 
-type WindowStyle = CSSProperties & Readonly<Record<"--wg-cell" | "--wg-gap", string>>;
+type WindowStyle = CSSProperties & Readonly<Record<"--widget-cell" | "--widget-gap", string>>;
 
 export function settingsDialog(
 	state: WindowState,
@@ -24,8 +24,8 @@ export function settingsDialog(
 	const { frame, manifest } = geometry;
 	const style: WindowStyle = {
 		inset: `${frame.inset}px`,
-		"--wg-cell": `${options.cell}px`,
-		"--wg-gap": `${options.gap}px`,
+		"--widget-cell": `${options.cell}px`,
+		"--widget-gap": `${options.gap}px`,
 	};
 	return h(
 		DialogOverlay,

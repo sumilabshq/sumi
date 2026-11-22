@@ -57,5 +57,5 @@ function toastMarks(record: ToastRecord, spot: ToastSpot): ToastMarks {
 }
 
 function spotStyle(spot: ToastSpot): TokenStyle {
-	return { "--wg-kit-toast-index": spot.index, "--wg-kit-toast-offset": `${spot.offsetPx}px` };
+	return { "--toast-index": spot.index, "--toast-offset": `${spot.offsetPx}px` };
 }

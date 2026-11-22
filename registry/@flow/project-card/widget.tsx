@@ -8,20 +8,20 @@ const CSS = `
 	container-name: widget;
 	display: flex;
 	flex-direction: column;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
 .flow-project-card-said {
 	margin: 0;
 	font-size: var(--font-ui-small);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .flow-project-card-head {
 	display: flex;
 	align-items: center;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -31,8 +31,8 @@ const CSS = `
 	place-content: center;
 	width: 34px;
 	height: 34px;
-	border-radius: var(--wg-kit-plate) var(--wg-kit-plate) var(--wg-kit-plate) var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--plate-radius) var(--plate-radius) var(--plate-radius) var(--pill);
+	background: var(--fill);
 	font-size: var(--font-ui-medium);
 	line-height: 1;
 }
@@ -69,7 +69,7 @@ const CSS = `
 .flow-project-card-track {
 	display: flex;
 	align-items: center;
-	gap: var(--wg-gap-parts);
+	gap: var(--gap-parts);
 	min-width: 0;
 }
 
@@ -77,22 +77,22 @@ const CSS = `
 	overflow: hidden;
 	flex: 1 1 auto;
 	height: 6px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-fill);
+	border-radius: var(--pill);
+	background: var(--fill);
 }
 
 .flow-project-card-bar-fill {
 	display: block;
 	height: 100%;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-accent);
+	border-radius: var(--pill);
+	background: var(--brand);
 }
 
 .flow-project-card-percent {
 	flex: none;
 	font-family: var(--font-monospace);
 	font-size: var(--font-ui-smaller);
-	color: var(--wg-kit-text-muted);
+	color: var(--muted-foreground);
 }
 
 .flow-project-card-counts {

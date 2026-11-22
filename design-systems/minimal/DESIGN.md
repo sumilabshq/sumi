@@ -90,7 +90,7 @@ Three roles, each a setting. The roles are fixed; the families are not. The pair
 - Mono is not a role. It appears only for machine ids (`ENG-51`, `Q-1042`), never for names, dates or amounts.
 - Emphasis is size and ink step, never bold inside a sentence.
 - **Copy:** plain, specific, sentence case. Live counts instead of labels (`9 waiting to be triaged`). No "Successfully", no exclamation marks.
-- TODO: the kit has `--font-sans` and `--font-mono` only; the display and heading roles need `--wg-kit-font-display` and `--wg-kit-font-heading` before `fonts` can switch at runtime.
+- TODO: the kit has `--font-sans` and `--font-mono` only; the display and heading roles need `--font-display` and `--font-heading` before `fonts` can switch at runtime.
 
 ## Component Stylings
 

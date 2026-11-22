@@ -40,7 +40,7 @@ export function Sparkline({
 	const boxRef = useRef<HTMLSpanElement>(null);
 	const width = useWidthOf(boxRef) || SPARKLINE_FALLBACK_WIDTH;
 	const values = valuesOf(data, dataKey);
-	const inked: TokenStyle = { "--wg-kit-spark": chartColorOf(color, 0), height: `${height}px`, ...style };
+	const inked: TokenStyle = { "--spark": chartColorOf(color, 0), height: `${height}px`, ...style };
 	return (
 		<span ref={boxRef} className={cn("wg-kit-spark", cls)} style={inked} {...props}>
 			<svg

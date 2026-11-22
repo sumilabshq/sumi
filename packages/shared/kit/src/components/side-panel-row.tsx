@@ -13,7 +13,7 @@ export interface SidePanelRowProps extends ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export function sidePanelDepthOf(depth: number): TokenStyle {
-	return { "--wg-kit-side-panel-depth": depth };
+	return { "--side-panel-depth": depth };
 }
 
 export function SidePanelRow({

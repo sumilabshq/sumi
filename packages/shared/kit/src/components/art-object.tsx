@@ -36,14 +36,14 @@ function partsOf(shape: ArtShape, tones: readonly BadgeColor[] | undefined, coun
 	if (shape === "discs" || shape === "blocks") return discsOf(tones, Math.min(count, 4));
 	if (shape !== "capsules") return null;
 	return Array.from({ length: Math.min(count, CAPSULES_AT_MOST) }, (_, index) => (
-		<i key={index} style={{ background: `var(--wg-kit-${tones?.[index % tones.length] ?? toneOfIndex(index)})` }} />
+		<i key={index} style={{ background: `var(--${tones?.[index % tones.length] ?? toneOfIndex(index)})` }} />
 	));
 }
 
 function discsOf(tones: readonly BadgeColor[] | undefined, count: number): ReactNode {
 	return Array.from({ length: count }, (_, index) => {
 		const tone = tones?.[index] ?? toneOfIndex(index * 2);
-		const inked: TokenStyle = { "--wg-art-a": `var(--wg-kit-${tone})`, "--wg-art-place": index };
+		const inked: TokenStyle = { "--art-a": `var(--${tone})`, "--art-place": index };
 		return <i key={index} style={inked} />;
 	});
 }

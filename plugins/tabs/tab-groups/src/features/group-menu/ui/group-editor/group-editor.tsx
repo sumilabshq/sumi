@@ -90,8 +90,8 @@ export function GroupEditor({ group, onDone }: GroupEditorProps): ReactElement {
 	);
 }
 
-function hueStyleOf(hue: string | null): CSSProperties & Readonly<Record<"--sumi-group", string>> {
+function hueStyleOf(hue: string | null): CSSProperties & Readonly<Record<"--group-legacy", string>> {
 	return {
-		"--sumi-group": groupColourOf(hue),
+		"--group-legacy": groupColourOf(hue),
 	};
 }

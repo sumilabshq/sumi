@@ -9,7 +9,7 @@ const COLOUR_OF_HUE: Readonly<Record<string, string>> = {
 	pink: "var(--pink)",
 };
 
-const NO_HUE = "var(--sumi-text-3)";
+const NO_HUE = "var(--text-3)";
 
 export function groupColourOf(hue: string | null): string {
 	return hue === null ? NO_HUE : (COLOUR_OF_HUE[hue] ?? NO_HUE);
