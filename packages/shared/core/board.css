@@ -2578,6 +2578,11 @@ body {
 	user-select: text;
 	-webkit-user-select: text;
 }
+:is(.wg-root, .wg-portal) .wg-kit-field.is-bare:not(.wg-kit-otp-slot):has(> :is(input, textarea):focus-visible) {
+	border-color: transparent;
+	outline: none;
+	box-shadow: none;
+}
 :is(.wg-root, .wg-portal) .wg-kit-field svg {
 	flex: none;
 }
@@ -17499,6 +17504,10 @@ body:has(.wg-cm-layer) {
 	color: var(--text-3);
 	transition: background-color var(--dur-hover) var(--ease-emphasized);
 }
+.sumi-launcher-setup:hover .sumi-launcher-pane {
+	background: var(--hover);
+	color: var(--text);
+}
 .sumi-launcher-setup-name {
 	margin-top: var(--space-2);
 	font-size: var(--fs-13);
@@ -17525,7 +17534,12 @@ body:has(.wg-cm-layer) {
 	justify-content: center;
 	gap: var(--space-2);
 	font-size: var(--fs-13);
+	color: var(--text);
 	text-align: center;
+	transition: background-color var(--dur-hover) var(--ease-emphasized);
+}
+.sumi-launcher-app:hover {
+	background: var(--hover);
 }
 .sumi-launcher-app-name {
 	max-width: 100%;
@@ -17533,6 +17547,9 @@ body:has(.wg-cm-layer) {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+.sumi-launcher-row:hover {
+	background: var(--hover);
 }
 .sumi-launcher-row-title {
 	min-width: 0;

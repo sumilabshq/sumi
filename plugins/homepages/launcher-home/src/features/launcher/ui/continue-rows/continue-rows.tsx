@@ -1,6 +1,5 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Pressable } from "@widgetarium/kit";
 import { RowIcon } from "@sumi/command-menu-plugin";
 import type { Intent, Row } from "@sumi/command-menu/contract";
 
@@ -20,8 +19,9 @@ export function ContinueRows({ rows, run }: ContinueRowsProps): ReactElement | n
 		<section className="sumi-launcher-section" aria-label={LABEL}>
 			<div className="sumi-launcher-label">{LABEL}</div>
 			{rows.map((row) => (
-				<Pressable
+				<button
 					key={row.key}
+					type="button"
 					className="wg-cm-row sumi-launcher-row"
 					onMouseDown={(event) => event.preventDefault()}
 					onClick={() => run(row.intent)}
@@ -29,7 +29,7 @@ export function ContinueRows({ rows, run }: ContinueRowsProps): ReactElement | n
 					<RowIcon icon={row.icon} />
 					<span className="sumi-launcher-row-title">{row.title}</span>
 					<span className="sumi-launcher-row-meta">{row.kindLabel}</span>
-				</Pressable>
+				</button>
 			))}
 		</section>
 	);
