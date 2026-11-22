@@ -3,12 +3,13 @@
 	display: inline-flex;
 	flex: none;
 	vertical-align: middle;
+	color: var(--sumi-text);
 }
 
-.sumi-figure-art {
+.sumi-figure-art,
+.sumi-figure-plant {
 	display: block;
 	flex: none;
-	overflow: visible;
 	pointer-events: none;
 }
 
@@ -17,17 +18,25 @@
 	transition: fill 420ms ease;
 }
 
-.sumi-figure-eye {
-	fill: var(--sumi-plate);
+.sumi-figure.is-waits {
+	color: var(--sumi-accent);
 }
 
 .sumi-figure.is-waits .sumi-figure-body {
 	fill: var(--sumi-accent);
 }
 
+.sumi-figure.is-done {
+	color: var(--sumi-success);
+}
+
 .sumi-figure.is-done .sumi-figure-body {
 	fill: var(--sumi-success);
 	transition-duration: 120ms;
+}
+
+.sumi-figure.is-error {
+	color: var(--sumi-danger);
 }
 
 .sumi-figure.is-error .sumi-figure-body {
@@ -39,14 +48,37 @@
 	animation: sumi-figure-breathe 3.2s ease-in-out infinite;
 }
 
+.sumi-figure.is-working .sumi-figure-cell {
+	animation: sumi-figure-wave 1.2s ease-in-out infinite;
+}
+
+.sumi-figure.is-working .sumi-figure-cell[data-leaf="1"] {
+	animation-delay: 0.3s;
+}
+
+.sumi-figure.is-working .sumi-figure-cell[data-leaf="2"] {
+	animation-delay: 0.6s;
+}
+
+.sumi-figure.is-working .sumi-figure-cell[data-leaf="3"] {
+	animation-delay: 0.9s;
+}
+
 @keyframes sumi-figure-breathe {
 	50% {
 		opacity: 0.78;
 	}
 }
 
+@keyframes sumi-figure-wave {
+	50% {
+		opacity: 0.3;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
-	.sumi-figure.is-asleep {
+	.sumi-figure.is-asleep,
+	.sumi-figure.is-working .sumi-figure-cell {
 		animation: none;
 	}
 }

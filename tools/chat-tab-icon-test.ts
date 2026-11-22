@@ -45,44 +45,47 @@ const address = server.address();
 const origin = typeof address === "object" && address !== null ? `http://127.0.0.1:${address.port}/` : "";
 
 const FACES = `Object.fromEntries([...document.querySelectorAll("[data-icons=small] [data-row]")].map((row) => {
-	const cube = row.querySelector(".wg-chat-tab-icon .wg-kit-status-cube");
-	return [row.dataset.row, cube.dataset.state];
+	const figure = row.querySelector(".wg-chat-tab-icon .sumi-figure");
+	return [row.dataset.row, figure.dataset.state];
 }))`;
 const PAINT = `(() => {
 	const box = (at) => { const one = document.querySelector(at).getBoundingClientRect(); return [one.width, one.height]; };
-	const body = (at) => getComputedStyle(document.querySelector(at + " .wg-kit-status-cube-body")).fill;
+	const body = (at) => getComputedStyle(document.querySelector(at + " .sumi-figure-body")).fill;
 	return {
 		icons: document.querySelectorAll("[data-icons=small] .wg-chat-tab-icon").length,
-		cubes: document.querySelectorAll("[data-icons=small] .wg-kit-status-cube").length,
+		figures: document.querySelectorAll("[data-icons=small] .sumi-figure").length,
 		icon: box("[data-icons=small] .wg-chat-tab-icon"),
-		cube: box("[data-icons=small] .wg-kit-status-cube"),
+		figure: box("[data-icons=small] .sumi-figure"),
 		isDoneOtherOnDark: body(".dark-row") !== body("[data-row=done]"),
 		isEachStateOwnColour: new Set(["idle", "done", "failed"].map((row) => body("[data-row=" + row + "]"))).size === 3,
-		glow: getComputedStyle(document.querySelector("[data-row=working] .wg-kit-status-cube-eye")).animationName,
 	};
 })()`;
-const SHAPES = `Object.fromEntries([...document.querySelectorAll("[data-icons=small] [data-row]")].map((row) =>
-	[row.dataset.row, row.querySelector(".wg-kit-status-cube-body").getAttribute("points")]))`;
+const WAVES = `Object.fromEntries([...document.querySelectorAll("[data-icons=small] [data-row]")].map((row) =>
+	[row.dataset.row, getComputedStyle(row.querySelector(".sumi-figure-cell")).animationName]))`;
 const HOP_OF_TWO_IDLE = `[...document.querySelectorAll("[data-host=idle]")].slice(0, 2).map((host) =>
 	getComputedStyle(host.querySelector(".wg-chat-tab-icon")).animationName)`;
 const FIRST_IDLE_CENTRE = `(() => { const box = document.querySelector("[data-host=idle]").getBoundingClientRect(); return [box.left + box.width / 2, box.top + box.height / 2]; })()`;
 
 const FACES_DRAWN = {
-	idle: "idle",
+	idle: "rest",
 	working: "working",
 	done: "done",
-	failed: "blocked",
+	failed: "error",
 };
 const PAINT_DRAWN = {
 	icons: ICONS_EXPECTED,
-	cubes: ICONS_EXPECTED,
+	figures: ICONS_EXPECTED,
 	icon: [16, 16],
-	cube: [14, 14],
+	figure: [14, 14],
 	isDoneOtherOnDark: true,
 	isEachStateOwnColour: true,
-	glow: "none",
 };
-const FRAMES_OF_ONE_LOOP = Math.ceil((SETTLE_MS / 1000) * 120);
+const WAVES_DRAWN = {
+	idle: "none",
+	working: "sumi-figure-wave",
+	done: "none",
+	failed: "none",
+};
 
 async function firstIdleCentre(page: AskedPage): Promise<readonly [number, number]> {
 	const centre = await page.ask(FIRST_IDLE_CENTRE);
@@ -94,25 +97,11 @@ async function firstIdleCentre(page: AskedPage): Promise<readonly [number, numbe
 	return [centre[0], centre[1]];
 }
 
-async function shapesOf(page: AskedPage): Promise<Record<string, string>> {
-	const shapes = await page.ask(SHAPES);
-
-	if (typeof shapes !== "object" || shapes === null) {
-		throw new Error(`no cube shapes on the page: ${JSON.stringify(shapes)}`);
-	}
-
-	return Object.fromEntries(Object.entries(shapes).map(([row, points]) => [row, String(points)]));
-}
-
 async function checkDrawn(page: AskedPage): Promise<void> {
-	const frames = await page.ask("window.__FRAMES__");
-	check("ten working cubes share one frame loop", typeof frames === "number" && frames > 0 && frames <= FRAMES_OF_ONE_LOOP, true);
-	check("each chat state shows its cube state", await page.ask(FACES), FACES_DRAWN);
-	check("a 14px cube in a 16px slot, own colour per state and theme, no glow", await page.ask(PAINT), PAINT_DRAWN);
-	const before = await shapesOf(page);
-	await waited(HOP_PEEK_MS);
-	const after = await shapesOf(page);
-	check("only the working cube moves", Object.keys(before).filter((row) => before[row] !== after[row]), ["working"]);
+	check("the small marks ask for no frames", await page.ask("window.__FRAMES__"), 0);
+	check("each chat state shows its figure state", await page.ask(FACES), FACES_DRAWN);
+	check("a 14px mark in a 16px slot, own colour per state and theme", await page.ask(PAINT), PAINT_DRAWN);
+	check("only the working mark moves", await page.ask(WAVES), WAVES_DRAWN);
 }
 
 async function checkHover(page: AskedPage): Promise<void> {
@@ -136,9 +125,12 @@ try {
 	await page.reduceMotion();
 	await page.ask("location.reload(); true");
 	await waited(SETTLE_MS);
-	const still = await shapesOf(page);
-	await waited(HOP_PEEK_MS);
-	check("reduced motion: the working cube stays still", (await shapesOf(page))["working"], still["working"]);
+	const still = await page.ask(WAVES);
+	check(
+		"reduced motion: the working mark stays still",
+		typeof still === "object" && still !== null && "working" in still ? still.working : null,
+		"none",
+	);
 	check("the page drew without a failure", await page.ask(`document.getElementById("boom").textContent`), "");
 } finally {
 	page.close();

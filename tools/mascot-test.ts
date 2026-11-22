@@ -14,16 +14,13 @@ import {
 import type { MascotTouch } from "../plugins/ai/chat/src/features/mascot/lib/mascot-state.ts";
 import { MascotStateSchema } from "../plugins/ai/chat/src/features/mascot/lib/mascot-state.schema.ts";
 import type { MascotState } from "../plugins/ai/chat/src/features/mascot/lib/mascot-state.schema.ts";
-import { gazeGoalOf, lidOf } from "../plugins/sumi-host/src/features/mascot/lib/sumi-goals.ts";
+import { cloverCellsOf, cloverRowsOf } from "../plugins/sumi-host/src/features/mascot/lib/clover-cells.ts";
 import {
-	EYE_TENSION,
-	bodyPointsOf,
-	cornerGoalsOf,
-	eyeTransformOf,
-	restingCorners,
-	restingSpring,
-	springToward,
-} from "../plugins/sumi-host/src/features/mascot/lib/sumi-springs.ts";
+	STEM_FOOT,
+	cloverCapsulesAt,
+	cloverInkAt,
+	leanedPoint,
+} from "../plugins/sumi-host/src/features/mascot/lib/clover-shape.ts";
 import { sumiStateOf } from "../plugins/sumi-host/src/features/mascot/lib/sumi-state-of.ts";
 import { activityAfter } from "../plugins/ai/chat/data/mascot/features/activity/lib/activity-after.ts";
 import { MemoryAgentActivityGateway } from "../plugins/ai/chat/data/mascot/gateways/agent-activity/memory.gateway.ts";
@@ -199,65 +196,33 @@ check(
 );
 check("nothing changed: nothing told", agentEventsBetween(running, running), []);
 
-const looked = { x: 0.4, y: -0.2 };
-check("rest looks where the pointer is", gazeGoalOf("rest", 1000, looked), looked);
-check("listening looks down at the composer", gazeGoalOf("listening", 1000, looked).y > 0, true);
-check("working holds the eye in the centre", gazeGoalOf("working", 1000, looked), { x: 0, y: 0 });
+const stillClover = cloverCapsulesAt(0);
+const overhead = { x: 0, y: -1 };
 check(
-	"waits looks down and taps between two heights",
-	[gazeGoalOf("waits", 0, looked).y, gazeGoalOf("waits", 450, looked).y],
-	[0.8, 0.58],
-);
-check(
-	"done nods up and down, then settles in the centre",
-	[gazeGoalOf("done", 0, looked).y < 0, gazeGoalOf("done", 160, looked).y > 0, gazeGoalOf("done", 900, looked)],
-	[true, true, { x: 0, y: 0 }],
-);
-check(
-	"error shakes side to side, then settles",
-	[gazeGoalOf("error", 0, looked).x, gazeGoalOf("error", 100, looked).x, gazeGoalOf("error", 900, looked)],
-	[-0.6, 0.6, { x: 0, y: 0 }],
-);
-check("asleep sinks low", gazeGoalOf("asleep", 0, looked), { x: 0, y: 0.78 });
-check(
-	"rest blinks at the start of each cycle and is open between",
-	[lidOf("rest", 75) < 0.5, lidOf("rest", 1000), lidOf("working", 75), lidOf("asleep", 1000)],
-	[true, 1, 1, 0.14],
-);
-const settling = restingSpring();
-for (let frame = 0; frame < 120; frame += 1) {
-	springToward(settling, { x: 1, y: 0 }, EYE_TENSION, 1 / 60);
-}
-check("the eye spring settles on its goal", [settling.x.toFixed(2), settling.y.toFixed(2)], ["1.00", "0.00"]);
-check(
-	"a still eye is square; a fast one stretches along its move, never turns",
+	"ink inside a leaf, paper far outside",
 	[
-		eyeTransformOf(restingSpring(), 200, 1),
-		/scale\(([\d.]+) ([\d.]+)\)/
-			.exec(eyeTransformOf({ x: 0, y: 0, vx: 8, vy: 0 }, 200, 1))
-			?.slice(1)
-			.map(Number)
-			.map((at) => at > 1),
-		eyeTransformOf({ x: 0, y: 0, vx: 8, vy: 8 }, 200, 1).includes("rotate"),
+		cloverInkAt(stillClover, { x: -0.35, y: -0.4 }, overhead) > 0,
+		cloverInkAt(stillClover, { x: 0.95, y: 0.95 }, overhead) < 0,
 	],
-	["translate(0.00 0.00) scale(1.000 1.000)", [true, false], false],
+	[true, true],
 );
-const pulledDown = cornerGoalsOf({ x: 0, y: 1 }, 1, { x: 0, y: 0 }, 0, 140);
 check(
-	"a pointer below pulls the bottom corners down, the top ones stay",
-	pulledDown.map((goal) => goal.y > 0),
-	[false, false, true, true],
+	"a leaning clover turns about its foot: the foot holds, a point above it moves",
+	[leanedPoint(STEM_FOOT, 0.4), leanedPoint({ x: STEM_FOOT.x, y: -0.5 }, 0.4).x < STEM_FOOT.x],
+	[STEM_FOOT, true],
 );
-check("no pointer, no move: every corner rests", cornerGoalsOf({ x: 0, y: 0 }, 0, { x: 0, y: 0 }, 0, 140), [
-	{ x: 0, y: 0 },
-	{ x: 0, y: 0 },
-	{ x: 0, y: 0 },
-	{ x: 0, y: 0 },
-]);
+const cellsPerLeaf = (size: number): number[] =>
+	cloverCellsOf(cloverRowsOf(size)).reduce<number[]>((counts, cell) => {
+		counts[cell.leaf] = (counts[cell.leaf] ?? 0) + 1;
+		return counts;
+	}, []);
 check(
-	"the resting body is the square itself",
-	bodyPointsOf(restingCorners(), 40),
-	"-20.0,-20.0 20.0,-20.0 20.0,20.0 -20.0,20.0",
+	"the small mark is four equal leaves round a heart, at both sizes",
+	[cellsPerLeaf(20), cellsPerLeaf(14)],
+	[
+		[13, 13, 13, 13, 1],
+		[8, 8, 8, 8, 1],
+	],
 );
 check(
 	"every old mood has a square state",
@@ -286,18 +251,24 @@ const FILLS = `(() => {
 		waits: body("[data-row=waits]") === ink("--sumi-accent"),
 		done: body("[data-row=done]") === ink("--sumi-success"),
 		error: body("[data-row=error]") === ink("--sumi-danger"),
-		eye: getComputedStyle(document.querySelector("[data-row=rest] .sumi-figure-eye")).fill === ink("--sumi-plate"),
 		dark: body("#dark") !== body("[data-row=rest]"),
-		glow: getComputedStyle(document.querySelector("[data-row=working] .sumi-figure-eye")).animationName,
+		cells: document.querySelectorAll("[data-row=rest] .sumi-figure-cell").length,
 	};
 })()`;
 const LIVE = `(() => {
 	const live = document.querySelector("#live .sumi-figure");
+	const canvas = live.querySelector("canvas");
 	const box = live.getBoundingClientRect();
+	const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, Math.round(canvas.height / 3)).data;
+	let inked = 0;
+	let across = 0;
+	for (let at = 3; at < pixels.length; at += 4) {
+		if (pixels[at] > 0) { inked += 1; across += ((at - 3) / 4) % canvas.width; }
+	}
 	return {
 		state: live.dataset.state,
-		eye: live.querySelector(".sumi-figure-eye").getAttribute("transform"),
-		body: live.querySelector(".sumi-figure-body").getAttribute("points"),
+		inked,
+		top: inked === 0 ? 0 : across / inked / canvas.width,
 		centre: [box.left + box.width / 2, box.top + box.height / 2],
 	};
 })()`;
@@ -310,12 +281,12 @@ const FRAMES_IN_A_SECOND = `new Promise((done) => {
 
 interface Live {
 	readonly state: string;
-	readonly eye: string;
-	readonly body: string;
+	readonly inked: number;
+	readonly top: number;
 	readonly centre: readonly [number, number];
 }
 
-const isLive = (value: unknown): value is Live => typeof value === "object" && value !== null && "eye" in value;
+const isLive = (value: unknown): value is Live => typeof value === "object" && value !== null && "inked" in value;
 
 async function liveOf(page: AskedPage): Promise<Live> {
 	const read = await page.ask(LIVE);
@@ -327,44 +298,33 @@ async function liveOf(page: AskedPage): Promise<Live> {
 	return read;
 }
 
-async function eyesWhenPointedFrom(page: AskedPage, centre: readonly [number, number]): Promise<readonly string[]> {
-	const eyes: string[] = [];
+async function topsWhenPointedFrom(page: AskedPage, centre: readonly [number, number]): Promise<readonly number[]> {
+	const tops: number[] = [];
 
 	for (const dx of [-300, 300]) {
-		for (let step = 0; step < 4; step += 1) {
-			await page.hover(centre[0] + dx + step, centre[1] + step);
-			await waited(60);
-		}
-
-		await waited(700);
-		eyes.push((await liveOf(page)).eye);
+		await page.hover(centre[0] + dx, centre[1]);
+		await waited(900);
+		tops.push((await liveOf(page)).top);
 	}
 
-	return eyes;
+	return tops;
 }
-
-const eyeX = (transform: string): number => Number(/translate\(([-\d.]+)/.exec(transform)?.[1] ?? NaN);
-const lowestY = (points: string): number => Math.max(...points.split(" ").map((one) => Number(one.split(",")[1])));
 
 const page = await paged(origin, "mascot", { size: [1300, 700] });
 try {
 	await waited(800);
-	check("each state paints its body, the eye is the paper, working does not glow", await page.ask(FILLS), {
+	check("each state paints its leaves, and the small mark is its 33 cells", await page.ask(FILLS), {
 		rest: true,
 		waits: true,
 		done: true,
 		error: true,
-		eye: true,
 		dark: true,
-		glow: "none",
+		cells: 33,
 	});
 	const resting = await liveOf(page);
-	check("the live mascot starts at rest", resting.state, "rest");
-	const [fromLeft = "", fromRight = ""] = await eyesWhenPointedFrom(page, resting.centre);
-	check("its eye follows the pointer", eyeX(fromLeft) < eyeX(fromRight) - 2, true);
-	await page.hover(resting.centre[0], resting.centre[1] + 160);
-	await waited(800);
-	check("a pointer below pulls the body down past its square", lowestY((await liveOf(page)).body) > 90, true);
+	check("the live mascot starts at rest, drawn in ink", [resting.state, resting.inked > 500], ["rest", true]);
+	const [fromLeft = 0, fromRight = 0] = await topsWhenPointedFrom(page, resting.centre);
+	check("its leaves lean toward the pointer", fromLeft < fromRight - 0.02, true);
 	await page.ask(`window.__RECORD__(["sent"]); true`);
 	await waited(300);
 	check("a sent message: working", (await liveOf(page)).state, "working");
@@ -379,8 +339,12 @@ try {
 	await page.ask(`location.reload(); true`);
 	await waited(1000);
 	const still = await liveOf(page);
-	const [stillLeft, stillRight] = await eyesWhenPointedFrom(page, still.centre);
-	check("reduced motion: the eye stays put", stillLeft === stillRight && stillLeft !== "", true);
+	const [stillLeft, stillRight] = await topsWhenPointedFrom(page, still.centre);
+	check(
+		"reduced motion: the clover is drawn and stays put",
+		[still.inked > 500, stillLeft === stillRight],
+		[true, true],
+	);
 	check("the page drew without a failure", await page.ask(`document.getElementById("boom").textContent`), "");
 } finally {
 	page.close();
