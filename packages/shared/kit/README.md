@@ -37,7 +37,7 @@ Everything is TSX with the classic `h` factory, so every file that draws imports
 
 ## Rules it keeps
 
-- **Colours are tokens.** Every colour is a `--*` custom property; nothing is written by hand.
+- **Colours are tokens.** Every colour is a kit token (`KIT_TOKENS`), a custom property such as `var(--fill)`; nothing is written by hand.
 - **A plate is earned.** `Card` asks the plate laws whether it may stand where it is; a refused plate paints nothing and warns.
 - **Icons and emojis are drawings**, not font glyphs, so they look the same in every host.
 - **Radix's conventions, shadcn's names.** Parts are flat exports (`PopoverTrigger`, `SelectItem`,

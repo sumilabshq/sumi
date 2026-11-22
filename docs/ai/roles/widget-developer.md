@@ -31,7 +31,7 @@ handbook and `show <id>` are the whole of what you need.
 - **You draw every element.** Behaviour from `radix-ui`, the look from Tailwind on the theme's
   tokens, motion as the design system's `motion.md` says; `components.md` lists the elements. Raw
   `<button>`, `<input>` and the rest are fine: the engine resets Obsidian's paint under a widget.
-- Colours, radii and spacing come from `--*` tokens; type from the host.
+- Colours, radii and spacing come from kit tokens; type from the host.
 - **A widget is a component with one job**, said in one sentence without "and" ({handbook}/brief.md,
   law 14). A list shows and picks; a card shows one record. **It never draws an add form, and never
   an edit or delete for the record it shows**: those are `@default/add-button` and

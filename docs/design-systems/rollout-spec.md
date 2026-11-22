@@ -81,7 +81,7 @@ It runs after the spec and before any page design. Stages become: 1 spec, **2 de
 ### Stage 4: the app's kit becomes the system's
 
 - **Kit copy.** Each app gets its own kit copy and aliases, the way `create` does for projects. This also closes the "draw with the plugin's kit" TODO for vault apps. Vault widgets of the app import the app's copy.
-- **Tokens first.** One job writes the system's token table into the copy's `--*` values and `theme.css`. All colours stay tokens (`audit-colors` clean).
+- **Tokens first.** One job writes the system's token table into the copy's kit token values and `theme.css`. All colours stay tokens (`audit-colors` clean).
 - **Components by dependency tier.** Build the import graph of the kit's components. Tier 0 imports no kit component (button, badge, icon…); tier n imports only lower tiers. A tier's components run as parallel jobs, one component each. The next tier starts when the whole tier is green.
   - Behaviour is kept; only the look changes, unless the system's traits change a control's function. For example, a lens scrubber replacing a select is a new component beside the old one, never a silent swap.
 - **Coverage.** The job list is generated from the graph, so no component can be skipped. Done = every component's job ended green.

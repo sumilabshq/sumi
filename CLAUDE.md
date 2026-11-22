@@ -165,7 +165,7 @@ map of which folder is MIT and which FSL-1.1-ALv2, and `REUSE.toml` maps paths t
 ## Sumi — the studio's design system
 
 **Sumi ("Quiet UI") is the one design system of the studio and the Tauri app.** The package is
-`design-systems/sumi/` (`DESIGN.md`, `tokens.css`, the runtime `sumi.css` with every `--*` token); its
+`design-systems/sumi/` (`DESIGN.md`, `tokens.css`, the runtime `sumi.css` with every theme token); its
 idea is the first section of `DESIGN.md` and wins over any rule, `references/quiet-ui-brief.md` is history, and the boards are the canvas
 "Studio two layers" (https://claude.ai/artifact/4YPtzqciNLEEfHLBeJZePw), copied as artboards into
 `docs/reference/sumi-layout/`. Sumi is also the mascot's name.
@@ -197,7 +197,7 @@ pictures under `references/` — by the format in `design-catalogue/README.md`, 
 `data-framework system check <id>` (`npm run test:design-systems` checks every one). **The token contract is
 shadcn's names** (`packages/shared/kit/src/constants/token-contract.ts`): `tokens.css` declares a few numeric
 parameters and every colour as an `oklch()` formula of them, in `:root` and in `.dark, .theme-dark`, so
-`--hue` re-derives both themes; the kit reads those names and `--*` are aliases onto them. The
+`--hue` re-derives both themes; the kit reads those shadcn names directly. The
 board sheet (`packages/shared/core/board.css`) carries `design-systems/default/tokens.css`, laid as `@layer wg-system` by the build,
 and `npm run test:system-tokens` holds it to the colours Obsidian drew before the flip. What cost the most to learn:
 
@@ -254,7 +254,7 @@ scopes, same body as before, only the subject is short.
 - **CRITICAL: NO ELLIPSIS IN WRITTEN TEXT.** A label, menu item, button, placeholder or status is written
   without "…" or "...": "Add a provider", never "Add a provider…". Only an overflowing line cut by CSS
   (`text-overflow: ellipsis`) may show one.
-- All colours from tokens (`--*` in the studio, `--*` in the kit); no hardcoded colours. The kit's controls paint fill and corner
+- All colours from tokens (the theme's tokens in `design-systems/sumi/sumi.css` in the studio, kit tokens such as `var(--fill)` in the kit); no hardcoded colours. The kit's controls paint fill and corner
   on a `::before` — the element itself is `border-radius: 0` by design.
 - Comments only with the prefixes `TODO:` and `TRADE-OFF:`, fewest possible words. `CONTEXT:` is
   gone: a fact the reader needs belongs in a name. A hook blocks anything else, on edits and on

@@ -60,7 +60,7 @@ names.
 
 ## Colour, size, motion
 
-Every colour is a `--*` token: a theme repaints a token and cannot repaint a hex. Two text
+Every colour is a kit token: a theme repaints a token and cannot repaint a hex. Two text
 colours, `--foreground` and `--muted-foreground`; a tone is a state of a plate, never a kind of
 one. No cast shadow on a plate, uppercase only as `clean-ui.md` allows, never colour alone.
 

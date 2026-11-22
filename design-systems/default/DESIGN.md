@@ -4,7 +4,7 @@
 
 The Widgetarium kit's own look: the system every app and the Obsidian plugin get when none is chosen. The page is the theme's colour; a group of things that answer one question stands on a faint grey plate with no edge; type and space do the rest. Quiet, because almost nothing is coloured or outlined; strict, because every colour, gap and corner comes from the kit and none is written by hand.
 
-The practice is taken from Material 3 Expressive and Apple's current system, never their look: **maximalist, physical, answering.** Big controls, large corners, generous spacing; shape carries the accent as much as colour; motion is the answer to a press. Their runtimes, colour roles and base components are refused: colours come from `--*`.
+The practice is taken from Material 3 Expressive and Apple's current system, never their look: **maximalist, physical, answering.** Big controls, large corners, generous spacing; shape carries the accent as much as colour; motion is the answer to a press. Their runtimes, colour roles and base components are refused: colours come from kit tokens.
 
 A system chosen for an app replaces this one; everything here also holds under it unless that system says otherwise, because `docs/ai/clean-ui.md` and the kit's plate laws are shared.
 
@@ -148,7 +148,7 @@ OKLCH. Light first, dark beside it.
 
 ## Never
 
-- a colour written by hand instead of a `--*` token
+- a colour written by hand instead of a kit token
 - a border on a group plate, or a line around a card, a cell or a picture
 - a cast shadow on a plate
 - an unchosen violet as a product's accent: the brand hue is the kit's until a product picks its own
