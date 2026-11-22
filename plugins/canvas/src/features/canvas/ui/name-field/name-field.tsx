@@ -1,5 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
+import { Input } from "@widgetarium/kit";
 
 export interface NameFieldProps {
 	readonly name: string;
@@ -14,7 +15,8 @@ export function NameField({ name, className, onDone }: NameFieldProps): ReactEle
 		onDone(trimmed === "" || trimmed === name ? null : trimmed);
 	};
 	return (
-		<input
+		<Input
+			size="s"
 			className={className}
 			value={typed}
 			aria-label="Name"

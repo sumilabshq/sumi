@@ -10,10 +10,10 @@ export interface TopRowProps {
 export function TopRow({ start, end }: TopRowProps): ReactElement {
 	return (
 		<div className="sumi-canvas-top-row" data-canvas-top-row="">
-			<ControlSpace side="start" className="sumi-canvas-plate">
+			<ControlSpace side="start" surface="glass" className="sumi-canvas-plate">
 				{start}
 			</ControlSpace>
-			<ControlSpace side="end" className="sumi-canvas-plate">
+			<ControlSpace side="end" surface="glass" className="sumi-canvas-plate">
 				{end}
 			</ControlSpace>
 		</div>

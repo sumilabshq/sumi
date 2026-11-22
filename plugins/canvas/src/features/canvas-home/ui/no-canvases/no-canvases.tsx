@@ -15,7 +15,10 @@ export function NoCanvases({ tabId, words }: NoCanvasesProps): ReactElement {
 	return (
 		<div className="sumi-canvas-home-empty">
 			<h2>No canvases yet</h2>
-			<p>A canvas holds screens as artboards. Start one here, or ask Sumi in a chat to draw: its canvas shows up on this page.</p>
+			<p>
+				A canvas holds screens as artboards. Start one here, or ask Sumi in a chat to draw: its canvas shows up on this
+				page.
+			</p>
 			<NewCanvasButton tabId={tabId} />
 		</div>
 	);

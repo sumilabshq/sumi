@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { artboards } from "@sumi/artboards/contract";
 import { useQuery } from "@widgetarium/data-framework";
-import { Popover, PopoverContent } from "@widgetarium/kit";
+import { Popover, PopoverContent, Pressable } from "@widgetarium/kit";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 import { BackgroundItems } from "../background-items/background-items.js";
 import { BackgroundSwatch } from "../background-swatch/background-swatch.js";
@@ -15,15 +15,16 @@ export function BackgroundAction(): ReactElement {
 	const [isOpen, setOpen] = useState(false);
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
-			<button
-				type="button"
+			<Pressable
+				tone="muted"
+				aria-haspopup="menu"
 				className="sumi-canvas-top-button is-square"
-				aria-label="Canvas background"
+				label="Canvas background"
 				aria-expanded={isOpen}
 				onClick={() => setOpen(!isOpen)}
 			>
 				<BackgroundSwatch value={current} />
-			</button>
+			</Pressable>
 			<PopoverContent side="bottom" align="end" sideOffset={MENU_GAP_PX}>
 				<BackgroundItems onChosen={() => setOpen(false)} />
 			</PopoverContent>

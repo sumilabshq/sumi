@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, Pressable } from "@widgetarium/kit";
 import { HOME_ICON, HOME_TITLE } from "../../../../shared/lib/canvas-links.js";
 import type { HomeShown } from "../../lib/home-shown.js";
 
@@ -23,10 +23,10 @@ export function HomeCrumb({ shown, onAll }: HomeCrumbProps): ReactElement {
 
 	return (
 		<Fragment>
-			<button type="button" className="sumi-canvas-top-button is-home" onClick={onAll}>
+			<Pressable tone="muted" className="sumi-canvas-top-button is-home" onClick={onAll}>
 				<Icon name={HOME_ICON} size={ICON_PX} />
 				<span>{HOME_TITLE}</span>
-			</button>
+			</Pressable>
 			<span className="sumi-canvas-crumb-slash" aria-hidden="true">
 				/
 			</span>

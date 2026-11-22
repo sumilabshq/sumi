@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { useCanvasesInChats } from "../../lib/use-canvases-in-chats.js";
 import { CanvasCard } from "../canvas-card/canvas-card.js";
 
@@ -24,9 +25,9 @@ export function InChatsRow({ tabId, words, onOpenAll }: InChatsRowProps): ReactE
 			<div className="sumi-canvas-home-head">
 				<h2>{TITLE}</h2>
 				{inChats.length > ROW_MOST ? (
-					<button type="button" className="sumi-canvas-home-quiet" onClick={onOpenAll}>
+					<Pressable variant="quiet" tone="muted" className="sumi-canvas-home-quiet" onClick={onOpenAll}>
 						Open all
-					</button>
+					</Pressable>
 				) : null}
 			</div>
 			<div className="sumi-canvas-home-row">

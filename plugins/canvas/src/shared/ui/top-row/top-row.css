@@ -26,7 +26,6 @@
 	min-width: 0;
 	height: var(--sumi-h-md);
 	padding-inline: var(--sumi-sp-2);
-	background: var(--sumi-canvas-plate-fill);
 	backdrop-filter: var(--sumi-blur-corner);
 	-webkit-backdrop-filter: var(--sumi-blur-corner);
 	pointer-events: auto;
@@ -39,22 +38,11 @@
 }
 
 .wg-pane[data-pane-tools] .sumi-canvas-top-row > .sumi-canvas-plate:last-child,
-.wg-shell:has([data-title-floats]) .wg-pane[data-pane-tools][data-corner-end] .sumi-canvas-top-row > .sumi-canvas-plate:last-child {
+.wg-shell:has([data-title-floats])
+	.wg-pane[data-pane-tools][data-corner-end]
+	.sumi-canvas-top-row
+	> .sumi-canvas-plate:last-child {
 	padding-inline-end: calc(var(--sumi-pane-tools-end) + var(--sumi-pane-tools-w) - var(--sumi-sp-3));
-}
-
-.sumi-canvas-top-row svg.wg-kit-icon-glyph {
-	flex: none;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1.6;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-
-.sumi-canvas-top-row svg.wg-kit-icon-glyph.is-filled {
-	fill: currentColor;
-	stroke: none;
 }
 
 .sumi-canvas-top-button {
@@ -64,24 +52,13 @@
 	min-width: 0;
 	height: var(--sumi-h-sm);
 	padding: 0 var(--sumi-sp-4);
-	border: 0;
-	background: none;
-	color: var(--sumi-text-3);
 	font: inherit;
 	font-size: var(--sumi-fs-13);
 	white-space: nowrap;
 	cursor: pointer;
 }
 
-.sumi-canvas-top-button:hover,
-.sumi-canvas-top-button[aria-expanded="true"],
-.sumi-canvas-top-button[aria-pressed="true"] {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
-}
-
 .sumi-canvas-top-button.is-title {
-	color: var(--sumi-text);
 	font-weight: var(--sumi-fw-medium);
 }
 
@@ -93,7 +70,6 @@
 .sumi-canvas-top-button.is-zoom {
 	justify-content: center;
 	min-width: 52px;
-	color: var(--sumi-text);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -111,10 +87,6 @@
 	width: 220px;
 	height: var(--sumi-h-sm);
 	padding: 0 var(--sumi-sp-4);
-	border: 0;
-	outline: 1px solid var(--sumi-line-strong);
-	background: var(--sumi-plate);
-	color: var(--sumi-text);
 	font: inherit;
 	font-size: var(--sumi-fs-13);
 	font-weight: var(--sumi-fw-medium);

@@ -35,11 +35,7 @@ export function InChatsGrid({ tabId, words, scroller }: InChatsGridProps): React
 				itemAt={(index) => inChats[index]}
 				onWanted={wantsNothing}
 				drawItem={(held) =>
-					held === undefined ? (
-						<WaitingCard />
-					) : (
-						<CanvasCard tabId={tabId} row={held.row} chat={held.chat} />
-					)
+					held === undefined ? <WaitingCard /> : <CanvasCard tabId={tabId} row={held.row} chat={held.chat} />
 				}
 			/>
 		</section>

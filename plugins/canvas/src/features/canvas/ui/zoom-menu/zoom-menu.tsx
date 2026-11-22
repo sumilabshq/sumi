@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { Popover, PopoverContent, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
+import { Popover, PopoverContent, PopoverItem, PopoverSeparator, Pressable } from "@widgetarium/kit";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 import { percentOf, useZoom } from "../../lib/zoom-store.js";
 
@@ -18,15 +18,15 @@ export function ZoomMenu(): ReactElement {
 	};
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
-			<button
-				type="button"
+			<Pressable
+				aria-haspopup="menu"
 				className="sumi-canvas-top-button is-zoom"
-				aria-label={MENU_LABEL}
+				label={MENU_LABEL}
 				aria-expanded={isOpen}
 				onClick={() => setOpen(!isOpen)}
 			>
 				{percentOf(scale)}
-			</button>
+			</Pressable>
 			<PopoverContent side="bottom" align="end" sideOffset={MENU_GAP_PX}>
 				<div role="menu" aria-label={MENU_LABEL}>
 					<PopoverItem role="menuitem" onClick={() => choose(() => zoom.fit())}>

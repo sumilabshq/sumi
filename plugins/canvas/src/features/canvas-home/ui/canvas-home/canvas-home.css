@@ -12,20 +12,6 @@
 	font-size: var(--sumi-fs-13);
 }
 
-.sumi-canvas-home svg.wg-kit-icon-glyph {
-	flex: none;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1.6;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-
-.sumi-canvas-home svg.wg-kit-icon-glyph.is-filled {
-	fill: currentColor;
-	stroke: none;
-}
-
 .sumi-canvas-home .sumi-canvas-plate {
 	gap: var(--sumi-sp-4);
 }
@@ -36,7 +22,8 @@
 	flex: 1;
 	min-width: 0;
 	overflow-y: auto;
-	padding: calc(var(--sumi-header-h) + var(--sumi-canvas-home-pad)) var(--sumi-canvas-home-pad) var(--sumi-canvas-home-pad);
+	padding: calc(var(--sumi-header-h) + var(--sumi-canvas-home-pad)) var(--sumi-canvas-home-pad)
+		var(--sumi-canvas-home-pad);
 }
 
 .sumi-canvas-home-column {
@@ -66,20 +53,12 @@
 	gap: var(--sumi-sp-2);
 	height: var(--sumi-h-xs);
 	padding: 0 var(--sumi-sp-4);
-	border: 0;
-	background: none;
-	color: var(--sumi-text-3);
 	font: inherit;
 	cursor: pointer;
 }
 
 .sumi-canvas-home-head .sumi-canvas-home-quiet {
 	margin-inline-end: calc(-1 * var(--sumi-sp-4));
-}
-
-.sumi-canvas-home-quiet:hover,
-.sumi-canvas-home-quiet[aria-expanded="true"] {
-	color: var(--sumi-text);
 }
 
 .sumi-canvas-home-row {
@@ -113,9 +92,6 @@
 	gap: var(--sumi-sp-2);
 	min-width: 0;
 	padding: 0;
-	border: 0;
-	background: none;
-	color: inherit;
 	font: inherit;
 	text-align: start;
 	cursor: pointer;
@@ -130,15 +106,6 @@
 	background: var(--sumi-soft);
 	color: var(--sumi-text-3);
 	transition: background var(--sumi-dur-hover) var(--sumi-ease);
-}
-
-.sumi-canvas-card-open:hover .sumi-canvas-card-cover {
-	background: color-mix(in srgb, var(--sumi-soft), var(--sumi-text) 4%);
-}
-
-.sumi-canvas-card-open:focus-visible .sumi-canvas-card-cover {
-	outline: 2px solid var(--sumi-text);
-	outline-offset: 2px;
 }
 
 .sumi-canvas-card-name {
@@ -162,24 +129,16 @@
 	max-width: 100%;
 	height: var(--sumi-h-xs);
 	padding: 0 var(--sumi-sp-4);
-	border: 0;
-	background: color-mix(in srgb, var(--sumi-hue-blue) 10%, var(--sumi-plate));
-	color: var(--sumi-hue-blue);
 	font: inherit;
 	font-size: var(--sumi-fs-12);
 	cursor: pointer;
-	transition: background var(--sumi-dur-hover) var(--sumi-ease);
-}
-
-.sumi-canvas-card-chat:hover {
-	background: color-mix(in srgb, var(--sumi-hue-blue) 16%, var(--sumi-plate));
 }
 
 .sumi-canvas-card-chat-dot {
 	flex: none;
 	width: 6px;
 	height: 6px;
-	border-radius: 50%;
+	border-radius: var(--wg-kit-round);
 	background: var(--sumi-hue-blue);
 }
 
@@ -205,17 +164,9 @@
 	flex: 1;
 	min-width: 0;
 	padding: 0;
-	border: 0;
-	outline: none;
-	background: none;
-	color: var(--sumi-text);
 	font: inherit;
 	font-size: var(--sumi-fs-13);
 	user-select: text;
-}
-
-.sumi-canvas-search-field::placeholder {
-	color: var(--sumi-text-3);
 }
 
 .sumi-canvas-search-field::-webkit-search-cancel-button {
@@ -235,9 +186,6 @@
 	gap: var(--sumi-sp-3);
 	height: var(--sumi-h-sm);
 	padding: 0 var(--sumi-sp-5);
-	border: 0;
-	background: var(--sumi-text);
-	color: var(--sumi-plate);
 	font: inherit;
 	font-size: var(--sumi-fs-13);
 	font-weight: var(--sumi-fw-medium);
@@ -245,16 +193,8 @@
 	cursor: pointer;
 }
 
-.sumi-canvas-new svg.wg-kit-icon-glyph:not(.is-filled) {
-	stroke-width: 2;
-}
-
 .sumi-canvas-top-button.is-still {
 	cursor: default;
-}
-
-.sumi-canvas-top-button.is-still:hover {
-	background: none;
 }
 
 .sumi-canvas-home-empty {

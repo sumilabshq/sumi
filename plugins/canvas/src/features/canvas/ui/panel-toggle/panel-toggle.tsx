@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { artboards } from "@sumi/artboards/contract";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { Icon, tooltipMarks } from "@widgetarium/kit";
+import { Icon, Pressable, tooltipMarks } from "@widgetarium/kit";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 
 const ICON_PX = 16;
@@ -15,15 +15,15 @@ export function PanelToggle(): ReactElement {
 	const toggle = useCommand(artboards.view.togglePanel);
 	const label = isPanelOpen ? HIDE_PANEL : SHOW_PANEL;
 	return (
-		<button
-			type="button"
+		<Pressable
+			tone="muted"
 			className="sumi-canvas-top-button is-square"
-			aria-label={label}
+			label={label}
 			aria-pressed={isPanelOpen}
 			{...tooltipMarks({ said: label })}
 			onClick={() => void toggle.run({ canvasId })}
 		>
 			<Icon name="panel-right" size={ICON_PX} />
-		</button>
+		</Pressable>
 	);
 }

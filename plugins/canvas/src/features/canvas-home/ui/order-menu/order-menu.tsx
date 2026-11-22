@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import type { CanvasOrder } from "@sumi/artboards/contract";
-import { Icon, Popover, PopoverContent, PopoverItem } from "@widgetarium/kit";
+import { Icon, Popover, PopoverContent, PopoverItem, Pressable } from "@widgetarium/kit";
 
 export interface OrderMenuProps {
 	readonly order: CanvasOrder;
@@ -21,16 +21,18 @@ export function OrderMenu({ order, onOrder }: OrderMenuProps): ReactElement {
 	const [isOpen, setOpen] = useState(false);
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
-			<button
-				type="button"
+			<Pressable
+				variant="quiet"
+				tone="muted"
+				aria-haspopup="menu"
 				className="sumi-canvas-home-quiet"
-				aria-label={MENU_LABEL}
+				label={MENU_LABEL}
 				aria-expanded={isOpen}
 				onClick={() => setOpen(!isOpen)}
 			>
 				{ORDER_WORDS[order]}
 				<Icon name="chevron-down" size={ICON_PX} />
-			</button>
+			</Pressable>
 			<PopoverContent side="bottom" align="end" sideOffset={MENU_GAP_PX}>
 				<div role="menu" aria-label={MENU_LABEL}>
 					{ORDERS.map((one) => (

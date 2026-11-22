@@ -13,7 +13,14 @@ export interface VirtualGridProps<T> {
 	readonly onWanted: (span: IndexSpan) => void;
 }
 
-export function VirtualGrid<T>({ scroller, total, cardPx, itemAt, drawItem, onWanted }: VirtualGridProps<T>): ReactElement {
+export function VirtualGrid<T>({
+	scroller,
+	total,
+	cardPx,
+	itemAt,
+	drawItem,
+	onWanted,
+}: VirtualGridProps<T>): ReactElement {
 	const grid = useRef<HTMLDivElement>(null);
 	const view = useGridView(scroller, grid);
 	const shape = gridShapeOf(view.width, cardPx);

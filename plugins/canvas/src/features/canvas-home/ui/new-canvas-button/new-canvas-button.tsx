@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { artboards } from "@sumi/artboards/contract";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { Icon } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 import { canvasHrefOf } from "../../../../shared/lib/canvas-links.js";
 import { useOpensLink } from "../../../../shared/lib/use-opens-link.js";
 import { freeCanvasIdOf } from "../../lib/free-canvas-id.js";
@@ -24,9 +24,9 @@ export function NewCanvasButton({ tabId }: { readonly tabId: string }): ReactEle
 		openLink(canvasHrefOf(canvasId), inNewTab);
 	};
 	return (
-		<button type="button" className="sumi-canvas-new" onClick={(event) => void startNew(event.metaKey)}>
+		<Button variant="primary" size="s" className="sumi-canvas-new" onClick={(event) => void startNew(event.metaKey)}>
 			<Icon name="plus" size={ICON_PX} />
 			<span>New canvas</span>
-		</button>
+		</Button>
 	);
 }

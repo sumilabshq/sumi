@@ -1,6 +1,6 @@
 import { createElement as h, useEffect, useRef } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, Input } from "@widgetarium/kit";
 
 export interface SearchFieldProps {
 	readonly words: string;
@@ -32,9 +32,11 @@ export function SearchField({ words, onWords }: SearchFieldProps): ReactElement 
 	}, []);
 
 	return (
-		<label className="sumi-canvas-search">
+		<div className="sumi-canvas-search">
 			<Icon name="search" size={ICON_PX} />
-			<input
+			<Input
+				variant="bare"
+				block
 				ref={field}
 				className="sumi-canvas-search-field"
 				type="search"
@@ -50,6 +52,6 @@ export function SearchField({ words, onWords }: SearchFieldProps): ReactElement 
 				}}
 			/>
 			<kbd className="sumi-canvas-search-keys">{KEYS}</kbd>
-		</label>
+		</div>
 	);
 }

@@ -37,9 +37,7 @@ export function AllCanvases({ tabId, words, scroller }: AllCanvasesProps): React
 				cardPx={PLAIN_CARD_PX}
 				itemAt={paged.rowAt}
 				onWanted={paged.want}
-				drawItem={(row) =>
-					row === undefined ? <WaitingCard /> : <CanvasCard tabId={tabId} row={row} chat={null} />
-				}
+				drawItem={(row) => (row === undefined ? <WaitingCard /> : <CanvasCard tabId={tabId} row={row} chat={null} />)}
 			/>
 		</section>
 	);

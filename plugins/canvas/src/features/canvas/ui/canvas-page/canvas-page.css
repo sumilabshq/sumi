@@ -31,11 +31,7 @@
 }
 
 .sumi-canvas-board-field {
-	border: 0;
-	outline: none;
 	padding: 0;
-	background: none;
-	color: var(--sumi-text);
 	font-family: inherit;
 	user-select: text;
 }
@@ -71,20 +67,6 @@
 
 .sumi-canvas-board-name {
 	cursor: move;
-}
-
-.sumi-canvas svg.wg-kit-icon-glyph {
-	flex: none;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1.6;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-
-.sumi-canvas svg.wg-kit-icon-glyph.is-filled {
-	fill: currentColor;
-	stroke: none;
 }
 
 .sumi-canvas-board-name {
@@ -134,9 +116,4 @@
 	width: 0;
 	height: 0;
 	pointer-events: none;
-}
-
-.sumi-canvas .wg-kit-side-panel {
-	backdrop-filter: var(--sumi-blur-corner);
-	-webkit-backdrop-filter: var(--sumi-blur-corner);
 }

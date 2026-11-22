@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Pressable } from "@widgetarium/kit";
 import { CANVAS_ICON_SOURCE } from "../../../../shared/lib/canvas-icon.js";
 
 export interface MiniHeadPage {
@@ -26,23 +27,26 @@ export function MiniHead({ title, pages, page, href, onPick }: MiniHeadProps): R
 				{pages.length > 1 ? (
 					<span className="sumi-mini-canvas-pages">
 						{pages.map(({ id, name }) => (
-							<button
+							<Pressable
+								tone="muted"
+								aria-current={id === page}
 								key={id}
-								type="button"
 								className={id === page ? "sumi-mini-canvas-page is-shown" : "sumi-mini-canvas-page"}
 								onClick={() => onPick(id)}
 							>
 								{name}
-							</button>
+							</Pressable>
 						))}
 					</span>
 				) : null}
 			</div>
-			<a className="sumi-mcp-square" href={href} aria-label={OPEN_LABEL} title={OPEN_LABEL} data-mini-canvas-head="">
-				<svg viewBox="0 0 12 12" aria-hidden="true">
-					<path d="M4 2h6v6M10 2L3 9" />
-				</svg>
-			</a>
+			<Pressable asChild tone="muted">
+				<a className="sumi-mcp-square" href={href} aria-label={OPEN_LABEL} title={OPEN_LABEL} data-mini-canvas-head="">
+					<svg viewBox="0 0 12 12" aria-hidden="true">
+						<path d="M4 2h6v6M10 2L3 9" />
+					</svg>
+				</a>
+			</Pressable>
 		</div>
 	);
 }

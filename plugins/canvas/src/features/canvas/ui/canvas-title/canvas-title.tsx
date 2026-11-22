@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { artboards } from "@sumi/artboards/contract";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { tooltipMarks } from "@widgetarium/kit";
+import { Pressable, tooltipMarks } from "@widgetarium/kit";
 import { useRecordsTabTitle } from "../../../../shared/lib/use-records-tab-title.js";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 import { NameField } from "../name-field/name-field.js";
@@ -36,13 +36,12 @@ export function CanvasTitle(): ReactElement {
 	}
 
 	return (
-		<button
-			type="button"
+		<Pressable
 			className="sumi-canvas-top-button is-title"
 			{...tooltipMarks({ said: SAID })}
 			onClick={() => setNaming(true)}
 		>
 			<span>{title}</span>
-		</button>
+		</Pressable>
 	);
 }

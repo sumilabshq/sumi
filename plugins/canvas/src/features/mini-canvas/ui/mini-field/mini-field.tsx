@@ -62,7 +62,12 @@ export function MiniField({ boards, background }: MiniFieldProps): ReactElement 
 							style={{ left: board.x, top: board.y, width: board.w, height: board.h }}
 						>
 							<p className="sumi-canvas-board-name">{board.name}</p>
-							<iframe className="sumi-canvas-board-page" title={board.name} sandbox="allow-scripts" srcDoc={board.html} />
+							<iframe
+								className="sumi-canvas-board-page"
+								title={board.name}
+								sandbox="allow-scripts"
+								srcDoc={board.html}
+							/>
 						</div>
 					))}
 				</div>

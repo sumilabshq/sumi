@@ -16,7 +16,12 @@ reportsFailures();
 
 export const SEEDED_CANVASES = 300;
 
-const CHATS = ["Питання про браузер Phi", "Дота HTML для MCP-чату", "Канвас: адаптив і домашня сторінка", "Sumi onboarding"];
+const CHATS = [
+	"Питання про браузер Phi",
+	"Дота HTML для MCP-чату",
+	"Канвас: адаптив і домашня сторінка",
+	"Sumi onboarding",
+];
 
 const screenOf = (title: string): string =>
 	`<!doctype html><html><body style="margin:0;font:16px system-ui;background:#fff;color:#1b1b1a"><div style="padding:48px"><h1 style="margin:0 0 24px;font-size:40px">${title}</h1><div style="height:56px;border:2px solid #ccc;margin-bottom:16px"></div><div style="width:240px;height:56px;background:#1b1b1a"></div></div></body></html>`;
@@ -48,7 +53,9 @@ async function seeded(): Promise<Runtime> {
 									...CHATS.map((_, at) => ({ kind: "tab" as const, id: `chat-${at}` })),
 								],
 								k0: [{ kind: "tab", id: "k1" }],
-								...Object.fromEntries(CHATS.map((_, at) => [`chat-${at}`, [{ kind: "tab" as const, id: `held-${at}` }]])),
+								...Object.fromEntries(
+									CHATS.map((_, at) => [`chat-${at}`, [{ kind: "tab" as const, id: `held-${at}` }]]),
+								),
 							},
 							views: { main: { shownId: "home" } },
 							minted: 4,
@@ -85,7 +92,7 @@ void seeded().then((app) => {
 
 	createRoot(root).render(
 		<RuntimeProvider runtime={app}>
-			<div className="canvas-home-demo">
+			<div className="canvas-home-demo wg-root">
 				<CanvasPage app="canvas" tabId={location.hash.slice(1)} />
 			</div>
 		</RuntimeProvider>,

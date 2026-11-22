@@ -7,7 +7,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 	SidePanelRow,
-	sidePanelIndentOf,
+	sidePanelDepthOf,
 } from "@widgetarium/kit";
 import { NameField } from "../name-field/name-field.js";
 
@@ -40,7 +40,7 @@ export function NamedRow({
 		return (
 			<div
 				className={isPicked ? "wg-kit-side-panel-row is-picked" : "wg-kit-side-panel-row"}
-				style={{ paddingLeft: sidePanelIndentOf(depth) }}
+				style={sidePanelDepthOf(depth)}
 			>
 				{icon}
 				<NameField
