@@ -1,0 +1,27 @@
+.sumi-agent-chat {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.sumi-agent-chat-head {
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-5);
+	padding: var(--sumi-sp-5) var(--sumi-sp-9);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) var(--sumi-font-ui);
+}
+
+.sumi-agent-chat-title {
+	color: var(--sumi-text);
+}
+
+.sumi-agent-chat-mode,
+.sumi-agent-chat-note {
+	color: var(--sumi-text-3);
+}
+
+.sumi-agent-chat-note {
+	padding: var(--sumi-sp-5) var(--sumi-sp-9);
+	font: var(--sumi-fw-regular) var(--sumi-fs-14) var(--sumi-font-ui);
+}

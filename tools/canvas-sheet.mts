@@ -15,6 +15,7 @@ const SOURCES = [
 	"plugins/ai/chat/src",
 	"plugins/ai/questions/src",
 	"plugins/ai/composer-expand/src",
+	"plugins/ai/background-agents/src",
 	"plugins/ai/slash-commands/src",
 	"plugins/ai/claude-code/src",
 	"plugins/ai/working-folder/src",
@@ -57,6 +58,12 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/composer-expand/src/features/composer-expand/ui/expand-frame/expand-frame.css",
 	"@sumi/composer-expand-plugin/expand-toggle.css":
 		"plugins/ai/composer-expand/src/features/composer-expand/ui/expand-toggle/expand-toggle.css",
+	"@sumi/background-agents-plugin/background-agents.css":
+		"plugins/ai/background-agents/src/features/background-agents/ui/background-agents/background-agents.css",
+	"@sumi/background-agents-plugin/agent-row.css":
+		"plugins/ai/background-agents/src/features/background-agents/ui/agent-row/agent-row.css",
+	"@sumi/background-agents-plugin/agent-chat-page.css":
+		"plugins/ai/background-agents/src/features/agent-chat/ui/agent-chat-page/agent-chat-page.css",
 	"@sumi/slash-commands-plugin/slash-commands.css":
 		"plugins/ai/slash-commands/src/features/slash-menu/ui/slash-commands/slash-commands.css",
 	"@sumi/plan-usage-plugin/usage-button.css":
@@ -134,6 +141,9 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/chat-plugin/chat-page.css";
 @import "@sumi/composer-expand-plugin/expand-frame.css";
 @import "@sumi/composer-expand-plugin/expand-toggle.css";
+@import "@sumi/background-agents-plugin/background-agents.css";
+@import "@sumi/background-agents-plugin/agent-row.css";
+@import "@sumi/background-agents-plugin/agent-chat-page.css";
 @import "@sumi/slash-commands-plugin/slash-commands.css";
 @import "@sumi/model-picker-plugin/model-menu.css";
 @import "@sumi/plan-usage-plugin/usage-button.css";
