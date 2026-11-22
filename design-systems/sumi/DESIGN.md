@@ -14,7 +14,7 @@ Sumi is a quiet tool that gives the screen to the work. Five aims, in this order
 
 Today's answers to the aims. Each may change when a better answer serves the same aims; none is a direction to push further.
 
-- **Square corners.** Frames are square because it reads cleaner today. What sits inside a frame keeps its natural shape: a dot is round, a git node is a circle, a stroke has round caps. "Make it more square" is never a reason for a change; square is the easiest place to go wrong.
+- **Soft corners from one scale.** A frame takes its corner from `--sumi-r-*` (4, 6, 8, 12, 14, 16px): a plate 14, a control 8, a chip 6. The mascot stays square: the clover is drawn in square cells. A corner written as a number in a sheet is debt; many frames still carry a literal 0 and move to the scale as they are touched.
 - **One surface, no shadows, lines edge to edge.** Depth and boxes compete with content.
 - **Icons in one colour.** An icon's margin lives in the icon itself, so an author can draw it to the box's full size.
 
@@ -43,14 +43,14 @@ Everything else is fixed. The delight layers are drawn on the canvas's "Delight"
 | Role                                        | Step                                                                                                                                                                               |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `background`, `sidebar`                     | paper: the one surface; sidebars and panes are the same paper                                                                                                                      |
-| `card`, `group`, `muted`, `fill`, `field`   | soft: the one fill: code blocks, inline code, a selected row, a user's message                                                                                                    |
+| `card`, `group`, `muted`, `fill`, `field`   | soft: the one fill: code blocks, inline code, a selected row, a user's message                                                                                                     |
 | `popover`, `raise`                          | paper with a 1px `border`, no shadow: the only floating thing                                                                                                                      |
 | `sidebar-accent`                            | selected: the shown tab, the chosen option                                                                                                                                         |
 | `accent`, `secondary`, `fill-hover`         | active: pressed                                                                                                                                                                    |
 | `foreground`                                | ink                                                                                                                                                                                |
 | `muted-foreground`, `ink-muted`             | ink-2: rarely used; secondary text takes ink-3                                                                                                                                     |
 | `faint`                                     | ink-3: times, verbs in tool rows, hints, table headers                                                                                                                             |
-| `group-line`, `sidebar-border`              | line: every divider and table rule                                                                                                                                                 |
+| `group-line`, `sidebar-border`              | line: table rules and dividers inside content; divider (fainter): the splits between panels and the composer edge                                                                  |
 | `border`, `input`                           | edge: the code block and popup outline                                                                                                                                             |
 | `primary`, `brand`                          | contrast: the one solid control per view, Send                                                                                                                                     |
 | `tint`, `on-wash`                           | the workspace ink (Sumi yellow by default): the caret, links, text selection at 26%, the workspace mark, the working line and shimmer, the italic line of a greeting; nothing else |
@@ -77,7 +77,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 
 ## Component Stylings
 
-- **Row** (sidebar, menu, list): 30px, no corner, a 16px solid icon, 10px gap. Hover and keyboard focus: one light fill. Pressed: a stronger fill. Selected: the soft fill and 500.
+- **Row** (sidebar, menu, list): 30px, a 6px corner (`--sumi-r-sm`), hover by the menu glide, a 16px solid icon, 10px gap. Hover and keyboard focus: one light fill. Pressed: a stronger fill. Selected: the soft fill and 500.
 - **Icons**: Sumi's own apps use solid drawn icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
 - **Code block**: filled with the soft step, no border, mono 13px, syntax in muted colours, copy and wrap icons at the right.
 - **Inline code**: the soft fill, mono 13px, square, padding 2px 5px.
@@ -121,7 +121,7 @@ Suits long work at a desk: an agent chat beside apps, a browser, an editor, a gi
 - Do keep everything on one surface and one left line.
 - Do spend solid colour once per view (Send) and the workspace ink only where its role lists it.
 - Do let dividers reach both edges of their pane.
-- Don't add a plate, a card, a rounded corner or a second surface level.
+- Don't add a plate, a card or a second surface level.
 - Don't box statuses or put them in uppercase badges.
 - Don't draw a chevron on the left of one row and on the right of another.
 
@@ -186,7 +186,7 @@ The mascot, a square with an eye, is the alphabet: a few signs taken from it rep
 ## Never
 
 - A plate, a card around a message, a white pill on grey, a second surface level.
-- A rounded corner.
+- A corner outside the `--sumi-r-*` scale.
 - A divider cut short of its pane's edges, or a line under a chat pane's header.
 - An ellipsis written into text, or `·` used as a separator.
 - A tick inside a box or a circle: a done state is the bare tick, a picked option the mascot mark.
