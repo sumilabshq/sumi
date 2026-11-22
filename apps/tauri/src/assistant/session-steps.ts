@@ -1,12 +1,13 @@
 import type {
 	AssistantCall,
 	AssistantSession,
+	BackgroundAgent,
 	AssistantTurn,
 	SentPictures,
 	TurnOutcome,
 } from "@widgetarium/core/engine/assistant-port.js";
 import { freshCallOf } from "@widgetarium/core/engine/assistant-port.js";
-import type { StreamPart, ToolResult } from "@widgetarium/core/engine/provider-stream.js";
+import type { BackgroundChange, StreamPart, ToolResult } from "@widgetarium/core/engine/provider-stream.js";
 
 export const EMPTY_SESSION: AssistantSession = {
 	turns: [],
@@ -15,7 +16,9 @@ export const EMPTY_SESSION: AssistantSession = {
 	tool: null,
 	phase: null,
 	spent: 0,
+	context: null,
 	queued: [],
+	background: [],
 };
 
 export interface AskedMessage {
@@ -41,6 +44,10 @@ export function heardMidTurn(session: AssistantSession, heard: readonly AskedMes
 		...paused,
 		turns: [...paused.turns, ...heard.map((message) => questionOf(message, at)), freshAnswerOf(at)],
 	};
+}
+
+export function startedUnasked(session: AssistantSession, at: number): AssistantSession {
+	return withStarted(session, [freshAnswerOf(at)]);
 }
 
 export function startedCompact(session: AssistantSession, at: number): AssistantSession {
@@ -77,6 +84,10 @@ export function withoutLastCompact(session: AssistantSession): AssistantSession 
 	return { ...session, turns: session.turns.slice(0, -1), failure: null };
 }
 
+export function isSessionFact(part: StreamPart): boolean {
+	return ["background", "usage", "session", "spent", "spentMore", "context"].some((fact) => fact in part);
+}
+
 export function withPart(session: AssistantSession, part: StreamPart, at: number): AssistantSession {
 	if ("phase" in part) {
 		return { ...session, phase: part.phase, tool: part.phase === "tools" ? session.tool : null };
@@ -88,6 +99,10 @@ export function withPart(session: AssistantSession, part: StreamPart, at: number
 
 	if ("spent" in part) {
 		return { ...session, spent: part.spent };
+	}
+
+	if ("context" in part) {
+		return { ...session, context: part.context };
 	}
 
 	if ("text" in part) {
@@ -107,6 +122,10 @@ export function withPart(session: AssistantSession, part: StreamPart, at: number
 			...turn,
 			calls: answered(turn.calls, part.result, at),
 		}));
+	}
+
+	if ("background" in part) {
+		return { ...session, background: withBackgroundChange(session.background, part.background, at) };
 	}
 
 	if ("compacted" in part) {
@@ -164,6 +183,41 @@ function withStarted(session: AssistantSession, started: readonly AssistantTurn[
 		tool: null,
 		phase: "thinking",
 		spent: 0,
+		context: session.context,
 		queued: session.queued,
+		background: session.background,
 	};
+}
+
+function withBackgroundChange(
+	background: readonly BackgroundAgent[],
+	change: BackgroundChange,
+	at: number,
+): readonly BackgroundAgent[] {
+	if (change.kind === "started") {
+		const started: BackgroundAgent = {
+			id: change.id,
+			ref: change.ref,
+			title: change.title,
+			state: "working",
+			said: "",
+			startedAt: at,
+			endedAt: null,
+		};
+		return [...background.filter(({ id }) => id !== change.id), started];
+	}
+
+	return background.map((agent) => (agent.id === change.id ? changedAgent(agent, change, at) : agent));
+}
+
+function changedAgent(agent: BackgroundAgent, change: BackgroundChange, at: number): BackgroundAgent {
+	if (change.kind === "progress") {
+		return { ...agent, said: change.said };
+	}
+
+	if (change.kind === "ended") {
+		return { ...agent, state: change.end, said: change.said, endedAt: at };
+	}
+
+	return agent;
 }

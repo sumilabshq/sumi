@@ -135,6 +135,10 @@ export type ChatKeyed = z.infer<typeof ChatKeySchema>;
 
 export type ChatKey = ChatKeyed["chat"];
 
+export const AgentChatKeySchema = ChatKeySchema.extend({
+	agent: z.string().min(1).max(128),
+});
+
 export const TallySchema = z.object({
 	passed: z.number(),
 	all: z.number(),
@@ -203,6 +207,23 @@ export const QueueChangeInChatSchema = ChatKeySchema.extend({
 	change: QueueChangeAskedSchema,
 });
 
+export const ContextFillSchema = z.object({
+	used: z.number().nonnegative(),
+	window: z.number().positive(),
+});
+
+export type ContextFill = z.infer<typeof ContextFillSchema>;
+
+export const BackgroundAgentSchema = z.object({
+	id: z.string(),
+	ref: z.string(),
+	title: z.string(),
+	state: z.enum(["working", "done", "stopped", "failed"]),
+	said: z.string(),
+	startedAt: z.number(),
+	endedAt: z.number().nullable(),
+});
+
 export const AssistantSessionSchema = z.object({
 	turns: z.array(AssistantTurnSchema).readonly(),
 	busy: z.boolean(),
@@ -210,7 +231,9 @@ export const AssistantSessionSchema = z.object({
 	tool: z.string().nullable(),
 	phase: z.enum(["thinking", "tools", "writing"]).nullable(),
 	spent: z.number(),
+	context: ContextFillSchema.nullable(),
 	queued: z.array(QueuedMessageSchema).readonly(),
+	background: z.array(BackgroundAgentSchema).readonly(),
 });
 
 export const DiffLineSchema = z.object({
@@ -311,6 +334,10 @@ export const ClaudeEffortSchema = z.enum(["low", "medium", "high", "xhigh", "max
 
 export type ClaudeEffort = z.infer<typeof ClaudeEffortSchema>;
 
+export const SandboxSchema = z.enum(["project", "read-only", "full"]);
+
+export type Sandbox = z.infer<typeof SandboxSchema>;
+
 export const UsageWindowSchema = z.object({
 	used: z.number().nonnegative(),
 	resetsAt: z.number().int().nonnegative(),
@@ -327,6 +354,7 @@ export const ClaudeOptionsSchema = z.object({
 	mode: PermissionModeSchema,
 	model: ClaudeModelSchema,
 	effort: ClaudeEffortSchema,
+	sandbox: SandboxSchema.default("full"),
 	usage: PlanUsageSchema.nullable(),
 });
 
@@ -336,6 +364,7 @@ export const ClaudeOptionAskedSchema = z.union([
 	z.object({ mode: PermissionModeSchema }),
 	z.object({ model: ClaudeModelSchema }),
 	z.object({ effort: ClaudeEffortSchema }),
+	z.object({ sandbox: SandboxSchema }),
 ]);
 
 export type ClaudeOptionAsked = z.infer<typeof ClaudeOptionAskedSchema>;
@@ -544,6 +573,10 @@ export const assistant = moduleContract("assistant", Anywhere, {
 			.input(ChatKeySchema)
 			.output(ChatSchema)
 			.settlesNow()),
+		agentChat: named("chat.agent-chat", query()
+			.public()
+			.input(AgentChatKeySchema)
+			.output(ChatSchema)),
 		retryTurn: named("chat.retry-turn", command()
 			.public()
 			.input(ChatKeySchema)

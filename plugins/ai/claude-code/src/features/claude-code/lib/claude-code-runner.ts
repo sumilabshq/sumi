@@ -16,6 +16,17 @@ const MODE: AgentOption = {
 	],
 };
 
+const SANDBOX: AgentOption = {
+	key: "sandbox",
+	label: "Sandbox",
+	default: "full",
+	choices: [
+		{ value: "project", label: "Project folder", note: "Writes only in the project folder" },
+		{ value: "read-only", label: "Read only", note: "Reads, changes nothing" },
+		{ value: "full", label: "Full access", note: "No limits" },
+	],
+};
+
 const EFFORT: AgentOption = {
 	key: "effort",
 	label: "Effort",
@@ -36,10 +47,10 @@ export const CLAUDE_CODE_RUNNER: Runner = {
 	id: "claude-code",
 	label: "Claude Code",
 	models: [
-		{ id: "opus", label: "Opus", note: "Most capable", options: [MODE, EFFORT] },
-		{ id: "sonnet", label: "Sonnet", note: "Fast for everyday work", options: [MODE, EFFORT] },
-		{ id: "haiku", label: "Haiku", note: "Quickest, lightest", options: [MODE, EFFORT] },
-		{ id: "fable", label: "Fable", options: [MODE, EFFORT] },
+		{ id: "opus", label: "Opus", note: "Most capable", options: [MODE, SANDBOX, EFFORT] },
+		{ id: "sonnet", label: "Sonnet", note: "Fast for everyday work", options: [MODE, SANDBOX, EFFORT] },
+		{ id: "haiku", label: "Haiku", note: "Quickest, lightest", options: [MODE, SANDBOX, EFFORT] },
+		{ id: "fable", label: "Fable", options: [MODE, SANDBOX, EFFORT] },
 	],
 	meters: [
 		{

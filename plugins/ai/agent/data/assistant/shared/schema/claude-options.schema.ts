@@ -13,6 +13,10 @@ export const ClaudeEffortSchema = z.enum(["low", "medium", "high", "xhigh", "max
 
 export type ClaudeEffort = z.infer<typeof ClaudeEffortSchema>;
 
+export const SandboxSchema = z.enum(["project", "read-only", "full"]);
+
+export type Sandbox = z.infer<typeof SandboxSchema>;
+
 export const UsageWindowSchema = z.object({
 	used: z.number().nonnegative(),
 	resetsAt: z.number().int().nonnegative(),
@@ -29,6 +33,7 @@ export const ClaudeOptionsSchema = z.object({
 	mode: PermissionModeSchema,
 	model: ClaudeModelSchema,
 	effort: ClaudeEffortSchema,
+	sandbox: SandboxSchema.default("full"),
 	usage: PlanUsageSchema.nullable(),
 });
 
@@ -38,6 +43,7 @@ export const ClaudeOptionAskedSchema = z.union([
 	z.object({ mode: PermissionModeSchema }),
 	z.object({ model: ClaudeModelSchema }),
 	z.object({ effort: ClaudeEffortSchema }),
+	z.object({ sandbox: SandboxSchema }),
 ]);
 
 export type ClaudeOptionAsked = z.infer<typeof ClaudeOptionAskedSchema>;

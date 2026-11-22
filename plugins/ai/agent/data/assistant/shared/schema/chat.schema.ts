@@ -70,6 +70,23 @@ export const QueueChangeInChatSchema = ChatKeySchema.extend({
 	change: QueueChangeAskedSchema,
 });
 
+export const ContextFillSchema = z.object({
+	used: z.number().nonnegative(),
+	window: z.number().positive(),
+});
+
+export type ContextFill = z.infer<typeof ContextFillSchema>;
+
+export const BackgroundAgentSchema = z.object({
+	id: z.string(),
+	ref: z.string(),
+	title: z.string(),
+	state: z.enum(["working", "done", "stopped", "failed"]),
+	said: z.string(),
+	startedAt: z.number(),
+	endedAt: z.number().nullable(),
+});
+
 export const AssistantSessionSchema = z.object({
 	turns: z.array(AssistantTurnSchema).readonly(),
 	busy: z.boolean(),
@@ -77,7 +94,9 @@ export const AssistantSessionSchema = z.object({
 	tool: z.string().nullable(),
 	phase: z.enum(["thinking", "tools", "writing"]).nullable(),
 	spent: z.number(),
+	context: ContextFillSchema.nullable(),
 	queued: z.array(QueuedMessageSchema).readonly(),
+	background: z.array(BackgroundAgentSchema).readonly(),
 });
 
 export const DiffLineSchema = z.object({

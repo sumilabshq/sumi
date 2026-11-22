@@ -1,5 +1,6 @@
 import type { Job } from "../app-jobs.js";
 import type { WidgetDefinition } from "../registry.js";
+import type { ContextFill } from "./provider-stream.js";
 import { z } from "zod";
 import { BlockerSchema, NO_CHAT_CARDS, TallySchema } from "./assistant-cards.js";
 import type { ChatCards } from "./assistant-cards.js";
@@ -47,6 +48,26 @@ export const TurnOutcomeSchema = z.enum(["done", "stopped", "failed"]);
 
 export type TurnOutcome = z.infer<typeof TurnOutcomeSchema>;
 
+export const BackgroundStateSchema = z.enum(["working", "done", "stopped", "failed"]);
+
+export type BackgroundState = z.infer<typeof BackgroundStateSchema>;
+
+export const BackgroundAgentSchema = z.object({
+	id: z.string(),
+	ref: z.string(),
+	title: z.string(),
+	state: BackgroundStateSchema,
+	said: z.string(),
+	startedAt: z.number(),
+	endedAt: z.number().nullable(),
+});
+
+export type BackgroundAgent = z.infer<typeof BackgroundAgentSchema>;
+
+export function workingIn<Agent extends Pick<BackgroundAgent, "state">>(background: readonly Agent[]): readonly Agent[] {
+	return background.filter(({ state }) => state === "working");
+}
+
 export const TurnRoleSchema = z.enum(["user", "agent", "compact"]);
 
 export type TurnRole = z.infer<typeof TurnRoleSchema>;
@@ -87,7 +108,9 @@ export interface AssistantSession {
 	readonly tool: string | null;
 	readonly phase: AssistantPhase | null;
 	readonly spent: number;
+	readonly context: ContextFill | null;
 	readonly queued: readonly QueuedMessage[];
+	readonly background: readonly BackgroundAgent[];
 }
 
 export type CallKind = "search" | "read" | "edit" | "run" | "other";
@@ -199,6 +222,7 @@ export interface AssistantPort {
 	useLauncher?(launcher: TurnLauncher): void;
 	useQuickLauncher?(launcher: QuickAskLauncher): void;
 	quickAsk?(prompt: string): Promise<string>;
+	agentSession?(agentId: string): Promise<AssistantSession>;
 }
 
 export interface AgentLinkFacts {
@@ -224,10 +248,17 @@ export interface TurnFacts {
 	readonly link: AgentLinkFacts | null;
 }
 
+export interface LiveInput {
+	readonly key: string;
+	readonly said: string;
+	readonly stop: string;
+}
+
 export interface TurnLaunch {
 	readonly program: string;
 	readonly args: readonly string[];
 	readonly env: Readonly<Record<string, string>>;
+	readonly live?: LiveInput;
 }
 
 export type TurnLauncher = (facts: TurnFacts) => TurnLaunch;
@@ -253,7 +284,9 @@ const NO_SESSION: AssistantSession = {
 	tool: null,
 	phase: null,
 	spent: 0,
+	context: null,
 	queued: [],
+	background: [],
 };
 
 const NO_JOBS: readonly AppJobs[] = [];

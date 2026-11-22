@@ -80,7 +80,7 @@ fn spawn(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     let path = search_path();
     let binary = program_path(path, &input.program)?;
     let env: Vec<(String, String)> = input.env.into_iter().collect();
-    let launch = ProcessLaunch { binary: &binary, argv: &input.args, cwd: &input.folder, search_path: path, env: &env };
+    let launch = ProcessLaunch { binary: &binary, argv: &input.args, cwd: &input.folder, search_path: path, env: &env, input: None };
     let sink: ProcessSink = Arc::new(move |event| {
         let _ = on_data.send(event);
     });

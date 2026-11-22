@@ -6,12 +6,17 @@ import { QuickAnswerSchema, QuickAskedSchema, TextAskedSchema } from "../../shar
 import { chatOf } from "./lib/chat-of.js";
 import { labelledFaceOf, servedToolNameOf } from "./lib/labelled-face.js";
 import type { ToolLabel } from "../../shared/schema/tool-label.schema.js";
-import { ChatKeySchema } from "../../shared/schema/chat-key.schema.js";
+import { AgentChatKeySchema, ChatKeySchema } from "../../shared/schema/chat-key.schema.js";
+import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
+import type { AssistantParts } from "../../gateways/assistant-parts/assistant-parts.gateway.js";
+import type { Chat } from "../../shared/schema/chat.schema.js";
+import type { ToolLabelsGateway } from "../../gateways/tool-labels/tool-labels.gateway.js";
 import { inChat } from "../../gateways/chat-parts/in-chat.js";
 
 const APP_CALLABLE: ReadonlySet<string> = new Set(
 	[
 		"chat",
+		"agent-chat",
 		"retry-turn",
 		"stop-turn",
 		"send-message",
@@ -55,30 +60,42 @@ export const one = query()
 	.input(ChatKeySchema)
 	.output(ChatSchema)
 	.settlesNow()
+	.handle(inChat((_input, parts) => shownChatOf(parts.assistantSession.session(), parts)));
+
+export const agentChat = query()
+	.public()
+	.input(AgentChatKeySchema)
+	.output(ChatSchema)
 	.handle(
-		inChat((_input, { assistantSession, toolLabels }) => {
-			const session = assistantSession.session();
-			const labelOf = (callName: string): ToolLabel | null => {
-				const named = servedToolNameOf(callName);
-				return named === null ? null : toolLabels.labelOf(named);
-			};
-			const viewOf = (callName: string): string | null => {
-				const named = servedToolNameOf(callName);
-				return named === null ? null : toolLabels.viewOf(named);
-			};
-			return chatOf({
-				isAvailable: assistantSession.isAvailable(),
-				session,
-				cards: assistantSession.cardsOf(session),
-				faces: session.turns.map((turn) =>
-					turn.calls.map((call) => ({
-						...labelledFaceOf(call, assistantSession.faceOf(call), labelOf(call.name)),
-						view: viewOf(call.name),
-					})),
-				),
-			});
-		}),
+		inChat(async ({ agent }, parts) => shownChatOf(await parts.assistantSession.agentSession(agent), parts)),
 	);
+
+interface ShownParts {
+	readonly assistantSession: AssistantParts["assistantSession"];
+	readonly toolLabels: ToolLabelsGateway;
+}
+
+function shownChatOf(session: AssistantSession, { assistantSession, toolLabels }: ShownParts): Chat {
+	const labelOf = (callName: string): ToolLabel | null => {
+		const named = servedToolNameOf(callName);
+		return named === null ? null : toolLabels.labelOf(named);
+	};
+	const viewOf = (callName: string): string | null => {
+		const named = servedToolNameOf(callName);
+		return named === null ? null : toolLabels.viewOf(named);
+	};
+	return chatOf({
+		isAvailable: assistantSession.isAvailable(),
+		session,
+		cards: assistantSession.cardsOf(session),
+		faces: session.turns.map((turn) =>
+			turn.calls.map((call) => ({
+				...labelledFaceOf(call, assistantSession.faceOf(call), labelOf(call.name)),
+				view: viewOf(call.name),
+			})),
+		),
+	});
+}
 
 export const retryTurn = command()
 	.public()
@@ -118,4 +135,5 @@ export const quickAsk = command()
 
 export const rereadChat = subscriber(sessionChanged).handle(({ chat: chatId }, { invalidate }) => {
 	invalidate(one, { chat: chatId });
+	invalidate(agentChat);
 });

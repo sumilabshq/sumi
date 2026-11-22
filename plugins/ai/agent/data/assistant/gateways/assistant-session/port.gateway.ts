@@ -11,6 +11,7 @@ import { AssistantSessionGateway } from "./assistant-session.gateway.js";
 
 const QUEUE_NOT_HERE = "This host cannot queue messages while the agent works.";
 const QUICK_ASK_NOT_HERE = "This host cannot run quick asks.";
+const AGENT_CHATS_NOT_HERE = "This host keeps no background agents' chats.";
 
 export class PortAssistantSessionGateway extends AssistantSessionGateway {
 	constructor(private readonly port: AssistantPort) {
@@ -71,5 +72,13 @@ export class PortAssistantSessionGateway extends AssistantSessionGateway {
 		}
 
 		return this.port.quickAsk(prompt);
+	}
+
+	agentSession(agentId: string): Promise<AssistantSession> {
+		if (this.port.agentSession === undefined) {
+			return Promise.reject(new Error(AGENT_CHATS_NOT_HERE));
+		}
+
+		return this.port.agentSession(agentId);
 	}
 }

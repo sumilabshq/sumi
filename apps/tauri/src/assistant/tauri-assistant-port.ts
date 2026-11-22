@@ -1,6 +1,7 @@
-import { NO_ASSISTANT } from "@widgetarium/core/engine/assistant-port.js";
+import { NO_ASSISTANT, workingIn } from "@widgetarium/core/engine/assistant-port.js";
 import type {
 	AssistantPort,
+	AssistantSession,
 	AssistantProvider,
 	AssistantSetup,
 	QueueChange,
@@ -14,7 +15,8 @@ import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
 import { NO_CHAT_QUESTIONS } from "./chat-questions.js";
 import { NO_CHAT_TASKS } from "./chat-tasks.js";
-import { runTurn } from "./turn-run.js";
+import { LiveSessions } from "./live-sessions.js";
+import { transcriptSessionOf } from "./agent-transcript.js";
 import { ChatSessions, ONE_CHAT_LINK } from "./chat-sessions.js";
 import type { ChatsLink, StartChatTurn } from "./chat-sessions.js";
 import type { TurnSession } from "./turn-session.js";
@@ -54,6 +56,8 @@ const NO_PROVIDER_LABEL = "No provider";
 const CHAT_NOT_OPEN = "This chat is not open, so its queue cannot change.";
 
 const SLASH = "/";
+
+const NO_AGENT_SESSION = "This chat has no Claude Code session yet, so it has no background agents to show.";
 
 export interface TauriAssistantPort extends AssistantPort {
 	readonly shownRead: () => Promise<void>;
@@ -95,13 +99,14 @@ export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPo
 		helperAgents: false,
 		setupWatchers: new Set(),
 	};
-	const sessions = new ChatSessions(doors.chats ?? ONE_CHAT_LINK, turnStarter(doors, held));
+	const live = new LiveSessions(doors.bridge, (chatId, part, stop) => sessions.heardIdle(chatId, part, stop));
+	const sessions = new ChatSessions(doors.chats ?? ONE_CHAT_LINK, turnStarter(doors, { held, live }));
 	const setup = setupDoorsOf(doors, held);
 	const chatPorts = new Map<string, AssistantPort>();
 	const port: TauriAssistantPort = {
 		...NO_ASSISTANT,
 		can: true,
-		...sessionDoorsOf(sessions, doors, held),
+		...sessionDoorsOf(sessions, { doors, held, live }),
 		...setup,
 		lendDrafts: (isDrafted) => sessions.lendDrafts(isDrafted),
 		useLauncher: (launcher) => {
@@ -112,7 +117,7 @@ export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPo
 		},
 		quickAsk: (prompt) => quickAsked(doors, held, prompt),
 		forChat: (chatId) => {
-			const made = chatPorts.get(chatId) ?? { ...port, ...chatDoorsOf(sessions, chatId, { doors, held }) };
+			const made = chatPorts.get(chatId) ?? { ...port, ...chatDoorsOf(sessions, chatId, { doors, held, live }) };
 			chatPorts.set(chatId, made);
 			return made;
 		},
@@ -123,9 +128,10 @@ export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPo
 interface CompactParts {
 	readonly doors: TauriAssistantDoors;
 	readonly held: PortHeld;
+	readonly live: LiveSessions;
 }
 
-function chatDoorsOf(sessions: ChatSessions, chatId: string, { doors, held }: CompactParts): Partial<AssistantPort> {
+function chatDoorsOf(sessions: ChatSessions, chatId: string, { doors, held, live }: CompactParts): Partial<AssistantPort> {
 	return {
 		session: () => sessions.nowOf(chatId),
 		onSession: (changed) => sessions.watchChat(chatId, changed),
@@ -134,7 +140,11 @@ function chatDoorsOf(sessions: ChatSessions, chatId: string, { doors, held }: Co
 		retry: () => sessions.readyOf(chatId)?.retry(),
 		stop: () => sessions.readyOf(chatId)?.stop(),
 		changeQueue: (change) => changeQueueIn(sessions.readyOf(chatId), change),
-		clear: async () => (await sessions.sessionOf(chatId)).clear(),
+		clear: async () => {
+			await (await sessions.sessionOf(chatId)).clear();
+			live.end(chatId);
+		},
+		agentSession: (agentId) => agentSessionOf(doors.bridge, sessions, { chatId, agentId }),
 		compact: async () => {
 			await refuseOrThrow(doors, held);
 			await (await sessions.sessionOf(chatId)).compact();
@@ -150,7 +160,7 @@ function changeQueueIn(session: TurnSession | null, change: QueueChange): string
 	return session.changeQueue(change);
 }
 
-function sessionDoorsOf(sessions: ChatSessions, doors: TauriAssistantDoors, held: PortHeld): SessionDoors {
+function sessionDoorsOf(sessions: ChatSessions, { doors, held, live }: CompactParts): SessionDoors {
 	return {
 		shownRead: () => sessions.readShown(),
 		session: sessions.now,
@@ -160,7 +170,13 @@ function sessionDoorsOf(sessions: ChatSessions, doors: TauriAssistantDoors, held
 		stop: () => sessions.shownIfReady()?.stop(),
 		changeQueue: (change) => changeQueueIn(sessions.shownIfReady(), change),
 		handQueueToAgent: (chatId) => sessions.readyOf(chatId)?.handQueueToAgent() ?? null,
-		clear: async () => (await sessions.shownSession()).clear(),
+		clear: async () => {
+			const shownId = sessions.shownId();
+			await (await sessions.shownSession()).clear();
+			if (shownId !== null) {
+				live.end(shownId);
+			}
+		},
 		compact: () => compact(doors, held, sessions),
 	};
 }
@@ -269,7 +285,7 @@ async function quickAsked(doors: TauriAssistantDoors, held: PortHeld, prompt: st
 	});
 }
 
-function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn {
+function turnStarter(doors: TauriAssistantDoors, { held, live }: Omit<CompactParts, "doors">): StartChatTurn {
 	return async (chatId, asked, resumeOf, emit) => {
 		const provider = chosenIn(await providersOf(doors.bridge, held), held.chosen);
 		if (provider === null) {
@@ -289,10 +305,30 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn 
 			launcher: held.launcher,
 			isWaitingOnPerson: () => questions.isWaitingOnPerson(chatId),
 		};
-		const run = runTurn(doors.bridge, ask, hearingUsage(doors.claude, emit));
+		const run = live.run(ask, hearingUsage(doors.claude, emit));
 		void run.done.then(() => questions.turnEnded(chatId));
 		return { run, providerId: provider.id, resumesWithoutAnId: provider.resumesWithoutAnId };
 	};
+}
+
+interface AgentAsked {
+	readonly chatId: string;
+	readonly agentId: string;
+}
+
+async function agentSessionOf(
+	bridge: AssistantBridge,
+	sessions: ChatSessions,
+	{ chatId, agentId }: AgentAsked,
+): Promise<AssistantSession> {
+	const resume = (await sessions.sessionOf(chatId)).resumeOf(PREFERRED_PROVIDER);
+
+	if (resume === null) {
+		throw new Error(NO_AGENT_SESSION);
+	}
+
+	const isWorking = workingIn(sessions.nowOf(chatId).background).some(({ id }) => id === agentId);
+	return transcriptSessionOf(await bridge.readAgentTranscript(resume, agentId), isWorking);
 }
 
 // TRADE-OFF: a slash command goes as typed, so a turn started by one carries no task trailer
@@ -308,8 +344,8 @@ async function withTrailers(
 	return [asked, trailer].filter((part) => part !== null).join("\n\n");
 }
 
-function claudeStartOf({ mode, model, effort }: ClaudeOptions): ClaudeStart {
-	return { mode, model, effort };
+function claudeStartOf({ mode, model, effort, sandbox }: ClaudeOptions): ClaudeStart {
+	return { mode, model, effort, sandbox };
 }
 
 function hearingUsage(claude: ClaudeChoices, emit: Emit): Emit {

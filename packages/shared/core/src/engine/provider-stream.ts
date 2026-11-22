@@ -26,17 +26,32 @@ export interface PlanUsage {
 	readonly week: UsageWindow | null;
 }
 
+export interface ContextFill {
+	readonly used: number;
+	readonly window: number;
+}
+
+export type BackgroundEnd = "done" | "stopped" | "failed";
+
+export type BackgroundChange =
+	| { readonly kind: "started"; readonly id: string; readonly ref: string; readonly title: string }
+	| { readonly kind: "progress"; readonly id: string; readonly said: string }
+	| { readonly kind: "ended"; readonly id: string; readonly end: BackgroundEnd; readonly said: string };
+
 export type StreamPart =
 	| { readonly session: string }
 	| { readonly usage: PlanUsage }
 	| { readonly phase: Phase }
 	| { readonly spentMore: number }
 	| { readonly spent: number }
+	| { readonly context: ContextFill }
 	| { readonly text: string }
 	| { readonly call: ToolCall }
 	| { readonly result: ToolResult }
 	| { readonly compacted: string }
 	| { readonly resumeLost: true }
+	| { readonly background: BackgroundChange }
+	| { readonly answered: true }
 	| { readonly failure: string };
 
 export type Emit = (part: StreamPart) => void;
@@ -98,6 +113,8 @@ interface ClaudeStreamState {
 	said: boolean;
 	turned: boolean;
 	compacted: boolean;
+	contextUsed: number | null;
+	readonly backgroundRefs: Set<string>;
 }
 
 const COMPACT_SUMMARY_LEAD = /^[\s\S]*?Summary:\s*\n/;
@@ -105,6 +122,13 @@ const NO_CONVERSATION_TO_RESUME = "No conversation found with session ID";
 const AGENT_REPORTED_AN_ERROR = "the agent reported an error";
 
 const MS_PER_SECOND = 1000;
+const BACKGROUND_AGENT = "local_agent";
+const END_OF_STATUS: Readonly<Record<string, BackgroundEnd>> = {
+	completed: "done",
+	failed: "failed",
+	killed: "stopped",
+	stopped: "stopped",
+};
 
 export function planUsageIn(info: Held | null): PlanUsage | null {
 	const windows = objectAt(info, "unifiedWindows");
@@ -196,6 +220,18 @@ function spokenTokensIn(usage: Held | null): number | null {
 	return typeof spoken === "number" && Number.isFinite(spoken) ? spoken : null;
 }
 
+function promptTokensIn(usage: Held | null): number | null {
+	const counts = [usage?.["input_tokens"], usage?.["cache_creation_input_tokens"], usage?.["cache_read_input_tokens"]];
+	const known = counts.filter((count): count is number => typeof count === "number" && Number.isFinite(count));
+	return known.length === 0 ? null : known.reduce((sum, count) => sum + count, 0);
+}
+
+function contextWindowIn(modelUsage: Held | null): number | null {
+	const windows = Object.values(modelUsage ?? {}).map((model) => (isObject(model) ? model["contextWindow"] : null));
+	const known = windows.filter((window): window is number => typeof window === "number" && window > 0);
+	return known.length === 0 ? null : Math.max(...known);
+}
+
 function partsOf(event: Held): unknown[] {
 	const content = objectAt(event, "message")?.["content"];
 	return Array.isArray(content) ? content : [];
@@ -222,10 +258,23 @@ function textDeltaIn(event: Held): string | null {
 
 // TRADE-OFF: a block arrives whole after its own deltas, so once one delta lands the block's text is dropped rather than shown twice
 function createClaudeStream(): LineReader {
-	const state: ClaudeStreamState = { streamed: false, said: false, turned: false, compacted: false };
+	const state: ClaudeStreamState = {
+		streamed: false,
+		said: false,
+		turned: false,
+		compacted: false,
+		contextUsed: null,
+		backgroundRefs: new Set(),
+	};
 	return (line, emit) => {
 		const event = jsonIn(line);
 		if (!event) return;
+		const change = backgroundChangeIn(event, state.backgroundRefs);
+		if (change !== null) {
+			emit({ background: change });
+			return;
+		}
+		if (isBackgroundAgentsOwn(event, state.backgroundRefs)) return;
 		emitSignals(event, state, emit);
 
 		if (event["type"] === "system" && event["subtype"] === "compact_boundary") {
@@ -254,7 +303,45 @@ function createClaudeStream(): LineReader {
 			return;
 		}
 		emitFailedResult(event, emit);
+		if (event["type"] !== "result") return;
+		state.streamed = false;
+		state.said = false;
+		state.turned = false;
+		emit({ answered: true });
 	};
+}
+
+function backgroundChangeIn(event: Held, refs: Set<string>): BackgroundChange | null {
+	if (event["type"] !== "system") return null;
+	const id = textAt(event, "task_id");
+	const ref = textAt(event, "tool_use_id");
+	if (id === "") return null;
+
+	if (event["subtype"] === "task_started") {
+		if (event["task_type"] !== BACKGROUND_AGENT) return null;
+		refs.add(ref);
+		return { kind: "started", id, ref, title: textAt(event, "description") };
+	}
+
+	if (!refs.has(ref)) return null;
+
+	if (event["subtype"] === "task_progress") {
+		return { kind: "progress", id, said: textAt(event, "description") };
+	}
+
+	if (event["subtype"] !== "task_notification") return null;
+	refs.delete(ref);
+	return { kind: "ended", id, end: END_OF_STATUS[textAt(event, "status")] ?? "stopped", said: textAt(event, "summary") };
+}
+
+function isBackgroundAgentsOwn(event: Held, refs: Set<string>): boolean {
+	const parent = event["parent_tool_use_id"];
+	return typeof parent === "string" && refs.has(parent);
+}
+
+function textAt(event: Held, key: string): string {
+	const value = event[key];
+	return typeof value === "string" ? value : "";
 }
 
 function emitFailedResult(event: Held, emit: Emit): void {
@@ -309,9 +396,14 @@ function emitSignals(event: Held, state: ClaudeStreamState, emit: Emit): void {
 		const spoken = spokenTokensIn(objectAt(inner, "usage"));
 		if (spoken !== null) emit({ spentMore: spoken });
 	}
+	if (event["type"] === "assistant" && event["parent_tool_use_id"] == null) {
+		state.contextUsed = promptTokensIn(objectAt(objectAt(event, "message"), "usage")) ?? state.contextUsed;
+	}
 	if (event["type"] === "result") {
 		const spoken = spokenTokensIn(objectAt(event, "usage"));
 		if (spoken !== null) emit({ spent: spoken });
+		const window = contextWindowIn(objectAt(event, "modelUsage"));
+		if (window !== null && state.contextUsed !== null) emit({ context: { used: state.contextUsed, window } });
 	}
 	if (event["type"] === "rate_limit_event") {
 		const usage = planUsageIn(objectAt(event, "rate_limit_info"));

@@ -5,6 +5,7 @@ pub mod drops;
 pub mod paths;
 pub mod providers;
 pub mod state;
+pub mod transcripts;
 
 use attachments::ensure_private_folder;
 use state::Assistant;

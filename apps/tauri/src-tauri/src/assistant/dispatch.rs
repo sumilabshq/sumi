@@ -66,6 +66,14 @@ pub fn handle<R: Runtime>(assistant: &Arc<Assistant>, invoke: Invoke<R>) -> bool
             Err(refusal) => resolver.respond(as_reply(Err(refusal))),
         },
         "stop_turn" => resolver.respond(as_reply(stop_turn(&assistant, &message))),
+        "write_turn" => resolver.respond(as_reply(write_turn(&assistant, &message))),
+        "close_turn" => resolver.respond(as_reply(close_turn(&assistant, &message))),
+        "read_agent_transcript" => match text_argument(&message, "session").and_then(|session| text_argument(&message, "agent").map(|agent| (session.to_string(), agent.to_string()))) {
+            Ok((session, agent)) => off_main_thread(resolver, move || {
+                super::transcripts::agent_transcript_in(&super::transcripts::claude_folder(), &session, &agent).map(Value::from)
+            }),
+            Err(refusal) => resolver.respond(as_reply(Err(refusal))),
+        },
         "write_attachment" => resolver.respond(as_reply(write_attachment(&assistant, &message))),
         "remove_attachment" => resolver.respond(as_reply(remove_attachment(&assistant, &message))),
         "sweep_attachments" => resolver.respond(as_reply(sweep_attachments(&assistant, &message))),
@@ -160,6 +168,7 @@ fn launch_ask_of<R: Runtime>(message: &InvokeMessage<R>) -> Result<LaunchAsk, St
         program: text_argument(message, "program")?.to_string(),
         args: texts_argument(message, "args")?,
         env: env_argument(message)?,
+        input: json_args(message).and_then(|args| args.get("input")).and_then(Value::as_str).map(str::to_string),
     })
 }
 
@@ -181,6 +190,14 @@ fn working_folder_of<R: Runtime>(message: &InvokeMessage<R>) -> Option<PathBuf> 
 
 fn stop_turn<R: Runtime>(assistant: &Assistant, message: &InvokeMessage<R>) -> Answer {
     Ok(commands::stop_turn(assistant, number_argument(message, "turnId")?))
+}
+
+fn write_turn<R: Runtime>(assistant: &Assistant, message: &InvokeMessage<R>) -> Answer {
+    commands::write_turn(assistant, number_argument(message, "turnId")?, text_argument(message, "line")?)
+}
+
+fn close_turn<R: Runtime>(assistant: &Assistant, message: &InvokeMessage<R>) -> Answer {
+    Ok(commands::close_turn(assistant, number_argument(message, "turnId")?))
 }
 
 fn write_attachment<R: Runtime>(assistant: &Assistant, message: &InvokeMessage<R>) -> Answer {

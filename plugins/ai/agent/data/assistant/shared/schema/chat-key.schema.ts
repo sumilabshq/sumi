@@ -7,3 +7,7 @@ export const ChatKeySchema = z.object({
 export type ChatKeyed = z.infer<typeof ChatKeySchema>;
 
 export type ChatKey = ChatKeyed["chat"];
+
+export const AgentChatKeySchema = ChatKeySchema.extend({
+	agent: z.string().min(1).max(128),
+});

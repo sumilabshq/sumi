@@ -1,4 +1,5 @@
 import type { Runtime } from "@widgetarium/data-framework";
+import { workingIn } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
 import type { FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
 import { chatFacts } from "@sumi/chat-facts/contract";
@@ -46,7 +47,7 @@ export class ChatTurnReports {
 
 	private reportBusy(): void {
 		for (const [chatId, session] of this.sessions) {
-			if (session.busy) {
+			if (session.busy || workingIn(session.background).length > 0) {
 				this.report(chatId);
 			}
 		}
@@ -137,7 +138,7 @@ export class ChatTurnReports {
 			this.isTaskBlocked(chatId),
 		]);
 		const session = this.sessions.get(chatId) ?? asked;
-		const isBusy = session?.busy ?? false;
+		const isBusy = session === undefined ? false : session.busy || workingIn(session.background).length > 0;
 		return {
 			chatId,
 			isBusy,

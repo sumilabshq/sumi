@@ -97,6 +97,7 @@ class FakeSessionGateway extends AssistantSessionGateway {
 			phase: null,
 			spent: 0,
 			queued: [],
+			background: [],
 		};
 	}
 
@@ -153,6 +154,10 @@ class FakeSessionGateway extends AssistantSessionGateway {
 
 	async quickAsk(prompt: string): Promise<string> {
 		return `quick: ${prompt}`;
+	}
+
+	agentSession(): Promise<AssistantSession> {
+		return Promise.resolve(this.session());
 	}
 }
 
@@ -790,7 +795,7 @@ check(
 	await folderChat
 		.send(assistant.agent.claudeOptions, { chat: null })
 		.then((answer) => (answer.ok ? answer.output : answer.reason)),
-	{ mode: "auto", model: "sonnet", effort: "medium", usage: null },
+	{ mode: "auto", model: "sonnet", effort: "medium", sandbox: "full", usage: null },
 );
 check(
 	"the web host refuses a Claude option, for it offers none",

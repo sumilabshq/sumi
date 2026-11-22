@@ -21,6 +21,7 @@ pub struct LaunchAsk {
     pub program: String,
     pub args: Vec<String>,
     pub env: Vec<(String, String)>,
+    pub input: Option<String>,
 }
 
 fn is_found(provider: &Provider) -> bool {
@@ -78,7 +79,7 @@ pub fn start_launch(assistant: &Assistant, project: Option<&Path>, launch: &Laun
     let project = project.ok_or(NO_PROJECT)?;
     let path = search_path();
     let binary = find_command(path, &launch.program).ok_or_else(|| NOT_ON_THIS_MACHINE.replace("{command}", &launch.program))?;
-    let process = ProcessLaunch { binary: &binary, argv: &launch.args, cwd: project, search_path: path, env: &launch.env };
+    let process = ProcessLaunch { binary: &binary, argv: &launch.args, cwd: project, search_path: path, env: &launch.env, input: launch.input.as_deref() };
     let run_id = assistant.turns.start(&process, sink)?;
     log::info!("[ink-assistant] turn {run_id}: none → running ({})", launch.program);
     Ok(json!(run_id))
@@ -96,6 +97,17 @@ pub fn remember_picked_folder(assistant: &Assistant, picked: &Path) -> Result<Va
 
 pub fn stop_turn(assistant: &Assistant, run_id: u64) -> Value {
     assistant.turns.stop(run_id);
+    Value::Null
+}
+
+pub fn write_turn(assistant: &Assistant, run_id: u64, line: &str) -> Result<Value, String> {
+    assistant.turns.write(run_id, line)?;
+    Ok(Value::Null)
+}
+
+pub fn close_turn(assistant: &Assistant, run_id: u64) -> Value {
+    assistant.turns.close_input(run_id);
+    log::info!("[ink-assistant] turn {run_id}: listening → input closed");
     Value::Null
 }
 

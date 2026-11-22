@@ -10,6 +10,7 @@ export const DEFAULT_CLAUDE_OPTIONS: ClaudeOptions = {
 	mode: "auto",
 	model: "opus",
 	effort: "medium",
+	sandbox: "full",
 	usage: null,
 };
 

@@ -82,7 +82,7 @@ fn stand_in_app(socket: PathBuf) -> thread::JoinHandle<Vec<Value>> {
 
 fn mcp_replies(socket: &PathBuf) -> Vec<Value> {
     let mut child = Command::new(env!("CARGO_BIN_EXE_widgetarium-host-tauri"))
-        .args(["--mcp", "--server", "tasks", "--socket", &socket.to_string_lossy(), "--token", "t0k", "--chat", "chat-7", "--folder", "/work/app", "--model", "opus"])
+        .args(["--mcp", "--server", "tasks", "--socket", &socket.to_string_lossy(), "--token", "t0k", "--chat", "chat-7", "--folder", "/work/app", "--model", "opus", "--sandbox", "project", "--writable", "%5B%22%2Fwork%2Fapp%22%5D"])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
@@ -122,7 +122,13 @@ fn check_mcp_process(checks: &mut Checks) {
             "token": "t0k",
             "kind": "mcp",
             "server": "tasks",
-            "headers": { "sumi-chat": "chat-7", "sumi-folder": "/work/app", "sumi-model": "opus" },
+            "headers": {
+                "sumi-chat": "chat-7",
+                "sumi-folder": "/work/app",
+                "sumi-model": "opus",
+                "sumi-sandbox": "project",
+                "sumi-writable": "%5B%22%2Fwork%2Fapp%22%5D",
+            },
             "message": requests_third(),
         }),
     );

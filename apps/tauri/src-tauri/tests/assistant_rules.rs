@@ -14,6 +14,7 @@ use widgetarium_host_tauri_lib::assistant::paths::{attachment_file_in, OUTSIDE_T
 use widgetarium_host_tauri_lib::assistant::providers::PROVIDERS;
 use widgetarium_host_tauri_lib::login_path::{find_command, joined_path, path_after_mark};
 use widgetarium_host_tauri_lib::assistant::state::Assistant;
+use widgetarium_host_tauri_lib::assistant::transcripts::{agent_transcript_in, NOT_AN_ID as TRANSCRIPT_NOT_AN_ID};
 use widgetarium_host_tauri_lib::process_runs::{ProcessLaunch, ProcessRuns, ProcessSink};
 use widgetarium_host_tauri_lib::assistant::attachments_script;
 
@@ -72,7 +73,7 @@ fn turn_refusals(checks: &mut Checks) {
     let assistant = Assistant::new(attachments.clone());
     let project = Some(attachments.as_path());
     let (sink, _) = recording_sink();
-    let launch = |program: &str| LaunchAsk { program: program.to_string(), args: vec!["hi".into()], env: Vec::new() };
+    let launch = |program: &str| LaunchAsk { program: program.to_string(), args: vec!["hi".into()], env: Vec::new(), input: None };
 
     let no_project = commands::start_launch(&assistant, None, &launch("sh"), sink.clone());
     checks.check("no project folder means no turn", no_project.err(), Some(NO_PROJECT.into()));
@@ -146,7 +147,7 @@ fn turns_stream_and_stop(checks: &mut Checks) {
     let cwd = scratch("turns");
     let (sink, heard) = recording_sink();
     let argv = vec!["-c".to_string(), "printf 'one\\ntwo\\n'; printf 'bad\\n' >&2; exit 3".into()];
-    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[] };
+    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[], input: None };
     turns.start(&launch, sink).expect("the turn starts");
     let exited = wait_for_exit(&heard, Duration::from_secs(5));
     checks.check("the exit code reaches the page", exited.map(|event| event["code"].clone()), Some(Value::from(3)));
@@ -157,7 +158,7 @@ fn turns_stream_and_stop(checks: &mut Checks) {
 
     let (sink, heard) = recording_sink();
     let argv = vec!["-c".to_string(), "sleep 30 & wait".into()];
-    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[] };
+    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[], input: None };
     let turn_id = turns.start(&launch, sink).expect("the long turn starts");
     turns.stop(turn_id);
     let stopped = wait_for_exit(&heard, Duration::from_secs(3));
@@ -172,14 +173,49 @@ fn turns_stream_and_stop(checks: &mut Checks) {
 
     let (sink, heard) = recording_sink();
     let argv = vec!["-c".to_string(), "sleep 30 & echo started".into()];
-    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[] };
+    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[], input: None };
     turns.start(&launch, sink).expect("a turn that leaves a helper behind starts");
     let exited = wait_for_exit(&heard, Duration::from_secs(3));
     checks.check("a helper holding the pipe does not keep the turn open", exited.map(|event| event["code"].clone()), Some(Value::from(0)));
 
-    let missing = ProcessLaunch { binary: Path::new("/no/such/tool"), argv: &[], cwd: &cwd, search_path: "", env: &[] };
+    let missing = ProcessLaunch { binary: Path::new("/no/such/tool"), argv: &[], cwd: &cwd, search_path: "", env: &[], input: None };
     let (sink, _) = recording_sink();
     checks.check("a binary that cannot start is refused", turns.start(&missing, sink).is_err(), true);
+}
+
+fn live_input(checks: &mut Checks) {
+    let turns = ProcessRuns::new();
+    let cwd = scratch("live-input");
+    let (sink, heard) = recording_sink();
+    let argv = vec!["-c".to_string(), "while read line; do echo \"got $line\"; done".into()];
+    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[], input: Some("first") };
+    let turn_id = turns.start(&launch, sink).expect("a live turn starts");
+    checks.check("a line written to a live turn reaches it", turns.write(turn_id, "second").is_ok(), true);
+    thread::sleep(Duration::from_millis(300));
+    let said: Vec<String> = heard.lock().expect("the events").iter().filter(|event| event["kind"] == "out").map(|event| event["text"].as_str().unwrap_or("").to_string()).collect();
+    checks.check("the first line and a later one are both heard, in order", said.join(""), "got first\ngot second\n".to_string());
+    checks.check("a live turn keeps running between lines", turns.is_running(turn_id), true);
+    turns.close_input(turn_id);
+    let exited = wait_for_exit(&heard, Duration::from_secs(3));
+    checks.check("closing the input lets the process end on its own", exited.map(|event| event["code"].clone()), Some(Value::from(0)));
+    checks.check("an ended turn takes no more input", turns.write(turn_id, "late").is_err(), true);
+
+    let (sink, _) = recording_sink();
+    let argv = vec!["-c".to_string(), "echo once".into()];
+    let launch = ProcessLaunch { binary: Path::new("/bin/sh"), argv: &argv, cwd: &cwd, search_path: "/bin:/usr/bin", env: &[], input: None };
+    let plain_id = turns.start(&launch, sink).expect("a plain turn starts");
+    checks.check("a turn started without input takes none", turns.write(plain_id, "x").is_err(), true);
+}
+
+fn agent_transcripts(checks: &mut Checks) {
+    let claude = scratch("claude-config");
+    let kept = claude.join("projects").join("-work-app").join("sess-1").join("subagents");
+    fs::create_dir_all(&kept).expect("a transcript folder");
+    fs::write(kept.join("agent-a1.jsonl"), b"{\"type\":\"user\"}\n").expect("a transcript");
+    checks.check("an agent's transcript is found under any project", agent_transcript_in(&claude, "sess-1", "a1").ok(), Some("{\"type\":\"user\"}\n".to_string()));
+    checks.check("a missing transcript is refused", agent_transcript_in(&claude, "sess-1", "a2").is_err(), true);
+    checks.check("an id that climbs out of the folder is refused", agent_transcript_in(&claude, "../sess-1", "a1"), Err(TRANSCRIPT_NOT_AN_ID.to_string()));
+    checks.check("an agent id with a slash is refused", agent_transcript_in(&claude, "sess-1", "a1/../../x"), Err(TRANSCRIPT_NOT_AN_ID.to_string()));
 }
 
 fn lent_folders(checks: &mut Checks) {
@@ -253,6 +289,8 @@ fn main() {
     private_files(&mut checks);
     search_paths(&mut checks);
     turns_stream_and_stop(&mut checks);
+    live_input(&mut checks);
+    agent_transcripts(&mut checks);
     if checks.failed > 0 {
         println!("{} check(s) failed", checks.failed);
         std::process::exit(1);

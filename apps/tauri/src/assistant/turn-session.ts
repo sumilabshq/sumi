@@ -12,8 +12,10 @@ import {
 	askedMessageOf,
 	endedTurn,
 	heardMidTurn,
+	isSessionFact,
 	startedCompact,
 	startedTurn,
+	startedUnasked,
 	withoutLastCompact,
 	withoutLastQuestion,
 	withPart,
@@ -43,6 +45,8 @@ export interface TurnSession {
 	lastEndedTurn(): string | null;
 	changeQueue(change: QueueChange): string | null;
 	handQueueToAgent(): string | null;
+	heardIdle(part: StreamPart, stop: () => void): void;
+	resumeOf(providerId: string): string | null;
 }
 
 export interface KeptChat {
@@ -98,6 +102,8 @@ export const NOTHING_TO_COMPACT = "There is nothing to compact yet: this chat ha
 export const COMPACT_PROMPT = "/compact";
 const NOT_STARTED = "The answer could not be started: {why}";
 const RESUMES_ITS_OWN_LAST = "last";
+const SPOKE_UNASKED = "unasked";
+const NEVER_SETTLED = new Promise<RunAnswer>(() => undefined);
 const DRAW_EVERY_MS = 60;
 const HEARD_MID_TURN =
 	"The person sent these messages while you were working. They are their newest words: read them now and take them into account before your next step.";
@@ -127,6 +133,7 @@ interface TurnEnd {
 interface SessionStore {
 	session: AssistantSession;
 	active: ActiveTurn | null;
+	unasked: ActiveTurn | null;
 	running: RunningTurn | null;
 	lastEnded: string | null;
 	generation: number;
@@ -144,6 +151,7 @@ export function createTurnSession(startTurn: StartTurn, options: TurnSessionOpti
 	const store: SessionStore = {
 		session: history.kept.session,
 		active: null,
+		unasked: null,
 		running: null,
 		lastEnded: null,
 		generation: 0,
@@ -178,7 +186,70 @@ export function createTurnSession(startTurn: StartTurn, options: TurnSessionOpti
 		lastEndedTurn: () => store.lastEnded,
 		changeQueue: (change) => changeQueue(store, startTurn, change),
 		handQueueToAgent: () => handQueueToAgent(store),
+		heardIdle: (part, stopIt) => heardIdle(store, startTurn, { part, stopIt }),
+		resumeOf: (providerId) => store.resumes.get(providerId) ?? null,
 	};
+}
+
+interface IdlePart {
+	readonly part: StreamPart;
+	readonly stopIt: () => void;
+}
+
+function heardIdle(store: SessionStore, startTurn: StartTurn, { part, stopIt }: IdlePart): void {
+	if (isSessionFact(part)) {
+		store.session = withPart(store.session, part, store.clock());
+		notifySoon(store);
+		return;
+	}
+
+	if ("answered" in part) {
+		settleUnasked(store, startTurn);
+		return;
+	}
+
+	if (store.session.busy && store.active !== store.unasked) {
+		console.warn(`[ink] a part heard between turns was dropped: a turn of the person's is running`);
+		return;
+	}
+
+	if (store.unasked === null) {
+		startUnasked(store, stopIt);
+	}
+
+	store.session = withPart(store.session, part, store.clock());
+	notifySoon(store);
+}
+
+function startUnasked(store: SessionStore, stopIt: () => void): void {
+	const at = store.clock();
+	store.session = startedUnasked(store.session, at);
+	store.unasked = { run: { stop: stopIt, done: NEVER_SETTLED }, providerId: SPOKE_UNASKED };
+	store.active = store.unasked;
+	store.running = {
+		id: `${at}-${store.generation}`,
+		isCompact: false,
+		startedBy: "host",
+		startedAt: at,
+	};
+	console.info("[ink] turn none → running (the agent spoke on its own: a background agent answered)");
+	notify(store);
+}
+
+function settleUnasked(store: SessionStore, startTurn: StartTurn): void {
+	if (store.unasked === null || store.active !== store.unasked) {
+		return;
+	}
+
+	const { failure } = store.session;
+	settleNow(store, endedTurn(store.session, failure === null ? "done" : "failed", store.clock()));
+	if (failure === null) {
+		announceEnd(store, { ended: "done", failureKind: null, failure: null, resumesAt: null });
+		sendQueue(store, startTurn);
+		return;
+	}
+
+	announceEnd(store, { ended: "failed", failureKind: "other", failure, resumesAt: null });
 }
 
 function notify(store: SessionStore): void {
@@ -205,6 +276,7 @@ function notifySoon(store: SessionStore): void {
 
 function settleNow(store: SessionStore, settled: AssistantSession): void {
 	store.active = null;
+	store.unasked = null;
 	store.generation += 1;
 	cancelDraw(store);
 	store.session = settled;

@@ -32,6 +32,7 @@ export interface ClaudeStart {
 	readonly mode: string;
 	readonly model: string;
 	readonly effort: string;
+	readonly sandbox: string;
 }
 
 export interface TurnFactsAsk {
@@ -71,6 +72,9 @@ export interface AssistantBridge {
 	turnFacts(ask: TurnFactsAsk): Promise<HostTurnFacts>;
 	startLaunch(launch: TurnLaunch, onEvent: (event: TurnEvent) => void): Promise<number>;
 	stopTurn(turnId: number): Promise<void>;
+	writeTurn(turnId: number, line: string): Promise<void>;
+	closeTurn(turnId: number): Promise<void>;
+	readAgentTranscript(session: string, agent: string): Promise<string>;
 	writeAttachment(path: string, bytes: Uint8Array): Promise<void>;
 	removeAttachment(path: string): Promise<void>;
 	sweepAttachments(ageMs: number): Promise<void>;
@@ -106,6 +110,8 @@ const NOT_DROPPED = "The assistant answered dropped paths in a shape Widgetarium
 
 const NOT_BYTES = "The assistant answered a dropped file without its bytes";
 
+const NOT_A_TRANSCRIPT = "The assistant answered an agent's transcript that is not text";
+
 const FILES_REACHES: readonly AttachedFilesReach[] = ["path", "inline", "none"];
 
 export function providersAnswerIn(held: unknown): ProvidersAnswer {
@@ -140,16 +146,20 @@ export function tauriAssistantBridge(ipc: TauriIpc): AssistantBridge {
 	return {
 		providers: async () => providersAnswerIn(await call("providers")),
 		turnFacts: async ({ folders, chatId }) => HostTurnFactsSchema.parse(await call("turn_facts", { folders, chatId })),
-		startLaunch: async ({ program, args, env }, onEvent) => {
+		startLaunch: async ({ program, args, env, live }, onEvent) => {
 			const onEventChannel = ipc.channel((message) => {
 				const event = turnEventIn(message);
 				if (event !== null) {
 					onEvent(event);
 				}
 			});
-			return turnIdIn(await call("start_launch", { program, args, env, onEvent: onEventChannel }));
+			const input = live?.said ?? null;
+			return turnIdIn(await call("start_launch", { program, args, env, input, onEvent: onEventChannel }));
 		},
 		stopTurn: async (turnId) => void (await call("stop_turn", { turnId })),
+		writeTurn: async (turnId, line) => void (await call("write_turn", { turnId, line })),
+		closeTurn: async (turnId) => void (await call("close_turn", { turnId })),
+		readAgentTranscript: async (session, agent) => transcriptIn(await call("read_agent_transcript", { session, agent })),
 		writeAttachment: async (path, bytes) =>
 			void (await ipc.invoke(commandNamed("write_attachment"), bytes, {
 				headers: { [ATTACHMENT_PATH_HEADER]: path },
@@ -229,6 +239,14 @@ function providerFactsIn(held: unknown): ProviderFacts | null {
 	return isText && isFlags && reads !== null
 		? { id, label, found, outputFormat, resumesWithoutAnId, compacts, reads }
 		: null;
+}
+
+function transcriptIn(held: unknown): string {
+	if (typeof held !== "string") {
+		throw new Error(NOT_A_TRANSCRIPT);
+	}
+
+	return held;
 }
 
 function turnIdIn(held: unknown): number {

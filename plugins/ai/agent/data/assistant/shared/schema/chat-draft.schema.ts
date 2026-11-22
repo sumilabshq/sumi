@@ -13,7 +13,7 @@ export const HeldDraftTextSchema = ChatKeySchema.extend({ said: z.string() });
 
 export const ChatOpenedSchema = z.object({ chat: z.string().min(1).max(200) });
 
-export type ClaudeChoices = Pick<ClaudeOptions, "mode" | "model" | "effort">;
+export type ClaudeChoices = Pick<ClaudeOptions, "mode" | "model" | "effort" | "sandbox">;
 
 export interface ChatDraft {
 	readonly said: string;

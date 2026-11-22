@@ -2,6 +2,7 @@ import { fileSystem, terminal } from "@sumi/contract";
 import { AuthenticatedGuard, PerCall, refuse } from "@widgetarium/data-framework";
 import { command, query } from "#module";
 import { cutLinesOf } from "../../shared/lib/cut-lines.js";
+import { sandboxOf, writeRefusalOf } from "../../shared/lib/sandbox.js";
 import {
 	EditAskedSchema,
 	EditedSchema,
@@ -52,6 +53,13 @@ export const write = command()
 	.idempotencyKey(PerCall)
 	.guard(AuthenticatedGuard)
 	.handle(async ({ path, content }, { send, user }) => {
+		const refusal = writeRefusalOf(sandboxOf(user), path);
+
+		if (refusal !== null) {
+			console.info(`[agent-tools] ${user.id}: ${path} write refused by the sandbox`);
+			return refuse(refusal);
+		}
+
 		await send(fileSystem.files.write, { path, content });
 		console.info(`[agent-tools] ${user.id}: ${path} → written, ${String(content.length)} characters`);
 		return { path, lines: content.split("\n").length };
@@ -69,6 +77,13 @@ export const edit = command()
 	.idempotencyKey(PerCall)
 	.guard(AuthenticatedGuard)
 	.handle(async ({ path, oldText, newText, replaceAll }, { send, user }) => {
+		const refusal = writeRefusalOf(sandboxOf(user), path);
+
+		if (refusal !== null) {
+			console.info(`[agent-tools] ${user.id}: ${path} edit refused by the sandbox`);
+			return refuse(refusal);
+		}
+
 		const text = await send(fileSystem.files.read, { path });
 		const edited = editedTextOf(path, text, { oldText, newText, replaceAll: replaceAll ?? false });
 

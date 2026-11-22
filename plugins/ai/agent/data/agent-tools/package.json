@@ -17,6 +17,11 @@
 			"source": "./generated/module.ts",
 			"types": "./dist/generated/module.d.ts",
 			"default": "./dist/generated/module.js"
+		},
+		"./sandbox": {
+			"source": "./shared/lib/sandbox.ts",
+			"types": "./dist/shared/lib/sandbox.d.ts",
+			"default": "./dist/shared/lib/sandbox.js"
 		}
 	},
 	"imports": {

@@ -1,7 +1,13 @@
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import { createLineSplitter, plainText, readerNamed } from "@widgetarium/core/engine/provider-stream.js";
-import type { Emit, LineSplitter, PlanUsage, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
-import type { TurnLauncher } from "@widgetarium/core/engine/assistant-port.js";
+import type {
+	BackgroundChange,
+	Emit,
+	LineSplitter,
+	PlanUsage,
+	StreamPart,
+} from "@widgetarium/core/engine/provider-stream.js";
+import type { TurnLaunch, TurnLauncher } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, TurnEvent } from "./assistant-bridge.js";
 
 export type RunFailureKind = "silent" | "usage_limit" | "other";
@@ -30,7 +36,7 @@ export interface TurnAsk {
 
 export const IDLE_MS = 180000;
 
-const TEXT_FORMAT = "text";
+export const TEXT_FORMAT = "text";
 
 const NO_RUNNER = "{runner} has no runner plugin to start its turn: turn the plugin on in the plugin list.";
 
@@ -48,7 +54,7 @@ const SAYS_USAGE_LIMIT = /\busage limit\b|\b(?:5-hour|weekly|opus|session) limit
 const USAGE_LIMIT_RESET = /usage limit reached\|(\d{9,11})\b/i;
 const MS_PER_SECOND = 1000;
 
-const ANSWERED: RunAnswer = {
+export const ANSWERED: RunAnswer = {
 	failure: null,
 	failureKind: null,
 	resumesAt: null,
@@ -62,6 +68,7 @@ interface RunHeld {
 	usage: PlanUsage | null;
 	quietTimer: ReturnType<typeof setTimeout> | undefined;
 	readonly stderr: string[];
+	readonly backgroundWorking: Set<string>;
 }
 
 interface RunScope {
@@ -72,12 +79,22 @@ interface RunScope {
 }
 
 export function runTurn(bridge: AssistantBridge, ask: TurnAsk, emit: Emit): TurnRun {
+	return runLaunch({ bridge, ask, launch: launchOf(bridge, ask) }, emit);
+}
+
+export interface LaunchRun {
+	readonly bridge: AssistantBridge;
+	readonly ask: TurnAsk;
+	readonly launch: Promise<TurnLaunch>;
+}
+
+export function runLaunch({ bridge, ask, launch }: LaunchRun, emit: Emit): TurnRun {
 	const answered: { settle: (answer: RunAnswer) => void } = { settle: () => undefined };
 	const done = new Promise<RunAnswer>((settle) => {
 		answered.settle = settle;
 	});
 	const scope: RunScope = { bridge, ask, held: freshHeld(), settle: (answer) => answered.settle(answer) };
-	begin(scope, emit);
+	begin(scope, { emit, launch });
 	return { stop: () => stopProcess(scope), done };
 }
 
@@ -123,7 +140,6 @@ function giveUp(scope: RunScope, answer: RunAnswer): void {
 
 function heard(scope: RunScope): void {
 	clearTimeout(scope.held.quietTimer);
-	const minutes = String(Math.round(IDLE_MS / 60000));
 	scope.held.quietTimer = setTimeout(
 		() =>
 			void wentQuiet(scope).then((isQuiet) => {
@@ -132,18 +148,14 @@ function heard(scope: RunScope): void {
 					return;
 				}
 
-				giveUp(scope, {
-					failure: said(WENT_QUIET, scope).replace("{minutes}", minutes),
-					failureKind: "silent",
-					resumesAt: null,
-				});
+				giveUp(scope, quietFailureOf(scope.ask.provider.label));
 			}),
 		IDLE_MS,
 	);
 }
 
 async function wentQuiet({ ask, held }: RunScope): Promise<boolean> {
-	if (held.settled) {
+	if (held.settled || held.backgroundWorking.size > 0) {
 		return false;
 	}
 
@@ -160,13 +172,37 @@ function exitAnswer(scope: RunScope, code: number | null): RunAnswer {
 		return failureAnswerOf(scope.held.streamFailure, scope.held.usage);
 	}
 
+	return endedAnswerOf({
+		label: scope.ask.provider.label,
+		code,
+		stderr: scope.held.stderr,
+		usage: scope.held.usage,
+	});
+}
+
+export interface Ended {
+	readonly label: string;
+	readonly code: number | null;
+	readonly stderr: readonly string[];
+	readonly usage: PlanUsage | null;
+}
+
+export function endedAnswerOf({ label, code, stderr, usage }: Ended): RunAnswer {
 	if (code === 0) {
 		return ANSWERED;
 	}
 
-	const stderr = scope.held.stderr.join("").trim();
 	const ended = code === null ? ENDED_BY_A_SIGNAL : ENDED_BADLY.replace("{code}", String(code));
-	return failureAnswerOf(said(ended, scope).replace("{said}", stderr).trim(), scope.held.usage);
+	const told = ended.replace("{command}", label).replace("{said}", stderr.join("").trim());
+	return failureAnswerOf(told.trim(), usage);
+}
+
+export function quietFailureOf(label: string): RunAnswer {
+	return {
+		failure: WENT_QUIET.replace("{command}", label).replace("{minutes}", String(Math.round(IDLE_MS / 60000))),
+		failureKind: "silent",
+		resumesAt: null,
+	};
 }
 
 // TRADE-OFF: a parser that throws is swallowed per line, because one unreadable line must not leave the turn spinning forever
@@ -191,6 +227,21 @@ function holdRunFacts(held: RunHeld, part: StreamPart): void {
 
 	if ("usage" in part) {
 		held.usage = part.usage;
+	}
+
+	if ("background" in part) {
+		holdBackground(held.backgroundWorking, part.background);
+	}
+}
+
+export function holdBackground(working: Set<string>, change: BackgroundChange): void {
+	if (change.kind === "started") {
+		working.add(change.id);
+		return;
+	}
+
+	if (change.kind === "ended") {
+		working.delete(change.id);
 	}
 }
 
@@ -226,9 +277,14 @@ function eventHandler(scope: RunScope, emit: Emit): (event: TurnEvent) => void {
 	};
 }
 
-function begin(scope: RunScope, emit: Emit): void {
+interface Launching {
+	readonly emit: Emit;
+	readonly launch: Promise<TurnLaunch>;
+}
+
+function begin(scope: RunScope, launching: Launching): void {
 	heard(scope);
-	startedTurn(scope, emit)
+	startedTurn(scope, launching)
 		.then((turnId) => {
 			scope.held.turnId = turnId;
 			if (scope.held.stopping) {
@@ -238,23 +294,26 @@ function begin(scope: RunScope, emit: Emit): void {
 		.catch((failed: unknown) => finish(scope, failureAnswerOf(failureMessage(failed), scope.held.usage)));
 }
 
-async function startedTurn(scope: RunScope, emit: Emit): Promise<number> {
-	const { provider, prompt, resume, claude, folders, chatId, launcher } = scope.ask;
+async function startedTurn(scope: RunScope, { emit, launch }: Launching): Promise<number> {
+	return scope.bridge.startLaunch(await launch, eventHandler(scope, emit));
+}
+
+export async function launchOf(bridge: AssistantBridge, ask: TurnAsk): Promise<TurnLaunch> {
+	const { provider, prompt, resume, claude, folders, chatId, launcher } = ask;
 
 	if (launcher === null) {
 		throw new Error(NO_RUNNER.replace("{runner}", provider.label));
 	}
 
-	const facts = await scope.bridge.turnFacts({ folders, chatId });
-	const launch = launcher({
+	const facts = await bridge.turnFacts({ folders, chatId });
+	return launcher({
 		...facts,
 		runner: provider.id,
 		prompt,
 		resume,
 		model: claude?.model ?? null,
-		options: claude === null ? {} : { mode: claude.mode, effort: claude.effort },
+		options: claude === null ? {} : { mode: claude.mode, effort: claude.effort, sandbox: claude.sandbox },
 	});
-	return scope.bridge.startLaunch(launch, eventHandler(scope, emit));
 }
 
 function freshHeld(): RunHeld {
@@ -266,6 +325,7 @@ function freshHeld(): RunHeld {
 		usage: null,
 		quietTimer: undefined,
 		stderr: [],
+		backgroundWorking: new Set(),
 	};
 }
 

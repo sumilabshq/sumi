@@ -36,6 +36,7 @@ import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-
 import { DEFAULT, FakeStore, quietly } from "./host-tauri-fake-store.ts";
 import { startTauriAssistant } from "../apps/tauri/src/assistant/tauri-assistant.ts";
 import { keptUsageIn } from "../apps/tauri/src/assistant/kept-usage.ts";
+import { transcriptSessionOf } from "../apps/tauri/src/assistant/agent-transcript.ts";
 import type { UsageMemory } from "../apps/tauri/src/assistant/kept-usage.ts";
 import type { TauriAssistant, TauriWorkspaceFolders } from "../apps/tauri/src/assistant/tauri-assistant.ts";
 
@@ -141,6 +142,19 @@ function recordingRunnersOf(ipc: FakeIpc): readonly Runner[] {
 	}));
 }
 
+function liveRunnersOf(ipc: FakeIpc): readonly Runner[] {
+	const live = (facts: TurnFacts): TurnLaunch => {
+		ipc.launched.push(facts);
+		return {
+			program: facts.runner,
+			args: facts.resume === null ? [] : ["--resume", facts.resume],
+			env: {},
+			live: { key: facts.folders.join(","), said: `said:${facts.prompt}`, stop: "interrupt" },
+		};
+	};
+	return recordingRunnersOf(ipc).map((runner) => ({ ...runner, launchOf: live }));
+}
+
 function quickAskOf({ runner, prompt }: QuickAskFacts): TurnLaunch {
 	return {
 		program: runner,
@@ -207,6 +221,7 @@ function fakeIpc(): FakeIpc {
 			if (command.endsWith("|drop_paths")) return ipc.dropped;
 			if (command.endsWith("|read_dropped")) return ipc.droppedBytes;
 			if (command.endsWith("|turn_facts")) return factsAnswerOf(args);
+			if (command.endsWith("|read_agent_transcript")) return AGENT_TRANSCRIPT;
 			if (command.endsWith("|start_launch") && ipc.startRefusal !== null) throw new Error(ipc.startRefusal);
 			return command.endsWith("|start_launch") ? 40 + ipc.called.length : null;
 		},
@@ -255,6 +270,273 @@ const CLAUDE_TURN = [
 	{ type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t1", content: "one line" }] } },
 	{ type: "result", is_error: false, usage: { output_tokens: 7 } },
 ];
+
+const BACKGROUND_TURN = [
+	{ type: "system", session_id: "sess-1" },
+	{
+		type: "assistant",
+		message: { content: [{ type: "tool_use", id: "toolu_bg", name: "Agent", input: { run_in_background: true } }] },
+	},
+	{
+		type: "system",
+		subtype: "task_started",
+		task_id: "a-1",
+		tool_use_id: "toolu_bg",
+		description: "Fix kit and tokens",
+		task_type: "local_agent",
+	},
+	{
+		type: "system",
+		subtype: "task_started",
+		task_id: "b-1",
+		tool_use_id: "toolu_shell",
+		description: "Sleep 40 seconds",
+		task_type: "local_bash",
+	},
+	{
+		type: "user",
+		message: { content: [{ type: "tool_result", tool_use_id: "toolu_bg", content: "Async agent launched" }] },
+	},
+	{ type: "assistant", message: { content: [{ type: "text", text: "LAUNCHED" }] } },
+	{
+		type: "assistant",
+		parent_tool_use_id: "toolu_bg",
+		message: { content: [{ type: "tool_use", id: "sub-1", name: "Bash", input: { command: "npm run test:kit" } }] },
+	},
+	{
+		type: "system",
+		subtype: "task_progress",
+		task_id: "a-1",
+		tool_use_id: "toolu_bg",
+		description: "Running npm run test:kit",
+	},
+];
+
+const TEXT_AND_RESULT = (text: string): readonly unknown[] => [
+	{ type: "stream_event", event: { type: "message_start" } },
+	{ type: "stream_event", event: { type: "content_block_delta", delta: { type: "text_delta", text } } },
+	{ type: "result", is_error: false, usage: { output_tokens: 3 } },
+];
+
+function liveAssistant(ipc: FakeIpc): AssistantPort {
+	const started = startedAssistant(ipc, {});
+	const runners = liveRunnersOf(ipc);
+	RUNNERS_OF.set(started, runners);
+	started.port.useLauncher?.(launcherFrom(runners, []));
+	return started.port;
+}
+
+function writtenLines(ipc: FakeIpc): unknown[] {
+	return callsNamed(ipc, "write_turn").map(({ args }) => Reflect.get(Object(args), "line"));
+}
+
+async function liveSessionChecks(): Promise<void> {
+	const ipc = fakeIpc();
+	const port = liveAssistant(ipc);
+	const channel = await sendAndStart(port, ipc, "first");
+	check(
+		"a live session starts once, its first message written to it",
+		callsNamed(ipc, "start_launch").map(({ args }) => Reflect.get(Object(args), "input")),
+		["said:first"],
+	);
+	streamed(channel, [{ type: "system", subtype: "init", session_id: "sess-1" }, ...TEXT_AND_RESULT("one")]);
+	await flush();
+	check(
+		"a turn of a live session ends on its result, the process still running",
+		[port.session().busy, lastAnswer(port.session())?.text, lastAnswer(port.session())?.outcome],
+		[false, "one", "done"],
+	);
+
+	await port.send("second");
+	await flush();
+	check(
+		"the next message is written to the same session",
+		[callsNamed(ipc, "start_launch").length, writtenLines(ipc)],
+		[1, ["said:second"]],
+	);
+	streamed(channel, TEXT_AND_RESULT("two"));
+	await flush();
+	check("its answer lands in its own turn", lastAnswer(port.session())?.text, "two");
+
+	streamed(channel, [
+		{
+			type: "system",
+			subtype: "task_started",
+			task_id: "a-1",
+			tool_use_id: "toolu_bg",
+			description: "Audit",
+			task_type: "local_agent",
+		},
+	]);
+	await flush();
+	check(
+		"a background agent heard between turns is kept",
+		port.session().background.map(({ state }) => state),
+		["working"],
+	);
+	streamed(channel, [
+		{
+			type: "system",
+			subtype: "task_notification",
+			task_id: "a-1",
+			tool_use_id: "toolu_bg",
+			status: "completed",
+			summary: "Found 3",
+		},
+		...TEXT_AND_RESULT("The audit found 3 things."),
+	]);
+	await flush();
+	const spoken = port.session().turns.at(-1);
+	check(
+		"a background agent's answer wakes the agent: its words land in a turn of its own, not in the person's",
+		[port.session().busy, spoken?.role, spoken?.text, spoken?.outcome, port.session().turns.at(-2)?.text],
+		[false, "agent", "The audit found 3 things.", "done", "two"],
+	);
+	check(
+		"the finished background agent says so",
+		port.session().background.map(({ state, said: summary }) => [state, summary]),
+		[["done", "Found 3"]],
+	);
+
+	await port.send("third");
+	await flush();
+	streamed(channel, [
+		{ type: "stream_event", event: { type: "content_block_delta", delta: { type: "text_delta", text: "Once" } } },
+	]);
+	port.stop();
+	await flush();
+	check(
+		"stop interrupts the turn and keeps the session: nothing is killed",
+		[writtenLines(ipc).at(-1), callsNamed(ipc, "stop_turn").length, lastAnswer(port.session())?.outcome],
+		["interrupt", 0, "stopped"],
+	);
+	await port.send("fourth");
+	await flush();
+	streamed(channel, [
+		{ type: "result", is_error: true, subtype: "error_during_execution" },
+		...TEXT_AND_RESULT("four"),
+	]);
+	await flush();
+	check(
+		"the stopped turn's own ending never closes the next one",
+		[port.session().failure, lastAnswer(port.session())?.text, lastAnswer(port.session())?.outcome],
+		[null, "four", "done"],
+	);
+
+	streamed(channel, [
+		{
+			type: "system",
+			subtype: "task_started",
+			task_id: "a-2",
+			tool_use_id: "toolu_bg2",
+			description: "Fix",
+			task_type: "local_agent",
+		},
+	]);
+	said(channel, { kind: "exited", code: 0 });
+	await flush();
+	check(
+		"a session that ends leaves no background agent working",
+		port.session().background.map(({ id, state }) => [id, state]),
+		[
+			["a-1", "done"],
+			["a-2", "stopped"],
+		],
+	);
+	await sendAndStart(port, ipc, "fifth");
+	check(
+		"after the session ended the next message starts a new one, resuming the conversation",
+		[callsNamed(ipc, "start_launch").length, ipc.launched.at(-1)?.resume],
+		[2, "sess-1"],
+	);
+}
+
+const AGENT_TRANSCRIPT = [
+	{
+		type: "user",
+		timestamp: "2026-11-22T10:28:12.000Z",
+		message: { role: "user", content: "Run the 25-second sleep, then reply DONE." },
+	},
+	{ type: "attachment", timestamp: "2026-11-22T10:28:12.100Z", attachment: { type: "hook_success" } },
+	{
+		type: "assistant",
+		timestamp: "2026-11-22T10:28:14.000Z",
+		message: { content: [{ type: "tool_use", id: "b-1", name: "Bash", input: { command: "sleep 25" } }] },
+	},
+	{
+		type: "user",
+		timestamp: "2026-11-22T10:28:40.000Z",
+		message: { content: [{ type: "tool_result", tool_use_id: "b-1", content: "(Bash completed with no output)" }] },
+	},
+	{ type: "assistant", timestamp: "2026-11-22T10:28:42.000Z", message: { content: [{ type: "text", text: "DONE" }] } },
+]
+	.map((line) => JSON.stringify(line))
+	.join("\n");
+
+async function agentChatChecks(): Promise<void> {
+	const ended = transcriptSessionOf(AGENT_TRANSCRIPT, false);
+	check(
+		"an agent's transcript reads as a chat: its task asked, its calls and words answered",
+		ended.turns.map(({ role, text, calls, outcome }) => ({
+			role,
+			text,
+			calls: calls.map(({ name, answered }) => [name, answered]),
+			outcome,
+		})),
+		[
+			{ role: "user", text: "Run the 25-second sleep, then reply DONE.", calls: [], outcome: undefined },
+			{ role: "agent", text: "DONE", calls: [["Bash", true]], outcome: "done" },
+		],
+	);
+	check("a working agent's chat stays open", transcriptSessionOf(AGENT_TRANSCRIPT, true).busy, true);
+
+	const ipc = fakeIpc();
+	const port = liveAssistant(ipc);
+	const noSession = await refusalOf(async () => port.forChat?.("chat-1").agentSession?.("a-1"));
+	check("a chat with no Claude session yet has no agent chats", noSession !== null, true);
+	const channel = await sendAndStart(port, ipc, "first");
+	streamed(channel, [{ type: "system", subtype: "init", session_id: "sess-9" }, ...TEXT_AND_RESULT("one")]);
+	await flush();
+	const read = await port.forChat?.("chat-1").agentSession?.("a-1");
+	check(
+		"an agent's chat is read from its own transcript, under the chat's Claude session",
+		[callsNamed(ipc, "read_agent_transcript").at(-1)?.args, read?.turns.at(-1)?.text],
+		[{ session: "sess-9", agent: "a-1" }, "DONE"],
+	);
+}
+
+async function backgroundChecks(): Promise<void> {
+	const ipc = fakeIpc();
+	const { port } = startedAssistant(ipc, {});
+	const channel = await sendAndStart(port, ipc, "launch a background agent");
+	streamed(channel, BACKGROUND_TURN);
+	check(
+		"a background agent is kept in the session with its latest progress, a background shell is not",
+		port.session().background.map(({ id, title, state, said: progress }) => ({ id, title, state, progress })),
+		[{ id: "a-1", title: "Fix kit and tokens", state: "working", progress: "Running npm run test:kit" }],
+	);
+	check(
+		"the background agent's own calls stay out of the main answer",
+		lastAnswer(port.session())?.calls.map(({ name }) => name),
+		["Agent"],
+	);
+
+	streamed(channel, [
+		{
+			type: "system",
+			subtype: "task_notification",
+			task_id: "a-1",
+			tool_use_id: "toolu_bg",
+			status: "completed",
+			summary: "DONE",
+		},
+	]);
+	check(
+		"a finished background agent is done, with its summary",
+		port.session().background.map(({ state, said: summary, endedAt }) => ({ state, summary, ended: endedAt !== null })),
+		[{ state: "done", summary: "DONE", ended: true }],
+	);
+}
 
 async function sendAndStart(port: AssistantPort, ipc: FakeIpc, asked: string): Promise<FakeChannel> {
 	await port.send(asked);
@@ -323,14 +605,14 @@ async function streamChecks(): Promise<void> {
 			prompt: "Reply with the single word ok",
 			resume: null,
 			model: "opus",
-			options: { mode: "auto", effort: "medium" },
+			options: { mode: "auto", effort: "medium", sandbox: "full" },
 			folders: [],
 		},
 	);
 	check(
 		"the host starts what the runner built, never a command line of its own",
 		callsNamed(ipc, "start_launch")[0]?.args,
-		{ program: "claude-code", args: ["Reply with the single word ok"], env: {}, onEvent: channel },
+		{ program: "claude-code", args: ["Reply with the single word ok"], env: {}, input: null, onEvent: channel },
 	);
 	check("a sent turn is busy", port.session().busy, true);
 
@@ -518,6 +800,30 @@ async function folderAndOptionChecks(): Promise<void> {
 		week: { used: 0.12, resetsAt: 1792731600000 },
 	});
 	check("kept usage whose windows all reset is no usage", keptUsageIn(shelf, 1792800000000), null);
+	streamed(lastChannel(ipc), [
+		{
+			type: "assistant",
+			parent_tool_use_id: null,
+			message: { usage: { input_tokens: 2, cache_creation_input_tokens: 5472, cache_read_input_tokens: 60880 } },
+		},
+		{
+			type: "assistant",
+			parent_tool_use_id: "toolu_1",
+			message: { usage: { input_tokens: 3, cache_creation_input_tokens: 0, cache_read_input_tokens: 32000 } },
+		},
+		{
+			type: "result",
+			subtype: "success",
+			usage: { output_tokens: 20 },
+			modelUsage: { opus: { contextWindow: 1000000 } },
+		},
+	]);
+	const shown = await chat.send(assistantContract.chat.one, { chat: null });
+	check(
+		"the main thread's last prompt reaches the chat as its context, against the model's window",
+		shown.ok ? shown.output.session.context : null,
+		{ used: 66354, window: 1000000 },
+	);
 	check(
 		"a picked path that is not absolute is refused",
 		await refusalOf(async () => pickedFolderIn("relative/x")),
@@ -1083,6 +1389,9 @@ await fileDropChecks();
 await compactChecks();
 await clearChecks();
 await pictureChecks();
+await backgroundChecks();
+await liveSessionChecks();
+await agentChatChecks();
 
 console.log(`\nhost-tauri assistant: ${failed === 0 ? "clean" : "BLOCKED"} — ${checks - failed}/${checks} checks`);
 process.exit(failed === 0 ? 0 : 1);

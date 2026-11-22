@@ -4,7 +4,7 @@ import type { ClaudeOptions, DraftAttachment } from "@widgetarium/assistant/cont
 import { HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind, StoreClient, WorkspaceRoot } from "@widgetarium/behaviors/tauri-store";
 
-export type ClaudeChoices = Pick<ClaudeOptions, "mode" | "model" | "effort">;
+export type ClaudeChoices = Pick<ClaudeOptions, "mode" | "model" | "effort" | "sandbox">;
 
 export interface ChatDraft {
 	readonly said: string;
@@ -51,6 +51,7 @@ const KeptChatDraftSchema = z.object({
 		mode: true,
 		model: true,
 		effort: true,
+		sandbox: true,
 	})
 		.nullable()
 		.catch(null),

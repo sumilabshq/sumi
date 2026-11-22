@@ -109,11 +109,12 @@ export function wearChoices(claudeOptions: OptionsHeld, choices: ClaudeChoices |
 	console.debug(`[widgetarium] claude options ${wasChoices} → ${JSON.stringify(choices)} (chat ${chatId} was opened)`);
 }
 
-function choicesOf({ mode, model, effort }: ClaudeOptions): ClaudeChoices {
+function choicesOf({ mode, model, effort, sandbox }: ClaudeOptions): ClaudeChoices {
 	return {
 		mode,
 		model,
 		effort,
+		sandbox,
 	};
 }
 

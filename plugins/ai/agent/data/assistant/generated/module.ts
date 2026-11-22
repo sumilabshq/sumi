@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { assistant as definition } from "../module.js";
 import { chooseClaudeModel, chooseClaudeOption, chooseProvider, chooseWorkingFolder, claudeOptions, getSetup, openProviders, pickWorkingFolder, rereadClaudeOptions, rereadSetup, rereadWorkingFolders, setHelpers, workingFolders } from "../features/agent/requests.js";
-import { changeQueue, one, quickAsk, rereadChat, retryTurn, sendText, stopTurn } from "../features/chat/requests.js";
+import { agentChat, changeQueue, one, quickAsk, rereadChat, retryTurn, sendText, stopTurn } from "../features/chat/requests.js";
 import { adoptDraft, attachDropped, attachFiles, attachFolder, attachReach, clearChat, draftAttachments, fileDrag, hearHostDrag, hearPageDrag, holdDraftText, openChatDraft, removeAttachment, sendMessage, sweepAttachments, takeDraft } from "../features/composer/requests.js";
 import { composer, prefillDraft, take } from "../features/prefill/requests.js";
 import { chooseModel, chooseOption, getMeters, getOptions, getRunners, rereadRunnersForOptions, rereadRunnersForSetup } from "../features/runners/requests.js";
@@ -35,6 +35,7 @@ export const assistant = handledModule(definition, [
 	named("chat-parts.session-changed", sessionChanged),
 	named("chat-parts.setup-changed", setupChanged),
 	named("chat-parts.working-folder-changed", workingFolderChanged),
+	named("chat.agent-chat", agentChat),
 	named("chat.change-queue", changeQueue),
 	named("chat.one", one),
 	named("chat.quick-ask", quickAsk),

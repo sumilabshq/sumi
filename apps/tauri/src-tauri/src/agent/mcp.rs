@@ -6,6 +6,8 @@ pub const MCP_FLAG: &str = "--mcp";
 pub const CHAT_HEADER: &str = "sumi-chat";
 pub const FOLDER_HEADER: &str = "sumi-folder";
 pub const MODEL_HEADER: &str = "sumi-model";
+pub const SANDBOX_HEADER: &str = "sumi-sandbox";
+pub const WRITABLE_HEADER: &str = "sumi-writable";
 
 const INTERNAL_ERROR: i64 = -32603;
 const NO_APP: &str = "Sumi is not running, so its MCP server {server} cannot answer: {reason}";
@@ -70,7 +72,13 @@ impl Relay {
 
 fn headers_of(args: &[String]) -> Value {
     let mut headers = serde_json::Map::new();
-    for (flag, header) in [("--chat", CHAT_HEADER), ("--folder", FOLDER_HEADER), ("--model", MODEL_HEADER)] {
+    for (flag, header) in [
+        ("--chat", CHAT_HEADER),
+        ("--folder", FOLDER_HEADER),
+        ("--model", MODEL_HEADER),
+        ("--sandbox", SANDBOX_HEADER),
+        ("--writable", WRITABLE_HEADER),
+    ] {
         let value = flag_value(args, flag);
         if !value.is_empty() {
             headers.insert(header.to_string(), Value::String(value));

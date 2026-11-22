@@ -2,6 +2,7 @@ import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import { ONE_CHAT } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
+import type { StreamPart } from "@widgetarium/core/engine/provider-stream.js";
 import type { ChatQuestions } from "./chat-questions.js";
 import { NO_CHAT_TASKS } from "./chat-tasks.js";
 import type { ChatTasks, Nudge } from "./chat-tasks.js";
@@ -74,6 +75,17 @@ export class ChatSessions {
 		this.draftReaders.add(isDrafted);
 	}
 
+	heardIdle(chatId: string, part: StreamPart, stop: () => void): void {
+		const ready = this.ready.get(chatId);
+
+		if (ready === undefined) {
+			console.warn(`[ink] chat ${chatId}: a part heard between turns was dropped: the chat is not open`);
+			return;
+		}
+
+		ready.heardIdle(part, stop);
+	}
+
 	readyOf(chatId: string): TurnSession | null {
 		return this.ready.get(chatId) ?? null;
 	}
@@ -98,7 +110,7 @@ export class ChatSessions {
 		return shownId === null ? null : (this.ready.get(shownId) ?? null);
 	}
 
-	private shownId(): string | null {
+	shownId(): string | null {
 		return this.link.focusedChat.now()?.id ?? null;
 	}
 

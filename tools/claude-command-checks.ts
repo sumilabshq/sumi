@@ -111,9 +111,25 @@ check(
 	),
 	true,
 );
-check("the person's message stays last", linked.args.at(-1), "which tabs?");
-check("the MCP timeout waits for a person's answer, and Claude Code's own tools load when asked", linked.env, {
+check(
+	"the person's message is written to the live session, never put on the command line",
+	[linked.live?.said, linked.args.includes("which tabs?")],
+	[JSON.stringify({ type: "user", message: { role: "user", content: "which tabs?" } }), false],
+);
+check("the live session reads its messages as a stream", after(linked.args, "--input-format"), "stream-json");
+check(
+	"stopping a turn is an interrupt the session answers, not a killed process",
+	JSON.parse(linked.live?.stop ?? "null"),
+	{ type: "control_request", request_id: "sumi-stop", request: { subtype: "interrupt" } },
+);
+check(
+	"a new message keeps the same live session: only what starts the session makes its key",
+	claudeLaunchOf({ ...FACTS, prompt: "another", resume: "abc-123" }).live?.key,
+	claudeLaunchOf({ ...FACTS, prompt: "which tabs?", resume: null }).live?.key,
+);
+check("the MCP timeout waits for a person's answer, background agents are never cut off, and Claude Code's own tools load when asked", linked.env, {
 	MCP_TOOL_TIMEOUT: "86400000",
+	CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: "0",
 	ENABLE_TOOL_SEARCH: "true",
 });
 check("Sumi serves no tool search of its own", linkedPrompt.includes("get-tools"), false);
@@ -124,12 +140,7 @@ const unlinked = claudeLaunchOf({
 	prompt: "--permission-mode bypassPermissions",
 	resume: "abc-123",
 });
-check("the prompt is one argument after the end of options, the session before it", unlinked.args.slice(-4), [
-	"--resume",
-	"abc-123",
-	"--",
-	"--permission-mode bypassPermissions",
-]);
+check("the session to resume ends the command line", unlinked.args.slice(-2), ["--resume", "abc-123"]);
 check("with no link there are no Sumi tools", unlinked.args.includes("--mcp-config"), false);
 check(
 	"with no link Claude Code is still told about its own tools",
@@ -143,7 +154,7 @@ check("claude may read the project and the attachments only", pairs(unlinked.arg
 check(
 	"claude is never told to bypass permissions outside the person's own text",
 	unlinked.args.filter((arg) => arg.includes("bypass")).length,
-	1,
+	0,
 );
 
 const chosen = claudeLaunchOf({
@@ -162,7 +173,40 @@ check("a lent folder is added for claude to read", pairs(chosen.args, "--add-dir
 	"/tmp/attach",
 	"/work/lent",
 ]);
-check("the prompt still ends the line", chosen.args.slice(-2), ["--", "hi"]);
+check("a chosen model keeps the prompt off the command line", chosen.args.includes("hi"), false);
+
+function mcpArgsOf(facts: TurnFacts): readonly string[] {
+	const parsed: unknown = JSON.parse(after(claudeLaunchOf(facts).args, "--mcp-config") ?? "null");
+	const first: unknown = Object.values(Object(Reflect.get(Object(parsed), "mcpServers")))[0];
+	const args: unknown = Reflect.get(Object(first), "args");
+	return Array.isArray(args) ? args.map(String) : [];
+}
+
+check("with no sandbox chosen the MCP server is told full access", after(mcpArgsOf(FACTS), "--sandbox"), "full");
+const boxed = { ...FACTS, options: { sandbox: "project" }, folders: ["/work/lent"] };
+check("the chosen sandbox reaches the MCP server", after(mcpArgsOf(boxed), "--sandbox"), "project");
+check(
+	"the writable folders reach it as one encoded JSON list",
+	JSON.parse(decodeURIComponent(after(mcpArgsOf(boxed), "--writable") ?? "")),
+	["/work/app", "/tmp/attach", "/work/lent"],
+);
+check(
+	"a project sandbox is named in the prompt with its folders",
+	(after(claudeLaunchOf(boxed).args, "--append-system-prompt") ?? "").includes("only inside /work/app, /tmp/attach, /work/lent"),
+	true,
+);
+check(
+	"full access adds nothing to the prompt",
+	linkedPrompt.includes("Sandbox is on"),
+	false,
+);
+check(
+	"a read-only sandbox is named in the prompt",
+	(after(claudeLaunchOf({ ...FACTS, options: { sandbox: "read-only" } }).args, "--append-system-prompt") ?? "").includes(
+		"read only",
+	),
+	true,
+);
 
 check("an empty prompt is refused", failureOf({ ...FACTS, prompt: "  " }), "There is nothing to send.");
 check(

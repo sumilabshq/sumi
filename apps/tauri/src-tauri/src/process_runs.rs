@@ -1,9 +1,9 @@
 use serde_json::{json, Value};
 use std::collections::HashMap;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::os::unix::process::CommandExt;
 use std::path::Path;
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -13,10 +13,13 @@ const HARD_STOP_AFTER: Duration = Duration::from_secs(5);
 const OWN_PROCESS_GROUP: i32 = 0;
 const GRACE_ON_QUIT: Duration = Duration::from_millis(300);
 const NOT_STARTED: &str = "{command} could not be started: {why}";
+const NOT_LISTENING: &str = "Run {run} takes no input: it has ended or was started without one.";
 
 pub type ProcessSink = Arc<dyn Fn(Value) + Send + Sync>;
 
 type RunningGroups = Arc<Mutex<HashMap<u64, u32>>>;
+
+type OpenInputs = Arc<Mutex<HashMap<u64, ChildStdin>>>;
 
 pub struct ProcessLaunch<'a> {
     pub binary: &'a Path,
@@ -24,6 +27,7 @@ pub struct ProcessLaunch<'a> {
     pub cwd: &'a Path,
     pub search_path: &'a str,
     pub env: &'a [(String, String)],
+    pub input: Option<&'a str>,
 }
 
 pub fn out_event(text: String) -> Value {
@@ -41,24 +45,44 @@ pub fn exited_event(code: Option<i32>) -> Value {
 pub struct ProcessRuns {
     next_id: AtomicU64,
     running: RunningGroups,
+    inputs: OpenInputs,
 }
 
 impl ProcessRuns {
     pub fn new() -> Self {
-        ProcessRuns { next_id: AtomicU64::new(0), running: Arc::new(Mutex::new(HashMap::new())) }
+        ProcessRuns {
+            next_id: AtomicU64::new(0),
+            running: Arc::new(Mutex::new(HashMap::new())),
+            inputs: Arc::new(Mutex::new(HashMap::new())),
+        }
     }
 
     pub fn start(&self, launch: &ProcessLaunch, sink: ProcessSink) -> Result<u64, String> {
         let mut child = spawn_in_own_group(launch).map_err(|why| not_started(launch.binary, &why))?;
         let run_id = self.next_id.fetch_add(1, Ordering::Relaxed) + 1;
         lock(&self.running).insert(run_id, child.id());
+        if let (Some(first), Some(stdin)) = (launch.input, child.stdin.take()) {
+            lock(&self.inputs).insert(run_id, stdin);
+            self.write(run_id, first)?;
+        }
         let readers = [
             stream_lines(child.stdout.take(), sink.clone(), out_event),
             stream_lines(child.stderr.take(), sink.clone(), err_event),
         ];
         let running = self.running.clone();
-        thread::spawn(move || watch_exit(ExitWatch { child, readers, running, run_id, sink }));
+        let inputs = self.inputs.clone();
+        thread::spawn(move || watch_exit(ExitWatch { child, readers, running, inputs, run_id, sink }));
         Ok(run_id)
+    }
+
+    pub fn write(&self, run_id: u64, line: &str) -> Result<(), String> {
+        let mut inputs = lock(&self.inputs);
+        let stdin = inputs.get_mut(&run_id).ok_or_else(|| NOT_LISTENING.replace("{run}", &run_id.to_string()))?;
+        stdin.write_all(format!("{line}\n").as_bytes()).and_then(|()| stdin.flush()).map_err(|failure| failure.to_string())
+    }
+
+    pub fn close_input(&self, run_id: u64) {
+        lock(&self.inputs).remove(&run_id);
     }
 
     pub fn stop(&self, run_id: u64) {
@@ -95,6 +119,7 @@ struct ExitWatch {
     child: Child,
     readers: [Option<thread::JoinHandle<()>>; 2],
     running: RunningGroups,
+    inputs: OpenInputs,
     run_id: u64,
     sink: ProcessSink,
 }
@@ -105,11 +130,12 @@ fn watch_exit(mut watch: ExitWatch) {
     signal_group(watch.child.id(), libc::SIGTERM);
     watch.readers.into_iter().flatten().for_each(|reader| drop(reader.join()));
     lock(&watch.running).remove(&watch.run_id);
+    lock(&watch.inputs).remove(&watch.run_id);
     (watch.sink)(exited_event(code));
 }
 
-fn lock(running: &RunningGroups) -> std::sync::MutexGuard<'_, HashMap<u64, u32>> {
-    running.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+fn lock<T>(held: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
+    held.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 fn not_started(binary: &Path, why: &std::io::Error) -> String {
@@ -122,7 +148,7 @@ fn spawn_in_own_group(launch: &ProcessLaunch) -> std::io::Result<Child> {
         .current_dir(launch.cwd)
         .env("PATH", launch.search_path)
         .envs(launch.env.iter().map(|(name, value)| (name.as_str(), value.as_str())))
-        .stdin(Stdio::null())
+        .stdin(if launch.input.is_some() { Stdio::piped() } else { Stdio::null() })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .process_group(OWN_PROCESS_GROUP)

@@ -1,5 +1,5 @@
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { z } from "zod";
 import { localTransport, runtime } from "@widgetarium/data-framework";
@@ -56,10 +56,10 @@ const ReplySchema = z.object({
 	}),
 });
 
-async function called(tool: string, args: unknown, chat = "chat-7") {
+async function called(tool: string, args: unknown, chat = "chat-7", sandbox: Record<string, string> = {}) {
 	const reply = await server.answer(
 		{ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: `agent-tools_${tool}`, arguments: args } },
-		{ headers: new Headers({ "sumi-chat": chat }) },
+		{ headers: new Headers({ "sumi-chat": chat, ...sandbox }) },
 	);
 	const { result } = ReplySchema.parse(reply);
 	const text = result.content.find((part) => part.type === "text")?.text ?? "";
@@ -133,6 +133,57 @@ check(
 	"not-started",
 );
 await called("shell_stop", { name: "ticker" });
+
+const boxHome = mkdtempSync(join(homedir(), ".sumi-sandbox-check-"));
+const project = join(boxHome, "project");
+mkdirSync(project);
+const outside = join(boxHome, "outside.txt");
+const projectBox = {
+	"sumi-sandbox": "project",
+	"sumi-writable": encodeURIComponent(JSON.stringify([project])),
+};
+const readOnlyBox = { "sumi-sandbox": "read-only" };
+
+async function boxedRun(command: string, sandbox: Record<string, string>) {
+	const ran = await called("shell_run", { command, folder: project }, "chat-box", sandbox);
+	return z.object({ exitCode: z.number().nullable(), lines: z.array(z.string()) }).parse(ran.json);
+}
+
+const inside = await boxedRun("echo in > inside.txt && cat inside.txt", projectBox);
+check("a project sandbox lets a command write inside the project", [inside.exitCode, inside.lines], [0, ["in"]]);
+const escaped = await boxedRun(`echo out > '${outside}'`, projectBox);
+check("a project sandbox stops a command writing outside it", [escaped.exitCode !== 0, existsSync(outside)], [true, false]);
+const viaDots = await boxedRun("echo out > ../outside.txt", projectBox);
+check("the sandbox sees through ..", [viaDots.exitCode !== 0, existsSync(outside)], [true, false]);
+const temp = await boxedRun("echo t > /tmp/sumi-sandbox-check-$$ && rm /tmp/sumi-sandbox-check-$$", projectBox);
+check("a project sandbox still lets a command use /tmp", temp.exitCode, 0);
+const readOnlyRun = await boxedRun("echo x > ro.txt", readOnlyBox);
+check("a read-only sandbox stops a command writing even inside the project", [readOnlyRun.exitCode !== 0, existsSync(join(project, "ro.txt"))], [true, false]);
+const reads = await boxedRun("cat inside.txt", readOnlyBox);
+check("a read-only sandbox still reads", reads.lines, ["in"]);
+
+const writtenInside = await called("files_write", { path: join(project, "w.txt"), content: "w" }, "chat-box", projectBox);
+check("a project sandbox lets the write tool write inside", [writtenInside.isError, existsSync(join(project, "w.txt"))], [false, true]);
+const writtenOutside = await called("files_write", { path: outside, content: "w" }, "chat-box", projectBox);
+check(
+	"a project sandbox refuses the write tool outside, naming the fix",
+	[writtenOutside.isError && writtenOutside.text.includes("widen the sandbox"), existsSync(outside)],
+	[true, false],
+);
+const dotted = await called("files_write", { path: `${project}/../outside.txt`, content: "w" }, "chat-box", projectBox);
+check("the write tool's check sees through ..", [dotted.isError, existsSync(outside)], [true, false]);
+const editedReadOnly = await called(
+	"files_edit",
+	{ path: join(project, "w.txt"), oldText: "w", newText: "v" },
+	"chat-box",
+	readOnlyBox,
+);
+check("a read-only sandbox refuses an edit", [editedReadOnly.isError, readFileSync(join(project, "w.txt"), "utf8")], [true, "w"]);
+const fullOutside = await boxedRun(`echo out > '${outside}'`, {});
+check("with no sandbox header a command has full access", [fullOutside.exitCode, existsSync(outside)], [0, true]);
+const userTemp = await boxedRun(`echo t > '${join(folder, "temp.txt")}'`, projectBox);
+check("a project sandbox lets a command use the user's temp folder", userTemp.exitCode, 0);
+rmSync(boxHome, { recursive: true, force: true });
 
 const now = await called("clock_get-now", {});
 check("the clock answers UTC", z.object({ utc: z.string() }).parse(now.json).utc.endsWith("Z"), true);

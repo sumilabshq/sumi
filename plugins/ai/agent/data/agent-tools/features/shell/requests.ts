@@ -11,9 +11,10 @@ import {
 	StartAskedSchema,
 	StopAskedSchema,
 } from "../../shared/schema/shell.schema.js";
+import { sandboxOf } from "../../shared/lib/sandbox.js";
+import { shellLaunchOf } from "../../shared/lib/seatbelt.js";
 import { runIdOf, shellRunOf } from "./lib/shell-runs.js";
 
-const SHELL = "sh";
 const RUN_TIMEOUT_SECONDS = 120;
 const POLL_MS = 250;
 const STOP_WAIT_MS = 2000;
@@ -24,7 +25,6 @@ interface Watch {
 	readonly until: number;
 }
 
-// TODO: Windows has no sh; pick the shell per platform
 export const run = command()
 	.public()
 	.metadata({
@@ -39,8 +39,9 @@ export const run = command()
 	.handle(async ({ command: line, folder, timeoutSeconds }, { send, user, clock }) => {
 		const name = `run-${crypto.randomUUID().slice(0, RUN_NAME_LENGTH)}`;
 		const runId = runIdOf(user.id, name);
-		await send(terminal.processes.start, { run: runId, folder, program: SHELL, args: ["-c", line] });
-		console.info(`[agent-tools] ${user.id}: ${name} none → running: ${line}`);
+		const launch = shellLaunchOf(sandboxOf(user), line);
+		await send(terminal.processes.start, { run: runId, folder, ...launch });
+		console.info(`[agent-tools] ${user.id}: ${name} none → running in ${launch.program}: ${line}`);
 		const until = clock.now().getTime() + (timeoutSeconds ?? RUN_TIMEOUT_SECONDS) * 1000;
 		return shellRunOf(name, await outputWhenSettled(send, clock, { run: runId, until }));
 	});
@@ -58,8 +59,9 @@ export const start = command()
 	.guard(AuthenticatedGuard)
 	.handle(async ({ name, command: line, folder }, { send, user }) => {
 		const runId = runIdOf(user.id, name);
-		await send(terminal.processes.start, { run: runId, folder, program: SHELL, args: ["-c", line] });
-		console.info(`[agent-tools] ${user.id}: ${name} none → running: ${line}`);
+		const launch = shellLaunchOf(sandboxOf(user), line);
+		await send(terminal.processes.start, { run: runId, folder, ...launch });
+		console.info(`[agent-tools] ${user.id}: ${name} none → running in ${launch.program}: ${line}`);
 		return shellRunOf(name, await send(terminal.processes.getOutput, { run: runId, from: 0 }));
 	});
 

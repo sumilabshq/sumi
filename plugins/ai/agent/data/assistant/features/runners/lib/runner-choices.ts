@@ -2,6 +2,7 @@ import {
 	ClaudeEffortSchema,
 	ClaudeModelSchema,
 	PermissionModeSchema,
+	SandboxSchema,
 } from "../../../shared/schema/claude-options.schema.js";
 import type {
 	ClaudeModel,
@@ -134,6 +135,11 @@ export function claudeAskedOf(key: string, value: string): ClaudeOptionAsked | s
 		return effort.success ? { effort: effort.data } : NO_CHOICE.replace("{key}", key).replace("{value}", value);
 	}
 
+	if (key === "sandbox") {
+		const sandbox = SandboxSchema.safeParse(value);
+		return sandbox.success ? { sandbox: sandbox.data } : NO_CHOICE.replace("{key}", key).replace("{value}", value);
+	}
+
 	return NOT_STORED.replace("{key}", key).replace("{runner}", CLAUDE_CODE_RUNNER_ID);
 }
 
@@ -144,6 +150,10 @@ function claudeValueOf(claude: ClaudeOptions, key: string): string | null {
 
 	if (key === "effort") {
 		return claude.effort;
+	}
+
+	if (key === "sandbox") {
+		return claude.sandbox;
 	}
 
 	return null;
