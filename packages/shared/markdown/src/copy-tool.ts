@@ -1,4 +1,4 @@
-import { tooltipMarks } from "@widgetarium/kit";
+import { iconButtonClass, tooltipMarks } from "@widgetarium/kit";
 import { createGlyph } from "./glyph.js";
 import type { GlyphName } from "./glyph.js";
 
@@ -22,7 +22,7 @@ export function createCopyTool(page: Document, body: string): HTMLButtonElement 
 export function createTool(page: Document, { said, glyph, onPress }: ToolAsk): HTMLButtonElement {
 	const tool = page.createElement("button");
 	tool.type = "button";
-	tool.className = "wg-studio-ai-codeblock-tool";
+	tool.className = `wg-studio-ai-codeblock-tool ${iconButtonClass({ variant: "ghost", size: "xs" })}`;
 	tool.setAttribute("aria-label", said);
 
 	for (const [attribute, value] of Object.entries(tooltipMarks({ said }))) {

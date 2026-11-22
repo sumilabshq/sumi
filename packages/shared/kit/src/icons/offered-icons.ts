@@ -1,4 +1,4 @@
-import { GLYPHS } from "./glyphs";
+import { LUCIDE_NAME_OF } from "./glyphs";
 import { ICON_TABLE, ICON_WORDS } from "./icon-table";
 
 export interface OfferedIcon {
@@ -11,8 +11,9 @@ const SPOKEN_ICONS: Readonly<Record<string, string>> = ICON_WORDS;
 let everyIconOffered: readonly OfferedIcon[] | null = null;
 
 export function offeredIcons(): readonly OfferedIcon[] {
-	everyIconOffered ??= Object.keys(GLYPHS)
-		.concat(Object.keys(ICON_TABLE).filter((name) => !Object.hasOwn(GLYPHS, name)))
+	const kitNames = Object.keys(LUCIDE_NAME_OF);
+	everyIconOffered ??= kitNames
+		.concat(Object.keys(ICON_TABLE).filter((name) => !kitNames.includes(name)))
 		.map(offeredIcon);
 	return everyIconOffered;
 }

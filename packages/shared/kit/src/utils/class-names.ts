@@ -14,12 +14,16 @@ const BUTTON_WORDS = {
 		secondary: "",
 		destructive: "is-danger",
 		outline: "is-outline",
+		"outline-muted": "is-outline is-muted",
+		wash: "is-wash",
+		page: "is-page",
 		link: "is-plain",
 	},
 	size: {
 		l: "is-l",
 		m: "is-m",
 		s: "is-s",
+		xs: "is-xs",
 		lg: "is-l",
 		default: "is-m",
 		sm: "is-s",
@@ -31,8 +35,16 @@ const BUTTON_WORDS = {
 };
 
 const ICON_BUTTON_WORDS = {
-	variant: { accent: "is-accent", neutral: "", raised: "is-raised", ghost: "is-ghost", glass: "wg-kit-glass" },
-	size: { l: "is-l", m: "is-m", s: "is-s", xs: "is-xs" },
+	variant: {
+		primary: "is-primary",
+		accent: "is-accent",
+		neutral: "",
+		raised: "is-raised",
+		ghost: "is-ghost",
+		glass: "wg-kit-glass",
+		overlay: "is-overlay",
+	},
+	size: { l: "is-l", m: "is-m", s: "is-s", xs: "is-xs", xxs: "is-xxs" },
 };
 
 const PILL_WORDS = {
@@ -59,11 +71,15 @@ const CARD_WORDS = {
 
 const SIDEBAR_WORDS = {
 	mode: { full: "", minimal: "is-minimal" },
-	surface: { solid: "", glass: "is-glass", edge: "is-edge" },
+	surface: { solid: "", glass: "is-glass", edge: "is-edge", soft: "is-soft", chrome: "is-chrome" },
 	at: { start: "", end: "is-end" },
 };
 
-const FIELD_WORDS = { size: { m: "", s: "is-s" }, block: { true: "is-block" } };
+const FIELD_WORDS = {
+	size: { m: "", s: "is-s" },
+	block: { true: "is-block" },
+	variant: { framed: "", bare: "is-bare", filled: "is-filled", outlined: "is-outlined", raised: "is-raised" },
+};
 
 const DIALOG_WORDS = { size: { m: "", s: "is-s" } };
 
@@ -86,6 +102,8 @@ export type SidebarSurface = keyof (typeof SIDEBAR_WORDS)["surface"];
 export type SidebarAt = keyof (typeof SIDEBAR_WORDS)["at"];
 
 export type FieldSize = keyof (typeof FIELD_WORDS)["size"];
+
+export type FieldVariant = keyof (typeof FIELD_WORDS)["variant"];
 
 export type DialogSize = keyof (typeof DIALOG_WORDS)["size"];
 
@@ -117,12 +135,14 @@ export const ROW_PART = {
 
 export const glassClass = variants("wg-kit-glass", {});
 
+export const softGlassClass = variants("wg-kit-soft-glass", {});
+
 export const sidebarClass = variants(cn("wg-kit-side", cardClass({ variant: "light", lift: true })), SIDEBAR_WORDS, {
 	mode: "full",
 	surface: "solid",
 	at: "start",
 });
 
-export const fieldClass = variants("wg-kit-field", FIELD_WORDS, { size: "m" });
+export const fieldClass = variants("wg-kit-field", FIELD_WORDS, { size: "m", variant: "framed" });
 
 export const dialogClass = variants("", DIALOG_WORDS, { size: "m" });

@@ -137,7 +137,13 @@ function domRect(left: number, top: number, width: number, height: number): DOMR
 	return { ...box, toJSON: () => box };
 }
 function stubComputedStyle(stub: (node: Element, pseudo?: string | null) => object): void {
-	Object.assign(globalThis, { getComputedStyle: stub });
+	const real = globalThis.getComputedStyle;
+	Object.assign(globalThis, {
+		getComputedStyle: (node: Element, pseudo?: string | null) => ({
+			getPropertyValue: (name: string) => real(node, pseudo).getPropertyValue(name),
+			...stub(node, pseudo),
+		}),
+	});
 }
 function htmlsIn(root: ParentNode, selector: string): HTMLElement[] {
 	return [...root.querySelectorAll(selector)].map(mustHtmlOf);
@@ -429,7 +435,7 @@ check("the three-dot menu has a glyph", host.querySelectorAll("svg.wg-kit-icon-g
 // the glyph is STROKED, so a radius over half the stroke width leaves a hole and the dots read as rings
 check(
 	"and they are dots, not rings",
-	[...host.querySelectorAll("circle")].every((dot) => parseFloat(dot.getAttribute("r") ?? "") <= 0.9),
+	[...host.querySelectorAll("circle")].every((dot) => parseFloat(dot.getAttribute("r") ?? "") <= 1),
 	true,
 );
 

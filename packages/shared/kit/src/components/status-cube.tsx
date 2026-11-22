@@ -18,6 +18,7 @@ export function StatusCube({ state, size, className }: StatusCubeProps): ReactEl
 	const resting = restingCubeLook(size);
 	return (
 		<span
+			data-slot="status-cube"
 			className={cn("wg-kit-status-cube", `is-${state}`, className)}
 			style={{
 				width: size,
@@ -28,7 +29,12 @@ export function StatusCube({ state, size, className }: StatusCubeProps): ReactEl
 			data-state={state}
 		>
 			<svg className="wg-kit-status-cube-art" viewBox={geometry.viewBox} aria-hidden="true">
-				<polygon ref={parts.body} className="wg-kit-status-cube-body" points={resting.body} strokeWidth={geometry.edge} />
+				<polygon
+					ref={parts.body}
+					className="wg-kit-status-cube-body"
+					points={resting.body}
+					strokeWidth={geometry.edge}
+				/>
 				<rect
 					ref={parts.eye}
 					className="wg-kit-status-cube-eye"

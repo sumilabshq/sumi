@@ -6,11 +6,14 @@ import { cn } from "../utils/cn";
 
 export type { ControlSpaceSide } from "../hooks/use-window-chrome-inset";
 
+export type ControlSpaceSurface = "none" | "glass";
+
 export interface ControlSpaceProps extends HTMLAttributes<HTMLDivElement> {
 	readonly side: ControlSpaceSide;
+	readonly surface?: ControlSpaceSurface | undefined;
 }
 
-export function ControlSpace({ side, className, style, ...rest }: ControlSpaceProps): ReactElement {
+export function ControlSpace({ side, surface = "none", className, style, ...rest }: ControlSpaceProps): ReactElement {
 	const space = useRef<HTMLDivElement>(null);
 	const inset = useWindowChromeInset(space, side);
 	return (
@@ -19,7 +22,7 @@ export function ControlSpace({ side, className, style, ...rest }: ControlSpacePr
 			role="toolbar"
 			{...rest}
 			data-control-space={side}
-			className={cn("wg-kit-control-space", `is-${side}`, className)}
+			className={cn("wg-kit-control-space", `is-${side}`, surface === "glass" && "is-glass", className)}
 			style={{
 				...style,
 				[side === "start" ? "paddingInlineStart" : "paddingInlineEnd"]: inset > 0 ? `${inset}px` : undefined,

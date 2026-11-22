@@ -7,6 +7,7 @@ import { domPropsOf } from "../utils/dom-props";
 import { SidebarContext } from "./sidebar-context";
 import { Slot } from "./slot";
 
+export { SidebarContent } from "./sidebar-content";
 export { SidebarGroup } from "./sidebar-group";
 export { SidebarRow } from "./sidebar-row";
 export { SidebarSheet } from "./sidebar-sheet";
@@ -20,7 +21,6 @@ export { SidebarDragGhost } from "./sidebar-drag-ghost";
 export { SidebarTrigger } from "./sidebar-trigger";
 export { useSidebar } from "./sidebar-context";
 export {
-	SidebarContent,
 	SidebarFooter,
 	SidebarGroupContent,
 	SidebarGroupLabel,

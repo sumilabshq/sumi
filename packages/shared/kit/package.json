@@ -31,10 +31,10 @@
 			"types": "./dist/icons/icon-table.d.ts",
 			"default": "./dist/icons/icon-table.js"
 		},
-		"./sharp-icons": {
-			"source": "./src/icons/sharp-table.ts",
-			"types": "./dist/icons/sharp-table.d.ts",
-			"default": "./dist/icons/sharp-table.js"
+		"./icon-markup": {
+			"source": "./src/icons/icon-markup.ts",
+			"types": "./dist/icons/icon-markup.d.ts",
+			"default": "./dist/icons/icon-markup.js"
 		},
 		"./emoji-table": {
 			"source": "./src/emojis/emoji-table.ts",

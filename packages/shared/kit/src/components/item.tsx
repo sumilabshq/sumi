@@ -57,8 +57,14 @@ export function Item({
 }: ItemProps): ReactElement {
 	const isSlotted = asChild || render !== undefined;
 	const drawn = renderChildren(render, children);
-	const line = holds === "line" ? rowClass({ pressable: pressable ?? PRESS_TAGS.includes(render?.type) }) : null;
-	const item = { "data-slot": "item", ...rest, "data-variant": variant, "data-size": size };
+	const isPressableLine = holds === "line" && (pressable ?? PRESS_TAGS.includes(render?.type));
+	const line = holds === "line" ? rowClass({ pressable: isPressableLine }) : null;
+	const item = {
+		"data-slot": "item",
+		...rest,
+		"data-variant": variant,
+		"data-size": size,
+	};
 	if (variant === "muted")
 		return <Card {...item} tone={tone} asChild={isSlotted} className={cn(line, className)} children={drawn} />;
 	const Comp = isSlotted ? Slot : "div";

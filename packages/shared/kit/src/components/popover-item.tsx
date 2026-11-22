@@ -6,9 +6,11 @@ import { cn } from "../utils/cn";
 export interface PopoverItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	readonly checked?: boolean | undefined;
 	readonly sub?: ReactNode;
+	readonly icon?: ReactNode;
+	readonly keys?: ReactNode;
 }
 
-export function PopoverItem({ checked, sub, children, ...rest }: PopoverItemProps): ReactElement {
+export function PopoverItem({ checked, sub, icon, keys, children, ...rest }: PopoverItemProps): ReactElement {
 	const [isHighlighted, setHighlighted] = useState(false);
 	return (
 		<button
@@ -36,19 +38,28 @@ export function PopoverItem({ checked, sub, children, ...rest }: PopoverItemProp
 			}}
 			className={cn("wg-kit-pop-item", Boolean(sub) && "is-two", rest.className)}
 		>
-			{sub === undefined ? (
-				children
-			) : (
-				<span className="wg-kit-pop-said">
-					{children}
-					<span className="wg-kit-pop-sub" key="sub">
-						{sub}
-					</span>
-				</span>
-			)}
+			{icon === undefined ? null : <span className="wg-kit-pop-icon">{icon}</span>}
+			{saidOf(children, sub, icon !== undefined || keys !== undefined)}
+			{keys === undefined ? null : <span className="wg-kit-menu-shortcut">{keys}</span>}
 			{checked === undefined ? null : <Icon name="tick" className="wg-kit-pop-tick" />}
 		</button>
 	);
+}
+
+function saidOf(children: ReactNode, sub: ReactNode, hasSlots: boolean): ReactNode {
+	if (sub !== undefined) {
+		return (
+			<span className="wg-kit-pop-said">
+				{children}
+				<span className="wg-kit-pop-sub" key="sub">
+					{sub}
+				</span>
+			</span>
+		);
+	}
+
+	if (hasSlots) return <span className="wg-kit-pop-label">{children}</span>;
+	return children;
 }
 
 function checkedStateOf(checked: boolean | undefined): "checked" | "unchecked" | undefined {

@@ -1,7 +1,8 @@
 import { createElement as h } from "react";
-import type { ButtonHTMLAttributes, ReactElement } from "react";
-import { cn } from "../utils/cn";
+import type { ReactElement } from "react";
+import { IconButton } from "./icon-button";
+import type { IconButtonProps } from "./icon-button";
 
-export function SidePanelAction({ className, ...rest }: ButtonHTMLAttributes<HTMLButtonElement>): ReactElement {
-	return <button type="button" {...rest} className={cn("wg-kit-side-panel-action", className)} />;
+export function SidePanelAction(props: IconButtonProps): ReactElement {
+	return <IconButton variant="ghost" size="xs" {...props} />;
 }

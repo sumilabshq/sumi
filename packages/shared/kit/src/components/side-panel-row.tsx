@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { ButtonHTMLAttributes, ReactElement, ReactNode } from "react";
 import { cn } from "../utils/cn";
+import type { TokenStyle } from "../utils/token-style";
 
 export interface SidePanelRowProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	readonly icon?: ReactNode;
@@ -11,11 +12,8 @@ export interface SidePanelRowProps extends ButtonHTMLAttributes<HTMLButtonElemen
 	readonly isOpen?: boolean | undefined;
 }
 
-const ROW_INSET_PX = 16;
-const DEPTH_STEP_PX = 24;
-
-export function sidePanelIndentOf(depth: number): number {
-	return ROW_INSET_PX + DEPTH_STEP_PX * depth;
+export function sidePanelDepthOf(depth: number): TokenStyle {
+	return { "--wg-kit-side-panel-depth": depth };
 }
 
 export function SidePanelRow({
@@ -34,7 +32,7 @@ export function SidePanelRow({
 			type="button"
 			{...rest}
 			className={cn("wg-kit-side-panel-row", isPicked && "is-picked", isOpen && "is-open", className)}
-			style={{ ...style, paddingLeft: sidePanelIndentOf(depth) }}
+			style={{ ...style, ...sidePanelDepthOf(depth) }}
 			aria-current={isPicked ? "true" : undefined}
 		>
 			{icon ? <span className="wg-kit-side-panel-icon">{icon}</span> : null}

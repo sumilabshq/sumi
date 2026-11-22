@@ -4,10 +4,13 @@ import { cn } from "../utils/cn";
 
 export type SidePanelSide = "start" | "end";
 
+export type SidePanelSurface = "plate" | "soft";
+
 export const SIDE_PANEL_MIN_WIDTH = 200;
 
 export interface SidePanelProps {
 	readonly side?: SidePanelSide | undefined;
+	readonly surface?: SidePanelSurface | undefined;
 	readonly width: number | string;
 	readonly minWidth?: number | undefined;
 	readonly label: string;
@@ -19,6 +22,7 @@ export interface SidePanelProps {
 
 export function SidePanel({
 	side = "start",
+	surface = "plate",
 	width,
 	minWidth = SIDE_PANEL_MIN_WIDTH,
 	label,
@@ -29,7 +33,7 @@ export function SidePanel({
 }: SidePanelProps): ReactElement {
 	return (
 		<aside
-			className={cn("wg-kit-side-panel", `is-${side}`, className)}
+			className={cn("wg-kit-side-panel", `is-${side}`, surface === "soft" && "is-soft", className)}
 			style={{
 				width,
 				minWidth,

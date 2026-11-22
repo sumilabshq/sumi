@@ -3,6 +3,8 @@ export { Kit } from "./kit-object";
 export { ActionButton, Button, ButtonLabel, IconButton, ShowMore, Spinner } from "./components/button";
 export { Badge, Count, Pill } from "./components/badge";
 export { TextLink } from "./components/text-link";
+export { Pressable } from "./components/pressable";
+export { FilePicker } from "./components/file-picker";
 
 export { Calendar } from "./components/calendar";
 export {
@@ -61,6 +63,7 @@ export {
 	PopoverTrigger,
 	usePopover,
 } from "./components/popover";
+export { PopoverLabel } from "./components/popover-label";
 
 export { Progress, ProgressBar, StatusProgress } from "./components/progress";
 export { ProgressRing } from "./components/progress-ring";
@@ -211,6 +214,7 @@ export {
 	cardClass,
 	fieldClass,
 	glassClass,
+	softGlassClass,
 	iconButtonClass,
 	listClass,
 	pillClass,
