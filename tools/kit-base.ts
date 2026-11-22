@@ -42,13 +42,13 @@ function exportNamesOfFile(file: string, visited: Set<string>): readonly string[
 
 function namesOfExportSource(source: string): readonly string[] {
 	return [...source.matchAll(/export\s*\{([^}]*)\}/g)].flatMap((match) =>
-		match[1].split(",").flatMap((specifier) => exportedNameOf(specifier) ?? []),
+		(match[1] ?? "").split(",").flatMap((specifier) => exportedNameOf(specifier) ?? []),
 	);
 }
 
 function followedFilesOf(source: string): readonly string[] {
 	return [...source.matchAll(/export\s*\*\s*from\s*"\.\/([^"]+)"/g)].map(
-		(match) => `${match[1].replace(/\.ts$/, "")}.ts`,
+		(match) => `${(match[1] ?? "").replace(/\.ts$/, "")}.ts`,
 	);
 }
 
