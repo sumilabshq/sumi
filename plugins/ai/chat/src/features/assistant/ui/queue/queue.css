@@ -22,7 +22,13 @@
 
 :is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-send, .wg-studio-ai-queued-more, .wg-studio-ai-edit-cancel) {
 	padding: var(--space-none) var(--space-1);
+	border: none;
+	background: none;
+	box-shadow: none;
+	color: var(--text);
 	font: var(--fw-medium) var(--fs-12) / 1.4 var(--font-ui);
+	text-decoration: underline;
+	text-decoration-color: var(--line-strong);
 	text-underline-offset: 3px;
 	cursor: pointer;
 }
@@ -31,9 +37,15 @@
 	height: 26px;
 }
 
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue-send:disabled {
+	color: var(--text-3);
+	cursor: default;
+}
+
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued-more {
 	margin-top: var(--space-1);
 	padding: var(--space-none);
+	color: var(--text-2);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued-act {

@@ -113,9 +113,11 @@
 	--spacing-sections: var(--gap-section);
 	--spacing-plate: var(--group-pad);
 
+	--shadow-raise: var(--shadow-raise);
 	--shadow-glass: var(--glass-edge);
 
 	--ease-spring: var(--spring);
+	--ease-standard: var(--ease-standard);
 }
 
 @custom-variant data-open {

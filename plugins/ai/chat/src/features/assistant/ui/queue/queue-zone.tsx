@@ -1,6 +1,5 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Button } from "@widgetarium/kit";
 import type { QueuedShown } from "@widgetarium/assistant/contract";
 import type { QueueActions } from "../../lib/use-queue-actions.js";
 import { QueuedMessage } from "./queued-message.js";
@@ -32,15 +31,9 @@ export function QueueZone({ queued, actions, onEdit }: QueueZoneProps): ReactEle
 					onRemove={() => actions.remove(message.id)}
 				/>
 			))}
-			<Button
-				variant="ghost"
-				size="s"
-				className="wg-studio-ai-queue-send"
-				disabled={!canSendNow}
-				onClick={actions.sendNow}
-			>
+			<button type="button" className="wg-studio-ai-queue-send" disabled={!canSendNow} onClick={actions.sendNow}>
 				{SEND_NOW}
-			</Button>
+			</button>
 		</section>
 	);
 }

@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Button, Icon, TextArea } from "@widgetarium/kit";
+import { Icon, TextArea } from "@widgetarium/kit";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import type { QueuedShown } from "@widgetarium/assistant/contract";
 import { useSetsDraftAside } from "../../lib/use-sets-draft-aside.js";
@@ -75,9 +75,9 @@ export function Composer({
 						<Icon name="pencil" size={13} />
 						<b>{EDITING}</b>
 						<span>{editNoteOf(editing)}</span>
-						<Button variant="ghost" size="s" className="wg-studio-ai-edit-cancel" onClick={onCancelEdit}>
+						<button type="button" className="wg-studio-ai-edit-cancel" onClick={onCancelEdit}>
 							{CANCEL}
-						</Button>
+						</button>
 					</div>
 				)}
 				<DraftAttachments />
