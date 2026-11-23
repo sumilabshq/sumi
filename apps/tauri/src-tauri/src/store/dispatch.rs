@@ -2,6 +2,7 @@ use super::files::FILE_EXTENSION;
 use super::legacy;
 use super::place;
 use super::refusal::Refusal;
+use super::retirement;
 use super::workspaces::{self, WORKSPACES_FILE, WORKSPACE_FILE};
 use super::{RootKind, Store};
 use crate::studio_caller::{is_studio_label, refuse_foreign_caller};
@@ -113,6 +114,8 @@ pub fn answer_of(store: &Store, call: &Call) -> Option<Answer> {
         "rename_workspace" => rename_workspace(store, call),
         "mark_workspace_opened" => mark_workspace_opened(store, call),
         "choose_workspace_folder" => choose_workspace_folder(store, call),
+        "retire_other_workspaces" => retire_other_workspaces(store, call),
+        "conversion_refusal" => Ok(conversion_refusal(store, call)),
         _ => return None,
     };
     Some(answer)
@@ -208,6 +211,20 @@ fn mark_workspace_opened(store: &Store, call: &Call) -> Answer {
 
 fn choose_workspace_folder(store: &Store, call: &Call) -> Answer {
     Ok(workspaces::choose_folder(store, call.text("id")?, call.text("folder")?)?.to_json())
+}
+
+fn retire_other_workspaces(store: &Store, call: &Call) -> Answer {
+    let keep_id = call.text("keepId")?;
+    if let Some(reason) = retirement::conversion_refusal(store, keep_id) {
+        return Err(Refusal::BadPath { detail: reason });
+    }
+
+    Ok(json!({ "retiredIds": retirement::retire_other_workspaces(store, keep_id)? }))
+}
+
+fn conversion_refusal(store: &Store, call: &Call) -> Value {
+    let id = call.text("id").unwrap_or_default();
+    retirement::conversion_refusal(store, id).map_or(Value::Null, Value::from)
 }
 
 fn rename_workspace(store: &Store, call: &Call) -> Answer {

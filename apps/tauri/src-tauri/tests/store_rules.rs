@@ -5,7 +5,7 @@ use std::process::{Command, ExitCode};
 use std::time::{Duration, Instant};
 use tauri::EventTarget;
 use widgetarium_host_tauri_lib::store::dispatch::{answer_of, call_of, change_of, is_studio_target};
-use widgetarium_host_tauri_lib::store::{atomic, legacy, workspaces, Refusal, Store, APP_FOLDER};
+use widgetarium_host_tauri_lib::store::{atomic, legacy, retirement, workspaces, Refusal, Store, APP_FOLDER};
 use widgetarium_host_tauri_lib::studio_core::quit::{QuitEnd, QuitFlushes, QuitStart};
 use widgetarium_host_tauri_lib::studio_caller::{refuse_foreign_caller, NOT_FROM_STUDIO};
 
@@ -326,6 +326,125 @@ fn legacy_moves(checks: &mut Checks) {
     checks.check("a second run copies nothing new", chat_ids(&sumi), vec!["new".to_owned(), "old".to_owned()]);
 }
 
+fn registered_ids(store: &Store) -> Vec<String> {
+    let mut ids: Vec<String> = workspaces::list(store).unwrap().into_iter().map(|entry| entry.id).collect();
+    ids.sort();
+    ids
+}
+
+fn registry_doc(store: &Store) -> Value {
+    store.read_doc(&store.global_place("workspaces.json").unwrap()).unwrap().doc.unwrap()
+}
+
+fn sorted(mut ids: Vec<String>) -> Vec<String> {
+    ids.sort();
+    ids
+}
+
+fn three_workspaces(home: &TempHome) -> (Store, Vec<String>) {
+    let store = Store::new(home.path.canonicalize().unwrap());
+    let first = workspaces::open_first(&store).unwrap();
+    let mut ids = vec![first.id];
+    for name in ["Research", "Notes"] {
+        let folder = home.path.join(name);
+        fs::create_dir_all(&folder).unwrap();
+        ids.push(workspaces::open_folder(&store, &folder).unwrap().id);
+    }
+    (store, ids)
+}
+
+fn retirement_rules(checks: &mut Checks) {
+    let home = TempHome::new("retire");
+    let (store, ids) = three_workspaces(&home);
+    let keep = ids[0].clone();
+    let retired = retirement::retire_other_workspaces(&store, &keep).unwrap();
+    checks.check("retiring keeps one root and answers the ids it dropped", sorted(retired), sorted(ids[1..].to_vec()));
+    checks.check("the registry lists only the root", registered_ids(&store), vec![keep.clone()]);
+    let doc = registry_doc(&store);
+    checks.check("the registry records the retired ids", sorted(doc["retiredIds"].as_array().unwrap().iter().map(|id| id.as_str().unwrap().to_owned()).collect()), sorted(ids[1..].to_vec()));
+    checks.check("and opens the root", doc["lastOpenedId"].as_str(), Some(keep.as_str()));
+    checks.check("no data folder is deleted", [home.path.join("Research"), home.path.join("Notes")].iter().all(|folder| folder.join(APP_FOLDER).join("workspace.json").is_file()), true);
+    checks.check("retiring again drops nothing", retirement::retire_other_workspaces(&store, &keep).unwrap(), Vec::<String>::new());
+    checks.check("a retired workspace's folder cannot be opened back", code_of(workspaces::open_folder(&store, &home.path.join("Research"))), "retired");
+    checks.check("a retired id cannot be marked opened", code_of(workspaces::mark_opened(&store, &ids[1])), "no-workspace");
+    checks.check("the root cannot be a retired workspace", code_of(retirement::retire_other_workspaces(&store, &ids[1])), "retired");
+    checks.check("an unknown root is refused", code_of(retirement::retire_other_workspaces(&store, "3a32cc8a-785e-4742-8c6d-c6b21031bccf")), "no-workspace");
+}
+
+fn retired_does_not_return(checks: &mut Checks) {
+    let home = TempHome::new("retired-legacy");
+    let (store, ids) = three_workspaces(&home);
+    let retired_id = ids[1].clone();
+    let legacy_folder = home.app_folder().join("workspaces").join(&retired_id);
+    fs::create_dir_all(&legacy_folder).unwrap();
+    let research = home.path.join("Research");
+    fs::write(legacy_folder.join("workspace.json"), json!({ "v": 1, "id": retired_id, "name": "Research", "folder": research.to_string_lossy() }).to_string()).unwrap();
+    fs::write(legacy_folder.join("late-notes.json"), "{}").unwrap();
+    retirement::retire_other_workspaces(&store, &ids[0]).unwrap();
+    legacy::move_legacy_workspaces(&store);
+    legacy::move_legacy_workspaces(&store);
+    checks.check("a retired workspace's legacy files are not copied into its folder", research.join(APP_FOLDER).join("late-notes.json").exists(), false);
+    checks.check("move_legacy_workspaces does not bring a retired workspace back", registered_ids(&store), vec![ids[0].clone()]);
+    checks.check("the retired workspace stays retired after it", retirement::is_retired(&store, &retired_id), true);
+    checks.check("the root is not retired", retirement::is_retired(&store, &ids[0]), false);
+}
+
+fn default_retired_still_opens_root(checks: &mut Checks) {
+    let home = TempHome::new("retired-default");
+    let (store, ids) = three_workspaces(&home);
+    retirement::retire_other_workspaces(&store, &ids[1]).unwrap();
+    let opened = workspaces::open_first(&store).unwrap();
+    checks.check("open_first opens the kept root when the Default workspace is retired", opened.id.clone(), ids[1].clone());
+    checks.check("and does not register the Default workspace again", registered_ids(&store), vec![ids[1].clone()]);
+}
+
+fn root_must_keep_its_data_folder(checks: &mut Checks) {
+    let home = TempHome::new("retire-unsafe");
+    let (store, ids) = three_workspaces(&home);
+    fs::remove_dir_all(home.path.join("Research").join(APP_FOLDER)).unwrap();
+    checks.check("a root without its .sumi is refused", code_of(retirement::retire_other_workspaces(&store, &ids[1])), "folder-not-found");
+    checks.check("and nothing is retired", (registry_doc(&store)["workspaces"].as_array().map(Vec::len), retirement::is_retired(&store, &ids[0])), (Some(3), false));
+}
+
+fn conversion_root_rules(checks: &mut Checks) {
+    let user = Path::new("/Users/someone");
+    let exact = user.join(".sumi-test-workspace");
+    checks.check("the test root passes", retirement::refusal_of_conversion_root(".sumi-test", Some(&exact), user), None);
+    checks.check("the real app folder is refused", retirement::refusal_of_conversion_root(".sumi", Some(&exact), user).is_some(), true);
+    checks.check("the dev app folder is refused", retirement::refusal_of_conversion_root(".sumi-dev", Some(&exact), user).is_some(), true);
+    checks.check("a near name is refused", retirement::refusal_of_conversion_root(".sumi-test2", Some(&exact), user).is_some(), true);
+    checks.check("another registry home is refused", retirement::refusal_of_conversion_root(".sumi-test", Some(&user.join("Sumi")), user).is_some(), true);
+    checks.check("a nested registry home is refused", retirement::refusal_of_conversion_root(".sumi-test", Some(&exact.join("inner")), user).is_some(), true);
+    checks.check("an unregistered workspace is refused", retirement::refusal_of_conversion_root(".sumi-test", None, user).is_some(), true);
+}
+
+fn conversion_through_dispatch(checks: &mut Checks) {
+    let home = TempHome::new("conversion-dispatch");
+    let root = home.path.canonicalize().unwrap();
+    let store = Store::new(root.clone());
+    let others = ["Research", "Notes"].map(|name| {
+        let folder = root.join(name);
+        fs::create_dir_all(&folder).unwrap();
+        workspaces::open_folder(&store, &folder).unwrap().id
+    });
+    let retire = |keep: &str| answer_of(&store, &call_of("retire_other_workspaces", json!({ "keepId": keep }))).map(|answer| answer.map_err(|refusal| refusal.code()));
+    checks.check("without the test app folder the command retires nothing", retire(&others[0]), Some(Err("bad-path")));
+    checks.check("and the registry keeps every row", registered_ids(&store).len(), 2);
+    let ask = |id: &str| answer_of(&store, &call_of("conversion_refusal", json!({ "id": id }))).and_then(|answer| answer.ok());
+    checks.check("conversion_refusal names the reason", ask(&others[0]).map(|reason| reason.is_string()), Some(true));
+    std::env::set_var("SUMI_APP_FOLDER", ".sumi-test");
+    let test_store = Store::new(root.clone());
+    let registered_elsewhere = workspaces::open_folder(&test_store, &root.join("Research")).unwrap().id;
+    checks.check("a registry home other than the test root is refused even on the test app folder", retire(&registered_elsewhere), Some(Err("bad-path")));
+    let test_root = root.join(".sumi-test-workspace");
+    fs::create_dir_all(&test_root).unwrap();
+    let kept = workspaces::open_folder(&test_store, &test_root).unwrap().id;
+    checks.check("conversion_refusal is null on the exact test root", ask(&kept), Some(Value::Null));
+    let retired = retire(&kept).and_then(|answer| answer.ok());
+    checks.check("the command retires the others on the exact test root", retired.map(|answer| answer["retiredIds"].as_array().map(Vec::len)), Some(Some(1)));
+    std::env::remove_var("SUMI_APP_FOLDER");
+}
+
 fn killed_between_write_and_rename(checks: &mut Checks) {
     let home = TempHome::new("crash");
     let store = home.store();
@@ -396,6 +515,12 @@ fn main() -> ExitCode {
     workspace_life(&mut checks);
     recent_folders(&mut checks);
     legacy_moves(&mut checks);
+    retirement_rules(&mut checks);
+    retired_does_not_return(&mut checks);
+    default_retired_still_opens_root(&mut checks);
+    root_must_keep_its_data_folder(&mut checks);
+    conversion_root_rules(&mut checks);
+    conversion_through_dispatch(&mut checks);
     killed_between_write_and_rename(&mut checks);
     println!("{} check(s) failed", checks.failed);
     if checks.failed == 0 {

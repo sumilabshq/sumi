@@ -10,6 +10,7 @@ pub enum Refusal {
     NoWorkspace { detail: String },
     NoFolder { detail: String },
     FolderNotFound { detail: String },
+    Retired { detail: String },
     StaleRev { current_rev: u64 },
     NewerVersion { on_disk_v: u64 },
     BadDoc { detail: String },
@@ -28,6 +29,7 @@ impl Refusal {
             Self::NoWorkspace { .. } => "no-workspace",
             Self::NoFolder { .. } => "no-folder",
             Self::FolderNotFound { .. } => "folder-not-found",
+            Self::Retired { .. } => "retired",
             Self::StaleRev { .. } => "stale-rev",
             Self::NewerVersion { .. } => "newer-version",
             Self::BadDoc { .. } => "bad-doc",
@@ -48,6 +50,7 @@ impl Refusal {
             | Self::NoWorkspace { detail }
             | Self::NoFolder { detail }
             | Self::FolderNotFound { detail }
+            | Self::Retired { detail }
             | Self::BadDoc { detail }
             | Self::BadLine { detail }
             | Self::BadCall { detail }
