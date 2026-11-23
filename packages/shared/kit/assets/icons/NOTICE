@@ -1,4 +1,4 @@
-The icon drawings in src/icon-table.js are Lucide
+The icon drawings in packages/shared/kit/src/icons/icon-table.ts are Lucide
 (https://github.com/lucide-icons/lucide), licensed under the ISC License, a copy
 of which sits beside this file.
 

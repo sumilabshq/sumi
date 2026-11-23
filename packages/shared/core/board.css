@@ -394,8 +394,8 @@
 		--h-row: 30px;
 		--h-md: 32px;
 		--h-lg: 36px;
-		--icon: 16px;
-		--icon-sm: 14px;
+		--icon: 13px;
+		--icon-sm: 12px;
 		--header-h: 44px;
 		--sidebar-w: 280px;
 		--sidebar-min: 200px;
@@ -1210,7 +1210,7 @@
 	--glass-tint: var(--soft-glass-fill);
 	--glass-panel: var(--soft-glass-fill);
 	--glass-blur: var(--soft-glass-blur);
-	--icon-stroke: 2;
+	--icon-stroke: 1.5;
 	--glass-edge: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 12%, transparent);
 	--glass-group: color-mix(in srgb, var(--foreground) 3.5%, var(--raise));
 	--shadow-raise: 0 1px 3px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.06);

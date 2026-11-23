@@ -15,7 +15,6 @@ export const LUCIDE_NAME_OF: Readonly<Record<string, string>> = {
 	update: "rotate-cw",
 	retry: "rotate-ccw",
 	chat: "message-square",
-	tick: "check",
 	dots: "ellipsis-vertical",
 	terminal: "square-terminal",
 	gear: "settings",

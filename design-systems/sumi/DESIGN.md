@@ -78,7 +78,7 @@ Inter (variable, weight 510, letter-spacing -0.01em) for everything people read;
 ## Component Stylings
 
 - **Row** (sidebar, menu, list): 30px, a 6px corner (`--r-sm`), hover by the menu glide, a 16px solid icon, 10px gap. Hover and keyboard focus: one light fill. Pressed: a stronger fill. Selected: the soft fill and 500.
-- **Icons**: Sumi's own apps use solid drawn icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
+- **Icons**: Hugeicons stroke-rounded at 12 to 13px, stroke 1.5; the kit's own apps may still draw solid icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
 - **Code block**: filled with the soft step, no border, mono 13px, syntax in muted colours, copy and wrap icons at the right.
 - **Inline code**: the soft fill, mono 13px, square, padding 2px 5px.
 - **Link**: ink-coloured text, underline on hover. A file path is a link and looks the same.
