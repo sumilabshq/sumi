@@ -37,45 +37,17 @@ const CYRILLIC_UNICODE_RANGE = "U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U
 
 const STUDIO_FONT_FACES: readonly FontFace[] = [
 	{
-		family: "IBM Plex Sans",
-		weight: "400",
+		family: "Inter",
+		weight: "100 900",
 		style: "normal",
-		file: "ibm-plex-sans/IBMPlexSans-400-latin.woff2",
+		file: "inter/InterVariable-latin.woff2",
 		unicodeRange: LATIN_UNICODE_RANGE,
 	},
 	{
-		family: "IBM Plex Sans",
-		weight: "500",
+		family: "Inter",
+		weight: "100 900",
 		style: "normal",
-		file: "ibm-plex-sans/IBMPlexSans-500-latin.woff2",
-		unicodeRange: LATIN_UNICODE_RANGE,
-	},
-	{
-		family: "IBM Plex Sans",
-		weight: "600",
-		style: "normal",
-		file: "ibm-plex-sans/IBMPlexSans-600-latin.woff2",
-		unicodeRange: LATIN_UNICODE_RANGE,
-	},
-	{
-		family: "IBM Plex Sans",
-		weight: "400",
-		style: "normal",
-		file: "ibm-plex-sans/ibm-plex-sans-cyrillic-400-normal.woff2",
-		unicodeRange: CYRILLIC_UNICODE_RANGE,
-	},
-	{
-		family: "IBM Plex Sans",
-		weight: "500",
-		style: "normal",
-		file: "ibm-plex-sans/ibm-plex-sans-cyrillic-500-normal.woff2",
-		unicodeRange: CYRILLIC_UNICODE_RANGE,
-	},
-	{
-		family: "IBM Plex Sans",
-		weight: "600",
-		style: "normal",
-		file: "ibm-plex-sans/ibm-plex-sans-cyrillic-600-normal.woff2",
+		file: "inter/InterVariable-cyrillic.woff2",
 		unicodeRange: CYRILLIC_UNICODE_RANGE,
 	},
 	{

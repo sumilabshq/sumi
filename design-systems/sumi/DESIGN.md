@@ -58,7 +58,7 @@ Everything else is fixed. The delight layers are drawn on the canvas's "Delight"
 
 ## Typography Rules
 
-IBM Plex Sans for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme; IBM Plex Serif, the one serif, for the voice: greetings, empty pages and a document's title. Plex Serif carries Cyrillic in roman and italic.
+Inter (variable, weight 510, letter-spacing -0.01em) for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme; IBM Plex Serif, the one serif, for the voice: greetings, empty pages and a document's title. Plex Serif carries Cyrillic in roman and italic.
 
 | Step       | Size / weight      | Use                                                       |
 | ---------- | ------------------ | --------------------------------------------------------- |
@@ -66,7 +66,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 | Page title | 30 / 500 serif     | a document's title in a pane                              |
 | Workspace  | 15 / 600           | the workspace name in the sidebar                         |
 | Chat       | 14 / 400, line 1.6 | every message, tool row, table, question and the composer |
-| UI         | 13 / 400           | sidebar rows, headers, menus, options                     |
+| UI         | 13 / 510           | sidebar rows, headers, menus, options                     |
 | Code       | 13 / 400 mono      | code blocks, inline code, commands in tool rows           |
 | Label      | 12 / 400           | section labels in the sidebar                             |
 
