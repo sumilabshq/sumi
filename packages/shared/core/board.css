@@ -316,6 +316,10 @@
 		--shadow-pop: 0 0 0 1px var(--line);
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
+		--shadow-page: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 1px 1.5px rgba(0, 0, 0, 0.1);
+		--shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+		--line-menu: rgba(0, 0, 0, 0.09);
+		--r-menu: 10px;
 		--blur-pop: none;
 		--blur-corner: blur(10px);
 		--viewer-ground: rgba(15, 15, 14, 0.94);
@@ -481,6 +485,9 @@
 		--shadow-pop: 0 0 0 1px var(--line);
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
+		--shadow-page: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 1px 1.5px rgba(0, 0, 0, 0.7);
+		--shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.45);
+		--line-menu: rgba(255, 255, 255, 0.09);
 
 		--selected: var(--soft);
 		--pick: #000000;
@@ -14831,12 +14838,12 @@ body.wg-tree-carrying .wg-tile-body {
 	--pop-motion: unfold;
 	padding: 4px;
 	line-height: 1.5;
-	border: 1px solid var(--line);
-	border-radius: var(--r-lg);
+	border: 1px solid var(--line-menu);
+	border-radius: var(--r-menu);
 	background: var(--overlay);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
-	box-shadow: none;
+	box-shadow: var(--shadow-menu);
 	font-size: var(--fs-13);
 	color: var(--text);
 }
@@ -16760,7 +16767,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	min-height: 0;
 	overflow: hidden;
 	background: var(--plate-fill, var(--plate));
-	box-shadow: var(--shadow-plate);
+	box-shadow: var(--shadow-page);
 	transition: background-color var(--dur-base) var(--ease-emphasized);
 }
 html:has([data-browser-pages-live]),

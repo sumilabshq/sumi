@@ -91,7 +91,7 @@ Inter (variable, weight 510, letter-spacing -0.01em) for everything people read;
 - **Questions**: one kind only, every question required. A block with the soft fill, the last thing in the chat: the mascot and "Sumi is waiting for you 1 of N", the question in 600, a line of why, numbered options (press 1–9, the number a filled square), "Or answer in your own words" with the caret, the next question as one quiet row. An answered question becomes a tool-group-like row "Asked 1 question" with the question and answer under the tree. Scrolled away from it, the arrow that scrolls to the latest message says "Back to questions".
 - **Composer**: the caret (a yellow block when focused, an outlined block when not), the hint, expand at the top right; below, `+` attach, model, effort, mode, folder, usage bar, and Send at the right.
 - **Send**: the one solid control: ink square with a paper arrow; an outline when the input is empty; a stop square while the agent works.
-- **Popup**: opaque paper in the double frame (Cube grammar), no shadow, no blur, rows 32px; a divider runs edge to edge; the highlighted row is the inverted block; the picked item ends with the mascot mark.
+- **Popup**: opaque paper, radius 10 (`--r-menu`), 1px `--line-menu` border, `--shadow-menu`, no blur, rows 32px; it scales from 0.85 to full out of its trigger in 70ms and back in 70ms; a divider runs edge to edge; the highlighted row is the inverted block; the picked item ends with the mascot mark.
 - **Data marks** (a plugin): `{meter done/total}` squares, the rest empty; `{meter passed/failed/total}` adds red ones; `{bar N%}`; `{trend a b c …}`; `{ok}` green, `{progress}` blue, `{fail}` red, `{neutral}` white, `{skip}` outline. The text always says the number too.
 
 ## Layout Principles
@@ -109,10 +109,11 @@ Inter (variable, weight 510, letter-spacing -0.01em) for everything people read;
 | Level        | What                        | Anatomy                                                                                                                                        |
 | ------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Paper        | the window, sidebars, panes | one colour, no edge; a fractal-noise grain at 8% and a radial light at 5% ink from the top centre, over everything, never catching the pointer |
-| Popup        | menus, pickers              | paper in the double frame, no shadow                                                                                                           |
+| Page         | the active tab, the main page | no border, `--shadow-page`: a 0.5px hairline and a 1px lift                                                                                  |
+| Popup        | menus, pickers              | paper, 1px `--line-menu` border, radius 10, `--shadow-menu`                                                                                    |
 | Command menu | the ⌘K menu                 | covers the whole window in the paper colour; no shadow, no blur                                                                                |
 
-Nothing casts a shadow. A line stands between panes, under a table header and as the two chat dividers; a code block is filled, never outlined.
+Only the active tab, the main page and popups cast a shadow. A line stands between panes, under a table header and as the two chat dividers; a code block is filled, never outlined.
 
 ## Do's and Don'ts
 
