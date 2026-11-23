@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, IconButton } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 import { ChoiceList } from "./choice-list.js";
 import type { TileProp } from "../model.js";
 import { bindingOf, typedIn, withFields, withTyped } from "../gateway/props.js";
@@ -31,9 +31,10 @@ export function sourceButton(state: SettingsState, key: string, spec: SettingsSp
 	if (spec.source) return null;
 	const isOpen = state.openRow === sourcesOpenKey(key);
 	return h(
-		IconButton,
+		Button,
 		{
-			size: "s",
+			shape: "square",
+			size: "sm",
 			key: "source",
 			label: WHERE_FROM,
 			className: "wg-set-pop-source",

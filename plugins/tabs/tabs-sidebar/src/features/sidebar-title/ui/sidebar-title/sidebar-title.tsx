@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import { appHost } from "@widgetarium/app-host/contract";
 import type { ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
+import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 
 const HIDE_SIDEBAR = "Hide sidebar";
 const SHOW_SIDEBAR = "Show sidebar";
@@ -15,8 +15,9 @@ export function SidebarTitle(): ReactNode {
 	const label = isDocked ? HIDE_SIDEBAR : SHOW_SIDEBAR;
 	return (
 		<div className="sumi-sidebar-title" data-title-floats={isDocked ? "beside" : "covering"}>
-			<IconButton
-				variant="ghost"
+			<Button
+				shape="square"
+				emphasis="ghost"
 				size="xs"
 				label={label}
 				{...tooltipMarks({ said: label })}
@@ -24,7 +25,7 @@ export function SidebarTitle(): ReactNode {
 				onClick={() => void toggle.run({ side: "left" })}
 			>
 				<Icon name="panel-left" size={ICON_PX} />
-			</IconButton>
+			</Button>
 		</div>
 	);
 }

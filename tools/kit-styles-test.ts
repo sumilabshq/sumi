@@ -12,7 +12,11 @@ check(
 	kitStyleRefusalsOf("a.css", ".row { mask-image: linear-gradient(#000000, transparent); }"),
 	[],
 );
-check("a kit component used as a component passes", kitStyleRefusalsOf("a.tsx", '<IconButton label="x" />'), []);
+check(
+	"a kit component used as a component passes",
+	kitStyleRefusalsOf("a.tsx", '<Button shape="square" label="x" />'),
+	[],
+);
 check("a kit selector is refused", kitStyleRefusalsOf("a.css", ".strip .wg-kit-icon { color: inherit; }"), [
 	"a.css:1 kit-selector: restyles a kit component from outside the kit; give the kit the state or variant",
 ]);
@@ -42,9 +46,9 @@ check(
 );
 
 const STRIP_TSX = [
-	'import { IconButton } from "@widgetarium/kit";',
+	'import { Button } from "@widgetarium/kit";',
 	'const ICON = "strip-icon is-new";',
-	"export const A = () => <IconButton className={cn(ICON, `tile-${place}`)} />;",
+	'export const A = () => <Button shape="square" className={cn(ICON, `tile-${place}`)} />;',
 ].join("\n");
 const KIT_CLASSES = new Set(kitClassesOf(STRIP_TSX));
 

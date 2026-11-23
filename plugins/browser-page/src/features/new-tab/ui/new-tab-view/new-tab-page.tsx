@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { Icon, IconButton, Input } from "@widgetarium/kit";
+import { Button, Icon, Input } from "@widgetarium/kit";
 
 export interface NewTabPageProps {
 	readonly onOpen: (typed: string) => void;
@@ -37,9 +37,16 @@ export function NewTabPage({ onOpen }: NewTabPageProps): ReactElement {
 					autoFocus
 					onChange={(event) => setTyped(event.target.value)}
 				/>
-				<IconButton type="submit" variant="ghost" size="xs" className="wg-browser-field-go" label={GO_LABEL}>
+				<Button
+					shape="square"
+					type="submit"
+					emphasis="ghost"
+					size="xs"
+					className="wg-browser-field-go"
+					label={GO_LABEL}
+				>
 					<Icon name="corner-down-left" size={16} />
-				</IconButton>
+				</Button>
 			</form>
 		</section>
 	);

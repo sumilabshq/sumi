@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { DialogClose } from "../dialog.js";
 import type { WindowState } from "../settings-window.js";
-import { Button, Icon, IconButton, Pill, Segmented, Sidebar, SidebarSheet } from "@widgetarium/kit";
+import { Button, Icon, Pill, Segmented, Sidebar, SidebarSheet } from "@widgetarium/kit";
 import type { SettingsTab } from "./use-settings-look.js";
 import { ZOOM_FLOOR, ZOOM_STEP, clamp } from "./canvas-input.js";
 import { actionGroup, commandDataGroups } from "./action-group.js";
@@ -104,8 +104,9 @@ export function zoomBar(state: WindowState): ReactElement {
 export function panel(state: WindowState): ReactElement {
 	if (state.folded) {
 		return h(
-			IconButton,
+			Button,
 			{
+				shape: "square",
 				key: "panel",
 				className: "wg-set-fold wg-kit-glass",
 				label: "Bring the settings back",

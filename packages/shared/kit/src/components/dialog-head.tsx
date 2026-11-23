@@ -1,7 +1,6 @@
 import { createElement as h, useContext } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "../icons/icon";
-import { IconButton } from "./icon-button";
+import { Button } from "./button";
 import type { DialogPanelProps } from "./dialog-panel";
 import { ModalIdsContext } from "./modal-ids-context";
 
@@ -16,9 +15,7 @@ export function DialogHead({ title, onClose }: Pick<DialogPanelProps, "title" | 
 				{title}
 			</span>
 			{onClose ? (
-				<IconButton variant="ghost" size="s" label={CLOSE_LABEL} onClick={onClose}>
-					<Icon name="x" />
-				</IconButton>
+				<Button shape="square" emphasis="ghost" size="sm" icon="x" label={CLOSE_LABEL} onClick={onClose} />
 			) : null}
 		</header>
 	);

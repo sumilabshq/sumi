@@ -5,5 +5,5 @@ import { EffortButton } from "./features/effort-picker/ui/effort-button/effort-b
 export const effortPicker = plugin("effort-picker")
 	.require(chat)
 	.apply((app) => {
-		app.use(chat).slots.optionsStart.add(EffortButton);
+		app.use(chat).slots.fieldOptions.add(EffortButton);
 	});

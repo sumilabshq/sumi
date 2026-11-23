@@ -1,4 +1,4 @@
-import { IconButton } from "widgetarium/kit";
+import { Button } from "widgetarium/kit";
 import { Glyph } from "./glyph";
 import type { TaskDialogProps } from "./types";
 
@@ -18,17 +18,18 @@ export function DialogTop({ onBoard, taskRef, navigator, onClose }: DialogTopPro
 				{onBoard ? ` · ${onBoard}` : ""}
 			</span>
 			<div className="otd-corner">
-				<IconButton
-					size="s"
+				<Button
+					shape="square"
+					size="sm"
 					label="Open the note"
 					title="Open the note"
 					onClick={() => navigator?.navigate?.(`/${taskRef}`)}
 				>
 					<Glyph name="expand" />
-				</IconButton>
-				<IconButton size="s" label="Close" title="Close" onClick={onClose}>
+				</Button>
+				<Button shape="square" size="sm" label="Close" title="Close" onClick={onClose}>
 					<Glyph name="close" />
-				</IconButton>
+				</Button>
 			</div>
 		</div>
 	);

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { MouseEvent, ReactElement } from "react";
-import { Icon, IconButton } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 import type { Template } from "./templates.js";
 
 export interface CreateButtonProps {
@@ -17,11 +17,13 @@ export function CreateButton({ template, isBusy, press }: CreateButtonProps): Re
 		press();
 	};
 	return h(
-		IconButton,
+		Button,
 		{
 			className: "wg-cat-go",
-			variant: "accent",
-			size: "s",
+			shape: "square",
+			emphasis: "solid",
+			tone: "brand",
+			size: "sm",
 			label: createLabelFor(template),
 			disabled: isBusy,
 			onClick: take,

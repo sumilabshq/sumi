@@ -1,0 +1,3 @@
+:is(.wg-root, .wg-portal) .wg-kit-btn.sumi-model-trigger {
+	--option-pad-end: var(--space-px);
+}

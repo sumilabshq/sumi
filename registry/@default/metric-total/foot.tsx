@@ -1,4 +1,4 @@
-import { IconButton } from "widgetarium/kit";
+import { Button } from "widgetarium/kit";
 import { AddButton } from "./add-button";
 import { ListGlyph } from "./list-glyph";
 import type { Band } from "./types";
@@ -9,9 +9,9 @@ export function Foot({ band, canAdd, onAdd, onList }: FootProps) {
 	return (
 		<div data-part="foot" className="mt3-foot">
 			{canAdd ? <AddButton band={band} onAdd={onAdd} /> : null}
-			<IconButton className="mt3-open-list" data-part="open-list" label="All records" onClick={onList}>
+			<Button shape="square" className="mt3-open-list" data-part="open-list" label="All records" onClick={onList}>
 				<ListGlyph part="open-list-icon" className="mt3-list-icon" />
-			</IconButton>
+			</Button>
 		</div>
 	);
 }

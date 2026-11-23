@@ -6,7 +6,7 @@ The component kit every widget and every screen is drawn with. Change a componen
 
 | Entry                      | What it gives                                                                                                                                                                        |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `@widgetarium/kit`         | `Card`, `Layout`, `ItemGroup`, `Grid`, `Button`, `IconButton`, `Badge`, `Heading`, `Field`, `Segmented`, `Tabs`, `Popover`, `Calendar`, `ProgressBar`, `Switch`, `Icon` and the rest |
+| `@widgetarium/kit`         | `Card`, `Layout`, `ItemGroup`, `Grid`, `Button`, `Badge`, `Heading`, `Field`, `Segmented`, `Tabs`, `Popover`, `Calendar`, `ProgressBar`, `Switch`, `Icon` and the rest |
 | `@widgetarium/kit/surface` | The plate context: how many plates stand above a component and which one it may wear                                                                                                 |
 | `@widgetarium/kit/plates`  | The plate laws: which surface may stand inside which, and how deep                                                                                                                   |
 | `@widgetarium/kit/icons`   | The Lucide icon table the kit's `Icon` draws behind its own glyphs                                                                                                                   |

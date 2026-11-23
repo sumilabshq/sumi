@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { sessions } from "@sumi/sessions/contract";
 import type { SessionRow as SessionRowData } from "@sumi/sessions/contract";
-import { Icon, IconButton, PopoverItem } from "@widgetarium/kit";
+import { Button, Icon, PopoverItem } from "@widgetarium/kit";
 import { useTabFace } from "@sumi/sumi-host-plugin";
 
 const ARCHIVE = "Archive";
@@ -44,19 +44,21 @@ export function SessionRow({ row, isCurrent, isArchived, onClose }: SessionRowPr
 			</PopoverItem>
 			{isHere ? (
 				<span className="sumi-sessions-actions">
-					<IconButton
-						variant="ghost"
-						size="xxs"
+					<Button
+						shape="square"
+						emphasis="ghost"
+						size="2xs"
 						className="sumi-sessions-action"
 						label={isArchived ? UNARCHIVE : ARCHIVE}
 						title={isArchived ? UNARCHIVE : ARCHIVE}
 						onClick={() => void archive.run({ chatId: row.chatId, isArchived: !isArchived })}
 					>
 						<Icon name={isArchived ? "archive-restore" : "archive"} size={ICON_PX} />
-					</IconButton>
-					<IconButton
-						variant="ghost"
-						size="xxs"
+					</Button>
+					<Button
+						shape="square"
+						emphasis="ghost"
+						size="2xs"
 						className="sumi-sessions-action"
 						data-confirming={isConfirming}
 						label={isConfirming ? CONFIRM_DELETE : DELETE}
@@ -71,7 +73,7 @@ export function SessionRow({ row, isCurrent, isArchived, onClose }: SessionRowPr
 						}}
 					>
 						{isConfirming ? CONFIRM_DELETE : <Icon name="trash" size={ICON_PX} />}
-					</IconButton>
+					</Button>
 				</span>
 			) : null}
 		</div>

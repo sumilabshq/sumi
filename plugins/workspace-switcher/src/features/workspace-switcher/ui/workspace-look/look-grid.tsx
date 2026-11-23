@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { IconButton } from "@widgetarium/kit";
+import { Button } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
@@ -25,10 +25,11 @@ export function LookGrid({ workspace, typed }: LookGridProps): ReactElement {
 	return (
 		<div className="sumi-ws-look-grid" role="listbox" aria-label={ICONS_LABEL}>
 			{choices.map(({ name, words }) => (
-				<IconButton
+				<Button
+					shape="square"
 					key={name}
-					variant="ghost"
-					size="s"
+					emphasis="ghost"
+					size="sm"
 					role="option"
 					label={words}
 					aria-selected={workspace.icon?.kind === "icon" && workspace.icon.name === name}
@@ -36,7 +37,7 @@ export function LookGrid({ workspace, typed }: LookGridProps): ReactElement {
 					onClick={() => void setIcon.run({ id: workspace.id, icon: { kind: "icon", name } })}
 				>
 					<WorkspaceGlyph icon={{ kind: "icon", name }} />
-				</IconButton>
+				</Button>
 			))}
 		</div>
 	);

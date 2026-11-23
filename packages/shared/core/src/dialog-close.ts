@@ -1,9 +1,9 @@
 import { createElement as h, useContext } from "react";
 import type { ButtonHTMLAttributes, ReactElement } from "react";
-import { cn, Icon, IconButton } from "@widgetarium/kit";
+import { Button, cn, Icon } from "@widgetarium/kit";
 import { DialogState } from "./dialog-state.js";
 
-export type DialogCloseProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "onClick"> & {
+export type DialogCloseProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "form" | "onClick"> & {
 	readonly className?: string;
 	readonly onClose?: () => void;
 	readonly label?: string;
@@ -13,9 +13,10 @@ export type DialogCloseProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "cl
 export function DialogClose({ className: cls, onClose, label = "Close", ...rest }: DialogCloseProps): ReactElement {
 	const state = useContext(DialogState);
 	return h(
-		IconButton,
+		Button,
 		{
-			size: "s",
+			shape: "square",
+			size: "sm",
 			...rest,
 			className: cn("wg-dialog-close", cls),
 			label,

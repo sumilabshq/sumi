@@ -38,7 +38,7 @@ export const BASE_KIT: readonly BaseKitEntry[] = [
 	{ name: "Kbd", group: "content", today: ["Kbd"] },
 	{ name: "Image", group: "content", today: [] },
 	{ name: "Pressable", group: "actions", today: ["Pressable"] },
-	{ name: "Button", group: "actions", today: ["Button", "IconButton", "ActionButton", "Toggle"] },
+	{ name: "Button", group: "actions", today: ["Button", "ActionButton", "Toggle"] },
 	{ name: "ButtonGroup", group: "actions", today: ["ButtonGroup"] },
 	{ name: "ToggleGroup", group: "actions", today: ["ToggleGroup", "Segmented"] },
 	{ name: "Form", group: "fields", today: [] },

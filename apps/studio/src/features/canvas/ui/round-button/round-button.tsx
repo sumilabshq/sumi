@@ -1,7 +1,6 @@
 import { createElement as h } from "react";
 import type { ButtonHTMLAttributes, ReactElement } from "react";
-import { IconButton } from "@widgetarium/kit";
-import type { IconButtonSize, IconButtonVariant } from "@widgetarium/kit";
+import { Button } from "@widgetarium/kit";
 import { useTopBarLook } from "../../lib/top-bar-look-context.js";
 import { Tip } from "../tip/tip.js";
 import { HeaderRoundButton } from "./header-round-button.js";
@@ -9,7 +8,7 @@ import { HeaderRoundButton } from "./header-round-button.js";
 export type RoundTone = "ink" | "raise" | "plate";
 export type RoundSize = "l" | "m";
 
-export interface RoundButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "type"> {
+export interface RoundButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "form" | "type"> {
 	readonly label: string;
 	readonly tip?: string;
 	readonly tone: RoundTone;
@@ -17,15 +16,15 @@ export interface RoundButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonEl
 	readonly isBusy?: boolean;
 }
 
-const VARIANT: Readonly<Record<RoundTone, IconButtonVariant>> = {
-	ink: "primary",
-	raise: "raised",
-	plate: "neutral",
-};
+const LOOK = {
+	ink: { emphasis: "solid" },
+	raise: { emphasis: "raised" },
+	plate: { emphasis: "soft" },
+} as const;
 
-const SIZE: Readonly<Record<RoundSize, IconButtonSize>> = {
-	l: "l",
-	m: "s",
+const SIZE: Readonly<Record<RoundSize, "lg" | "sm">> = {
+	l: "lg",
+	m: "sm",
 };
 
 const BUSY = "cv:aria-busy:motion-safe:animate-canvas-pulse";
@@ -45,8 +44,9 @@ export function RoundButton({
 
 	return (
 		<Tip label={tip}>
-			<IconButton
-				variant={VARIANT[tone]}
+			<Button
+				shape="square"
+				{...LOOK[tone]}
 				size={SIZE[size]}
 				label={label}
 				aria-busy={isBusy || undefined}
@@ -54,7 +54,7 @@ export function RoundButton({
 				{...rest}
 			>
 				{children}
-			</IconButton>
+			</Button>
 		</Tip>
 	);
 }

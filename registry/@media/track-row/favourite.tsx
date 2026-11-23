@@ -1,14 +1,15 @@
-import { Icon, IconButton } from "widgetarium/kit";
+import { Button, Icon } from "widgetarium/kit";
 
 const ADD_TO_FAVOURITES = "Add to favourites";
 const REMOVE_FROM_FAVOURITES = "Remove from favourites";
 
 export function Favourite({ isOn, onPress }: { isOn: boolean; onPress: () => void }) {
 	return (
-		<IconButton
+		<Button
+			shape="square"
 			className="mt-fav"
-			size="s"
-			variant="ghost"
+			size="sm"
+			emphasis="ghost"
 			data-on={isOn ? "" : undefined}
 			aria-pressed={isOn ? "true" : "false"}
 			label={isOn ? REMOVE_FROM_FAVOURITES : ADD_TO_FAVOURITES}
@@ -18,6 +19,6 @@ export function Favourite({ isOn, onPress }: { isOn: boolean; onPress: () => voi
 			}}
 		>
 			<Icon name="heart" size={15} />
-		</IconButton>
+		</Button>
 	);
 }

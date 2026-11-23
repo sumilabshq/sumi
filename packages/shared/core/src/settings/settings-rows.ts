@@ -4,7 +4,6 @@ import {
 	Button,
 	Input,
 	Icon,
-	IconButton,
 	Popover,
 	PopoverItem,
 	Row,
@@ -76,9 +75,10 @@ export function valueRow(parts: ValueRowParts): ReactElement {
 
 export function enterButton(state: EnteringState, step: MountStep): ReactElement {
 	return h(
-		IconButton,
+		Button,
 		{
-			size: "s",
+			shape: "square",
+			size: "sm",
 			key: "enter",
 			className: "wg-set-enter",
 			label: "Open its own settings",

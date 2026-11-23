@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Input, Icon, IconButton, SidebarGroup, SidebarRow, Switch } from "@widgetarium/kit";
+import { Input, Button, Icon, SidebarGroup, SidebarRow, Switch } from "@widgetarium/kit";
 import type { RefDescription } from "../gateway/refs.js";
 import {
 	TARGET_FIELD,
@@ -95,14 +95,15 @@ function sourcesToggle(state: SettingsState, name: string, sourcesOpen: boolean)
 	const onClick = (): void => state.openEditor(sourcesOpen ? popKeyOf(name) : sourcesKeyOf(name));
 	const className = "wg-set-pop-source";
 	const said = {
-		size: "s" as const,
+		shape: "square" as const,
+		size: "sm" as const,
 		key: "source",
 		label: WHERE_IT_ACTS,
 		className,
 		"aria-pressed": sourcesOpen,
 		onClick,
 	};
-	return h(IconButton, said, h(Icon, { name: "database" }));
+	return h(Button, said, h(Icon, { name: "database" }));
 }
 
 function implementationChoices(state: SettingsState, name: string, binding: CommandBinding): ReactNode[] {

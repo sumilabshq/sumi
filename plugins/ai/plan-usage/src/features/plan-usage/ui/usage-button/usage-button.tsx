@@ -25,8 +25,9 @@ export function UsageButton({ chat, surface }: ComposerOptionProps): ReactElemen
 		<Popover isPortaled>
 			<PopoverTrigger asChild>
 				<Button
-					variant="ghost"
+					variant="secondary"
 					size="xs"
+					form="round"
 					className="sumi-usage-button"
 					aria-label={
 						first === null ? usage.label : USED.replace("{label}", usage.label).replace("{used}", percentOf(first.used))

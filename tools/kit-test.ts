@@ -683,7 +683,7 @@ let exited = 0;
 render(
 	h(
 		Kit.Popover,
-		{ trigger: h(Kit.IconButton, { label: "More" }, "…"), onExited: () => (exited += 1) },
+		{ trigger: h(Kit.Button, { shape: "square", label: "More" }, "…"), onExited: () => (exited += 1) },
 		h(Kit.PopoverItem, { checked: true }, "Rename"),
 	),
 	host,
@@ -1153,7 +1153,7 @@ check(
 done.click();
 check("and it is a button again, pressable", pressed, 1);
 
-render(h(Kit.IconButton, { label: "Save", isLoading: true }, h(Kit.Icon, { name: "plus" })), host);
+render(h(Kit.Button, { shape: "square", label: "Save", isLoading: true }, h(Kit.Icon, { name: "plus" })), host);
 check(
 	"an icon button loads the same way, its icon stepping aside",
 	[Boolean(host.querySelector(".wg-kit-spinner")), foundTag(host, "button", "button").disabled],
@@ -1274,7 +1274,6 @@ check(
 
 const surface = [
 	"Button",
-	"IconButton",
 	"Badge",
 	"Spinner",
 	"Emblem",

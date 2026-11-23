@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import type { BoardColumn as Column, TaskCard as Card } from "@widgetarium/tasks/contract";
-import { Button, Icon, IconButton } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 import type { TasksView } from "../../lib/use-tasks-view.js";
 import { StatusGlyph } from "../status-glyph/status-glyph.js";
 import { TaskCard } from "../task-card/task-card.js";
@@ -57,8 +57,8 @@ function headEndOf(column: Column, view: TasksView, fold: () => void): ReactNode
 	}
 
 	return (
-		<IconButton variant="ghost" size="xs" label={FOLD.replace("{status}", column.label)} onClick={fold}>
+		<Button shape="square" emphasis="ghost" size="xs" label={FOLD.replace("{status}", column.label)} onClick={fold}>
 			<Icon name="chevrons-left" size={14} />
-		</IconButton>
+		</Button>
 	);
 }

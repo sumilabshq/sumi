@@ -1,3 +1,4 @@
 .sumi-composer-expand-toggle {
 	flex: none;
+	margin-inline-end: calc(-1 * ((var(--control-xxs) - var(--icon-sm, 14px)) / 2 + var(--icon-sm, 14px) / 12));
 }

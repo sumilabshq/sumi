@@ -15,7 +15,7 @@ import {
 	useData,
 } from "widgetarium";
 import { z } from "zod";
-import { Button, FormFields, Icon, IconButton, isDraftComplete, valuesOfDraft } from "widgetarium/kit";
+import { Button, FormFields, Icon, isDraftComplete, valuesOfDraft } from "widgetarium/kit";
 import type { FormDraft } from "widgetarium/kit";
 import { FormFieldSchema, presetValues } from "@default/lib";
 
@@ -44,9 +44,16 @@ const AddButton = createWidget({
 				{label}
 			</Button>
 		) : (
-			<IconButton label={reason ?? title} variant="accent" disabled={!allowed.can} onClick={() => setOpen(true)}>
+			<Button
+				shape="square"
+				label={reason ?? title}
+				emphasis="solid"
+				tone="brand"
+				disabled={!allowed.can}
+				onClick={() => setOpen(true)}
+			>
 				<Icon name="plus" />
-			</IconButton>
+			</Button>
 		);
 		const add = async (values: Record<string, unknown>) => {
 			const named = { ...presetValues(preset, new Date()), ...values };

@@ -3,6 +3,7 @@
 	--frame: #ffffff;
 	--plate: #ffffff;
 	--soft: #f5f5f5;
+	--field: #fbfbfb;
 	--sunken: rgba(21, 21, 19, 0.045);
 	--overlay: #ffffff;
 	--text: #151513;
@@ -168,6 +169,7 @@
 	--frame: #000000;
 	--plate: #000000;
 	--soft: #0e0e0e;
+	--field: #060606;
 	--sunken: rgba(233, 230, 222, 0.05);
 	--overlay: #000000;
 	--text: #e9e6de;

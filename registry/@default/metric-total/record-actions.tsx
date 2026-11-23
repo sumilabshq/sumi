@@ -1,5 +1,5 @@
 import type { RecordRef } from "widgetarium";
-import { Icon, IconButton } from "widgetarium/kit";
+import { Button, Icon } from "widgetarium/kit";
 import { Stroked } from "./stroked";
 import type { Allowed, Listed } from "./types";
 
@@ -16,21 +16,23 @@ export function RecordActions({ row, allowed, onEdit, onDelete }: RecordActionsP
 	return (
 		<span data-part="record-actions" className="mt3-record-actions">
 			{allowed.canEdit ? (
-				<IconButton
-					size="s"
-					variant="raised"
+				<Button
+					shape="square"
+					size="sm"
+					emphasis="raised"
 					data-part="record-edit"
 					className="mt3-record-btn"
 					label="Edit"
 					onClick={() => onEdit(row)}
 				>
 					<Icon name="pencil" size={15} className="mt3-record-icon" />
-				</IconButton>
+				</Button>
 			) : null}
 			{allowed.canDelete ? (
-				<IconButton
-					size="s"
-					variant="raised"
+				<Button
+					shape="square"
+					size="sm"
+					emphasis="raised"
 					data-part="record-delete"
 					className="mt3-record-btn"
 					label="Delete"
@@ -39,7 +41,7 @@ export function RecordActions({ row, allowed, onEdit, onDelete }: RecordActionsP
 					<Stroked className="mt3-record-icon" size={15} weight={1.6} join>
 						<path d={DELETE_BIN} />
 					</Stroked>
-				</IconButton>
+				</Button>
 			) : null}
 		</span>
 	);

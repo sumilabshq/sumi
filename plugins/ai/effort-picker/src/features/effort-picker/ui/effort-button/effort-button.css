@@ -1,0 +1,5 @@
+:is(.wg-root, .wg-portal) .wg-kit-btn.sumi-effort-trigger,
+:is(.wg-root, .wg-portal) .wg-kit-select-trigger.sumi-effort-trigger {
+	--option-pad-start: var(--space-px);
+	color: var(--text-3);
+}

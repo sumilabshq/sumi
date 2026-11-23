@@ -6,11 +6,11 @@ import { Icon } from "../icons/icon";
 import { cn } from "../utils/cn";
 import type { ScrollEngine } from "../utils/message-scroll-engine";
 import { wornWord } from "../utils/surface";
-import { IconButton } from "./icon-button";
-import type { IconButtonProps } from "./icon-button";
+import { Button } from "./button";
+import type { SquareButtonProps } from "./button";
 import { useMessageScrollerState } from "./message-scroller-context";
 
-export interface MessageScrollerButtonProps extends IconButtonProps {
+export interface MessageScrollerButtonProps extends SquareButtonProps {
 	readonly direction?: ScrollDirection | undefined;
 	readonly behavior?: ScrollBehavior | undefined;
 }
@@ -19,31 +19,32 @@ interface EdgeJump {
 	readonly engine: ScrollEngine;
 	readonly toward: ScrollDirection;
 	readonly behavior: ScrollBehavior;
-	readonly onClick: IconButtonProps["onClick"];
+	readonly onClick: SquareButtonProps["onClick"];
 }
 
 export function MessageScrollerButton(props: MessageScrollerButtonProps): ReactElement {
-	const { direction, behavior = "smooth", variant = "raised", label, onClick, className, children, ...rest } = props;
+	const { direction, behavior = "smooth", label, onClick, className, children, ...rest } = props;
 	const { engine, report } = useMessageScrollerState();
 	const toward = wornWord(direction, SCROLL_DIRECTION_WORD);
 	return (
-		<IconButton
+		<Button
+			shape="square"
+			emphasis="raised"
 			data-slot="message-scroller-button"
 			data-direction={toward}
 			data-active={String(report[toward])}
 			inert={!report[toward]}
 			label={label ?? SCROLL_BUTTON_LABELS[toward]}
-			variant={variant}
 			{...rest}
 			className={cn("wg-kit-scroller-button", className)}
 			onClick={edgeJumpHandlerOf({ engine, toward, behavior, onClick })}
 		>
 			{children ?? <Icon name={toward === "end" ? "arrow-down" : "arrow-up"} />}
-		</IconButton>
+		</Button>
 	);
 }
 
-function edgeJumpHandlerOf({ engine, toward, behavior, onClick }: EdgeJump): IconButtonProps["onClick"] {
+function edgeJumpHandlerOf({ engine, toward, behavior, onClick }: EdgeJump): SquareButtonProps["onClick"] {
 	return (event) => {
 		onClick?.(event);
 		if (event.defaultPrevented) return;

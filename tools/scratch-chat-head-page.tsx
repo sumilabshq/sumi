@@ -48,9 +48,9 @@ const fills = new SlotFills([
 	{ slot: "chat.head-title", pluginId: "chat-title", kind: "replace" as const, component: HeadTitle },
 	{ slot: "chat.head-tools", pluginId: "sessions", kind: "add" as const, component: SessionsChevron },
 	{ slot: "chat.empty-options", pluginId: "sessions", kind: "add" as const, component: SessionsPicker },
-	{ slot: "chat.options-start", pluginId: "model-picker", kind: "add" as const, component: () => <StubPicker said="Opus" /> },
-	{ slot: "chat.options-start", pluginId: "effort-picker", kind: "add" as const, component: () => <StubPicker said="Medium" /> },
-	{ slot: "chat.options-start", pluginId: "permission-mode", kind: "add" as const, component: () => <StubPicker said="Auto" /> },
+	{ slot: "chat.field-options", pluginId: "model-picker", kind: "add" as const, component: () => <StubPicker said="Opus" /> },
+	{ slot: "chat.field-options", pluginId: "effort-picker", kind: "add" as const, component: () => <StubPicker said="Medium" /> },
+	{ slot: "chat.field-options", pluginId: "permission-mode", kind: "add" as const, component: () => <StubPicker said="Auto" /> },
 ]);
 
 const MESSAGES = Array.from({ length: 14 }, (_, at) => `Message ${String(at + 1)}: a line of the conversation scrolled under the header.`);

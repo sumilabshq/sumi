@@ -5,5 +5,5 @@ import { ModelButton } from "./features/model-picker/ui/model-button/model-butto
 export const modelPicker = plugin("model-picker")
 	.require(chat)
 	.apply((app) => {
-		app.use(chat).slots.optionsStart.add(ModelButton);
+		app.use(chat).slots.fieldOptions.add(ModelButton);
 	});

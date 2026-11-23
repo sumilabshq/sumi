@@ -951,30 +951,16 @@
 	display: flex;
 	box-sizing: border-box;
 	flex-direction: column;
-	gap: var(--space-2);
+	gap: var(--space-2-5);
 	margin: var(--space-none) var(--chat-gutter) var(--space-1);
-	padding: var(--space-3);
-	border-radius: var(--plate-radius);
+	padding: var(--space-3) var(--space-2-5) var(--space-2-5) var(--space-3-5);
+	border-radius: var(--r-xl);
 	isolation: isolate;
-	background: none;
+	background: var(--field);
 	transition: border-radius var(--dur-slow) var(--ease-emphasized);
 	box-shadow: none;
 	cursor: text;
-	border: 0;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-field::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: -1;
-	box-sizing: border-box;
-	border: 1px solid var(--soft-glass-edge);
-	border-radius: inherit;
-	background: var(--soft-glass-fill);
-	-webkit-backdrop-filter: var(--soft-glass-blur);
-	backdrop-filter: var(--soft-glass-blur);
-	pointer-events: none;
+	border: 1px solid var(--divider);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working {
@@ -1007,7 +993,7 @@
 	flex: 1;
 	box-sizing: border-box;
 	min-width: 0;
-	min-height: 20px;
+	min-height: var(--space-5-5);
 	max-height: 200px;
 	padding: var(--space-none);
 	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
@@ -1028,7 +1014,7 @@
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar {
 	display: flex;
 	align-items: center;
-	gap: var(--space-none);
+	gap: var(--space-0-5);
 	margin-top: auto;
 	min-width: 0;
 	white-space: nowrap;
@@ -1077,7 +1063,7 @@
 	height: var(--h-sm);
 	padding: var(--space-none);
 	cursor: pointer;
-	margin: var(--space-none) var(--space-1) var(--space-none) var(--space-none);
+	margin: var(--space-none) var(--space-none) var(--space-none) calc(-1 * var(--space-2) - var(--space-px));
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-chevron {
@@ -1103,15 +1089,16 @@
 :is(.wg-root, .wg-portal) .wg-studio-ai-stop-square {
 	width: 7px;
 	height: 7px;
+	border-radius: calc(var(--r-xs) / 2);
 	background: var(--plate);
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-send-play {
-	width: 9px;
-	height: 10px;
-	margin-left: var(--space-0-5);
-	background: currentColor;
-	clip-path: polygon(0 0, 100% 50%, 0 100%);
+:is(.wg-root, .wg-portal) .wg-studio-ai-send.wg-kit-icon.is-primary[aria-disabled="true"]::before {
+	background: var(--active);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-send.wg-kit-icon.is-primary[aria-disabled="true"] {
+	color: var(--text-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-strip {
@@ -1119,14 +1106,38 @@
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-strip > :first-child {
-	margin-inline-start: var(--space-none);
+	margin-inline-start: -5px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-strip > :first-child .wg-kit-btn > .wg-kit-icon-glyph:first-child {
+	display: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field-bar :is(.wg-kit-btn, .wg-kit-select-trigger):not(.wg-kit-icon) {
+	height: var(--h-sm);
+	padding-inline: var(--option-pad-start, var(--space-2)) var(--option-pad-end, var(--space-2));
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field-bar .wg-kit-select-chevron {
+	display: none;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar .sumi-usage-button {
 	justify-content: center;
 	width: var(--h-sm);
-	margin-right: var(--space-1);
+	height: var(--h-sm);
+	margin-right: var(--space-1-5);
 	padding: var(--space-none);
+	--option-pad-start: var(--space-none);
+	--option-pad-end: var(--space-none);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-plus.wg-kit-icon {
+	color: var(--text);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-strip .wg-kit-btn {
+	color: var(--text-2);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments {

@@ -1,4 +1,4 @@
-import { ActionButton, Button, ButtonLabel, IconButton, ShowMore, Spinner } from "./components/button";
+import { ActionButton, Button, ButtonLabel, ShowMore, Spinner } from "./components/button";
 import { Badge, Count, Pill } from "./components/badge";
 
 import { Calendar } from "./components/calendar";
@@ -129,7 +129,6 @@ export const Kit = {
 	variants,
 	Button,
 	ButtonLabel,
-	IconButton,
 	Badge,
 	Spinner,
 	Emblem,

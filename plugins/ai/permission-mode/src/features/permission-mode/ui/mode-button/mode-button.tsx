@@ -4,5 +4,5 @@ import { ComposerOptionSelect } from "@sumi/chat-plugin";
 import type { ComposerOptionProps } from "@sumi/chat-plugin";
 
 export function ModeButton(props: ComposerOptionProps): ReactElement {
-	return <ComposerOptionSelect {...props} optionKey="mode" align="start" />;
+	return <ComposerOptionSelect {...props} optionKey="mode" align="start" form="round" />;
 }

@@ -1,4 +1,4 @@
-import { Icon, IconButton } from "widgetarium/kit";
+import { Button, Icon } from "widgetarium/kit";
 
 const MONTHS = [
 	"January",
@@ -26,16 +26,16 @@ export function MonthHead({
 }) {
 	return (
 		<div className="hm-head">
-			<IconButton size="s" label="Previous month" onClick={() => onShift(-1)}>
+			<Button shape="square" size="sm" label="Previous month" onClick={() => onShift(-1)}>
 				<Icon name="chevron" size={15} className="hm-flip" />
-			</IconButton>
+			</Button>
 			<span className="hm-mid">
 				<span className="hm-title">{`${MONTHS[shown.getMonth()]} ${shown.getFullYear()}`}</span>
 				{caption === "" ? null : <span className="hm-note">{caption}</span>}
 			</span>
-			<IconButton size="s" label="Next month" onClick={() => onShift(1)}>
+			<Button shape="square" size="sm" label="Next month" onClick={() => onShift(1)}>
 				<Icon name="chevron" size={15} />
-			</IconButton>
+			</Button>
 		</div>
 	);
 }

@@ -19,8 +19,8 @@ import { SendButton } from "./send-button.js";
 export interface ComposerProps {
 	readonly busy: boolean;
 	readonly strip?: ReactNode;
+	readonly fieldOptions?: ReactNode;
 	readonly meter?: ReactNode;
-	readonly isFirst: boolean;
 	readonly attached: Attached | null;
 	readonly onSend: (said: string) => Promise<boolean>;
 	readonly onStop: () => void;
@@ -30,9 +30,8 @@ export interface ComposerProps {
 	readonly onCancelEdit: () => void;
 }
 
-const FIRST_PLACEHOLDER = "Describe what to build or change ↵ send ⇧↵ new line / commands";
-const NEXT_PLACEHOLDER = "Ask for the next change ↵ send ⇧↵ new line";
-const BUSY_PLACEHOLDER = "Add to the queue ↵ queues it";
+const ASK_PLACEHOLDER = "Ask anything, / for actions";
+const BUSY_PLACEHOLDER = "Add to the queue, / for actions";
 const EDIT_PLACEHOLDER = "Edit the queued message";
 const EDITING = "Editing a queued message";
 const EDIT_SAVES = "· ↵ saves it in its place, your draft comes back after";
@@ -42,8 +41,8 @@ const CANCEL = "Cancel";
 export function Composer({
 	busy,
 	strip = null,
+	fieldOptions = null,
 	meter = null,
-	isFirst,
 	attached,
 	onSend,
 	onStop,
@@ -89,7 +88,7 @@ export function Composer({
 						className={isBoxTextHidden ? "wg-studio-ai-box is-text-hidden" : "wg-studio-ai-box"}
 						rows={1}
 						value={draft}
-						placeholder={placeholderOf({ isFirst, busy, isEditing: editing !== null, hint })}
+						placeholder={placeholderOf({ busy, isEditing: editing !== null, hint })}
 						onChange={onChange}
 						onKeyDown={(event) => {
 							if (takesKey(event)) {
@@ -110,6 +109,7 @@ export function Composer({
 				</div>
 				<div className="wg-studio-ai-field-bar">
 					<ComposerTools />
+					{fieldOptions}
 					<span className="wg-studio-ai-bar-space" />
 					{meter}
 					<SendButton state={state} isEditing={editing !== null} onSend={sendDraft} onStop={onStop} />
@@ -128,12 +128,10 @@ function fieldClassOf(busy: boolean): string {
 }
 
 function placeholderOf({
-	isFirst,
 	busy,
 	isEditing,
 	hint,
 }: {
-	readonly isFirst: boolean;
 	readonly busy: boolean;
 	readonly isEditing: boolean;
 	readonly hint: string | null;
@@ -150,7 +148,7 @@ function placeholderOf({
 		return hint;
 	}
 
-	return isFirst ? FIRST_PLACEHOLDER : NEXT_PLACEHOLDER;
+	return ASK_PLACEHOLDER;
 }
 
 function editNoteOf(editing: QueuedShown): string {

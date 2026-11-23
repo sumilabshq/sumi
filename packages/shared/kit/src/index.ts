@@ -1,6 +1,6 @@
 export { Kit } from "./kit-object";
 
-export { ActionButton, Button, ButtonLabel, IconButton, ShowMore, Spinner } from "./components/button";
+export { ActionButton, Button, ButtonLabel, ShowMore, Spinner } from "./components/button";
 export { Badge, Count, Pill } from "./components/badge";
 export { TextLink } from "./components/text-link";
 export { Pressable } from "./components/pressable";

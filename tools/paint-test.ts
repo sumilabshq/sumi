@@ -386,7 +386,7 @@ function sideReach(value) {
 const KIT_PROBE = `
 import { createElement as h } from "react";
 import { render } from "./packages/shared/core/src/engine/render.js";
-import { Button, cardClass, Icon, IconButton, List, PlaceholderMark, Row, markOf } from "./packages/shared/kit/src/index.ts";
+import { Button, cardClass, Icon, List, PlaceholderMark, Row, markOf } from "./packages/shared/kit/src/index.ts";
 const MARK_SEED = "Kind of Blue";
 const marked = (id, props) => h("div", { key: id, id }, h(PlaceholderMark, { seed: MARK_SEED, ...props }));
 render(
@@ -396,14 +396,14 @@ render(
 			h(Button, { key: "accent", id: "accent", variant: "accent" }, "Save"),
 			h(Button, { key: "plain", id: "plain", variant: "plain" }, "Cancel"),
 			h(Button, { key: "danger", id: "danger", variant: "danger" }, "Discard"),
-			h(IconButton, { key: "icon", id: "icon" }, h(Icon, { name: "close" })),
-			h(IconButton, { key: "glass", id: "glass", variant: "glass" }, h(Icon, { name: "close" })),
+			h(Button, { key: "icon", id: "icon", shape: "square", label: "Close" }, h(Icon, { name: "close" })),
+			h(Button, { key: "glass", id: "glass", shape: "square", emphasis: "glass", label: "Close" }, h(Icon, { name: "close" })),
 		]),
 		h(List, { key: "list", style: { width: "320px" } }, [
 			h(Row, { key: "row" }, [
 				h("span", { key: "label", className: "wg-kit-row-label" }, "In a group"),
 				h(Button, { key: "rowbutton", id: "row-button" }, "Open"),
-				h(IconButton, { key: "rowicon", id: "row-icon" }, h(Icon, { name: "close" })),
+				h(Button, { key: "rowicon", id: "row-icon", shape: "square", label: "Close" }, h(Icon, { name: "close" })),
 			]),
 		]),
 		h("div", { key: "plate", id: "plain-card", className: cardClass({}), style: { width: "240px", height: "80px" } }, "A plain light card"),

@@ -18,6 +18,7 @@ export const chat = pluginWithSlots(definition, {
 		headTools: listPluginSlot<{ readonly chatId: never }>("chat.head-tools"),
 		optionsStart: listPluginSlot<{ readonly chat: never; readonly surface: never }>("chat.options-start"),
 		emptyOptions: listPluginSlot<{ readonly chat: never }>("chat.empty-options"),
+		fieldOptions: listPluginSlot<{ readonly chat: never; readonly surface: never }>("chat.field-options"),
 		optionsEnd: listPluginSlot<{ readonly chat: never; readonly surface: never }>("chat.options-end"),
 	},
 });

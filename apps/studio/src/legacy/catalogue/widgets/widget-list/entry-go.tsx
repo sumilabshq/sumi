@@ -1,5 +1,5 @@
 import { createElement as h } from "react";
-import { Icon, IconButton } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 import { EntryRing } from "./entry-ring.js";
 import type { EntryState, Job } from "./types.js";
 
@@ -12,6 +12,10 @@ const GO_CLASS = {
 
 const GLYPH = { add: "plus", install: "download", update: "refresh-cw", failed: "rotate-ccw" } as const;
 
+const ADD_LOOK = { emphasis: "solid", tone: "brand" } as const;
+
+const GHOST_LOOK = { emphasis: "ghost" } as const;
+
 interface EntryGoProps {
 	readonly busyJob: Job | null;
 	readonly state: EntryState;
@@ -22,10 +26,11 @@ interface EntryGoProps {
 export function EntryGo({ busyJob, state, label, press }: EntryGoProps) {
 	if (busyJob) return <EntryRing job={busyJob} label={label} />;
 	return (
-		<IconButton
+		<Button
+			shape="square"
 			className={GO_CLASS[state]}
-			variant={state === "add" ? "accent" : "ghost"}
-			size="s"
+			{...(state === "add" ? ADD_LOOK : GHOST_LOOK)}
+			size="sm"
 			label={label}
 			onClick={(event) => {
 				event.stopPropagation();
@@ -33,6 +38,6 @@ export function EntryGo({ busyJob, state, label, press }: EntryGoProps) {
 			}}
 		>
 			<Icon name={GLYPH[state]} size={15} />
-		</IconButton>
+		</Button>
 	);
 }

@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { Icon, IconButton, copyText } from "@widgetarium/kit";
+import { Icon, Button, copyText } from "@widgetarium/kit";
 
 export interface TaskIdProps {
 	readonly id: string;
@@ -15,8 +15,9 @@ export function TaskId({ id }: TaskIdProps): ReactElement {
 		<span className="wg-tasks-id wg-tasks-mono" data-tasks-id="">
 			{id}
 			<span className="wg-tasks-id-copy">
-				<IconButton
-					variant="ghost"
+				<Button
+					shape="square"
+					emphasis="ghost"
 					size="xs"
 					label={isCopied ? COPIED : COPY_ID}
 					isDone={isCopied}
@@ -24,7 +25,7 @@ export function TaskId({ id }: TaskIdProps): ReactElement {
 					onClick={() => void copyText(id).then(setCopied)}
 				>
 					<Icon name={isCopied ? "check" : "copy"} size={12} />
-				</IconButton>
+				</Button>
 			</span>
 		</span>
 	);
