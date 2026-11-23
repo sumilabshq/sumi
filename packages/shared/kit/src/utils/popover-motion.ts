@@ -2,6 +2,7 @@ import { CONTENT_DELAY_MS, CONTENT_MS, EXIT_GUARD_MS, GROW_MS, LAND_MARGIN_MS } 
 import type { Placement } from "../constants/popover";
 import { viewportSize } from "./floating-placement";
 import { foldJelly, liveJelly, wantsJelly } from "./jelly-throw";
+import { scaleIn, scaleOut, wantsScale } from "./pop-scale";
 import { unfoldIn, unfoldOut, wantsUnfold } from "./pop-unfold";
 import { laidFrameOf, wearAnchorWidth, wearSpot } from "./wear-spot";
 import { prefersReducedMotion } from "./reduced-motion";
@@ -45,6 +46,7 @@ export function enterPanel(panel: HTMLElement, anchor: HTMLElement, placement: P
 	const placed = placePopoverPanel(panel, anchor.getBoundingClientRect(), placement);
 	anchor.style.visibility = placement.hidesTrigger ? "hidden" : "";
 	if (prefersReducedMotion()) return undefined;
+	if (wantsScale(panel)) return scaleIn(panel);
 	if (wantsUnfold(panel)) return unfoldIn(panel);
 	if (wantsJelly(panel)) return liveJelly(panel, anchor.getBoundingClientRect());
 	const seat = seatOnAnchor(anchor, placed);
@@ -64,6 +66,7 @@ export function enterPanel(panel: HTMLElement, anchor: HTMLElement, placement: P
 }
 
 export function exitPanel(panel: HTMLElement, anchor: HTMLElement, done: () => void): StopMotion {
+	if (wantsScale(panel)) return scaleOut(panel, done);
 	if (wantsUnfold(panel)) return unfoldOut(panel, done);
 	if (wantsJelly(panel)) return foldJelly(panel, anchor.getBoundingClientRect(), done) ?? fadePanel(panel, done);
 	holdForFold(panel);

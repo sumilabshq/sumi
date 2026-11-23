@@ -14835,7 +14835,7 @@ body.wg-tree-carrying .wg-tile-body {
 	box-sizing: border-box;
 	min-width: 250px;
 	--pop-pad: 0px;
-	--pop-motion: unfold;
+	--pop-motion: scale;
 	padding: 4px;
 	line-height: 1.5;
 	border: 1px solid var(--line-menu);
