@@ -1,3 +1,4 @@
+import { IS_FLOWS_CONVERSION_ON } from "../plugins/tabs/navigation/data/navigation/shared/host/places.host.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { Invoke } from "../packages/shared/behaviors/src/tauri-store/store-invoke.ts";
 import { keptPlacesParts } from "../plugins/tabs/navigation/data/navigation/gateways/places-parts/places-parts.gateway.ts";
@@ -70,11 +71,24 @@ function keptDoc(fake: FakeStore): Record<string, unknown> {
 async function flagOffChecks(): Promise<void> {
 	const fake = seeded();
 	fake.conversionRefusal = null;
-	const { answer } = await heard(() => gatewayOver(fake.invoke, undefined).places());
-	check("with the flag at its default no flows are made", answer.flows, null);
+	const { answer } = await heard(() => gatewayOver(fake.invoke, false).places());
+	check("with the flag off no flows are made", answer.flows, null);
 	check("nothing is written", replacesOf(fake).length, 0);
 	check("and the guard is not even asked", fake.commandsCalled().includes("conversion_refusal"), false);
 	check("the old tabs read as before", JSON.stringify(answer.tabs), JSON.stringify(fixturePlaced()));
+}
+
+async function flagDefaultChecks(): Promise<void> {
+	const fake = seeded();
+	const { answer, said } = await heard(() => gatewayOver(fake.invoke, undefined).places());
+	check("the flag at its default is on", IS_FLOWS_CONVERSION_ON, true);
+	check(
+		"with the flag at its default a store whose guard refuses makes no flows and writes nothing",
+		[answer.flows, replacesOf(fake).length],
+		[null, 0],
+	);
+	check("the guard is asked", fake.commandsCalled().includes("conversion_refusal"), true);
+	check("and says why", said.warns.some((line) => line.includes("the fake store allows no conversion")), true);
 }
 
 async function refusedChecks(): Promise<void> {
@@ -273,6 +287,7 @@ async function memoryChecks(first: FlowsDoc | null): Promise<void> {
 }
 
 await flagOffChecks();
+await flagDefaultChecks();
 await refusedChecks();
 const converted = await convertedChecks();
 await rerunChecks(converted);

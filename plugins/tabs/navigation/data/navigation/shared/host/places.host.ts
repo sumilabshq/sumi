@@ -18,7 +18,7 @@ export interface PlacedApp {
 	readonly abilities: AppAbilities;
 }
 
-export const IS_FLOWS_CONVERSION_ON = false;
+export const IS_FLOWS_CONVERSION_ON = true;
 
 export interface PlacesConfig {
 	readonly store: StoreClient;
