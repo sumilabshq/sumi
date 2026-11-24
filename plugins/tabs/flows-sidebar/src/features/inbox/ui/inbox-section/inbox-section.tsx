@@ -22,13 +22,13 @@ export function InboxSection({ sidebar, acts }: InboxSectionProps): ReactElement
 	const folderNames = folderNamesByFlow(sidebar);
 
 	if (rows.length === 0) {
-		return clearing.canUndo ? <ClearedNotice onUndo={clearing.undo} /> : null;
+		return clearing.canUndo ? <ClearedNotice failure={clearing.failure} onUndo={clearing.undo} /> : null;
 	}
 
 	return (
 		<section className="sumi-flows-section" aria-label="Inbox">
 			<div className="sumi-flows-label">
-				<span>Inbox</span>
+				<span>{clearing.failure ?? "Inbox"}</span>
 				<button
 					type="button"
 					className="sumi-flows-label-action"
