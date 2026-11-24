@@ -98,8 +98,6 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/tabs/flows-home/src/features/apps/ui/app-tiles/app-tiles.css",
 	"@sumi/flows-home-plugin/continue-rows.css":
 		"plugins/tabs/flows-home/src/features/continue/ui/continue-rows/continue-rows.css",
-	"@sumi/flows-home-plugin/flow-status.css":
-		"plugins/tabs/flows-home/src/features/continue/ui/flow-status/flow-status.css",
 	"@sumi/flows-home-plugin/tile-chrome.css":
 		"plugins/tabs/flows-home/src/shared/ui/tile-chrome/tile-chrome.css",
 	"@sumi/flows-home-plugin/app-icon.css":
@@ -197,7 +195,6 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/flows-home-plugin/setup-thumb.css";
 @import "@sumi/flows-home-plugin/app-tiles.css";
 @import "@sumi/flows-home-plugin/continue-rows.css";
-@import "@sumi/flows-home-plugin/flow-status.css";
 @import "@sumi/flows-home-plugin/tile-chrome.css";
 @import "@sumi/flows-home-plugin/app-icon.css";
 @import "@sumi/flows-home-plugin/home-section.css";

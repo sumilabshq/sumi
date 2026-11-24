@@ -1,9 +1,9 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
+import { StatusMark } from "@sumi/flows-sidebar-plugin";
 import { HomeSection } from "../../../../shared/ui/home-section/home-section.js";
 import { ageOf } from "../../lib/age-of.js";
 import { useRecentFlows } from "../../lib/use-recent-flows.js";
-import { FlowStatus } from "../flow-status/flow-status.js";
 
 const TITLE = "Continue";
 const SHOWN_FIRST = 3;
@@ -27,7 +27,7 @@ export function ContinueRows(): ReactElement | null {
 						<span className="sumi-home-continue-name">{flow.name}</span>
 						{flow.folderName === null ? null : <span className="sumi-home-continue-folder">{flow.folderName}</span>}
 						<span className="sumi-home-continue-age">{ageOf(flow.lastOpenedAt, now)}</span>
-						<FlowStatus status={flow.status} />
+						<StatusMark status={flow.status} />
 					</button>
 				))}
 				{isExpanded || recent.flows.length <= SHOWN_FIRST ? null : (
