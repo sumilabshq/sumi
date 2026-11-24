@@ -3,7 +3,7 @@ import http from "node:http";
 import path from "node:path";
 import { z } from "zod";
 import { paged, waited } from "./chrome-ask.ts";
-import type { AskedPage } from "./chrome-ask.ts";
+import type { AskedPage, PageSize } from "./chrome-ask.ts";
 import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
@@ -28,6 +28,8 @@ export const TRAFFIC_LIGHTS: TrafficLights = trafficLightsOf();
 
 const PAGE_CSS = `.flows-page-plate{flex:1;margin:0 8px 8px 0;border-radius:10px;background:var(--plate);box-shadow:var(--shadow-page)} .wg-shell{--shell-chrome-left:${TRAFFIC_LIGHTS.rightEdgePx}px}`;
 const SETTLE_MS = 1500;
+const HARNESS_SIZE: PageSize = [1000, 640];
+const STUDIO_PORTAL_LAYER = "wg-root wg-portal wg-kit-portal-layer is-studio";
 
 export interface OpenedSidebar {
 	readonly page: AskedPage;
@@ -60,8 +62,13 @@ export async function doubleClickOn(page: AskedPage, selector: string, name: str
 	await page.ask(`${rowOf(selector, name)}.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }))`);
 }
 
-export async function openedSidebar(bundled: string, theme: string, scene: string): Promise<OpenedSidebar> {
-	const html = htmlOf(bundled, theme);
+export async function openedSidebar(
+	bundled: string,
+	theme: string,
+	scene: string,
+	size: PageSize = HARNESS_SIZE,
+): Promise<OpenedSidebar> {
+	const html = htmlOf(bundled, theme, size);
 	const server = http.createServer((_request, response) => {
 		response.setHeader("content-type", "text/html");
 		response.end(html);
@@ -69,7 +76,7 @@ export async function openedSidebar(bundled: string, theme: string, scene: strin
 	await new Promise<void>((listening) => server.listen(0, "127.0.0.1", listening));
 	const address = server.address();
 	const port = typeof address === "object" && address !== null ? address.port : 0;
-	const page = await pagedWithRetry(`http://127.0.0.1:${port}/#${scene}`);
+	const page = await pagedWithRetry(`http://127.0.0.1:${port}/#${scene}`, size);
 	await waited(SETTLE_MS);
 	return {
 		page,
@@ -80,8 +87,8 @@ export async function openedSidebar(bundled: string, theme: string, scene: strin
 	};
 }
 
-async function pagedWithRetry(file: string): Promise<AskedPage> {
-	const asked = { size: [1000, 640] as const, hearsFailures: true };
+async function pagedWithRetry(file: string, size: PageSize): Promise<AskedPage> {
+	const asked = { size, hearsFailures: true };
 
 	try {
 		return await paged(file, "flows sidebar", asked);
@@ -90,11 +97,11 @@ async function pagedWithRetry(file: string): Promise<AskedPage> {
 	}
 }
 
-function htmlOf(bundled: string, theme: string): string {
+function htmlOf(bundled: string, theme: string, [width, height]: PageSize): string {
 	const sheets = SHEETS.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
 	const dark = theme === "dark" ? " dark" : "";
 	const script = bundled.replaceAll("</script", "<\\/script");
-	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body class="theme-${theme}${dark}" style="margin:0;background:var(--frame)"><div id="frame" style="width:1000px;height:640px"></div><script>${script}</script></body></html>`;
+	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body class="theme-${theme}${dark}" style="margin:0;background:var(--frame)"><div class="${STUDIO_PORTAL_LAYER}"></div><div id="frame" style="width:${width}px;height:${height}px"></div><script>${script}</script></body></html>`;
 }
 
 function trafficLightsOf(): TrafficLights {

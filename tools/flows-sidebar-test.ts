@@ -39,6 +39,12 @@ const dragged = (source: string, folder: string): string =>
 
 const bundled = await bundleOf("tools/flows-sidebar-page.tsx");
 
+async function pressKeyOn(page: AskedPage, name: string, key: string): Promise<void> {
+	await page.ask(
+		`${rowOf(".sumi-flows-row-main", name)}.dispatchEvent(new KeyboardEvent("keydown", { key: ${JSON.stringify(key)}, bubbles: true, cancelable: true }))`,
+	);
+}
+
 type Case = (page: AskedPage) => Promise<void>;
 
 async function inInbox(theme: string, scene: string, run: Case): Promise<void> {
@@ -224,9 +230,9 @@ async function rowsAndFolders(): Promise<void> {
 
 async function renaming(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
-		await doubleClickOn(page, ".sumi-flows-row-main", "Client project");
+		await pressKeyOn(page, "Client project", "F2");
 		await waited(300);
-		check("double click turns the row into a field", await page.ask(count(".sumi-flows-field-input")), 1);
+		check("F2 turns the folder row into a field", await page.ask(count(".sumi-flows-field-input")), 1);
 		await page.typeText("Customer work");
 		await page.pressEnter();
 		await waited(SETTLE_MS);
@@ -236,7 +242,7 @@ async function renaming(): Promise<void> {
 			"Personal",
 			"Research",
 		]);
-		await doubleClickOn(page, ".sumi-flows-row-main", "Customer work");
+		await pressKeyOn(page, "Customer work", "Enter");
 		await waited(300);
 		const [x, y] = (await page.ask(
 			`(() => { const box = document.querySelector(".sumi-flows-field-icon").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`,
@@ -255,7 +261,7 @@ async function hoverPanel(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		const folderFlow = ".sumi-flows-folder .sumi-flows-row[data-kind=flow]";
 		await hoverOn(page, folderFlow, "Composer redesign", 100);
-		check("the chats panel waits 300 ms", await page.ask(count(".sumi-flows-chats")), 0);
+		check("the chats panel waits 300 ms", await page.ask(count(".sumi-flows-chats.is-open")), 0);
 		await waited(800);
 		check("a Flow with several chats lists them on hover", await page.ask(namesOf(".sumi-flows-chats-item")), [
 			"Refactor",
@@ -265,7 +271,7 @@ async function hoverPanel(): Promise<void> {
 		await page.hover(900, 400);
 		await waited(900);
 		await hoverOn(page, folderFlow, "Design system", 1000);
-		check("a Flow with one chat has no panel", await page.ask(count(".sumi-flows-chats")), 0);
+		check("a Flow with one chat has no panel", await page.ask(count(".sumi-flows-chats.is-open")), 0);
 	});
 }
 
@@ -343,7 +349,7 @@ async function peekHolds(): Promise<void> {
 		await peeked(page);
 		const folderFlow = ".sumi-flows-folder .sumi-flows-row[data-kind=flow]";
 		await hoverOn(page, folderFlow, "Composer redesign", 800);
-		check("the chats card opens", await page.ask(count(".sumi-flows-chats")), 1);
+		check("the chats card opens", await page.ask(count(".sumi-flows-chats.is-open")), 1);
 		const [x, y] = (await page.ask(
 			`(() => { const box = document.querySelector(".sumi-flows-chats").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`,
 		)) as [number, number];
@@ -392,7 +398,9 @@ async function deleting(): Promise<void> {
 		await waited(300);
 		check(
 			"a Flow row menu offers Rename and Delete flow",
-			await page.ask(`[...document.querySelectorAll("[role=menuitem]")].map((item) => item.textContent)`),
+			await page.ask(
+				`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`,
+			),
 			["Rename", "Delete flow"],
 		);
 		await page.ask(clickText("[role=menuitem]", "Delete flow"));
