@@ -21,6 +21,7 @@ export function LauncherHome({ tabId }: HomeViewProps): ReactElement {
 				fieldStart={<Icon name="search" size={SEARCH_ICON_PX} />}
 				fieldEnd={<LauncherHints />}
 				isHintless
+				isFieldFramed
 			/>
 		</div>
 	);

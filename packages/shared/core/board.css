@@ -453,11 +453,19 @@
 		--chat-w: 560px;
 		--read-w: 768px;
 		--plate-min: 240px;
+
+		--field-frame-pad: var(--space-1);
+		--field-frame-gap: var(--space-none);
+		--field-frame-bg: var(--field);
+		--field-frame-line: var(--divider);
+		--field-frame-line-width: var(--space-px);
 	}
 
 	:root.dark,
 	.dark,
 	.theme-dark {
+		--field-frame-bg: var(--field);
+		--field-frame-line: var(--divider);
 		--frame: #111214;
 		--plate: #000000;
 		--soft: #0e0e0e;
@@ -512,6 +520,14 @@
 		--hue-purple: #a78bfa;
 		--hue-pink: #f472b6;
 		--hue-slate: #94a3b8;
+	}
+
+	:root[data-field-frame="off"],
+	:root[data-field-frame="off"] :is(.dark, .theme-dark) {
+		--field-frame-pad: 0px;
+		--field-frame-bg: transparent;
+		--field-frame-line: transparent;
+		--field-frame-line-width: 0px;
 	}
 
 	.sumi-ink-ember {
@@ -11858,6 +11874,18 @@ body.wg-tree-carrying .wg-tile-body {
 	padding: 0;
 }
 
+:is(.wg-root, .wg-portal) .wg-kit-field-frame {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	min-width: 0;
+	padding: var(--field-frame-pad);
+	border: var(--field-frame-line-width) solid var(--field-frame-line);
+	border-radius: calc(var(--field-frame-radius, var(--r-lg)) + var(--field-frame-pad) + var(--field-frame-line-width));
+	gap: var(--field-frame-gap);
+	background: var(--field-frame-bg);
+}
+
 :is(.wg-root, .wg-portal) .wg-kit-input-group {
 	position: relative;
 	display: flex;
@@ -17396,15 +17424,11 @@ body:has(.wg-cm-layer) {
 }
 .sumi-launcher .wg-cm-field {
 	height: var(--space-12);
-	margin: var(--space-1);
 	padding: var(--space-none) var(--space-3-5);
 	gap: var(--space-2-5);
 	border: 1px solid var(--divider);
 	border-radius: var(--r-lg);
 	background: var(--plate);
-	box-shadow:
-		0 0 0 var(--space-1) var(--field),
-		0 0 0 calc(var(--space-1) + var(--space-px)) var(--divider);
 	color: var(--text-3);
 	font-size: var(--fs-14);
 }
@@ -18367,17 +18391,14 @@ body:has(.wg-cm-layer) {
 	--control-xs: var(--h-xs);
 	--chat-gutter: max(var(--space-6), calc(50% - var(--studio-chat-content, var(--read-w)) / 2));
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-tray {
-	display: flex;
+:is(.wg-root, .wg-portal) .wg-studio-ai-composer-frame {
 	flex: 1 1 auto;
-	flex-direction: column;
-	box-sizing: border-box;
 	min-height: 0;
 	margin: var(--space-none) calc(var(--chat-gutter) - 5px) var(--space-3);
-	padding: var(--space-1) var(--space-1) var(--space-none);
-	border: 1px solid var(--divider);
-	border-radius: calc(var(--composer-box-radius) + var(--space-1) + var(--space-px));
-	background: var(--field);
+	--field-frame-radius: var(--composer-box-radius);
+}
+:is(.wg-root, .wg-portal) .wg-studio-ai-above:empty {
+	display: none;
 }
 .wg-chat-app .wg-studio-ai-dock > .wg-studio-ai-composer {
 	max-width: none;
@@ -18400,9 +18421,6 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working {
 	overflow: hidden;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working:has(.sumi-slash-menu) {
-	overflow: visible;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working::after {
 	content: "";
@@ -18447,10 +18465,6 @@ body:has(.wg-cm-layer) {
 	min-width: 0;
 	white-space: nowrap;
 }
-:is(.wg-root, .wg-portal) .wg-studio-ai-field:has(.sumi-slash-menu:not([aria-hidden="true"])) {
-	border-start-start-radius: var(--radius-none);
-	border-start-end-radius: var(--radius-none);
-}
 :is(.wg-root, .wg-portal) .wg-studio-ai-under .sumi-composer-expand-toggle {
 	margin-inline-start: auto;
 }
@@ -18461,6 +18475,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-none);
 	min-width: 0;
 	height: var(--space-7);
+	margin-bottom: calc(-1 * var(--field-frame-pad));
 	padding-inline: var(--space-2);
 	white-space: nowrap;
 }
@@ -20260,21 +20275,11 @@ body:has(.wg-cm-layer) {
 	color: var(--accent-text);
 }
 :is(.wg-root, .wg-portal) .sumi-slash-menu {
-	position: absolute;
-	z-index: 5;
-	bottom: calc(100% + var(--slash-lift, var(--space-3)));
-	left: calc(-1 * var(--space-3));
+	position: relative;
 	box-sizing: border-box;
-	width: calc(100% + 2 * var(--space-3));
+	width: 100%;
 	padding: var(--space-1) var(--space-none);
-	border: 1px solid var(--divider);
-	border-bottom: 0;
-	border-start-start-radius: var(--plate-radius);
-	border-start-end-radius: var(--plate-radius);
 	overflow: hidden;
-	background: var(--soft-glass-fill);
-	-webkit-backdrop-filter: var(--soft-glass-blur);
-	backdrop-filter: var(--soft-glass-blur);
 	color: var(--text);
 	font: var(--fw-regular) var(--fs-13) / 1.5 var(--font-ui);
 }

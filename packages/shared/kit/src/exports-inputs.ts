@@ -8,6 +8,7 @@ export {
 	InputGroupText,
 	InputGroupTextarea,
 } from "./components/input-group";
+export { FieldFrame } from "./components/field-frame";
 export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, OTPInputContext } from "./components/input-otp";
 export { REGEXP_ONLY_CHARS, REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS } from "./constants/input-otp";
 export { RadioGroup, RadioGroupItem } from "./components/radio-group";
@@ -44,6 +45,7 @@ export type { CaptionLayout, WeekDay } from "./constants/calendar";
 export type { DateRange, Matcher, Matchers } from "./utils/calendar-matchers";
 export type { CalendarCell } from "./utils/calendar";
 export type { InputGroupAddonAlign, InputGroupAddonProps, InputGroupButtonProps } from "./components/input-group";
+export type { FieldFrameProps } from "./components/field-frame";
 export type { InputOTPProps, InputOTPSlotProps } from "./components/input-otp";
 export type { LabelProps } from "./components/label";
 export type { RadioGroupItemProps, RadioGroupProps } from "./components/radio-group";

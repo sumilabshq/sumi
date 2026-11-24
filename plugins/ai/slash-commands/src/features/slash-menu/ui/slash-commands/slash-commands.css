@@ -15,21 +15,11 @@
 }
 
 :is(.wg-root, .wg-portal) .sumi-slash-menu {
-	position: absolute;
-	z-index: 5;
-	bottom: calc(100% + var(--slash-lift, var(--space-3)));
-	left: calc(-1 * var(--space-3));
+	position: relative;
 	box-sizing: border-box;
-	width: calc(100% + 2 * var(--space-3));
+	width: 100%;
 	padding: var(--space-1) var(--space-none);
-	border: 1px solid var(--divider);
-	border-bottom: 0;
-	border-start-start-radius: var(--plate-radius);
-	border-start-end-radius: var(--plate-radius);
 	overflow: hidden;
-	background: var(--soft-glass-fill);
-	-webkit-backdrop-filter: var(--soft-glass-blur);
-	backdrop-filter: var(--soft-glass-blur);
 	color: var(--text);
 	font: var(--fw-regular) var(--fs-13) / 1.5 var(--font-ui);
 }

@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Icon, TextArea } from "@widgetarium/kit";
+import { FieldFrame, Icon, TextArea } from "@widgetarium/kit";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import type { QueuedShown } from "@widgetarium/assistant/contract";
 import { useSetsDraftAside } from "../../lib/use-sets-draft-aside.js";
@@ -54,6 +54,7 @@ export function Composer({
 	const composer = useRef<HTMLDivElement>(null);
 	const composerBox = useRef<HTMLTextAreaElement>(null);
 	const field = useRef<HTMLDivElement>(null);
+	const above = useRef<HTMLDivElement>(null);
 	const sendOrSave = editing === null ? onSend : (said: string) => onSaveEdit(editing.id, said);
 	const { draft, state, sendDraft, onChange, onKeyDown, onPaste, fill } = useComposerDraft({
 		busy,
@@ -64,11 +65,18 @@ export function Composer({
 	const fitBox = useFitsDraft(composerBox, draft);
 	useFocusesWhen(composerBox, attached?.label ?? null);
 	useTakesPrefill(composerBox, fill);
-	const { input, takesKey, isBoxTextHidden, hint } = useComposerInput({ draft, fill, box: composerBox, field });
+	const { input, takesKey, isBoxTextHidden, hint } = useComposerInput({
+		draft,
+		fill,
+		box: composerBox,
+		field,
+		above,
+	});
 	useFocusesFromChat(composerBox);
 	return (
 		<div className="wg-studio-ai-composer" ref={composer}>
-			<div className="wg-studio-ai-tray">
+			<FieldFrame className="wg-studio-ai-composer-frame">
+				<div ref={above} className="wg-studio-ai-above" />
 				<div ref={field} className={fieldClassOf(busy)}>
 					{editing === null ? null : (
 						<div className="wg-studio-ai-edit-bar">
@@ -120,7 +128,7 @@ export function Composer({
 					{strip}
 					<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 				</div>
-			</div>
+			</FieldFrame>
 		</div>
 	);
 }

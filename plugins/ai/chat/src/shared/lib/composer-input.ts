@@ -9,6 +9,7 @@ export interface ComposerInput {
 	readonly draft: string;
 	readonly box: RefObject<HTMLTextAreaElement | null>;
 	readonly field: RefObject<HTMLDivElement | null>;
+	readonly above: RefObject<HTMLDivElement | null>;
 	readonly keyTaker: RefObject<ComposerKeyTaker | null>;
 	readonly replaceDraft: (text: string, caret: number) => void;
 	readonly hideBoxText: (isHidden: boolean) => void;
@@ -20,6 +21,7 @@ export interface ComposerInputAsk {
 	readonly fill: (text: string) => void;
 	readonly box: RefObject<HTMLTextAreaElement | null>;
 	readonly field: RefObject<HTMLDivElement | null>;
+	readonly above: RefObject<HTMLDivElement | null>;
 }
 
 export interface ComposerInputParts {
@@ -29,7 +31,7 @@ export interface ComposerInputParts {
 	readonly hint: string | null;
 }
 
-export function useComposerInput({ draft, fill, box, field }: ComposerInputAsk): ComposerInputParts {
+export function useComposerInput({ draft, fill, box, field, above }: ComposerInputAsk): ComposerInputParts {
 	const keyTaker = useRef<ComposerKeyTaker | null>(null);
 	const pendingCaret = usePlacesCaretAfterDraft(box, draft);
 	const [isBoxTextHidden, hideBoxText] = useState(false);
@@ -40,6 +42,7 @@ export function useComposerInput({ draft, fill, box, field }: ComposerInputAsk):
 			draft,
 			box,
 			field,
+			above,
 			keyTaker,
 			replaceDraft: (text, caret) => {
 				pendingCaret.current = caret;

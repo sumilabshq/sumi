@@ -26,6 +26,7 @@ export interface HomePanelProps {
 	readonly fieldStart: ReactNode;
 	readonly fieldEnd: ReactNode;
 	readonly isHintless: boolean;
+	readonly isFieldFramed?: boolean;
 }
 
 const HOME_DOOR = "home";
@@ -39,6 +40,7 @@ export function HomePanel({
 	fieldStart,
 	fieldEnd,
 	isHintless,
+	isFieldFramed = false,
 }: HomePanelProps): ReactElement {
 	const [text, setText] = useState("");
 	const results = useOptionalQuery(commandMenu.results.all, { text, door: HOME_DOOR, pageId: null }).data ?? NO_RESULTS;
@@ -58,7 +60,7 @@ export function HomePanel({
 		<div className="wg-cm-home" data-command-menu-home="" data-cm-idle={isIdle ? "" : undefined} onKeyDown={onKey}>
 			<div className="wg-cm-column">
 				{head ?? <ProfileLine />}
-				<MenuField ask={field} start={fieldStart} end={fieldEnd} onFiles={null} />
+				<MenuField ask={field} start={fieldStart} end={fieldEnd} onFiles={null} isFramed={isFieldFramed} />
 				{isIdle ? (
 					idle({ sections: results.sections, run: moves.run })
 				) : (
