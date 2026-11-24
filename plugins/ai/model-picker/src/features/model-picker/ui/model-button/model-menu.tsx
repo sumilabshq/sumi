@@ -20,6 +20,7 @@ export function ModelMenu({ chat, shown, effort, onPicked }: ModelMenuProps): Re
 	const chooseModel = useCommand(assistant.runners.chooseModel);
 	const openProviders = useCommand(assistant.agent.openProviders);
 	const shownRunner = browsedRunner ?? shown.chosenRunner ?? shown.runners[0]?.id ?? "";
+	const shownEffort = shownRunner === shown.chosenRunner ? effort : null;
 	return (
 		<div className="sumi-model-panes">
 			<ProvidersPane
@@ -39,7 +40,7 @@ export function ModelMenu({ chat, shown, effort, onPicked }: ModelMenuProps): Re
 					onPicked();
 					void chooseModel.run({ chat, runner, model });
 				}}
-				footer={effort === null ? null : <EffortList chat={chat} effort={effort} onPicked={onPicked} />}
+				footer={shownEffort === null ? null : <EffortList chat={chat} effort={shownEffort} onPicked={onPicked} />}
 			/>
 		</div>
 	);

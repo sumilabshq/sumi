@@ -25,7 +25,7 @@ export function useBoardSpan(origin: RefObject<HTMLElement | null>): BoardSpan |
 		}
 
 		return () => watch.disconnect();
-	});
+	}, [origin]);
 	return span;
 }
 

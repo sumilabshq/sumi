@@ -24,7 +24,7 @@ export function StatusMark({ status }: StatusMarkProps): ReactElement | null {
 
 	return (
 		<span className="sumi-flows-status" data-status={status} role="img" aria-label={SAID[status]}>
-			{status === "unread" ? <Icon name="check" size={STATUS_ICON_PX} /> : null}
+			{status === "unread" ? <Icon name="tick" size={STATUS_ICON_PX} /> : null}
 			{status === "running" ? <RunningRing /> : null}
 		</span>
 	);
