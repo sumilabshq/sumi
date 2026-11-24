@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
-import { Popover, PopoverContent } from "@widgetarium/kit";
+import { Popover, PopoverContent, PopoverTrigger } from "@widgetarium/kit";
 import type { FlowIcon } from "@widgetarium/navigation/contract";
 import { usePeekHold } from "../../../../shared/lib/peek-hold.js";
 import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
@@ -30,16 +30,14 @@ export function RowField({ name, icon, fallback, onCommit, onIcon, onDone }: Row
 	return (
 		<div className="sumi-flows-field">
 			<Popover open={isPicking} onOpenChange={setIsPicking} isPortaled>
-				<button
-					type="button"
+				<PopoverTrigger
 					className="sumi-flows-field-icon"
 					aria-label={CHANGE_ICON}
 					onMouseDown={(event) => event.preventDefault()}
-					onClick={() => setIsPicking((was) => !was)}
 				>
 					<FlowGlyph icon={icon} fallback={fallback} />
-				</button>
-				<PopoverContent side="right" align="start">
+				</PopoverTrigger>
+				<PopoverContent side="bottom" align="start">
 					<IconPicker icon={icon} onPick={pick} />
 				</PopoverContent>
 			</Popover>

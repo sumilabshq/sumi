@@ -427,20 +427,12 @@
 	cursor: default;
 }
 
-:is(.wg-root, .wg-portal) .wg-kit-hover-card.sumi-flows-chats {
-	box-sizing: border-box;
+:is(.wg-root, .wg-portal) .wg-kit-pop.sumi-flows-chats {
 	width: auto;
 	min-width: 176px;
-	padding: var(--space-1);
-	font-family: var(--font-ui);
 	font-size: var(--fs-12);
 	font-weight: var(--fw-ui);
 	letter-spacing: var(--tracking-ui);
-	background: var(--surface-menu);
-	backdrop-filter: none;
-	border: 1px solid var(--line-menu);
-	border-radius: var(--r-menu);
-	box-shadow: var(--shadow-menu);
 }
 
 .sumi-flows-chats-head {

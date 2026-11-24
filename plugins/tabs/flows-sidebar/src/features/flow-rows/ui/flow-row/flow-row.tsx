@@ -6,9 +6,12 @@ import type { FlowRowFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
+import { FLOW_RENAME_KEYS, RENAME_KEY, renamesOn } from "../../lib/rename-keys.js";
 import { ChatsHover } from "../chats-panel/chats-panel.js";
 import { RowField } from "../row-field/row-field.js";
 import { RowMenu } from "../row-menu/row-menu.js";
+
+const FLOW_MENU = "Flow";
 
 export interface FlowRowViewProps {
 	readonly flow: FlowRowFacts;
@@ -37,33 +40,38 @@ export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowVi
 
 	return (
 		<RowMenu
+			label={FLOW_MENU}
 			items={[
-				{ label: "Rename", onSelect: () => setIsRenaming(true) },
-				{ label: "Delete flow", onSelect: () => acts.remove(flow.id), isDestructive: true },
+				{ label: "Rename", icon: "pencil-line", keys: RENAME_KEY, onSelect: () => setIsRenaming(true) },
+				{ label: "Delete flow", icon: "trash", onSelect: () => acts.remove(flow.id), isDestructive: true },
 			]}
 		>
 			<ChatsHover chats={flow.chats}>
-				<div
-					className="sumi-flows-row"
-					data-kind="flow"
-					data-indented={folderId === null ? undefined : ""}
-					data-current={isCurrent ? "" : undefined}
-					data-drop={drag.overKey === dropKeyOf(target) ? "" : undefined}
-					{...drag.sourceProps(flow.id)}
-					{...drag.targetProps(target)}
-				>
-					<button
-						type="button"
-						className="sumi-flows-row-main"
-						aria-current={isCurrent ? "true" : undefined}
-						onClick={() => acts.open(flow.id)}
-						onDoubleClick={() => setIsRenaming(true)}
+				{(hover) => (
+					<div
+						{...hover}
+						className="sumi-flows-row"
+						data-kind="flow"
+						data-indented={folderId === null ? undefined : ""}
+						data-current={isCurrent ? "" : undefined}
+						data-drop={drag.overKey === dropKeyOf(target) ? "" : undefined}
+						{...drag.sourceProps(flow.id)}
+						{...drag.targetProps(target)}
 					>
-						<FlowGlyph icon={flow.icon} fallback="dot" />
-						<span className="sumi-flows-name">{flow.name}</span>
-					</button>
-					<StatusMark status={flow.status} />
-				</div>
+						<button
+							type="button"
+							className="sumi-flows-row-main"
+							aria-current={isCurrent ? "true" : undefined}
+							onClick={() => acts.open(flow.id)}
+							onDoubleClick={() => setIsRenaming(true)}
+							onKeyDown={renamesOn(FLOW_RENAME_KEYS, () => setIsRenaming(true))}
+						>
+							<FlowGlyph icon={flow.icon} fallback="dot" />
+							<span className="sumi-flows-name">{flow.name}</span>
+						</button>
+						<StatusMark status={flow.status} />
+					</div>
+				)}
 			</ChatsHover>
 		</RowMenu>
 	);

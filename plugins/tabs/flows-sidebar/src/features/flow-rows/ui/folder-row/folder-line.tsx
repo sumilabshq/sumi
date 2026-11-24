@@ -6,6 +6,7 @@ import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FolderRowFacts } from "../../../../shared/lib/flow-facts.js";
 import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
+import { FOLDER_RENAME_KEYS, renamesOn } from "../../lib/rename-keys.js";
 
 const CHEVRON_PX = 12;
 
@@ -31,7 +32,7 @@ export function FolderLine({ folder, drag, onToggle, onRename, onAdd }: FolderLi
 				className="sumi-flows-row-main"
 				aria-expanded={folder.isOpen}
 				onClick={onToggle}
-				onDoubleClick={onRename}
+				onKeyDown={renamesOn(FOLDER_RENAME_KEYS, onRename)}
 			>
 				<FlowGlyph icon={folder.icon} fallback="folder" />
 				<span className="sumi-flows-chevron">

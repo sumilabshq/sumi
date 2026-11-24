@@ -5,9 +5,11 @@ import type { FolderRowFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 import { RowField } from "../row-field/row-field.js";
 import { RowMenu } from "../row-menu/row-menu.js";
+import { RENAME_KEY } from "../../lib/rename-keys.js";
 import { FolderLine } from "./folder-line.js";
 
 const NEW_FLOW = "New flow";
+const FOLDER_MENU = "Folder";
 
 export interface FolderRowViewProps {
 	readonly folder: FolderRowFacts;
@@ -40,9 +42,10 @@ export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): React
 
 	return (
 		<RowMenu
+			label={FOLDER_MENU}
 			items={[
-				{ label: "Rename", onSelect: () => setIsRenaming(true) },
-				{ label: "Remove folder", onSelect: () => acts.removeFolder(folder.id), isDestructive: true },
+				{ label: "Rename", icon: "pencil-line", keys: RENAME_KEY, onSelect: () => setIsRenaming(true) },
+				{ label: "Remove folder", icon: "folder-x", onSelect: () => acts.removeFolder(folder.id), isDestructive: true },
 			]}
 		>
 			<FolderLine
