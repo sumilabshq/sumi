@@ -46,6 +46,17 @@ export const FolderRowSchema = z.object({
 	flows: z.array(FlowRowSchema).readonly(),
 });
 
+export const ArchivedFlowSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	icon: FlowIconSchema.nullable(),
+	archivedAt: z.number(),
+});
+
+export const ArchivedFlowsSchema = z.object({
+	flows: z.array(ArchivedFlowSchema).readonly(),
+});
+
 export const FlowsSidebarSchema = z.object({
 	isConverted: z.boolean(),
 	looseFlows: z.array(FlowRowSchema).readonly(),
@@ -104,6 +115,7 @@ export const FlowSchema = z.object({
 	layout: FlowLayoutSchema,
 	createdAt: z.number().nonnegative(),
 	lastOpenedAt: z.number().nonnegative(),
+	archivedAt: z.number().nonnegative().nullable().default(null),
 });
 
 export const FlowDetailSchema = z.object({
@@ -1221,6 +1233,9 @@ export const navigation = moduleContract("navigation", Server, {
 			.public()
 			.input(WindowFlowAskSchema)
 			.output(FlowsSidebarSchema)),
+		archived: named("flows.archived", query()
+			.public()
+			.output(ArchivedFlowsSchema)),
 		one: named("flows.one", query()
 			.public()
 			.input(FlowAskSchema)
@@ -1258,6 +1273,19 @@ export const navigation = moduleContract("navigation", Server, {
 			.input(MoveFlowAskSchema)
 			.idempotencyKey(Repeatable)),
 		remove: named("flows.remove", command()
+			.public()
+			.input(RemoveFlowAskSchema)
+			.output(TabsSettledSchema)
+			.idempotencyKey(Repeatable)),
+		archive: named("flows.archive", command()
+			.public()
+			.input(FlowAskSchema)
+			.idempotencyKey(Repeatable)),
+		unarchive: named("flows.unarchive", command()
+			.public()
+			.input(FlowAskSchema)
+			.idempotencyKey(Repeatable)),
+		deleteFlow: named("flows.delete-flow", command()
 			.public()
 			.input(RemoveFlowAskSchema)
 			.output(TabsSettledSchema)

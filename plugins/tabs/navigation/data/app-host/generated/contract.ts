@@ -268,6 +268,10 @@ export const FlowIdAskSchema = z.object({
 	flowId: z.string().min(1),
 });
 
+export const FolderIdAskSchema = z.object({
+	folderId: z.string().min(1),
+});
+
 export const FlowCopiedSchema = z.object({
 	flowId: z.string(),
 });
@@ -491,6 +495,14 @@ export const appHost = moduleContract("app-host", Device, {
 		remove: named("flows.remove", command()
 			.public()
 			.input(FlowIdAskSchema)
+			.idempotencyKey(Repeatable)),
+		deleteFlow: named("flows.delete-flow", command()
+			.public()
+			.input(FlowIdAskSchema)
+			.idempotencyKey(Repeatable)),
+		deleteFolder: named("flows.delete-folder", command()
+			.public()
+			.input(FolderIdAskSchema)
 			.idempotencyKey(Repeatable)),
 		duplicate: named("flows.duplicate", command()
 			.public()

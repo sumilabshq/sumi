@@ -106,6 +106,7 @@ export function startSetupMove(
 			layout: layoutOfSetup(setup.root, birth.id, created.tabIds),
 			createdAt: birth.at,
 			lastOpenedAt: birth.at,
+			archivedAt: null,
 		};
 		return {
 			next: { tabs: created.placed, flows: withFlowAdded(now.flows, flow, ask.place) },

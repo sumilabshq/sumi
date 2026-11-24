@@ -11,6 +11,7 @@ import { navigation as placesContract } from "../plugins/tabs/navigation/data/na
 import { MemoryTabsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/tabs/memory.gateway.ts";
 import { PlacedTabsSchema } from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
 import type { PlacedTabs, TabMark } from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
+import type { KeptChat } from "../packages/domain/workspaces/shared/schema/chat.schema.ts";
 import type { FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
@@ -88,7 +89,7 @@ export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld>
 				injects: memoryWorkspacesParts({
 					workspaces: [{ id: "home", name: "Home", icon: null, ink: "yellow" }],
 					currentId: "home",
-					chats: { chats: [], openOnStartId: null },
+					chats: { chats: chatRecordsOf(spec), openOnStartId: null },
 				}),
 			}),
 		)
@@ -166,6 +167,12 @@ function specOf(scene: SidebarScene): WorldSpec {
 	};
 }
 
+function chatRecordsOf(spec: WorldSpec): KeptChat[] {
+	return tabsOf(spec)
+		.filter(({ app }) => app === "chat")
+		.map(({ id, title }): KeptChat => ({ id, title, titleBy: "ask", createdAt: 1, lastAt: 1, archivedAt: null }));
+}
+
 const idOf = (name: string): string => name.toLowerCase().replaceAll(" ", "-");
 
 function tabsOf(spec: WorldSpec): PlacedTabs["tabs"] {
@@ -196,6 +203,7 @@ function flowOf(flow: FlowSpec): FlowsDoc["flows"][number] {
 		},
 		createdAt: 1,
 		lastOpenedAt: 1,
+		archivedAt: null,
 	};
 }
 

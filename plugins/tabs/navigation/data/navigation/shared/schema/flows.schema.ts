@@ -73,6 +73,7 @@ export const FlowSchema = z.object({
 	layout: FlowLayoutSchema,
 	createdAt: z.number().nonnegative(),
 	lastOpenedAt: z.number().nonnegative(),
+	archivedAt: z.number().nonnegative().nullable().default(null),
 });
 
 export type Flow = z.infer<typeof FlowSchema>;

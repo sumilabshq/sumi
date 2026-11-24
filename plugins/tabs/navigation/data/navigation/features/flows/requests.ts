@@ -7,6 +7,7 @@ import { flowsMove } from "../../shared/lib/flows/flow-moves.js";
 import { answered } from "../../shared/lib/settling/settling.js";
 import {
 	AdoptChatsAskSchema,
+	ArchivedFlowsSchema,
 	AdoptedChatsSchema,
 	CreateFlowAskSchema,
 	DuplicateFlowAskSchema,
@@ -25,17 +26,24 @@ import {
 } from "../../shared/schema/flow-asks.schema.js";
 import { OpenedTabSettledSchema, TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import { adoptChatsMove } from "./lib/adopt-plans.js";
+import { deleteFlowMove } from "./lib/flow-delete-plans.js";
 import { duplicateFlowMove } from "./lib/flow-duplicate-plans.js";
 import { openFlowMove } from "./lib/flow-open-plans.js";
 import { openFlowTabMove } from "./lib/flow-tab-plans.js";
 import { createFlowPlan, moveFlowPlan, removeFlowMove, renameFlowPlan, setFlowIconPlan } from "./lib/flow-plans.js";
-import { flowDetailOf, sidebarOf } from "./lib/flow-reads.js";
+import { archiveFlowPlan, unarchiveFlowPlan } from "./lib/flow-archive-plans.js";
+import { archivedOf, flowDetailOf, sidebarOf } from "./lib/flow-reads.js";
 
 export const sidebar = query()
 	.public()
 	.input(WindowFlowAskSchema)
 	.output(FlowsSidebarSchema)
 	.handle(async ({ window }, { tabs, placedApps }) => sidebarOf(await tabs.places(), placedApps.placedApps(), window));
+
+export const archived = query()
+	.public()
+	.output(ArchivedFlowsSchema)
+	.handle(async (_input, { tabs }) => archivedOf(await tabs.places()));
 
 export const one = query()
 	.public()
@@ -119,6 +127,31 @@ export const remove = command()
 		answered(await tabs.movePlaces(removeFlowMove(ask, placedApps.placedApps()))),
 	);
 
+export const archive = command()
+	.public()
+	.input(FlowAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs }) => {
+		answered(await tabs.movePlaces(flowsMove(archiveFlowPlan(ask, Date.now()))));
+	});
+
+export const unarchive = command()
+	.public()
+	.input(FlowAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs }) => {
+		answered(await tabs.movePlaces(flowsMove(unarchiveFlowPlan(ask))));
+	});
+
+export const deleteFlow = command()
+	.public()
+	.input(RemoveFlowAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs, placedApps }) =>
+		answered(await tabs.movePlaces(deleteFlowMove(ask, placedApps.placedApps()))),
+	);
+
 export const adoptChats = command()
 	.public()
 	.input(AdoptChatsAskSchema)
@@ -130,6 +163,7 @@ export const adoptChats = command()
 
 export const rereadFlows = subscriber(flowsChanged).handle((_input, { invalidate }) => {
 	invalidate(sidebar);
+	invalidate(archived);
 	invalidate(one);
 });
 

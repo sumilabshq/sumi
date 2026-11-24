@@ -74,6 +74,7 @@ function withStrayFlowed(doc: FlowsDoc, { tabId, placed, now }: StrayTab): Flows
 		layout: layoutOfTabs({ flowId, mainTabId: tabId, tabIds: [tabId] }),
 		createdAt: now,
 		lastOpenedAt: now,
+		archivedAt: null,
 	};
 	return withFlowAdded(doc, flow, { folderId: null, before: null });
 }

@@ -31,6 +31,17 @@ export const FolderRowSchema = z.object({
 	flows: z.array(FlowRowSchema).readonly(),
 });
 
+export const ArchivedFlowSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	icon: FlowIconSchema.nullable(),
+	archivedAt: z.number(),
+});
+
+export const ArchivedFlowsSchema = z.object({
+	flows: z.array(ArchivedFlowSchema).readonly(),
+});
+
 export const FlowsSidebarSchema = z.object({
 	isConverted: z.boolean(),
 	looseFlows: z.array(FlowRowSchema).readonly(),

@@ -1,6 +1,15 @@
+import { appHost } from "../plugins/tabs/navigation/data/app-host/generated/contract.ts";
+import { workspaces } from "../packages/domain/workspaces/generated/contract.ts";
+import { FIXTURE_WINDOW, sidebarWorldOf } from "./flows-sidebar-world.ts";
+import type { SidebarWorld } from "./flows-sidebar-world.ts";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import { FlowsDocSchema } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
-import type { FlowFolder, FlowNode, FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
+import type {
+	FlowFolder,
+	FlowNode,
+	FlowsDoc,
+} from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { folderColorsFillMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { atOf } from "./flows-asks.ts";
@@ -354,12 +363,18 @@ async function duplicateChecks(): Promise<void> {
 		[true, false, copyTabIds.length, true],
 	);
 	console.warn = warnBefore;
-	const layoutIds = (flow: typeof copy): string[] => (flow === undefined ? [] : [...flowPanesOf(flow).map(({ id }) => id), ...splitIdsOf(flow.layout.root)]);
+	const layoutIds = (flow: typeof copy): string[] =>
+		flow === undefined ? [] : [...flowPanesOf(flow).map(({ id }) => id), ...splitIdsOf(flow.layout.root)];
 	const originalIds = original === undefined ? [] : layoutIds(original);
 	const copyIds = layoutIds(copy);
 	check(
 		"a copy shares no pane or split id with the original, keeps its focus, and healing stays silent",
-		[copyIds.length === originalIds.length, copyIds.some((id) => originalIds.includes(id)), copy !== undefined && flowPanesOf(copy).some(({ id }) => id === copy.layout.focusedPaneId), warned],
+		[
+			copyIds.length === originalIds.length,
+			copyIds.some((id) => originalIds.includes(id)),
+			copy !== undefined && flowPanesOf(copy).some(({ id }) => id === copy.layout.focusedPaneId),
+			warned,
+		],
 		[true, false, true, []],
 	);
 	check("every law holds after the duplicate", await lawsOf(stand), []);
@@ -588,6 +603,120 @@ async function removeNoOpCloseChecks(): Promise<void> {
 	);
 }
 
+async function archiveChecks(): Promise<void> {
+	const stand = standOver(true);
+	const flowId = chatFlow(2);
+	const at = atOf(MAIN);
+	const tabsBefore = (await stand.tabs.places()).tabs.tabs.length;
+	const inInbox = async (): Promise<boolean> =>
+		(await stand.app.send(navigation.inbox.rows, undefined)).rows.some(({ id }) => id === flowId);
+	const inSidebar = async (): Promise<boolean> =>
+		(await stand.app.send(navigation.flows.sidebar, { window: MAIN })).looseFlows.some(({ id }) => id === flowId);
+	check(
+		"a flow with an unread chat shows in the sidebar and the inbox",
+		[await inSidebar(), await inInbox()],
+		[true, true],
+	);
+	await stand.app.send(navigation.flows.archive, { flowId });
+	check(
+		"archive leaves the flow out of the sidebar and the inbox",
+		[await inSidebar(), await inInbox()],
+		[false, false],
+	);
+	const archived = await stand.app.send(navigation.flows.archived, undefined);
+	check(
+		"flows.archived lists it with archivedAt",
+		[archived.flows.map(({ id }) => id), (archived.flows[0]?.archivedAt ?? 0) > 0],
+		[[flowId], true],
+	);
+	check(
+		"an archived flow keeps its tabs and layout in the doc",
+		[(await stand.tabs.places()).tabs.tabs.length, (await flowsIn(stand)).flows.some(({ id }) => id === flowId)],
+		[tabsBefore, true],
+	);
+	check(
+		"an archived flow cannot be opened",
+		(await refusalOf(() => stand.app.send(navigation.flows.open, { window: MAIN, flowId, at }))).includes("archived"),
+		true,
+	);
+	await stand.app.send(navigation.flows.unarchive, { flowId });
+	check("unarchive brings it back to the sidebar and the inbox", [await inSidebar(), await inInbox()], [true, true]);
+	check("and empties flows.archived", (await stand.app.send(navigation.flows.archived, undefined)).flows, []);
+	check("every law holds after archive and unarchive", await lawsOf(stand), []);
+	const { archivedAt: _dropped, ...oldFlow } = (await flowsIn(stand)).flows[0] ?? emptyFlow();
+	const old = FlowsDocSchema.parse({ ...(await flowsIn(stand)), flows: [oldFlow] });
+	check("a doc written before archivedAt reads it as null", old.flows[0]?.archivedAt, null);
+}
+
+async function closedOfTabs(stand: Stand, ids: ReadonlySet<string>): Promise<number> {
+	return (await stand.tabs.places()).tabs.closed.filter(({ tab }) => ids.has(tab.id)).length;
+}
+
+async function deleteChecks(): Promise<void> {
+	const at = { window: MAIN, screen: BARE_SCREEN };
+	const removed = standOver(true);
+	const deleted = standOver(true);
+	const flow = (await flowsIn(removed)).flows.find(({ id }) => id === chatFlow(8)) ?? emptyFlow();
+	const ids = new Set(flowTabIdsOf(flow));
+	const before = await closedOfTabs(removed, ids);
+	await removed.app.send(navigation.flows.remove, { flowId: chatFlow(8), at });
+	await deleted.app.send(navigation.flows.deleteFlow, { flowId: chatFlow(8), at });
+	const { tabs, flows } = await deleted.tabs.places();
+	check("remove keeps the closed tabs of the flow in the history", [before, await closedOfTabs(removed, ids)], [0, 7]);
+	check(
+		"delete removes the flow, its tabs and its closed entries",
+		[flows?.flows.some(({ id }) => id === chatFlow(8)), tabs.tabs.length, await closedOfTabs(deleted, ids)],
+		[false, (await removed.tabs.places()).tabs.tabs.length, 0],
+	);
+	check("every law holds after delete", await lawsOf(deleted), []);
+}
+
+async function chatIdsIn(world: SidebarWorld): Promise<readonly string[]> {
+	const records = await world.app.send(workspaces.chats.chatRecords, undefined);
+	return records.ok ? records.output.chats.map(({ id }) => id) : [];
+}
+
+async function sidebarNamesIn(world: SidebarWorld): Promise<readonly string[]> {
+	const sidebar = await world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
+	return sidebar.ok
+		? [...sidebar.output.looseFlows, ...sidebar.output.folders.flatMap(({ flows }) => flows)].map(({ name }) => name)
+		: [];
+}
+
+async function folderDeleteChecks(): Promise<void> {
+	const world = await sidebarWorldOf("quiet");
+	const chatsBefore = await chatIdsIn(world);
+	const deleted = await world.app.send(appHost.flows.deleteFolder, { folderId: "sumi" });
+	const names = await sidebarNamesIn(world);
+	check("deleting a folder with its flows answers ok", deleted.ok, true);
+	check(
+		"it removes the folder and all three flows",
+		[names.includes("Composer redesign"), names.includes("Design system"), names.includes("Plugin layout")],
+		[false, false, false],
+	);
+	check("and leaves the other flows", names.includes("Sprint board"), true);
+	const sidebar = await world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
+	check("and the folder", sidebar.ok && sidebar.output.folders.some(({ id }) => id === "sumi"), false);
+	const chatsAfter = await chatIdsIn(world);
+	check("each chat of those flows is deleted through deleteChat", chatsBefore.length - chatsAfter.length, 5);
+	check("and no other chat", chatsAfter.includes("sprint-board-0"), true);
+}
+
+async function ungroupChecks(): Promise<void> {
+	const world = await sidebarWorldOf("quiet");
+	await world.app.send(navigation.folders.remove, { id: "client-project" });
+	const sidebar = await world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
+	check(
+		"ungroup removes the folder and keeps its flow loose",
+		sidebar.ok && [
+			sidebar.output.folders.some(({ id }) => id === "client-project"),
+			sidebar.output.looseFlows.some(({ name }) => name === "Sprint board"),
+		],
+		[false, true],
+	);
+	check("and keeps its chat", (await chatIdsIn(world)).includes("sprint-board-0"), true);
+}
+
 async function moveBeforeItselfChecks(): Promise<void> {
 	const stand = standOver(true);
 	const before = (await flowsIn(stand)).looseFlowIds;
@@ -620,5 +749,9 @@ await reconcileChecks();
 await healingChecks();
 await removeNoOpCloseChecks();
 await moveBeforeItselfChecks();
+await archiveChecks();
+await deleteChecks();
+await folderDeleteChecks();
+await ungroupChecks();
 console.log(tally.failed ? `flows commands: ${tally.failed} check(s) failed` : "flows commands: all checks passed");
 process.exit(tally.failed ? 1 : 0);

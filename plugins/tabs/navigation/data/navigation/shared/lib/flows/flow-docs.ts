@@ -12,6 +12,10 @@ export function flowOfId(doc: FlowsDoc, flowId: string): Flow | undefined {
 	return doc.flows.find(({ id }) => id === flowId);
 }
 
+export function isArchived(flow: Flow): boolean {
+	return flow.archivedAt !== null;
+}
+
 export function folderOfId(doc: FlowsDoc, folderId: string): FlowFolder | undefined {
 	return doc.folders.find(({ id }) => id === folderId);
 }

@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { appHost as definition } from "../module.js";
 import { closedTabs, reopenById, rereadClosedTabs, rereadClosedTabsForCore } from "../features/closed-tabs/requests.js";
-import { back, duplicate as flowsDuplicate, forward, open, openTab as flowsOpenTab, remove } from "../features/flows/requests.js";
+import { back, deleteFlow, deleteFolder, duplicate as flowsDuplicate, forward, open, openTab as flowsOpenTab, remove } from "../features/flows/requests.js";
 import { conceal, frameSides, peek, rereadSides, rereadSidesForCore, toggle } from "../features/frame-sides/requests.js";
 import { openLink } from "../features/links/requests.js";
 import { closeShowingPanes, closeShown as paneTabsCloseShown, dropGoneTabs, openShown, showChat, showInTarget } from "../features/pane-tabs/requests.js";
@@ -42,6 +42,8 @@ export const appHost = handledModule(definition, [
 	named("closed-tabs.reopen-by-id", reopenById),
 	named("core-changes.studio-core-changed", studioCoreChanged),
 	named("flows.back", back),
+	named("flows.delete-flow", deleteFlow),
+	named("flows.delete-folder", deleteFolder),
 	named("flows.duplicate", flowsDuplicate),
 	named("flows.forward", forward),
 	named("flows.open", open),

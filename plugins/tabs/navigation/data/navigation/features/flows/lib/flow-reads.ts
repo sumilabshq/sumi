@@ -1,14 +1,19 @@
 import type { z } from "zod";
-import { flowOfId, folderHolding } from "../../../shared/lib/flows/flow-docs.js";
+import { flowOfId, folderHolding, isArchived } from "../../../shared/lib/flows/flow-docs.js";
 import type { PlacedPlaces } from "../../../shared/lib/flows/flow-moves.js";
 import { flowTabIdsOf } from "../../../shared/lib/flows/flow-nodes.js";
 import { flowRowOf, folderRowOf } from "../../../shared/lib/flows/flow-rows.js";
 import { isChatTab } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
-import type { FlowDetailSchema, FlowsSidebarSchema } from "../../../shared/schema/flow-asks.schema.js";
+import type {
+	ArchivedFlowsSchema,
+	FlowDetailSchema,
+	FlowsSidebarSchema,
+} from "../../../shared/schema/flow-asks.schema.js";
 
 type FlowsSidebar = z.infer<typeof FlowsSidebarSchema>;
 type FlowDetail = z.infer<typeof FlowDetailSchema>;
+type ArchivedFlows = z.infer<typeof ArchivedFlowsSchema>;
 
 const NOT_CONVERTED: FlowsSidebar = {
 	isConverted: false,
@@ -27,7 +32,7 @@ export function sidebarOf({ tabs, flows }: PlacedPlaces, apps: PlacedApps, windo
 		isConverted: true,
 		looseFlows: flows.looseFlowIds.flatMap((id) => {
 			const flow = flowOfId(flows, id);
-			return flow === undefined ? [] : [flowRowOf(flow, facts)];
+			return flow === undefined || isArchived(flow) ? [] : [flowRowOf(flow, facts)];
 		}),
 		folders: flows.folders.map((folder) => folderRowOf(folder, facts)),
 		windowFlowId: flows.windowFlows[window] ?? null,
@@ -57,4 +62,11 @@ export function flowDetailOf({ tabs, flows }: PlacedPlaces, apps: PlacedApps, fl
 			})),
 		folderId: folderHolding(flows, flowId)?.id ?? null,
 	};
+}
+
+export function archivedOf({ flows }: Pick<PlacedPlaces, "flows">): ArchivedFlows {
+	const archived = (flows?.flows ?? []).flatMap(({ id, name, icon, archivedAt }) =>
+		archivedAt === null ? [] : [{ id, name, icon, archivedAt }],
+	);
+	return { flows: archived.sort((one, other) => other.archivedAt - one.archivedAt) };
 }
