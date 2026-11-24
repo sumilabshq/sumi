@@ -23,6 +23,11 @@ export interface FlowRowViewProps {
 
 export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowViewProps): ReactElement {
 	const [isRenaming, setIsRenaming] = useState(false);
+	const [opensPicker, setOpensPicker] = useState(false);
+	const editIcon = (): void => {
+		setOpensPicker(true);
+		setIsRenaming(true);
+	};
 	const target: DropTarget = { kind: "flow", flowId: flow.id, folderId };
 
 	if (isRenaming) {
@@ -31,9 +36,13 @@ export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowVi
 				name={flow.name}
 				icon={flow.icon}
 				fallback="dot"
+				opensPicker={opensPicker}
 				onCommit={(name) => acts.rename("flow", flow.id, name)}
 				onIcon={(icon) => acts.setIcon("flow", flow.id, icon)}
-				onDone={() => setIsRenaming(false)}
+				onDone={() => {
+					setIsRenaming(false);
+					setOpensPicker(false);
+				}}
 			/>
 		);
 	}
@@ -43,6 +52,8 @@ export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowVi
 			label={FLOW_MENU}
 			items={[
 				{ label: "Rename", icon: "pencil-line", keys: RENAME_KEY, onSelect: () => setIsRenaming(true) },
+				{ label: "Edit icon", icon: "shapes", onSelect: editIcon },
+				{ label: "Duplicate", icon: "copy", onSelect: () => acts.duplicate(flow.id) },
 				{ label: "Delete flow", icon: "trash", onSelect: () => acts.remove(flow.id), isDestructive: true },
 			]}
 		>

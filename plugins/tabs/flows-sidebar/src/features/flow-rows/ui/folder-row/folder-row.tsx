@@ -19,6 +19,7 @@ export interface FolderRowViewProps {
 
 export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): ReactElement {
 	const [isRenaming, setIsRenaming] = useState(false);
+	const [opensPicker, setOpensPicker] = useState(false);
 	const addFlow = (): void => {
 		acts.create(NEW_FLOW, { folderId: folder.id, before: null });
 
@@ -33,13 +34,17 @@ export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): React
 				name={folder.name}
 				icon={folder.icon}
 				fallback="folder"
+				opensPicker={opensPicker}
 				color={{
 					value: folder.color,
 					onPick: (color) => acts.setFolderColor(folder.id, color),
 				}}
 				onCommit={(name) => acts.rename("folder", folder.id, name)}
 				onIcon={(icon) => acts.setIcon("folder", folder.id, icon)}
-				onDone={() => setIsRenaming(false)}
+				onDone={() => {
+					setIsRenaming(false);
+					setOpensPicker(false);
+				}}
 			/>
 		);
 	}
@@ -49,6 +54,14 @@ export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): React
 			label={FOLDER_MENU}
 			items={[
 				{ label: "Rename", icon: "pencil-line", keys: RENAME_KEY, onSelect: () => setIsRenaming(true) },
+				{
+					label: "Edit icon",
+					icon: "shapes",
+					onSelect: () => {
+						setOpensPicker(true);
+						setIsRenaming(true);
+					},
+				},
 				{ label: "Remove folder", icon: "folder-x", onSelect: () => acts.removeFolder(folder.id), isDestructive: true },
 			]}
 		>

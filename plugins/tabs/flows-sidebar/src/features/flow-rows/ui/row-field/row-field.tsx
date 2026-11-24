@@ -17,13 +17,14 @@ export interface RowFieldProps {
 	readonly icon: FlowIcon | null;
 	readonly fallback: FlowGlyphProps["fallback"];
 	readonly color?: ColorChoice;
+	readonly opensPicker?: boolean;
 	readonly onCommit: (name: string) => void;
 	readonly onIcon: (icon: FlowIcon | null) => void;
 	readonly onDone: () => void;
 }
 
-export function RowField({ name, icon, fallback, color, onCommit, onIcon, onDone }: RowFieldProps): ReactElement {
-	const [isPicking, setIsPicking] = useState(false);
+export function RowField({ name, icon, fallback, color, opensPicker = false, onCommit, onIcon, onDone }: RowFieldProps): ReactElement {
+	const [isPicking, setIsPicking] = useState(opensPicker);
 	const draft = useFieldDraft({ name, onCommit, onDone });
 	const nameRef = useRef<HTMLInputElement | null>(null);
 	useRefocusesAfterPicking(isPicking, nameRef);

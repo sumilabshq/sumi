@@ -422,6 +422,22 @@ async function dragging(): Promise<void> {
 	});
 }
 
+async function editingIcon(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		await page.ask(
+			`document.querySelector(${JSON.stringify(FLOWS)}).dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`,
+		);
+		await waited(300);
+		await page.ask(clickText("[role=menuitem]", "Edit icon"));
+		await waited(300);
+		check(
+			"Edit icon opens the picker in the row field",
+			await page.ask(`[${count(".sumi-flows-field")}, ${count(".sumi-flows-picker")}]`),
+			[1, 1],
+		);
+	});
+}
+
 async function deleting(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await page.ask(
@@ -429,11 +445,11 @@ async function deleting(): Promise<void> {
 		);
 		await waited(300);
 		check(
-			"a Flow row menu offers Rename and Delete flow",
+			"a Flow row menu offers Rename, Edit icon, Duplicate and Delete flow",
 			await page.ask(
 				`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`,
 			),
-			["Rename", "Delete flow"],
+			["Rename", "Edit icon", "Duplicate", "Delete flow"],
 		);
 		await page.ask(clickText("[role=menuitem]", "Delete flow"));
 		await waited(SETTLE_MS * 2);
@@ -455,6 +471,7 @@ await hoverPanel();
 await hiding();
 await peekHolds();
 await dragging();
+await editingIcon();
 await deleting();
 
 if (tally.failed > 0) {
