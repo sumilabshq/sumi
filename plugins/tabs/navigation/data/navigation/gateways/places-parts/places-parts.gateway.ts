@@ -5,14 +5,16 @@ import type { TabsGateway } from "../tabs/tabs.gateway.js";
 import {
 	KeptNavigationSchema,
 	TauriTabsGateway,
+	flowsConverted,
 	groupEntriesOf,
 	oldViewsOf,
 	viewsCarried,
 	workspaceTabsOf,
 } from "../tabs/tauri/tauri.gateway.js";
-import type { KeptNavigation } from "../tabs/tauri/tauri.gateway.js";
+import type { FlowsConversionFacts, KeptNavigation } from "../tabs/tauri/tauri.gateway.js";
 import { ListedPlacedAppsGateway } from "../placed-apps/listed.gateway.js";
 import type { PlacedAppsGateway } from "../placed-apps/placed-apps.gateway.js";
+import { IS_FLOWS_CONVERSION_ON } from "../../shared/host/places.host.js";
 import type { PlacesConfig } from "../../shared/host/places.host.js";
 import { PlacedTabsSchema } from "../../shared/schema/tabs.schema.js";
 import type { PlacedTabs } from "../../shared/schema/tabs.schema.js";
@@ -37,20 +39,30 @@ const GLOBAL_PLACES: DocKind<{ readonly tabs?: unknown }> = {
 const NOT_CARRIED =
 	"[widgetarium] navigation of workspace {workspace}: the global places.json was not carried over ({reason})";
 
-export function keptPlacesParts({ store, apps }: PlacesConfig, workspaceId: string): PlacesParts {
+export function keptPlacesParts(
+	{ store, apps, isFlowsConversionOn = IS_FLOWS_CONVERSION_ON }: PlacesConfig,
+	workspaceId: string,
+): PlacesParts {
 	return {
 		tabs: new TauriTabsGateway({
 			ownId: workspaceId,
-			navigationOf: (anyWorkspaceId) => heldNavigationOf(store, anyWorkspaceId),
+			navigationOf: (anyWorkspaceId) => heldNavigationOf(store, anyWorkspaceId, { isOn: isFlowsConversionOn, apps }),
 		}),
 		placedApps: new ListedPlacedAppsGateway(apps),
 	};
 }
 
-function heldNavigationOf(store: StoreClient, workspaceId: string): Promise<HeldDoc<KeptNavigation>> {
-	return store.heldOnce(workspaceRootOf(workspaceId), NAVIGATION.file, async () =>
-		startedFresh(await panesCarried(store, workspaceId, await carriedNavigation(store, workspaceId))),
-	);
+type FlowsConversionConfig = Pick<FlowsConversionFacts, "isOn" | "apps">;
+
+function heldNavigationOf(
+	store: StoreClient,
+	workspaceId: string,
+	conversion: FlowsConversionConfig,
+): Promise<HeldDoc<KeptNavigation>> {
+	return store.heldOnce(workspaceRootOf(workspaceId), NAVIGATION.file, async () => {
+		const carried = await panesCarried(store, workspaceId, await carriedNavigation(store, workspaceId));
+		return startedFresh(await flowsConverted(carried, { store, workspaceId, ...conversion }));
+	});
 }
 
 async function carriedNavigation(store: StoreClient, workspaceId: string): Promise<HeldDoc<KeptNavigation>> {
