@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { MouseEvent, PointerEvent, ReactElement } from "react";
 import type { FlowTab } from "../../../../shared/lib/flow-board-types.js";
+import { focusNeighbourTab } from "../../lib/tab-arrow-focus.js";
 import type { TabFit } from "../../lib/tab-fit.js";
 import { tabLabelOf } from "../../lib/tab-look.js";
 import { PaneTab } from "../pane-tab/pane-tab.js";
@@ -23,7 +24,7 @@ export interface PaneTabListProps {
 export function PaneTabList(props: PaneTabListProps): ReactElement {
 	const { fit, activeId, renamingId, liftedId } = props;
 	return (
-		<div className="sumi-pane-tabs-list">
+		<div className="sumi-pane-tabs-list" onKeyDown={focusNeighbourTab}>
 			{props.tabs
 				.filter(({ id }) => fit.shown.includes(id))
 				.map((tab) => (

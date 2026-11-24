@@ -36,7 +36,7 @@ export function PaneTab(props: PaneTabProps): ReactElement {
 			{...{ [TAB_ATTRIBUTE]: tab.id }}
 			className="sumi-pane-tab"
 			role="tab"
-			tabIndex={0}
+			tabIndex={isActive ? 0 : -1}
 			aria-selected={isActive}
 			aria-label={label}
 			title={isLabelled ? undefined : label}

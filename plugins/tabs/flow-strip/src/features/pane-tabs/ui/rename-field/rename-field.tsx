@@ -8,20 +8,29 @@ export interface RenameFieldProps {
 
 export function RenameField({ initial, onDone }: RenameFieldProps): ReactElement {
 	const field = useRef<HTMLInputElement | null>(null);
+	const isSettled = useRef(false);
 	useEffect(() => {
 		field.current?.select();
 	}, []);
-	const finish = (): void => {
+	const settle = (label: string | null): void => {
+		if (isSettled.current) {
+			return;
+		}
+
+		isSettled.current = true;
+		onDone(label);
+	};
+	const commit = (): void => {
 		const typed = field.current?.value.trim() ?? "";
-		onDone(typed === "" || typed === initial ? null : typed);
+		settle(typed === "" || typed === initial ? null : typed);
 	};
 	const onKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
 		if (event.key === "Enter") {
-			finish();
+			commit();
 		}
 
 		if (event.key === "Escape") {
-			onDone(null);
+			settle(null);
 		}
 	};
 	return (
@@ -32,7 +41,7 @@ export function RenameField({ initial, onDone }: RenameFieldProps): ReactElement
 			aria-label="Tab name"
 			autoFocus
 			onKeyDown={onKeyDown}
-			onBlur={finish}
+			onBlur={commit}
 			onPointerDown={(event) => event.stopPropagation()}
 		/>
 	);

@@ -5,6 +5,7 @@ import { Button, Icon } from "@widgetarium/kit";
 import type { FlowTab } from "../../../../shared/lib/flow-board-types.js";
 import { PANE_ROW_ATTRIBUTE } from "../../../../shared/lib/pane-dom.js";
 import { tabFitOf } from "../../lib/tab-fit.js";
+import { tabMenuSpotOf } from "../../lib/tab-menu-spot.js";
 import { useTabArt } from "../../lib/tab-look.js";
 import { usePaneTabActs } from "../../lib/use-pane-tab-acts.js";
 import type { PaneTabActs } from "../../lib/use-pane-tab-acts.js";
@@ -76,7 +77,7 @@ function PaneTabRowBody({ flowId, paneId, tabs, activeTabId, notice, onNotice }:
 				onClose={acts.close}
 				onMenu={(tabId, event) => {
 					event.preventDefault();
-					setMenu({ x: event.clientX, y: event.clientY, tabId });
+					setMenu({ ...tabMenuSpotOf(event), tabId });
 				}}
 				onPress={drag.press}
 				onRenameStart={setRenamingId}
