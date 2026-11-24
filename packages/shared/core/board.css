@@ -20912,7 +20912,7 @@ body:has(.wg-cm-layer) {
 	overflow-y: auto;
 	font-family: var(--font-ui);
 	font-size: var(--fs-13);
-	font-weight: var(--fw-ui);
+	font-weight: var(--fw-regular);
 	letter-spacing: var(--tracking-ui);
 }
 .sumi-flows-section {
@@ -21255,6 +21255,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-kit-seg.sumi-flows-picker-tabs {
 	--seg-pad: 2px;
+	background: var(--fill);
 	display: flex;
 	border-radius: calc(var(--r-sm) + 2px);
 }
@@ -21282,7 +21283,7 @@ body:has(.wg-cm-layer) {
 	height: var(--h-sm);
 	padding: 0 var(--space-2);
 	color: var(--text-3);
-	background: var(--hover);
+	background: var(--fill);
 	border-radius: var(--r-sm);
 }
 .sumi-flows-picker-input {
