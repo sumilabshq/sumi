@@ -6,7 +6,6 @@ import { changedLinesOf } from "../../lib/changed-lines.js";
 import { failuresIn } from "../../lib/failures-in.js";
 import { knownFacesOf } from "../../lib/known-face.js";
 import { callsSpanMs, saidElapsed } from "../../lib/spent.js";
-import { toolsIconOf } from "../../lib/tools-icon.js";
 import { toolsSummaryOf } from "../../lib/tools-summary.js";
 import { LineCounts } from "./line-counts.js";
 
@@ -18,7 +17,6 @@ export interface ToolsHeadProps {
 }
 
 const SOME_FAILED = "{count} failed";
-const TOOL_ICON_PX = 12;
 
 export function ToolsHead({ calls, faces, isOpen, onToggle }: ToolsHeadProps): ReactElement {
 	const failed = failuresIn(calls);
@@ -27,7 +25,6 @@ export function ToolsHead({ calls, faces, isOpen, onToggle }: ToolsHeadProps): R
 	const known = knownFacesOf(calls, faces);
 	return (
 		<button className="wg-studio-ai-tools-head" type="button" aria-expanded={isOpen} onClick={onToggle}>
-			<Icon name={toolsIconOf(known)} size={TOOL_ICON_PX} />
 			<span className="wg-studio-ai-tools-said">{toolsSummaryOf(known)}</span>
 			{changed === null ? null : <LineCounts added={changed.added} removed={changed.removed} />}
 			{failed === 0 ? null : (

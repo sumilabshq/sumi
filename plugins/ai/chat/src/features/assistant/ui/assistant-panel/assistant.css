@@ -17,7 +17,7 @@
 	user-select: text;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-scroll-content :is(button, .wg-studio-ai-welcome, .wg-studio-ai-finish-mark) {
+:is(.wg-root, .wg-portal) .wg-studio-ai-scroll-content :is(button, .wg-studio-ai-welcome) {
 	-webkit-user-select: none;
 	user-select: none;
 }
@@ -614,22 +614,10 @@
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-finish {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
+	padding: var(--space-none);
+	background: none;
 	color: var(--text-3);
-	font: var(--fw-regular) var(--fs-13) var(--font-code);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-finish-mark {
-	flex: none;
-	width: 8px;
-	height: 8px;
-	background: currentColor;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-finish-said {
-	flex-grow: 1;
+	font: var(--fw-ui) var(--fs-12) / 16px var(--font-ui);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-title {
