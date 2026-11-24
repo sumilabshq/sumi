@@ -4,19 +4,14 @@ import { check, tally } from "./check-helpers.ts";
 const OLD_PLUGIN_IDS = ["tabs-view", "tab-strip", "tabs-sidebar", "panes", "workspace-switcher"];
 const FLOW_PLUGIN_IDS = ["flows-sidebar", "flow-strip", "flow-board"];
 
-interface Drawing {
-	readonly name?: string;
-}
-
 const resolved = startSumiPlugins(builtInPluginState());
 
 function addedTo(slot: string): readonly (string | undefined)[] {
-	return resolved.slotFills.fillOf(slot).added.map((drawing: Drawing) => drawing.name);
+	return resolved.slotFills.fillOf(slot).added.map(({ name }) => name);
 }
 
 function replacementOf(slot: string): string | undefined {
-	const replacement: Drawing | null = resolved.slotFills.fillOf(slot).replacement;
-	return replacement?.name;
+	return resolved.slotFills.fillOf(slot).replacement?.name;
 }
 
 check("the built-in profile starts with no refusal", resolved.refusals, []);
