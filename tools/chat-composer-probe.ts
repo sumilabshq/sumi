@@ -12,7 +12,7 @@ const BOX: PartKeys = ["h", "w", "radius", "pad", "gap", "bg", "edge"];
 const TEXT: PartKeys = ["fs", "fw", "lh", "color", "spacing"];
 const FLAT: PartKeys = ["h", "radius", "pad", "gap", "bg", "edge"];
 
-const AUTO_BUILT = '.wg-studio-ai-field-bar .wg-kit-btn[aria-label="Permission mode"]';
+const AUTO_BUILT = '.wg-studio-ai-strip .wg-kit-btn[aria-label="Permission mode"]';
 const PICK_KEYS: PartKeys = ["h", "radius", "bg", "edge", "border", "fs", "fw", "color"];
 const PICK_BOARD = ".bar > .pick:nth-of-type(2)";
 const MODEL_BUILT = '.wg-studio-ai-field-bar .wg-kit-btn[aria-label="Model"]';
@@ -30,7 +30,7 @@ export const IDLE_PARTS: Parts = {
 	plus: { board: ".plus", built: ".wg-studio-ai-plus", keys: [...BOX, "border", "color"] },
 	plusGlyph: { board: ".plus svg", built: ".wg-studio-ai-plus svg", keys: ["w", "h"] },
 	model: { board: PICK_BOARD, built: MODEL_BUILT, keys: PICK_KEYS },
-	mode: { board: ".bar > .pick:nth-of-type(3)", built: AUTO_BUILT, keys: [...PICK_KEYS, "pad"] },
+	mode: { board: ".under .opt:nth-of-type(3)", built: AUTO_BUILT, keys: ["fs", "fw", "color"] },
 	usage: { board: ".usage", built: ".sumi-usage-button", keys: ["h", "w", "radius", "pad", "border"] },
 	sendIdle: {
 		board: ".send",
@@ -51,7 +51,7 @@ export const UNJUDGED = [
 	"the model and effort buttons: the board draws one button, the build two that read as one, so their padding and gap are not compared",
 	"the usage ring: the build keeps its 18px ring and the fill of a secondary button, the board draws 16px on --soft",
 	"the idle send in dark: the build paints --active, a translucent fill the probe reads over white, so its dark background is not compared",
-	"the option chevrons: the kit draws 12px, the board 13px, and icon sizes stay",
+	"the option chevrons: the build hides them in the footer row and the board draws none",
 	"the spacing under the field: the build stands the row on the field edges with a negative margin, the board pads it, so the two gaps are not compared",
 	"the typing hints: the person moved ↵ send and ⇧↵ new line into the placeholder, so the field draws no hint row",
 	"the tooltips: the person chose the studio's own gliding tooltip, with its arrow, over the board's plain tip",

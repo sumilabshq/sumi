@@ -50,15 +50,15 @@ async function seenIn(state: string, bundled: string): Promise<unknown> {
 
 const bundled = await bundleOf("tools/chat-composer-page.tsx");
 check(
-	"the empty chat draws a bare head, the welcome and the folder button; the model button names the model",
+	"the empty chat draws a bare head, the welcome and the folder button; the model button names the model and its effort",
 	await seenIn("empty", bundled),
 	{
 		header: 0,
 		strip: 1,
 		folder: 1,
 		welcome: 1,
-		bar: "OpusMediumAuto",
-		model: "Opus",
+		bar: "OpusMedium",
+		model: "OpusMedium",
 	},
 );
 check(
@@ -69,8 +69,8 @@ check(
 		strip: 1,
 		folder: 0,
 		welcome: 0,
-		bar: "OpusMediumAuto",
-		model: "Opus",
+		bar: "OpusMedium",
+		model: "OpusMedium",
 	},
 );
 check("a provider with no runner has no options and asks for a model", await seenIn("codex", bundled), {

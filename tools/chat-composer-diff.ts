@@ -149,7 +149,7 @@ const PHASES: readonly Phase[] = [
 		menuLabel: { board: "Permission mode", built: "Permission mode" },
 		state: "composer",
 		act: async (page) => {
-			await pressed(page, ".wg-studio-ai-field-bar .wg-kit-btn", "Permission mode");
+			await pressed(page, ".wg-studio-ai-strip .wg-kit-btn", "Permission mode");
 			await hoveredOn(page, '.wg-kit-pop.is-open .wg-kit-pop-item:not([aria-checked="true"])');
 		},
 		parts: MENU_PARTS,
