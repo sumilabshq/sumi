@@ -319,6 +319,7 @@
 		--shadow-page: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 1px 1.5px rgba(0, 0, 0, 0.1);
 		--shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
 		--line-menu: rgba(0, 0, 0, 0.09);
+		--surface-menu: #ffffff;
 		--r-menu: 10px;
 		--blur-pop: none;
 		--blur-corner: blur(10px);
@@ -488,6 +489,7 @@
 		--shadow-page: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 1px 1.5px rgba(0, 0, 0, 0.7);
 		--shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.45);
 		--line-menu: rgba(255, 255, 255, 0.09);
+		--surface-menu: #17181b;
 
 		--selected: var(--soft);
 		--pick: #000000;
@@ -2694,11 +2696,12 @@ body {
 	visibility: visible;
 	position: fixed;
 	z-index: var(--float-z, 60);
-	border-radius: var(--plate-radius);
-	background: var(--glass-panel);
-	backdrop-filter: var(--glass-blur);
-	-webkit-backdrop-filter: var(--glass-blur);
-	box-shadow: var(--glass-edge);
+	border: 1px solid var(--line-menu);
+	border-radius: var(--r-menu);
+	background: var(--surface-menu);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	box-shadow: var(--shadow-menu);
 	transform-origin: top left;
 	opacity: 0;
 	pointer-events: none;
@@ -2868,7 +2871,7 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-pop-tick {
 	margin-left: auto;
 	flex: none;
-	color: var(--brand);
+	color: var(--text);
 	opacity: 0;
 }
 
@@ -4541,12 +4544,15 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-btn:focus-visible::before,
 :is(.wg-root, .wg-portal) .wg-kit-press:focus-visible::before,
 :is(.wg-root, .wg-portal) .wg-kit-icon:focus-visible::before,
-:is(.wg-root, .wg-portal) .wg-kit-pop-item:focus-visible::before,
 :is(.wg-root, .wg-portal) .wg-kit-row:focus-visible::before,
 :is(.wg-root, .wg-portal) .wg-kit-cal-day:focus-visible::before,
 :is(.wg-root, .wg-portal) .wg-kit-seg button:focus-visible::before,
 :is(.wg-root, .wg-portal) .wg-kit-switch:focus-visible::before {
 	box-shadow: 0 0 0 2px var(--brand);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop-item:focus-visible::before {
+	box-shadow: inset 0 0 0 1px var(--focus-ring);
 }
 
 /* ═══════════════ THE SETTINGS WINDOW ═══════════════
@@ -12577,11 +12583,12 @@ body.wg-tree-carrying .wg-tile-body {
 	max-height: var(--pop-available-height, 70vh);
 	overflow-y: auto;
 	padding: var(--size-4-2, 8px);
-	border-radius: var(--plate-radius);
-	background: var(--glass-panel);
-	backdrop-filter: var(--glass-blur);
-	-webkit-backdrop-filter: var(--glass-blur);
-	box-shadow: var(--glass-edge);
+	border: 1px solid var(--line-menu);
+	border-radius: var(--r-menu);
+	background: var(--surface-menu);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	box-shadow: var(--shadow-menu);
 	outline: none;
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-item {
@@ -14840,7 +14847,7 @@ body.wg-tree-carrying .wg-tile-body {
 	line-height: 1.5;
 	border: 1px solid var(--line-menu);
 	border-radius: var(--r-menu);
-	background: var(--overlay);
+	background: var(--surface-menu);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	box-shadow: var(--shadow-menu);
