@@ -1,0 +1,14 @@
+.sumi-home-section {
+	margin-top: var(--space-6);
+}
+
+.sumi-home-heading {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	height: var(--space-6-5);
+	margin-bottom: var(--space-2);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
+	color: var(--text-3);
+}

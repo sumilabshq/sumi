@@ -1,0 +1,40 @@
+{
+	"name": "@sumi/home-layout",
+	"version": "0.1.0",
+	"description": "Home layout: the order of the Setup tiles, and the order, size and removal of the App tiles, the same in every workspace",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		"./contract": {
+			"source": "./generated/contract.ts",
+			"types": "./dist/generated/contract.d.ts",
+			"default": "./dist/generated/contract.js"
+		},
+		"./implementation": {
+			"source": "./generated/module.ts",
+			"types": "./dist/generated/module.d.ts",
+			"default": "./dist/generated/module.js"
+		}
+	},
+	"imports": {
+		"#module": {
+			"source": "./generated/command.ts",
+			"types": "./dist/generated/command.d.ts",
+			"default": "./dist/generated/command.js"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/behaviors": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}
