@@ -105,7 +105,7 @@ function whenTransitionEnds(panel: HTMLElement, property: string, done: () => vo
 }
 
 export function keepPanelPlaced(panel: HTMLElement, anchor: HTMLElement, placement: Placement): boolean {
-	if (panel.style.animation !== "" || panel.style.scale !== "") {
+	if (isInMotion(panel)) {
 		return false;
 	}
 
@@ -115,6 +115,12 @@ export function keepPanelPlaced(panel: HTMLElement, anchor: HTMLElement, placeme
 	const spot = placement.solve(anchor.getBoundingClientRect(), panel.getBoundingClientRect(), viewportSize());
 	wearSpot(panel, spot, frame);
 	return true;
+}
+
+function isInMotion(panel: HTMLElement): boolean {
+	if (panel.style.animation !== "" || panel.style.scale !== "") return true;
+	if (typeof panel.getAnimations !== "function") return false;
+	return panel.getAnimations().some((motion) => motion.playState === "running");
 }
 
 function isStyled(node: Element | null): node is Styled {

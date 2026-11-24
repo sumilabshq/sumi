@@ -1,12 +1,11 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useTabFace } from "@sumi/sumi-host-plugin";
-import { Button, Icon, PopoverItem } from "@widgetarium/kit";
+import { Button, Icon, PopoverItem, SpotMenu } from "@widgetarium/kit";
+import type { MenuSpot } from "@widgetarium/kit";
 import type { FlowTab } from "../../../../shared/lib/flow-board-types.js";
 import { tabLabelOf } from "../../lib/tab-look.js";
 import type { TabFaceLook } from "../../lib/tab-look.js";
-import { SpotMenu } from "../spot-menu/spot-menu.js";
-import type { MenuSpot } from "../spot-menu/spot-menu.js";
 
 export interface OverflowMenuProps {
 	readonly tabs: readonly FlowTab[];

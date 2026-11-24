@@ -2,9 +2,8 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { navigation } from "@widgetarium/navigation/contract";
-import { Icon, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
-import { SpotMenu } from "../spot-menu/spot-menu.js";
-import type { MenuSpot } from "../spot-menu/spot-menu.js";
+import { Icon, PopoverItem, PopoverSeparator, SpotMenu } from "@widgetarium/kit";
+import type { MenuSpot } from "@widgetarium/kit";
 
 export interface TabMenuAt extends MenuSpot {
 	readonly tabId: string;
