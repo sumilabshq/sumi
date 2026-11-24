@@ -1,5 +1,5 @@
 import { flowOfId, withFlowAdded } from "../../../shared/lib/flows/flow-docs.js";
-import { layoutWithTabsRenamed, placeAfterFlow } from "../../../shared/lib/flows/flow-copies.js";
+import { layoutWithFreshIds, layoutWithTabsRenamed, placeAfterFlow } from "../../../shared/lib/flows/flow-copies.js";
 import { tabsMoveAsPlaces } from "../../../shared/lib/flows/flow-moves.js";
 import type { MovePlaces, PlacedPlaces, PlacesMove } from "../../../shared/lib/flows/flow-moves.js";
 import { flowTabIdsOf } from "../../../shared/lib/flows/flow-nodes.js";
@@ -9,7 +9,7 @@ import type { Answer, ExtraPlan, Settled } from "../../../shared/lib/settling/se
 import { duplicatePlan } from "../../../shared/lib/showing/opening-plans.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import type { DuplicateFlowAskSchema } from "../../../shared/schema/flow-asks.schema.js";
-import type { Flow } from "../../../shared/schema/flows.schema.js";
+import type { Flow, FlowsDoc } from "../../../shared/schema/flows.schema.js";
 import type { z } from "zod";
 import type { FlowBirth } from "./flow-plans.js";
 
@@ -88,7 +88,7 @@ function withCopyAdded({ now, flow, birth }: CopyMoment, copied: PlacesMove<Answ
 		...flow,
 		id: birth.id,
 		name: `${flow.name}${COPY_SUFFIX}`,
-		layout: layoutWithTabsRenamed(flow.layout, copyOfTab),
+		layout: layoutWithFreshIds(layoutWithTabsRenamed(flow.layout, copyOfTab), mintedAcross(flows)),
 		createdAt: birth.at,
 		lastOpenedAt: birth.at,
 	};
@@ -103,6 +103,10 @@ function withCopyAdded({ now, flow, birth }: CopyMoment, copied: PlacesMove<Answ
 			},
 		},
 	};
+}
+
+function mintedAcross(doc: FlowsDoc): number {
+	return Math.max(0, ...doc.flows.map(({ layout }) => layout.minted));
 }
 
 function refused(reason: string): PlacesMove<FlowDuplicated> {

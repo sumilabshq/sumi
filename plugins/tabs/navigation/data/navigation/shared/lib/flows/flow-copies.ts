@@ -10,6 +10,33 @@ export function layoutWithTabsRenamed(layout: Flow["layout"], copyOfTab: Readonl
 	return { ...layout, root: nodeWithTabsRenamed(layout.root, copyOfTab) };
 }
 
+export function layoutWithFreshIds(layout: Flow["layout"], mintedAcrossDoc: number): Flow["layout"] {
+	const minting = { minted: mintedAcrossDoc, freshOf: new Map<string, string>() };
+	const root = nodeWithFreshIds(layout.root, minting);
+	return {
+		root,
+		focusedPaneId: minting.freshOf.get(layout.focusedPaneId) ?? layout.focusedPaneId,
+		minted: minting.minted,
+	};
+}
+
+interface IdMinting {
+	minted: number;
+	readonly freshOf: Map<string, string>;
+}
+
+function nodeWithFreshIds(node: FlowNode, minting: IdMinting): FlowNode {
+	minting.minted += 1;
+	const id = `${node.kind}-m${minting.minted}`;
+	minting.freshOf.set(node.id, id);
+
+	if (node.kind === "pane") {
+		return { ...node, id };
+	}
+
+	return { ...node, id, children: node.children.map((child) => nodeWithFreshIds(child, minting)) };
+}
+
 export function placeAfterFlow(doc: FlowsDoc, flowId: string): FlowPlaceAfter | null {
 	if (flowOfId(doc, flowId) === undefined) {
 		return null;

@@ -1,6 +1,6 @@
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
-import type { FlowFolder, FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
+import type { FlowFolder, FlowNode, FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { folderColorsFillMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { atOf } from "./flows-asks.ts";
@@ -321,8 +321,15 @@ async function removeChecks(): Promise<void> {
 	check("every law holds after the removal", await lawsOf(stand), []);
 }
 
+function splitIdsOf(node: FlowNode): string[] {
+	return node.kind === "pane" ? [] : [node.id, ...node.children.flatMap(splitIdsOf)];
+}
+
 async function duplicateChecks(): Promise<void> {
 	const stand = standOver(true);
+	const warned: string[] = [];
+	const warnBefore = console.warn;
+	console.warn = (...said: unknown[]): void => void warned.push(said.map(String).join(" "));
 	const at = { window: MAIN, screen: BARE_SCREEN };
 	const source = chatFlow(3);
 	const before = await stand.tabs.places();
@@ -345,6 +352,15 @@ async function duplicateChecks(): Promise<void> {
 			copy?.layout.root.kind === original?.layout.root.kind,
 		],
 		[true, false, copyTabIds.length, true],
+	);
+	console.warn = warnBefore;
+	const layoutIds = (flow: typeof copy): string[] => (flow === undefined ? [] : [...flowPanesOf(flow).map(({ id }) => id), ...splitIdsOf(flow.layout.root)]);
+	const originalIds = original === undefined ? [] : layoutIds(original);
+	const copyIds = layoutIds(copy);
+	check(
+		"a copy shares no pane or split id with the original, keeps its focus, and healing stays silent",
+		[copyIds.length === originalIds.length, copyIds.some((id) => originalIds.includes(id)), copy !== undefined && flowPanesOf(copy).some(({ id }) => id === copy.layout.focusedPaneId), warned],
+		[true, false, true, []],
 	);
 	check("every law holds after the duplicate", await lawsOf(stand), []);
 }
