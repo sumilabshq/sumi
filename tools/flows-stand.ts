@@ -64,10 +64,14 @@ function askerOf(started: Runtime): Asker {
 	};
 }
 
-export function standOver(withFlows: boolean, extraApps: readonly PlacedApp[] = []): Stand {
+export function standOver(
+	withFlows: boolean,
+	extraApps: readonly PlacedApp[] = [],
+	broken: (flows: FlowsDoc) => FlowsDoc = (flows) => flows,
+): Stand {
 	const { placed, flows } = seeded();
 	const listed = [...BUILT_IN_PLACED_APPS, ...extraApps];
-	const tabs = new MemoryTabsGateway(placed, undefined, undefined, withFlows ? flows : null, {
+	const tabs = new MemoryTabsGateway(placed, undefined, undefined, withFlows ? broken(flows) : null, {
 		apps: placedAppsOf(listed),
 		now: () => NOW,
 	});

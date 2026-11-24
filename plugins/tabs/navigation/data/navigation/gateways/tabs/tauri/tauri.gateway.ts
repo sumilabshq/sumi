@@ -43,7 +43,7 @@ export class TauriTabsGateway extends TabsGateway {
 	}
 
 	override async places(): Promise<PlacedPlaces> {
-		return placesIn(await this.ready);
+		return placesIn((await this.ready).now());
 	}
 
 	override async movePlaces<T>(move: MovePlaces<T>): Promise<T> {

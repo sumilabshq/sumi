@@ -1,4 +1,4 @@
-import type { DocKind, DocState, StoreClient, StoreRoot } from "./store-client.js";
+import type { DocKind, DocState, Replaced, StoreClient, StoreRoot } from "./store-client.js";
 
 const WRITE_DELAY_MS = 400;
 const MOST_WRITE_WAIT_MS = 2000;
@@ -23,6 +23,12 @@ export interface DocAt<Doc> {
 interface PendingChange<Doc> {
 	readonly patch: Partial<Doc>;
 	readonly reasons: readonly string[];
+}
+
+export interface DocStep<Doc, Answer> {
+	readonly patch: Partial<Doc> | null;
+	readonly reason: string;
+	readonly answer: Answer;
 }
 
 export class HeldDoc<Doc extends object> {
@@ -85,6 +91,18 @@ export class HeldDoc<Doc extends object> {
 		for (const changed of [...this.listeners]) {
 			changed();
 		}
+	}
+
+	changeOnNewest<Answer>(step: (now: Doc) => DocStep<Doc, Answer>): Promise<Answer> {
+		const stepped = this.writing.then(async () => {
+			await this.writePending();
+			return this.writeStepped(step);
+		});
+		this.writing = stepped.then(
+			() => undefined,
+			() => undefined,
+		);
+		return stepped;
 	}
 
 	flush(): Promise<void> {
@@ -236,6 +254,84 @@ export class HeldDoc<Doc extends object> {
 
 		console.error(`[ink] ${this.label()} kept changing underneath, "${reason}" waits for the next write`);
 		return false;
+	}
+
+	private async writeStepped<Answer>(step: (now: Doc) => DocStep<Doc, Answer>): Promise<Answer> {
+		if (!this.isRead()) {
+			throw new Error(`[ink] ${this.label()} is not read yet, a change on the newest doc cannot run`);
+		}
+
+		for (let tries = 0; tries < MOST_WRITE_TRIES; tries += 1) {
+			const stepped = step(this.now());
+
+			if (stepped.patch === null || this.held.isReadOnly) {
+				return this.answeredWithoutWrite(stepped);
+			}
+
+			const doc = { ...this.now(), ...stepped.patch };
+			const carried = this.pending;
+			this.pending = null;
+			const answer = await this.replacedOrNull(doc, stepped.reason);
+
+			if (answer?.ok === true) {
+				this.landWritten(doc, answer.rev);
+				return stepped.answer;
+			}
+
+			if (carried !== null) {
+				this.keepForNextWrite(carried);
+			}
+
+			if (answer === null) {
+				return this.answeredWithoutWrite(stepped);
+			}
+
+			console.info(
+				`[ink] ${this.label()} rev ${this.held.rev} is stale (now ${answer.currentRev}), "${stepped.reason}" runs again on it`,
+			);
+			await this.rebase({ patch: {}, reasons: [] });
+		}
+
+		throw new Error(`[ink] ${this.label()} kept changing underneath, nothing written`);
+	}
+
+	private async replacedOrNull(doc: Doc, reason: string): Promise<Replaced | null> {
+		try {
+			return await this.at.store.replaceDoc(this.at.root, this.at.kind, { doc, baseRev: this.held.rev, reason });
+		} catch (failure: unknown) {
+			// TRADE-OFF: a failed disk write replays the whole patch later; re-running the step would need a queue of steps
+			console.error(
+				`[ink] ${this.label()} could not be written, "${reason}" waits in memory for the next write`,
+				failure,
+			);
+			return null;
+		}
+	}
+
+	private answeredWithoutWrite<Answer>(stepped: DocStep<Doc, Answer>): Answer {
+		if (stepped.patch !== null) {
+			this.change(stepped.patch, stepped.reason);
+		}
+
+		return stepped.answer;
+	}
+
+	private landWritten(doc: Doc, rev: number): void {
+		if (rev <= this.held.rev) {
+			return;
+		}
+
+		this.held = {
+			...this.held,
+			rev,
+			doc: {
+				...doc,
+				...this.pending?.patch,
+			},
+		};
+		for (const listener of [...this.listeners]) {
+			listener();
+		}
 	}
 
 	private async rebase(change: PendingChange<Doc>): Promise<void> {

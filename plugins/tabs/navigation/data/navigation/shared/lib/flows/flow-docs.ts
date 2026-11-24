@@ -35,6 +35,10 @@ export function withFolderChanged(doc: FlowsDoc, folderId: string, change: Parti
 }
 
 export function withFlowPlaced(doc: FlowsDoc, flowId: string, place: FlowPlace): FlowsDoc {
+	if (place.before === flowId) {
+		return doc;
+	}
+
 	const bare = withoutFlowPlace(doc, flowId);
 
 	if (place.folderId === null) {

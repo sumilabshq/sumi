@@ -14,29 +14,55 @@ export const KeptNavigationSchema = z.looseObject({
 
 export type KeptNavigation = z.infer<typeof KeptNavigationSchema>;
 
-export function placesIn(kept: HeldDoc<KeptNavigation>): PlacedPlaces {
-	const { tabs, flows } = kept.now();
+const UNREADABLE_FLOWS =
+	"[widgetarium] navigation flows cannot be read, they stay on disk untouched and no flows command runs: {error}";
+
+export function placesIn({ tabs, flows }: KeptNavigation): PlacedPlaces {
 	return {
 		tabs: PlacedTabsSchema.parse(tabs),
 		flows: flowsIn(flows),
 	};
 }
 
-export async function commitPlaces<T>(kept: HeldDoc<KeptNavigation>, move: MovePlaces<T>): Promise<T> {
-	const was = placesIn(kept);
-	const moved = move(was);
+export function commitPlaces<T>(kept: HeldDoc<KeptNavigation>, move: MovePlaces<T>): Promise<T> {
+	return kept.changeOnNewest((now) => {
+		const was = placesIn(now);
+		const moved = move(was);
+		return {
+			patch: moved.next === null ? null : placesPatchOf(moved.next, { now, was }),
+			reason: `navigation ${moved.reason}`,
+			answer: moved.answer,
+		};
+	});
+}
 
-	if (moved.next === null) {
-		return moved.answer;
+interface PlacesRead {
+	readonly now: KeptNavigation;
+	readonly was: PlacedPlaces;
+}
+
+function placesPatchOf(next: PlacedPlaces, { now, was }: PlacesRead): Partial<KeptNavigation> {
+	if (next.flows === null || (was.flows === null && now.flows !== undefined)) {
+		return { tabs: next.tabs };
 	}
 
-	const { tabs, flows } = moved.next;
-	kept.change(flows === null || flows === was.flows ? { tabs } : { tabs, flows }, `navigation ${moved.reason}`);
-	await kept.flush();
-	return moved.answer;
+	return {
+		tabs: next.tabs,
+		flows: next.flows === was.flows ? now.flows : next.flows,
+	};
 }
 
 function flowsIn(flows: unknown): FlowsDoc | null {
+	if (flows === undefined) {
+		return null;
+	}
+
 	const parsed = FlowsDocSchema.safeParse(flows);
-	return parsed.success ? parsed.data : null;
+
+	if (!parsed.success) {
+		console.error(UNREADABLE_FLOWS.replace("{error}", () => parsed.error.message));
+		return null;
+	}
+
+	return parsed.data;
 }

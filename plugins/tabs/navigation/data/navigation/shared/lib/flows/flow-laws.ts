@@ -16,8 +16,8 @@ export function flowBreaksOf(doc: FlowsDoc, liveTabIds: readonly string[]): read
 	return [
 		...repeatedIdsOf(doc),
 		...tabPlacesBreaks(doc, liveTabIds),
-		...flowPlacesBreaks(doc),
-		...doc.flows.flatMap(layoutBreaksOf),
+		...flowPlacesBreaksOf(doc),
+		...doc.flows.flatMap(flowLayoutBreaksOf),
 	];
 }
 
@@ -57,7 +57,7 @@ function tabPlacesBreaks(doc: FlowsDoc, liveTabIds: readonly string[]): readonly
 	return [...notOnePane, ...unknown];
 }
 
-function flowPlacesBreaks(doc: FlowsDoc): readonly string[] {
+export function flowPlacesBreaksOf(doc: FlowsDoc): readonly string[] {
 	const flowIds = new Set(doc.flows.map(({ id }) => id));
 	const places = [
 		{ place: "looseFlowIds", ids: doc.looseFlowIds },
@@ -73,7 +73,7 @@ function flowPlacesBreaks(doc: FlowsDoc): readonly string[] {
 	return [...notOnePlace, ...unknown];
 }
 
-function layoutBreaksOf(flow: Flow): readonly string[] {
+export function flowLayoutBreaksOf(flow: Flow): readonly string[] {
 	const panes = flowPanesOf(flow);
 	return [
 		...splitBreaksOf(flow, flow.layout.root),

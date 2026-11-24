@@ -145,7 +145,7 @@ export function removeFlowMove(ask: RemoveFlowAsk, apps: PlacedApps): MovePlaces
 				? null
 				: tabsMoveAsPlaces(settling(ask.at, apps, closeTabsPlan(ids, `remove flow ${ask.flowId}`)))(now);
 
-		if (closed !== null && closed.next === null) {
+		if (closed?.answer.isRefused === true) {
 			return closed;
 		}
 

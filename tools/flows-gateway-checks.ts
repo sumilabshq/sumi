@@ -7,7 +7,7 @@ import { FlowsDocSchema } from "../plugins/tabs/navigation/data/navigation/share
 import type { FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { flowBreaksOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-laws.ts";
 import { flowsConversionMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
-import { flowCountsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-conversion.ts";
+import { flowCountsOf, flowsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-conversion.ts";
 import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { BUILT_IN_APPS, BUILT_IN_PLACED_APPS } from "./placed-apps-fixture.ts";
 import { fixturePlaced } from "./flows-fixture.ts";
@@ -251,12 +251,95 @@ async function unreadableFlowsChecks(): Promise<void> {
 	const fake = seeded({ flows: { v: 99, junk: true } });
 	fake.conversionRefusal = null;
 	const tabs = gatewayOver(fake.invoke, true);
-	const { answer } = await heard(() => tabs.places());
+	const { answer, said } = await heard(() => tabs.places());
 	check("flows that cannot be read are not converted over", [answer.flows, replacesOf(fake).length], [null, 0]);
+	check(
+		"and the read says why, loudly",
+		said.errors.some((line) => line.includes("navigation flows cannot be read") && line.includes("expected")),
+		true,
+	);
 	await heard(() =>
 		tabs.movePlacedTabs((now) => ({ next: { ...now, minted: now.minted + 1 }, reason: "a tab command", answer: null })),
 	);
 	check("a tab command leaves them on disk untouched", keptDoc(fake)["flows"], { v: 99, junk: true });
+}
+
+function seededConverted(): FakeStore {
+	const converted = flowsOf({ placed: fixturePlaced(), apps: BUILT_IN_APPS, sourceRev: SEEDED_REV, now: 1 });
+
+	if (converted.isRefused) {
+		throw new Error(converted.reasons.join("; "));
+	}
+
+	return seeded({ flows: JSON.parse(JSON.stringify(converted.doc)) });
+}
+
+function twoWindowsOver(fake: FakeStore): readonly [ReturnType<typeof gatewayOver>, ReturnType<typeof gatewayOver>] {
+	return [gatewayOver(fake.invoke, false), gatewayOver(fake.invoke, false)];
+}
+
+function diskPlacesOf(fake: FakeStore): { readonly liveIds: readonly string[]; readonly flows: FlowsDoc } {
+	const disk = keptDoc(fake);
+	return {
+		liveIds: Object(disk["tabs"])["tabs"].map(({ id }: { readonly id: string }) => id),
+		flows: FlowsDocSchema.parse(disk["flows"]),
+	};
+}
+
+async function staleWindowTabWriteChecks(): Promise<void> {
+	const fake = seededConverted();
+	const [windowA, windowB] = twoWindowsOver(fake);
+	const [closed, marked] = (await heard(() => windowA.places())).answer.tabs.tabs.map(({ id }) => id);
+	await heard(() => windowB.places());
+	await heard(() =>
+		windowA.movePlacedTabs((now) => ({
+			next: { ...now, tabs: now.tabs.filter(({ id }) => id !== closed) },
+			reason: "window A closes a tab",
+			answer: null,
+		})),
+	);
+	await heard(() =>
+		windowB.movePlacedTabs((now) => ({
+			next: { ...now, tabs: now.tabs.map((tab) => (tab.id === marked ? { ...tab, mark: "running" as const } : tab)) },
+			reason: "window B marks a chat running from an old read",
+			answer: null,
+		})),
+	);
+	const { liveIds, flows } = diskPlacesOf(fake);
+	const disk = Object(keptDoc(fake)["tabs"])["tabs"] as readonly { readonly id: string; readonly mark?: string }[];
+	check(
+		"a stale window's tab write keeps the other window's close and every law",
+		[liveIds.includes(closed ?? ""), disk.find(({ id }) => id === marked)?.mark, flowBreaksOf(flows, liveIds)],
+		[false, "running", []],
+	);
+}
+
+async function staleWindowHoldChecks(): Promise<void> {
+	const fake = seededConverted();
+	const [windowA, windowB] = twoWindowsOver(fake);
+	const [first, second] = (await heard(() => windowA.places())).answer.flows?.flows.map(({ id }) => id) ?? [];
+	await heard(() => windowB.places());
+	const holding =
+		(window: string, flowId: string | undefined): Parameters<typeof windowA.movePlaces>[0] =>
+		(now) => ({
+			next:
+				now.flows === null
+					? null
+					: {
+							tabs: now.tabs,
+							flows: { ...now.flows, windowFlows: { ...now.flows.windowFlows, [window]: flowId ?? "" } },
+						},
+			reason: `${window} opens ${flowId}`,
+			answer: null,
+		});
+	await heard(() => windowA.movePlaces(holding("window-a", first)));
+	await heard(() => windowB.movePlaces(holding("window-b", second)));
+	const { windowFlows } = diskPlacesOf(fake).flows;
+	check(
+		"two windows opening flows from old reads both keep their hold",
+		[windowFlows["window-a"], windowFlows["window-b"]],
+		[first, second],
+	);
 }
 
 async function memoryChecks(first: FlowsDoc | null): Promise<void> {
@@ -299,6 +382,8 @@ await crashChecks(converted);
 await tabWritesKeepFlowsChecks();
 await flowsChangedChecks(converted);
 await unreadableFlowsChecks();
+await staleWindowTabWriteChecks();
+await staleWindowHoldChecks();
 await memoryChecks(converted);
 console.log(tally.failed ? `flows gateway: ${tally.failed} check(s) failed` : "flows gateway: all checks passed");
 process.exit(tally.failed ? 1 : 0);

@@ -173,6 +173,15 @@ function savedSplitChecks(placed: PlacedTabs): void {
 		flowOf(converted(acrossFlows).doc, "flow-loose-group-93").layout.root.kind,
 		"pane",
 	);
+	const memberless: PlacedTabs = {
+		...withSplit,
+		splits: [{ ...(withSplit.splits[0] ?? never()), memberIds: [] }],
+	};
+	check(
+		"a saved split with no members is laid on no flow",
+		converted(memberless).said.filter((line) => line.includes("split-1")),
+		[],
+	);
 }
 
 function never(): never {

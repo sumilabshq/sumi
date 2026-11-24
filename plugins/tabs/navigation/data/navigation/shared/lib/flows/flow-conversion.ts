@@ -231,7 +231,7 @@ function chatFlowOf(chatId: string, context: Context): FlowMade {
 		membersOf(flowId, [chatId], context),
 	);
 	return {
-		flow: flowOf({ id: flowId, name: nameOfTab(chatId, context), layout }, context),
+		flow: flowOf({ id: flowId, name: flowNameOfTab(context.source.placed, chatId), layout }, context),
 		said,
 	};
 }
@@ -241,7 +241,7 @@ function tabFlowOf(tabId: string, context: Context): FlowMade {
 	const members = membersOf(flowId, [tabId], context);
 	const { layout, said } = layoutOfPaneNode(savedSplitOf(members, context), members);
 	return {
-		flow: flowOf({ id: flowId, name: nameOfTab(tabId, context), layout }, context),
+		flow: flowOf({ id: flowId, name: flowNameOfTab(context.source.placed, tabId), layout }, context),
 		said,
 	};
 }
@@ -282,8 +282,8 @@ function flowOf({ id, name, layout }: FlowFacts, { source }: Context): Flow {
 	};
 }
 
-function nameOfTab(tabId: string, { source }: Context): string {
-	const tab = source.placed.tabs.find(({ id }) => id === tabId);
+export function flowNameOfTab(placed: PlacedTabs, tabId: string): string {
+	const tab = placed.tabs.find(({ id }) => id === tabId);
 	return tab?.label ?? tab?.title ?? UNTITLED_FLOW;
 }
 
@@ -293,7 +293,9 @@ function paneNodeOfChat(trees: readonly PaneTree[], chatId: string): PaneNode | 
 }
 
 function savedSplitOf({ tabIds }: FlowMembers, { source }: Context): PaneNode | null {
-	const saved = source.placed.splits.find((split) => split.memberIds.every((id) => tabIds.includes(id)));
+	const saved = source.placed.splits.find(
+		({ memberIds }) => memberIds.length > 0 && memberIds.every((id) => tabIds.includes(id)),
+	);
 	return saved === undefined ? null : paneNodeOfSplit(saved.layout, saved.id);
 }
 

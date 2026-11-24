@@ -1,10 +1,11 @@
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
-import { flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
+import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
 import type { FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { atOf } from "./flows-asks.ts";
 import { chatIdOf } from "./flows-fixture.ts";
 import { MAIN, SIDE, chatFlow, flowsIn, lawsOf, refusalOf, standOver } from "./flows-stand.ts";
+import type { Stand } from "./flows-stand.ts";
 import { check, tally } from "./check-helpers.ts";
 
 async function readChecks(): Promise<void> {
@@ -315,6 +316,192 @@ async function reconcileChecks(): Promise<void> {
 	check("every law holds after the reopen", await lawsOf(stand), []);
 }
 
+type Flow = FlowsDoc["flows"][number];
+
+function withFlowEdited(flows: FlowsDoc, flowId: string, edit: (flow: Flow) => Flow): FlowsDoc {
+	return { ...flows, flows: flows.flows.map((flow) => (flow.id === flowId ? edit(flow) : flow)) };
+}
+
+function withTabAddedToRoot(flow: Flow, tabId: string): Flow {
+	const { root } = flow.layout;
+	return root.kind === "pane"
+		? { ...flow, layout: { ...flow.layout, root: { ...root, tabIds: [...root.tabIds, tabId] } } }
+		: flow;
+}
+
+function withRootSplitInTwoSamePanes(flow: Flow): Flow {
+	const { root } = flow.layout;
+
+	if (root.kind !== "pane") {
+		return flow;
+	}
+
+	const [first = "", ...rest] = root.tabIds;
+	return {
+		...flow,
+		layout: {
+			...flow.layout,
+			root: {
+				kind: "split",
+				id: "split-healing",
+				dir: "row",
+				shares: [1, 1],
+				children: [
+					{ ...root, tabIds: [first], activeTabId: first },
+					{ ...root, tabIds: rest, activeTabId: rest[0] ?? null },
+				],
+			},
+		},
+	};
+}
+
+async function afterAWrite(stand: Stand): Promise<{ readonly laws: readonly string[]; readonly flows: FlowsDoc }> {
+	const refused = await refusalOf(() =>
+		stand.tabs.movePlacedTabs((now) => ({
+			next: { ...now, minted: now.minted + 1 },
+			reason: "a chat mark",
+			answer: null,
+		})),
+	);
+	return { laws: refused === "" ? await lawsOf(stand) : [refused], flows: await flowsIn(stand) };
+}
+
+function holdersOf(flows: FlowsDoc, tabId: string): readonly string[] {
+	return flows.flows.filter((flow) => flowTabIdsOf(flow).includes(tabId)).map(({ id }) => id);
+}
+
+async function healingChecks(): Promise<void> {
+	const twoPanes = await afterAWrite(
+		standOver(true, [], (flows) => withFlowEdited(flows, chatFlow(2), (flow) => withTabAddedToRoot(flow, chatIdOf(1)))),
+	);
+	check(
+		"a tab in two panes heals into its first pane on the next write",
+		[twoPanes.laws, holdersOf(twoPanes.flows, chatIdOf(1))],
+		[[], [chatFlow(1)]],
+	);
+
+	const repeatedFlow = await afterAWrite(
+		standOver(true, [], (flows) => ({
+			...flows,
+			flows: [...flows.flows, ...flows.flows.filter(({ id }) => id === chatFlow(3))],
+		})),
+	);
+	check(
+		"a repeated flow id heals to one flow",
+		[repeatedFlow.laws, repeatedFlow.flows.flows.filter(({ id }) => id === chatFlow(3)).length],
+		[[], 1],
+	);
+
+	const repeatedPane = await afterAWrite(
+		standOver(true, [], (flows) => withFlowEdited(flows, chatFlow(1), withRootSplitInTwoSamePanes)),
+	);
+	const healedFlow = repeatedPane.flows.flows.find(({ id }) => id === chatFlow(1)) ?? emptyFlow();
+	check(
+		"a repeated pane id heals to two panes with their tabs",
+		[
+			repeatedPane.laws,
+			new Set(flowPanesOf(healedFlow).map(({ id }) => id)).size,
+			holdersOf(repeatedPane.flows, chatIdOf(1)),
+		],
+		[[], 2, [chatFlow(1)]],
+	);
+
+	const twoPlaces = await afterAWrite(
+		standOver(true, [], (flows) => ({
+			...flows,
+			folders: flows.folders.map((folder, at) =>
+				at === 0 ? { ...folder, flowIds: [...folder.flowIds, chatFlow(1)] } : folder,
+			),
+		})),
+	);
+	check(
+		"a flow in two places heals into its first place",
+		[
+			twoPlaces.laws,
+			twoPlaces.flows.looseFlowIds.includes(chatFlow(1)),
+			twoPlaces.flows.folders[0]?.flowIds.includes(chatFlow(1)),
+		],
+		[[], true, false],
+	);
+
+	const seededFolders = (await flowsIn(standOver(true))).folders.length;
+	const repeatedFolder = await afterAWrite(
+		standOver(true, [], (flows) => ({
+			...flows,
+			folders: [...flows.folders, ...flows.folders.slice(0, 1).map((folder) => ({ ...folder, flowIds: [] }))],
+		})),
+	);
+	check(
+		"a repeated folder id heals into one folder",
+		[repeatedFolder.laws, repeatedFolder.flows.folders.length],
+		[[], seededFolders],
+	);
+
+	const warned: string[] = [];
+	console.warn = (...said: unknown[]): void => void warned.push(said.map(String).join(" "));
+	const strayStand = standOver(true);
+	const strayRefused = await refusalOf(() =>
+		strayStand.tabs.movePlacedTabs((now) => ({
+			next: {
+				...now,
+				tabs: [...now.tabs, { ...(now.tabs.find(({ id }) => id === "tab-94") ?? never()), id: "tab-stray" }],
+			},
+			reason: "a tab no old list holds",
+			answer: null,
+		})),
+	);
+	console.warn = () => undefined;
+	check(
+		"a stray the old tab laws refuse to convert gets a flow of its own",
+		[strayRefused, await lawsOf(strayStand), holdersOf(await flowsIn(strayStand), "tab-stray")],
+		["", [], ["flow-tab-tab-stray"]],
+	);
+	check(
+		"and the healing is logged with its reason",
+		warned.some((line) => line.includes("tab-stray") && line.includes("refuse conversion")),
+		true,
+	);
+}
+
+async function removeNoOpCloseChecks(): Promise<void> {
+	const ghost = "flow-ghost";
+	const stand = standOver(true, [], (flows) => ({
+		...flows,
+		flows: [
+			...flows.flows,
+			{
+				...(flows.flows[0] ?? emptyFlow()),
+				id: ghost,
+				layout: {
+					root: { kind: "pane", id: "pane-ghost", tabIds: ["tab-ghost"], activeTabId: "tab-ghost" },
+					focusedPaneId: "pane-ghost",
+					minted: 0,
+				},
+			},
+		],
+		looseFlowIds: [...flows.looseFlowIds, ghost],
+	}));
+	const refused = await refusalOf(() =>
+		stand.app.send(navigation.flows.remove, { flowId: ghost, at: { window: MAIN, screen: BARE_SCREEN } }),
+	);
+	check(
+		"a flow whose tabs cannot close is refused, never reported removed while it stays",
+		[refused.includes("holds no tab"), (await flowsIn(stand)).flows.some(({ id }) => id === ghost)],
+		[true, true],
+	);
+}
+
+async function moveBeforeItselfChecks(): Promise<void> {
+	const stand = standOver(true);
+	const before = (await flowsIn(stand)).looseFlowIds;
+	await stand.app.send(navigation.flows.move, { flowId: chatFlow(2), place: { folderId: null, before: chatFlow(2) } });
+	check("moving a flow before itself leaves it where it stands", (await flowsIn(stand)).looseFlowIds, before);
+}
+
+function never(): never {
+	throw new Error("the fixture holds no tab-94");
+}
+
 function emptyFlow(): FlowsDoc["flows"][number] {
 	throw new Error("the flow is gone");
 }
@@ -331,5 +518,8 @@ await setupChecks();
 await removeChecks();
 await adoptChecks();
 await reconcileChecks();
+await healingChecks();
+await removeNoOpCloseChecks();
+await moveBeforeItselfChecks();
 console.log(tally.failed ? `flows commands: ${tally.failed} check(s) failed` : "flows commands: all checks passed");
 process.exit(tally.failed ? 1 : 0);

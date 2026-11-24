@@ -1,8 +1,14 @@
 import type { FlowLayout, FlowNode, FlowPane } from "../../schema/flows.schema.js";
 import { panesOf } from "./flow-nodes.js";
 
+export type PanePruning = (pane: FlowPane) => FlowPane | null;
+
 export function layoutWithoutTabs(layout: FlowLayout, gone: ReadonlySet<string>): FlowLayout {
-	const pruned = prunedNode(layout.root, gone);
+	return layoutPruned(layout, (pane) => prunedPane(pane, gone));
+}
+
+export function layoutPruned(layout: FlowLayout, prunePane: PanePruning): FlowLayout {
+	const pruned = prunedNode(layout.root, prunePane);
 	const root = pruned ?? emptiedPane(layout.root);
 	const paneIds = panesOf(root).map(({ id }) => id);
 	return {
@@ -48,13 +54,13 @@ function emptiedPane(root: FlowNode): FlowPane {
 	};
 }
 
-function prunedNode(node: FlowNode, gone: ReadonlySet<string>): FlowNode | null {
+function prunedNode(node: FlowNode, prunePane: PanePruning): FlowNode | null {
 	if (node.kind === "pane") {
-		return prunedPane(node, gone);
+		return prunePane(node);
 	}
 
 	const survivors = node.children.flatMap((child, at) => {
-		const pruned = prunedNode(child, gone);
+		const pruned = prunedNode(child, prunePane);
 		return pruned === null ? [] : [{ pruned, share: node.shares[at] ?? 1 }];
 	});
 	const [only] = survivors;
