@@ -3,6 +3,7 @@ import path from "node:path";
 import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
 import { TRAFFIC_LIGHTS, bundledSidebarPage, openedSidebar } from "./flows-sidebar-harness.ts";
+import { chatTitleChecks } from "./flows-chat-title-checks.ts";
 import { frameLookChecks, nameOf } from "./flows-frame-checks.ts";
 import type { FrameState, FrameTheme } from "./flows-frame-checks.ts";
 import { FRAME_SPLITS, sceneOf } from "./flows-frame-scenes.ts";
@@ -172,6 +173,7 @@ for (const theme of THEMES) {
 }
 
 await inState("inbox+board", "light", async (page) => trailChecks(page, "docked trail"));
+await chatTitleChecks();
 
 console.log(tally.failed ? `flows chrome: ${tally.failed} check(s) failed` : "flows chrome: all checks passed");
 process.exit(tally.failed ? 1 : 0);
