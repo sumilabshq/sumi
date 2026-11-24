@@ -8,6 +8,7 @@ export interface ChoiceGridAsk {
 
 export interface ChoiceGrid {
 	readonly activeIndex: number;
+	readonly isKeying: boolean;
 	readonly firstRow: number;
 	readonly endRow: number;
 	readonly rowCount: number;
@@ -31,6 +32,7 @@ const STEP_OF_KEY: ReadonlyMap<string, number> = new Map([
 interface ListPlace {
 	readonly listKey: string;
 	readonly activeIndex: number;
+	readonly isKeying: boolean;
 	readonly scrollTop: number;
 }
 
@@ -43,13 +45,15 @@ export function useChoiceGrid({ count, listKey }: ChoiceGridAsk): ChoiceGrid {
 	const [held, setHeld] = useState<ListPlace>({
 		listKey,
 		activeIndex: 0,
+		isKeying: false,
 		scrollTop: 0,
 	});
-	const place = held.listKey === listKey ? held : { listKey, activeIndex: 0, scrollTop: 0 };
+	const place = held.listKey === listKey ? held : { listKey, activeIndex: 0, isKeying: false, scrollTop: 0 };
 	const rowCount = Math.ceil(count / GRID_COLUMNS);
 	const scrolledRow = Math.floor(place.scrollTop / GRID_ROW_PX);
 	return {
 		activeIndex: Math.min(place.activeIndex, count - 1),
+		isKeying: place.isKeying,
 		firstRow: Math.max(0, scrolledRow - OVERSCAN_ROWS),
 		endRow: Math.min(rowCount, scrolledRow + GRID_VIEW_ROWS + OVERSCAN_ROWS + 1),
 		rowCount,
@@ -62,7 +66,7 @@ export function useChoiceGrid({ count, listKey }: ChoiceGridAsk): ChoiceGrid {
 			}
 
 			const activeIndex = Math.min(Math.max(place.activeIndex + step, 0), count - 1);
-			setHeld({ ...place, activeIndex });
+			setHeld({ ...place, activeIndex, isKeying: true });
 			scrollRowIntoView(scrollRef.current, Math.floor(activeIndex / GRID_COLUMNS));
 			return true;
 		},

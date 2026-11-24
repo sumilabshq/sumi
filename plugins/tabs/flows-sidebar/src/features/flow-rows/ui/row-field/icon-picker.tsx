@@ -1,6 +1,6 @@
 import { createElement as h, useId, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
-import { Icon, Segmented } from "@widgetarium/kit";
+import { Icon, Segmented, tooltipMarks } from "@widgetarium/kit";
 import type { FlowIcon } from "@widgetarium/navigation/contract";
 import { iconChoicesOf } from "../../lib/icon-choices.js";
 import type { IconChoice, PickerTab } from "../../lib/icon-choices.js";
@@ -69,7 +69,7 @@ export function IconPicker({ icon, color, onPick }: IconPickerProps): ReactEleme
 					type="button"
 					className="sumi-flows-picker-remove"
 					aria-label={REMOVE_ICON}
-					title={REMOVE_ICON}
+					{...tooltipMarks({ said: REMOVE_ICON })}
 					disabled={icon === null}
 					onMouseDown={(event) => event.preventDefault()}
 					onClick={() => onPick(null)}

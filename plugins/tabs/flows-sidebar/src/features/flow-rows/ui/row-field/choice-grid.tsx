@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { tooltipMarks } from "@widgetarium/kit";
 import type { FlowIcon } from "@widgetarium/navigation/contract";
 import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import { isPickedChoice } from "../../lib/icon-choices.js";
@@ -20,7 +21,11 @@ export interface ChoiceGridProps {
 
 export function ChoiceGrid({ id, label, choices, picked, grid, onPick }: ChoiceGridProps): ReactElement {
 	if (choices.length === 0) {
-		return <p className="sumi-flows-picker-none">{NOTHING_FOUND}</p>;
+		return (
+			<div role="status" className="sumi-flows-picker-none">
+				{NOTHING_FOUND}
+			</div>
+		);
 	}
 
 	const rows = Array.from({ length: grid.endRow - grid.firstRow }, (_, offset) => grid.firstRow + offset);
@@ -51,10 +56,10 @@ export function ChoiceGrid({ id, label, choices, picked, grid, onPick }: ChoiceG
 									role="option"
 									tabIndex={-1}
 									className="sumi-flows-picker-choice"
-									title={choice.label}
 									aria-label={choice.label}
+									{...tooltipMarks({ said: choice.label })}
 									aria-selected={isPickedChoice(choice, picked)}
-									data-active={index === grid.activeIndex ? "" : undefined}
+									data-active={grid.isKeying && index === grid.activeIndex ? "" : undefined}
 									onClick={() => onPick(choice.icon)}
 								>
 									<FlowGlyph icon={choice.icon} fallback="dot" scale="choice" />

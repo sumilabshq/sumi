@@ -251,7 +251,7 @@ async function renaming(): Promise<void> {
 		await waited(300);
 		check(
 			"the field icon opens a picker with Remove icon",
-			await page.ask(`document.querySelector(".sumi-flows-picker-remove")?.textContent`),
+			await page.ask(`document.querySelector(".sumi-flows-picker-remove")?.getAttribute("aria-label")`),
 			"Remove icon",
 		);
 		check(
@@ -260,6 +260,29 @@ async function renaming(): Promise<void> {
 				`(() => { const fill = (sel) => getComputedStyle(document.querySelector(sel)).backgroundColor; return fill(".sumi-flows-picker-tabs") === fill(".sumi-flows-picker-field"); })()`,
 			),
 			true,
+		);
+		check(
+			"the picker uses kit tooltips, no native title",
+			await page.ask(
+				`[document.querySelectorAll(".sumi-flows-picker [title]").length, document.querySelector(".sumi-flows-picker-remove").dataset.tipSaid]`,
+			),
+			[0, "Remove icon"],
+		);
+		check(
+			"nothing is selected or highlighted before a key is pressed",
+			await page.ask(
+				`document.querySelectorAll(".sumi-flows-picker-choice[data-active], .sumi-flows-picker-choice[aria-selected=true]").length`,
+			),
+			0,
+		);
+		await page.typeText("zzzzqqqq");
+		await waited(300);
+		check(
+			"an empty search shows only the centred text",
+			await page.ask(
+				`[document.querySelector(".sumi-flows-picker-none")?.textContent, document.querySelectorAll(".sumi-flows-picker-choice").length, document.querySelector(".sumi-flows-picker-none")?.children.length]`,
+			),
+			["Nothing matches", 0, 0],
 		);
 		const coloured = `(() => { const row = [...document.querySelectorAll(".sumi-flows-row[data-kind=folder]")].find((one) => one.querySelector(".sumi-flows-name")?.textContent !== "Customer work" && !one.querySelector("img")); row.dataset.color = "red"; const svg = row.querySelector(".sumi-flows-glyph svg.wg-kit-filled-icon"); return svg !== null && getComputedStyle(svg).color === getComputedStyle(row.querySelector(".sumi-flows-name")).color && getComputedStyle(svg).color !== getComputedStyle(document.body).color; })()`;
 		check("a coloured folder row draws the filled folder in its colour", await page.ask(coloured), true);

@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { tooltipMarks } from "@widgetarium/kit";
 import { GroupHueSchema } from "@widgetarium/navigation/contract";
 import type { GroupHue } from "@widgetarium/navigation/contract";
 
@@ -27,7 +28,7 @@ export function ColorDots({ choice }: ColorDotsProps): ReactElement {
 					className="sumi-flows-picker-color"
 					data-color={color ?? undefined}
 					aria-label={color ?? NO_COLOR}
-					title={color ?? NO_COLOR}
+					{...tooltipMarks({ said: color ?? NO_COLOR })}
 					aria-checked={choice.value === color}
 					onMouseDown={(event) => event.preventDefault()}
 					onClick={() => choice.onPick(color)}

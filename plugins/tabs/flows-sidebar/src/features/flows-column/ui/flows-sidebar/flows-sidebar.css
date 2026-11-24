@@ -195,6 +195,7 @@
 .sumi-flows-glyph {
 	display: grid;
 	flex: none;
+	grid-template: 100% / 100%;
 	place-items: center;
 	width: var(--icon);
 	height: var(--icon);
@@ -227,6 +228,7 @@
 .sumi-flows-chevron {
 	display: none;
 	flex: none;
+	grid-template: 100% / 100%;
 	place-items: center;
 	width: var(--icon);
 	height: var(--icon);
