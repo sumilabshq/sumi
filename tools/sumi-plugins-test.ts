@@ -434,7 +434,6 @@ check(
 			"slash-commands": { enabled: false },
 			"claude-code": { enabled: false },
 			"model-picker": { enabled: false },
-			"effort-picker": { enabled: false },
 			"permission-mode": { enabled: false },
 			"sandbox-mode": { enabled: false },
 			"working-folder": { enabled: false },

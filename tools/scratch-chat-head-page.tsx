@@ -49,7 +49,6 @@ const fills = new SlotFills([
 	{ slot: "chat.head-tools", pluginId: "sessions", kind: "add" as const, component: SessionsChevron },
 	{ slot: "chat.empty-options", pluginId: "sessions", kind: "add" as const, component: SessionsPicker },
 	{ slot: "chat.field-options", pluginId: "model-picker", kind: "add" as const, component: () => <StubPicker said="Opus" /> },
-	{ slot: "chat.field-options", pluginId: "effort-picker", kind: "add" as const, component: () => <StubPicker said="Medium" /> },
 	{ slot: "chat.field-options", pluginId: "permission-mode", kind: "add" as const, component: () => <StubPicker said="Auto" /> },
 ]);
 

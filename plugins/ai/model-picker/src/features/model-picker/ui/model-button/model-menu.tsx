@@ -3,16 +3,19 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { assistant } from "@widgetarium/assistant/contract";
 import type { RunnersShown } from "@widgetarium/assistant/contract";
+import type { EffortShown } from "../../lib/model-labels.js";
+import { EffortList } from "./effort-list.js";
 import { ModelsPane } from "./models-pane.js";
 import { ProvidersPane } from "./providers-pane.js";
 
 export interface ModelMenuProps {
 	readonly chat: string | null;
 	readonly shown: RunnersShown;
+	readonly effort: EffortShown | null;
 	readonly onPicked: () => void;
 }
 
-export function ModelMenu({ chat, shown, onPicked }: ModelMenuProps): ReactElement {
+export function ModelMenu({ chat, shown, effort, onPicked }: ModelMenuProps): ReactElement {
 	const [browsedRunner, setBrowsedRunner] = useState<string | null>(null);
 	const chooseModel = useCommand(assistant.runners.chooseModel);
 	const openProviders = useCommand(assistant.agent.openProviders);
@@ -36,6 +39,7 @@ export function ModelMenu({ chat, shown, onPicked }: ModelMenuProps): ReactEleme
 					onPicked();
 					void chooseModel.run({ chat, runner, model });
 				}}
+				footer={effort === null ? null : <EffortList chat={chat} effort={effort} onPicked={onPicked} />}
 			/>
 		</div>
 	);

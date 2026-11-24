@@ -1,5 +1,5 @@
 import { createElement as h } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { PopoverItem } from "@widgetarium/kit";
 import type { RunnersShown } from "@widgetarium/assistant/contract";
 import { PaneHead } from "./pane-head.js";
@@ -8,11 +8,12 @@ export interface ModelsPaneProps {
 	readonly shown: RunnersShown;
 	readonly shownRunner: string;
 	readonly onPick: (runner: string, model: string) => void;
+	readonly footer?: ReactNode;
 }
 
 const MODEL = "Model";
 
-export function ModelsPane({ shown, shownRunner, onPick }: ModelsPaneProps): ReactElement {
+export function ModelsPane({ shown, shownRunner, onPick, footer = null }: ModelsPaneProps): ReactElement {
 	return (
 		<div className="sumi-model-pane">
 			<PaneHead title={MODEL} />
@@ -41,6 +42,7 @@ export function ModelsPane({ shown, shownRunner, onPick }: ModelsPaneProps): Rea
 					);
 				})}
 			</div>
+			{footer}
 		</div>
 	);
 }

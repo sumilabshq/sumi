@@ -46,7 +46,6 @@
 		"@sumi/workspace-switcher-plugin": "0.1.0",
 		"@sumi/sub-pages-plugin": "0.1.0",
 		"@sumi/sessions-plugin": "0.1.0",
-		"@sumi/effort-picker-plugin": "0.1.0",
 		"@sumi/files-plugin": "0.1.0",
 		"@sumi/git-plugin": "0.1.0",
 		"@sumi/html-viewer-plugin": "0.1.0",

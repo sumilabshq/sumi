@@ -5,5 +5,5 @@ import { ModeButton } from "./features/permission-mode/ui/mode-button/mode-butto
 export const permissionMode = plugin("permission-mode")
 	.require(chat)
 	.apply((app) => {
-		app.use(chat).slots.fieldOptions.add(ModeButton);
+		app.use(chat).slots.optionsStart.add(ModeButton);
 	});

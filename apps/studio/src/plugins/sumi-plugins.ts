@@ -34,7 +34,6 @@ import { nextPrompt } from "@sumi/next-prompt-plugin";
 import { chatImages } from "@sumi/chat-images-plugin";
 import { chatViews } from "@sumi/chat-views-plugin";
 import { pictureViewer } from "@sumi/picture-viewer-plugin";
-import { effortPicker } from "@sumi/effort-picker-plugin";
 import { modelPicker } from "@sumi/model-picker-plugin";
 import { permissionMode } from "@sumi/permission-mode-plugin";
 import { sandboxMode } from "@sumi/sandbox-mode-plugin";
@@ -172,10 +171,9 @@ const INSTALLED_PLUGINS = [
 	pictureViewer,
 	claudeCode,
 	modelPicker,
-	effortPicker,
-	permissionMode,
-	sandboxMode,
 	workingFolder,
+	sandboxMode,
+	permissionMode,
 	planUsage,
 	terminalCursor,
 	controlMenu,
@@ -214,10 +212,9 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		pictureViewer.id,
 		claudeCode.id,
 		modelPicker.id,
-		effortPicker.id,
-		permissionMode.id,
-		sandboxMode.id,
 		workingFolder.id,
+		sandboxMode.id,
+		permissionMode.id,
 		planUsage.id,
 		terminalCursor.id,
 		controlMenu.id,

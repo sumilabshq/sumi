@@ -22,7 +22,6 @@ const SOURCES = [
 	"plugins/ai/permission-mode/src",
 	"plugins/ai/plan-usage/src",
 	"plugins/ai/model-picker/src",
-	"plugins/ai/effort-picker/src",
 	"plugins/control-menu/src",
 	"plugins/ai/sessions/src",
 	"plugins/tabs/tab-strip/src",
@@ -122,8 +121,6 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-menu.css",
 	"@sumi/model-picker-plugin/model-button.css":
 		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-button.css",
-	"@sumi/effort-picker-plugin/effort-button.css":
-		"plugins/ai/effort-picker/src/features/effort-picker/ui/effort-button/effort-button.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
 const ENTRY = `@layer theme, base, components, utilities;
@@ -151,7 +148,6 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/slash-commands-plugin/slash-commands.css";
 @import "@sumi/model-picker-plugin/model-menu.css";
 @import "@sumi/model-picker-plugin/model-button.css";
-@import "@sumi/effort-picker-plugin/effort-button.css";
 @import "@sumi/plan-usage-plugin/usage-button.css";
 @import "@sumi/chat-plugin/new-chat-row.css";
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
