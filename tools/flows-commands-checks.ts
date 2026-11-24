@@ -321,6 +321,34 @@ async function removeChecks(): Promise<void> {
 	check("every law holds after the removal", await lawsOf(stand), []);
 }
 
+async function duplicateChecks(): Promise<void> {
+	const stand = standOver(true);
+	const at = { window: MAIN, screen: BARE_SCREEN };
+	const source = chatFlow(3);
+	const before = await stand.tabs.places();
+	const original = before.flows?.flows.find(({ id }) => id === source);
+	const copied = await stand.app.send(navigation.flows.duplicate, { flowId: source, at });
+	const { tabs, flows } = await stand.tabs.places();
+	const copy = flows?.flows.find(({ id }) => id === copied.flowId);
+	const copyTabIds = copy === undefined ? [] : flowTabIdsOf(copy);
+	check(
+		"a duplicated flow is named copy and stands right after the original",
+		[copy?.name, flows?.looseFlowIds.indexOf(copied.flowId), flows?.looseFlowIds.indexOf(source)],
+		[`${original?.name} copy`, (flows?.looseFlowIds.indexOf(source) ?? -2) + 1, flows?.looseFlowIds.indexOf(source)],
+	);
+	check(
+		"every tab of the copy is a new tab and the layout keeps its shape",
+		[
+			copyTabIds.length === (original === undefined ? -1 : flowTabIdsOf(original).length),
+			copyTabIds.some((id) => original !== undefined && flowTabIdsOf(original).includes(id)),
+			tabs.tabs.length - before.tabs.tabs.length,
+			copy?.layout.root.kind === original?.layout.root.kind,
+		],
+		[true, false, copyTabIds.length, true],
+	);
+	check("every law holds after the duplicate", await lawsOf(stand), []);
+}
+
 async function adoptChecks(): Promise<void> {
 	const stand = standOver(true);
 	const adopted = await stand.app.send(navigation.flows.adoptChats, { chatIds: ["chat-99", chatIdOf(1), "chat-98"] });
@@ -570,6 +598,7 @@ await folderChecks();
 await folderColorChecks();
 await setupChecks();
 await removeChecks();
+await duplicateChecks();
 await adoptChecks();
 await reconcileChecks();
 await healingChecks();

@@ -177,6 +177,10 @@ export const RemoveFlowAskSchema = FlowAskSchema.extend({
 	at: TabsAskSchema,
 });
 
+export const DuplicateFlowAskSchema = FlowAskSchema.extend({
+	at: TabsAskSchema,
+});
+
 export const AdoptChatsAskSchema = z.object({
 	chatIds: z.array(z.string().min(1)),
 });
@@ -257,6 +261,60 @@ export const SetupSavedSchema = z.object({
 
 export const FlowStartedSchema = z.object({
 	flowId: z.string(),
+});
+
+export const TornViewSchema = z.enum(["chat", "app"]);
+
+export const SplitNodeSchema: z.ZodType<SplitNode> = z.lazy(() =>
+	z.discriminatedUnion("kind", [
+		z.object({ kind: z.literal("tab"), tabId: z.string().min(1) }),
+		z.object({
+			kind: z.literal("branch"),
+			id: z.string().min(1),
+			dir: SplitDirSchema,
+			children: z.array(SplitNodeSchema).readonly(),
+			shares: z.array(z.number().positive()).readonly(),
+		}),
+	]),
+);
+
+export const TabEffectSchema = z.discriminatedUnion("kind", [
+	z.object({ kind: z.literal("open-page"), pageId: z.string() }),
+	z.object({ kind: z.literal("close-page"), pageId: z.string() }),
+	z.object({ kind: z.literal("show-page"), pageId: z.string() }),
+	z.object({ kind: z.literal("open-address"), pageId: z.string(), address: z.string(), isShown: z.boolean() }),
+	z.object({ kind: z.literal("reload-page"), pageId: z.string() }),
+	z.object({ kind: z.literal("open-own-window"), pageId: z.string() }),
+	z.object({ kind: z.literal("focus-own-window"), pageId: z.string() }),
+	z.object({ kind: z.literal("focus-window"), window: z.string() }),
+	z.object({ kind: z.literal("tear-off-page"), pageId: z.string(), tabId: z.string() }),
+	z.object({ kind: z.literal("tear-off-tab"), tabId: z.string(), view: TornViewSchema }),
+	z.object({ kind: z.literal("close-panes"), tabIds: z.array(z.string()) }),
+	z.object({ kind: z.literal("close-chat-panes"), chatIds: z.array(z.string()) }),
+	z.object({ kind: z.literal("open-shown-tab-pane") }),
+	z.object({ kind: z.literal("close-shown-tab-pane") }),
+	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
+	z.object({ kind: z.literal("show-chat"), chatId: z.string(), paneId: z.string().nullable() }),
+	z.object({
+		kind: z.literal("show-beside-chat"),
+		chatId: z.string(),
+		tabId: z.string(),
+		side: z.enum(["left", "right"]),
+	}),
+	z.object({ kind: z.literal("show-chat-beside-chat"), chatId: z.string(), besideChatId: z.string() }),
+	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
+	z.object({
+		kind: z.literal("show-split"),
+		layout: SplitNodeSchema,
+		chatIds: z.array(z.string()),
+		focusedId: z.string(),
+	}),
+	z.object({ kind: z.literal("focus-split"), focusedId: z.string() }),
+	z.object({ kind: z.literal("leave-split") }),
+]);
+
+export const FlowDuplicatedSchema = FlowStartedSchema.extend({
+	effects: z.array(TabEffectSchema),
 });
 
 export const FlowBoardSchema = z.object({
@@ -499,61 +557,11 @@ export type PlacementPreview = z.infer<typeof PlacementPreviewSchema>;
 
 export type WindowSeat = z.infer<typeof WindowSeatSchema>;
 
-export const TornViewSchema = z.enum(["chat", "app"]);
-
 export type PageFacts = z.infer<typeof PageFactsSchema>;
 
 export type Screen = z.infer<typeof ScreenSchema>;
 
 export type TabsAsk = z.infer<typeof TabsAskSchema>;
-
-export const SplitNodeSchema: z.ZodType<SplitNode> = z.lazy(() =>
-	z.discriminatedUnion("kind", [
-		z.object({ kind: z.literal("tab"), tabId: z.string().min(1) }),
-		z.object({
-			kind: z.literal("branch"),
-			id: z.string().min(1),
-			dir: SplitDirSchema,
-			children: z.array(SplitNodeSchema).readonly(),
-			shares: z.array(z.number().positive()).readonly(),
-		}),
-	]),
-);
-
-export const TabEffectSchema = z.discriminatedUnion("kind", [
-	z.object({ kind: z.literal("open-page"), pageId: z.string() }),
-	z.object({ kind: z.literal("close-page"), pageId: z.string() }),
-	z.object({ kind: z.literal("show-page"), pageId: z.string() }),
-	z.object({ kind: z.literal("open-address"), pageId: z.string(), address: z.string(), isShown: z.boolean() }),
-	z.object({ kind: z.literal("reload-page"), pageId: z.string() }),
-	z.object({ kind: z.literal("open-own-window"), pageId: z.string() }),
-	z.object({ kind: z.literal("focus-own-window"), pageId: z.string() }),
-	z.object({ kind: z.literal("focus-window"), window: z.string() }),
-	z.object({ kind: z.literal("tear-off-page"), pageId: z.string(), tabId: z.string() }),
-	z.object({ kind: z.literal("tear-off-tab"), tabId: z.string(), view: TornViewSchema }),
-	z.object({ kind: z.literal("close-panes"), tabIds: z.array(z.string()) }),
-	z.object({ kind: z.literal("close-chat-panes"), chatIds: z.array(z.string()) }),
-	z.object({ kind: z.literal("open-shown-tab-pane") }),
-	z.object({ kind: z.literal("close-shown-tab-pane") }),
-	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
-	z.object({ kind: z.literal("show-chat"), chatId: z.string(), paneId: z.string().nullable() }),
-	z.object({
-		kind: z.literal("show-beside-chat"),
-		chatId: z.string(),
-		tabId: z.string(),
-		side: z.enum(["left", "right"]),
-	}),
-	z.object({ kind: z.literal("show-chat-beside-chat"), chatId: z.string(), besideChatId: z.string() }),
-	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
-	z.object({
-		kind: z.literal("show-split"),
-		layout: SplitNodeSchema,
-		chatIds: z.array(z.string()),
-		focusedId: z.string(),
-	}),
-	z.object({ kind: z.literal("focus-split"), focusedId: z.string() }),
-	z.object({ kind: z.literal("leave-split") }),
-]);
 
 export type TabEffect = z.infer<typeof TabEffectSchema>;
 
@@ -1221,6 +1229,11 @@ export const navigation = moduleContract("navigation", Server, {
 			.public()
 			.input(CreateFlowAskSchema)
 			.output(FlowStartedSchema)
+			.idempotencyKey(PerCall)),
+		duplicate: named("flows.duplicate", command()
+			.public()
+			.input(DuplicateFlowAskSchema)
+			.output(FlowDuplicatedSchema)
 			.idempotencyKey(PerCall)),
 		open: named("flows.open", command()
 			.public()

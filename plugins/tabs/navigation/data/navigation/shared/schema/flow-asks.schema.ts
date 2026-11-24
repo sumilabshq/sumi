@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { FlowIconSchema, FlowLayoutSchema, FlowSchema, FlowStatusSchema, SetupSchema } from "./flows.schema.js";
-import { TabsAskSchema } from "./screen.schema.js";
+import { TabEffectSchema, TabsAskSchema } from "./screen.schema.js";
 import { SplitSideSchema } from "./splits.schema.js";
 import { AppKindSchema, GroupHueSchema, PageAppSchema, TabMarkSchema } from "./tabs.schema.js";
 
@@ -100,6 +100,10 @@ export const RemoveFlowAskSchema = FlowAskSchema.extend({
 	at: TabsAskSchema,
 });
 
+export const DuplicateFlowAskSchema = FlowAskSchema.extend({
+	at: TabsAskSchema,
+});
+
 export const AdoptChatsAskSchema = z.object({
 	chatIds: z.array(z.string().min(1)),
 });
@@ -161,6 +165,10 @@ export const SetupSavedSchema = z.object({
 
 export const FlowStartedSchema = z.object({
 	flowId: z.string(),
+});
+
+export const FlowDuplicatedSchema = FlowStartedSchema.extend({
+	effects: z.array(TabEffectSchema),
 });
 
 export const FlowBoardSchema = z.object({

@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { navigation as definition } from "../module.js";
 import { board as flowPanesBoard, closePane, focus, moveTab, rereadBoardOnFlows, rereadBoardOnTabs, resize as flowPanesResize, showTab, split } from "../features/flow-panes/requests.js";
-import { adoptChats, create as flowsCreate, move as flowsMove, one, open, openTab as flowsOpenTab, remove as flowsRemove, rename as flowsRename, rereadFlowMarks, rereadFlows, setIcon as flowsSetIcon, sidebar as flowsSidebar } from "../features/flows/requests.js";
+import { adoptChats, create as flowsCreate, duplicate as flowsDuplicate, move as flowsMove, one, open, openTab as flowsOpenTab, remove as flowsRemove, rename as flowsRename, rereadFlowMarks, rereadFlows, setIcon as flowsSetIcon, sidebar as flowsSidebar } from "../features/flows/requests.js";
 import { create as foldersCreate, remove as foldersRemove, rename as foldersRename, setBaseDir, setColor, setIcon as foldersSetIcon, toggle } from "../features/folders/requests.js";
 import { clear, rereadInbox, rereadInboxMarks, rows as inboxRows, undoClear } from "../features/inbox/requests.js";
 import { aim, board as panesBoard, close, closeShowingPanes, closeShown as panesCloseShown, dropGoneTabs, openShown, place as panesPlace, placementPreview, rereadBoard, resizeSplit, showChat, showInTarget } from "../features/panes/requests.js";
@@ -11,7 +11,7 @@ import { place as splitsPlace, placeInView, remove as splitsRemove, reorderMembe
 import { closeGroup, closeOthers, closeShown as tabClosingCloseShown, closeTab } from "../features/tab-closing/requests.js";
 import { askedLinks, openLink, ownAppTab, recordAppAddress, rereadAskedLinks, rereadOwnAppTab, rereadTabsOfApp, tabsOfApp, takeAskedLink } from "../features/tab-facts/requests.js";
 import { goBack, goForward } from "../features/tab-history/requests.js";
-import { duplicate, navigate, openBelow, openOnce, openTab as tabOpeningOpenTab, reopenClosed } from "../features/tab-opening/requests.js";
+import { duplicate as tabOpeningDuplicate, navigate, openBelow, openOnce, openTab as tabOpeningOpenTab, reopenClosed } from "../features/tab-opening/requests.js";
 import { fold, place as tabPlacingPlace, rename as tabPlacingRename } from "../features/tab-placing/requests.js";
 import { fitToPanes, openInOwnWindow, reload, rememberPages, restore, show, showView, tearOff } from "../features/tab-showing/requests.js";
 import { closedTabs, heldTabs, holders, placedTabs, rereadPlaced, rows as tabsRows, shownView, sidebar as tabsSidebar } from "../features/tabs/requests.js";
@@ -52,6 +52,7 @@ export const navigation = handledModule(definition, [
 	named("flow-panes.split", split),
 	named("flows.adopt-chats", adoptChats),
 	named("flows.create", flowsCreate),
+	named("flows.duplicate", flowsDuplicate),
 	named("flows.flows-changed", flowsChanged),
 	named("flows.move", flowsMove),
 	named("flows.one", one),
@@ -105,7 +106,7 @@ export const navigation = handledModule(definition, [
 	named("tab-facts.take-asked-link", takeAskedLink),
 	named("tab-history.go-back", goBack),
 	named("tab-history.go-forward", goForward),
-	named("tab-opening.duplicate", duplicate),
+	named("tab-opening.duplicate", tabOpeningDuplicate),
 	named("tab-opening.navigate", navigate),
 	named("tab-opening.open-below", openBelow),
 	named("tab-opening.open-once", openOnce),

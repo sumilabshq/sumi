@@ -4,7 +4,7 @@ import { navigation } from "@widgetarium/navigation/contract";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { OpenedTabSchema } from "../../shared/schema/app-tab.schema.js";
-import { FlowTabToOpenSchema, FlowIdAskSchema } from "../../shared/schema/flow-ask.schema.js";
+import { FlowCopiedSchema, FlowTabToOpenSchema, FlowIdAskSchema } from "../../shared/schema/flow-ask.schema.js";
 
 export const open = command()
 	.public()
@@ -24,6 +24,18 @@ export const remove = command()
 		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
 			send(navigation.flows.remove, { at, flowId }),
 		);
+	});
+
+export const duplicate = command()
+	.public()
+	.input(FlowIdAskSchema)
+	.output(FlowCopiedSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ flowId }, { send, emit, ...injects }) => {
+		const copied = await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(navigation.flows.duplicate, { at, flowId }),
+		);
+		return { flowId: copied.flowId };
 	});
 
 export const openTab = command()

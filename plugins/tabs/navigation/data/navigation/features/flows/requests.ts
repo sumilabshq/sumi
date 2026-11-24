@@ -9,6 +9,8 @@ import {
 	AdoptChatsAskSchema,
 	AdoptedChatsSchema,
 	CreateFlowAskSchema,
+	DuplicateFlowAskSchema,
+	FlowDuplicatedSchema,
 	FlowAskSchema,
 	FlowDetailSchema,
 	FlowStartedSchema,
@@ -23,6 +25,7 @@ import {
 } from "../../shared/schema/flow-asks.schema.js";
 import { OpenedTabSettledSchema, TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import { adoptChatsMove } from "./lib/adopt-plans.js";
+import { duplicateFlowMove } from "./lib/flow-duplicate-plans.js";
 import { openFlowMove } from "./lib/flow-open-plans.js";
 import { openFlowTabMove } from "./lib/flow-tab-plans.js";
 import { createFlowPlan, moveFlowPlan, removeFlowMove, renameFlowPlan, setFlowIconPlan } from "./lib/flow-plans.js";
@@ -51,6 +54,17 @@ export const create = command()
 		const birth = { id: newFlowIdOf(callKeyOf(idempotencyKey)), at: Date.now() };
 		const made = answered(await tabs.movePlaces(flowsMove(createFlowPlan(ask, birth))));
 		return { flowId: made.flowId };
+	});
+
+export const duplicate = command()
+	.public()
+	.input(DuplicateFlowAskSchema)
+	.output(FlowDuplicatedSchema)
+	.idempotencyKey(PerCall)
+	.handle(async (ask, { tabs, placedApps, idempotencyKey }) => {
+		const birth = { id: newFlowIdOf(callKeyOf(idempotencyKey)), at: Date.now() };
+		const { extra, effects } = answered(await tabs.movePlaces(duplicateFlowMove(ask, placedApps.placedApps(), birth)));
+		return { flowId: extra, effects };
 	});
 
 export const open = command()
