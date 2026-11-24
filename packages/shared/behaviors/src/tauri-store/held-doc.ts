@@ -58,6 +58,8 @@ export class HeldDoc<Doc extends object> {
 
 	isRead = (): boolean => this.changedBeforeRead === null;
 
+	rev = (): number => this.held.rev;
+
 	watch = (changed: () => void): (() => void) => {
 		this.listeners.add(changed);
 		return () => void this.listeners.delete(changed);

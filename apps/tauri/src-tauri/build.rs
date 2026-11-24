@@ -33,6 +33,8 @@ const STORE_COMMANDS: &[&str] = &[
     "list_workspaces",
     "rename_workspace",
     "choose_workspace_folder",
+    "retire_other_workspaces",
+    "conversion_refusal",
 ];
 
 const BROWSER_COMMANDS: &[&str] = &[
