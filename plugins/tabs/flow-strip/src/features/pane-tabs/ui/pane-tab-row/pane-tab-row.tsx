@@ -19,7 +19,6 @@ import { TabDragLayer } from "../tab-drag-layer/tab-drag-layer.js";
 export interface PaneTabRowProps {
 	readonly flowId: string;
 	readonly paneId: string;
-	readonly newTabList: string | null;
 	readonly tabs: readonly FlowTab[];
 	readonly activeTabId: string | null;
 }
@@ -50,10 +49,10 @@ interface BodyProps extends PaneTabRowProps {
 	readonly onNotice: (notice: string | null) => void;
 }
 
-function PaneTabRowBody({ flowId, paneId, newTabList, tabs, activeTabId, notice, onNotice }: BodyProps): ReactElement {
+function PaneTabRowBody({ flowId, paneId, tabs, activeTabId, notice, onNotice }: BodyProps): ReactElement {
 	const row = useRef<HTMLDivElement | null>(null);
 	const width = useRowWidth(row);
-	const acts = usePaneTabActs({ flowId, paneId, newTabList });
+	const acts = usePaneTabActs({ flowId, paneId, tabs });
 	const artOf = useTabArt();
 	const drag = useTabDrag({ onDrop: acts.drop });
 	const [menu, setMenu] = useState<TabMenuAt | null>(null);

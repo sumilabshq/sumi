@@ -15,14 +15,16 @@ import {
 	FlowsSidebarSchema,
 	MoveFlowAskSchema,
 	OpenFlowAskSchema,
+	OpenFlowTabAskSchema,
 	RemoveFlowAskSchema,
 	RenameAskSchema,
 	SetIconAskSchema,
 	WindowFlowAskSchema,
 } from "../../shared/schema/flow-asks.schema.js";
-import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
+import { OpenedTabSettledSchema, TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import { adoptChatsMove } from "./lib/adopt-plans.js";
 import { openFlowMove } from "./lib/flow-open-plans.js";
+import { openFlowTabMove } from "./lib/flow-tab-plans.js";
 import {
 	createFlowPlan,
 	moveFlowPlan,
@@ -65,6 +67,16 @@ export const open = command()
 	.handle(async (ask, { tabs, placedApps }) =>
 		answered(await tabs.movePlaces(openFlowMove(ask, placedApps.placedApps()))),
 	);
+
+export const openTab = command()
+	.public()
+	.input(OpenFlowTabAskSchema)
+	.output(OpenedTabSettledSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs, placedApps }) => {
+		const { effects, extra } = answered(await tabs.movePlaces(openFlowTabMove(ask, placedApps.placedApps())));
+		return { id: extra, effects };
+	});
 
 export const rename = command()
 	.public()

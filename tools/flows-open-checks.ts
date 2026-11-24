@@ -1,8 +1,9 @@
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
-import { flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
+import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
+import type { Flow } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { BROWSER_SCREEN, WEB_APP, atOf } from "./flows-asks.ts";
 import { chatIdOf } from "./flows-fixture.ts";
-import { MAIN, SIDE, chatFlow, flowsIn, refusalOf, standOver } from "./flows-stand.ts";
+import { MAIN, SIDE, chatFlow, flowsIn, lawsOf, refusalOf, standOver } from "./flows-stand.ts";
 import { check, tally } from "./check-helpers.ts";
 
 async function openChecks(): Promise<void> {
@@ -77,10 +78,127 @@ async function openPagesChecks(): Promise<void> {
 	check("and none for a page that is open already", listed.effects, []);
 }
 
+function emptyFlow(): Flow {
+	throw new Error("the flow is gone");
+}
+
+function paneOf(
+	doc: FlowsDoc,
+	flowId: string,
+	paneId: string,
+): { readonly tabIds: readonly string[]; readonly activeTabId: string | null } {
+	const pane = flowPanesOf(doc.flows.find(({ id }) => id === flowId) ?? emptyFlow()).find(({ id }) => id === paneId);
+
+	if (pane === undefined) {
+		throw new Error(`the pane ${paneId} is gone`);
+	}
+
+	return pane;
+}
+
+async function openTabChecks(): Promise<void> {
+	const stand = standOver(true, [WEB_APP]);
+	const made = await stand.app.send(navigation.flows.create, {
+		name: "Notes",
+		place: { folderId: null, before: null },
+	});
+	const [bare] = flowPanesOf((await flowsIn(stand)).flows.find(({ id }) => id === made.flowId) ?? emptyFlow());
+	const paneId = bare?.id ?? "";
+	const before = (await flowsIn(stand)).flows.length;
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: made.flowId, at: atOf(MAIN) });
+	const first = await stand.app.send(navigation.flows.openTab, {
+		window: MAIN,
+		flowId: made.flowId,
+		paneId,
+		app: "canvas",
+		address: null,
+		at: atOf(MAIN),
+	});
+	const afterFirst = await flowsIn(stand);
+	check(
+		"a tab opened into the pane of a flow with no chat stands in that pane, active",
+		[paneOf(afterFirst, made.flowId, paneId).tabIds, paneOf(afterFirst, made.flowId, paneId).activeTabId],
+		[[first.id], first.id],
+	);
+	check("and makes no new flow", afterFirst.flows.length, before);
+	check("every law holds after the first tab", await lawsOf(stand), []);
+	const second = await stand.app.send(navigation.flows.openTab, {
+		window: MAIN,
+		flowId: made.flowId,
+		paneId,
+		app: "web",
+		address: "https://example.com",
+		at: atOf(MAIN, BROWSER_SCREEN),
+	});
+	const page = (await stand.tabs.places()).tabs.tabs.find(({ id }) => id === second.id)?.pageId ?? null;
+	check(
+		"a second tab is appended and active, and a page app answers the effect to open its page",
+		[
+			paneOf(await flowsIn(stand), made.flowId, paneId).tabIds,
+			second.effects.some((effect) => effect.kind === "open-page" && effect.pageId === page),
+		],
+		[[first.id, second.id], true],
+	);
+	await splitPaneChecks();
+	await openTabRefusalChecks();
+}
+
+async function splitPaneChecks(): Promise<void> {
+	const stand = standOver(true);
+	const flowId = chatFlow(5);
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId, at: atOf(MAIN) });
+	const doc = await flowsIn(stand);
+	const panes = flowPanesOf(doc.flows.find(({ id }) => id === flowId) ?? emptyFlow());
+	const aimed = panes.find(({ id }) => id !== doc.flows.find((flow) => flow.id === flowId)?.layout.focusedPaneId);
+	const opened = await stand.app.send(navigation.flows.openTab, {
+		window: MAIN,
+		flowId,
+		paneId: aimed?.id ?? "",
+		app: "canvas",
+		address: null,
+		at: atOf(MAIN),
+	});
+	const after = await flowsIn(stand);
+	check(
+		"in a split flow the tab goes to the aimed pane, and no other pane gains it",
+		panes.map(({ id }) => paneOf(after, flowId, id).tabIds.includes(opened.id)),
+		panes.map(({ id }) => id === aimed?.id),
+	);
+	check("and that pane takes the focus", after.flows.find(({ id }) => id === flowId)?.layout.focusedPaneId, aimed?.id);
+	check("every law holds after the split flow gains a tab", await lawsOf(stand), []);
+}
+
+async function openTabRefusalChecks(): Promise<void> {
+	const stand = standOver(true);
+	const flowId = chatFlow(4);
+	const [pane] = flowPanesOf((await flowsIn(stand)).flows.find(({ id }) => id === flowId) ?? emptyFlow());
+	const ask = { window: MAIN, flowId, paneId: pane?.id ?? "", app: "canvas", address: null, at: atOf(MAIN) };
+	check(
+		"a pane that does not exist is refused",
+		(await refusalOf(() => stand.app.send(navigation.flows.openTab, { ...ask, paneId: "pane-none" }))).includes(
+			"no pane",
+		),
+		true,
+	);
+	await stand.app.send(navigation.flows.open, { window: SIDE, flowId, at: atOf(SIDE) });
+	check(
+		"a flow open in another window takes no tab",
+		(await refusalOf(() => stand.app.send(navigation.flows.openTab, ask))).includes("open in window"),
+		true,
+	);
+	const unconverted = standOver(false);
+	check(
+		"a workspace that is not converted refuses it",
+		(await refusalOf(() => unconverted.app.send(navigation.flows.openTab, ask))).includes("not converted"),
+		true,
+	);
+}
+
 console.info = () => undefined;
 console.warn = () => undefined;
 console.error = () => undefined;
 await openChecks();
 await openPagesChecks();
+await openTabChecks();
 console.log(tally.failed ? `flows open: ${tally.failed} check(s) failed` : "flows open: all checks passed");
 process.exit(tally.failed ? 1 : 0);

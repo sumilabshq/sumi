@@ -6,4 +6,3 @@ export * from "./shared/lib/pane-dom.js";
 export * from "./shared/lib/pane-rects.js";
 export * from "./shared/lib/use-open-flow-board.js";
 export * from "./shared/lib/track-pointer.js";
-export * from "./shared/lib/new-tab-list.js";

@@ -16,7 +16,7 @@ import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import { heldTabOf, isPageTab, markSelected, openTabUnshown, placeTab, tabOf } from "../../../shared/lib/tabs/host-tabs.js";
 import type { HostTab, TabPlace } from "../../../shared/lib/tabs/host-tabs.js";
 import { locationOf, placeOfLocation } from "../../../shared/lib/tabs/tab-lists.js";
-import { openPlan, withAddressKept } from "./opening-plans.js";
+import { openPlan, withAddressKept } from "../../../shared/lib/showing/opening-plans.js";
 
 type Navigation = Omit<NavigateAsk, "at">;
 

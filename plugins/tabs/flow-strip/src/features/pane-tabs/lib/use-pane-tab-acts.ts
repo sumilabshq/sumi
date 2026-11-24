@@ -3,12 +3,13 @@ import { appHost } from "@widgetarium/app-host/contract";
 import { navigation } from "@widgetarium/navigation/contract";
 import type { SplitSide } from "@widgetarium/navigation/contract";
 import { useFlowWindow } from "../../../shared/lib/flow-window-context.js";
+import type { FlowTab } from "../../../shared/lib/flow-board-types.js";
 import type { DragAim } from "./drag-aim.js";
 
 export interface PaneScope {
 	readonly flowId: string;
 	readonly paneId: string;
-	readonly newTabList: string | null;
+	readonly tabs: readonly FlowTab[];
 }
 
 export interface PaneTabActs {
@@ -61,25 +62,23 @@ function usePlacementActs({ flowId, paneId }: PaneScope): PlacementActs {
 
 type TabCommandActs = Pick<PaneTabActs, "close" | "duplicate" | "rename" | "openHome">;
 
-function useTabCommandActs({ flowId, paneId, newTabList }: PaneScope): TabCommandActs {
-	const window = useFlowWindow();
-	const focusPane = useCommand(navigation.flowPanes.focus);
+function useTabCommandActs({ flowId, paneId, tabs }: PaneScope): TabCommandActs {
 	const closeTab = useCommand(appHost.tabActions.closeTab);
-	const duplicate = useCommand(appHost.tabActions.duplicate);
 	const renameTab = useCommand(appHost.tabActions.renameTab);
-	const openTab = useCommand(appHost.tabActions.openTab);
-	const focusThen = async (run: () => Promise<unknown>): Promise<void> => {
-		const focused = await focusPane.run({ window, flowId, paneId });
-
-		if (focused.ok) {
-			await run();
-		}
-	};
+	const openTab = useCommand(appHost.flows.openTab);
+	const openInPane = (app: string, address: string | null): void =>
+		void openTab.run({ flowId, paneId, app, address });
 	return {
 		close: (tabId) => void closeTab.run({ id: tabId }),
-		duplicate: (tabId) => void focusThen(() => duplicate.run({ id: tabId, list: newTabList })),
+		duplicate: (tabId) => {
+			const source = tabs.find(({ id }) => id === tabId);
+
+			if (source !== undefined) {
+				openInPane(source.app, source.address);
+			}
+		},
 		rename: (tabId, label) => void renameTab.run({ id: tabId, label }),
-		openHome: () => void focusThen(() => openTab.run({ app: HOME_APP, list: newTabList })),
+		openHome: () => openInPane(HOME_APP, null),
 	};
 }
 

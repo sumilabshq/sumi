@@ -1,18 +1,18 @@
 import type {
 	DuplicateTabAsk,
 	OpenTabAsk,
-} from "../../../shared/schema/tab-asks.schema.js";
-import type { PageApp } from "../../../shared/schema/tabs.schema.js";
-import { isRefusal, plannedWith, refusal } from "../../../shared/lib/settling/settling.js";
-import type { ExtraPlan, Planned, Refusal, ShowingPlan } from "../../../shared/lib/settling/settling.js";
-import { freshTabOf } from "../../../shared/lib/showing/new-tab-page.js";
-import { withOpenedTabShown } from "../../../shared/lib/showing/opening.js";
-import { withClosedReopened } from "../../../shared/lib/showing/reopening.js";
-import { withMoved, withTabPageOpened } from "../../../shared/lib/showing/showing.js";
-import { withShownTab } from "../../../shared/lib/showing/tab-shown.js";
-import type { Showing } from "../../../shared/lib/showing/showing.js";
-import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
-import { tabPageOf } from "../../../shared/lib/showing/tab-pages.js";
+} from "../../schema/tab-asks.schema.js";
+import type { PageApp } from "../../schema/tabs.schema.js";
+import { isRefusal, plannedWith, refusal } from "../settling/settling.js";
+import type { ExtraPlan, Planned, Refusal, ShowingPlan } from "../settling/settling.js";
+import { freshTabOf } from "./new-tab-page.js";
+import { withOpenedTabShown } from "./opening.js";
+import { withClosedReopened } from "./reopening.js";
+import { withMoved, withTabPageOpened } from "./showing.js";
+import { withShownTab } from "./tab-shown.js";
+import type { Showing } from "./showing.js";
+import type { TabFacts } from "./tab-facts.js";
+import { tabPageOf } from "./tab-pages.js";
 import {
 	chatIdOf,
 	heldTabOf,
@@ -20,11 +20,11 @@ import {
 	openTab,
 	openTabAfter,
 	openTabUnshown,
-} from "../../../shared/lib/tabs/host-tabs.js";
-import type { HostTab, HostTabsMoment, OpenedHostTab, TabPlace } from "../../../shared/lib/tabs/host-tabs.js";
-import { chatOfGroup, placeAfterOf } from "../../../shared/lib/tabs/tab-lists.js";
-import { isPageApp, navigatingAppOf } from "../../../shared/lib/tabs/app-abilities.js";
-import { isPageList, isPlaceableList } from "../../../shared/lib/tabs/sub-pages.js";
+} from "../tabs/host-tabs.js";
+import type { HostTab, HostTabsMoment, OpenedHostTab, TabPlace } from "../tabs/host-tabs.js";
+import { chatOfGroup, placeAfterOf } from "../tabs/tab-lists.js";
+import { isPageApp, navigatingAppOf } from "../tabs/app-abilities.js";
+import { isPageList, isPlaceableList } from "../tabs/sub-pages.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
 const NOT_LISTED = 'the tab "{id}" stands in no list';

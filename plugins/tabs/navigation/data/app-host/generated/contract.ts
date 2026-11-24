@@ -268,6 +268,12 @@ export const FlowIdAskSchema = z.object({
 	flowId: z.string().min(1),
 });
 
+export const FlowTabToOpenSchema = FlowIdAskSchema.extend({
+	paneId: z.string().min(1),
+	app: AppKindSchema,
+	address: z.string().nullable().default(null),
+});
+
 export const FrameSideSchema = z.enum(["left"]);
 
 export type FrameSide = z.infer<typeof FrameSideSchema>;
@@ -481,6 +487,11 @@ export const appHost = moduleContract("app-host", Device, {
 		remove: named("flows.remove", command()
 			.public()
 			.input(FlowIdAskSchema)
+			.idempotencyKey(Repeatable)),
+		openTab: named("flows.open-tab", command()
+			.public()
+			.input(FlowTabToOpenSchema)
+			.output(OpenedTabSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	frameSides: {

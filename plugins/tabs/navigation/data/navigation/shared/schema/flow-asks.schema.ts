@@ -2,7 +2,7 @@ import { z } from "zod";
 import { FlowIconSchema, FlowLayoutSchema, FlowSchema, FlowStatusSchema, SetupSchema } from "./flows.schema.js";
 import { TabsAskSchema } from "./screen.schema.js";
 import { SplitSideSchema } from "./splits.schema.js";
-import { AppKindSchema, TabMarkSchema } from "./tabs.schema.js";
+import { AppKindSchema, PageAppSchema, TabMarkSchema } from "./tabs.schema.js";
 
 export const FlowChatRowSchema = z.object({
 	id: z.string(),
@@ -190,4 +190,10 @@ export const ShowFlowTabAskSchema = PaneFlowAskSchema.extend({
 export const MoveFlowTabAskSchema = FlowPaneAskSchema.extend({
 	tabId: z.string().min(1),
 	before: z.string().min(1).nullable(),
+});
+
+export const OpenFlowTabAskSchema = FlowPaneAskSchema.extend({
+	at: TabsAskSchema,
+	app: PageAppSchema,
+	address: z.string().nullable(),
 });

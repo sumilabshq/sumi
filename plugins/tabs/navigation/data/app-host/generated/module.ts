@@ -2,14 +2,14 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { appHost as definition } from "../module.js";
 import { closedTabs, reopenById, rereadClosedTabs, rereadClosedTabsForCore } from "../features/closed-tabs/requests.js";
-import { open, remove } from "../features/flows/requests.js";
+import { open, openTab as flowsOpenTab, remove } from "../features/flows/requests.js";
 import { conceal, frameSides, peek, rereadSides, rereadSidesForCore, toggle } from "../features/frame-sides/requests.js";
 import { openLink } from "../features/links/requests.js";
 import { closeShowingPanes, closeShown as paneTabsCloseShown, dropGoneTabs, openShown, showChat, showInTarget } from "../features/pane-tabs/requests.js";
 import { aim, close, paneTree, place, placementPreview, rereadPanes, rereadPanesForCore, rereadPanesForTabs, resizeSplit } from "../features/panes/requests.js";
 import { current, rereadShownView, rereadShownViewForCore, showView } from "../features/shown-view/requests.js";
 import { closeViewPane, placeInView, placeSplit, rereadShown, rereadShownForCore, resize, shown, unsplit } from "../features/splits/requests.js";
-import { closeGroup, closeOthers, closeShown as tabActionsCloseShown, closeTab, closeTabs, duplicate, foldTab, moveToWorkspace, navigate, openBelow, openOnce, openTab, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
+import { closeGroup, closeOthers, closeShown as tabActionsCloseShown, closeTab, closeTabs, duplicate, foldTab, moveToWorkspace, navigate, openBelow, openOnce, openTab as tabActionsOpenTab, reload, renameTab, reopenClosed, tearOff } from "../features/tab-actions/requests.js";
 import { appTabs, canOpenOwnWindow, ensurePanePages, heldTabs, holders, placeTab, rememberPages, rereadForAccessAsks, rereadForChats, rereadForInk, rereadForPages, rereadTabs, rereadTabsForCore, restore, showTab, tabsSidebar } from "../features/tabs/requests.js";
 import { studioCoreChanged } from "../gateways/core-changes/core-changes.events.js";
 import { peeksChanged } from "../gateways/side-peeks/side-peeks.events.js";
@@ -42,6 +42,7 @@ export const appHost = handledModule(definition, [
 	named("closed-tabs.reopen-by-id", reopenById),
 	named("core-changes.studio-core-changed", studioCoreChanged),
 	named("flows.open", open),
+	named("flows.open-tab", flowsOpenTab),
 	named("flows.remove", remove),
 	named("frame-sides.conceal", conceal),
 	named("frame-sides.frame-sides", frameSides),
@@ -81,7 +82,7 @@ export const appHost = handledModule(definition, [
 	named("tab-actions.navigate", navigate),
 	named("tab-actions.open-below", openBelow),
 	named("tab-actions.open-once", openOnce),
-	named("tab-actions.open-tab", openTab),
+	named("tab-actions.open-tab", tabActionsOpenTab),
 	named("tab-actions.reload", reload),
 	named("tab-actions.rename-tab", renameTab),
 	named("tab-actions.reopen-closed", reopenClosed),

@@ -19,7 +19,7 @@ import { heldTabOf } from "../../../shared/lib/tabs/host-tabs.js";
 import { listStartOf, openTabAs, withTabFreed } from "../../../shared/lib/tabs/once-tabs.js";
 import { heldAt, holderLabelOf } from "../../../shared/lib/tabs/tab-leases.js";
 import { tabFactsOf } from "../../../shared/lib/showing/tab-facts.js";
-import { withAddressKept } from "./opening-plans.js";
+import { withAddressKept } from "../../../shared/lib/showing/opening-plans.js";
 import { withExistingShown } from "./navigating-plans.js";
 
 type OnceAsk = Omit<OpenOnceAsk, "at">;

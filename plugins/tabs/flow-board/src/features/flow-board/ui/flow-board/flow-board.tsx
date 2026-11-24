@@ -3,7 +3,7 @@ import type { ReactElement, RefObject } from "react";
 import { navigation } from "@widgetarium/navigation/contract";
 import { useCommand } from "@widgetarium/data-framework";
 import type { PaneBoardProps } from "@sumi/sumi-host-plugin";
-import { BOARD_ATTRIBUTE, PaneTabRow, edgesOf, isAtTopEdge, newTabListOf, paneRectsOf, panesOf, useOpenFlowBoard } from "@sumi/flow-strip-plugin";
+import { BOARD_ATTRIBUTE, PaneTabRow, edgesOf, isAtTopEdge, paneRectsOf, panesOf, useOpenFlowBoard } from "@sumi/flow-strip-plugin";
 import type { OpenFlowBoard } from "@sumi/flow-strip-plugin";
 import { rootWithDraft } from "../../lib/edge-shares.js";
 import { pageSlotsOf } from "../../lib/page-slots.js";
@@ -65,7 +65,6 @@ function BoardPanes({ open, board, drawn }: BoardPanesProps): ReactElement {
 							<PaneTabRow
 								flowId={flow.flowId}
 								paneId={rect.paneId}
-								newTabList={newTabListOf(flow)}
 								tabs={flow.tabs.filter(({ id }) => pane?.tabIds.includes(id))}
 								activeTabId={pane?.activeTabId ?? null}
 							/>

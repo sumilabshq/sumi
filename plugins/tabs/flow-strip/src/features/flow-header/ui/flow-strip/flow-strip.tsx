@@ -1,6 +1,5 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { newTabListOf } from "../../../../shared/lib/new-tab-list.js";
 import { useOpenFlowBoard } from "../../../../shared/lib/use-open-flow-board.js";
 import { isAtTopEdge, paneRectsOf, panesOf } from "../../../../shared/lib/pane-rects.js";
 import { PaneTabRow } from "../../../pane-tabs/ui/pane-tab-row/pane-tab-row.js";
@@ -37,7 +36,6 @@ function TopRows({ open, span }: TopRowsProps): ReactElement {
 							<PaneTabRow
 								flowId={board.flowId}
 								paneId={rect.paneId}
-								newTabList={newTabListOf(board)}
 								tabs={board.tabs.filter(({ id }) => pane?.tabIds.includes(id))}
 								activeTabId={pane?.activeTabId ?? null}
 							/>

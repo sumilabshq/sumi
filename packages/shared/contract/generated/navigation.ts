@@ -288,6 +288,14 @@ export const MoveFlowTabAskSchema = FlowPaneAskSchema.extend({
 	before: z.string().min(1).nullable(),
 });
 
+export const PageAppSchema = AppKindSchema;
+
+export const OpenFlowTabAskSchema = FlowPaneAskSchema.extend({
+	at: TabsAskSchema,
+	app: PageAppSchema,
+	address: z.string().nullable(),
+});
+
 export type FlowIcon = z.infer<typeof FlowIconSchema>;
 
 export type FlowStatus = z.infer<typeof FlowStatusSchema>;
@@ -702,8 +710,6 @@ export const PlaceTabAskSchema = z.object({
 	id: z.string().min(1),
 	place: TabPlaceSchema,
 });
-
-export const PageAppSchema = AppKindSchema;
 
 export const OpenTabAskSchema = z.object({
 	at: TabsAskSchema,
@@ -1200,6 +1206,11 @@ export const navigation = moduleContract("navigation", Server, {
 			.public()
 			.input(OpenFlowAskSchema)
 			.output(TabsSettledSchema)
+			.idempotencyKey(Repeatable)),
+		openTab: named("flows.open-tab", command()
+			.public()
+			.input(OpenFlowTabAskSchema)
+			.output(OpenedTabSettledSchema)
 			.idempotencyKey(Repeatable)),
 		rename: named("flows.rename", command()
 			.public()
