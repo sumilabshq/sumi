@@ -73,12 +73,13 @@ export {
 	labelOfPlacesWindow,
 	placesWindowHere,
 	placesWindowOf,
+	placesWindowOfPage,
 	isCorePage,
 	isTearOffGhostPage,
 	studioWindowOf,
 	viewFileOf,
 } from "./src/studio-window/studio-window.js";
-export type { StudioWindow } from "./src/studio-window/studio-window.js";
+export type { PlacesWindowPage, StudioWindow } from "./src/studio-window/studio-window.js";
 export { TearOffGhost } from "./src/tear-off/tear-off-ghost.js";
 export type { TearOffGhostAsk, WindowZone } from "./src/tear-off/tear-off-ghost.js";
 export type { GhostFace, GhostShape, GhostSize, ListSizes } from "./src/tear-off/drag-ghost.js";

@@ -3,7 +3,6 @@ import type { ReactElement } from "react";
 import { appHost } from "@widgetarium/app-host/contract";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
-import { FlowsWindowScope } from "../../../../shared/ui/flows-window-scope/flows-window-scope.js";
 import { NewFlowButton } from "./new-flow-button.js";
 
 const HIDE_SIDEBAR = "Hide sidebar";
@@ -28,9 +27,7 @@ export function SidebarTitle(): ReactElement {
 			>
 				<Icon name="panel-left" size={ICON_PX} />
 			</Button>
-			<FlowsWindowScope>
-				<NewFlowButton />
-			</FlowsWindowScope>
+			<NewFlowButton />
 		</div>
 	);
 }
