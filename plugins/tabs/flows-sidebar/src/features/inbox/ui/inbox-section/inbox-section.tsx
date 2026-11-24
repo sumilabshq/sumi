@@ -8,6 +8,7 @@ import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
 import { INBOX_SHORT_ROWS, folderNamesByFlow, shownInboxRows } from "../../lib/inbox-view.js";
 import { ClearedNotice } from "./cleared-notice.js";
+import { MarkAllReadButton } from "./mark-all-read-button.js";
 import { useInboxClearing } from "../../lib/use-inbox-clearing.js";
 
 export interface InboxSectionProps {
@@ -29,13 +30,13 @@ export function InboxSection({ sidebar, acts }: InboxSectionProps): ReactElement
 		<section className="sumi-flows-section" aria-label="Inbox">
 			<div className="sumi-flows-label">
 				<span>{clearing.failure ?? "Inbox"}</span>
-				<button
-					type="button"
-					className="sumi-flows-label-action"
-					onClick={clearing.canUndo ? clearing.undo : clearing.clear}
-				>
-					{clearing.canUndo ? "Undo" : "Clear"}
-				</button>
+				{clearing.canUndo ? (
+					<button type="button" className="sumi-flows-label-action" onClick={clearing.undo}>
+						Undo
+					</button>
+				) : (
+					<MarkAllReadButton onClear={clearing.clear} />
+				)}
 			</div>
 			{shownInboxRows(rows, isExpanded).map((flow) => (
 				<div className="sumi-flows-row" data-kind="flow" key={flow.id}>

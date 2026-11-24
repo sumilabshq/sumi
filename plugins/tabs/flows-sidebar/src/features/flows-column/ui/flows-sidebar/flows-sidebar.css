@@ -111,12 +111,13 @@
 	justify-content: space-between;
 	box-sizing: border-box;
 	height: var(--h-xs);
-	padding: 0 var(--space-2);
+	padding: 0 0 0 var(--space-2);
 	font-size: var(--fs-12);
 	color: var(--text-3);
 }
 
 .sumi-flows-label-action {
+	margin-inline-end: var(--space-2);
 	padding: 0 var(--space-1);
 	font: inherit;
 	color: inherit;
