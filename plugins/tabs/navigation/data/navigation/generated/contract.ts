@@ -250,6 +250,43 @@ export const FlowStartedSchema = z.object({
 	flowId: z.string(),
 });
 
+export const FlowBoardSchema = z.object({
+	flowId: z.string(),
+	layout: FlowLayoutSchema,
+	tabs: z.array(FlowTabSchema).readonly(),
+});
+
+export const PaneFlowAskSchema = z.object({
+	window: z.string().min(1),
+	flowId: z.string().min(1),
+});
+
+export const FlowPaneAskSchema = PaneFlowAskSchema.extend({
+	paneId: z.string().min(1),
+});
+
+export const SplitSideSchema = z.enum(["left", "right", "top", "bottom"]);
+
+export const SplitFlowPaneAskSchema = FlowPaneAskSchema.extend({
+	side: SplitSideSchema,
+	tabId: z.string().min(1),
+});
+
+export const ResizeFlowPaneAskSchema = PaneFlowAskSchema.extend({
+	splitId: z.string().min(1),
+	at: z.number().int().nonnegative(),
+	share: z.number().positive(),
+});
+
+export const ShowFlowTabAskSchema = PaneFlowAskSchema.extend({
+	tabId: z.string().min(1),
+});
+
+export const MoveFlowTabAskSchema = FlowPaneAskSchema.extend({
+	tabId: z.string().min(1),
+	before: z.string().min(1).nullable(),
+});
+
 export type FlowIcon = z.infer<typeof FlowIconSchema>;
 
 export type FlowStatus = z.infer<typeof FlowStatusSchema>;
@@ -315,8 +352,6 @@ export const WindowSeatSchema = z.object({
 });
 
 export const SeatAskSchema = z.object({ seat: WindowSeatSchema });
-
-export const SplitSideSchema = z.enum(["left", "right", "top", "bottom"]);
 
 export const PanePlacementSchema = z.object({
 	view: PaneViewSchema,
@@ -1116,6 +1151,36 @@ export interface WindowsMoved {
 export type MoveWindows = (now: Windows) => WindowsMoved | null;
 
 export const navigation = moduleContract("navigation", Server, {
+	flowPanes: {
+		board: named("flow-panes.board", query()
+			.public()
+			.input(FlowAskSchema)
+			.output(FlowBoardSchema.nullable())),
+		split: named("flow-panes.split", command()
+			.public()
+			.input(SplitFlowPaneAskSchema)
+			.idempotencyKey(Repeatable)),
+		closePane: named("flow-panes.close-pane", command()
+			.public()
+			.input(FlowPaneAskSchema)
+			.idempotencyKey(Repeatable)),
+		resize: named("flow-panes.resize", command()
+			.public()
+			.input(ResizeFlowPaneAskSchema)
+			.idempotencyKey(Repeatable)),
+		focus: named("flow-panes.focus", command()
+			.public()
+			.input(FlowPaneAskSchema)
+			.idempotencyKey(Repeatable)),
+		showTab: named("flow-panes.show-tab", command()
+			.public()
+			.input(ShowFlowTabAskSchema)
+			.idempotencyKey(Repeatable)),
+		moveTab: named("flow-panes.move-tab", command()
+			.public()
+			.input(MoveFlowTabAskSchema)
+			.idempotencyKey(Repeatable)),
+	},
 	flows: {
 		sidebar: named("flows.sidebar", query()
 			.public()

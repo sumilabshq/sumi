@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { FlowIconSchema, FlowSchema, FlowStatusSchema, SetupSchema } from "./flows.schema.js";
+import { FlowIconSchema, FlowLayoutSchema, FlowSchema, FlowStatusSchema, SetupSchema } from "./flows.schema.js";
 import { TabsAskSchema } from "./screen.schema.js";
+import { SplitSideSchema } from "./splits.schema.js";
 import { AppKindSchema, TabMarkSchema } from "./tabs.schema.js";
 
 export const FlowChatRowSchema = z.object({
@@ -153,4 +154,39 @@ export const SetupSavedSchema = z.object({
 
 export const FlowStartedSchema = z.object({
 	flowId: z.string(),
+});
+
+export const FlowBoardSchema = z.object({
+	flowId: z.string(),
+	layout: FlowLayoutSchema,
+	tabs: z.array(FlowTabSchema).readonly(),
+});
+
+export const PaneFlowAskSchema = z.object({
+	window: z.string().min(1),
+	flowId: z.string().min(1),
+});
+
+export const FlowPaneAskSchema = PaneFlowAskSchema.extend({
+	paneId: z.string().min(1),
+});
+
+export const SplitFlowPaneAskSchema = FlowPaneAskSchema.extend({
+	side: SplitSideSchema,
+	tabId: z.string().min(1),
+});
+
+export const ResizeFlowPaneAskSchema = PaneFlowAskSchema.extend({
+	splitId: z.string().min(1),
+	at: z.number().int().nonnegative(),
+	share: z.number().positive(),
+});
+
+export const ShowFlowTabAskSchema = PaneFlowAskSchema.extend({
+	tabId: z.string().min(1),
+});
+
+export const MoveFlowTabAskSchema = FlowPaneAskSchema.extend({
+	tabId: z.string().min(1),
+	before: z.string().min(1).nullable(),
 });
