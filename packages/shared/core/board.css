@@ -20830,8 +20830,18 @@ body:has(.wg-cm-layer) {
 	transform-origin: left top;
 	animation: sumi-flows-float-in 70ms var(--ease-out-expo);
 }
+.sumi-flows-float[data-leaving] {
+	pointer-events: none;
+	animation: sumi-flows-float-out 70ms var(--ease-out-expo) forwards;
+}
 @keyframes sumi-flows-float-in {
 	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+}
+@keyframes sumi-flows-float-out {
+	to {
 		opacity: 0;
 		transform: scale(0.96);
 	}
