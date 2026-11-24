@@ -1,5 +1,6 @@
 import { labelOfPlacesWindow } from "@widgetarium/behaviors";
 import { flowOfId, isArchived, withFlowChanged } from "../../../shared/lib/flows/flow-docs.js";
+import { withHomeTabsInEmptyFlows } from "../../../shared/lib/flows/flow-home-tabs.js";
 import { READ_ON_OPEN, marksCleared, marksSaid } from "../../../shared/lib/flows/flow-marks.js";
 import { chatTabsOf, flowHolderOf } from "../../../shared/lib/flows/flow-rows.js";
 import { refusal } from "../../../shared/lib/settling/settling.js";
@@ -101,10 +102,13 @@ export function openFlowPlan(ask: OpenFlowAsk, { apps, at }: OpeningMoment): Flo
 			ask.flowId,
 			{ lastOpenedAt: at },
 		);
+		const homed = withHomeTabsInEmptyFlows({ tabs: read.placed, flows: opened }, apps);
 		return {
-			tabs: read.placed,
-			flows: opened,
-			reason: `window ${ask.window} flow ${was} → ${ask.flowId}, read: ${marksSaid(read.changes)}`,
+			tabs: homed.tabs,
+			flows: homed.flows,
+			reason: [`window ${ask.window} flow ${was} → ${ask.flowId}, read: ${marksSaid(read.changes)}`, ...homed.said].join(
+				"; ",
+			),
 			value: NO_EFFECTS,
 		};
 	};

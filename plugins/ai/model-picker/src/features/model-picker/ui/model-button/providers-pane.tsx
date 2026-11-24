@@ -4,6 +4,7 @@ import { Icon, PopoverItem } from "@widgetarium/kit";
 import type { RunnersShown } from "@widgetarium/assistant/contract";
 import { ManageProvidersButton } from "./manage-providers-button.js";
 import { PaneHead } from "./pane-head.js";
+import { RunnerMark } from "./runner-mark.js";
 
 export interface ProvidersPaneProps {
 	readonly shown: RunnersShown;
@@ -30,7 +31,7 @@ export function ProvidersPane({ shown, shownRunner, onBrowse, onManage }: Provid
 							onPointerEnter={() => onBrowse(id)}
 							onFocus={() => onBrowse(id)}
 						>
-							<Icon name="terminal" size={14} />
+							<RunnerMark runner={id} />
 							<span className="sumi-provider-label">{label}</span>
 							{isShown ? <Icon name="chevron-right" size={14} /> : null}
 						</PopoverItem>

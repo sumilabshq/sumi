@@ -11,6 +11,7 @@ import { useDropsFiles } from "../../lib/use-drops-files.js";
 import { useSweepsAttachments } from "../../lib/use-sweeps-attachments.js";
 import { Composer } from "../composer/composer.js";
 import { FileDropZone } from "../file-drop-zone/file-drop-zone.js";
+import { LinkMenu } from "../link-menu/link-menu.js";
 import type { AttachedChange, ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { useFailureLine } from "../../../../shared/lib/failure-line.js";
 import { scrollToCard } from "../../lib/scroll-to-card.js";
@@ -107,6 +108,7 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 				/>
 			</ChatDock>
 			<FileDropZone isOver={drop.isOver} />
+			<LinkMenu root={chatRoot} chatId={chatId} />
 		</div>
 	);
 	return (

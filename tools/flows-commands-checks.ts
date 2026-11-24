@@ -8,9 +8,11 @@ import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navig
 import type {
 	FlowFolder,
 	FlowNode,
+	FlowPane,
 	FlowsDoc,
 } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { folderColorsFillMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
+import { HOME_TAB_APP } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-home-tabs.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { atOf } from "./flows-asks.ts";
 import { chatIdOf } from "./flows-fixture.ts";
@@ -71,11 +73,16 @@ async function flowCommandChecks(): Promise<void> {
 	});
 	const flows = await flowsIn(stand);
 	check(
-		"create adds an empty flow at the end of its folder",
+		"create adds a flow at the end of its folder",
 		flows.folders.find(({ id }) => id === "folder-group-93")?.flowIds.at(-1),
 		made.flowId,
 	);
-	check("the new flow is one empty pane", flows.flows.find(({ id }) => id === made.flowId)?.layout.root.kind, "pane");
+	check("the new flow is one pane", flows.flows.find(({ id }) => id === made.flowId)?.layout.root.kind, "pane");
+	check(
+		"the new flow holds exactly one tab, a Home tab",
+		await appsOfFlow(stand, made.flowId),
+		[HOME_TAB_APP],
+	);
 	check("every law holds after create", await lawsOf(stand), []);
 	check(
 		"a missing folder is refused",
@@ -414,9 +421,9 @@ async function reconcileChecks(): Promise<void> {
 	);
 	await stand.app.send(navigation.tabClosing.closeTab, { at, id: chatIdOf(1) });
 	check(
-		"a flow whose last tab closed goes with it",
-		(await flowsIn(stand)).flows.some(({ id }) => id === chatFlow(1)),
-		false,
+		"a flow whose last tab closed stays, holding one Home tab",
+		await appsOfFlow(stand, chatFlow(1)),
+		[HOME_TAB_APP],
 	);
 	check("every law holds after the closes", await lawsOf(stand), []);
 	const reopened = await stand.app.send(navigation.tabOpening.reopenClosed, { at, tabId: chatIdOf(1) });
@@ -476,6 +483,45 @@ async function afterAWrite(stand: Stand): Promise<{ readonly laws: readonly stri
 		})),
 	);
 	return { laws: refused === "" ? await lawsOf(stand) : [refused], flows: await flowsIn(stand) };
+}
+
+async function appsOfFlow(stand: Stand, flowId: string): Promise<readonly (string | undefined)[]> {
+	const { tabs, flows } = await stand.tabs.places();
+	const flow = flows?.flows.find(({ id }) => id === flowId);
+	return flow === undefined ? ["no flow"] : flowTabIdsOf(flow).map((id) => tabs.tabs.find((tab) => tab.id === id)?.app);
+}
+
+const STORED_EMPTY_FLOW = "flow-stored-empty";
+
+function withStoredEmptyFlow(flows: FlowsDoc): FlowsDoc {
+	const pane = { kind: "pane" as const, id: "pane-stored-empty", tabIds: [], activeTabId: null };
+	const flow: Flow = {
+		id: STORED_EMPTY_FLOW,
+		name: "Stored empty",
+		icon: null,
+		layout: { root: pane, focusedPaneId: pane.id, minted: 0 },
+		createdAt: 0,
+		lastOpenedAt: 0,
+		archivedAt: null,
+	};
+	return { ...flows, flows: [...flows.flows, flow], looseFlowIds: [...flows.looseFlowIds, STORED_EMPTY_FLOW] };
+}
+
+async function homeTabHealingChecks(): Promise<void> {
+	const written = standOver(true, [], withStoredEmptyFlow);
+	const healed = await afterAWrite(written);
+	check(
+		"a stored flow with 0 tabs is healed to one Home tab on the next write",
+		[healed.laws, await appsOfFlow(written, STORED_EMPTY_FLOW)],
+		[[], [HOME_TAB_APP]],
+	);
+	const opened = standOver(true, [], withStoredEmptyFlow);
+	await opened.app.send(navigation.flows.open, { window: MAIN, flowId: STORED_EMPTY_FLOW, at: atOf(MAIN) });
+	check(
+		"opening a stored flow with 0 tabs shows it with one Home tab",
+		[await lawsOf(opened), await appsOfFlow(opened, STORED_EMPTY_FLOW)],
+		[[], [HOME_TAB_APP]],
+	);
 }
 
 function holdersOf(flows: FlowsDoc, tabId: string): readonly string[] {
@@ -724,6 +770,36 @@ async function moveBeforeItselfChecks(): Promise<void> {
 	check("moving a flow before itself leaves it where it stands", (await flowsIn(stand)).looseFlowIds, before);
 }
 
+async function linkTabChecks(): Promise<void> {
+	const stand = standOver(true);
+	const at = atOf(MAIN);
+	const chat = chatIdOf(1);
+	const paneOfChat = async (): Promise<FlowPane | undefined> =>
+		flowPanesOf((await flowsIn(stand)).flows.find(({ id }) => id === chatFlow(1)) ?? emptyFlow()).find(({ tabIds }) =>
+			tabIds.includes(chat),
+		);
+	const before = (await paneOfChat())?.tabIds ?? [];
+	const link = { at, homeId: chat, app: "canvas", address: "canvas://link-check" } as const;
+	const opened = await stand.app.send(navigation.flows.openLinkTab, { ...link, place: "beside" });
+	const after = await paneOfChat();
+	check(
+		"a link opens a shown tab right after the chat, in the chat's pane, and the chat stays",
+		[after?.tabIds, after?.activeTabId],
+		[[chat, opened.id, ...before.slice(1)], opened.id],
+	);
+	const again = await stand.app.send(navigation.flows.openLinkTab, { ...link, place: "beside" });
+	check("a link already open in the flow shows that tab", [again.id, (await paneOfChat())?.tabIds.length], [opened.id, before.length + 1]);
+	const split = await stand.app.send(navigation.flows.openLinkTab, { ...link, address: "canvas://split-check", place: "split" });
+	const flow = (await flowsIn(stand)).flows.find(({ id }) => id === chatFlow(1)) ?? emptyFlow();
+	const root = flow.layout.root;
+	check(
+		"Open in split puts the new tab in a new pane to the right of the chat's pane",
+		[root.kind === "split" ? root.dir : null, root.kind === "split" ? root.children.length : 0, flowPanesOf(flow).at(-1)?.tabIds],
+		["row", 2, [split.id]],
+	);
+	check("every law holds after the link opens", await lawsOf(stand), []);
+}
+
 function never(): never {
 	throw new Error("the fixture holds no tab-94");
 }
@@ -747,11 +823,13 @@ await duplicateChecks();
 await adoptChecks();
 await reconcileChecks();
 await healingChecks();
+await homeTabHealingChecks();
 await removeNoOpCloseChecks();
 await moveBeforeItselfChecks();
 await archiveChecks();
 await deleteChecks();
 await folderDeleteChecks();
 await ungroupChecks();
+await linkTabChecks();
 console.log(tally.failed ? `flows commands: ${tally.failed} check(s) failed` : "flows commands: all checks passed");
 process.exit(tally.failed ? 1 : 0);

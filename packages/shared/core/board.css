@@ -399,6 +399,7 @@
 		--h-lg: 36px;
 		--icon: 13px;
 		--icon-sm: 12px;
+		--brand-claude: #d97757;
 		--r-tab: 7px;
 		--tab-w: 176px;
 		--tab-min-w: 120px;
@@ -7125,11 +7126,6 @@ body.wg-tree-carrying .wg-tile-body {
 	margin-right: var(--space-0-5, 4px);
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-mine-line .wg-studio-ai-round {
-	width: 24px;
-	height: 24px;
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-answer {
 	position: relative;
 	padding-block-end: 22px;
@@ -7158,12 +7154,6 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-answer:is(:hover, :focus-within) .wg-studio-ai-answer-line {
 	opacity: 1;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-answer-line .wg-studio-ai-round {
-	width: 24px;
-	height: 24px;
-	margin-inline: -5px;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-pictures {
@@ -7306,30 +7296,6 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-fill {
 	flex: 1 1 auto;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-button {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: 36px;
-	height: 36px;
-	padding: 0;
-	border: none;
-	border-radius: var(--r-full, 999px);
-	background: transparent;
-	box-shadow: none;
-	color: var(--viewer-ink-2);
-	cursor: pointer;
-	transition:
-		background var(--dur-fast, 120ms) var(--ease-emphasized, ease),
-		color var(--dur-fast, 120ms) var(--ease-emphasized, ease);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-button:hover {
-	background: var(--viewer-hover);
-	color: var(--viewer-ink);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-stage {
@@ -7576,36 +7542,6 @@ body.wg-tree-carrying .wg-tile-body {
 	rotate: 90deg;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-round,
-:is(.wg-root, .wg-portal) .wg-studio-ai-pill {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	height: 32px;
-	border: none;
-	border-radius: var(--control-corner);
-	background: var(--raise);
-	box-shadow: none;
-	color: var(--foreground);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-round {
-	width: 32px;
-	padding: 0;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-round.is-button {
-	background: none;
-	color: var(--muted-foreground);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-round.is-button:hover {
-	background: var(--hover, var(--fill-hover));
-	color: var(--foreground);
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-list {
 	display: flex;
 	flex-direction: column;
@@ -7798,24 +7734,6 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-line.is-removed {
 	background: var(--error-wash);
 	color: var(--error-ink);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-pill {
-	padding: 0 12px;
-	font-family: inherit;
-	font-size: 12px;
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-pill:hover {
-	background: var(--fill-hover);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-pill.is-l {
-	height: 52px;
-	padding: 0 20px;
-	font-size: 13px;
-	font-weight: var(--font-medium, 500);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-running {
@@ -14250,57 +14168,9 @@ body.wg-tree-carrying .wg-tile-body {
 	min-width: 0;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-plus {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: var(--h-sm);
-	height: var(--h-sm);
-	padding: 0;
-	border: none;
-	border-radius: var(--r-sm);
-	background: none;
-	box-shadow: none;
-	color: var(--text-2);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-plus:hover,
-:is(.wg-root, .wg-portal) .wg-studio-ai-plus.is-on {
-	background: var(--hover);
-	color: var(--text);
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-chevron {
 	display: inline-flex;
 	color: inherit;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-send {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: var(--h-sm);
-	height: var(--h-sm);
-	padding: 0;
-	border: none;
-	border-radius: var(--r-full);
-	background: var(--accent-base);
-	box-shadow: none;
-	color: var(--on-accent);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle {
-	background: var(--active);
-	color: var(--text-3);
-	cursor: default;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-streaming {
-	background: var(--text);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-stop-square {
@@ -14492,34 +14362,6 @@ body.wg-tree-carrying .wg-tile-body {
 	font: var(--fw-regular) var(--fs-12) / 1.4 var(--font-ui);
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-card-remove {
-	position: absolute;
-	top: -6px;
-	right: -6px;
-	z-index: 3;
-	display: none;
-	align-items: center;
-	justify-content: center;
-	width: 18px;
-	height: 18px;
-	padding: 0;
-	border: none;
-	border-radius: var(--r-full);
-	background: var(--text);
-	box-shadow: none;
-	color: var(--plate);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-card-remove svg {
-	stroke-width: 2.5;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-card:hover .wg-studio-ai-card-remove,
-:is(.wg-root, .wg-portal) .wg-studio-ai-card:focus-within .wg-studio-ai-card-remove {
-	display: inline-flex;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments-more {
@@ -17483,8 +17325,8 @@ body:has(.wg-cm-layer) {
 }
 .sumi-home-switch {
 	position: absolute;
-	right: var(--space-6);
-	bottom: var(--space-4);
+	right: var(--space-2-5);
+	top: calc(var(--space-2-5) + var(--space-6-5) + var(--space-1));
 	display: flex;
 	align-items: center;
 	gap: var(--space-0-5);
@@ -17502,63 +17344,135 @@ body:has(.wg-cm-layer) {
 	font: inherit;
 	cursor: pointer;
 }
+.sumi-home-edit {
+	position: absolute;
+	top: var(--space-2-5);
+	right: var(--space-2-5);
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	min-width: var(--space-6-5);
+	height: var(--space-6-5);
+	padding: var(--space-none) var(--space-2);
+	border: 0;
+	border-radius: var(--r-md);
+	background: transparent;
+	color: var(--text-2);
+	font: var(--fw-ui) var(--fs-12) / 1 var(--font-ui);
+	cursor: pointer;
+}
+.sumi-home-edit:hover {
+	background: var(--hover);
+	color: var(--text);
+}
+.sumi-home-edit[data-editing] {
+	padding: var(--space-none) var(--space-3);
+	border-radius: var(--r-full);
+	background: var(--text);
+	color: var(--plate);
+}
 .sumi-launcher {
 	height: 100%;
 	min-height: 0;
 }
 .sumi-launcher .wg-cm-home {
-	--cm-column: 768px;
-	--cm-top: 72px;
+	--cm-column: 640px;
+	--cm-top: var(--space-12);
 }
 .sumi-launcher-greeting {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
-	gap: var(--space-5);
-	padding: var(--space-none) var(--cm-inset) var(--space-5);
+	align-items: center;
+	margin-bottom: var(--space-4-5);
 	color: var(--text);
 }
 .sumi-launcher-question {
-	margin: var(--space-none);
-	font: var(--fw-medium) 22px / 1.3 var(--font-ui);
-	letter-spacing: -0.01em;
+	margin: var(--space-2) var(--space-none) var(--space-none);
+	font-size: var(--fs-20);
+	font-weight: var(--fw-semi);
+	line-height: 28px;
+	letter-spacing: -0.02em;
 	color: var(--text);
+}
+.sumi-launcher .wg-cm-field {
+	height: var(--space-12);
+	margin: var(--space-1);
+	padding: var(--space-none) var(--space-3-5);
+	gap: var(--space-2-5);
+	border: 1px solid var(--line);
+	border-radius: var(--r-lg);
+	background: var(--field);
+	box-shadow:
+		0 0 0 var(--space-1) var(--sunken),
+		0 0 0 calc(var(--space-1) + var(--space-px)) var(--divider);
+	color: var(--text-3);
+	font-size: var(--fs-14);
+}
+.sumi-launcher :is(.wg-cm-ghost, .wg-cm-input) {
+	font-size: var(--fs-14);
+}
+.sumi-launcher .wg-cm-input {
+	color: var(--text);
+}
+.sumi-launcher-hints {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--space-3);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
+	color: var(--text-3);
+}
+.sumi-launcher-hints b {
+	margin-inline-end: var(--space-1);
+	font-weight: var(--fw-semi);
+	color: var(--text-2);
 }
 .sumi-launcher-idle {
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto;
-	padding-bottom: var(--space-6);
+	padding-bottom: var(--space-12);
+}
+.sumi-launcher-section {
+	margin-top: var(--space-6);
 }
 .sumi-launcher-label {
-	padding: var(--space-6) var(--cm-inset) var(--space-2);
+	display: flex;
+	align-items: center;
+	height: var(--space-6-5);
+	margin-bottom: var(--space-2);
 	font-size: var(--fs-12);
-	line-height: 16px;
+	font-weight: var(--fw-ui);
 	color: var(--text-3);
 }
 .sumi-launcher-setups {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: var(--space-4);
-	padding: var(--space-none) var(--cm-inset);
+	gap: var(--space-3-5);
 }
 .sumi-launcher-setup {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
 	min-width: 0;
+	color: var(--text-2);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
 }
 .sumi-launcher-thumb {
-	height: 92px;
+	height: 82px;
 	display: flex;
-	gap: var(--space-0-5);
+	gap: var(--space-px);
+	overflow: hidden;
+	border-radius: var(--r-md);
 }
 .sumi-launcher-column {
 	flex: 1.6;
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-0-5);
+	gap: var(--space-px);
 }
 .sumi-launcher-pane {
 	flex: 1;
@@ -17575,37 +17489,34 @@ body:has(.wg-cm-layer) {
 	color: var(--text);
 }
 .sumi-launcher-setup-name {
-	margin-top: var(--space-2);
-	font-size: var(--fs-13);
-	color: var(--text);
-}
-.sumi-launcher-setup-apps {
-	font-size: var(--fs-13);
-	color: var(--text-3);
+	margin-top: var(--space-1-5);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 .sumi-launcher-apps {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-1);
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: var(--space-2);
 }
 .sumi-launcher-app {
-	width: 88px;
-	height: 64px;
+	height: 54px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: var(--space-2);
-	font-size: var(--fs-13);
-	color: var(--text);
+	gap: var(--space-1-5);
+	min-width: 0;
+	border-radius: var(--r-md);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
+	color: var(--text-2);
 	text-align: center;
 	transition: background-color var(--dur-hover) var(--ease-emphasized);
 }
 .sumi-launcher-app:hover {
 	background: var(--hover);
+	color: var(--text);
 }
 .sumi-launcher-app-name {
 	max-width: 100%;
@@ -17614,18 +17525,43 @@ body:has(.wg-cm-layer) {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.sumi-launcher-row:hover {
-	background: var(--hover);
+.sumi-launcher-row {
+	width: 100%;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-weight: var(--fw-ui);
+	color: var(--text-2);
+	white-space: nowrap;
+}
+.sumi-launcher-row:hover .sumi-launcher-row-title {
+	color: var(--text);
 }
 .sumi-launcher-row-title {
 	min-width: 0;
-	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+.sumi-launcher-row-place,
+.sumi-launcher-row-meta {
+	flex: none;
+	font-size: var(--fs-12);
+	color: var(--text-3);
+}
 .sumi-launcher-row-meta {
 	margin-left: auto;
+}
+.sumi-launcher-more {
+	display: flex;
+	align-items: center;
+	height: var(--space-7);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
 	color: var(--text-3);
+}
+.sumi-launcher-more:hover {
+	color: var(--text);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai {
 	--ai-gutter: 5px;
@@ -17948,7 +17884,7 @@ body:has(.wg-cm-layer) {
 	background: none;
 	box-shadow: none;
 	color: var(--text-3);
-	font: var(--fw-ui) var(--fs-12) / var(--tool-row-h) var(--font-ui);
+	font: var(--fw-ui) var(--fs-13) / var(--tool-row-h) var(--font-ui);
 	text-align: start;
 	cursor: pointer;
 }
@@ -18374,7 +18310,7 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
 	max-width: min(400px, 80%);
-	padding: calc(var(--space-2) - var(--space-px)) calc(var(--space-3) - var(--space-px));
+	padding: var(--space-1-5) var(--space-2-5);
 	border-radius: 10px;
 	background: var(--soft);
 }
@@ -18575,9 +18511,6 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-strip {
 	display: contents;
-}
-:is(.wg-root, .wg-portal) .wg-studio-ai-strip > :first-child .wg-kit-btn > .wg-kit-icon-glyph:first-child {
-	display: none;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar :is(.wg-kit-btn, .wg-kit-select-trigger):not(.wg-kit-icon) {
 	height: var(--h-xs);
@@ -20164,6 +20097,11 @@ body:has(.wg-cm-layer) {
 	padding-inline-end: max(var(--corner-end, 0px), var(--space-4));
 	background: linear-gradient(var(--plate-fill, var(--plate)) var(--chat-head-line), transparent);
 }
+.wg-chat-app .wg-studio-ai > .wg-chat-head {
+	width: auto;
+	max-width: none;
+	margin-inline: var(--space-none);
+}
 .wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-scroll {
 	padding-block-start: var(--chat-head-h);
 }
@@ -20477,6 +20415,10 @@ body:has(.wg-cm-layer) {
 .sumi-model-effort {
 	color: var(--text-3);
 }
+.sumi-runner-mark {
+	flex: none;
+	fill: var(--brand-claude);
+}
 .sumi-usage-ring {
 	flex: none;
 }
@@ -20787,7 +20729,8 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-none) var(--space-1);
 	overflow: hidden;
 	font-family: var(--font-ui);
-	font-size: var(--fs-14);
+	color: var(--text);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-medium);
 	line-height: var(--h-sm);
 	text-align: start;
@@ -21671,321 +21614,6 @@ body:has(.wg-cm-layer) {
 	height: var(--space-2);
 	margin-top: calc(var(--space-1) * -1);
 	cursor: row-resize;
-}
-.sumi-home {
-	color: var(--text);
-	font: var(--fw-ui) var(--fs-13) / 20px var(--font-ui);
-	letter-spacing: var(--tracking-ui);
-}
-:where(.sumi-home button) {
-	padding: var(--space-none);
-	border: 0;
-	background: transparent;
-	color: inherit;
-	font: inherit;
-	letter-spacing: inherit;
-}
-.sumi-home-scroll {
-	flex: 1;
-	min-height: 0;
-	overflow-y: auto;
-}
-.sumi-home-column {
-	width: 640px;
-	max-width: 100%;
-	margin: var(--space-none) auto;
-	padding: var(--space-12) var(--space-none) var(--space-12);
-}
-.sumi-home-head {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	margin-bottom: var(--space-4-5);
-}
-.sumi-home-question {
-	margin: var(--space-2) var(--space-none) var(--space-none);
-	font-size: var(--fs-20);
-	font-weight: var(--fw-semi);
-	line-height: 28px;
-	letter-spacing: -0.02em;
-}
-.sumi-home[data-editing] .sumi-home-head,
-.sumi-home[data-editing] .sumi-home-ring,
-.sumi-home[data-editing] .sumi-home-continue {
-	opacity: 0.45;
-}
-.sumi-home-edit {
-	position: absolute;
-	top: var(--space-2-5);
-	right: var(--space-2-5);
-	z-index: 1;
-	display: grid;
-	place-items: center;
-	min-width: var(--space-6-5);
-	height: var(--space-6-5);
-	padding: var(--space-none) var(--space-2);
-	border-radius: var(--r-md);
-	color: var(--text-2);
-	font-size: var(--fs-12);
-	font-weight: var(--fw-ui);
-}
-.sumi-home-edit:hover {
-	background: var(--hover);
-	color: var(--text);
-}
-.sumi-home-edit[data-editing] {
-	padding: var(--space-none) var(--space-3);
-	border-radius: var(--r-full);
-	background: var(--text);
-	color: var(--plate);
-}
-.sumi-home-edit[data-editing]:hover {
-	background: var(--text);
-	color: var(--plate);
-}
-.sumi-home-ring {
-	margin: var(--space-none) calc(var(--space-1) * -1);
-	padding: var(--space-1);
-	border: 1px solid var(--divider);
-	border-radius: var(--r-xl);
-	background: var(--sunken);
-}
-.sumi-home-field {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2-5);
-	height: var(--space-12);
-	padding: var(--space-none) var(--space-3-5);
-	border: 1px solid var(--line);
-	border-radius: var(--r-lg);
-	background: var(--field);
-	color: var(--text-3);
-	font-size: var(--fs-14);
-}
-.sumi-home-input {
-	flex: 1;
-	min-width: 0;
-	color: var(--text);
-}
-.sumi-home-hints,
-.sumi-home-outcome {
-	display: flex;
-	flex: none;
-	align-items: center;
-	gap: var(--space-3);
-	font-size: var(--fs-12);
-	font-weight: var(--fw-ui);
-	color: var(--text-3);
-}
-.sumi-home-hints b {
-	margin-inline-end: var(--space-1);
-	font-weight: var(--fw-semi);
-	color: var(--text-2);
-}
-.sumi-home-outcome {
-	color: var(--text);
-}
-.sumi-home-outcome-tag {
-	color: var(--text-3);
-}
-.sumi-home-setups {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: var(--space-3-5);
-}
-.sumi-home-setup {
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	width: 100%;
-	min-width: 0;
-	text-align: start;
-	color: var(--text-2);
-	font-size: var(--fs-12);
-	font-weight: var(--fw-ui);
-}
-.sumi-home-setup:disabled {
-	cursor: default;
-}
-.sumi-home-setup:not(:disabled):hover .sumi-home-cell {
-	background: var(--hover);
-	color: var(--text);
-}
-.sumi-home-setup-name {
-	margin-top: var(--space-1-5);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.sumi-home-thumb {
-	display: flex;
-	height: 82px;
-	overflow: hidden;
-	border-radius: var(--r-md);
-}
-.sumi-home-split {
-	display: flex;
-	flex: 1;
-	gap: var(--space-px);
-	min-width: 0;
-}
-.sumi-home-split[data-dir="column"] {
-	flex-direction: column;
-}
-.sumi-home-part {
-	display: flex;
-	min-width: 0;
-	min-height: 0;
-}
-.sumi-home-cell {
-	display: grid;
-	flex: 1;
-	place-items: center;
-	background: var(--soft);
-	color: var(--text-3);
-	transition: background-color var(--dur-hover) var(--ease-emphasized);
-}
-.sumi-home-apps {
-	display: grid;
-	grid-template-columns: repeat(6, minmax(0, 1fr));
-	gap: var(--space-2);
-}
-.sumi-home-app {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: var(--space-1-5);
-	width: 100%;
-	height: 54px;
-	border-radius: var(--r-md);
-	color: var(--text-2);
-	font-size: var(--fs-12);
-	font-weight: var(--fw-ui);
-}
-.sumi-home-app:disabled {
-	cursor: default;
-}
-.sumi-home-app:not(:disabled):hover {
-	background: var(--hover);
-	color: var(--text);
-}
-.sumi-home-app-name {
-	max-width: 100%;
-	padding: var(--space-none) var(--space-1);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.sumi-home-continue {
-	display: flex;
-	flex-direction: column;
-}
-.sumi-home-continue-row {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-	width: 100%;
-	height: 30px;
-	color: var(--text-2);
-	font-weight: var(--fw-ui);
-	text-align: start;
-	white-space: nowrap;
-}
-.sumi-home-continue-row:hover .sumi-home-continue-name {
-	color: var(--text);
-}
-.sumi-home-continue-name {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.sumi-home-continue-folder,
-.sumi-home-continue-age {
-	font-size: var(--fs-12);
-	font-weight: var(--fw-regular);
-	color: var(--text-3);
-}
-.sumi-home-continue-age {
-	margin-inline-start: auto;
-}
-.sumi-home-more {
-	display: flex;
-	align-items: center;
-	height: var(--space-7);
-	font-size: var(--fs-12);
-	font-weight: var(--fw-ui);
-	color: var(--text-3);
-}
-.sumi-home-more:hover {
-	color: var(--text);
-}
-.sumi-home-tile {
-	position: relative;
-	min-width: 0;
-	border-radius: var(--r-md);
-}
-.sumi-home-tile[data-editing] {
-	background: var(--soft);
-}
-.sumi-home-tile[data-lifted] {
-	opacity: 0.5;
-}
-.sumi-home-grip,
-.sumi-home-remove {
-	position: absolute;
-	top: var(--space-1);
-	display: grid;
-	place-items: center;
-	width: var(--space-5);
-	height: var(--space-5);
-	padding: var(--space-none);
-	border-radius: var(--r-xs);
-	color: var(--text-3);
-}
-.sumi-home-grip {
-	left: var(--space-1);
-	cursor: grab;
-	touch-action: none;
-}
-.sumi-home-remove {
-	right: var(--space-1);
-	background: transparent;
-}
-.sumi-home-remove:hover {
-	background: var(--hover);
-	color: var(--text);
-}
-.sumi-home-resize {
-	position: absolute;
-	right: var(--space-1);
-	bottom: var(--space-1);
-	display: grid;
-	place-items: center;
-	width: var(--space-5);
-	height: var(--space-5);
-	color: var(--text-3);
-	cursor: nwse-resize;
-	touch-action: none;
-}
-.sumi-home-icon {
-	display: grid;
-	flex: none;
-	place-items: center;
-	color: var(--text-3);
-}
-.sumi-home-section {
-	margin-top: var(--space-6);
-}
-.sumi-home-heading {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-	height: var(--space-6-5);
-	margin-bottom: var(--space-2);
-	font-size: var(--fs-12);
-	font-weight: var(--fw-ui);
-	color: var(--text-3);
 }
 .sumi-tab-strip {
 	display: flex;

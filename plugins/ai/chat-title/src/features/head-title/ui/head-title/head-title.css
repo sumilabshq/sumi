@@ -11,7 +11,8 @@
 	padding: var(--space-none) var(--space-1);
 	overflow: hidden;
 	font-family: var(--font-ui);
-	font-size: var(--fs-14);
+	color: var(--text);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-medium);
 	line-height: var(--h-sm);
 	text-align: start;

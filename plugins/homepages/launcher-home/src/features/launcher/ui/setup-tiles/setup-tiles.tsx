@@ -11,7 +11,7 @@ export interface SetupTilesProps {
 }
 
 const LABEL = "Setups";
-const CHAT = "Chat";
+const CHAT_TITLE = "Chat";
 
 export function SetupTiles({ appRows, homeTabId }: SetupTilesProps): ReactElement | null {
 	const listed = useOptionalQuery(setups.setups.all).data?.setups ?? [];
@@ -30,14 +30,12 @@ export function SetupTiles({ appRows, homeTabId }: SetupTilesProps): ReactElemen
 						key={setup.id}
 						type="button"
 						className="sumi-launcher-setup"
+						title={[CHAT_TITLE, ...setup.panes.map(({ title }) => title)].join(", ")}
 						onMouseDown={(event) => event.preventDefault()}
 						onClick={() => void open.run({ id: setup.id, homeTabId })}
 					>
 						<SetupThumb setup={setup} appRows={appRows} />
 						<span className="sumi-launcher-setup-name">{setup.title}</span>
-						<span className="sumi-launcher-setup-apps">
-							{[CHAT, ...setup.panes.map(({ title }) => title)].join(", ")}
-						</span>
 					</button>
 				))}
 			</div>

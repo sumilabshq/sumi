@@ -11,8 +11,6 @@ export interface LauncherIdleProps {
 	readonly homeTabId: string;
 }
 
-const CONTINUE_SHOWN = 4;
-
 export function LauncherIdle({ view, homeTabId }: LauncherIdleProps): ReactElement {
 	const rows = view.sections.flatMap((section) => section.rows);
 	const appRows = rows.filter(isAppRow);
@@ -20,7 +18,7 @@ export function LauncherIdle({ view, homeTabId }: LauncherIdleProps): ReactEleme
 		<div className="sumi-launcher-idle">
 			<SetupTiles appRows={appRows} homeTabId={homeTabId} />
 			<AppTiles appRows={appRows} run={view.run} />
-			<ContinueRows rows={rows.filter((row) => !isAppRow(row)).slice(0, CONTINUE_SHOWN)} run={view.run} />
+			<ContinueRows rows={rows.filter((row) => !isAppRow(row))} run={view.run} />
 		</div>
 	);
 }

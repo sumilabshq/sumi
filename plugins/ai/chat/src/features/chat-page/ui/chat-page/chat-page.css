@@ -53,6 +53,12 @@
 	background: linear-gradient(var(--plate-fill, var(--plate)) var(--chat-head-line), transparent);
 }
 
+.wg-chat-app .wg-studio-ai > .wg-chat-head {
+	width: auto;
+	max-width: none;
+	margin-inline: var(--space-none);
+}
+
 .wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-scroll {
 	padding-block-start: var(--chat-head-h);
 }

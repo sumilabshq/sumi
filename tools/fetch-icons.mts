@@ -17,6 +17,7 @@ const DROPPED_WHEN_DEFAULT: Readonly<Record<string, string>> = {
 	strokeWidth: HUGEICONS_DEFAULT_STROKE,
 };
 const KIT_ONLY_DRAWINGS: Readonly<Record<string, string>> = { tick: "Tick02" };
+const KEPT_LUCIDE: ReadonlySet<string> = new Set(["maximize", "minimize"]);
 const HUGEICONS_OVERRIDES: Readonly<Record<string, string>> = {
 	"circle-alert": "AlertCircle",
 	"maximize-2": "Maximize02",
@@ -157,6 +158,7 @@ function pascalOf(name: string): string {
 }
 
 function hugeiconsDrawingOf(name: string): string | null {
+	if (KEPT_LUCIDE.has(name)) return null;
 	const candidates = HUGEICONS_OVERRIDES[name] ? [HUGEICONS_OVERRIDES[name]] : [pascalOf(name), `${pascalOf(name)}01`];
 	for (const candidate of candidates) {
 		const elements = hugeiconsElementsOf(`${candidate}Icon`);

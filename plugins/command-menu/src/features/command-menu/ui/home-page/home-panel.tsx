@@ -9,7 +9,7 @@ import { MenuField } from "../command-menu/menu-field.js";
 import { NO_RESULTS } from "../command-menu/menu-panel.js";
 import { MenuSections } from "../command-menu/menu-sections.js";
 import { ProfileLine } from "../command-menu/profile-line.js";
-import { HomeFoot } from "./home-foot.js";
+import { HOME_HINTS, HomeFoot } from "./home-foot.js";
 
 export interface HomeIdleView {
 	readonly sections: readonly Section[];
@@ -23,12 +23,23 @@ export interface HomePanelProps {
 	readonly head: ReactNode;
 	readonly idle: HomeIdle | null;
 	readonly placeholder: string | null;
+	readonly fieldStart: ReactNode;
+	readonly fieldEnd: ReactNode;
+	readonly isHintless: boolean;
 }
 
 const HOME_DOOR = "home";
 const PLACEHOLDER = "Open an app, paste a link or ask Sumi";
 
-export function HomePanel({ homeTabId, head, idle, placeholder }: HomePanelProps): ReactElement {
+export function HomePanel({
+	homeTabId,
+	head,
+	idle,
+	placeholder,
+	fieldStart,
+	fieldEnd,
+	isHintless,
+}: HomePanelProps): ReactElement {
 	const [text, setText] = useState("");
 	const results = useOptionalQuery(commandMenu.results.all, { text, door: HOME_DOOR, pageId: null }).data ?? NO_RESULTS;
 	const isIdle = idle !== null && text === "";
@@ -47,14 +58,14 @@ export function HomePanel({ homeTabId, head, idle, placeholder }: HomePanelProps
 		<div className="wg-cm-home" data-command-menu-home="" data-cm-idle={isIdle ? "" : undefined} onKeyDown={onKey}>
 			<div className="wg-cm-column">
 				{head ?? <ProfileLine />}
-				<MenuField ask={field} start={null} end={null} onFiles={null} />
+				<MenuField ask={field} start={fieldStart} end={fieldEnd} onFiles={null} />
 				{isIdle ? (
 					idle({ sections: results.sections, run: moves.run })
 				) : (
 					<MenuSections sections={listed.sections} isNothingFound={false} moves={moves} />
 				)}
 			</div>
-			<HomeFoot moves={moves} />
+			<HomeFoot moves={moves} hints={isHintless ? [] : HOME_HINTS} />
 		</div>
 	);
 }

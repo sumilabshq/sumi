@@ -2,13 +2,13 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { assistant } from "@widgetarium/assistant/contract";
-import { Button, Icon, Popover, PopoverContent, PopoverTrigger } from "@widgetarium/kit";
+import { Button, Popover, PopoverContent, PopoverTrigger } from "@widgetarium/kit";
 import type { ComposerOptionProps } from "@sumi/chat-plugin";
 import { chosenLabelOf, effortLabelOf, effortOf } from "../../lib/model-labels.js";
 import { ModelMenu } from "./model-menu.js";
+import { RunnerMark } from "./runner-mark.js";
 
 const MODEL = "Model";
-const RUNNER_ICON_PX = 13;
 
 export function ModelButton({ chat }: ComposerOptionProps): ReactElement | null {
 	const shown = useOptionalQuery(assistant.runners.getRunners, { chat }).data ?? null;
@@ -26,7 +26,7 @@ export function ModelButton({ chat }: ComposerOptionProps): ReactElement | null 
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
 			<PopoverTrigger asChild>
 				<Button variant="ghost" size="xs" form="round" className="sumi-model-trigger" aria-label={MODEL}>
-					<Icon name="terminal" size={RUNNER_ICON_PX} />
+					<RunnerMark runner={shown.chosenRunner} />
 					<span className="sumi-model-name">{chosenLabelOf(shown)}</span>
 					{effortLabel === null ? null : <span className="sumi-model-effort">{effortLabel}</span>}
 				</Button>

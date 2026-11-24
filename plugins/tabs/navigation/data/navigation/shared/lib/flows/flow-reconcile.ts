@@ -2,9 +2,11 @@ import type { Flow, FlowsDoc } from "../../schema/flows.schema.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
 import { flowsOf } from "./flow-conversion.js";
-import { withFlowAdded, withFlowChanged, withoutFlow } from "./flow-docs.js";
+import { withFlowAdded, withFlowChanged } from "./flow-docs.js";
 import { withFolderColorsFilled } from "./flow-folder-colors.js";
 import { flowsHealed, withStraysInOwnFlows } from "./flow-healing.js";
+import { withHomeTabsInEmptyFlows } from "./flow-home-tabs.js";
+import type { HomeTabsFilled } from "./flow-home-tabs.js";
 import type { FlowsHealed } from "./flow-healing.js";
 import { flowBreaksOf } from "./flow-laws.js";
 import type { MovePlaces } from "./flow-moves.js";
@@ -36,32 +38,35 @@ export function reconciling<T>(move: MovePlaces<T>, facts: ReconcileFacts | null
 		const reconciled = placesReconciled({ tabs: moved.next.tabs, flows: moved.next.flows }, facts);
 
 		if (reconciled.said.length === 0) {
-			return { ...moved, next: { tabs: moved.next.tabs, flows: reconciled.doc } };
+			return { ...moved, next: { tabs: reconciled.tabs, flows: reconciled.flows } };
 		}
 
 		const said = reconciled.said.join("; ");
 		console.warn(HEALED.replace("{said}", () => said));
 		return {
 			...moved,
-			next: { tabs: moved.next.tabs, flows: reconciled.doc },
+			next: { tabs: reconciled.tabs, flows: reconciled.flows },
 			reason: `${moved.reason}; healed: ${said}`,
 		};
 	};
 }
 
-function placesReconciled(next: PlacesToReconcile, facts: ReconcileFacts): FlowsHealed {
-	const liveIds = next.tabs.tabs.map(({ id }) => id);
+function placesReconciled(next: PlacesToReconcile, facts: ReconcileFacts): HomeTabsFilled {
 	const healed = flowsHealed(next.flows);
 	const colored = withFolderColorsFilled(healed.doc, next.tabs.groups);
-	const tidy = withoutGoneTabs(colored.doc, new Set(liveIds));
+	const tidy = withoutGoneTabs(colored.doc, new Set(next.tabs.tabs.map(({ id }) => id)));
 	const adopted = withStraysAdopted({ doc: tidy, said: [...healed.said, ...colored.said] }, next.tabs, facts);
-	const breaks = flowBreaksOf(adopted.doc, liveIds);
+	const homed = withHomeTabsInEmptyFlows({ tabs: next.tabs, flows: adopted.doc }, facts.apps);
+	const breaks = flowBreaksOf(
+		homed.flows,
+		homed.tabs.tabs.map(({ id }) => id),
+	);
 
 	if (breaks.length > 0) {
-		refuseUnhealed(breaks, { tabs: next.tabs, flows: adopted.doc });
+		refuseUnhealed(breaks, homed);
 	}
 
-	return adopted;
+	return { ...homed, said: [...adopted.said, ...homed.said] };
 }
 
 function refuseUnhealed(breaks: readonly string[], state: PlacesToReconcile): never {
@@ -82,10 +87,7 @@ function withoutGoneTabs(doc: FlowsDoc, live: ReadonlySet<string>): FlowsDoc {
 			return kept;
 		}
 
-		const isEmptied = gone.size === flowTabIdsOf(flow).length;
-		return isEmptied
-			? withoutFlow(kept, flow.id)
-			: withFlowChanged(kept, flow.id, { layout: layoutWithoutTabs(flow.layout, gone) });
+		return withFlowChanged(kept, flow.id, { layout: layoutWithoutTabs(flow.layout, gone) });
 	}, doc);
 }
 

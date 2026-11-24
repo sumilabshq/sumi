@@ -304,6 +304,7 @@ export const LinkToOpenSchema = z.object({
 	href: z.string().max(MOST_LINK_CHARS),
 	opensNew: z.boolean().default(false),
 	home: z.string().nullable().default(null),
+	place: z.enum(["beside", "split"]).default("beside"),
 });
 
 export const SplitDirSchema = z.enum(["row", "column"]);

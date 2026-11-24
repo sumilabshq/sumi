@@ -104,6 +104,7 @@ async function openTabChecks(): Promise<void> {
 	});
 	const [bare] = flowPanesOf((await flowsIn(stand)).flows.find(({ id }) => id === made.flowId) ?? emptyFlow());
 	const paneId = bare?.id ?? "";
+	const homeIds = bare?.tabIds ?? [];
 	const before = (await flowsIn(stand)).flows.length;
 	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: made.flowId, at: atOf(MAIN) });
 	const first = await stand.app.send(navigation.flows.openTab, {
@@ -116,9 +117,9 @@ async function openTabChecks(): Promise<void> {
 	});
 	const afterFirst = await flowsIn(stand);
 	check(
-		"a tab opened into the pane of a flow with no chat stands in that pane, active",
+		"a tab opened into the pane of a new flow stands after its Home tab, active",
 		[paneOf(afterFirst, made.flowId, paneId).tabIds, paneOf(afterFirst, made.flowId, paneId).activeTabId],
-		[[first.id], first.id],
+		[[...homeIds, first.id], first.id],
 	);
 	check("and makes no new flow", afterFirst.flows.length, before);
 	check("every law holds after the first tab", await lawsOf(stand), []);
@@ -137,7 +138,7 @@ async function openTabChecks(): Promise<void> {
 			paneOf(await flowsIn(stand), made.flowId, paneId).tabIds,
 			second.effects.some((effect) => effect.kind === "open-page" && effect.pageId === page),
 		],
-		[[first.id, second.id], true],
+		[[...homeIds, first.id, second.id], true],
 	);
 	await splitPaneChecks();
 	await openTabRefusalChecks();

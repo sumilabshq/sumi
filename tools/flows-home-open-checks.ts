@@ -8,7 +8,7 @@ import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import { atOf } from "./flows-asks.ts";
 import { MAIN, chatFlow, flowsIn, lawsOf, standOver } from "./flows-stand.ts";
 import type { Stand } from "./flows-stand.ts";
-import { check } from "./check-helpers.ts";
+import { check, tally } from "./check-helpers.ts";
 
 const FLOW_ID = chatFlow(3);
 const NEW_CHAT_ID = "chat-from-home";
@@ -104,7 +104,7 @@ async function canvasReplacesHome(): Promise<void> {
 	await checkReplaced(home, opened.id, "canvas");
 }
 
-export async function homeOpenChecks(): Promise<void> {
-	await chatReplacesHome();
-	await canvasReplacesHome();
-}
+await chatReplacesHome();
+await canvasReplacesHome();
+console.log(tally.failed ? `flows home open: ${tally.failed} check(s) failed` : "flows home open: all checks passed");
+process.exit(tally.failed ? 1 : 0);

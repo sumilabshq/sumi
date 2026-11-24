@@ -23,7 +23,6 @@ import { navigation } from "@sumi/navigation-plugin";
 import { flowsSidebar } from "@sumi/flows-sidebar-plugin";
 import { flowStrip } from "@sumi/flow-strip-plugin";
 import { flowBoard } from "@sumi/flow-board-plugin";
-import { flowsHome } from "@sumi/flows-home-plugin";
 import { tabGroups } from "@sumi/tab-groups-plugin";
 import { pinnedTabs } from "@sumi/pinned-tabs-plugin";
 import { subPages } from "@sumi/sub-pages-plugin";
@@ -179,7 +178,6 @@ const INSTALLED_PLUGINS = [
 	flowsSidebar,
 	flowStrip,
 	flowBoard,
-	flowsHome,
 	pinnedTabs,
 	subPages,
 ];
@@ -191,7 +189,6 @@ const ALWAYS_ON_PLUGINS = [
 	flowsSidebar,
 	flowStrip,
 	flowBoard,
-	flowsHome,
 	apps,
 	commandMenu,
 	chat,
