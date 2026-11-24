@@ -40,7 +40,15 @@ export function OverflowMenu({ tabs, artOf, onShow }: OverflowMenuProps): ReactE
 							<PopoverItem
 								key={tab.id}
 								role="menuitem"
-								icon={<TabFace art={artOf(tab)} favicon={null} title={tabLabelOf(tab)} address={tab.address} mark={tab.mark} />}
+								icon={
+									<TabFace
+										art={artOf(tab)}
+										favicon={null}
+										title={tabLabelOf(tab)}
+										address={tab.address}
+										mark={tab.mark}
+									/>
+								}
 								onClick={() => {
 									setAt(null);
 									onShow(tab.id);

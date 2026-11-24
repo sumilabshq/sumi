@@ -1,7 +1,4 @@
-import type {
-	DuplicateTabAsk,
-	OpenTabAsk,
-} from "../../schema/tab-asks.schema.js";
+import type { DuplicateTabAsk, OpenTabAsk } from "../../schema/tab-asks.schema.js";
 import type { PageApp } from "../../schema/tabs.schema.js";
 import { isRefusal, plannedWith, refusal } from "../settling/settling.js";
 import type { ExtraPlan, Planned, Refusal, ShowingPlan } from "../settling/settling.js";
@@ -13,14 +10,7 @@ import { withShownTab } from "./tab-shown.js";
 import type { Showing } from "./showing.js";
 import type { TabFacts } from "./tab-facts.js";
 import { tabPageOf } from "./tab-pages.js";
-import {
-	chatIdOf,
-	heldTabOf,
-	newTabPlaceOf,
-	openTab,
-	openTabAfter,
-	openTabUnshown,
-} from "../tabs/host-tabs.js";
+import { chatIdOf, heldTabOf, newTabPlaceOf, openTab, openTabAfter, openTabUnshown } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, OpenedHostTab, TabPlace } from "../tabs/host-tabs.js";
 import { chatOfGroup, placeAfterOf } from "../tabs/tab-lists.js";
 import { isPageApp, navigatingAppOf } from "../tabs/app-abilities.js";
@@ -101,7 +91,8 @@ export function duplicatePlan(ask: Omit<DuplicateTabAsk, "at">): ExtraPlan<strin
 			return place;
 		}
 
-		const address = chatIdOf(showing.moment.apps, source) ?? tabPageOf(showing.moment, facts.pages, ask.id)?.address ?? "";
+		const address =
+			chatIdOf(showing.moment.apps, source) ?? tabPageOf(showing.moment, facts.pages, ask.id)?.address ?? "";
 		const opened = openedShowing(showing, facts, { app: source.app, place, address, show: ask.show });
 		return plannedWith(withTitleOf(opened.showing, opened.extra, source), opened.extra);
 	};
@@ -183,7 +174,9 @@ function askedPlaceOf(moment: HostTabsMoment, { list, groupId }: AskedPlace): Ta
 		return refusal(NO_LIST.replace("{list}", list));
 	}
 
-	return list !== null && isPageList(moment, list) ? { chatId: list, groupId: null, before: null } : newTabPlaceOf(list);
+	return list !== null && isPageList(moment, list)
+		? { chatId: list, groupId: null, before: null }
+		: newTabPlaceOf(list);
 }
 
 function duplicatePlaceOf(moment: HostTabsMoment, asked: AskedPlace & { readonly id: string }): TabPlace | Refusal {

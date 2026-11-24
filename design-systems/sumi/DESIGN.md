@@ -106,12 +106,12 @@ Inter (variable, weight 510, letter-spacing -0.01em) for everything people read;
 
 ## Depth & Elevation
 
-| Level        | What                        | Anatomy                                                                                                                                        |
-| ------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Paper        | the window, sidebars, panes | one colour, no edge; a fractal-noise grain at 8% and a radial light at 5% ink from the top centre, over everything, never catching the pointer |
-| Page         | the active tab, the main page | no border, `--shadow-page`: a 0.5px hairline and a 1px lift                                                                                  |
-| Popup        | menus, pickers              | paper, 1px `--line-menu` border, radius 10, `--shadow-menu`                                                                                    |
-| Command menu | the ⌘K menu                 | covers the whole window in the paper colour; no shadow, no blur                                                                                |
+| Level        | What                          | Anatomy                                                                                                                                        |
+| ------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Paper        | the window, sidebars, panes   | one colour, no edge; a fractal-noise grain at 8% and a radial light at 5% ink from the top centre, over everything, never catching the pointer |
+| Page         | the active tab, the main page | no border, `--shadow-page`: a 0.5px hairline and a 1px lift                                                                                    |
+| Popup        | menus, pickers                | paper, 1px `--line-menu` border, radius 10, `--shadow-menu`                                                                                    |
+| Command menu | the ⌘K menu                   | covers the whole window in the paper colour; no shadow, no blur                                                                                |
 
 Only the active tab, the main page and popups cast a shadow. A line stands between panes, under a table header and as the two chat dividers; a code block is filled, never outlined.
 

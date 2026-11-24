@@ -13,7 +13,14 @@ import { swappedInSplit } from "../../../shared/lib/splits/split-moves.js";
 import { splitOfTab, standsInSection } from "../../../shared/lib/splits/split-members.js";
 import { isPageApp, resolvedAppOf } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
-import { heldTabOf, isPageTab, markSelected, openTabUnshown, placeTab, tabOf } from "../../../shared/lib/tabs/host-tabs.js";
+import {
+	heldTabOf,
+	isPageTab,
+	markSelected,
+	openTabUnshown,
+	placeTab,
+	tabOf,
+} from "../../../shared/lib/tabs/host-tabs.js";
 import type { HostTab, TabPlace } from "../../../shared/lib/tabs/host-tabs.js";
 import { locationOf, placeOfLocation } from "../../../shared/lib/tabs/tab-lists.js";
 import { openPlan, withAddressKept } from "../../../shared/lib/showing/opening-plans.js";
@@ -125,7 +132,10 @@ function inPlaceNavigated(showing: Showing, facts: TabFacts, { target, fromId }:
 	}
 
 	const place = placeOfLocation(showing.moment, location);
-	const reached = target.kind === "app" ? freshReachedOf(showing, facts, { target, place }) : reachedTabOf(showing, { target, place });
+	const reached =
+		target.kind === "app"
+			? freshReachedOf(showing, facts, { target, place })
+			: reachedTabOf(showing, { target, place });
 
 	if (isRefusal(reached)) {
 		return reached;
@@ -203,7 +213,6 @@ function reachedTabOf(showing: Showing, { target, place }: Reaching): Reached | 
 		tab,
 	};
 }
-
 
 function withViewSettled(showing: Showing): Showing {
 	const { view } = showing.moment;

@@ -22,7 +22,13 @@ export function SpotMenu<At extends MenuSpot>({ at, onClose, children }: SpotMen
 
 	const shown = last.current;
 	return (
-		<Popover open={at !== null} onOpenChange={(isOpen) => isOpen || onClose()} placement="over" isPortaled className="is-compact">
+		<Popover
+			open={at !== null}
+			onOpenChange={(isOpen) => isOpen || onClose()}
+			placement="over"
+			isPortaled
+			className="is-compact"
+		>
 			{shown === null ? null : (
 				<PopoverAnchor
 					className="sumi-pane-menu-spot"

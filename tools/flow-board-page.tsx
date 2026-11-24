@@ -7,10 +7,12 @@ import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-h
 import { flowsMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { TabFaceContext } from "../plugins/sumi-host/src/index.ts";
+import type { PaneBoardProps } from "../plugins/sumi-host/src/index.ts";
 import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
 import { FlowWindowContext } from "../plugins/tabs/flow-strip/src/shared/lib/flow-window-context.ts";
 import { FlowStrip } from "../plugins/tabs/flow-strip/src/features/flow-header/ui/flow-strip/flow-strip.tsx";
 import { FlowBoard } from "../plugins/tabs/flow-board/src/features/flow-board/ui/flow-board/flow-board.tsx";
+import { FRAME_LIMITS } from "../packages/state/layout/shared/lib/frame-bounds.ts";
 import { studioFakesOf } from "./app-host-fixture.ts";
 import { MAIN, SIDE, chatFlow, flowsIn, standOver } from "./flows-stand.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
@@ -44,7 +46,11 @@ function Probe({ label }: { readonly label: string }): ReactElement {
 	);
 }
 
-function drawn(view: { readonly kind: string; readonly chatId?: string | undefined; readonly tabId?: string | null }): ReactElement {
+function drawn(view: {
+	readonly kind: string;
+	readonly chatId?: string | undefined;
+	readonly tabId?: string | null;
+}): ReactElement {
 	if (view.kind === "chat") {
 		return <Probe label={`chat ${view.chatId ?? ""}`} />;
 	}
@@ -100,13 +106,13 @@ window.__demo = {
 	layout: async () => (await flowsIn(stand)).flows.find(({ id }) => id === FLOW)?.layout,
 };
 
-const BOARD_PROPS = {
+const BOARD_PROPS: PaneBoardProps = {
 	drawn,
 	empty: <div className="demo-page">No flow</div>,
 	chatPx: 0,
-	bounds: {},
+	bounds: FRAME_LIMITS,
 	onChatPx: () => undefined,
-} as never;
+};
 
 function Demo(): ReactElement {
 	return (

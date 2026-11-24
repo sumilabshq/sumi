@@ -29,7 +29,11 @@ export function InboxSection({ sidebar, acts }: InboxSectionProps): ReactElement
 		<section className="sumi-flows-section" aria-label="Inbox">
 			<div className="sumi-flows-label">
 				<span>Inbox</span>
-				<button type="button" className="sumi-flows-label-action" onClick={clearing.canUndo ? clearing.undo : clearing.clear}>
+				<button
+					type="button"
+					className="sumi-flows-label-action"
+					onClick={clearing.canUndo ? clearing.undo : clearing.clear}
+				>
 					{clearing.canUndo ? "Undo" : "Clear"}
 				</button>
 			</div>

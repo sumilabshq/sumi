@@ -66,8 +66,7 @@ function useTabCommandActs({ flowId, paneId, tabs }: PaneScope): TabCommandActs 
 	const closeTab = useCommand(appHost.tabActions.closeTab);
 	const renameTab = useCommand(appHost.tabActions.renameTab);
 	const openTab = useCommand(appHost.flows.openTab);
-	const openInPane = (app: string, address: string | null): void =>
-		void openTab.run({ flowId, paneId, app, address });
+	const openInPane = (app: string, address: string | null): void => void openTab.run({ flowId, paneId, app, address });
 	return {
 		close: (tabId) => void closeTab.run({ id: tabId }),
 		duplicate: (tabId) => {

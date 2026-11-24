@@ -48,26 +48,59 @@ async function inInbox(theme: string, scene: string, run: Case): Promise<void> {
 
 async function inboxRows(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
-		check("Inbox shows three rows then Show more", await page.ask(namesOf(INBOX)), ["Composer redesign", "Design system", "Sprint board"]);
-		check("Inbox title row is the label and Clear, no count", await page.ask(`document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent`), "InboxClear");
+		check("Inbox shows three rows then Show more", await page.ask(namesOf(INBOX)), [
+			"Composer redesign",
+			"Design system",
+			"Sprint board",
+		]);
+		check(
+			"Inbox title row is the label and Clear, no count",
+			await page.ask(`document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent`),
+			"InboxClear",
+		);
 		check("Show more is offered", await page.ask(count(".sumi-flows-more")), 1);
 		await page.ask(`document.querySelector(".sumi-flows-more").click()`);
 		await waited(SETTLE_MS);
-		check("Show more lists the rest", await page.ask(namesOf(INBOX)), ["Composer redesign", "Design system", "Sprint board", "Plugin layout"]);
-		check("a running Flow stays out of Inbox", ((await page.ask(namesOf(INBOX))) as string[]).includes("Summarize papers"), false);
+		check("Show more lists the rest", await page.ask(namesOf(INBOX)), [
+			"Composer redesign",
+			"Design system",
+			"Sprint board",
+			"Plugin layout",
+		]);
+		check(
+			"a running Flow stays out of Inbox",
+			((await page.ask(namesOf(INBOX))) as string[]).includes("Summarize papers"),
+			false,
+		);
 	});
 }
 
 async function inboxOpening(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await pressOn(page, INBOX, "Sprint board");
-		check("opening an Inbox row removes it from Inbox", (await page.ask(namesOf(INBOX))) as string[], ["Composer redesign", "Design system", "Plugin layout"]);
-		check("the opened Flow is the current row", await page.ask(`document.querySelector(".sumi-flows-row[data-current] .sumi-flows-name").textContent`), "Sprint board");
+		check("opening an Inbox row removes it from Inbox", (await page.ask(namesOf(INBOX))) as string[], [
+			"Composer redesign",
+			"Design system",
+			"Plugin layout",
+		]);
+		check(
+			"the opened Flow is the current row",
+			await page.ask(`document.querySelector(".sumi-flows-row[data-current] .sumi-flows-name").textContent`),
+			"Sprint board",
+		);
 		await pressOn(page, FLOWS, "Plugin layout");
-		check("opening a Flow clears its done tick, and an asking Flow returns once it is not open", (await page.ask(namesOf(INBOX))) as string[], ["Composer redesign", "Design system", "Sprint board"]);
+		check(
+			"opening a Flow clears its done tick, and an asking Flow returns once it is not open",
+			(await page.ask(namesOf(INBOX))) as string[],
+			["Composer redesign", "Design system", "Sprint board"],
+		);
 	});
 	await inInbox("light", "opened", async (page) => {
-		check("an asking Flow is hidden from Inbox while open", await page.ask(namesOf(INBOX)), ["Composer redesign", "Sprint board", "Plugin layout"]);
+		check("an asking Flow is hidden from Inbox while open", await page.ask(namesOf(INBOX)), [
+			"Composer redesign",
+			"Sprint board",
+			"Plugin layout",
+		]);
 	});
 }
 
@@ -75,17 +108,36 @@ async function inboxClearing(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
 		await waited(SETTLE_MS);
-		check("Clear leaves only Flows that wait for an answer", await page.ask(namesOf(INBOX)), ["Design system", "Sprint board"]);
-		check("Clear turns into a short Undo", await page.ask(`document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent`), "InboxUndo");
+		check("Clear leaves only Flows that wait for an answer", await page.ask(namesOf(INBOX)), [
+			"Design system",
+			"Sprint board",
+		]);
+		check(
+			"Clear turns into a short Undo",
+			await page.ask(`document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent`),
+			"InboxUndo",
+		);
 		await page.ask(clickText(".sumi-flows-label-action", "Undo"));
 		await waited(SETTLE_MS);
-		check("Undo brings the rows back", await page.ask(namesOf(INBOX)), ["Composer redesign", "Design system", "Sprint board"]);
+		check("Undo brings the rows back", await page.ask(namesOf(INBOX)), [
+			"Composer redesign",
+			"Design system",
+			"Sprint board",
+		]);
 	});
 	await inInbox("light", "finished", async (page) => {
 		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
 		await waited(SETTLE_MS);
-		check("Clear on a finished-only Inbox hides the whole section", await page.ask(count("section[aria-label=Inbox]")), 0);
-		check("and offers Undo in its place", await page.ask(`document.querySelector("[role=status]")?.textContent`), "Inbox clearedUndo");
+		check(
+			"Clear on a finished-only Inbox hides the whole section",
+			await page.ask(count("section[aria-label=Inbox]")),
+			0,
+		);
+		check(
+			"and offers Undo in its place",
+			await page.ask(`document.querySelector("[role=status]")?.textContent`),
+			"Inbox clearedUndo",
+		);
 		await page.ask(clickText(".sumi-flows-label-action", "Undo"));
 		await waited(SETTLE_MS);
 		check("Undo restores the section", await page.ask(count("section[aria-label=Inbox]")), 1);
@@ -115,7 +167,11 @@ async function rowsAndFolders(): Promise<void> {
 			`[...document.querySelectorAll(".sumi-flows-row[data-kind=folder]")].find((one) => one.querySelector(".sumi-flows-name")?.textContent === "Personal").querySelector(".sumi-flows-add").click()`,
 		);
 		await waited(SETTLE_MS * 2);
-		check("plus creates a Flow in its folder", ((await page.ask(folderFlowsOf("Personal"))) as string[]).includes("New flow"), true);
+		check(
+			"plus creates a Flow in its folder",
+			((await page.ask(folderFlowsOf("Personal"))) as string[]).includes("New flow"),
+			true,
+		);
 	});
 }
 
@@ -127,13 +183,24 @@ async function renaming(): Promise<void> {
 		await page.typeText("Customer work");
 		await page.pressEnter();
 		await waited(SETTLE_MS);
-		check("Enter renames the folder", await page.ask(namesOf(FOLDERS)), ["Sumi", "Customer work", "Personal", "Research"]);
+		check("Enter renames the folder", await page.ask(namesOf(FOLDERS)), [
+			"Sumi",
+			"Customer work",
+			"Personal",
+			"Research",
+		]);
 		await doubleClickOn(page, ".sumi-flows-row-main", "Customer work");
 		await waited(300);
-		const [x, y] = (await page.ask(`(() => { const box = document.querySelector(".sumi-flows-field-icon").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`)) as [number, number];
+		const [x, y] = (await page.ask(
+			`(() => { const box = document.querySelector(".sumi-flows-field-icon").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`,
+		)) as [number, number];
 		await page.press(x, y);
 		await waited(300);
-		check("the field icon opens a picker with Remove icon", await page.ask(`document.querySelector(".sumi-flows-picker-remove")?.textContent`), "Remove icon");
+		check(
+			"the field icon opens a picker with Remove icon",
+			await page.ask(`document.querySelector(".sumi-flows-picker-remove")?.textContent`),
+			"Remove icon",
+		);
 	});
 }
 
@@ -143,7 +210,11 @@ async function hoverPanel(): Promise<void> {
 		await hoverOn(page, folderFlow, "Composer redesign", 100);
 		check("the chats panel waits 300 ms", await page.ask(count(".sumi-flows-chats")), 0);
 		await waited(800);
-		check("a Flow with several chats lists them on hover", await page.ask(namesOf(".sumi-flows-chats-item")), ["Refactor", "Run tests", "Update docs"]);
+		check("a Flow with several chats lists them on hover", await page.ask(namesOf(".sumi-flows-chats-item")), [
+			"Refactor",
+			"Run tests",
+			"Update docs",
+		]);
 		await page.hover(900, 400);
 		await waited(900);
 		await hoverOn(page, folderFlow, "Design system", 1000);
@@ -155,8 +226,18 @@ async function hiding(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await page.ask(`document.querySelector("[aria-label='Hide sidebar']").click()`);
 		await waited(SETTLE_MS);
-		check("hiding removes the column and leaves the toggle", await page.ask(`[${count(".sumi-flows-sidebar")}, ${count(".sumi-flows-hidden")}, !!document.querySelector("[aria-label='Show sidebar']")]`), [0, 1, true]);
-		check("the title bar floats over the content when hidden", await page.ask(`document.querySelector(".sumi-flows-title").dataset.titleFloats`), "covering");
+		check(
+			"hiding removes the column and leaves the toggle",
+			await page.ask(
+				`[${count(".sumi-flows-sidebar")}, ${count(".sumi-flows-hidden")}, !!document.querySelector("[aria-label='Show sidebar']")]`,
+			),
+			[0, 1, true],
+		);
+		check(
+			"the title bar floats over the content when hidden",
+			await page.ask(`document.querySelector(".sumi-flows-title").dataset.titleFloats`),
+			"covering",
+		);
 		await page.hover(2, 300);
 		await waited(SETTLE_MS);
 		check("the left edge reveals the sidebar", await page.ask(count(".sumi-flows-float")), 1);
@@ -165,7 +246,13 @@ async function hiding(): Promise<void> {
 		check("leaving it hides it again", await page.ask(count(".sumi-flows-float")), 0);
 		await page.ask(`document.querySelector("[aria-label='Show sidebar']").click()`);
 		await waited(SETTLE_MS);
-		check("showing docks the column", await page.ask(`[${count(".sumi-flows-sidebar")}, document.querySelector(".sumi-flows-title").dataset.titleFloats]`), [1, "beside"]);
+		check(
+			"showing docks the column",
+			await page.ask(
+				`[${count(".sumi-flows-sidebar")}, document.querySelector(".sumi-flows-title").dataset.titleFloats]`,
+			),
+			[1, "beside"],
+		);
 	});
 }
 
@@ -173,19 +260,35 @@ async function dragging(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await page.ask(dragged("Plugin layout", "Client project"));
 		await waited(SETTLE_MS * 2);
-		check("dropping a Flow on a folder moves it there", await page.ask(folderFlowsOf("Client project")), ["Sprint board", "Plugin layout"]);
-		check("and takes it out of the old folder", await page.ask(folderFlowsOf("Sumi")), ["Composer redesign", "Design system"]);
+		check("dropping a Flow on a folder moves it there", await page.ask(folderFlowsOf("Client project")), [
+			"Sprint board",
+			"Plugin layout",
+		]);
+		check("and takes it out of the old folder", await page.ask(folderFlowsOf("Sumi")), [
+			"Composer redesign",
+			"Design system",
+		]);
 	});
 }
 
 async function deleting(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
-		await page.ask(`${rowOf(FLOWS, "Plugin layout")}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`);
+		await page.ask(
+			`${rowOf(FLOWS, "Plugin layout")}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`,
+		);
 		await waited(300);
-		check("a Flow row menu offers Rename and Delete flow", await page.ask(`[...document.querySelectorAll("[role=menuitem]")].map((item) => item.textContent)`), ["Rename", "Delete flow"]);
+		check(
+			"a Flow row menu offers Rename and Delete flow",
+			await page.ask(`[...document.querySelectorAll("[role=menuitem]")].map((item) => item.textContent)`),
+			["Rename", "Delete flow"],
+		);
 		await page.ask(clickText("[role=menuitem]", "Delete flow"));
 		await waited(SETTLE_MS * 2);
-		check("Delete flow takes the Flow out of the sidebar", ((await page.ask(namesOf(FLOWS))) as string[]).includes("Plugin layout"), false);
+		check(
+			"Delete flow takes the Flow out of the sidebar",
+			((await page.ask(namesOf(FLOWS))) as string[]).includes("Plugin layout"),
+			false,
+		);
 		check("and out of Inbox", ((await page.ask(namesOf(INBOX))) as string[]).includes("Plugin layout"), false);
 	});
 }

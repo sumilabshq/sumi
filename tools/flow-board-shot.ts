@@ -32,7 +32,9 @@ let failures = 0;
 function check(name: string, got: unknown, want: unknown): void {
 	const isOk = JSON.stringify(got) === JSON.stringify(want);
 	failures += isOk ? 0 : 1;
-	console.log(`${isOk ? "OK " : "BAD"} ${name}${isOk ? "" : ` got ${JSON.stringify(got)} want ${JSON.stringify(want)}`}`);
+	console.log(
+		`${isOk ? "OK " : "BAD"} ${name}${isOk ? "" : ` got ${JSON.stringify(got)} want ${JSON.stringify(want)}`}`,
+	);
 }
 
 function htmlOf(theme: string): string {
@@ -76,17 +78,26 @@ interface Box {
 }
 
 async function boxOf(page: AskedPage, selector: string): Promise<Box> {
-	return asked<Box>(page, `(() => { const r = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; })()`);
+	return asked<Box>(
+		page,
+		`(() => { const r = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; })()`,
+	);
 }
 
 const centre = (box: Box): readonly [number, number] => [box.x + box.width / 2, box.y + box.height / 2];
 
 async function panesOf(page: AskedPage): Promise<readonly (readonly string[])[]> {
-	return asked(page, "window.__demo.layout().then((layout) => { const out = []; const walk = (n) => n.kind === 'pane' ? out.push(n.tabIds) : n.children.forEach(walk); walk(layout.root); return out; })");
+	return asked(
+		page,
+		"window.__demo.layout().then((layout) => { const out = []; const walk = (n) => n.kind === 'pane' ? out.push(n.tabIds) : n.children.forEach(walk); walk(layout.root); return out; })",
+	);
 }
 
 async function rowsOf(page: AskedPage): Promise<readonly (readonly string[])[]> {
-	return asked(page, "[...document.querySelectorAll('[data-flow-pane-row]')].map((row) => [...row.querySelectorAll('[data-flow-tab]')].map((tab) => tab.getAttribute('data-flow-tab') + (tab.getAttribute('data-mode') === 'icon' ? ':icon' : '')))");
+	return asked(
+		page,
+		"[...document.querySelectorAll('[data-flow-pane-row]')].map((row) => [...row.querySelectorAll('[data-flow-tab]')].map((tab) => tab.getAttribute('data-flow-tab') + (tab.getAttribute('data-mode') === 'icon' ? ':icon' : '')))",
+	);
 }
 
 async function lookShots(): Promise<void> {
@@ -94,7 +105,12 @@ async function lookShots(): Promise<void> {
 		for (const scenario of ["side", "stacked", "narrow"]) {
 			const { page, stop } = await opened(theme, scenario);
 			await shot(page, `${scenario}-${theme}`);
-			console.log(`shot ${scenario}-${theme} rows`, JSON.stringify(await rowsOf(page)), "failures", page.failures().length);
+			console.log(
+				`shot ${scenario}-${theme} rows`,
+				JSON.stringify(await rowsOf(page)),
+				"failures",
+				page.failures().length,
+			);
 			stop();
 		}
 	}
@@ -103,23 +119,44 @@ async function lookShots(): Promise<void> {
 async function behaviourChecks(): Promise<void> {
 	const { page, stop } = await opened("light", "side");
 	check("side by side: two rows, one per pane", (await rowsOf(page)).length, 2);
-	check("the header holds both rows", await asked(page, "document.querySelectorAll('.sumi-flow-strip [data-flow-pane-row]').length"), 2);
-	check("the board draws no row of its own", await asked(page, "document.querySelectorAll('.sumi-flow-board [data-flow-pane-row]').length"), 0);
+	check(
+		"the header holds both rows",
+		await asked(page, "document.querySelectorAll('.sumi-flow-strip [data-flow-pane-row]').length"),
+		2,
+	);
+	check(
+		"the board draws no row of its own",
+		await asked(page, "document.querySelectorAll('.sumi-flow-board [data-flow-pane-row]').length"),
+		0,
+	);
 	const before = await asked<Record<string, number>>(page, "window.__demo.mounts");
 	const second = await boxOf(page, "[data-flow-tab='sub-3-1']");
 	await page.press(...centre(second));
 	await page.release(centre(second));
 	await waited(500);
-	check("a click shows the tab", await asked(page, "document.querySelector(\"[data-flow-tab='sub-3-1']\").getAttribute('aria-selected')"), "true");
-	check("switching tabs mounts nothing again", await asked(page, "window.__demo.mounts"), { ...before, "page sub-3-1": 1 });
+	check(
+		"a click shows the tab",
+		await asked(page, "document.querySelector(\"[data-flow-tab='sub-3-1']\").getAttribute('aria-selected')"),
+		"true",
+	);
+	check("switching tabs mounts nothing again", await asked(page, "window.__demo.mounts"), {
+		...before,
+		"page sub-3-1": 1,
+	});
 	await page.press(...centre(await boxOf(page, "[data-flow-tab='chat-03']")));
 	await page.release(centre(await boxOf(page, "[data-flow-tab='chat-03']")));
 	await waited(400);
 	check("switching back keeps the chat mounted once", await asked(page, "window.__demo.mounts['chat chat-03']"), 1);
-	await page.ask("document.querySelector(\"[data-flow-tab='sub-3-1']\").dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 330, clientY: 20 }))");
+	await page.ask(
+		"document.querySelector(\"[data-flow-tab='sub-3-1']\").dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 330, clientY: 20 }))",
+	);
 	await waited(500);
 	await shot(page, "menu-light");
-	check("the tab menu lists its items", await asked(page, "[...document.querySelectorAll('[role=menuitem]')].map((item) => item.textContent)"), ["Rename", "Duplicate", "Split right", "Split down", "Save as setup", "Close"]);
+	check(
+		"the tab menu lists its items",
+		await asked(page, "[...document.querySelectorAll('[role=menuitem]')].map((item) => item.textContent)"),
+		["Rename", "Duplicate", "Split right", "Split down", "Save as setup", "Close"],
+	);
 	stop();
 }
 
@@ -142,7 +179,12 @@ async function dragChecks(): Promise<void> {
 	await shot(page, "drag-row-light");
 	await hold.drop(move);
 	await waited(700);
-	check("a drop into another row moves the tab there, before the one aimed at", (await panesOf(page)).flat(), ["chat-03", "sub-3-1", "sub-3-2", "sub-3-3"]);
+	check("a drop into another row moves the tab there, before the one aimed at", (await panesOf(page)).flat(), [
+		"chat-03",
+		"sub-3-1",
+		"sub-3-2",
+		"sub-3-3",
+	]);
 	check("sub-3-1 now stands in the middle pane", (await panesOf(page))[1], ["sub-3-1", "sub-3-2"]);
 	check("the moved page was not mounted again", await asked(page, "window.__demo.mounts['page sub-3-1'] ?? 0"), 1);
 	stop();
@@ -169,7 +211,14 @@ async function holdChecks(): Promise<void> {
 	await page.release(centre(plus));
 	await waited(700);
 	await shot(page, "refused-light");
-	check("a pane command from the other window shows its refusal", await asked(page, "[...document.querySelectorAll('[role=status]')].some((note) => note.textContent.includes('only that window changes its panes'))"), true);
+	check(
+		"a pane command from the other window shows its refusal",
+		await asked(
+			page,
+			"[...document.querySelectorAll('[role=status]')].some((note) => note.textContent.includes('only that window changes its panes'))",
+		),
+		true,
+	);
 	stop();
 }
 

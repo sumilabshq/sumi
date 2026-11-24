@@ -72,7 +72,9 @@ function PaneTabMenuItems({ tabId, flowId, acts, onClose }: ItemsProps): ReactEl
 			<PopoverItem
 				role="menuitem"
 				icon={<Icon name="bookmark" />}
-				onClick={chose(() => acts.saveAsSetup(flowName === undefined || flowName === "" ? FALLBACK_SETUP_NAME : flowName))}
+				onClick={chose(() =>
+					acts.saveAsSetup(flowName === undefined || flowName === "" ? FALLBACK_SETUP_NAME : flowName),
+				)}
 			>
 				Save as setup
 			</PopoverItem>

@@ -70,7 +70,9 @@ const nodes = recordOf(JSON.parse(read("icon-nodes.json")), "icon-nodes.json");
 const tags = recordOf(JSON.parse(read("tags.json")), "tags.json");
 
 const hugeicons = recordOf(
-	await import(pathToFileURL(path.join(installDir, "node_modules", "@hugeicons", HUGEICONS_DIR, "dist", "esm", "index.js")).href),
+	await import(
+		pathToFileURL(path.join(installDir, "node_modules", "@hugeicons", HUGEICONS_DIR, "dist", "esm", "index.js")).href
+	),
 	"hugeicons index",
 );
 const table: Record<string, string> = {};
@@ -96,11 +98,16 @@ mkdirSync(path.join(NOTICE_DIR, "hugeicons"), { recursive: true });
 writeFileSync(path.join(NOTICE_DIR, "NOTICE"), NOTICE);
 writeFileSync(path.join(NOTICE_DIR, "LICENSE"), read("LICENSE"));
 
-writeFileSync(path.join(NOTICE_DIR, "hugeicons", "LICENSE"), readFileSync(path.join(installDir, "node_modules", "@hugeicons", HUGEICONS_DIR, "LICENSE.md"), "utf8"));
+writeFileSync(
+	path.join(NOTICE_DIR, "hugeicons", "LICENSE"),
+	readFileSync(path.join(installDir, "node_modules", "@hugeicons", HUGEICONS_DIR, "LICENSE.md"), "utf8"),
+);
 writeFileSync(path.join(NOTICE_DIR, "hugeicons", "NOTICE"), HUGEICONS_NOTICE);
 writeFileSync(path.join(NOTICE_DIR, "hugeicons", "lucide-fallback.txt"), `${keptLucide.join("\n")}\n`);
 
-console.log(`${Object.keys(table).length} icons -> packages/shared/kit/src/icons/icon-table.ts, ${keptLucide.length} still Lucide`);
+console.log(
+	`${Object.keys(table).length} icons -> packages/shared/kit/src/icons/icon-table.ts, ${keptLucide.length} still Lucide`,
+);
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);

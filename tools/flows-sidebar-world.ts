@@ -65,7 +65,10 @@ export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld>
 		closed: [],
 		windows: [{ label: "main", openedAt: 1 }],
 	});
-	const places = new MemoryTabsGateway(placed, undefined, undefined, flowsDocOf(spec), { apps: BUILT_IN_APPS, now: () => 1_700_000_000_000 });
+	const places = new MemoryTabsGateway(placed, undefined, undefined, flowsDocOf(spec), {
+		apps: BUILT_IN_APPS,
+		now: () => 1_700_000_000_000,
+	});
 	const sidePeeks = new MemorySidePeeksGateway();
 	const core = placesLinkOf(places, [PluginAppsModule]);
 	const app = runtime()
@@ -80,9 +83,20 @@ export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld>
 			}),
 			browser({ injects: fakeBrowser().parts }),
 			layoutModule({ injects: { ...serverLayoutParts() } }),
-			workspaces({ injects: memoryWorkspacesParts({ workspaces: [{ id: "home", name: "Home", icon: null, ink: "yellow" }], currentId: "home", chats: { chats: [], openOnStartId: null } }) }),
+			workspaces({
+				injects: memoryWorkspacesParts({
+					workspaces: [{ id: "home", name: "Home", icon: null, ink: "yellow" }],
+					currentId: "home",
+					chats: { chats: [], openOnStartId: null },
+				}),
+			}),
 		)
-		.imports(placesContract({ over: core }), tabGroups({ over: core }), chatFacts({ over: core }), appsContract({ over: core }))
+		.imports(
+			placesContract({ over: core }),
+			tabGroups({ over: core }),
+			chatFacts({ over: core }),
+			appsContract({ over: core }),
+		)
 		.start({ platform: "browser", scope: { workspaceId: "fixture" } });
 	return { app, sidePeeks };
 }
@@ -126,7 +140,12 @@ function specOf(scene: SidebarScene): WorldSpec {
 				isOpen: true,
 				flows: [{ name: "Sprint board", chats: [{ title: "Sprint", mark: mark("asking") }] }],
 			},
-			{ name: "Personal", icon: "star", isOpen: false, flows: [{ name: "Trip plan", icon: "list", chats: [NOTE("Trip")], isNotes: true }] },
+			{
+				name: "Personal",
+				icon: "star",
+				isOpen: false,
+				flows: [{ name: "Trip plan", icon: "list", chats: [NOTE("Trip")], isNotes: true }],
+			},
 			{
 				name: "Research",
 				icon: "book-open",

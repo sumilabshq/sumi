@@ -25,7 +25,9 @@ function AimMark({ aim }: { readonly aim: DragAim }): ReactElement {
 		return <div className="sumi-pane-insert" style={styleOf(aim.mark)} />;
 	}
 
-	return <div className="sumi-pane-zone" data-aim={aim.kind === "split" ? aim.side : "append"} style={styleOf(aim.zone)} />;
+	return (
+		<div className="sumi-pane-zone" data-aim={aim.kind === "split" ? aim.side : "append"} style={styleOf(aim.zone)} />
+	);
 }
 
 function styleOf(box: Box): CSSProperties {

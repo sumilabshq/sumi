@@ -88,7 +88,11 @@ async function flagDefaultChecks(): Promise<void> {
 		[null, 0],
 	);
 	check("the guard is asked", fake.commandsCalled().includes("conversion_refusal"), true);
-	check("and says why", said.warns.some((line) => line.includes("the fake store allows no conversion")), true);
+	check(
+		"and says why",
+		said.warns.some((line) => line.includes("the fake store allows no conversion")),
+		true,
+	);
 }
 
 async function refusedChecks(): Promise<void> {

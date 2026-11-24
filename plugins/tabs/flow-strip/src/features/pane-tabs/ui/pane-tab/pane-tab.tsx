@@ -50,13 +50,23 @@ export function PaneTab(props: PaneTabProps): ReactElement {
 			onKeyDown={(event) => event.key === "Enter" && props.onShow()}
 		>
 			<TabFaceSlot tab={tab} art={props.art} label={label} />
-			{isLabelled ? <TabText label={label} isRenaming={props.isRenaming} onRenamed={props.onRenamed} onClose={props.onClose} /> : null}
+			{isLabelled ? (
+				<TabText label={label} isRenaming={props.isRenaming} onRenamed={props.onRenamed} onClose={props.onClose} />
+			) : null}
 			<StatusDot mark={tab.mark} />
 		</div>
 	);
 }
 
-function TabFaceSlot({ tab, art, label }: { readonly tab: FlowTab; readonly art: string; readonly label: string }): ReactElement {
+function TabFaceSlot({
+	tab,
+	art,
+	label,
+}: {
+	readonly tab: FlowTab;
+	readonly art: string;
+	readonly label: string;
+}): ReactElement {
 	const TabFace = useTabFace();
 	return (
 		<span className="sumi-pane-tab-face">
@@ -87,7 +97,9 @@ function TabText({ label, isRenaming, onRenamed, onClose }: TabTextProps): React
 
 function StatusDot({ mark }: { readonly mark: string }): ReactElement | null {
 	const said = STATUS_SAID[mark];
-	return said === undefined ? null : <span className="sumi-pane-tab-dot" data-mark={mark} role="img" aria-label={said} />;
+	return said === undefined ? null : (
+		<span className="sumi-pane-tab-dot" data-mark={mark} role="img" aria-label={said} />
+	);
 }
 
 function CloseButton({ onClose }: { readonly onClose: () => void }): ReactElement {

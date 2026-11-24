@@ -25,13 +25,7 @@ import { OpenedTabSettledSchema, TabsSettledSchema } from "../../shared/schema/s
 import { adoptChatsMove } from "./lib/adopt-plans.js";
 import { openFlowMove } from "./lib/flow-open-plans.js";
 import { openFlowTabMove } from "./lib/flow-tab-plans.js";
-import {
-	createFlowPlan,
-	moveFlowPlan,
-	removeFlowMove,
-	renameFlowPlan,
-	setFlowIconPlan,
-} from "./lib/flow-plans.js";
+import { createFlowPlan, moveFlowPlan, removeFlowMove, renameFlowPlan, setFlowIconPlan } from "./lib/flow-plans.js";
 import { flowDetailOf, sidebarOf } from "./lib/flow-reads.js";
 
 export const sidebar = query()

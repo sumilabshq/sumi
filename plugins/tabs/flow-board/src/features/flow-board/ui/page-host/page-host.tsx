@@ -12,7 +12,14 @@ export interface PageHostProps {
 	readonly onFocus: (paneId: string) => void;
 }
 
-export const PageHost = memo(function PageHost({ paneId, view, isActive, place, drawn, onFocus }: PageHostProps): ReactElement {
+export const PageHost = memo(function PageHost({
+	paneId,
+	view,
+	isActive,
+	place,
+	drawn,
+	onFocus,
+}: PageHostProps): ReactElement {
 	return (
 		<div
 			{...(isActive ? { [PANE_BODY_ATTRIBUTE]: paneId } : {})}

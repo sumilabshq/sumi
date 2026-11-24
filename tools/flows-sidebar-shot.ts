@@ -16,7 +16,10 @@ const SCENES: Readonly<Record<string, { readonly scene: string; readonly steps: 
 	quiet: { scene: "quiet", steps: [] },
 	hidden: { scene: "hidden", steps: [] },
 	peeking: { scene: "peeking", steps: [] },
-	"folder-hover": { scene: "inbox", steps: [(page) => hoverOn(page, ".sumi-flows-row[data-kind=folder]", "Sumi", 200)] },
+	"folder-hover": {
+		scene: "inbox",
+		steps: [(page) => hoverOn(page, ".sumi-flows-row[data-kind=folder]", "Sumi", 200)],
+	},
 	"chats-hover": { scene: "inbox", steps: [(page) => hoverOn(page, FOLDER_FLOW, "Composer redesign", 900)] },
 	rename: { scene: "inbox", steps: [(page) => doubleClickOn(page, ".sumi-flows-row-main", "Client project")] },
 	picker: {

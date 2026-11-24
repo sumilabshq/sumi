@@ -3,7 +3,15 @@ import type { ReactElement, RefObject } from "react";
 import { navigation } from "@widgetarium/navigation/contract";
 import { useCommand } from "@widgetarium/data-framework";
 import type { PaneBoardProps } from "@sumi/sumi-host-plugin";
-import { BOARD_ATTRIBUTE, PaneTabRow, edgesOf, isAtTopEdge, paneRectsOf, panesOf, useOpenFlowBoard } from "@sumi/flow-strip-plugin";
+import {
+	BOARD_ATTRIBUTE,
+	PaneTabRow,
+	edgesOf,
+	isAtTopEdge,
+	paneRectsOf,
+	panesOf,
+	useOpenFlowBoard,
+} from "@sumi/flow-strip-plugin";
 import type { OpenFlowBoard } from "@sumi/flow-strip-plugin";
 import { rootWithDraft } from "../../lib/edge-shares.js";
 import { pageSlotsOf } from "../../lib/page-slots.js";

@@ -66,7 +66,15 @@ function watchPress({ tab, start, setLifted, onDrop }: PressWatch): void {
 	});
 }
 
-function dropAt({ tab, point, onDrop }: { readonly tab: DraggedTab; readonly point: Point; readonly onDrop: PressWatch["onDrop"] }): void {
+function dropAt({
+	tab,
+	point,
+	onDrop,
+}: {
+	readonly tab: DraggedTab;
+	readonly point: Point;
+	readonly onDrop: PressWatch["onDrop"];
+}): void {
 	const aim = aimAt(point, sceneOf(document), tab.id);
 
 	if (aim !== null) {

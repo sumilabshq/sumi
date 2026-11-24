@@ -34,9 +34,9 @@ export function openFlowMove(ask: OpenFlowAsk, apps: PlacedApps): MovePlaces<Ans
 		}
 
 		const flow = flowOfId(opened.next.flows, ask.flowId);
-		const pages = tabsMoveAsPlaces(settling(ask.at, apps, pagesEnsuredPlan(flow === undefined ? [] : flowTabIdsOf(flow))))(
-			opened.next,
-		);
+		const pages = tabsMoveAsPlaces(
+			settling(ask.at, apps, pagesEnsuredPlan(flow === undefined ? [] : flowTabIdsOf(flow))),
+		)(opened.next);
 
 		if (pages.answer.isRefused) {
 			return opened;

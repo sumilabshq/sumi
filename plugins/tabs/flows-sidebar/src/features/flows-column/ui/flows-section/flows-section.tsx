@@ -34,7 +34,14 @@ export function FlowsSection({ sidebar, acts, drag }: FlowsSectionProps): ReactE
 				</button>
 			</div>
 			{looseFlows.map((flow) => (
-				<FlowRowView key={flow.id} flow={flow} folderId={null} isCurrent={flow.id === windowFlowId} acts={acts} drag={drag} />
+				<FlowRowView
+					key={flow.id}
+					flow={flow}
+					folderId={null}
+					isCurrent={flow.id === windowFlowId}
+					acts={acts}
+					drag={drag}
+				/>
 			))}
 			{folders.map((folder) => (
 				<div className="sumi-flows-folder" key={folder.id}>

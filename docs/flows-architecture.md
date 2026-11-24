@@ -8,12 +8,12 @@ The default workspace stays as one hidden storage root, so chats, canvases and t
 
 ## Prior art
 
-| Product | Model | Taken |
-|---|---|---|
-| Arc | Spaces own tabs | A heavy container becomes a mode, so folders stay light |
-| Obsidian | Split, tabs, leaf tree | The PaneTree shape |
-| VS Code | Grid of editor groups with tabs | Active tab per pane, closing the last tab collapses the pane |
-| Linear | Inbox with read state | Inbox is derived attention, not a location |
+| Product  | Model                           | Taken                                                        |
+| -------- | ------------------------------- | ------------------------------------------------------------ |
+| Arc      | Spaces own tabs                 | A heavy container becomes a mode, so folders stay light      |
+| Obsidian | Split, tabs, leaf tree          | The PaneTree shape                                           |
+| VS Code  | Grid of editor groups with tabs | Active tab per pane, closing the last tab collapses the pane |
+| Linear   | Inbox with read state           | Inbox is derived attention, not a location                   |
 
 ## Storage root
 
@@ -63,13 +63,13 @@ Inbox holds Flows with status failed, asking or unread. Opening a Flow clears `u
 
 The navigation module is the one writer. `movePlaces(plan)` commits `{tabs, flows}` in one `HeldDoc.change` and is the only write path.
 
-| Feature in `$NAV/features/` | Requests |
-|---|---|
-| `flows` | `sidebar`, `one`, `create`, `open`, `rename`, `setIcon`, `move`, `remove`, `adoptChats` |
-| `folders` | `create`, `rename`, `setIcon`, `setBaseDir`, `toggle`, `remove` (spills Flows to loose) |
-| `flow-panes` | `board`, `split`, `closePane`, `resize`, `focus`, `showTab`, `moveTab` |
-| `inbox` | `rows`, `clear`, `undoClear` |
-| `setups` | `all`, `saveFrom`, `start`, `remove` |
+| Feature in `$NAV/features/` | Requests                                                                                |
+| --------------------------- | --------------------------------------------------------------------------------------- |
+| `flows`                     | `sidebar`, `one`, `create`, `open`, `rename`, `setIcon`, `move`, `remove`, `adoptChats` |
+| `folders`                   | `create`, `rename`, `setIcon`, `setBaseDir`, `toggle`, `remove` (spills Flows to loose) |
+| `flow-panes`                | `board`, `split`, `closePane`, `resize`, `focus`, `showTab`, `moveTab`                  |
+| `inbox`                     | `rows`, `clear`, `undoClear`                                                            |
+| `setups`                    | `all`, `saveFrom`, `start`, `remove`                                                    |
 
 Event: `flowsChanged` in `$NAV/gateways/flows/flows.events.ts`, fired from the same doc watch.
 
@@ -108,17 +108,17 @@ Expected from the test copy: 5 folders, 24 Flows (22 chat, 2 loose: MCP and Refa
 
 ## Slices
 
-| # | Slice | Proof |
-|---|---|---|
-| S0 | Schemas, status, pure conversion | `tools/flows-conversion-checks.ts`: expected counts, rerun identical, mutated fixture goes red |
-| S1 | Root safety and retirement in Rust | Temp-home tests: a retired workspace does not return |
-| S2 | Atomic gateway, flagged conversion | Flag off: `test:places` unchanged. Crash-before-flush rerun |
-| S3 | Commands and tab reconcile | One place per tab under every command |
-| S4 | Per-pane tabs | Split, move, close last tab, two-window hold |
-| S5 | Sidebar, header, board plugins | `test:plugin-layout`, real-app screenshot, `test:paint` |
-| S6 | Single writer and consumers | Turn marks reach Inbox, no outside `movePlacedTabs` |
-| S7 | Cutover on the test root | Full `npm test`, invariant on the copy, restart twice |
-| S8 | Remove old plugins, `lists`, `groups` | `test:types`, `test:plugin-layout`, full `npm test` |
+| #   | Slice                                 | Proof                                                                                          |
+| --- | ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| S0  | Schemas, status, pure conversion      | `tools/flows-conversion-checks.ts`: expected counts, rerun identical, mutated fixture goes red |
+| S1  | Root safety and retirement in Rust    | Temp-home tests: a retired workspace does not return                                           |
+| S2  | Atomic gateway, flagged conversion    | Flag off: `test:places` unchanged. Crash-before-flush rerun                                    |
+| S3  | Commands and tab reconcile            | One place per tab under every command                                                          |
+| S4  | Per-pane tabs                         | Split, move, close last tab, two-window hold                                                   |
+| S5  | Sidebar, header, board plugins        | `test:plugin-layout`, real-app screenshot, `test:paint`                                        |
+| S6  | Single writer and consumers           | Turn marks reach Inbox, no outside `movePlacedTabs`                                            |
+| S7  | Cutover on the test root              | Full `npm test`, invariant on the copy, restart twice                                          |
+| S8  | Remove old plugins, `lists`, `groups` | `test:types`, `test:plugin-layout`, full `npm test`                                            |
 
 ## Risks
 
