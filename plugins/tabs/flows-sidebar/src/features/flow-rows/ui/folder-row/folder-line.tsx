@@ -24,6 +24,7 @@ export function FolderLine({ folder, drag, onToggle, onRename, onAdd }: FolderLi
 		<div
 			className="sumi-flows-row"
 			data-kind="folder"
+			data-color={folder.color ?? undefined}
 			data-drop={drag.overKey === dropKeyOf(target) ? "" : undefined}
 			{...drag.targetProps(target)}
 		>

@@ -6,6 +6,7 @@ import type { PlacedApps } from "../tabs/app-abilities.js";
 import { flowsOf } from "./flow-conversion.js";
 import type { FlowsConverted } from "./flow-conversion.js";
 import { withViewsRecorded } from "./window-trails.js";
+import { withFolderColorsFilled } from "./flow-folder-colors.js";
 
 export interface PlacedPlaces {
 	readonly tabs: PlacedTabs;
@@ -79,6 +80,21 @@ export function flowsConversionMove(moment: ConversionMoment): MovePlaces<FlowsC
 			next: { tabs: now.tabs, flows: converted.doc },
 			reason: `flows none → ${converted.said.at(-1) ?? "converted"}`,
 			answer: converted,
+		};
+	};
+}
+
+export function folderColorsFillMove(): MovePlaces<readonly string[]> {
+	return (now) => {
+		if (now.flows === null) {
+			return { next: null, reason: NOT_CONVERTED, answer: [] };
+		}
+
+		const filled = withFolderColorsFilled(now.flows, now.tabs.groups);
+		return {
+			next: filled.said.length === 0 ? null : { tabs: now.tabs, flows: filled.doc },
+			reason: filled.said.length === 0 ? "every converted folder holds its color" : filled.said.join("; "),
+			answer: filled.said,
 		};
 	};
 }

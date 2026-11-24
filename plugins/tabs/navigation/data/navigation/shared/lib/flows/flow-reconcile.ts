@@ -3,6 +3,7 @@ import type { PlacedApps } from "../tabs/app-abilities.js";
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
 import { flowsOf } from "./flow-conversion.js";
 import { withFlowAdded, withFlowChanged, withoutFlow } from "./flow-docs.js";
+import { withFolderColorsFilled } from "./flow-folder-colors.js";
 import { flowsHealed, withStraysInOwnFlows } from "./flow-healing.js";
 import type { FlowsHealed } from "./flow-healing.js";
 import { flowBreaksOf } from "./flow-laws.js";
@@ -51,8 +52,9 @@ export function reconciling<T>(move: MovePlaces<T>, facts: ReconcileFacts | null
 function placesReconciled(next: PlacesToReconcile, facts: ReconcileFacts): FlowsHealed {
 	const liveIds = next.tabs.tabs.map(({ id }) => id);
 	const healed = flowsHealed(next.flows);
-	const tidy = withoutGoneTabs(healed.doc, new Set(liveIds));
-	const adopted = withStraysAdopted({ doc: tidy, said: healed.said }, next.tabs, facts);
+	const colored = withFolderColorsFilled(healed.doc, next.tabs.groups);
+	const tidy = withoutGoneTabs(colored.doc, new Set(liveIds));
+	const adopted = withStraysAdopted({ doc: tidy, said: [...healed.said, ...colored.said] }, next.tabs, facts);
 	const breaks = flowBreaksOf(adopted.doc, liveIds);
 
 	if (breaks.length > 0) {

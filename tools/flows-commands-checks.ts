@@ -1,6 +1,7 @@
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
-import type { FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
+import type { FlowFolder, FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
+import { folderColorsFillMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { atOf } from "./flows-asks.ts";
 import { chatIdOf } from "./flows-fixture.ts";
@@ -199,6 +200,58 @@ async function folderChecks(): Promise<void> {
 		(await refusalOf(() => stand.app.send(navigation.folders.toggle, { id: "folder-none" }))).includes("no folder"),
 		true,
 	);
+}
+
+const COLORED_FOLDERS = ["folder-group-89", "folder-group-90"];
+
+function colorsStripped(flows: FlowsDoc): FlowsDoc {
+	return {
+		...flows,
+		folders: flows.folders.map(({ color: _dropped, ...folder }): FlowFolder => folder),
+	};
+}
+
+async function colorsOf(stand: Stand): Promise<readonly (string | null | undefined)[]> {
+	const { folders } = await flowsIn(stand);
+	return COLORED_FOLDERS.map((id) => folders.find((folder) => folder.id === id)?.color);
+}
+
+async function folderColorChecks(): Promise<void> {
+	const converted = standOver(true);
+	check("conversion carries each tab group's hue to its folder", await colorsOf(converted), ["orange", "blue"]);
+	const stripped = standOver(true, [], colorsStripped);
+	check("a folder converted before colors holds none", await colorsOf(stripped), [undefined, undefined]);
+	const said = await stripped.tabs.movePlaces(folderColorsFillMove());
+	check("the fill move takes each missing color from its source group", await colorsOf(stripped), ["orange", "blue"]);
+	check(
+		"and logs each before → after",
+		said.includes('folder folder-group-90 color missing → blue (from tab group "group-90")'),
+		true,
+	);
+	check("a second fill changes nothing", await stripped.tabs.movePlaces(folderColorsFillMove()), []);
+	await stripped.app.send(navigation.folders.setColor, { id: "folder-group-90", color: null });
+	check(
+		"setColor to none is kept, never refilled",
+		[(await colorsOf(stripped))[1], await stripped.tabs.movePlaces(folderColorsFillMove())],
+		[null, []],
+	);
+	await stripped.app.send(navigation.folders.setColor, { id: "folder-group-90", color: "red" });
+	const sidebar = await stripped.app.send(navigation.flows.sidebar, { window: MAIN });
+	check(
+		"the sidebar row carries the folder color",
+		sidebar.folders.find(({ id }) => id === "folder-group-90")?.color,
+		"red",
+	);
+	check(
+		"setColor on a missing folder is refused",
+		(
+			await refusalOf(() => stripped.app.send(navigation.folders.setColor, { id: "folder-none", color: "red" }))
+		).includes("no folder"),
+		true,
+	);
+	const healing = standOver(true, [], colorsStripped);
+	await healing.app.send(navigation.folders.toggle, { id: "folder-group-90" });
+	check("any move heals missing colors on its way", await colorsOf(healing), ["orange", "blue"]);
 }
 
 async function setupChecks(): Promise<void> {
@@ -514,6 +567,7 @@ await flowCommandChecks();
 await inboxChecks();
 await undoSkipsMovedOnChecks();
 await folderChecks();
+await folderColorChecks();
 await setupChecks();
 await removeChecks();
 await adoptChecks();

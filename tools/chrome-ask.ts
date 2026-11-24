@@ -40,6 +40,7 @@ export interface AskedPage {
 	readonly shoot: () => Promise<Buffer>;
 	readonly typeText: (text: string) => Promise<void>;
 	readonly pressEnter: () => Promise<void>;
+	readonly pressKey: (key: NamedKey) => Promise<void>;
 	readonly failures: () => readonly string[];
 	readonly close: () => void;
 }
@@ -57,6 +58,7 @@ interface PageSocket {
 	readonly shoot: () => Promise<Buffer>;
 	readonly typeText: (text: string) => Promise<void>;
 	readonly pressEnter: () => Promise<void>;
+	readonly pressKey: (key: NamedKey) => Promise<void>;
 	readonly failures: () => readonly string[];
 	readonly viewportSetTo: (size: PageSize) => Promise<unknown>;
 }
@@ -125,6 +127,7 @@ function handled(socket: PageSocket, chrome: ChildProcess, profile: string): Ask
 		shoot: socket.shoot,
 		typeText: socket.typeText,
 		pressEnter: socket.pressEnter,
+		pressKey: socket.pressKey,
 		failures: socket.failures,
 		close: () => {
 			socket.close();
@@ -250,6 +253,15 @@ async function talking(socketUrl: string, hearsFailures: boolean): Promise<PageS
 			await send("Input.dispatchKeyEvent", ENTER_DOWN);
 			await send("Input.dispatchKeyEvent", ENTER_UP);
 		},
+		pressKey: async (key) => {
+			const held = {
+				key,
+				code: key,
+				windowsVirtualKeyCode: KEY_CODES[key],
+			};
+			await send("Input.dispatchKeyEvent", { ...held, type: "rawKeyDown" });
+			await send("Input.dispatchKeyEvent", { ...held, type: "keyUp" });
+		},
 		failures: () => [...failures],
 		viewportSetTo: ([width, height]) =>
 			send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false }),
@@ -358,6 +370,16 @@ function pumping(socket: WebSocket, pending: Map<unknown, Waiting>, heard: Heard
 	socket.addEventListener("close", abandon);
 	socket.addEventListener("error", abandon);
 }
+
+export type NamedKey = "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown" | "Escape";
+
+const KEY_CODES: Readonly<Record<NamedKey, number>> = {
+	ArrowLeft: 37,
+	ArrowUp: 38,
+	ArrowRight: 39,
+	ArrowDown: 40,
+	Escape: 27,
+};
 
 const ENTER_DOWN = {
 	type: "keyDown",

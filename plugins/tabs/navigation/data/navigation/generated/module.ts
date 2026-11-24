@@ -3,7 +3,7 @@ import { handledModule, named } from "@widgetarium/data-framework";
 import { navigation as definition } from "../module.js";
 import { board as flowPanesBoard, closePane, focus, moveTab, rereadBoardOnFlows, rereadBoardOnTabs, resize as flowPanesResize, showTab, split } from "../features/flow-panes/requests.js";
 import { adoptChats, create as flowsCreate, move as flowsMove, one, open, openTab as flowsOpenTab, remove as flowsRemove, rename as flowsRename, rereadFlowMarks, rereadFlows, setIcon as flowsSetIcon, sidebar as flowsSidebar } from "../features/flows/requests.js";
-import { create as foldersCreate, remove as foldersRemove, rename as foldersRename, setBaseDir, setIcon as foldersSetIcon, toggle } from "../features/folders/requests.js";
+import { create as foldersCreate, remove as foldersRemove, rename as foldersRename, setBaseDir, setColor, setIcon as foldersSetIcon, toggle } from "../features/folders/requests.js";
 import { clear, rereadInbox, rereadInboxMarks, rows as inboxRows, undoClear } from "../features/inbox/requests.js";
 import { aim, board as panesBoard, close, closeShowingPanes, closeShown as panesCloseShown, dropGoneTabs, openShown, place as panesPlace, placementPreview, rereadBoard, resizeSplit, showChat, showInTarget } from "../features/panes/requests.js";
 import { all as setupsAll, remove as setupsRemove, rereadSetups, saveFrom, start } from "../features/setups/requests.js";
@@ -65,6 +65,7 @@ export const navigation = handledModule(definition, [
 	named("folders.remove", foldersRemove),
 	named("folders.rename", foldersRename),
 	named("folders.set-base-dir", setBaseDir),
+	named("folders.set-color", setColor),
 	named("folders.set-icon", foldersSetIcon),
 	named("folders.toggle", toggle),
 	named("inbox.clear", clear),

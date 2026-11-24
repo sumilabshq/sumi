@@ -2,8 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
-import { bundleOf } from "./harness.ts";
-import { TRAFFIC_LIGHTS, openedSidebar } from "./flows-sidebar-harness.ts";
+import { TRAFFIC_LIGHTS, bundledSidebarPage, openedSidebar } from "./flows-sidebar-harness.ts";
 import { frameLookChecks, nameOf } from "./flows-frame-checks.ts";
 import type { FrameState, FrameTheme } from "./flows-frame-checks.ts";
 import { FRAME_SPLITS, sceneOf } from "./flows-frame-scenes.ts";
@@ -39,7 +38,7 @@ interface Box {
 	readonly centreY: number;
 }
 
-const bundled = await bundleOf("tools/flows-sidebar-page.tsx");
+const bundled = await bundledSidebarPage();
 
 const boxOf = (selector: string): string =>
 	`(() => { const box = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, centreY: box.top + box.height / 2 }; })()`;

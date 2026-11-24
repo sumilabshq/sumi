@@ -33,10 +33,13 @@ export const FlowRowSchema = z.object({
 	lastOpenedAt: z.number(),
 });
 
+export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
+
 export const FolderRowSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	icon: FlowIconSchema.nullable(),
+	color: GroupHueSchema.nullable(),
 	baseDir: z.string().nullable(),
 	isOpen: z.boolean(),
 	status: FlowStatusSchema.nullable(),
@@ -159,6 +162,11 @@ export const RenameAskSchema = z.object({
 export const SetIconAskSchema = z.object({
 	id: z.string().min(1),
 	icon: FlowIconSchema.nullable(),
+});
+
+export const SetColorAskSchema = z.object({
+	id: z.string().min(1),
+	color: GroupHueSchema.nullable(),
 });
 
 export const MoveFlowAskSchema = FlowAskSchema.extend({
@@ -1075,8 +1083,6 @@ export type TabMark = z.infer<typeof TabMarkSchema>;
 
 export type SectionList = z.infer<typeof SectionListSchema>;
 
-export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
-
 export type GroupHue = z.infer<typeof GroupHueSchema>;
 
 export type ListEntry = z.infer<typeof ListEntrySchema>;
@@ -1262,6 +1268,10 @@ export const navigation = moduleContract("navigation", Server, {
 		setIcon: named("folders.set-icon", command()
 			.public()
 			.input(SetIconAskSchema)
+			.idempotencyKey(Repeatable)),
+		setColor: named("folders.set-color", command()
+			.public()
+			.input(SetColorAskSchema)
 			.idempotencyKey(Repeatable)),
 		setBaseDir: named("folders.set-base-dir", command()
 			.public()

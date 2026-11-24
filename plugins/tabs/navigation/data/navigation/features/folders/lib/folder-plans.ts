@@ -6,6 +6,7 @@ import type {
 	FolderAskSchema,
 	RenameAskSchema,
 	SetBaseDirAskSchema,
+	SetColorAskSchema,
 	SetIconAskSchema,
 } from "../../../shared/schema/flow-asks.schema.js";
 import type { z } from "zod";
@@ -15,6 +16,7 @@ type FolderAsk = z.infer<typeof FolderAskSchema>;
 type RenameAsk = z.infer<typeof RenameAskSchema>;
 type SetBaseDirAsk = z.infer<typeof SetBaseDirAskSchema>;
 type SetIconAsk = z.infer<typeof SetIconAskSchema>;
+type SetColorAsk = z.infer<typeof SetColorAskSchema>;
 
 const NO_FOLDER = 'no folder "{id}" stands here';
 
@@ -28,6 +30,7 @@ export function createFolderPlan(ask: CreateFolderAsk, id: string): FlowsPlan<{ 
 			id,
 			name: ask.name,
 			icon: null,
+			color: null,
 			baseDir: ask.baseDir,
 			isOpen: true,
 			flowIds: [],
@@ -67,6 +70,22 @@ export function setFolderIconPlan({ id, icon }: SetIconAsk): FlowsPlan<null> {
 		return {
 			flows: JSON.stringify(folder.icon) === JSON.stringify(icon) ? flows : withFolderChanged(flows, id, { icon }),
 			reason: `folder ${id} icon ${JSON.stringify(folder.icon)} → ${JSON.stringify(icon)}`,
+			value: null,
+		};
+	};
+}
+
+export function setFolderColorPlan({ id, color }: SetColorAsk): FlowsPlan<null> {
+	return ({ flows }) => {
+		const folder = folderOfId(flows, id);
+
+		if (folder === undefined) {
+			return refusal(NO_FOLDER.replace("{id}", id));
+		}
+
+		return {
+			flows: folder.color === color ? flows : withFolderChanged(flows, id, { color }),
+			reason: `folder ${id} color ${folder.color ?? "none"} → ${color ?? "none"}`,
 			value: null,
 		};
 	};

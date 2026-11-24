@@ -2,7 +2,7 @@ import { z } from "zod";
 import { FlowIconSchema, FlowLayoutSchema, FlowSchema, FlowStatusSchema, SetupSchema } from "./flows.schema.js";
 import { TabsAskSchema } from "./screen.schema.js";
 import { SplitSideSchema } from "./splits.schema.js";
-import { AppKindSchema, PageAppSchema, TabMarkSchema } from "./tabs.schema.js";
+import { AppKindSchema, GroupHueSchema, PageAppSchema, TabMarkSchema } from "./tabs.schema.js";
 
 export const FlowChatRowSchema = z.object({
 	id: z.string(),
@@ -24,6 +24,7 @@ export const FolderRowSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	icon: FlowIconSchema.nullable(),
+	color: GroupHueSchema.nullable(),
 	baseDir: z.string().nullable(),
 	isOpen: z.boolean(),
 	status: FlowStatusSchema.nullable(),
@@ -84,6 +85,11 @@ export const RenameAskSchema = z.object({
 export const SetIconAskSchema = z.object({
 	id: z.string().min(1),
 	icon: FlowIconSchema.nullable(),
+});
+
+export const SetColorAskSchema = z.object({
+	id: z.string().min(1),
+	color: GroupHueSchema.nullable(),
 });
 
 export const MoveFlowAskSchema = FlowAskSchema.extend({

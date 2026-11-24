@@ -36,6 +36,7 @@ const NO_BOUNDS = { left: { leastPx: 0, usualPx: 0 }, chat: { leastPx: 0, usualP
 declare global {
 	interface Window {
 		__spoilUndo: () => Promise<void>;
+		__flowsSidebar: () => Promise<unknown>;
 		__chrome: {
 			readonly hasOwnDrag: (target: Element) => boolean;
 			readonly isControl: (target: Element) => boolean;
@@ -110,6 +111,7 @@ async function main(): Promise<void> {
 	}
 
 	window.__spoilUndo = world.spoilUndo;
+	window.__flowsSidebar = () => world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
 
 	const holder = document.getElementById("frame");
 

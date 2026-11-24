@@ -1,6 +1,6 @@
 import { labelOfPlacesWindow } from "@widgetarium/behaviors";
 import type { Flow, FlowFolder, FlowStatus, FlowsDoc } from "../../schema/flows.schema.js";
-import type { PlacedTabs } from "../../schema/tabs.schema.js";
+import type { GroupHue, PlacedTabs } from "../../schema/tabs.schema.js";
 import { isChatTab } from "../tabs/app-abilities.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 import { flowTabIdsOf } from "./flow-nodes.js";
@@ -28,6 +28,7 @@ export interface FolderRow {
 	readonly id: string;
 	readonly name: string;
 	readonly icon: FlowFolder["icon"];
+	readonly color: GroupHue | null;
 	readonly baseDir: string | null;
 	readonly isOpen: boolean;
 	readonly status: FlowStatus | null;
@@ -66,6 +67,7 @@ export function folderRowOf(folder: FlowFolder, facts: RowFacts): FolderRow {
 		id: folder.id,
 		name: folder.name,
 		icon: folder.icon,
+		color: folder.color ?? null,
 		baseDir: folder.baseDir,
 		isOpen: folder.isOpen,
 		status: flowStatusOf(flows.flatMap(({ status }) => (status === null ? [] : [{ isChat: true, mark: status }]))),

@@ -194,6 +194,7 @@ function folderOf(group: TabGroup, flows: readonly Flow[]): FlowFolder {
 		id: folderIdOf(group.id),
 		name: group.name,
 		icon: null,
+		color: group.hue,
 		baseDir: null,
 		isOpen: group.isOpen,
 		flowIds: flows.map(({ id }) => id),

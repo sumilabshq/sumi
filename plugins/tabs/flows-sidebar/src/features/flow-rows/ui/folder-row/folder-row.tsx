@@ -33,6 +33,10 @@ export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): React
 				name={folder.name}
 				icon={folder.icon}
 				fallback="folder"
+				color={{
+					value: folder.color,
+					onPick: (color) => acts.setFolderColor(folder.id, color),
+				}}
 				onCommit={(name) => acts.rename("folder", folder.id, name)}
 				onIcon={(icon) => acts.setIcon("folder", folder.id, icon)}
 				onDone={() => setIsRenaming(false)}
