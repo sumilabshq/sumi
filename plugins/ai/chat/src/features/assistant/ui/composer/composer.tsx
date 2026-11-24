@@ -68,56 +68,58 @@ export function Composer({
 	useFocusesFromChat(composerBox);
 	return (
 		<div className="wg-studio-ai-composer" ref={composer}>
-			<div ref={field} className={fieldClassOf(busy)}>
-				{editing === null ? null : (
-					<div className="wg-studio-ai-edit-bar">
-						<Icon name="pencil" size={13} />
-						<b>{EDITING}</b>
-						<span>{editNoteOf(editing)}</span>
-						<button type="button" className="wg-studio-ai-edit-cancel" onClick={onCancelEdit}>
-							{CANCEL}
-						</button>
+			<div className="wg-studio-ai-tray">
+				<div ref={field} className={fieldClassOf(busy)}>
+					{editing === null ? null : (
+						<div className="wg-studio-ai-edit-bar">
+							<Icon name="pencil" size={13} />
+							<b>{EDITING}</b>
+							<span>{editNoteOf(editing)}</span>
+							<button type="button" className="wg-studio-ai-edit-cancel" onClick={onCancelEdit}>
+								{CANCEL}
+							</button>
+						</div>
+					)}
+					<DraftAttachments />
+					{attached ? <AttachedChip attached={attached} /> : null}
+					<div className="wg-studio-ai-box-frame">
+						<TextArea
+							variant="bare"
+							ref={composerBox}
+							className={isBoxTextHidden ? "wg-studio-ai-box is-text-hidden" : "wg-studio-ai-box"}
+							rows={1}
+							value={draft}
+							placeholder={placeholderOf({ busy, isEditing: editing !== null, hint })}
+							onChange={onChange}
+							onKeyDown={(event) => {
+								if (takesKey(event)) {
+									event.preventDefault();
+									return;
+								}
+
+								if (editing !== null && event.key === "Escape") {
+									onCancelEdit();
+									return;
+								}
+
+								onKeyDown(event);
+							}}
+							onPaste={onPaste}
+						/>
+						<ListPluginSlot name="chat.composer-input" props={{ input }} />
 					</div>
-				)}
-				<DraftAttachments />
-				{attached ? <AttachedChip attached={attached} /> : null}
-				<div className="wg-studio-ai-box-frame">
-					<TextArea
-						variant="bare"
-						ref={composerBox}
-						className={isBoxTextHidden ? "wg-studio-ai-box is-text-hidden" : "wg-studio-ai-box"}
-						rows={1}
-						value={draft}
-						placeholder={placeholderOf({ busy, isEditing: editing !== null, hint })}
-						onChange={onChange}
-						onKeyDown={(event) => {
-							if (takesKey(event)) {
-								event.preventDefault();
-								return;
-							}
-
-							if (editing !== null && event.key === "Escape") {
-								onCancelEdit();
-								return;
-							}
-
-							onKeyDown(event);
-						}}
-						onPaste={onPaste}
-					/>
-					<ListPluginSlot name="chat.composer-input" props={{ input }} />
+					<div className="wg-studio-ai-field-bar">
+						<ComposerTools />
+						{fieldOptions}
+						<span className="wg-studio-ai-bar-space" />
+						{meter}
+						<SendButton state={state} isEditing={editing !== null} onSend={sendDraft} onStop={onStop} />
+					</div>
 				</div>
-				<div className="wg-studio-ai-field-bar">
-					<ComposerTools />
-					{fieldOptions}
-					<span className="wg-studio-ai-bar-space" />
-					{meter}
-					<SendButton state={state} isEditing={editing !== null} onSend={sendDraft} onStop={onStop} />
+				<div className="wg-studio-ai-under">
+					{strip}
+					<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 				</div>
-			</div>
-			<div className="wg-studio-ai-under">
-				{strip}
-				<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 			</div>
 		</div>
 	);

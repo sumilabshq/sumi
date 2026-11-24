@@ -4,7 +4,7 @@
 
 .wg-chat-app {
 	--studio-edge: var(--plate-pad);
-	--studio-chat-content: var(--read-w);
+	--studio-chat-content: 640px;
 	--studio-container-corner: calc(var(--radius) + var(--gap-plate));
 	--studio-bubble-corner: calc(var(--radius) - 4px);
 	display: flex;
