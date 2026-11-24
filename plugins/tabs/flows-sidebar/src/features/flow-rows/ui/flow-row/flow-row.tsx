@@ -52,7 +52,7 @@ export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowVi
 			label={FLOW_MENU}
 			items={[
 				{ label: "Rename", icon: "pencil-line", keys: RENAME_KEY, onSelect: () => setIsRenaming(true) },
-				{ label: "Edit icon", icon: "shapes", onSelect: editIcon },
+				{ label: "Edit icon", icon: "image", onSelect: editIcon },
 				{ label: "Duplicate", icon: "copy", onSelect: () => acts.duplicate(flow.id) },
 				{ label: "Delete flow", icon: "trash", onSelect: () => acts.remove(flow.id), isDestructive: true },
 			]}

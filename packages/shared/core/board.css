@@ -21378,6 +21378,16 @@ body:has(.wg-cm-layer) {
 	padding: 0 var(--space-2);
 	color: var(--text-2);
 }
+.sumi-flows-menu-colors {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+	padding: var(--space-1) var(--space-2);
+}
+.sumi-flows-menu-label {
+	font-size: var(--fs-12);
+	color: var(--text-3);
+}
 .sumi-pane-tabs {
 	position: relative;
 	display: flex;

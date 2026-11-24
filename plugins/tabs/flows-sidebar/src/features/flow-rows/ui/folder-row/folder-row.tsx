@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import type { FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FolderRowFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
+import { ColorDots } from "../row-field/color-dots.js";
 import { RowField } from "../row-field/row-field.js";
 import { RowMenu } from "../row-menu/row-menu.js";
 import { RENAME_KEY } from "../../lib/rename-keys.js";
@@ -10,6 +11,7 @@ import { FolderLine } from "./folder-line.js";
 
 const NEW_FLOW = "New flow";
 const FOLDER_MENU = "Folder";
+const COLOR_LABEL = "Color";
 
 export interface FolderRowViewProps {
 	readonly folder: FolderRowFacts;
@@ -52,11 +54,25 @@ export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): React
 	return (
 		<RowMenu
 			label={FOLDER_MENU}
+			section={(close) => (
+				<div className="sumi-flows-menu-colors">
+					<span className="sumi-flows-menu-label">{COLOR_LABEL}</span>
+					<ColorDots
+						choice={{
+							value: folder.color,
+							onPick: (color) => {
+								acts.setFolderColor(folder.id, color);
+								close();
+							},
+						}}
+					/>
+				</div>
+			)}
 			items={[
 				{ label: "Rename", icon: "pencil-line", keys: RENAME_KEY, onSelect: () => setIsRenaming(true) },
 				{
 					label: "Edit icon",
-					icon: "shapes",
+					icon: "image",
 					onSelect: () => {
 						setOpensPicker(true);
 						setIsRenaming(true);

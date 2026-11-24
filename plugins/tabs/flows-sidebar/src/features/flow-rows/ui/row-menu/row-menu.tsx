@@ -15,13 +15,14 @@ export interface RowMenuItem {
 export interface RowMenuProps {
 	readonly label: string;
 	readonly items: readonly RowMenuItem[];
+	readonly section?: (close: () => void) => ReactNode;
 	readonly children: ReactNode;
 }
 
 const MENU_KEY = "ContextMenu";
 const SHIFTED_MENU_KEY = "F10";
 
-export function RowMenu({ label, items, children }: RowMenuProps): ReactElement {
+export function RowMenu({ label, items, section, children }: RowMenuProps): ReactElement {
 	const [at, setAt] = useState<MenuSpot | null>(null);
 	const [wasOpened, setWasOpened] = useState(false);
 	usePeekHold(at !== null);
@@ -41,7 +42,7 @@ export function RowMenu({ label, items, children }: RowMenuProps): ReactElement 
 			{children}
 			{wasOpened ? (
 				<SpotMenu at={at} onClose={() => setAt(null)}>
-					{() => <RowMenuItems label={label} items={items} onClose={() => setAt(null)} />}
+					{() => <RowMenuItems label={label} items={items} section={section} onClose={() => setAt(null)} />}
 				</SpotMenu>
 			) : null}
 		</div>
@@ -51,28 +52,34 @@ export function RowMenu({ label, items, children }: RowMenuProps): ReactElement 
 interface RowMenuItemsProps {
 	readonly label: string;
 	readonly items: readonly RowMenuItem[];
+	readonly section: ((close: () => void) => ReactNode) | undefined;
 	readonly onClose: () => void;
 }
 
-function RowMenuItems({ label, items, onClose }: RowMenuItemsProps): ReactElement {
+function RowMenuItems({ label, items, section, onClose }: RowMenuItemsProps): ReactElement {
+	const drawn = (item: RowMenuItem): ReactElement => (
+		<PopoverItem
+			key={item.label}
+			role="menuitem"
+			variant={item.isDestructive === true ? "destructive" : "default"}
+			icon={<Icon name={item.icon} />}
+			keys={item.keys}
+			onClick={() => {
+				onClose();
+				item.onSelect();
+			}}
+		>
+			{item.label}
+		</PopoverItem>
+	);
+	const destructive = items.filter((item) => item.isDestructive === true);
+
 	return (
 		<div role="menu" aria-label={label}>
-			{items.map((item) => [
-				item.isDestructive === true ? <PopoverSeparator key={`${item.label}-gap`} /> : null,
-				<PopoverItem
-					key={item.label}
-					role="menuitem"
-					variant={item.isDestructive === true ? "destructive" : "default"}
-					icon={<Icon name={item.icon} />}
-					keys={item.keys}
-					onClick={() => {
-						onClose();
-						item.onSelect();
-					}}
-				>
-					{item.label}
-				</PopoverItem>,
-			])}
+			{items.filter((item) => item.isDestructive !== true).map(drawn)}
+			{section === undefined ? null : section(onClose)}
+			{destructive.length === 0 ? null : <PopoverSeparator />}
+			{destructive.map(drawn)}
 		</div>
 	);
 }
