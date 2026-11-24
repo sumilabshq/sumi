@@ -254,6 +254,15 @@ async function renaming(): Promise<void> {
 			await page.ask(`document.querySelector(".sumi-flows-picker-remove")?.textContent`),
 			"Remove icon",
 		);
+		check(
+			"the picker switch and search field share one fill",
+			await page.ask(
+				`(() => { const fill = (sel) => getComputedStyle(document.querySelector(sel)).backgroundColor; return fill(".sumi-flows-picker-tabs") === fill(".sumi-flows-picker-field"); })()`,
+			),
+			true,
+		);
+		const coloured = `(() => { const row = [...document.querySelectorAll(".sumi-flows-row[data-kind=folder]")].find((one) => one.querySelector(".sumi-flows-name")?.textContent !== "Customer work" && !one.querySelector("img")); row.dataset.color = "red"; const svg = row.querySelector(".sumi-flows-glyph svg.wg-kit-filled-icon"); return svg !== null && getComputedStyle(svg).color === getComputedStyle(row.querySelector(".sumi-flows-name")).color && getComputedStyle(svg).color !== getComputedStyle(document.body).color; })()`;
+		check("a coloured folder row draws the filled folder in its colour", await page.ask(coloured), true);
 	});
 }
 

@@ -43,5 +43,5 @@ function glyphOf(icon: FlowIcon | null, fallback: FlowGlyphProps["fallback"], sc
 		return <Icon name={icon.name} size={ICON_PX[scale]} />;
 	}
 
-	return fallback === "folder" ? <Icon name="folder" size={ICON_PX[scale]} /> : <i className="sumi-flows-dot" />;
+	return fallback === "folder" ? <FilledIcon name="folder" size={ICON_PX[scale]} /> : <i className="sumi-flows-dot" />;
 }
