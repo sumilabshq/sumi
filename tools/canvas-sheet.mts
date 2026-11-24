@@ -76,6 +76,14 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
 	"@sumi/chat-title-plugin/head-title.css":
 		"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
+	"@sumi/flows-sidebar-plugin/flows-sidebar.css":
+		"plugins/tabs/flows-sidebar/src/features/flows-column/ui/flows-sidebar/flows-sidebar.css",
+	"@sumi/flow-strip-plugin/pane-tab-row.css":
+		"plugins/tabs/flow-strip/src/features/pane-tabs/ui/pane-tab-row/pane-tab-row.css",
+	"@sumi/flow-strip-plugin/flow-strip.css":
+		"plugins/tabs/flow-strip/src/features/flow-header/ui/flow-strip/flow-strip.css",
+	"@sumi/flow-board-plugin/flow-board.css":
+		"plugins/tabs/flow-board/src/features/flow-board/ui/flow-board/flow-board.css",
 	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
 	"@sumi/pinned-tabs-plugin/pinned-tabs.css":
 		"plugins/tabs/pinned-tabs/src/features/pinned-tabs/ui/pinned-tabs/pinned-tabs.css",
@@ -156,6 +164,10 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sessions-plugin/sessions-popover.css";
 @import "@sumi/sessions-plugin/sessions-chevron.css";
 @import "@sumi/chat-title-plugin/head-title.css";
+@import "@sumi/flows-sidebar-plugin/flows-sidebar.css";
+@import "@sumi/flow-strip-plugin/pane-tab-row.css";
+@import "@sumi/flow-strip-plugin/flow-strip.css";
+@import "@sumi/flow-board-plugin/flow-board.css";
 @import "@sumi/tab-strip-plugin/tab-strip.css";
 @import "@sumi/pinned-tabs-plugin/pinned-tabs.css";
 @import "@sumi/tab-groups-plugin/group-editor.css";
