@@ -22,6 +22,7 @@ import type { RunAnswer } from "../apps/tauri/src/assistant/turn-run.ts";
 import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 import { layJsdomGlobals } from "./jsdom-globals.ts";
+import type { ReactElement } from "react";
 import { oneChatParts } from "./assistant-one-chat-parts.ts";
 
 const DAILY = "3b0c1d7e-2f4a-4c55-9a1e-6d2b8f0c4a11";
@@ -309,6 +310,65 @@ check(
 	[isHeldSoon, (await opened(chatServerOver(providersRestarted), RACE)).said],
 	[true, FAST],
 );
+
+const { useRuntime } = await import("../packages/shared/data-framework/src/index.ts");
+const { useOpensChatDraft } = await import("../plugins/ai/chat/src/features/chat-page/lib/use-opens-chat-draft.ts");
+const { useTakesPrefill } = await import("../plugins/ai/chat/src/features/assistant/lib/use-takes-prefill.ts");
+const REMOUNTED = "1f2e3d4c-5b6a-4978-8a1b-2c3d4e5f6a7b";
+const ELSEWHERE = "8a7b6c5d-4e3f-4a2b-9c1d-0e1f2a3b4c5d";
+const TYPED_BEFORE_SWITCH = "typed, then the tab was switched";
+const NO_BOX = { current: null };
+interface ShownComposer {
+	said: string | null;
+	fill: ((text: string) => void) | null;
+}
+
+function ComposerProbe({ shown }: { readonly shown: ShownComposer }): null {
+	const draft = useComposerDraft({ busy: false, onSend: async () => true, onTyped: () => undefined });
+	useTakesPrefill(NO_BOX, draft.fill);
+	shown.said = draft.draft;
+	shown.fill = draft.fill;
+	return null;
+}
+
+function ChatOfProbe({ chatId, shown }: { readonly chatId: string; readonly shown: ShownComposer }): ReactElement {
+	useOpensChatDraft(useRuntime("ChatOfProbe"), chatId);
+	return h(ComposerProbe, { shown });
+}
+
+async function chatPageOver(frame: Runtime, chatId: string): Promise<{ shown: ShownComposer; unmount: () => void }> {
+	const shown: ShownComposer = { said: null, fill: null };
+	const root = createRoot(document.createElement("div"));
+	root.render(
+		h(RuntimeProvider, { runtime: frame }, h(Suspense, { fallback: null }, h(ChatOfProbe, { chatId, shown }))),
+	);
+	await waitFor(() => shown.fill !== null);
+	return { shown, unmount: () => root.unmount() };
+}
+
+const switchFrame = chatServerOver(providersRestarted);
+const typedPage = await chatPageOver(switchFrame, REMOUNTED);
+typedPage.shown.fill?.(TYPED_BEFORE_SWITCH);
+await waitFor(() => providersRestarted.draftOf(REMOUNTED)?.said === TYPED_BEFORE_SWITCH);
+typedPage.unmount();
+const backPage = await chatPageOver(switchFrame, REMOUNTED);
+const isShownAfterTabSwitch = await waitFor(() => backPage.shown.said === TYPED_BEFORE_SWITCH, 300);
+check(
+	"a chat page unmounted by a tab or Flow switch and mounted again shows the typed text, and keeps it",
+	[isShownAfterTabSwitch, backPage.shown.said, providersRestarted.draftOf(REMOUNTED)?.said],
+	[true, TYPED_BEFORE_SWITCH, TYPED_BEFORE_SWITCH],
+);
+backPage.unmount();
+const otherFlowPage = await chatPageOver(switchFrame, ELSEWHERE);
+await pause(40);
+otherFlowPage.unmount();
+const returnedPage = await chatPageOver(switchFrame, REMOUNTED);
+check(
+	"after a Flow showing another chat, coming back shows the typed text again",
+	[await waitFor(() => returnedPage.shown.said === TYPED_BEFORE_SWITCH, 300), returnedPage.shown.said],
+	[true, TYPED_BEFORE_SWITCH],
+);
+returnedPage.unmount();
 
 const tempFolder = "/private/att";
 function tempFiles(): QueuedFiles & { readonly held: Map<string, Uint8Array> } {

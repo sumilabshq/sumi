@@ -97,7 +97,13 @@ function useHoldsDraft({ draft, attachedCount, sending }: HeldInput): () => void
 	};
 	const latestHoldOf = useRef(hold);
 	latestHoldOf.current = hold;
+	const isMounted = useRef(false);
 	useEffect(() => {
+		if (!isMounted.current) {
+			isMounted.current = true;
+			return;
+		}
+
 		latestHoldOf.current(draft);
 	}, [draft, attachedCount]);
 	useEffect(
