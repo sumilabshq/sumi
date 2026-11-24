@@ -18,6 +18,7 @@ export interface EmptySpaceMenuProps {
 
 export function EmptySpaceMenu({ sidebar, acts, children }: EmptySpaceMenuProps): ReactElement {
 	const [at, setAt] = useState<MenuSpot | null>(null);
+	const [wasOpened, setWasOpened] = useState(false);
 	usePeekHold(at !== null);
 	const open = (event: MouseEvent): void => {
 		if (event.defaultPrevented) {
@@ -25,6 +26,7 @@ export function EmptySpaceMenu({ sidebar, acts, children }: EmptySpaceMenuProps)
 		}
 
 		event.preventDefault();
+		setWasOpened(true);
 		setAt({ x: event.clientX, y: event.clientY });
 	};
 	const close = (): void => setAt(null);
@@ -36,22 +38,30 @@ export function EmptySpaceMenu({ sidebar, acts, children }: EmptySpaceMenuProps)
 	return (
 		<div className="sumi-flows" onContextMenu={open}>
 			{children}
-			<SpotMenu at={at} onClose={close}>
-				{() => (
-					<div role="menu" aria-label={MENU_LABEL}>
-						<PopoverItem
-							role="menuitem"
-							icon={<Icon name="square-pen" />}
-							onClick={() => pick(() => acts.create(NEW_FLOW, { folderId: null, before: sidebar.looseFlows[0]?.id ?? null }))}
-						>
-							{NEW_FLOW}
-						</PopoverItem>
-						<PopoverItem role="menuitem" icon={<Icon name="folder-plus" />} onClick={() => pick(() => acts.createFolder(NEW_FOLDER))}>
-							{NEW_FOLDER}
-						</PopoverItem>
-					</div>
-				)}
-			</SpotMenu>
+			{wasOpened ? (
+				<SpotMenu at={at} onClose={close}>
+					{() => (
+						<div role="menu" aria-label={MENU_LABEL}>
+							<PopoverItem
+								role="menuitem"
+								icon={<Icon name="square-pen" />}
+								onClick={() =>
+									pick(() => acts.create(NEW_FLOW, { folderId: null, before: sidebar.looseFlows[0]?.id ?? null }))
+								}
+							>
+								{NEW_FLOW}
+							</PopoverItem>
+							<PopoverItem
+								role="menuitem"
+								icon={<Icon name="folder-plus" />}
+								onClick={() => pick(() => acts.createFolder(NEW_FOLDER))}
+							>
+								{NEW_FOLDER}
+							</PopoverItem>
+						</div>
+					)}
+				</SpotMenu>
+			) : null}
 		</div>
 	);
 }
