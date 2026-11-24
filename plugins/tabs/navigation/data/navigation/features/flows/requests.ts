@@ -61,9 +61,9 @@ export const create = command()
 	.input(CreateFlowAskSchema)
 	.output(FlowStartedSchema)
 	.idempotencyKey(PerCall)
-	.handle(async (ask, { tabs, idempotencyKey }) => {
+	.handle(async (ask, { tabs, placedApps, idempotencyKey }) => {
 		const birth = { id: newFlowIdOf(callKeyOf(idempotencyKey)), at: Date.now() };
-		const made = answered(await tabs.movePlaces(flowsMove(createFlowPlan(ask, birth))));
+		const made = answered(await tabs.movePlaces(flowsMove(createFlowPlan(ask, birth, placedApps.placedApps()))));
 		return { flowId: made.flowId };
 	});
 

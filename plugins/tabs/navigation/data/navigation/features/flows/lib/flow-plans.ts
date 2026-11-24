@@ -6,6 +6,7 @@ import {
 	withFlowPlaced,
 	withoutFlow,
 } from "../../../shared/lib/flows/flow-docs.js";
+import { withHomeTabsInEmptyFlows } from "../../../shared/lib/flows/flow-home-tabs.js";
 import { layoutOfTabs } from "../../../shared/lib/flows/flow-layouts.js";
 import { flowHolderOf } from "../../../shared/lib/flows/flow-rows.js";
 import { flowTabIdsOf } from "../../../shared/lib/flows/flow-nodes.js";
@@ -40,8 +41,12 @@ const NO_FLOW = 'no flow "{id}" stands here';
 const HELD_ELSEWHERE = 'the flow "{id}" is open in window {window}: only that window removes it';
 const NO_EFFECTS: TabsSettled = { effects: [] };
 
-export function createFlowPlan(ask: CreateFlowAsk, birth: FlowBirth): FlowsPlan<{ readonly flowId: string }> {
-	return ({ flows }) => {
+export function createFlowPlan(
+	ask: CreateFlowAsk,
+	birth: FlowBirth,
+	apps: PlacedApps,
+): FlowsPlan<{ readonly flowId: string }> {
+	return ({ tabs, flows }) => {
 		if (flowOfId(flows, birth.id) !== undefined) {
 			return { flows, reason: `flow ${birth.id} stands already, create skipped`, value: { flowId: birth.id } };
 		}
@@ -61,9 +66,14 @@ export function createFlowPlan(ask: CreateFlowAsk, birth: FlowBirth): FlowsPlan<
 			lastOpenedAt: birth.at,
 			archivedAt: null,
 		};
+		const homed = withHomeTabsInEmptyFlows({ tabs, flows: withFlowAdded(flows, flow, ask.place) }, apps);
 		return {
-			flows: withFlowAdded(flows, flow, ask.place),
-			reason: `flows ${flows.flows.length} → ${flows.flows.length + 1} (create ${birth.id} "${ask.name}" in ${ask.place.folderId ?? "no folder"})`,
+			flows: homed.flows,
+			tabs: homed.tabs,
+			reason: [
+				`flows ${flows.flows.length} → ${flows.flows.length + 1} (create ${birth.id} "${ask.name}" in ${ask.place.folderId ?? "no folder"})`,
+				...homed.said,
+			].join("; "),
 			value: { flowId: birth.id },
 		};
 	};

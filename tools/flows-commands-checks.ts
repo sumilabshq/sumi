@@ -12,6 +12,7 @@ import type {
 	FlowsDoc,
 } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { folderColorsFillMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
+import { HOME_TAB_APP } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-home-tabs.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { atOf } from "./flows-asks.ts";
 import { chatIdOf } from "./flows-fixture.ts";
@@ -72,11 +73,16 @@ async function flowCommandChecks(): Promise<void> {
 	});
 	const flows = await flowsIn(stand);
 	check(
-		"create adds an empty flow at the end of its folder",
+		"create adds a flow at the end of its folder",
 		flows.folders.find(({ id }) => id === "folder-group-93")?.flowIds.at(-1),
 		made.flowId,
 	);
-	check("the new flow is one empty pane", flows.flows.find(({ id }) => id === made.flowId)?.layout.root.kind, "pane");
+	check("the new flow is one pane", flows.flows.find(({ id }) => id === made.flowId)?.layout.root.kind, "pane");
+	check(
+		"the new flow holds exactly one tab, a Home tab",
+		await appsOfFlow(stand, made.flowId),
+		[HOME_TAB_APP],
+	);
 	check("every law holds after create", await lawsOf(stand), []);
 	check(
 		"a missing folder is refused",
@@ -415,9 +421,9 @@ async function reconcileChecks(): Promise<void> {
 	);
 	await stand.app.send(navigation.tabClosing.closeTab, { at, id: chatIdOf(1) });
 	check(
-		"a flow whose last tab closed goes with it",
-		(await flowsIn(stand)).flows.some(({ id }) => id === chatFlow(1)),
-		false,
+		"a flow whose last tab closed stays, holding one Home tab",
+		await appsOfFlow(stand, chatFlow(1)),
+		[HOME_TAB_APP],
 	);
 	check("every law holds after the closes", await lawsOf(stand), []);
 	const reopened = await stand.app.send(navigation.tabOpening.reopenClosed, { at, tabId: chatIdOf(1) });
@@ -477,6 +483,45 @@ async function afterAWrite(stand: Stand): Promise<{ readonly laws: readonly stri
 		})),
 	);
 	return { laws: refused === "" ? await lawsOf(stand) : [refused], flows: await flowsIn(stand) };
+}
+
+async function appsOfFlow(stand: Stand, flowId: string): Promise<readonly (string | undefined)[]> {
+	const { tabs, flows } = await stand.tabs.places();
+	const flow = flows?.flows.find(({ id }) => id === flowId);
+	return flow === undefined ? ["no flow"] : flowTabIdsOf(flow).map((id) => tabs.tabs.find((tab) => tab.id === id)?.app);
+}
+
+const STORED_EMPTY_FLOW = "flow-stored-empty";
+
+function withStoredEmptyFlow(flows: FlowsDoc): FlowsDoc {
+	const pane = { kind: "pane" as const, id: "pane-stored-empty", tabIds: [], activeTabId: null };
+	const flow: Flow = {
+		id: STORED_EMPTY_FLOW,
+		name: "Stored empty",
+		icon: null,
+		layout: { root: pane, focusedPaneId: pane.id, minted: 0 },
+		createdAt: 0,
+		lastOpenedAt: 0,
+		archivedAt: null,
+	};
+	return { ...flows, flows: [...flows.flows, flow], looseFlowIds: [...flows.looseFlowIds, STORED_EMPTY_FLOW] };
+}
+
+async function homeTabHealingChecks(): Promise<void> {
+	const written = standOver(true, [], withStoredEmptyFlow);
+	const healed = await afterAWrite(written);
+	check(
+		"a stored flow with 0 tabs is healed to one Home tab on the next write",
+		[healed.laws, await appsOfFlow(written, STORED_EMPTY_FLOW)],
+		[[], [HOME_TAB_APP]],
+	);
+	const opened = standOver(true, [], withStoredEmptyFlow);
+	await opened.app.send(navigation.flows.open, { window: MAIN, flowId: STORED_EMPTY_FLOW, at: atOf(MAIN) });
+	check(
+		"opening a stored flow with 0 tabs shows it with one Home tab",
+		[await lawsOf(opened), await appsOfFlow(opened, STORED_EMPTY_FLOW)],
+		[[], [HOME_TAB_APP]],
+	);
 }
 
 function holdersOf(flows: FlowsDoc, tabId: string): readonly string[] {
@@ -778,6 +823,7 @@ await duplicateChecks();
 await adoptChecks();
 await reconcileChecks();
 await healingChecks();
+await homeTabHealingChecks();
 await removeNoOpCloseChecks();
 await moveBeforeItselfChecks();
 await archiveChecks();
