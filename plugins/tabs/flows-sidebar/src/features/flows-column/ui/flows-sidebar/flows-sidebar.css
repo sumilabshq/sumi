@@ -370,21 +370,172 @@
 	outline: 0;
 }
 
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="red"] {
+	--folder-color: var(--red);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="orange"] {
+	--folder-color: var(--orange);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="amber"] {
+	--folder-color: var(--yellow);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="green"] {
+	--folder-color: var(--green);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="teal"] {
+	--folder-color: var(--cyan);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="blue"] {
+	--folder-color: var(--blue);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="purple"] {
+	--folder-color: var(--purple);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="pink"] {
+	--folder-color: var(--pink);
+}
+
+.sumi-flows-row[data-color] :is(.sumi-flows-glyph, .sumi-flows-name),
+.sumi-flows-field[data-color] .sumi-flows-field-icon {
+	color: var(--folder-color);
+}
+
+.sumi-flows-picker-colors {
+	display: flex;
+	justify-content: space-between;
+	height: var(--h-xs);
+	padding: 0 var(--space-1);
+}
+
+.sumi-flows-picker-color {
+	--folder-color: transparent;
+	display: grid;
+	place-items: center;
+	width: var(--h-xs);
+	height: var(--h-xs);
+	padding: 0;
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-full);
+}
+
+.sumi-flows-picker-color::before {
+	width: 12px;
+	height: 12px;
+	content: "";
+	background: var(--folder-color);
+	border-radius: var(--r-full);
+	box-shadow: inset 0 0 0 1.25px var(--line-strong);
+}
+
+.sumi-flows-picker-color[data-color]::before {
+	box-shadow: none;
+}
+
+.sumi-flows-picker-color:hover {
+	background: var(--hover);
+}
+
+.sumi-flows-picker-color[aria-checked="true"] {
+	box-shadow: inset 0 0 0 1.5px var(--text-2);
+}
+
+.sumi-flows-glyph[data-scale="choice"] {
+	width: 22px;
+	height: 22px;
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) {
+	--pop-motion: scale;
+	min-width: 0;
+	padding: 0;
+	font-family: var(--font-ui);
+	font-size: var(--fs-13);
+	font-weight: var(--fw-ui);
+	letter-spacing: var(--tracking-ui);
+	background: var(--surface-menu);
+	border: 1px solid var(--line-menu);
+	border-radius: var(--r-menu);
+	box-shadow: var(--shadow-menu);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) > .wg-kit-pop-inner {
+	padding: 0;
+}
+
 .sumi-flows-picker {
 	display: flex;
 	flex-direction: column;
+	gap: var(--space-1);
+	box-sizing: content-box;
+	width: calc(var(--h-sm) * 9);
 	padding: var(--space-1);
 }
 
-.sumi-flows-picker-grid {
-	display: grid;
-	grid-template-columns: repeat(5, var(--h-sm));
-	gap: var(--space-0-5);
+:is(.wg-root, .wg-portal) .wg-kit-seg.sumi-flows-picker-tabs {
+	--seg-pad: 2px;
+	display: flex;
+	border-radius: calc(var(--r-sm) + 2px);
 }
 
-.sumi-flows-picker-choice {
+:is(.wg-root, .wg-portal) .wg-kit-seg.sumi-flows-picker-tabs button {
+	flex: 1 1 0;
+	height: var(--h-xs);
+	padding: 0 var(--space-2);
+	font-size: var(--fs-13);
+	font-weight: var(--fw-ui);
+	letter-spacing: var(--tracking-ui);
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-picker-search {
+	display: flex;
+	gap: var(--space-1);
+	align-items: center;
+}
+
+.sumi-flows-picker-field {
+	display: flex;
+	flex: 1 1 auto;
+	gap: var(--space-2);
+	align-items: center;
+	box-sizing: border-box;
+	min-width: 0;
+	height: var(--h-sm);
+	padding: 0 var(--space-2);
+	color: var(--text-3);
+	background: var(--hover);
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-picker-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0;
+	font: inherit;
+	color: var(--text);
+	background: transparent;
+	border: 0;
+	outline: 0;
+}
+
+.sumi-flows-picker-input::placeholder {
+	color: var(--text-3);
+}
+
+.sumi-flows-picker-remove {
 	display: grid;
+	flex: none;
 	place-items: center;
+	width: var(--h-sm);
 	height: var(--h-sm);
 	padding: 0;
 	color: var(--text-2);
@@ -394,36 +545,64 @@
 	border-radius: var(--r-sm);
 }
 
-.sumi-flows-picker-choice:hover {
-	background: var(--hover);
-}
-
-.sumi-flows-picker-choice[aria-pressed="true"] {
-	color: var(--text);
-	background: var(--group-plain);
-}
-
-.sumi-flows-picker-remove {
-	height: var(--h-sm);
-	margin-top: var(--space-1);
-	padding: 0 var(--space-2);
-	font: inherit;
-	font-size: var(--fs-12);
-	color: var(--text-2);
-	text-align: left;
-	cursor: pointer;
-	background: none;
-	border: 0;
-	border-radius: var(--r-sm);
-}
-
 .sumi-flows-picker-remove:hover:not(:disabled) {
+	color: var(--text);
 	background: var(--hover);
 }
 
 .sumi-flows-picker-remove:disabled {
 	color: var(--text-3);
 	cursor: default;
+}
+
+.sumi-flows-picker-grid {
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: none;
+}
+
+.sumi-flows-picker-rows {
+	position: relative;
+}
+
+.sumi-flows-picker-row {
+	position: absolute;
+	left: 0;
+	display: grid;
+	grid-template-columns: repeat(9, var(--h-sm));
+	height: var(--h-sm);
+}
+
+.sumi-flows-picker-choice {
+	display: grid;
+	place-items: center;
+	width: var(--h-sm);
+	height: var(--h-sm);
+	padding: 0;
+	color: var(--text-2);
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-picker-choice:hover,
+.sumi-flows-picker-choice[data-active] {
+	color: var(--text);
+	background: var(--hover);
+}
+
+.sumi-flows-picker-choice[aria-selected="true"] {
+	color: var(--text);
+	background: var(--group-plain);
+}
+
+.sumi-flows-picker-none {
+	display: grid;
+	place-items: center;
+	height: calc(var(--h-sm) * 7);
+	margin: 0;
+	color: var(--text-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-hover-card.sumi-flows-chats {

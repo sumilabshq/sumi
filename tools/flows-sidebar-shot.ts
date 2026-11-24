@@ -2,13 +2,24 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
-import { bundleOf } from "./harness.ts";
-import { doubleClickOn, hoverOn, openedSidebar } from "./flows-sidebar-harness.ts";
+import { bundledSidebarPage, doubleClickOn, hoverOn, openedSidebar } from "./flows-sidebar-harness.ts";
 
 const OUT = process.argv[2] ?? "/tmp/flows-sidebar-shots";
 const FOLDER_FLOW = ".sumi-flows-folder .sumi-flows-row[data-kind=flow]";
 
-type Step = (page: AskedPage) => Promise<void>;
+type Step = (page: AskedPage) => Promise<unknown>;
+
+function opensPicker(row: string): Step {
+	return async (page) => {
+		await doubleClickOn(page, ".sumi-flows-row-main", row);
+		await waited(300);
+		const [x, y] = (await page.ask(
+			`(() => { const box = document.querySelector(".sumi-flows-field-icon").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`,
+		)) as [number, number];
+		await page.press(x, y);
+		await waited(500);
+	};
+}
 
 const SCENES: Readonly<Record<string, { readonly scene: string; readonly steps: readonly Step[] }>> = {
 	inbox: { scene: "inbox", steps: [] },
@@ -22,18 +33,37 @@ const SCENES: Readonly<Record<string, { readonly scene: string; readonly steps: 
 	},
 	"chats-hover": { scene: "inbox", steps: [(page) => hoverOn(page, FOLDER_FLOW, "Composer redesign", 900)] },
 	rename: { scene: "inbox", steps: [(page) => doubleClickOn(page, ".sumi-flows-row-main", "Client project")] },
-	picker: {
+	picker: { scene: "inbox", steps: [opensPicker("Client project")] },
+	"picker-icons": { scene: "inbox", steps: [opensPicker("Reading list")] },
+	"picker-search": {
+		scene: "inbox",
+		steps: [opensPicker("Reading list"), (page) => page.typeText("folder"), () => waited(300)],
+	},
+	"picker-emoji": {
 		scene: "inbox",
 		steps: [
-			(page) => doubleClickOn(page, ".sumi-flows-row-main", "Client project"),
-			async (page) => {
-				await waited(300);
-				const [x, y] = (await page.ask(
-					`(() => { const box = document.querySelector(".sumi-flows-field-icon").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`,
-				)) as [number, number];
-				await page.press(x, y);
-				await waited(400);
-			},
+			opensPicker("Reading list"),
+			(page) =>
+				page.ask(
+					`[...document.querySelectorAll(".sumi-flows-picker [role=tab]")].find((tab) => tab.textContent === "Emoji").click()`,
+				),
+			() => waited(600),
+		],
+	},
+	"emoji-row": {
+		scene: "inbox",
+		steps: [
+			opensPicker("Reading list"),
+			(page) =>
+				page.ask(
+					`[...document.querySelectorAll(".sumi-flows-picker [role=tab]")].find((tab) => tab.textContent === "Emoji").click()`,
+				),
+			(page) => page.typeText("rocket"),
+			() => waited(300),
+			(page) => page.ask(`document.querySelector(".sumi-flows-picker [role=option]").click()`),
+			() => waited(400),
+			(page) => page.pressEnter(),
+			() => waited(800),
 		],
 	},
 };
@@ -56,7 +86,7 @@ async function shoot(bundled: string, name: string, theme: string): Promise<void
 }
 
 mkdirSync(OUT, { recursive: true });
-const bundled = await bundleOf("tools/flows-sidebar-page.tsx");
+const bundled = await bundledSidebarPage();
 const names = process.argv[3] ? [process.argv[3]] : Object.keys(SCENES);
 
 for (const theme of ["light", "dark"]) {

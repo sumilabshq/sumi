@@ -9,6 +9,7 @@ import {
 	FolderMadeSchema,
 	RenameAskSchema,
 	SetBaseDirAskSchema,
+	SetColorAskSchema,
 	SetIconAskSchema,
 } from "../../shared/schema/flow-asks.schema.js";
 import {
@@ -16,6 +17,7 @@ import {
 	removeFolderPlan,
 	renameFolderPlan,
 	setBaseDirPlan,
+	setFolderColorPlan,
 	setFolderIconPlan,
 	toggleFolderPlan,
 } from "./lib/folder-plans.js";
@@ -46,6 +48,14 @@ export const setIcon = command()
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tabs }) => {
 		answered(await tabs.movePlaces(flowsMove(setFolderIconPlan(ask))));
+	});
+
+export const setColor = command()
+	.public()
+	.input(SetColorAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs }) => {
+		answered(await tabs.movePlaces(flowsMove(setFolderColorPlan(ask))));
 	});
 
 export const setBaseDir = command()

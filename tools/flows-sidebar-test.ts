@@ -1,8 +1,7 @@
 import { waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
-import { bundleOf } from "./harness.ts";
-import { doubleClickOn, hoverOn, openedSidebar, pressOn, rowOf } from "./flows-sidebar-harness.ts";
+import { bundledSidebarPage, doubleClickOn, hoverOn, openedSidebar, pressOn, rowOf } from "./flows-sidebar-harness.ts";
 
 const INBOX = "section[aria-label=Inbox] .sumi-flows-row";
 const FLOWS = "section[aria-label=Flows] .sumi-flows-row";
@@ -32,7 +31,7 @@ const dragged = (source: string, folder: string): string =>
 		send(row, "dragend");
 	})()`;
 
-const bundled = await bundleOf("tools/flows-sidebar-page.tsx");
+const bundled = await bundledSidebarPage();
 
 type Case = (page: AskedPage) => Promise<void>;
 
@@ -223,18 +222,190 @@ async function renaming(): Promise<void> {
 			"Personal",
 			"Research",
 		]);
-		await doubleClickOn(page, ".sumi-flows-row-main", "Customer work");
+	});
+}
+
+const PICKER = ".sumi-flows-picker";
+const OPTIONS = `${PICKER} [role=option]`;
+const PICKED_ROW = "Client project";
+const FILLED_PACK_ROWS = Math.ceil(1512 / 9);
+const RENDERED_ROWS_CAP = 14;
+
+const labelsOf = (selector: string): string =>
+	`[...document.querySelectorAll(${JSON.stringify(selector)})].map((one) => one.getAttribute("aria-label"))`;
+
+const textsOf = (selector: string): string =>
+	`[...document.querySelectorAll(${JSON.stringify(selector)})].map((one) => one.textContent)`;
+
+async function openedPicker(page: AskedPage, row: string): Promise<void> {
+	await doubleClickOn(page, ".sumi-flows-row-main", row);
+	await waited(300);
+	const [x, y] = (await page.ask(
+		`(() => { const box = document.querySelector(".sumi-flows-field-icon").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`,
+	)) as [number, number];
+	await page.press(x, y);
+	await waited(400);
+}
+
+async function sidebarFieldOf(page: AskedPage, name: string, key: string): Promise<unknown> {
+	return fieldNamed(await page.ask(`window.__flowsSidebar()`), name, key);
+}
+
+function fieldNamed(held: unknown, name: string, key: string): unknown {
+	if (typeof held !== "object" || held === null) {
+		return undefined;
+	}
+
+	if ("name" in held && held.name === name && key in held) {
+		return Object.getOwnPropertyDescriptor(held, key)?.value;
+	}
+
+	for (const inner of Object.values(held)) {
+		const found = fieldNamed(inner, name, key);
+
+		if (found !== undefined) {
+			return found;
+		}
+	}
+
+	return undefined;
+}
+
+const iconOfRow = (page: AskedPage, name: string): Promise<unknown> => sidebarFieldOf(page, name, "icon");
+
+const colorOfFolder = (page: AskedPage, name: string): Promise<unknown> => sidebarFieldOf(page, name, "color");
+
+async function picking(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		await openedPicker(page, PICKED_ROW);
+		check("the picker opens on Icons and Emoji tabs", await page.ask(textsOf(`${PICKER} [role=tab]`)), [
+			"Icons",
+			"Emoji",
+		]);
+		check("the search takes typing at once", await page.ask(`document.activeElement.placeholder`), "Search icons");
+		check(
+			"a remove-icon button stands right of the search, centred on it",
+			await page.ask(
+				`(() => { const field = document.querySelector("${PICKER} .sumi-flows-picker-field").getBoundingClientRect(); const remove = document.querySelector("[aria-label='Remove icon']").getBoundingClientRect(); return [Math.round(remove.left - field.right), Math.round(remove.top + remove.height / 2 - field.top - field.height / 2)]; })()`,
+			),
+			[4, 0],
+		);
+		check(
+			"the Icons tab holds the whole filled pack",
+			await page.ask(
+				`Math.round(document.querySelector("${PICKER} [role=listbox]").getBoundingClientRect().height / 28)`,
+			),
+			FILLED_PACK_ROWS,
+		);
+		check(
+			"and draws only the rows in view",
+			((await page.ask(count(OPTIONS))) as number) <= RENDERED_ROWS_CAP * 9,
+			true,
+		);
+		check(
+			"the cells are filled drawings",
+			await page.ask(`document.querySelector("${OPTIONS} svg").getAttribute("fill")`),
+			"currentColor",
+		);
+		await page.typeText("rocket");
 		await waited(300);
-		const [x, y] = (await page.ask(
-			`(() => { const box = document.querySelector(".sumi-flows-field-icon").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`,
-		)) as [number, number];
-		await page.press(x, y);
+		check("search narrows to the keyword", await page.ask(labelsOf(OPTIONS)), ["rocket", "rocket launch"]);
+		await page.pressKey("ArrowRight");
+		await waited(100);
+		check("an arrow key moves through the grid", await page.ask(labelsOf(`${OPTIONS}[data-active]`)), [
+			"rocket launch",
+		]);
+		await page.pressEnter();
+		await waited(SETTLE_MS);
+		check("Enter picks the active icon", await iconOfRow(page, PICKED_ROW), { kind: "icon", name: "rocket-launch" });
+		check("and closes the picker", await page.ask(count(PICKER)), 0);
+	});
+	await inInbox("light", "inbox", async (page) => {
+		await openedPicker(page, PICKED_ROW);
+		await page.ask(clickText(`${PICKER} [role=tab]`, "Emoji"));
 		await waited(300);
 		check(
-			"the field icon opens a picker with Remove icon",
-			await page.ask(`document.querySelector(".sumi-flows-picker-remove")?.textContent`),
-			"Remove icon",
+			"the Emoji tab keeps the search focused",
+			await page.ask(`document.activeElement.placeholder`),
+			"Search emoji",
 		);
+		await page.typeText("rocket");
+		await waited(300);
+		check("emoji search narrows by keyword", await page.ask(labelsOf(OPTIONS)), [
+			"astronaut",
+			"man astronaut",
+			"woman astronaut",
+			"rocket",
+		]);
+		await page.ask(`document.querySelector("${OPTIONS}[aria-label=rocket]").click()`);
+		await waited(SETTLE_MS);
+		check("picking an emoji stores it in the folder's FlowIcon", await iconOfRow(page, PICKED_ROW), {
+			kind: "emoji",
+			emoji: "🚀",
+		});
+		await page.pressEnter();
+		await waited(SETTLE_MS);
+		check(
+			"the sidebar row draws the vendored Fluent 3D picture",
+			await page.ask(
+				`(() => { const row = ${rowOf(FOLDERS, PICKED_ROW)}; const drawn = row.querySelector(".sumi-flows-glyph .wg-kit-fluent-emoji"); return drawn ? [drawn.dataset.glyph, getComputedStyle(drawn).backgroundImage.includes("/packages/shared/kit/assets/emojis/fluent-3d/sheet-")] : null; })()`,
+			),
+			["🚀", true],
+		);
+		check(
+			"and the sheet loads",
+			await page.ask(
+				`new Promise((done) => { const img = new Image(); img.onload = () => done(img.naturalWidth); img.onerror = () => done(0); img.src = getComputedStyle(document.querySelector(".sumi-flows-glyph .wg-kit-fluent-emoji")).backgroundImage.slice(5, -2); })`,
+			),
+			640,
+		);
+	});
+	await inInbox("light", "inbox", async (page) => {
+		await openedPicker(page, "Research");
+		await page.ask(`document.querySelector("[aria-label='Remove icon']").click()`);
+		await waited(SETTLE_MS);
+		check("Remove icon clears the FlowIcon", await iconOfRow(page, "Research"), null);
+	});
+	await inInbox("light", "inbox", async (page) => {
+		const before = await iconOfRow(page, PICKED_ROW);
+		await openedPicker(page, PICKED_ROW);
+		await page.pressKey("Escape");
+		await waited(SETTLE_MS);
+		check("Esc closes the picker", await page.ask(count(PICKER)), 0);
+		check("and leaves the icon as it was", await iconOfRow(page, PICKED_ROW), before);
+	});
+	await inInbox("light", "inbox", async (page) => {
+		await openedPicker(page, "Reading list");
+		check("a Flow's picker offers no colors", await page.ask(count(`${PICKER} [role=radio]`)), 0);
+	});
+	await inInbox("light", "inbox", async (page) => {
+		const nameColor = `getComputedStyle(${rowOf(FOLDERS, PICKED_ROW)}.querySelector(".sumi-flows-name")).color`;
+		const plain = await page.ask(nameColor);
+		await openedPicker(page, PICKED_ROW);
+		check("a folder's picker offers no color and eight colors", await page.ask(labelsOf(`${PICKER} [role=radio]`)), [
+			"No color",
+			"red",
+			"orange",
+			"amber",
+			"green",
+			"teal",
+			"blue",
+			"purple",
+			"pink",
+		]);
+		await page.ask(`document.querySelector("${PICKER} [role=radio][aria-label=blue]").click()`);
+		await waited(SETTLE_MS);
+		check("picking a color keeps the picker open", await page.ask(count(PICKER)), 1);
+		check("and stores it on the folder", await colorOfFolder(page, PICKED_ROW), "blue");
+		await page.pressKey("Escape");
+		await waited(300);
+		await page.pressEnter();
+		await waited(SETTLE_MS);
+		const drawn = (await page.ask(
+			`(() => { const row = ${rowOf(FOLDERS, PICKED_ROW)}; const blue = document.createElement("i"); blue.style.color = "var(--blue)"; row.append(blue); const want = getComputedStyle(blue).color; blue.remove(); return [row.dataset.color, getComputedStyle(row.querySelector(".sumi-flows-name")).color === want, getComputedStyle(row.querySelector(".sumi-flows-glyph")).color === want]; })()`,
+		)) as unknown[];
+		check("the folder name and icon draw in its color", drawn, ["blue", true, true]);
+		check("which differs from an uncolored name", (await page.ask(nameColor)) !== plain, true);
 	});
 }
 
@@ -398,6 +569,7 @@ await inboxOpening();
 await inboxClearing();
 await rowsAndFolders();
 await renaming();
+await picking();
 await hoverPanel();
 await hiding();
 await peekHolds();

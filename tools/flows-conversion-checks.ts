@@ -58,6 +58,18 @@ function countChecks(placed: PlacedTabs): void {
 		["MCP", "Refactoring"],
 	);
 	check("every law holds", flowBreaksOf(doc, liveIds), []);
+	check(
+		"each folder takes its tab group's hue as its color",
+		doc.folders.map(({ id, color }) => [id, color]),
+		placed.groups
+			.filter(({ id }) => doc.folders.some((folder) => folder.id === `folder-${id}`))
+			.map(({ id, hue }) => [`folder-${id}`, hue]),
+	);
+	check(
+		"the fixture's folders carry at least one color",
+		doc.folders.some(({ color }) => color !== null),
+		true,
+	);
 	check("the doc matches its schema", FlowsDocSchema.safeParse(doc).success, true);
 }
 

@@ -1,0 +1,11 @@
+The icon drawings in packages/shared/kit/src/icons/filled-icon-table.ts are Phosphor
+Icons (https://phosphoricons.com), Fill weight, taken whole from @phosphor-icons/core@2.1.1 and
+licensed under the MIT License, a copy of which sits beside this file.
+
+Each icon keeps its Phosphor name; the words it answers to are its Phosphor tags
+and categories.
+
+Regenerate with: node tools/fetch-filled-icons.mts
+
+Each body is the inside of an SVG drawn on viewBox="0 0 256 256" and filled with
+currentColor.

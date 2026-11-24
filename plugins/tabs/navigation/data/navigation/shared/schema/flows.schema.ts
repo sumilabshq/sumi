@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SplitDirSchema } from "./splits.schema.js";
-import { AppKindSchema, TabMarkSchema } from "./tabs.schema.js";
+import { AppKindSchema, GroupHueSchema, TabMarkSchema } from "./tabs.schema.js";
 
 export const FLOWS_DOC_V = 1;
 
@@ -81,6 +81,7 @@ export const FlowFolderSchema = z.object({
 	id: z.string().min(1),
 	name: z.string(),
 	icon: FlowIconSchema.nullable(),
+	color: GroupHueSchema.nullable().optional(),
 	baseDir: z.string().min(1).nullable(),
 	isOpen: z.boolean(),
 	flowIds: z.array(z.string().min(1)),

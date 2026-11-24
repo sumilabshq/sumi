@@ -3,6 +3,7 @@ import http from "node:http";
 import path from "node:path";
 import { z } from "zod";
 import { paged, waited } from "./chrome-ask.ts";
+import { bundleOf } from "./harness.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
@@ -28,6 +29,12 @@ export const TRAFFIC_LIGHTS: TrafficLights = trafficLightsOf();
 
 const PAGE_CSS = `.flows-page-plate{flex:1;margin:0 8px 8px 0;border-radius:10px;background:var(--plate);box-shadow:var(--shadow-page)} .wg-shell{--shell-chrome-left:${TRAFFIC_LIGHTS.rightEdgePx}px}`;
 const SETTLE_MS = 1500;
+const KIT_ASSETS = "/packages/shared/kit/assets/";
+const ASSET_TYPES: Readonly<Record<string, string>> = {
+	".webp": "image/webp",
+};
+const MODULE_URL_GLOBAL = "window.__harnessModuleUrl";
+const MODULE_URL = "/packages/shared/kit/src/emojis/fluent-3d-table.ts";
 
 export interface OpenedSidebar {
 	readonly page: AskedPage;
@@ -60,9 +67,21 @@ export async function doubleClickOn(page: AskedPage, selector: string, name: str
 	await page.ask(`${rowOf(selector, name)}.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }))`);
 }
 
+export function bundledSidebarPage(): Promise<string> {
+	return bundleOf("tools/flows-sidebar-page.tsx", { "import.meta.url": MODULE_URL_GLOBAL });
+}
+
 export async function openedSidebar(bundled: string, theme: string, scene: string): Promise<OpenedSidebar> {
 	const html = htmlOf(bundled, theme);
-	const server = http.createServer((_request, response) => {
+	const server = http.createServer((request, response) => {
+		const asset = kitAssetOf(request.url ?? "");
+
+		if (asset !== null) {
+			response.setHeader("content-type", asset.type);
+			response.end(readFileSync(asset.file));
+			return;
+		}
+
 		response.setHeader("content-type", "text/html");
 		response.end(html);
 	});
@@ -94,7 +113,20 @@ function htmlOf(bundled: string, theme: string): string {
 	const sheets = SHEETS.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
 	const dark = theme === "dark" ? " dark" : "";
 	const script = bundled.replaceAll("</script", "<\\/script");
-	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body class="theme-${theme}${dark}" style="margin:0;background:var(--frame)"><div id="frame" style="width:1000px;height:640px"></div><script>${script}</script></body></html>`;
+	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body class="theme-${theme}${dark}" style="margin:0;background:var(--frame)"><div id="frame" style="width:1000px;height:640px"></div><script>${MODULE_URL_GLOBAL} = location.origin + ${JSON.stringify(MODULE_URL)};</script><script>${script}</script></body></html>`;
+}
+
+function kitAssetOf(url: string): { readonly file: string; readonly type: string } | null {
+	const type = ASSET_TYPES[path.extname(url)];
+	const file = path.join(REPO, path.normalize(url));
+	if (!url.startsWith(KIT_ASSETS) || type === undefined || !file.startsWith(path.join(REPO, KIT_ASSETS))) {
+		return null;
+	}
+
+	return {
+		file,
+		type,
+	};
 }
 
 function trafficLightsOf(): TrafficLights {
