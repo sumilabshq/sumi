@@ -1,6 +1,6 @@
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
-import type { Flow } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
+import type { Flow, FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { BROWSER_SCREEN, WEB_APP, atOf } from "./flows-asks.ts";
 import { chatIdOf } from "./flows-fixture.ts";
 import { MAIN, SIDE, chatFlow, flowsIn, lawsOf, refusalOf, standOver } from "./flows-stand.ts";
