@@ -4,45 +4,91 @@
 }
 
 .sumi-launcher .wg-cm-home {
-	--cm-column: 768px;
-	--cm-top: 72px;
+	--cm-column: 640px;
+	--cm-top: var(--space-12);
 }
 
 .sumi-launcher-greeting {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
-	gap: var(--space-5);
-	padding: var(--space-none) var(--cm-inset) var(--space-5);
+	align-items: center;
+	margin-bottom: var(--space-4-5);
 	color: var(--text);
 }
 
 .sumi-launcher-question {
-	margin: var(--space-none);
-	font: var(--fw-medium) 22px / 1.3 var(--font-ui);
-	letter-spacing: -0.01em;
+	margin: var(--space-2) var(--space-none) var(--space-none);
+	font-size: var(--fs-20);
+	font-weight: var(--fw-semi);
+	line-height: 28px;
+	letter-spacing: -0.02em;
 	color: var(--text);
+}
+
+.sumi-launcher .wg-cm-field {
+	height: var(--space-12);
+	margin: var(--space-1);
+	padding: var(--space-none) var(--space-3-5);
+	gap: var(--space-2-5);
+	border: 1px solid var(--line);
+	border-radius: var(--r-lg);
+	background: var(--field);
+	box-shadow:
+		0 0 0 var(--space-1) var(--sunken),
+		0 0 0 calc(var(--space-1) + var(--space-px)) var(--divider);
+	color: var(--text-3);
+	font-size: var(--fs-14);
+}
+
+.sumi-launcher :is(.wg-cm-ghost, .wg-cm-input) {
+	font-size: var(--fs-14);
+}
+
+.sumi-launcher .wg-cm-input {
+	color: var(--text);
+}
+
+.sumi-launcher-hints {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--space-3);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
+	color: var(--text-3);
+}
+
+.sumi-launcher-hints b {
+	margin-inline-end: var(--space-1);
+	font-weight: var(--fw-semi);
+	color: var(--text-2);
 }
 
 .sumi-launcher-idle {
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto;
-	padding-bottom: var(--space-6);
+	padding-bottom: var(--space-12);
+}
+
+.sumi-launcher-section {
+	margin-top: var(--space-6);
 }
 
 .sumi-launcher-label {
-	padding: var(--space-6) var(--cm-inset) var(--space-2);
+	display: flex;
+	align-items: center;
+	height: var(--space-6-5);
+	margin-bottom: var(--space-2);
 	font-size: var(--fs-12);
-	line-height: 16px;
+	font-weight: var(--fw-ui);
 	color: var(--text-3);
 }
 
 .sumi-launcher-setups {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: var(--space-4);
-	padding: var(--space-none) var(--cm-inset);
+	gap: var(--space-3-5);
 }
 
 .sumi-launcher-setup {
@@ -50,12 +96,17 @@
 	flex-direction: column;
 	align-items: stretch;
 	min-width: 0;
+	color: var(--text-2);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
 }
 
 .sumi-launcher-thumb {
-	height: 92px;
+	height: 82px;
 	display: flex;
-	gap: var(--space-0-5);
+	gap: var(--space-px);
+	overflow: hidden;
+	border-radius: var(--r-md);
 }
 
 .sumi-launcher-column {
@@ -63,7 +114,7 @@
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-0-5);
+	gap: var(--space-px);
 }
 
 .sumi-launcher-pane {
@@ -83,41 +134,37 @@
 }
 
 .sumi-launcher-setup-name {
-	margin-top: var(--space-2);
-	font-size: var(--fs-13);
-	color: var(--text);
-}
-
-.sumi-launcher-setup-apps {
-	font-size: var(--fs-13);
-	color: var(--text-3);
+	margin-top: var(--space-1-5);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
 .sumi-launcher-apps {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-1);
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: var(--space-2);
 }
 
 .sumi-launcher-app {
-	width: 88px;
-	height: 64px;
+	height: 54px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: var(--space-2);
-	font-size: var(--fs-13);
-	color: var(--text);
+	gap: var(--space-1-5);
+	min-width: 0;
+	border-radius: var(--r-md);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
+	color: var(--text-2);
 	text-align: center;
 	transition: background-color var(--dur-hover) var(--ease-emphasized);
 }
 
 .sumi-launcher-app:hover {
 	background: var(--hover);
+	color: var(--text);
 }
 
 .sumi-launcher-app-name {
@@ -128,18 +175,47 @@
 	text-overflow: ellipsis;
 }
 
-.sumi-launcher-row:hover {
-	background: var(--hover);
+.sumi-launcher-row {
+	width: 100%;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-weight: var(--fw-ui);
+	color: var(--text-2);
+	white-space: nowrap;
+}
+
+.sumi-launcher-row:hover .sumi-launcher-row-title {
+	color: var(--text);
 }
 
 .sumi-launcher-row-title {
 	min-width: 0;
-	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
+.sumi-launcher-row-place,
+.sumi-launcher-row-meta {
+	flex: none;
+	font-size: var(--fs-12);
+	color: var(--text-3);
+}
+
 .sumi-launcher-row-meta {
 	margin-left: auto;
+}
+
+.sumi-launcher-more {
+	display: flex;
+	align-items: center;
+	height: var(--space-7);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
 	color: var(--text-3);
+}
+
+.sumi-launcher-more:hover {
+	color: var(--text);
 }
