@@ -431,13 +431,9 @@ check(
 
 // AN ICON THE KIT DOES NOT KNOW RENDERS NOTHING AT ALL — no error, no box, an empty button.
 render(h(Kit.Icon, { name: "dots" }), host);
-check("the three-dot menu has a glyph", host.querySelectorAll("svg.wg-kit-icon-glyph circle").length, 3);
-// the glyph is STROKED, so a radius over half the stroke width leaves a hole and the dots read as rings
-check(
-	"and they are dots, not rings",
-	[...host.querySelectorAll("circle")].every((dot) => parseFloat(dot.getAttribute("r") ?? "") <= 1),
-	true,
-);
+const dotsDrawing = host.querySelector("svg.wg-kit-icon-glyph path")?.getAttribute("d") ?? "";
+check("the three-dot menu has a glyph", host.querySelectorAll("svg.wg-kit-icon-glyph path").length, 1);
+check("and the glyph is three closed dots", dotsDrawing.match(/Z/g)?.length, 3);
 
 render(h(Kit.Button, { asChild: true, variant: "plain" }, h("a", { href: "#x" }, "Go")), host);
 check(
