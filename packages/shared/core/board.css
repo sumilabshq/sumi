@@ -20478,6 +20478,10 @@ body:has(.wg-cm-layer) {
 .sumi-model-effort {
 	color: var(--text-3);
 }
+.sumi-runner-mark {
+	flex: none;
+	fill: var(--brand-claude);
+}
 .sumi-usage-ring {
 	flex: none;
 }
