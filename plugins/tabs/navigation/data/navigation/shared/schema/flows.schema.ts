@@ -143,6 +143,20 @@ export const InboxUndoSchema = z.object({
 
 export type InboxUndo = z.infer<typeof InboxUndoSchema>;
 
+export const ViewSpotSchema = z.object({
+	flowId: z.string().min(1),
+	tabId: z.string().min(1),
+});
+
+export type ViewSpot = z.infer<typeof ViewSpotSchema>;
+
+export const WindowTrailSchema = z.object({
+	back: z.array(ViewSpotSchema),
+	forward: z.array(ViewSpotSchema),
+});
+
+export type WindowTrail = z.infer<typeof WindowTrailSchema>;
+
 export const ConversionSchema = z.object({
 	key: z.literal(WORKSPACE_TO_FLOWS_KEY),
 	sourceRev: z.number().int().nonnegative(),
@@ -160,6 +174,7 @@ export const FlowsDocSchema = z.object({
 	setups: z.array(SetupSchema),
 	windowFlows: z.record(z.string(), z.string().min(1)),
 	inboxUndo: InboxUndoSchema.nullable(),
+	windowTrails: z.record(z.string(), WindowTrailSchema).optional(),
 	conversion: ConversionSchema.nullable(),
 });
 

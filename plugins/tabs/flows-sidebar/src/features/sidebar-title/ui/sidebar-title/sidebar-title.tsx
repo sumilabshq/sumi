@@ -4,6 +4,7 @@ import { appHost } from "@widgetarium/app-host/contract";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 import { NewFlowButton } from "./new-flow-button.js";
+import { TrailButtons } from "./trail-buttons.js";
 
 const HIDE_SIDEBAR = "Hide sidebar";
 const SHOW_SIDEBAR = "Show sidebar";
@@ -28,6 +29,7 @@ export function SidebarTitle(): ReactElement {
 				<Icon name="panel-left" size={ICON_PX} />
 			</Button>
 			<NewFlowButton />
+			<TrailButtons />
 		</div>
 	);
 }

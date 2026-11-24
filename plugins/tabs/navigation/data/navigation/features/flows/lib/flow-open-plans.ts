@@ -24,8 +24,24 @@ export interface OpeningMoment {
 const NO_FLOW = 'no flow "{id}" stands here';
 const NO_EFFECTS: TabsSettled = { effects: [] };
 
+export interface FlowOpening {
+	readonly window: string;
+	readonly at: OpenFlowAsk["at"];
+	readonly apps: PlacedApps;
+}
+
 export function openFlowMove(ask: OpenFlowAsk, apps: PlacedApps): MovePlaces<Answer<TabsSettled>> {
-	const opening = flowsMove(openFlowPlan(ask, { apps, at: Date.now() }));
+	return withFlowPagesEnsured(flowsMove(openFlowPlan(ask, { apps, at: Date.now() })), {
+		window: ask.window,
+		at: ask.at,
+		apps,
+	});
+}
+
+export function withFlowPagesEnsured(
+	opening: MovePlaces<Answer<TabsSettled>>,
+	{ window, at, apps }: FlowOpening,
+): MovePlaces<Answer<TabsSettled>> {
 	return (now) => {
 		const opened = opening(now);
 
@@ -33,10 +49,11 @@ export function openFlowMove(ask: OpenFlowAsk, apps: PlacedApps): MovePlaces<Ans
 			return opened;
 		}
 
-		const flow = flowOfId(opened.next.flows, ask.flowId);
-		const pages = tabsMoveAsPlaces(
-			settling(ask.at, apps, pagesEnsuredPlan(flow === undefined ? [] : flowTabIdsOf(flow))),
-		)(opened.next);
+		const flowId = opened.next.flows.windowFlows[window];
+		const flow = flowId === undefined ? undefined : flowOfId(opened.next.flows, flowId);
+		const pages = tabsMoveAsPlaces(settling(at, apps, pagesEnsuredPlan(flow === undefined ? [] : flowTabIdsOf(flow))))(
+			opened.next,
+		);
 
 		if (pages.answer.isRefused) {
 			return opened;

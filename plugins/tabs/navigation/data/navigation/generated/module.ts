@@ -16,6 +16,7 @@ import { fold, place as tabPlacingPlace, rename as tabPlacingRename } from "../f
 import { fitToPanes, openInOwnWindow, reload, rememberPages, restore, show, showView, tearOff } from "../features/tab-showing/requests.js";
 import { closedTabs, heldTabs, holders, placedTabs, rereadPlaced, rows as tabsRows, shownView, sidebar as tabsSidebar } from "../features/tabs/requests.js";
 import { hideLeft, rereadSides, sides } from "../features/window-sides/requests.js";
+import { back, forward, rereadTrailOnFlows, rereadTrailOnTabs, trail } from "../features/window-trail/requests.js";
 import { all as windowsAll, closeWindow, keepLiveWindows, openWindow, reread } from "../features/windows/requests.js";
 import { move as workspaceMovesMove } from "../features/workspace-moves/requests.js";
 import { flowsChanged } from "../gateways/flows/flows.events.js";
@@ -40,6 +41,8 @@ export const navigation = handledModule(definition, [
 	rereadShown,
 	rereadSides,
 	rereadTabsOfApp,
+	rereadTrailOnFlows,
+	rereadTrailOnTabs,
 	named("flow-panes.board", flowPanesBoard),
 	named("flow-panes.close-pane", closePane),
 	named("flow-panes.focus", focus),
@@ -128,6 +131,9 @@ export const navigation = handledModule(definition, [
 	named("tabs.sidebar", tabsSidebar),
 	named("window-sides.hide-left", hideLeft),
 	named("window-sides.sides", sides),
+	named("window-trail.back", back),
+	named("window-trail.forward", forward),
+	named("window-trail.trail", trail),
 	named("windows.all", windowsAll),
 	named("windows.close-window", closeWindow),
 	named("windows.keep-live-windows", keepLiveWindows),

@@ -493,6 +493,12 @@ export const appHost = moduleContract("app-host", Device, {
 			.input(FlowTabToOpenSchema)
 			.output(OpenedTabSchema)
 			.idempotencyKey(Repeatable)),
+		back: named("flows.back", command()
+			.public()
+			.idempotencyKey(Repeatable)),
+		forward: named("flows.forward", command()
+			.public()
+			.idempotencyKey(Repeatable)),
 	},
 	frameSides: {
 		frameSides: named("frame-sides.frame-sides", query()

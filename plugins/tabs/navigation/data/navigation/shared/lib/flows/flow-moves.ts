@@ -5,6 +5,7 @@ import type { Answer, MovePlacedTabs, Refusal } from "../settling/settling.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 import { flowsOf } from "./flow-conversion.js";
 import type { FlowsConverted } from "./flow-conversion.js";
+import { withViewsRecorded } from "./window-trails.js";
 
 export interface PlacedPlaces {
 	readonly tabs: PlacedTabs;
@@ -96,7 +97,7 @@ export function flowsMove<T>(plan: FlowsPlan<T>): MovePlaces<Answer<T>> {
 
 		const isUnchanged = planned.flows === now.flows && planned.tabs === undefined;
 		return {
-			next: isUnchanged ? null : { tabs: planned.tabs ?? now.tabs, flows: planned.flows },
+			next: isUnchanged ? null : { tabs: planned.tabs ?? now.tabs, flows: withViewsRecorded(now.flows, planned.flows) },
 			reason: planned.reason,
 			answer: { isRefused: false, value: planned.value },
 		};

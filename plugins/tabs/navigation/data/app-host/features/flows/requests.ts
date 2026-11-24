@@ -37,3 +37,21 @@ export const openTab = command()
 		);
 		return { id: opened.id };
 	});
+
+export const back = command()
+	.public()
+	.idempotencyKey(Repeatable)
+	.handle(async (_input, { send, emit, ...injects }) => {
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(navigation.windowTrail.back, { at, window: at.window }),
+		);
+	});
+
+export const forward = command()
+	.public()
+	.idempotencyKey(Repeatable)
+	.handle(async (_input, { send, emit, ...injects }) => {
+		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
+			send(navigation.windowTrail.forward, { at, window: at.window }),
+		);
+	});

@@ -1129,6 +1129,20 @@ export const WindowTabsSchema = z.object({
 
 export type WindowTabs = z.infer<typeof WindowTabsSchema>;
 
+export const TrailStepAskSchema = z.object({
+	window: z.string().min(1),
+	at: TabsAskSchema,
+});
+
+export type TrailStepAsk = z.infer<typeof TrailStepAskSchema>;
+
+export const WindowTrailStateSchema = z.object({
+	canGoBack: z.boolean(),
+	canGoForward: z.boolean(),
+});
+
+export type WindowTrailState = z.infer<typeof WindowTrailStateSchema>;
+
 export const OpenWindowSchema = z.object({
 	label: z.string().min(1),
 	openedAt: z.number().nonnegative(),
@@ -1561,6 +1575,22 @@ export const navigation = moduleContract("navigation", Server, {
 		hideLeft: named("window-sides.hide-left", command()
 			.public()
 			.input(HideSideAskSchema)
+			.idempotencyKey(Repeatable)),
+	},
+	windowTrail: {
+		trail: named("window-trail.trail", query()
+			.public()
+			.input(WindowFlowAskSchema)
+			.output(WindowTrailStateSchema)),
+		back: named("window-trail.back", command()
+			.public()
+			.input(TrailStepAskSchema)
+			.output(TabsSettledSchema)
+			.idempotencyKey(Repeatable)),
+		forward: named("window-trail.forward", command()
+			.public()
+			.input(TrailStepAskSchema)
+			.output(TabsSettledSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	windows: {
