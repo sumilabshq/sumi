@@ -59,7 +59,7 @@ Everything else is fixed. The delight layers are drawn on the canvas's "Delight"
 
 ## Typography Rules
 
-Inter (variable, weight 510, letter-spacing -0.01em) for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme; IBM Plex Serif, the one serif, for the voice: greetings, empty pages and a document's title. Plex Serif carries Cyrillic in roman and italic.
+Inter (variable, weight 400, letter-spacing -0.01em) for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme; IBM Plex Serif, the one serif, for the voice: greetings, empty pages and a document's title. Plex Serif carries Cyrillic in roman and italic.
 
 | Step       | Size / weight      | Use                                                       |
 | ---------- | ------------------ | --------------------------------------------------------- |
@@ -67,7 +67,7 @@ Inter (variable, weight 510, letter-spacing -0.01em) for everything people read;
 | Page title | 30 / 500 serif     | a document's title in a pane                              |
 | Workspace  | 15 / 600           | the workspace name in the sidebar                         |
 | Chat       | 14 / 400, line 1.6 | every message, tool row, table, question and the composer |
-| UI         | 13 / 510           | sidebar rows, headers, menus, options                     |
+| UI         | 12.5 / 400         | sidebar rows, headers, menus, options                     |
 | Code       | 13 / 400 mono      | code blocks, inline code, commands in tool rows           |
 | Label      | 12 / 400           | section labels in the sidebar                             |
 
@@ -196,3 +196,5 @@ The mascot, a square with an eye, is the alphabet: a few signs taken from it rep
 - The ink anywhere its role does not list; a gradient but the working line, the shimmer and the top light; a violet accent nobody chose; a rainbow glow.
 - A third grey, a second text size inside the chat, bold for anything but a heading.
 - A status in an uppercase badge.
+
+Owner override: UI text 400 weight and Inter sized to match the old Plex 13px.

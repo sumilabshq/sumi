@@ -147,7 +147,7 @@ async function structureChecks(): Promise<void> {
 	const app = await styleOf(page, ".sumi-home-app", ["background-color", "border-top-width", "box-shadow"]);
 	check("an app tile has no background, border or shadow", [app["background-color"], app["border-top-width"], app["box-shadow"]], ["rgba(0, 0, 0, 0)", "0px", "none"]);
 	const row = await styleOf(page, ".sumi-home-continue-row", ["font-size", "font-weight", "font-family"]);
-	check("text is Inter 13 at weight 510", [row["font-size"], row["font-weight"], row["font-family"]?.startsWith("Inter")], ["13px", "510", true]);
+	check("text is Inter 12.5 at weight 400", [row["font-size"], row["font-weight"], row["font-family"]?.startsWith("Inter")], ["12.5px", "400", true]);
 	check("a page failure was not heard", page.failures().length, 0);
 	stop();
 }

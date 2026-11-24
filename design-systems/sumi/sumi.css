@@ -72,7 +72,7 @@
 	--font-features: normal;
 	--fs-11: 11px;
 	--fs-12: 12px;
-	--fs-13: 13px;
+	--fs-13: 12.5px;
 	--fs-14: 14px;
 	--fs-16: 16px;
 	--fs-20: 20px;
@@ -80,8 +80,8 @@
 	--fw-regular: 400;
 	--fw-medium: 500;
 	--fw-semi: 600;
-	--fw-ui: 510;
-	--fw-tab: 450;
+	--fw-ui: 400;
+	--fw-tab: 400;
 	--tracking-ui: -0.01em;
 
 	--space-none: 0px;
