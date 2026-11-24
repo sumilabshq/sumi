@@ -9,6 +9,7 @@ const RETIRED_IDS: &str = "retiredIds";
 const LAST_OPENED_ID: &str = "lastOpenedId";
 const CONVERSION_APP_FOLDER: &str = ".sumi-test";
 const CONVERSION_HOME_FOLDER: &str = ".sumi-test-workspace";
+const CONVERSION_APPROVAL_FILE: &str = "flows-conversion-approved";
 const DOC_V: u64 = 1;
 
 pub fn retired_ids_in(registry: Option<&Fields>) -> Vec<String> {
@@ -90,8 +91,16 @@ fn refuse_unsafe_root(home: &Path) -> Result<(), Refusal> {
 }
 
 pub fn conversion_refusal(store: &Store, id: &str) -> Option<String> {
+    if is_conversion_approved(&store.global_folder(), id) {
+        return None;
+    }
+
     let registered = workspaces::registered_home_of(store, id);
     refusal_of_conversion_root(&home_app_folder(), registered.as_deref(), store.home())
+}
+
+pub fn is_conversion_approved(global_folder: &Path, id: &str) -> bool {
+    std::fs::read_to_string(global_folder.join(CONVERSION_APPROVAL_FILE)).is_ok_and(|approved| approved.trim() == id)
 }
 
 pub fn refusal_of_conversion_root(app_folder: &str, registry_home: Option<&Path>, user_home: &Path) -> Option<String> {

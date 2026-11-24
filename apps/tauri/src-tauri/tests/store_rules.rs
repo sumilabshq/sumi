@@ -416,6 +416,14 @@ fn conversion_root_rules(checks: &mut Checks) {
     checks.check("another registry home is refused", retirement::refusal_of_conversion_root(".sumi-test", Some(&user.join("Sumi")), user).is_some(), true);
     checks.check("a nested registry home is refused", retirement::refusal_of_conversion_root(".sumi-test", Some(&exact.join("inner")), user).is_some(), true);
     checks.check("an unregistered workspace is refused", retirement::refusal_of_conversion_root(".sumi-test", None, user).is_some(), true);
+
+    let approvals = std::env::temp_dir().join(format!("sumi-approval-{}", std::process::id()));
+    std::fs::create_dir_all(&approvals).expect("approval folder");
+    checks.check("no approval file approves nothing", retirement::is_conversion_approved(&approvals, "ws-1"), false);
+    std::fs::write(approvals.join("flows-conversion-approved"), "ws-1\n").expect("approval file");
+    checks.check("the approved workspace converts", retirement::is_conversion_approved(&approvals, "ws-1"), true);
+    checks.check("another workspace stays refused", retirement::is_conversion_approved(&approvals, "ws-2"), false);
+    std::fs::remove_dir_all(&approvals).ok();
 }
 
 fn conversion_through_dispatch(checks: &mut Checks) {
