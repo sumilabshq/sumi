@@ -430,7 +430,9 @@ async function emptySpaceMenu(): Promise<void> {
 		await waited(300);
 		check(
 			"right-clicking empty space offers New flow and New folder",
-			await page.ask(`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`),
+			await page.ask(
+				`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`,
+			),
 			["New flow", "New folder"],
 		);
 		await page.ask(clickText("[role=menuitem]", "New folder"));
@@ -468,13 +470,22 @@ async function deleting(): Promise<void> {
 		);
 		await waited(300);
 		check(
-			"a Flow row menu offers Rename, Edit icon, Duplicate and Delete flow",
+			"a Flow row menu offers Rename, Edit icon, Duplicate, Archive and Delete flow",
 			await page.ask(
 				`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`,
 			),
-			["Rename", "Edit icon", "Duplicate", "Delete flow"],
+			["Rename", "Edit icon", "Duplicate", "Archive", "Delete flow"],
 		);
 		await page.ask(clickText("[role=menuitem]", "Delete flow"));
+		await waited(300);
+		check(
+			"Delete flow asks first, naming the Flow and its chats",
+			await page.ask(
+				`(document.querySelector("[role=alertdialog]")?.textContent ?? "").includes(${JSON.stringify('Delete "Plugin layout"?')})`,
+			),
+			true,
+		);
+		await page.ask(clickText("[role=alertdialog] button", "Delete flow"));
 		await waited(SETTLE_MS * 2);
 		check(
 			"Delete flow takes the Flow out of the sidebar",
@@ -482,6 +493,35 @@ async function deleting(): Promise<void> {
 			false,
 		);
 		check("and out of Inbox", ((await page.ask(namesOf(INBOX))) as string[]).includes("Plugin layout"), false);
+	});
+}
+
+async function folderMenuAndArchive(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		await page.ask(
+			`${rowOf(FOLDERS, "Client project")}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`,
+		);
+		await waited(300);
+		check(
+			"a folder row menu offers Rename, Edit icon, Ungroup and Delete folder and its Flows",
+			await page.ask(
+				`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`,
+			),
+			["Rename", "Edit icon", "Ungroup", "Delete folder and its Flows"],
+		);
+		await page.ask(`document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+		await waited(300);
+		await page.ask(
+			`${rowOf(FLOWS, "Reading list")}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`,
+		);
+		await waited(300);
+		await page.ask(clickText("[role=menuitem]", "Archive"));
+		await waited(SETTLE_MS * 2);
+		check(
+			"Archive takes the Flow out of the sidebar",
+			((await page.ask(namesOf(FLOWS))) as string[]).includes("Reading list"),
+			false,
+		);
 	});
 }
 
@@ -497,6 +537,7 @@ await peekHolds();
 await dragging();
 await editingIcon();
 await deleting();
+await folderMenuAndArchive();
 
 if (tally.failed > 0) {
 	console.log(`${tally.failed} failed`);
