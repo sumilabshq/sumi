@@ -1,9 +1,12 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
 import { bundleOf } from "./harness.ts";
 import { TRAFFIC_LIGHTS, openedSidebar } from "./flows-sidebar-harness.ts";
+import { frameLookChecks, nameOf } from "./flows-frame-checks.ts";
+import type { FrameState, FrameTheme } from "./flows-frame-checks.ts";
+import { FRAME_SPLITS, sceneOf } from "./flows-frame-scenes.ts";
 
 const TOGGLE = "button[aria-label='Hide sidebar'], button[aria-label='Show sidebar']";
 const FIRST_TAB = ".sumi-flow-strip .sumi-pane-tab";
@@ -14,6 +17,8 @@ const HOST_INSETS = "apps/tauri/src/tauri-studio-host.ts";
 const HOST_RIGHT_EDGE = /TRAFFIC_LIGHTS_RIGHT_EDGE_PX = (\d+)/;
 const TOLERANCE_PX = 0.5;
 const EMPTY_STRIP_OFFSET_PX = 40;
+const SHOTS_DIR = process.argv[2] ?? null;
+const THEMES: readonly FrameTheme[] = ["light", "dark"];
 
 interface Box {
 	readonly left: number;
@@ -38,8 +43,8 @@ function isCentredOnTrafficLights(box: Box): boolean {
 	return Math.abs(box.centreY - TRAFFIC_LIGHTS.centreYPx) <= TOLERANCE_PX;
 }
 
-async function inState(scene: string, run: (page: AskedPage) => Promise<void>): Promise<void> {
-	const opened = await openedSidebar(bundled, "light", scene);
+async function inState(scene: string, theme: FrameTheme, run: (page: AskedPage) => Promise<void>): Promise<void> {
+	const opened = await openedSidebar(bundled, theme, scene);
 
 	try {
 		await run(opened.page);
@@ -80,14 +85,30 @@ check(
 	Number(HOST_RIGHT_EDGE.exec(hostSource)?.[1]),
 	TRAFFIC_LIGHTS.rightEdgePx,
 );
-await inState("inbox+board", async (page) => {
+await inState("inbox+board", "light", async (page) => {
 	await chromeChecks(page, "docked");
 	await pressChecks(page, "docked");
 });
-await inState("hidden+board", async (page) => {
+await inState("hidden+board", "light", async (page) => {
 	await chromeChecks(page, "hidden");
 	await pressChecks(page, "hidden");
 });
+
+if (SHOTS_DIR !== null) {
+	mkdirSync(SHOTS_DIR, { recursive: true });
+}
+
+for (const theme of THEMES) {
+	for (const isDocked of [true, false]) {
+		for (const split of FRAME_SPLITS) {
+			const state: FrameState = { theme, isDocked, split };
+			await inState(sceneOf(isDocked ? "inbox" : "hidden", split), theme, async (page) => {
+				const look = await frameLookChecks(page, state, SHOTS_DIR);
+				console.log(`   ${nameOf(state)} measured ${JSON.stringify(look.panel)}`);
+			});
+		}
+	}
+}
 
 console.log(tally.failed ? `flows chrome: ${tally.failed} check(s) failed` : "flows chrome: all checks passed");
 process.exit(tally.failed ? 1 : 0);

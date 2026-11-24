@@ -14,7 +14,11 @@ import { SlotFills } from "../packages/shared/plugin-framework/src/index.ts";
 import { PluginSlotsContext } from "../packages/shared/plugin-framework/src/react/index.ts";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { FIXTURE_WINDOW, sidebarWorldOf } from "./flows-sidebar-world.ts";
-import type { SidebarScene } from "./flows-sidebar-world.ts";
+import type { SidebarScene, SidebarWorld } from "./flows-sidebar-world.ts";
+import { drawnPlate } from "./flows-frame-plates.tsx";
+import { measured, pixelsOf, quietOverlays, restoreOverlays, underlaidNativePage } from "./flows-frame-probe.ts";
+import { SPLIT_SIDES, sidebarSceneOf, splitOfScene } from "./flows-frame-scenes.ts";
+import { BARE_SCREEN } from "./places-fixture.ts";
 
 const SIDEBAR_FILLS = [
 	{ slot: "sumi-host.title-tabs", pluginId: "flows-sidebar", kind: "add" as const, component: SidebarTitle },
@@ -24,7 +28,8 @@ const BOARD_FILLS = [
 	{ slot: "sumi-host.title-tabs", pluginId: "flow-strip", kind: "add" as const, component: FlowStrip },
 	{ slot: "sumi-host.pane-board", pluginId: "flow-board", kind: "replace" as const, component: FlowBoard },
 ];
-const BOARD_SCENE = "+board";
+const SPLIT_FLOW = "composer-redesign";
+const SPLIT_TAB = "composer-redesign-1";
 const NO_BOUNDS = { left: { leastPx: 0, usualPx: 0 }, chat: { leastPx: 0, usualPx: 0 }, plateLeastPx: 0 };
 
 declare global {
@@ -34,10 +39,18 @@ declare global {
 			readonly hasOwnDrag: (target: Element) => boolean;
 			readonly isControl: (target: Element) => boolean;
 		};
+		__frame: {
+			readonly measured: typeof measured;
+			readonly underlaidNativePage: typeof underlaidNativePage;
+			readonly pixelsOf: typeof pixelsOf;
+			readonly quietOverlays: typeof quietOverlays;
+			readonly restoreOverlays: typeof restoreOverlays;
+		};
 	}
 }
 
 window.__chrome = { hasOwnDrag, isControl };
+window.__frame = { measured, underlaidNativePage, pixelsOf, quietOverlays, restoreOverlays };
 
 function PageZone({ isBoard }: { readonly isBoard: boolean }): ReactElement {
 	if (!isBoard) {
@@ -46,7 +59,7 @@ function PageZone({ isBoard }: { readonly isBoard: boolean }): ReactElement {
 
 	return (
 		<PaneBoardSlot
-			drawn={() => <div className="flows-page-plate" />}
+			drawn={drawnPlate}
 			empty={<div className="flows-page-plate" />}
 			chatPx={0}
 			bounds={NO_BOUNDS}
@@ -55,12 +68,33 @@ function PageZone({ isBoard }: { readonly isBoard: boolean }): ReactElement {
 	);
 }
 
+async function openedSplit(world: SidebarWorld, side: "right" | "bottom"): Promise<void> {
+	const flow = { window: FIXTURE_WINDOW, flowId: SPLIT_FLOW };
+	await world.app.send(navigation.flows.open, { ...flow, at: { window: FIXTURE_WINDOW, screen: BARE_SCREEN } });
+	const split = await world.app.send(navigation.flowPanes.split, {
+		...flow,
+		paneId: `pane-${SPLIT_FLOW}`,
+		side,
+		tabId: SPLIT_TAB,
+	});
+
+	if (!split.ok) {
+		throw new Error(split.reason);
+	}
+}
+
 async function main(): Promise<void> {
 	const asked = location.hash.slice(1) || "inbox";
-	const isBoard = asked.endsWith(BOARD_SCENE);
-	const scene = asked.replace(BOARD_SCENE, "") as SidebarScene;
+	const split = splitOfScene(asked);
+	const isBoard = split !== null;
+	const scene = sidebarSceneOf(asked, split) as SidebarScene;
 	const fills = new SlotFills(isBoard ? [...SIDEBAR_FILLS, ...BOARD_FILLS] : SIDEBAR_FILLS);
 	const world = await sidebarWorldOf(scene);
+	const side = split === null ? null : SPLIT_SIDES[split];
+
+	if (side !== null) {
+		await openedSplit(world, side);
+	}
 
 	if (scene === "hidden" || scene === "peeking") {
 		const answer = await world.app.send(navigation.windowSides.hideLeft, { window: FIXTURE_WINDOW, isHidden: true });
