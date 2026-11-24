@@ -55,6 +55,7 @@ function BoardPanes({ open, board, drawn }: BoardPanesProps): ReactElement {
 				return rect === undefined ? null : (
 					<PageHost
 						key={slot.key}
+						flowId={flow.flowId}
 						paneId={slot.paneId}
 						view={slot.view}
 						isActive={slot.isActive}
