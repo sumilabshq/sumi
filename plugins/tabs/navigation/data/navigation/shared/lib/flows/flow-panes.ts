@@ -25,6 +25,24 @@ export function layoutWithTab(layout: FlowLayout, tabId: string, paneId: string)
 	};
 }
 
+export function layoutWithTabReplaced(layout: FlowLayout, fromId: string, toId: string): FlowLayout {
+	const holder = panesOf(layout.root).find(({ tabIds }) => tabIds.includes(fromId));
+
+	if (holder === undefined) {
+		return layout;
+	}
+
+	const replaced: FlowPane = {
+		...holder,
+		tabIds: holder.tabIds.map((id) => (id === fromId ? toId : id)),
+		activeTabId: toId,
+	};
+	return {
+		...layoutPruned(layout, (pane) => (pane.id === holder.id ? replaced : pane)),
+		focusedPaneId: holder.id,
+	};
+}
+
 function withTabAdded(node: FlowNode, paneId: string, tabId: string): FlowNode {
 	if (node.kind === "split") {
 		return {
