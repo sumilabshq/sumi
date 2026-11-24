@@ -9,11 +9,13 @@ import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-h
 import { flowsMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { TabFaceContext } from "../plugins/sumi-host/src/index.ts";
+import type { PaneBoardProps } from "../plugins/sumi-host/src/index.ts";
 import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
 import { FlowWindowContext } from "../plugins/tabs/flow-strip/src/shared/lib/flow-window-context.ts";
 import { FlowStrip } from "../plugins/tabs/flow-strip/src/features/flow-header/ui/flow-strip/flow-strip.tsx";
 import { FlowBoard } from "../plugins/tabs/flow-board/src/features/flow-board/ui/flow-board/flow-board.tsx";
+import { FRAME_LIMITS } from "../packages/state/layout/shared/lib/frame-bounds.ts";
 import { studioFakesOf } from "./app-host-fixture.ts";
 import { MAIN, chatFlow, flowsIn, standOver } from "./flows-stand.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
@@ -114,13 +116,13 @@ window.__home = {
 	flowsOpened: async () => (await flowsIn(stand)).windowFlows,
 };
 
-const BOARD_PROPS = {
+const BOARD_PROPS: PaneBoardProps = {
 	drawn,
 	empty: <div className="demo-page">No flow</div>,
 	chatPx: 0,
-	bounds: {},
+	bounds: FRAME_LIMITS,
 	onChatPx: () => undefined,
-} as never;
+};
 
 function Demo(): ReactElement {
 	return (
