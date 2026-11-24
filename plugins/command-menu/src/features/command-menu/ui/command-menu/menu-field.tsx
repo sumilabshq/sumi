@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ClipboardEvent, DragEvent, ReactElement, ReactNode } from "react";
-import { Input } from "@widgetarium/kit";
+import { FieldFrame, Input } from "@widgetarium/kit";
 import { useSelectsFieldOnMount } from "../../lib/use-selects-field-on-mount.js";
 
 export interface MenuFieldAsk {
@@ -16,6 +16,7 @@ export interface MenuFieldProps {
 	readonly start: ReactNode;
 	readonly end: ReactNode;
 	readonly onFiles: FilesTaker | null;
+	readonly isFramed?: boolean;
 }
 
 type FilesTaker = (files: readonly File[]) => void;
@@ -27,9 +28,10 @@ export function MenuField({
 	start,
 	end,
 	onFiles,
+	isFramed = false,
 }: MenuFieldProps): ReactElement {
 	const field = useSelectsFieldOnMount();
-	return (
+	const plainField = (
 		<div
 			className="wg-cm-field"
 			data-cm-link={isLink ? "" : undefined}
@@ -58,6 +60,12 @@ export function MenuField({
 			{end}
 		</div>
 	);
+
+	if (!isFramed) {
+		return plainField;
+	}
+
+	return <FieldFrame>{plainField}</FieldFrame>;
 }
 
 function takePastedFiles(event: ClipboardEvent<HTMLInputElement>, onFiles: FilesTaker | null): void {

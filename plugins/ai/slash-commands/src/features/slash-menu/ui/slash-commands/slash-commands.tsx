@@ -56,6 +56,7 @@ export function SlashCommands({ input }: { readonly input: ComposerInput }): Rea
 					draft={lastOpen.current.draft}
 					isLeaving={!slash.isOpen}
 					onGone={() => setLeaving(false)}
+					host={input.above.current}
 				/>
 			) : null}
 		</>

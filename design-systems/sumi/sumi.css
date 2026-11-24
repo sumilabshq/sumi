@@ -175,11 +175,19 @@
 	--chat-w: 560px;
 	--read-w: 768px;
 	--plate-min: 240px;
+
+	--field-frame-pad: var(--space-1);
+	--field-frame-gap: var(--space-none);
+	--field-frame-bg: var(--field);
+	--field-frame-line: var(--divider);
+	--field-frame-line-width: var(--space-px);
 }
 
 :root.dark,
 .dark,
 .theme-dark {
+	--field-frame-bg: var(--field);
+	--field-frame-line: var(--divider);
 	--frame: #111214;
 	--plate: #000000;
 	--soft: #0e0e0e;
@@ -234,6 +242,14 @@
 	--hue-purple: #a78bfa;
 	--hue-pink: #f472b6;
 	--hue-slate: #94a3b8;
+}
+
+:root[data-field-frame="off"],
+:root[data-field-frame="off"] :is(.dark, .theme-dark) {
+	--field-frame-pad: 0px;
+	--field-frame-bg: transparent;
+	--field-frame-line: transparent;
+	--field-frame-line-width: 0px;
 }
 
 .sumi-ink-ember {

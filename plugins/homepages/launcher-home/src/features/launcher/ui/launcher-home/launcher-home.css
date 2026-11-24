@@ -27,15 +27,11 @@
 
 .sumi-launcher .wg-cm-field {
 	height: var(--space-12);
-	margin: var(--space-1);
 	padding: var(--space-none) var(--space-3-5);
 	gap: var(--space-2-5);
-	border: 1px solid var(--line);
+	border: 1px solid var(--divider);
 	border-radius: var(--r-lg);
-	background: var(--field);
-	box-shadow:
-		0 0 0 var(--space-1) var(--sunken),
-		0 0 0 calc(var(--space-1) + var(--space-px)) var(--divider);
+	background: var(--plate);
 	color: var(--text-3);
 	font-size: var(--fs-14);
 }

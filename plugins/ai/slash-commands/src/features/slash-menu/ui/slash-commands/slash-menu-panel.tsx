@@ -1,4 +1,5 @@
-import { createElement as h, useLayoutEffect, useRef } from "react";
+import { createElement as h, useRef } from "react";
+import { createPortal } from "react-dom";
 import type { ReactElement } from "react";
 import { Kbd, Pressable } from "@widgetarium/kit";
 import type { SlashMenu } from "../../lib/use-slash-menu.js";
@@ -17,37 +18,18 @@ export interface SlashMenuPanelProps {
 	readonly draft: string;
 	readonly isLeaving: boolean;
 	readonly onGone: () => void;
+	readonly host: HTMLElement | null;
 }
 
-export function SlashMenuPanel({ slash, draft, isLeaving, onGone }: SlashMenuPanelProps): ReactElement {
+export function SlashMenuPanel({ slash, draft, isLeaving, onGone, host }: SlashMenuPanelProps): ReactElement | null {
 	const isEmpty = slash.matches.length === 0;
 	const panel = useRef<HTMLDivElement>(null);
 	useResizesSmoothly(panel, isLeaving, onGone);
-	useLayoutEffect(() => {
-		const node = panel.current;
-		const frame = node?.offsetParent;
-		const field = frame?.parentElement;
+	if (host === null) {
+		return null;
+	}
 
-		if (!node || !(frame instanceof HTMLElement) || !field) {
-			return undefined;
-		}
-
-		const lift = (): void =>
-			node.style.setProperty(
-				"--slash-lift",
-				`${frame.getBoundingClientRect().top - field.getBoundingClientRect().top}px`,
-			);
-		lift();
-
-		if (typeof ResizeObserver !== "function") {
-			return undefined;
-		}
-
-		const sizes = new ResizeObserver(lift);
-		sizes.observe(field);
-		return () => sizes.disconnect();
-	}, []);
-	return (
+	return createPortal(
 		<div ref={panel} className="sumi-slash-menu" role="listbox" aria-label={MENU_LABEL} aria-hidden={isLeaving}>
 			<p className="sumi-slash-label">{MENU_LABEL}</p>
 			{isEmpty ? <p className="sumi-slash-none">{NO_MATCH.replace("{typed}", draft)}</p> : null}
@@ -74,6 +56,7 @@ export function SlashMenuPanel({ slash, draft, isLeaving, onGone }: SlashMenuPan
 					))}
 				</p>
 			)}
-		</div>
+		</div>,
+		host,
 	);
 }

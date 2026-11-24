@@ -932,17 +932,15 @@
 	--chat-gutter: max(var(--space-6), calc(50% - var(--studio-chat-content, var(--read-w)) / 2));
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-tray {
-	display: flex;
+:is(.wg-root, .wg-portal) .wg-studio-ai-composer-frame {
 	flex: 1 1 auto;
-	flex-direction: column;
-	box-sizing: border-box;
 	min-height: 0;
 	margin: var(--space-none) calc(var(--chat-gutter) - 5px) var(--space-3);
-	padding: var(--space-1) var(--space-1) var(--space-none);
-	border: 1px solid var(--divider);
-	border-radius: calc(var(--composer-box-radius) + var(--space-1) + var(--space-px));
-	background: var(--field);
+	--field-frame-radius: var(--composer-box-radius);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-above:empty {
+	display: none;
 }
 
 .wg-chat-app .wg-studio-ai-dock > .wg-studio-ai-composer {
@@ -968,10 +966,6 @@
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working {
 	overflow: hidden;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working:has(.sumi-slash-menu) {
-	overflow: visible;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field.is-working::after {
@@ -1023,11 +1017,6 @@
 	white-space: nowrap;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-field:has(.sumi-slash-menu:not([aria-hidden="true"])) {
-	border-start-start-radius: var(--radius-none);
-	border-start-end-radius: var(--radius-none);
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-under .sumi-composer-expand-toggle {
 	margin-inline-start: auto;
 }
@@ -1039,6 +1028,7 @@
 	gap: var(--space-none);
 	min-width: 0;
 	height: var(--space-7);
+	margin-bottom: calc(-1 * var(--field-frame-pad));
 	padding-inline: var(--space-2);
 	white-space: nowrap;
 }
