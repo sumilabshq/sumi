@@ -96,7 +96,19 @@
 	flex: 1 1 0;
 	min-width: var(--plate-min);
 	min-height: 0;
+	margin: var(--space-none) var(--frame-gap) var(--frame-gap) var(--space-none);
+	border-radius: var(--r-page);
+	background: var(--plate);
+	box-shadow: var(--shadow-page);
 	container: shell-app / inline-size;
+}
+
+.wg-shell:has([data-title-floats]) .wg-shell-app-zone {
+	margin-top: var(--header-h);
+}
+
+.wg-shell:has([data-title-floats="covering"]) .wg-shell-app-zone {
+	margin-left: var(--frame-gap);
 }
 
 .wg-shell-panel {
@@ -132,14 +144,16 @@
 	min-width: var(--plate-min);
 	min-height: 0;
 	overflow: hidden;
+	border-radius: var(--plate-top-left-radius, 0px) var(--plate-top-right-radius, 0px)
+		var(--plate-bottom-right-radius, 0px) var(--plate-bottom-left-radius, 0px);
 	background: var(--plate-fill, var(--plate));
-	box-shadow: var(--shadow-page);
 	transition: background-color var(--dur-base) var(--ease-emphasized);
 }
 
 html:has([data-browser-pages-live]),
 body:has([data-browser-pages-live]),
 .wg-studio.wg-shell:has([data-browser-pages-live]),
+.wg-shell-app-zone:has([data-browser-pages-live]),
 .wg-shell-plate:has([data-browser-pages-live]) {
 	background: transparent;
 }

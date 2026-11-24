@@ -6,10 +6,6 @@
 	min-height: 0;
 }
 
-.wg-shell:has([data-title-floats]) .sumi-flow-board {
-	margin-top: var(--header-h);
-}
-
 .sumi-flow-page {
 	position: absolute;
 	display: flex;
@@ -36,7 +32,10 @@
 	position: absolute;
 	display: flex;
 	align-items: center;
+	box-sizing: border-box;
 	min-width: 0;
+	padding: var(--space-none) var(--space-2);
+	background: var(--frame);
 }
 
 .sumi-flow-edge {
@@ -48,6 +47,7 @@
 .sumi-flow-edge[data-dir="row"] {
 	width: var(--space-2);
 	margin-left: calc(var(--space-1) * -1);
+	background: linear-gradient(var(--divider), var(--divider)) var(--space-1) 0 / var(--space-px) 100% no-repeat;
 	cursor: col-resize;
 }
 

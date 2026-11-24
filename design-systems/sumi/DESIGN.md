@@ -15,6 +15,7 @@ Sumi is a quiet tool that gives the screen to the work. Five aims, in this order
 Today's answers to the aims. Each may change when a better answer serves the same aims; none is a direction to push further.
 
 - **Soft corners from one scale.** A frame takes its corner from `--r-*` (4, 6, 8, 12, 14, 16px): a plate 14, a control 8, a chip 6. The mascot stays square: the clover is drawn in square cells. A corner written as a number in a sheet is debt; many frames still carry a literal 0 and move to the scale as they are touched.
+- **The page panel.** The approved Flows redesign (canvas `tab-215`) overrides square frames here: the page is one white panel on the grey `--frame`, radius 10 (`--r-page`), inset `--frame-gap` (8px) from the window, no border, `--shadow-page`; split panes share it with a 1px `--divider`.
 - **One surface, no shadows, lines edge to edge.** Depth and boxes compete with content.
 - **Icons in one colour.** An icon's margin lives in the icon itself, so an author can draw it to the box's full size.
 

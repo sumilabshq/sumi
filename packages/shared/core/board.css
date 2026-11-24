@@ -278,7 +278,7 @@
 
 	:root {
 		--invert: #ffffff;
-		--frame: #ffffff;
+		--frame: #f7f7f7;
 		--plate: #ffffff;
 		--soft: #f5f5f5;
 		--field: #fbfbfb;
@@ -321,6 +321,7 @@
 		--line-menu: rgba(0, 0, 0, 0.09);
 		--surface-menu: #ffffff;
 		--r-menu: 10px;
+		--r-page: 10px;
 		--blur-pop: none;
 		--blur-corner: blur(10px);
 		--viewer-ground: rgba(15, 15, 14, 0.94);
@@ -401,7 +402,7 @@
 		--sidebar-w: 280px;
 		--sidebar-min: 200px;
 		--sidebar-max: 420px;
-		--frame-gap: 0px;
+		--frame-gap: 8px;
 		--pad: 20px;
 		--side-pad: 16px;
 		--caret-w: 8px;
@@ -451,7 +452,7 @@
 	:root.dark,
 	.dark,
 	.theme-dark {
-		--frame: #000000;
+		--frame: #111214;
 		--plate: #000000;
 		--soft: #0e0e0e;
 		--field: #060606;
@@ -16742,7 +16743,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	flex: 1 1 0;
 	min-width: var(--plate-min);
 	min-height: 0;
+	margin: var(--space-none) var(--frame-gap) var(--frame-gap) var(--space-none);
+	border-radius: var(--r-page);
+	background: var(--plate);
+	box-shadow: var(--shadow-page);
 	container: shell-app / inline-size;
+}
+.wg-shell:has([data-title-floats]) .wg-shell-app-zone {
+	margin-top: var(--header-h);
+}
+.wg-shell:has([data-title-floats="covering"]) .wg-shell-app-zone {
+	margin-left: var(--frame-gap);
 }
 .wg-shell-panel {
 	display: flex;
@@ -16773,13 +16784,15 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	min-width: var(--plate-min);
 	min-height: 0;
 	overflow: hidden;
+	border-radius: var(--plate-top-left-radius, 0px) var(--plate-top-right-radius, 0px)
+		var(--plate-bottom-right-radius, 0px) var(--plate-bottom-left-radius, 0px);
 	background: var(--plate-fill, var(--plate));
-	box-shadow: var(--shadow-page);
 	transition: background-color var(--dur-base) var(--ease-emphasized);
 }
 html:has([data-browser-pages-live]),
 body:has([data-browser-pages-live]),
 .wg-studio.wg-shell:has([data-browser-pages-live]),
+.wg-shell-app-zone:has([data-browser-pages-live]),
 .wg-shell-plate:has([data-browser-pages-live]) {
 	background: transparent;
 }
@@ -21411,9 +21424,6 @@ body:has(.wg-cm-layer) {
 	min-width: 0;
 	min-height: 0;
 }
-.wg-shell:has([data-title-floats]) .sumi-flow-board {
-	margin-top: var(--header-h);
-}
 .sumi-flow-page {
 	position: absolute;
 	display: flex;
@@ -21437,7 +21447,10 @@ body:has(.wg-cm-layer) {
 	position: absolute;
 	display: flex;
 	align-items: center;
+	box-sizing: border-box;
 	min-width: 0;
+	padding: var(--space-none) var(--space-2);
+	background: var(--frame);
 }
 .sumi-flow-edge {
 	position: absolute;
@@ -21447,6 +21460,7 @@ body:has(.wg-cm-layer) {
 .sumi-flow-edge[data-dir="row"] {
 	width: var(--space-2);
 	margin-left: calc(var(--space-1) * -1);
+	background: linear-gradient(var(--divider), var(--divider)) var(--space-1) 0 / var(--space-px) 100% no-repeat;
 	cursor: col-resize;
 }
 .sumi-flow-edge[data-dir="column"] {

@@ -1,6 +1,6 @@
 :root {
 	--invert: #ffffff;
-	--frame: #ffffff;
+	--frame: #f7f7f7;
 	--plate: #ffffff;
 	--soft: #f5f5f5;
 	--field: #fbfbfb;
@@ -43,6 +43,7 @@
 	--line-menu: rgba(0, 0, 0, 0.09);
 	--surface-menu: #ffffff;
 	--r-menu: 10px;
+	--r-page: 10px;
 	--blur-pop: none;
 	--blur-corner: blur(10px);
 	--viewer-ground: rgba(15, 15, 14, 0.94);
@@ -123,7 +124,7 @@
 	--sidebar-w: 280px;
 	--sidebar-min: 200px;
 	--sidebar-max: 420px;
-	--frame-gap: 0px;
+	--frame-gap: 8px;
 	--pad: 20px;
 	--side-pad: 16px;
 	--caret-w: 8px;
@@ -173,7 +174,7 @@
 :root.dark,
 .dark,
 .theme-dark {
-	--frame: #000000;
+	--frame: #111214;
 	--plate: #000000;
 	--soft: #0e0e0e;
 	--field: #060606;
