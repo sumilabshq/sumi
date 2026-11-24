@@ -16,28 +16,33 @@ gets a new transport, never a new message vocabulary. A design or diff introduci
 once: `@sumi/contract` got `ask { service, input }` with a `storage` read/write service, five agents built on
 it, and all of it had to be redone.
 
-**CRITICAL — a plugin owns its data; the host knows no plugin.** A plugin owns its modules and what other
-plugins hand it through its API (`.apply((app) => api)`); only its own code reads that, and everyone else
-reaches the data through its module's queries, commands and events (`docs/architecture/plugins.md`). The
-host provides generic services (`backend`, `windows`, `shell`) and starts or draws only what plugins register
-through them; it never reads another plugin's API or configures a module with its data. `appHost({ apps })`
-did exactly that and was rewritten.
+**CRITICAL — a module owns its data; a plugin is the view and owns none; the host starts modules from declarations
+and names no specific plugin.** A module owns its data and is its one writer; everyone else reaches it through the
+module's queries, commands and events. A plugin is the view (blocks, slots, tab pages): it keeps only view state and
+what other plugins hand it through its API (`.apply((app) => api)`), lists the modules and plugins it uses in
+`peerDependencies` and reaches them by package name (`app.use("@sumi/tasks")`), and never starts a module or imports its
+`./implementation` (`docs/architecture/plugins.md`). The host provides generic services (`shell`, `agents`), starts every
+module an enabled plugin lists from the module's declaration and draws only what plugins register through the services;
+it never reads another plugin's API or configures a module with its data. `appHost({ apps })` did exactly that and was
+rewritten.
 
 **CRITICAL — the machine is reached only through the Sumi contract.** The file system and terminal
 sessions are the host's capabilities, and every plugin and app reaches them through `@sumi/contract`
 (`fileSystem.files.read`, `terminal.lines.output`, …), never through Tauri. They are not a reason a plugin "cannot" do
 something: a plugin that needs the machine sends a contract request. `sumi-host` and its services
-(`backend`, `windows`, `shell`) are part of that contract, the base every plugin builds on; a module
-runs in the background because a plugin registers it with `app.use(backend).module(...)`, and the host starts
-it. Nothing in host code names a plugin's module.
+(`shell`, `agents`) are part of that contract, the base every plugin builds on; a module
+runs in the background because an enabled plugin lists it in `peerDependencies`, and the host starts
+it from its declaration. Nothing in host code names a plugin's module.
 
-**CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
-`plugins/<name>/`, or `plugins/<group>/<name>/` inside a group folder that holds only plugins (`plugins/ai/`), and nothing else: `src/plugin.ts` (always; only the `plugin()` definition, no helper,
-schema or type), `src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by `data-framework generate`), every other file of `src/` placed as in a client package
+**CRITICAL — the plugin and module layout is a requirement, not a preference.** Every plugin is
+`plugins/<name>/`, or `plugins/<group>/<name>/` inside a group folder that holds only plugins (`plugins/ai/`), with a
+`package.json` (`name`, `version`, `peerDependencies`) and nothing else: `src/plugin.ts` (always; only the `plugin()`
+definition, no helper, schema or type), `src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by
+`data-framework generate`), every other file of `src/` placed as in a client package
 (`features/<feature>/ui/<block>/*.tsx` with the `.css` a block uses beside it, `features/<feature>/lib/*.ts`,
 `shared/ui/` and `shared/lib/` for what two features use, nothing else loose in `src/`, no feature importing
-another's `lib/`), and `data/<module>/` (when it owns modules: each a data module package). A module outside
-`data/`, a plugin outside `plugin.ts` or a file out of its place fails
+another's `lib/`). A plugin has no `data/` folder: every module is its own package, `modules/<name>/`. A module inside
+a plugin, a plugin declaration outside `plugin.ts` or a file out of its place fails
 `npm run test:plugin-layout`, and the `plugin-layout-reviewer` agent refuses the change; until the layout is
 right, no other quality of the change counts. `docs/architecture/plugins.md#layout`.
 
@@ -95,6 +100,8 @@ is `.ts` React with `h()` hyperscript, **no JSX there**; `tools/` is `.ts` too. 
 `unknown` and is narrowed by a guard.
 
 **The repository is an npm-workspaces monorepo, and the arrows between its parts point one way.**
+
+Where code stands today; packages move to plugins/ and modules/ as docs/architecture/plugins.md says.
 
 ```
 apps/tauri               FSL  the desktop host: windows, workspaces, the machine's capabilities; the product
@@ -273,4 +280,4 @@ scopes, same body as before, only the subject is short.
      Idioms that stay: `xOf(y)` for a derivation read off `y`, `isX`/`hasX`, `refuseX` answering a reason
      or null, `withX(y)`, `useX`, `createX`, `defineX`, `*Schema`. A request, event, subscriber or module is
      its camelCase constant with no kind suffix (`frameSides`, `toggleFrameSide`, `layout`); a module and a plugin
-     also take their name as one kebab string (`module("layout")`, `plugin("command-menu")`).
+     take their name from `name` in `package.json`; `module()` and `plugin()` take no string.

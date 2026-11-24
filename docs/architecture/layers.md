@@ -18,7 +18,7 @@ When two handlers of one feature need the same computation, it is a pure functio
 (`features/frame-sides/lib/side-looks.ts`, used by toggle, peek and conceal), never repeated in each handler
 nor hidden in a gateway; `shared/lib/` holds what two features use.
 
-**Bad: the handler forwards, a "store" in lib owns the state and the rules** (`packages/state/layout`, 2026-10-24):
+**Bad: the handler forwards, a "store" in lib owns the state and the rules** (`layout`, 2026-10-24):
 
 ```ts
 export const toggleFrameSide = command()

@@ -1,6 +1,6 @@
 # Legacy
 
-Two kinds of code predate these rules. Both leave by rewrite, one package at a time,, with the app running between pieces.
+Three kinds of code predate these rules. All leave by rewrite, one package at a time, with the app running between pieces.
 
 ## `legacy/` folders
 
@@ -30,3 +30,20 @@ Code written before any of these rules lives in a `legacy/` folder inside the ap
 | a `*Store` in `lib/` holding state and rules                                 | a gateway that stores, the rule in the handler, pure `lib`                               |
 
 Nothing new is written in the older shape.
+
+## The older plugin shape
+
+A package not moved to the model in [plugins.md](plugins.md) still has it. This section leaves when the last package moves.
+
+| Older shape                                                          | This architecture                                              |
+| -------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `plugins/<name>/data/<module>/`, `packages/domain`, `packages/state` | `modules/<name>/`                                              |
+| `.require(apps, chat)` on imported objects                           | `peerDependencies`; `app.use("@sumi/chat-plugin")` where used  |
+| a module's `.imports(users)` by object                               | `peerDependencies`; a handler sends through the contract       |
+| `app.use(backend).moduleOf(…, contract)` starts the module           | the host starts it from `peerDependencies`                     |
+| a plugin imports `"./implementation"`                                | only the host does                                             |
+| a view imports the contract's value                                  | `useModule("@sumi/tasks")`                                     |
+| two plugins of one id run under an alias `chat-2`                    | one package per name; a replacement says so in `replaces`      |
+| a module prefix on the wire, `chat-2.questions.agent.post`           | none: one module per name                                      |
+| `plugin("tasks")`, `module("tasks")`                                 | `plugin()`, `module()`: the name is read from `package.json`   |
+| wire names `tasks.tasks.create`, `chat.composer-model`               | `@sumi/tasks#tasks.create`, `@sumi/chat-plugin#composer-model` |

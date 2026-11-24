@@ -1,6 +1,6 @@
 # Views
 
-Views live in client packages (`packages/client/<name>`, `"level": "client"`). A page is a composition of blocks; a block is a plain React component that reads its own requests; a layout is a block that places slots and reads nothing; a package exports its root views from `shared/ui/index.ts`. A view decides nothing about data.
+Views live in plugins (`plugins/<name>`, [plugins.md](plugins.md#layout)) and in client packages (`packages/client/<name>`, `"level": "client"`). A page is a composition of blocks; a block is a plain React component that reads its own requests; a layout is a block that places slots and reads nothing; a package exports its root views from `shared/ui/index.ts`. A view decides nothing about data.
 
 ## Four rules
 
@@ -29,12 +29,13 @@ const layoutApp = startLayoutApp({ platform, workspaceId });
 </RuntimeProvider>;
 ```
 
-A block imports requests from the data module's `"./contract"` and reads them through the hooks; it never imports `"./implementation"`, a handler or a gateway. An adapter outside React that needs the same data uses the same started app (`layoutApp.send`, `layoutApp.routes`), never a second one.
+A block gets a module's requests with `useModule("@sumi/tasks")` and reads them through the hooks; it never imports `"./implementation"`, a handler or a gateway. An adapter outside React that needs the same data uses the same started app (`layoutApp.send`, `layoutApp.routes`), never a second one.
 
 ## Reading and writing
 
 ```tsx skip-check
 export function TaskList() {
+	const tasks = useModule("@sumi/tasks");
 	const open = useQuery(tasks.board.all, { status: "open" });
 	const stats = useOptionalQuery(tasks.board.trailer, {});
 	const complete = useCommand(tasks.person.accept);

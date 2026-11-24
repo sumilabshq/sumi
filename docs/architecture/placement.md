@@ -1,15 +1,15 @@
 # Where a file goes
 
-A file's place is decided by **what it is** and **who uses it**: a feature's own code stays in the feature; what two features use moves to `shared/`. There are two package shapes: a data module and a client package.
+A file's place is decided by **what it is** and **who uses it**: a feature's own code stays in the feature; what two features use moves to `shared/`. There are two package shapes: a data module and a client package. A plugin's `src/` has a client package's inside ([plugins.md](plugins.md#layout)).
 
 ## A data module
 
-`packages/domain/<name>/` or `packages/state/<name>/`, `"widgetarium": { "level": "domain" }`. Reference: `packages/state/layout`.
+`modules/<name>/`, `"widgetarium": { "level": "domain" }`. Reference: the `layout` module.
 
 ```
 server.ts                        generated, only for a Server or Anywhere module with non-public requests: export * from "./generated/server.js"; the "./server" entry
-module.ts                        export const <name> = module("<name>").on(…).provide(…): the module's decisions only
-package.json                     "exports" ("./contract", "./implementation", "./server" when generated) and "imports": { "#module": ./generated/command.ts }
+module.ts                        export const <name> = module().on(…).provide(…): the module's decisions only
+package.json                     "name", "version", "peerDependencies" (the modules it sends to), "exports" ("./contract", "./implementation", "./server" when generated) and "imports": { "#module": ./generated/command.ts }
 features/<feature>/requests.ts   the feature's requests, each with its handler
 features/<feature>/lib/          pure functions the feature's handlers share
 shared/lib/                      pure functions two features use
@@ -29,10 +29,10 @@ No `ui/`, no `.tsx`, no React. No empty folder is created ahead. The top holds n
 
 A data module and a feature are laid by the CLI, never by hand; what it lays is the reference shape.
 
-| Command                                                                               | Lays                                                                                                                                                                                                                                                                                                                                                                       |
-| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data-framework add module <name> --on Server\|Device\|Anywhere [--in domain\|state]` | `packages/<layer>/<name>/` with `package.json` (`"./contract"` and `"./implementation"`, the latter only under `"server"` for a server module), `tsconfig.json`, `LICENSE`, `module.ts` (`module("<name>")`, a server module guarded by `AuthenticatedGuard`) and the picker `gateways/<name>-parts/`; adds the folder to the workspaces and `test:types`, runs `generate` |
-| `data-framework add feature <module>/<feature> [--query <name>] [--command <name>]`   | `features/<feature>/requests.ts`, `shared/schema/<feature>.schema.ts`, `gateways/<feature>/` (the abstract class and `memory.gateway.ts`) wired into the picker, the requests marked `.public()`, `tools/<module>-<feature>-checks.ts` starting the module `({ injects: fakes })`; runs `generate`                                                                         |
+| Command                                                                             | Lays                                                                                                                                                                                                                                                                                                                                                      |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-framework add module <name> --on Server\|Device\|Anywhere`                    | `modules/<name>/` with `package.json` (`"./contract"` and `"./implementation"`, the latter only under `"server"` for a server module), `tsconfig.json`, `LICENSE`, `module.ts` (`module()`, a server module guarded by `AuthenticatedGuard`) and the picker `gateways/<name>-parts/`; adds the folder to the workspaces and `test:types`, runs `generate` |
+| `data-framework add feature <module>/<feature> [--query <name>] [--command <name>]` | `features/<feature>/requests.ts`, `shared/schema/<feature>.schema.ts`, `gateways/<feature>/` (the abstract class and `memory.gateway.ts`) wired into the picker, the requests marked `.public()`, `tools/<module>-<feature>-checks.ts` starting the module `({ injects: fakes })`; runs `generate`                                                        |
 
 Both refuse an existing folder, feature or package name and a bad name, writing nothing; a request name is camelCase letters with no kind suffix (`--query tasks --command addTask`). Run the check the feature got with `node --single-threaded --import ./tools/loader/register.mts tools/<module>-<feature>-checks.ts`.
 
@@ -90,7 +90,9 @@ There is no `"./gateways"`: the module picks its gateways from the facts it is g
 | storage or an outside system (memory, a file, Tauri, Stripe)    | `gateways/<gateway>/`: the abstract class and one file per implementation |
 | which implementation a platform gets                            | `gateways/<module>-parts/`                                                |
 | a module's placement, guards and `provide`                      | `module.ts`                                                               |
-| a block, a layout, a root view                                  | a client package's `ui/`                                                  |
+| a business area's logic and data                                | `modules/<name>/`                                                         |
+| a view drawn in the window, and the slots it marks              | `plugins/<name>/`                                                         |
+| a block, a layout, a root view                                  | a client package's `ui/`, a plugin's `features/` and `shared/`            |
 | a hook or helper a block uses                                   | a client package's `lib/`                                                 |
 | behavior with no domain (drag, scroll, focus)                   | `packages/shared/behaviors`                                               |
 | a drawn part with no domain                                     | the kit                                                                   |
@@ -99,7 +101,7 @@ There is no `"./gateways"`: the module picks its gateways from the facts it is g
 
 ## Questions an agent asks, answered
 
-**Another module needs this request.** Name the module in `.imports(...)`, import the request from its `"./contract"` (or `"./server"` for a non-public one), and call `send(billing.charges.charge, input)` in the handler, through the module's namespace ([requests.md](requests.md#sending-to-another-module)). Never import the other module's `module.ts`, handler or gateway.
+**Another module needs this request.** List the module in `peerDependencies`, import the request from its `"./contract"` (or `"./server"` for a non-public one), and call `send(billing.charges.charge, input)` in the handler, through the module's namespace ([requests.md](requests.md#sending-to-another-module)). Never import the other module's `module.ts`, handler or gateway.
 
 **Two handlers of one feature compute the same thing.** It is a pure function in that feature's `lib/`. Two features → `shared/lib/`. A feature never imports another feature's `lib/`.
 
