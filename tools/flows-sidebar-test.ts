@@ -422,6 +422,29 @@ async function dragging(): Promise<void> {
 	});
 }
 
+async function emptySpaceMenu(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		await page.ask(
+			`document.querySelector("section[aria-label=Flows]").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 400 }))`,
+		);
+		await waited(300);
+		check(
+			"right-clicking empty space offers New flow and New folder",
+			await page.ask(`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`),
+			["New flow", "New folder"],
+		);
+		await page.ask(clickText("[role=menuitem]", "New folder"));
+		await waited(SETTLE_MS * 2);
+		check(
+			"New folder starts renaming with the name selected",
+			await page.ask(
+				`(() => { const input = document.querySelector(".sumi-flows-field-input"); return [input?.value, document.activeElement === input, input?.selectionStart, input?.selectionEnd]; })()`,
+			),
+			["New folder", true, 0, 10],
+		);
+	});
+}
+
 async function editingIcon(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await page.ask(
@@ -466,6 +489,7 @@ await inboxRows();
 await inboxOpening();
 await inboxClearing();
 await rowsAndFolders();
+await emptySpaceMenu();
 await renaming();
 await hoverPanel();
 await hiding();

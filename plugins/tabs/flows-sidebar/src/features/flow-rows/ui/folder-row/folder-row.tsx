@@ -2,6 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import type { FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FolderRowFacts } from "../../../../shared/lib/flow-facts.js";
+import { useFolderRenaming } from "../../../../shared/lib/folder-rename-request.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 import { ColorDots } from "../row-field/color-dots.js";
 import { RowField } from "../row-field/row-field.js";
@@ -20,7 +21,7 @@ export interface FolderRowViewProps {
 }
 
 export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): ReactElement {
-	const [isRenaming, setIsRenaming] = useState(false);
+	const [isRenaming, setIsRenaming] = useFolderRenaming(folder.id);
 	const [opensPicker, setOpensPicker] = useState(false);
 	const addFlow = (): void => {
 		acts.create(NEW_FLOW, { folderId: folder.id, before: null });

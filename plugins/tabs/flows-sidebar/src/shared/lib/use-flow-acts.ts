@@ -3,6 +3,8 @@ import { appHost } from "@widgetarium/app-host/contract";
 import { navigation } from "@widgetarium/navigation/contract";
 import type { FlowIcon, GroupHue } from "@widgetarium/navigation/contract";
 
+import { requestFolderRename } from "./folder-rename-request.js";
+
 export type RowKind = "flow" | "folder";
 
 export interface FlowPlace {
@@ -21,6 +23,7 @@ export interface FlowActs {
 	readonly setFolderColor: (id: string, color: GroupHue | null) => void;
 	readonly toggleFolder: (id: string) => void;
 	readonly removeFolder: (id: string) => void;
+	readonly createFolder: (name: string) => void;
 }
 
 export function useFlowActs(): FlowActs {
@@ -36,6 +39,7 @@ export function useFlowActs(): FlowActs {
 	const setFolderColor = useCommand(navigation.folders.setColor);
 	const toggleFolder = useCommand(navigation.folders.toggle);
 	const removeFolder = useCommand(navigation.folders.remove);
+	const createFolder = useCommand(navigation.folders.create);
 	const open = (flowId: string): void => void openFlow.run({ flowId });
 	return {
 		open,
@@ -48,5 +52,7 @@ export function useFlowActs(): FlowActs {
 		setFolderColor: (id, color) => void setFolderColor.run({ id, color }),
 		toggleFolder: (id) => void toggleFolder.run({ id }),
 		removeFolder: (id) => void removeFolder.run({ id }),
+		createFolder: (name) =>
+			void createFolder.run({ name, baseDir: null }).then((made) => made.ok && requestFolderRename(made.output.folderId)),
 	};
 }

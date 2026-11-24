@@ -8,6 +8,7 @@ import type { PaneBoardViews } from "@sumi/sumi-host-plugin";
 import { NewChatShortcut } from "../../../app-host/ui/new-chat-shortcut/new-chat-shortcut.js";
 import { LinkOpener } from "../../../app-host/ui/link-opener/link-opener.js";
 import { layout } from "@widgetarium/layout/contract";
+import { hushesNativeMenu } from "../../lib/hushes-native-menu.js";
 import { useWritesChromeLeft } from "../../lib/use-writes-chrome-left.js";
 import { useWritesFrameWidths } from "../../lib/use-writes-frame-widths.js";
 import { WindowLayers } from "./window-layers.js";
@@ -33,6 +34,7 @@ export function StudioFrame({ frame, chromeLeftPx, panes, panel }: StudioFramePr
 				ref={frame}
 				className={`${FRAME_CLASS} sumi-ink-${ink}`}
 				data-shell-frame=""
+				onContextMenu={hushesNativeMenu}
 			>
 				<Slot loading={null}>
 					<TitleBar />
