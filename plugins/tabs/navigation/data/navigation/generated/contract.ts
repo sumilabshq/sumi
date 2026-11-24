@@ -374,6 +374,21 @@ export const OpenFlowTabAskSchema = FlowPaneAskSchema.extend({
 	address: z.string().nullable(),
 });
 
+export const LinkTabPlaceSchema = z.enum(["beside", "split"]);
+
+export const OpenLinkTabAskSchema = z.object({
+	at: TabsAskSchema,
+	homeId: z.string().min(1),
+	app: PageAppSchema,
+	address: z.string(),
+	place: LinkTabPlaceSchema,
+});
+
+export const LinkTabOpenedSchema = z.object({
+	id: z.string().nullable(),
+	effects: z.array(TabEffectSchema),
+});
+
 export type FlowIcon = z.infer<typeof FlowIconSchema>;
 
 export type FlowStatus = z.infer<typeof FlowStatusSchema>;
@@ -1259,6 +1274,11 @@ export const navigation = moduleContract("navigation", Server, {
 			.public()
 			.input(OpenFlowTabAskSchema)
 			.output(OpenedTabSettledSchema)
+			.idempotencyKey(Repeatable)),
+		openLinkTab: named("flows.open-link-tab", command()
+			.public()
+			.input(OpenLinkTabAskSchema)
+			.output(LinkTabOpenedSchema)
 			.idempotencyKey(Repeatable)),
 		rename: named("flows.rename", command()
 			.public()

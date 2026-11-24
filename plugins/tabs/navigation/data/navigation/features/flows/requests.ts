@@ -16,9 +16,11 @@ import {
 	FlowDetailSchema,
 	FlowStartedSchema,
 	FlowsSidebarSchema,
+	LinkTabOpenedSchema,
 	MoveFlowAskSchema,
 	OpenFlowAskSchema,
 	OpenFlowTabAskSchema,
+	OpenLinkTabAskSchema,
 	RemoveFlowAskSchema,
 	RenameAskSchema,
 	SetIconAskSchema,
@@ -30,6 +32,7 @@ import { deleteFlowMove } from "./lib/flow-delete-plans.js";
 import { duplicateFlowMove } from "./lib/flow-duplicate-plans.js";
 import { openFlowMove } from "./lib/flow-open-plans.js";
 import { openFlowTabMove } from "./lib/flow-tab-plans.js";
+import { openLinkTabMove } from "./lib/link-tab-plans.js";
 import { createFlowPlan, moveFlowPlan, removeFlowMove, renameFlowPlan, setFlowIconPlan } from "./lib/flow-plans.js";
 import { archiveFlowPlan, unarchiveFlowPlan } from "./lib/flow-archive-plans.js";
 import { archivedOf, flowDetailOf, sidebarOf } from "./lib/flow-reads.js";
@@ -91,6 +94,16 @@ export const openTab = command()
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tabs, placedApps }) => {
 		const { effects, extra } = answered(await tabs.movePlaces(openFlowTabMove(ask, placedApps.placedApps())));
+		return { id: extra, effects };
+	});
+
+export const openLinkTab = command()
+	.public()
+	.input(OpenLinkTabAskSchema)
+	.output(LinkTabOpenedSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs, placedApps }) => {
+		const { effects, extra } = answered(await tabs.movePlaces(openLinkTabMove(ask, placedApps.placedApps())));
 		return { id: extra, effects };
 	});
 

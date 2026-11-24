@@ -222,3 +222,18 @@ export const OpenFlowTabAskSchema = FlowPaneAskSchema.extend({
 	app: PageAppSchema,
 	address: z.string().nullable(),
 });
+
+export const LinkTabPlaceSchema = z.enum(["beside", "split"]);
+
+export const OpenLinkTabAskSchema = z.object({
+	at: TabsAskSchema,
+	homeId: z.string().min(1),
+	app: PageAppSchema,
+	address: z.string(),
+	place: LinkTabPlaceSchema,
+});
+
+export const LinkTabOpenedSchema = z.object({
+	id: z.string().nullable(),
+	effects: z.array(TabEffectSchema),
+});

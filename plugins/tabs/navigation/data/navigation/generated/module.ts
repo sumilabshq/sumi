@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { navigation as definition } from "../module.js";
 import { board as flowPanesBoard, closePane, focus, moveTab, rereadBoardOnFlows, rereadBoardOnTabs, resize as flowPanesResize, showTab, split } from "../features/flow-panes/requests.js";
-import { adoptChats, archive, archived, create as flowsCreate, deleteFlow, duplicate as flowsDuplicate, move as flowsMove, one, open, openTab as flowsOpenTab, remove as flowsRemove, rename as flowsRename, rereadFlowMarks, rereadFlows, setIcon as flowsSetIcon, sidebar as flowsSidebar, unarchive } from "../features/flows/requests.js";
+import { adoptChats, archive, archived, create as flowsCreate, deleteFlow, duplicate as flowsDuplicate, move as flowsMove, one, open, openLinkTab, openTab as flowsOpenTab, remove as flowsRemove, rename as flowsRename, rereadFlowMarks, rereadFlows, setIcon as flowsSetIcon, sidebar as flowsSidebar, unarchive } from "../features/flows/requests.js";
 import { create as foldersCreate, remove as foldersRemove, rename as foldersRename, setBaseDir, setColor, setIcon as foldersSetIcon, toggle } from "../features/folders/requests.js";
 import { clear, rereadInbox, rereadInboxMarks, rows as inboxRows, undoClear } from "../features/inbox/requests.js";
 import { aim, board as panesBoard, close, closeShowingPanes, closeShown as panesCloseShown, dropGoneTabs, openShown, place as panesPlace, placementPreview, rereadBoard, resizeSplit, showChat, showInTarget } from "../features/panes/requests.js";
@@ -60,6 +60,7 @@ export const navigation = handledModule(definition, [
 	named("flows.move", flowsMove),
 	named("flows.one", one),
 	named("flows.open", open),
+	named("flows.open-link-tab", openLinkTab),
 	named("flows.open-tab", flowsOpenTab),
 	named("flows.remove", flowsRemove),
 	named("flows.rename", flowsRename),

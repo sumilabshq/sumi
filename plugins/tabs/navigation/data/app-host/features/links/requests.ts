@@ -1,101 +1,110 @@
 import { Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
+import { navigation } from "@widgetarium/navigation/contract";
 import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
-import type { LinkTarget } from "@widgetarium/core/engine/sumi-link.js";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { apps as appsContract } from "@sumi/apps/contract";
 import { openTabSettled, showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
+import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { AppKindSchema } from "../../shared/schema/app-tab.schema.js";
 import type { AppKind } from "../../shared/schema/app-tab.schema.js";
 import { LinkToOpenSchema } from "../../shared/schema/link.schema.js";
+import type { z } from "zod";
 
-interface LinkOpening {
-	readonly target: LinkTarget;
-	readonly opensNew: boolean;
-	readonly home: string | null;
-	readonly reach: TabsReach;
-}
+type LinkToOpen = z.infer<typeof LinkToOpenSchema>;
+
+type LinkDestination =
+	| { readonly kind: "tab"; readonly id: string }
+	| { readonly kind: "app"; readonly app: AppKind; readonly address: string };
 
 const BROWSER_APP: AppKind = "browser";
 const BROWSER_PAGE_APP: AppKind = "browser-page";
 const WEB_SCHEMES: ReadonlySet<string> = new Set(["https:", "http:"]);
 const NO_SUCH_APP = "Sumi has no app named {app}";
-const OPENED = "[widgetarium] link {href} opened{where}";
+const OPENED = "[widgetarium] link {href} opened {where}";
 
 export const openLink = command()
 	.public()
 	.input(LinkToOpenSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ href, opensNew, home }, { send, emit, ...injects }) => {
+	.handle(async (link, { send, emit, ...injects }) => {
 		const reach = { injects, send, told: () => emit(tabsSettled) };
-		const under = opensNew ? null : home;
-		const refusal = isWebPage(href)
-			? await openWebPageLinked(href, { opensNew, home: under }, reach)
-			: await openSumiLinked(href, { opensNew, home: under }, reach);
+		const destination = await destinationOf(reach, link.href);
 
-		if (refusal !== null) {
-			return refuse(refusal);
+		if (typeof destination === "string") {
+			return refuse(destination);
 		}
 
-		console.info(
-			OPENED.replace("{href}", JSON.stringify(href)).replace(
-				"{where}",
-				opensNew ? " in a new tab" : under === null ? "" : ` as a sub-page of ${under}`,
-			),
-		);
+		const where = await openDestination(reach, destination, link);
+		console.info(OPENED.replace("{href}", JSON.stringify(link.href)).replace("{where}", where));
 	});
+
+async function destinationOf(reach: TabsReach, href: string): Promise<LinkDestination | string> {
+	if (isWebPage(href)) {
+		const app = (await isKnownApp(reach, BROWSER_PAGE_APP)) ? BROWSER_PAGE_APP : BROWSER_APP;
+		return { kind: "app", app, address: href };
+	}
+
+	const read = linkTargetOf(href);
+
+	if (!read.ok) {
+		return read.reason;
+	}
+
+	if (read.target.kind === "chat" || read.target.kind === "tab") {
+		return { kind: "tab", id: read.target.id };
+	}
+
+	const app = AppKindSchema.safeParse(read.target.app);
+	return app.success && (await isKnownApp(reach, read.target.app))
+		? { kind: "app", app: app.data, address: read.target.address }
+		: NO_SUCH_APP.replace("{app}", read.target.app);
+}
+
+async function openDestination(reach: TabsReach, destination: LinkDestination, link: LinkToOpen): Promise<string> {
+	if (destination.kind === "tab") {
+		await showTabSettled(reach, { id: destination.id });
+		return `by showing ${destination.id}`;
+	}
+
+	if (link.home !== null) {
+		const beside = await openBesideHome(reach, { ...destination, home: link.home, place: link.place });
+
+		if (beside !== null) {
+			return `as ${beside} ${link.place} ${link.home}`;
+		}
+	}
+
+	return openAsOldTab(reach, destination, link);
+}
+
+interface BesideHome {
+	readonly app: AppKind;
+	readonly address: string;
+	readonly home: string;
+	readonly place: LinkToOpen["place"];
+}
+
+async function openBesideHome(reach: TabsReach, { app, address, home, place }: BesideHome): Promise<string | null> {
+	const opened = await settleAsked(reach, (at) =>
+		reach.send(navigation.flows.openLinkTab, { at, homeId: home, app, address, place }),
+	);
+	return opened.id;
+}
+
+async function openAsOldTab(
+	reach: TabsReach,
+	{ app, address }: Extract<LinkDestination, { kind: "app" }>,
+	{ opensNew, home }: LinkToOpen,
+): Promise<string> {
+	const under = opensNew ? null : home;
+	await openTabSettled(reach, { app, list: under, groupId: null, address, show: true, reusesHeld: !opensNew });
+	return opensNew ? "in a new tab" : under === null ? "" : `as a sub-page of ${under}`;
+}
 
 function isWebPage(href: string): boolean {
 	return WEB_SCHEMES.has(URL.parse(href)?.protocol ?? "");
-}
-
-interface LinkWhere {
-	readonly opensNew: boolean;
-	readonly home: string | null;
-}
-
-async function openSumiLinked(href: string, where: LinkWhere, reach: TabsReach): Promise<string | null> {
-	const read = linkTargetOf(href);
-	return read.ok ? openTargetLinked({ target: read.target, ...where, reach }) : read.reason;
-}
-
-async function openTargetLinked({ target, opensNew, home, reach }: LinkOpening): Promise<string | null> {
-	if (target.kind === "chat" || target.kind === "tab") {
-		await showTabSettled(reach, { id: target.id });
-		return null;
-	}
-
-	const app = AppKindSchema.safeParse(target.app);
-
-	if (!app.success || !(await isKnownApp(reach, target.app))) {
-		return NO_SUCH_APP.replace("{app}", target.app);
-	}
-
-	await openAppTab(reach, { app: app.data, address: target.address, opensNew, home });
-	return null;
-}
-
-async function openWebPageLinked(href: string, where: LinkWhere, reach: TabsReach): Promise<null> {
-	const app = (await isKnownApp(reach, BROWSER_PAGE_APP)) ? BROWSER_PAGE_APP : BROWSER_APP;
-	await openAppTab(reach, { app, address: href, ...where });
-	return null;
-}
-
-interface AppTabAsk extends LinkWhere {
-	readonly app: AppKind;
-	readonly address: string;
-}
-
-async function openAppTab(reach: TabsReach, { app, address, opensNew, home }: AppTabAsk): Promise<void> {
-	await openTabSettled(reach, {
-		app,
-		list: home,
-		groupId: null,
-		address,
-		show: true,
-		reusesHeld: !opensNew,
-	});
 }
 
 async function isKnownApp(reach: TabsReach, app: string): Promise<boolean> {

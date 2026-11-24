@@ -8,6 +8,7 @@ import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navig
 import type {
 	FlowFolder,
 	FlowNode,
+	FlowPane,
 	FlowsDoc,
 } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { folderColorsFillMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
@@ -724,6 +725,36 @@ async function moveBeforeItselfChecks(): Promise<void> {
 	check("moving a flow before itself leaves it where it stands", (await flowsIn(stand)).looseFlowIds, before);
 }
 
+async function linkTabChecks(): Promise<void> {
+	const stand = standOver(true);
+	const at = atOf(MAIN);
+	const chat = chatIdOf(1);
+	const paneOfChat = async (): Promise<FlowPane | undefined> =>
+		flowPanesOf((await flowsIn(stand)).flows.find(({ id }) => id === chatFlow(1)) ?? emptyFlow()).find(({ tabIds }) =>
+			tabIds.includes(chat),
+		);
+	const before = (await paneOfChat())?.tabIds ?? [];
+	const link = { at, homeId: chat, app: "canvas", address: "canvas://link-check" } as const;
+	const opened = await stand.app.send(navigation.flows.openLinkTab, { ...link, place: "beside" });
+	const after = await paneOfChat();
+	check(
+		"a link opens a shown tab right after the chat, in the chat's pane, and the chat stays",
+		[after?.tabIds, after?.activeTabId],
+		[[chat, opened.id, ...before.slice(1)], opened.id],
+	);
+	const again = await stand.app.send(navigation.flows.openLinkTab, { ...link, place: "beside" });
+	check("a link already open in the flow shows that tab", [again.id, (await paneOfChat())?.tabIds.length], [opened.id, before.length + 1]);
+	const split = await stand.app.send(navigation.flows.openLinkTab, { ...link, address: "canvas://split-check", place: "split" });
+	const flow = (await flowsIn(stand)).flows.find(({ id }) => id === chatFlow(1)) ?? emptyFlow();
+	const root = flow.layout.root;
+	check(
+		"Open in split puts the new tab in a new pane to the right of the chat's pane",
+		[root.kind === "split" ? root.dir : null, root.kind === "split" ? root.children.length : 0, flowPanesOf(flow).at(-1)?.tabIds],
+		["row", 2, [split.id]],
+	);
+	check("every law holds after the link opens", await lawsOf(stand), []);
+}
+
 function never(): never {
 	throw new Error("the fixture holds no tab-94");
 }
@@ -753,5 +784,6 @@ await archiveChecks();
 await deleteChecks();
 await folderDeleteChecks();
 await ungroupChecks();
+await linkTabChecks();
 console.log(tally.failed ? `flows commands: ${tally.failed} check(s) failed` : "flows commands: all checks passed");
 process.exit(tally.failed ? 1 : 0);
