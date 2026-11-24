@@ -54,6 +54,7 @@ interface WorldSpec {
 export interface SidebarWorld {
 	readonly app: Runtime;
 	readonly sidePeeks: MemorySidePeeksGateway;
+	spoilUndo(): Promise<void>;
 }
 
 export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld> {
@@ -98,7 +99,16 @@ export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld>
 			appsContract({ over: core }),
 		)
 		.start({ platform: "browser", scope: { workspaceId: "fixture" } });
-	return { app, sidePeeks };
+	return {
+		app,
+		sidePeeks,
+		spoilUndo: () =>
+			places.movePlaces((now) => ({
+				next: now.flows === null ? null : { tabs: now.tabs, flows: { ...now.flows, inboxUndo: null } },
+				reason: "harness: the undo offer was spent elsewhere",
+				answer: undefined,
+			})),
+	};
 }
 
 const NOTE = (title: string): ChatSpec => ({ title, mark: "none" });

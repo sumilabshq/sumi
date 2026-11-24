@@ -125,6 +125,40 @@ async function inboxClearing(): Promise<void> {
 			"Sprint board",
 		]);
 	});
+	await inInbox("light", "inbox", async (page) => {
+		const label = `document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent`;
+		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
+		await waited(SETTLE_MS);
+		await page.ask(`document.querySelector("[aria-label='Hide sidebar']").click()`);
+		await waited(SETTLE_MS);
+		await page.ask(`document.querySelector("[aria-label='Show sidebar']").click()`);
+		await waited(SETTLE_MS);
+		check("the Undo offer survives hiding and docking the sidebar", await page.ask(label), "InboxUndo");
+		await page.ask(clickText(".sumi-flows-label-action", "Undo"));
+		await waited(SETTLE_MS);
+		check("and still undoes after it", await page.ask(namesOf(INBOX)), [
+			"Composer redesign",
+			"Design system",
+			"Sprint board",
+		]);
+	});
+	await inInbox("light", "inbox", async (page) => {
+		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
+		await waited(SETTLE_MS);
+		await page.ask(`window.__spoilUndo()`);
+		await page.ask(clickText(".sumi-flows-label-action", "Undo"));
+		await waited(SETTLE_MS);
+		check(
+			"a refused Undo says so and keeps the offer",
+			await page.ask(`document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent`),
+			"Could not undoUndo",
+		);
+		check(
+			"a refused Undo is logged with its reason",
+			page.failures().some((failure) => failure.includes("inbox undo refused: nothing to undo")),
+			true,
+		);
+	});
 	await inInbox("light", "finished", async (page) => {
 		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
 		await waited(SETTLE_MS);
@@ -256,6 +290,72 @@ async function hiding(): Promise<void> {
 	});
 }
 
+const FLOAT = ".sumi-flows-float";
+const AWAY = [700, 300] as const;
+const PEEK_SETTLE_MS = 700;
+const CARD_STILL_OPEN_MS = 400;
+
+async function peeked(page: AskedPage): Promise<void> {
+	await page.hover(2, 300);
+	await waited(SETTLE_MS);
+	check("the left edge reveals the sidebar", await page.ask(count(FLOAT)), 1);
+}
+
+async function peekHolds(): Promise<void> {
+	await inInbox("light", "hidden", async (page) => {
+		await peeked(page);
+		await page.ask(
+			`${rowOf(FLOWS, "Plugin layout")}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`,
+		);
+		await waited(300);
+		await page.hover(...AWAY);
+		await waited(PEEK_SETTLE_MS);
+		check("an open row menu holds the peek", await page.ask(count(FLOAT)), 1);
+		await page.press(...AWAY);
+		await waited(PEEK_SETTLE_MS);
+		check("closing the menu lets the peek conceal", await page.ask(count(FLOAT)), 0);
+	});
+	await inInbox("light", "hidden", async (page) => {
+		await peeked(page);
+		await doubleClickOn(page, "section[aria-label=Flows] .sumi-flows-row-main", "Sprint board");
+		await waited(300);
+		await page.hover(...AWAY);
+		await waited(PEEK_SETTLE_MS);
+		check("a rename in progress holds the peek", await page.ask(count(FLOAT)), 1);
+		await page.pressEnter();
+		await waited(PEEK_SETTLE_MS);
+		check("ending the rename lets the peek conceal", await page.ask(count(FLOAT)), 0);
+	});
+	await inInbox("light", "hidden", async (page) => {
+		await peeked(page);
+		const folderFlow = ".sumi-flows-folder .sumi-flows-row[data-kind=flow]";
+		await hoverOn(page, folderFlow, "Composer redesign", 800);
+		check("the chats card opens", await page.ask(count(".sumi-flows-chats")), 1);
+		const [x, y] = (await page.ask(
+			`(() => { const box = document.querySelector(".sumi-flows-chats").getBoundingClientRect(); return [box.left + 10, box.top + 10]; })()`,
+		)) as [number, number];
+		await page.hover(x, y);
+		await waited(200);
+		await page.hover(...AWAY);
+		await waited(CARD_STILL_OPEN_MS);
+		check("an open chats card holds the peek past the conceal delay", await page.ask(count(FLOAT)), 1);
+		await waited(PEEK_SETTLE_MS);
+		check("closing the card lets the peek conceal", await page.ask(count(FLOAT)), 0);
+	});
+	await inInbox("light", "hidden", async (page) => {
+		await peeked(page);
+		const dragEvent = (type: string): string =>
+			`${rowOf(".sumi-flows-folder .sumi-flows-row[data-kind=flow]", "Plugin layout")}.dispatchEvent(new DragEvent("${type}", { bubbles: true, cancelable: true, dataTransfer: new DataTransfer() }))`;
+		await page.ask(dragEvent("dragstart"));
+		await page.hover(...AWAY);
+		await waited(PEEK_SETTLE_MS);
+		check("a Flow drag holds the peek", await page.ask(count(FLOAT)), 1);
+		await page.ask(dragEvent("dragend"));
+		await waited(PEEK_SETTLE_MS);
+		check("ending the drag lets the peek conceal", await page.ask(count(FLOAT)), 0);
+	});
+}
+
 async function dragging(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await page.ask(dragged("Plugin layout", "Client project"));
@@ -300,6 +400,7 @@ await rowsAndFolders();
 await renaming();
 await hoverPanel();
 await hiding();
+await peekHolds();
 await dragging();
 await deleting();
 

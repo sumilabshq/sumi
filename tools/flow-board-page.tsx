@@ -11,6 +11,7 @@ import type { PaneBoardProps } from "../plugins/sumi-host/src/index.ts";
 import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
 import { FlowWindowContext } from "../plugins/tabs/flow-strip/src/shared/lib/flow-window-context.ts";
 import { FlowStrip } from "../plugins/tabs/flow-strip/src/features/flow-header/ui/flow-strip/flow-strip.tsx";
+import { RenameField } from "../plugins/tabs/flow-strip/src/features/pane-tabs/ui/rename-field/rename-field.tsx";
 import { FlowBoard } from "../plugins/tabs/flow-board/src/features/flow-board/ui/flow-board/flow-board.tsx";
 import { FRAME_LIMITS } from "../packages/state/layout/shared/lib/frame-bounds.ts";
 import { studioFakesOf } from "./app-host-fixture.ts";
@@ -19,12 +20,16 @@ import { BARE_SCREEN } from "./places-fixture.ts";
 
 declare global {
 	interface Window {
+		__renames: (string | null)[];
 		__demo: {
 			readonly mounts: Record<string, number>;
 			readonly layout: () => Promise<unknown>;
 		};
 	}
 }
+
+const renames: (string | null)[] = [];
+window.__renames = renames;
 
 const FLOW = chatFlow(3);
 const CHAT = "chat-03";
@@ -143,5 +148,7 @@ void arrange().then(() => {
 		throw new Error("flow board page: no #demo");
 	}
 
-	createRoot(holder).render(<Demo />);
+	createRoot(holder).render(
+		scenario === "rename" ? <RenameField initial="Sub page" onDone={(label) => renames.push(label)} /> : <Demo />,
+	);
 });

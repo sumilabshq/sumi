@@ -160,6 +160,63 @@ async function behaviourChecks(): Promise<void> {
 	stop();
 }
 
+async function renameChecks(): Promise<void> {
+	const field = "document.querySelector(\"input[aria-label='Tab name']\")";
+	const typed = async (key: "Escape" | "Enter"): Promise<unknown> => {
+		const { page, stop } = await opened("light", "rename");
+		await page.typeText("Renamed");
+
+		if (key === "Enter") {
+			await page.pressEnter();
+		} else {
+			await page.ask(`${field}.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+		}
+
+		await page.ask(`${field}.blur()`);
+		await waited(200);
+		const renames = await asked(page, "window.__renames");
+		stop();
+		return renames;
+	};
+	check("Escape never commits, even when the field then blurs", await typed("Escape"), [null]);
+	check("Enter commits once, even when the field then blurs", await typed("Enter"), ["Renamed"]);
+}
+
+async function keyboardChecks(): Promise<void> {
+	const { page, stop } = await opened("light", "side");
+	await page.ask(
+		"document.querySelector(\"[data-flow-tab='sub-3-1']\").dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 0, clientY: 0 }))",
+	);
+	await waited(500);
+	const menu = await asked<{ x: number }>(
+		page,
+		"(() => { const r = document.querySelector('[role=menu]').getBoundingClientRect(); return { x: r.x }; })()",
+	);
+	check("a keyboard-opened tab menu opens at the tab, not the corner", menu.x > 100, true);
+	stop();
+	await arrowChecks();
+}
+
+async function arrowChecks(): Promise<void> {
+	const { page, stop } = await opened("light", "side");
+	const row = "[data-flow-pane-row='pane-3']";
+	const key = (name: string): string =>
+		`document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: "${name}", bubbles: true, cancelable: true }))`;
+	const focused = "document.activeElement.getAttribute('data-flow-tab')";
+	await page.ask(`document.querySelector("${row} [role=tab][tabindex='0']").focus()`);
+	const first = await asked(page, focused);
+	await page.ask(key("ArrowRight"));
+	check("the arrow keys move focus along the tabs", (await asked(page, focused)) !== first, true);
+	await page.ask(key("ArrowLeft"));
+	check("and back again", await asked(page, focused), first);
+	check(
+		"only the shown tab is a tab stop",
+		await asked(page, `document.querySelectorAll("${row} [role=tab][tabindex='0']").length`),
+		1,
+	);
+	stop();
+}
+
 async function dragChecks(): Promise<void> {
 	const { page, stop } = await opened("light", "side");
 	const tab = await boxOf(page, "[data-flow-tab='sub-3-3']");
@@ -234,6 +291,8 @@ async function plusChecks(): Promise<void> {
 
 await lookShots();
 await behaviourChecks();
+await renameChecks();
+await keyboardChecks();
 await dragChecks();
 await closeChecks();
 await plusChecks();

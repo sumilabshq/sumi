@@ -29,6 +29,7 @@ const NO_BOUNDS = { left: { leastPx: 0, usualPx: 0 }, chat: { leastPx: 0, usualP
 
 declare global {
 	interface Window {
+		__spoilUndo: () => Promise<void>;
 		__chrome: {
 			readonly hasOwnDrag: (target: Element) => boolean;
 			readonly isControl: (target: Element) => boolean;
@@ -72,6 +73,8 @@ async function main(): Promise<void> {
 	if (scene === "peeking") {
 		world.sidePeeks.setPeeking("left", true);
 	}
+
+	window.__spoilUndo = world.spoilUndo;
 
 	const holder = document.getElementById("frame");
 
