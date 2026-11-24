@@ -3,6 +3,7 @@ import http from "node:http";
 import path from "node:path";
 import { z } from "zod";
 import { paged, waited } from "./chrome-ask.ts";
+import { bundleOf } from "./harness.ts";
 import type { AskedPage, PageSize } from "./chrome-ask.ts";
 import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
@@ -111,4 +112,8 @@ function trafficLightsOf(): TrafficLights {
 		rightEdgePx: x + TRAFFIC_LIGHTS_GROUP_PX,
 		centreYPx: y - TRAFFIC_LIGHTS_TOP_OFFSET_PX + TRAFFIC_LIGHTS_BUTTON_PX / 2,
 	};
+}
+
+export function bundledSidebarPage(): Promise<string> {
+	return bundleOf("tools/flows-sidebar-page.tsx");
 }

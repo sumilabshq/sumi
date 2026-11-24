@@ -16,6 +16,7 @@ export interface TabLook {
 	readonly isActive: boolean;
 	readonly isFaceDrawn: boolean;
 	readonly faceWidth: number;
+	readonly isArtInsideFace: boolean;
 }
 
 interface HoverLook {
@@ -35,7 +36,7 @@ const TAB_MIN_PX = 120;
 const TAB_HEIGHT_PX = 28;
 const TAB_PAD = "9px";
 const TAB_RADIUS = "7px";
-const TAB_WEIGHT = "510";
+const TAB_WEIGHT = "450";
 const FACE_PX = 12;
 const TOLERANCE_PX = 0.5;
 const HOVER_MS = 250;
@@ -49,7 +50,13 @@ const tabsLooked = `[...document.querySelectorAll(${JSON.stringify(TABS)})].map(
 		const at = part.getBoundingClientRect();
 		return at.width > 0 && at.height > 0 && getComputedStyle(part).visibility === "visible";
 	});
+	const faceBox = face === null ? null : face.getBoundingClientRect();
+	const isInside = faceBox !== null && [...face.querySelectorAll("*")].every((part) => {
+		const at = part.getBoundingClientRect();
+		return at.left >= faceBox.left - 0.5 && at.right <= faceBox.right + 0.5 && at.top >= faceBox.top - 0.5 && at.bottom <= faceBox.bottom + 0.5;
+	});
 	return {
+		isArtInsideFace: isInside,
 		width: box.width, height: box.height, left: box.left, top: box.top,
 		padLeft: look.paddingLeft, padRight: look.paddingRight, radius: look.borderRadius,
 		weight: look.fontWeight, border: look.borderTopWidth, mode: tab.dataset.mode,
@@ -111,6 +118,11 @@ function shapeChecks(tabs: readonly TabLook[], name: string): void {
 	check(
 		`${name}: every tab icon is ${FACE_PX}px`,
 		tabs.every(({ faceWidth }) => isNear(faceWidth, FACE_PX)),
+		true,
+	);
+	check(
+		`${name}: every tab icon's art sits inside its box`,
+		tabs.every(({ isArtInsideFace }) => isArtInsideFace),
 		true,
 	);
 	check(
