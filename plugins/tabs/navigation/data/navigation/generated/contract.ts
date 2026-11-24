@@ -119,24 +119,6 @@ export const CreateFlowAskSchema = z.object({
 	place: FlowPlaceSchema,
 });
 
-export const OpenFlowAskSchema = WindowFlowAskSchema.extend({
-	flowId: z.string().min(1),
-});
-
-export const RenameAskSchema = z.object({
-	id: z.string().min(1),
-	name: z.string().trim().min(1),
-});
-
-export const SetIconAskSchema = z.object({
-	id: z.string().min(1),
-	icon: FlowIconSchema.nullable(),
-});
-
-export const MoveFlowAskSchema = FlowAskSchema.extend({
-	place: FlowPlaceSchema,
-});
-
 export const PageFactsSchema = z.object({
 	pageId: z.string(),
 	title: z.string(),
@@ -162,6 +144,25 @@ export const ScreenSchema = z.object({
 export const TabsAskSchema = z.object({
 	window: z.string().min(1),
 	screen: ScreenSchema,
+});
+
+export const OpenFlowAskSchema = WindowFlowAskSchema.extend({
+	flowId: z.string().min(1),
+	at: TabsAskSchema,
+});
+
+export const RenameAskSchema = z.object({
+	id: z.string().min(1),
+	name: z.string().trim().min(1),
+});
+
+export const SetIconAskSchema = z.object({
+	id: z.string().min(1),
+	icon: FlowIconSchema.nullable(),
+});
+
+export const MoveFlowAskSchema = FlowAskSchema.extend({
+	place: FlowPlaceSchema,
 });
 
 export const RemoveFlowAskSchema = FlowAskSchema.extend({

@@ -36,7 +36,12 @@ export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowVi
 	}
 
 	return (
-		<RowMenu items={[{ label: "Rename", onSelect: () => setIsRenaming(true) }]}>
+		<RowMenu
+			items={[
+				{ label: "Rename", onSelect: () => setIsRenaming(true) },
+				{ label: "Delete flow", onSelect: () => acts.remove(flow.id), isDestructive: true },
+			]}
+		>
 			<ChatsHover chats={flow.chats}>
 				<div
 					className="sumi-flows-row"

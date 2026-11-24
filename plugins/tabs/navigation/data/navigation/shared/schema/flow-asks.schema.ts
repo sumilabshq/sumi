@@ -73,6 +73,7 @@ export const CreateFlowAskSchema = z.object({
 
 export const OpenFlowAskSchema = WindowFlowAskSchema.extend({
 	flowId: z.string().min(1),
+	at: TabsAskSchema,
 });
 
 export const RenameAskSchema = z.object({

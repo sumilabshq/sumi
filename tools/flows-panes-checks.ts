@@ -283,7 +283,7 @@ async function closeLastTabChecks(): Promise<void> {
 
 async function holdChecks(): Promise<void> {
 	const stand = standOver(true);
-	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: FLOW });
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: FLOW, at: { window: MAIN, screen: BARE_SCREEN } });
 	const refused = await refusalOf(() =>
 		stand.app.send(navigation.flowPanes.closePane, { window: SIDE, flowId: FLOW, paneId: RIGHT }),
 	);

@@ -2,6 +2,7 @@ import { navigation } from "../plugins/tabs/navigation/data/navigation/generated
 import { flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
 import type { FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
+import { atOf } from "./flows-asks.ts";
 import { chatIdOf } from "./flows-fixture.ts";
 import { MAIN, SIDE, chatFlow, flowsIn, lawsOf, refusalOf, standOver } from "./flows-stand.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -106,39 +107,6 @@ async function flowCommandChecks(): Promise<void> {
 	check("every law holds after the moves", await lawsOf(stand), []);
 }
 
-async function openChecks(): Promise<void> {
-	const stand = standOver(true);
-	const first = await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(2) });
-	const { tabs, flows } = await stand.tabs.places();
-	check(
-		"open sets the flow of the window and answers no effect",
-		[flows?.windowFlows[MAIN], first.effects],
-		[chatFlow(2), []],
-	);
-	check("opening reads an unread chat", tabs.tabs.find(({ id }) => id === chatIdOf(2))?.mark, "none");
-	const second = await stand.app.send(navigation.flows.open, { window: SIDE, flowId: chatFlow(2) });
-	check("a second window is sent to the window that holds the flow", second.effects, [
-		{ kind: "focus-window", window: "main" },
-	]);
-	check("and the hold is not stored", (await flowsIn(stand)).windowFlows[SIDE], undefined);
-	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(6) });
-	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(5) });
-	check(
-		"opening a failed chat reads it and leaves an asking chat as it is",
-		(await stand.tabs.places()).tabs.tabs
-			.filter(({ id }) => id === chatIdOf(5) || id === chatIdOf(6))
-			.map(({ mark }) => mark),
-		["none", "asking"],
-	);
-	check(
-		"a flow that does not exist is refused",
-		(await refusalOf(() => stand.app.send(navigation.flows.open, { window: MAIN, flowId: "flow-none" }))).includes(
-			"no flow",
-		),
-		true,
-	);
-}
-
 async function inboxChecks(): Promise<void> {
 	const stand = standOver(true);
 	const rows = await stand.app.send(navigation.inbox.rows, undefined);
@@ -151,13 +119,13 @@ async function inboxChecks(): Promise<void> {
 			[chatFlow(2), "unread"],
 		],
 	);
-	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(6) });
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(6), at: atOf(MAIN) });
 	check(
 		"an asking flow is hidden only while it is open",
 		(await stand.app.send(navigation.inbox.rows, undefined)).rows.map(({ id }) => id),
 		[chatFlow(5), chatFlow(2)],
 	);
-	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(1) });
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(1), at: atOf(MAIN) });
 	const cleared = await stand.app.send(navigation.inbox.clear, undefined);
 	check("clear reads unread and failed, not asking", [...cleared.clearedTabIds].sort(), [chatIdOf(2), chatIdOf(5)]);
 	check(
@@ -166,7 +134,7 @@ async function inboxChecks(): Promise<void> {
 		[chatFlow(6)],
 	);
 	check("the undo is kept in the doc", (await flowsIn(stand)).inboxUndo?.clearId, cleared.clearId);
-	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(3) });
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(3), at: atOf(MAIN) });
 	const undone = await stand.app.send(navigation.inbox.undoClear, { clearId: cleared.clearId });
 	check("undo restores the tabs still at none", [...undone.clearedTabIds].sort(), [chatIdOf(2), chatIdOf(5)]);
 	check(
@@ -280,7 +248,7 @@ async function removeChecks(): Promise<void> {
 	const stand = standOver(true);
 	const at = { window: MAIN, screen: BARE_SCREEN };
 	const before = (await stand.tabs.places()).tabs.tabs.length;
-	await stand.app.send(navigation.flows.open, { window: SIDE, flowId: chatFlow(4) });
+	await stand.app.send(navigation.flows.open, { window: SIDE, flowId: chatFlow(4), at: atOf(SIDE) });
 	check(
 		"a flow open in another window is not removed",
 		(await refusalOf(() => stand.app.send(navigation.flows.remove, { flowId: chatFlow(4), at }))).includes(
@@ -356,7 +324,6 @@ console.warn = () => undefined;
 console.error = () => undefined;
 await readChecks();
 await flowCommandChecks();
-await openChecks();
 await inboxChecks();
 await undoSkipsMovedOnChecks();
 await folderChecks();

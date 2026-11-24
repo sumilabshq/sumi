@@ -22,10 +22,10 @@ import {
 } from "../../shared/schema/flow-asks.schema.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import { adoptChatsMove } from "./lib/adopt-plans.js";
+import { openFlowMove } from "./lib/flow-open-plans.js";
 import {
 	createFlowPlan,
 	moveFlowPlan,
-	openFlowPlan,
 	removeFlowMove,
 	renameFlowPlan,
 	setFlowIconPlan,
@@ -63,7 +63,7 @@ export const open = command()
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tabs, placedApps }) =>
-		answered(await tabs.movePlaces(flowsMove(openFlowPlan(ask, { apps: placedApps.placedApps(), at: Date.now() })))),
+		answered(await tabs.movePlaces(openFlowMove(ask, placedApps.placedApps()))),
 	);
 
 export const rename = command()

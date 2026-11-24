@@ -1,4 +1,5 @@
 import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
+import type { ListedPlacedAppsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/placed-apps/listed.gateway.ts";
 import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport, ServerSideModule } from "../packages/shared/data-framework/src/index.ts";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
@@ -108,11 +109,15 @@ export function withWindowView(placed: PlacedTabs, view: StudioView, windowLabel
 	};
 }
 
-export function placesLinkOf(tabs: MemoryTabsGateway, besidePlaces: readonly ServerSideModule[] = []): RemoteTransport {
+export function placesLinkOf(
+	tabs: MemoryTabsGateway,
+	besidePlaces: readonly ServerSideModule[] = [],
+	placedApps: ListedPlacedAppsGateway = builtInPlacedApps(),
+): RemoteTransport {
 	const link = localTransport();
 	const parts = {
 		tabs,
-		placedApps: builtInPlacedApps(),
+		placedApps,
 	};
 	link.serve(
 		runtime()
@@ -128,8 +133,11 @@ export function placesLinkOf(tabs: MemoryTabsGateway, besidePlaces: readonly Ser
 	return link;
 }
 
-export function placesOver(tabs: MemoryTabsGateway = new MemoryTabsGateway()): readonly RemoteModule[] {
-	const link = placesLinkOf(tabs);
+export function placesOver(
+	tabs: MemoryTabsGateway = new MemoryTabsGateway(),
+	placedApps: ListedPlacedAppsGateway = builtInPlacedApps(),
+): readonly RemoteModule[] {
+	const link = placesLinkOf(tabs, [], placedApps);
 	return [navigation({ over: link }), tabGroups({ over: link }), chatFacts({ over: link })];
 }
 

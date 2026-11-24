@@ -2,7 +2,7 @@ import { waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
 import { bundleOf } from "./harness.ts";
-import { doubleClickOn, hoverOn, openedSidebar, pressOn } from "./flows-sidebar-harness.ts";
+import { doubleClickOn, hoverOn, openedSidebar, pressOn, rowOf } from "./flows-sidebar-harness.ts";
 
 const INBOX = "section[aria-label=Inbox] .sumi-flows-row";
 const FLOWS = "section[aria-label=Flows] .sumi-flows-row";
@@ -178,6 +178,18 @@ async function dragging(): Promise<void> {
 	});
 }
 
+async function deleting(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		await page.ask(`${rowOf(FLOWS, "Plugin layout")}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`);
+		await waited(300);
+		check("a Flow row menu offers Rename and Delete flow", await page.ask(`[...document.querySelectorAll("[role=menuitem]")].map((item) => item.textContent)`), ["Rename", "Delete flow"]);
+		await page.ask(clickText("[role=menuitem]", "Delete flow"));
+		await waited(SETTLE_MS * 2);
+		check("Delete flow takes the Flow out of the sidebar", ((await page.ask(namesOf(FLOWS))) as string[]).includes("Plugin layout"), false);
+		check("and out of Inbox", ((await page.ask(namesOf(INBOX))) as string[]).includes("Plugin layout"), false);
+	});
+}
+
 await inboxRows();
 await inboxOpening();
 await inboxClearing();
@@ -186,6 +198,7 @@ await renaming();
 await hoverPanel();
 await hiding();
 await dragging();
+await deleting();
 
 if (tally.failed > 0) {
 	console.log(`${tally.failed} failed`);

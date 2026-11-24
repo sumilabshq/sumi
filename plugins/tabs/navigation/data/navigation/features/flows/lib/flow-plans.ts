@@ -1,4 +1,3 @@
-import { labelOfPlacesWindow } from "@widgetarium/behaviors";
 import {
 	flowOfId,
 	placeProblemOf,
@@ -8,8 +7,7 @@ import {
 	withoutFlow,
 } from "../../../shared/lib/flows/flow-docs.js";
 import { layoutOfTabs } from "../../../shared/lib/flows/flow-layouts.js";
-import { READ_ON_OPEN, marksCleared, marksSaid } from "../../../shared/lib/flows/flow-marks.js";
-import { chatTabsOf, flowHolderOf } from "../../../shared/lib/flows/flow-rows.js";
+import { flowHolderOf } from "../../../shared/lib/flows/flow-rows.js";
 import { flowTabIdsOf } from "../../../shared/lib/flows/flow-nodes.js";
 import { withTabsClosed } from "../../../shared/lib/showing/closing.js";
 import { refusal, settling } from "../../../shared/lib/settling/settling.js";
@@ -20,7 +18,6 @@ import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import type {
 	CreateFlowAskSchema,
 	MoveFlowAskSchema,
-	OpenFlowAskSchema,
 	RemoveFlowAskSchema,
 	RenameAskSchema,
 	SetIconAskSchema,
@@ -29,7 +26,6 @@ import type { TabsSettled } from "../../../shared/schema/screen.schema.js";
 import type { z } from "zod";
 
 type CreateFlowAsk = z.infer<typeof CreateFlowAskSchema>;
-type OpenFlowAsk = z.infer<typeof OpenFlowAskSchema>;
 type RenameAsk = z.infer<typeof RenameAskSchema>;
 type SetIconAsk = z.infer<typeof SetIconAskSchema>;
 type MoveFlowAsk = z.infer<typeof MoveFlowAskSchema>;
@@ -37,11 +33,6 @@ type RemoveFlowAsk = z.infer<typeof RemoveFlowAskSchema>;
 
 export interface FlowBirth {
 	readonly id: string;
-	readonly at: number;
-}
-
-export interface OpeningMoment {
-	readonly apps: PlacedApps;
 	readonly at: number;
 }
 
@@ -73,44 +64,6 @@ export function createFlowPlan(ask: CreateFlowAsk, birth: FlowBirth): FlowsPlan<
 			flows: withFlowAdded(flows, flow, ask.place),
 			reason: `flows ${flows.flows.length} → ${flows.flows.length + 1} (create ${birth.id} "${ask.name}" in ${ask.place.folderId ?? "no folder"})`,
 			value: { flowId: birth.id },
-		};
-	};
-}
-
-export function openFlowPlan(ask: OpenFlowAsk, { apps, at }: OpeningMoment): FlowsPlan<TabsSettled> {
-	return ({ tabs, flows }) => {
-		const flow = flowOfId(flows, ask.flowId);
-
-		if (flow === undefined) {
-			return refusal(NO_FLOW.replace("{id}", ask.flowId));
-		}
-
-		const holder = flowHolderOf(tabs, flows, ask);
-
-		if (holder !== null) {
-			return {
-				flows,
-				reason: `window ${ask.window} flow stays: ${ask.flowId} is held by ${holder}`,
-				value: { effects: [{ kind: "focus-window", window: labelOfPlacesWindow(holder) }] },
-			};
-		}
-
-		const read = marksCleared(
-			tabs,
-			new Set(chatTabsOf(flow, { placed: tabs, apps }).map(({ id }) => id)),
-			READ_ON_OPEN,
-		);
-		const was = flows.windowFlows[ask.window] ?? "none";
-		const opened = withFlowChanged(
-			{ ...flows, windowFlows: { ...flows.windowFlows, [ask.window]: ask.flowId } },
-			ask.flowId,
-			{ lastOpenedAt: at },
-		);
-		return {
-			tabs: read.placed,
-			flows: opened,
-			reason: `window ${ask.window} flow ${was} → ${ask.flowId}, read: ${marksSaid(read.changes)}`,
-			value: NO_EFFECTS,
 		};
 	};
 }

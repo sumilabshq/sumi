@@ -6,7 +6,10 @@ import { flowsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/f
 import { flowBreaksOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-laws.ts";
 import type { FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import type { PlacedTabs, TabMark } from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
-import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
+import { ListedPlacedAppsGateway } from "../plugins/tabs/navigation/data/navigation/gateways/placed-apps/listed.gateway.ts";
+import { placedAppsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/tabs/app-abilities.ts";
+import type { PlacedApp } from "../plugins/tabs/navigation/data/navigation/shared/host/places.host.ts";
+import { BUILT_IN_APPS, BUILT_IN_PLACED_APPS } from "./placed-apps-fixture.ts";
 import { placesOver } from "./places-fixture.ts";
 import { MAIN_WINDOW, chatIdOf, fixturePlaced } from "./flows-fixture.ts";
 
@@ -61,17 +64,18 @@ function askerOf(started: Runtime): Asker {
 	};
 }
 
-export function standOver(withFlows: boolean): Stand {
+export function standOver(withFlows: boolean, extraApps: readonly PlacedApp[] = []): Stand {
 	const { placed, flows } = seeded();
+	const listed = [...BUILT_IN_PLACED_APPS, ...extraApps];
 	const tabs = new MemoryTabsGateway(placed, undefined, undefined, withFlows ? flows : null, {
-		apps: BUILT_IN_APPS,
+		apps: placedAppsOf(listed),
 		now: () => NOW,
 	});
 	return {
 		tabs,
 		app: askerOf(
 			runtime()
-				.imports(...placesOver(tabs))
+				.imports(...placesOver(tabs, new ListedPlacedAppsGateway(listed)))
 				.start(),
 		),
 	};

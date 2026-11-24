@@ -264,6 +264,10 @@ export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).rea
 
 export const ClosedTabIdSchema = z.object({ tabId: z.string().min(1) });
 
+export const FlowIdAskSchema = z.object({
+	flowId: z.string().min(1),
+});
+
 export const FrameSideSchema = z.enum(["left"]);
 
 export type FrameSide = z.infer<typeof FrameSideSchema>;
@@ -467,6 +471,16 @@ export const appHost = moduleContract("app-host", Device, {
 		reopenById: named("closed-tabs.reopen-by-id", command()
 			.public()
 			.input(ClosedTabIdSchema)
+			.idempotencyKey(Repeatable)),
+	},
+	flows: {
+		open: named("flows.open", command()
+			.public()
+			.input(FlowIdAskSchema)
+			.idempotencyKey(Repeatable)),
+		remove: named("flows.remove", command()
+			.public()
+			.input(FlowIdAskSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	frameSides: {

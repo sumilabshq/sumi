@@ -13,6 +13,7 @@ import { FlowStrip } from "../plugins/tabs/flow-strip/src/features/flow-header/u
 import { FlowBoard } from "../plugins/tabs/flow-board/src/features/flow-board/ui/flow-board/flow-board.tsx";
 import { studioFakesOf } from "./app-host-fixture.ts";
 import { MAIN, SIDE, chatFlow, flowsIn, standOver } from "./flows-stand.ts";
+import { BARE_SCREEN } from "./places-fixture.ts";
 
 declare global {
 	interface Window {
@@ -63,7 +64,7 @@ const run = (request: Parameters<typeof stand.app.send>[0], input: unknown): Pro
 
 async function arrange(): Promise<void> {
 	const pane = { window: MAIN, flowId: FLOW };
-	await run(navigation.flows.open, pane);
+	await run(navigation.flows.open, { ...pane, at: { window: MAIN, screen: BARE_SCREEN } });
 
 	if (scenario === "stacked") {
 		await run(navigation.flowPanes.closePane, { ...pane, paneId: RIGHT });
