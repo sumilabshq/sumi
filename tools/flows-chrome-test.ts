@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -7,6 +7,10 @@ import { TRAFFIC_LIGHTS, openedSidebar } from "./flows-sidebar-harness.ts";
 import { frameLookChecks, nameOf } from "./flows-frame-checks.ts";
 import type { FrameState, FrameTheme } from "./flows-frame-checks.ts";
 import { FRAME_SPLITS, sceneOf } from "./flows-frame-scenes.ts";
+import { crowdedTabChecks, framedAt, hoverChecks, openedFlowRow, roomyTabChecks, tabsOf } from "./flows-tab-checks.ts";
+import type { Crowding } from "./flows-tab-checks.ts";
+import { BACK, FORWARD, trailChecks } from "./flows-trail-checks.ts";
+import { trailLawChecks } from "./window-trail-checks.ts";
 
 const TOGGLE = "button[aria-label='Hide sidebar'], button[aria-label='Show sidebar']";
 const FIRST_TAB = ".sumi-flow-strip .sumi-pane-tab";
@@ -19,6 +23,11 @@ const TOLERANCE_PX = 0.5;
 const EMPTY_STRIP_OFFSET_PX = 40;
 const SHOTS_DIR = process.argv[2] ?? null;
 const THEMES: readonly FrameTheme[] = ["light", "dark"];
+const THREE_TAB_FLOW = "Composer redesign";
+const CROWDED_FRAMES: readonly { readonly widthPx: number; readonly crowding: Crowding }[] = [
+	{ widthPx: 760, crowding: "shrunk" },
+	{ widthPx: 600, crowding: "narrow" },
+];
 
 interface Box {
 	readonly left: number;
@@ -66,6 +75,14 @@ async function chromeChecks(page: AskedPage, state: string): Promise<void> {
 	check(`${state}: the first tab is centred on the traffic lights`, isCentredOnTrafficLights(tab), true);
 	check(`${state}: the first tab starts after the toggle`, tab.left >= toggle.right, true);
 	check(`${state}: the new tab button is centred on the traffic lights`, isCentredOnTrafficLights(plus), true);
+	const back = (await page.ask(boxOf(BACK))) as Box;
+	const forward = (await page.ask(boxOf(FORWARD))) as Box;
+	check(
+		`${state}: Back and Forward are centred on the traffic lights`,
+		[back, forward].every(isCentredOnTrafficLights),
+		true,
+	);
+	check(`${state}: Back and Forward follow the toggle`, back.left >= toggle.right && forward.left >= back.right, true);
 }
 
 async function pressChecks(page: AskedPage, state: string): Promise<void> {
@@ -79,6 +96,7 @@ async function pressChecks(page: AskedPage, state: string): Promise<void> {
 	check(`${state}: an empty spot of the title row drags the window`, await page.ask(takesWindowAtEmptyStrip()), true);
 }
 
+trailLawChecks();
 const hostSource = readFileSync(path.join(import.meta.dirname, "..", HOST_INSETS), "utf8");
 check(
 	"the host's left inset is the right edge of the traffic lights in tauri.conf.json",
@@ -109,6 +127,33 @@ for (const theme of THEMES) {
 		}
 	}
 }
+
+async function shot(page: AskedPage, name: string): Promise<void> {
+	if (SHOTS_DIR !== null) {
+		writeFileSync(path.join(SHOTS_DIR, `${name}.png`), await page.shoot());
+	}
+}
+
+for (const theme of THEMES) {
+	await inState("inbox+board", theme, async (page) => {
+		roomyTabChecks(await tabsOf(page), `${theme}, one tab`, 1);
+		await hoverChecks(page, `${theme}, one tab`);
+		await shot(page, `${theme}-tabs-one`);
+		await openedFlowRow(page, THREE_TAB_FLOW);
+		roomyTabChecks(await tabsOf(page), `${theme}, three tabs`, 3);
+		await hoverChecks(page, `${theme}, three tabs`);
+		await shot(page, `${theme}-tabs-three`);
+
+		for (const { widthPx, crowding } of CROWDED_FRAMES) {
+			await framedAt(page, widthPx);
+			crowdedTabChecks(await tabsOf(page), `${theme}, crowded at ${widthPx}px`, crowding);
+			await hoverChecks(page, `${theme}, crowded at ${widthPx}px`);
+			await shot(page, `${theme}-tabs-crowded-${widthPx}`);
+		}
+	});
+}
+
+await inState("inbox+board", "light", async (page) => trailChecks(page, "docked trail"));
 
 console.log(tally.failed ? `flows chrome: ${tally.failed} check(s) failed` : "flows chrome: all checks passed");
 process.exit(tally.failed ? 1 : 0);

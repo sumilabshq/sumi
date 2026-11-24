@@ -1,7 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
-import { FrameStart, PaneBoardSlot, TitleBar } from "../plugins/sumi-host/src/index.ts";
+import { FrameStart, PaneBoardSlot, TabFaceContext, TitleBar } from "../plugins/sumi-host/src/index.ts";
+import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
 import { FlowsSidebar } from "../plugins/tabs/flows-sidebar/src/features/flows-column/ui/flows-sidebar/flows-sidebar.tsx";
 import { SidebarTitle } from "../plugins/tabs/flows-sidebar/src/features/sidebar-title/ui/sidebar-title/sidebar-title.tsx";
 import { hasOwnDrag, isControl } from "../apps/tauri/src/window-drag-target.ts";
@@ -118,25 +119,27 @@ async function main(): Promise<void> {
 
 	createRoot(holder).render(
 		<RuntimeProvider runtime={world.app}>
-			<PluginSlotsContext.Provider value={fills}>
-				<FlowsWindowContext.Provider value={FIXTURE_WINDOW}>
-					<FlowWindowContext.Provider value={FIXTURE_WINDOW}>
-						<div className="wg-studio wg-root wg-shell is-flat" style={{ height: "100%" }}>
-							<Slot loading={null}>
-								<TitleBar />
-							</Slot>
-							<div className="wg-shell-body">
+			<TabFaceContext.Provider value={MenuTabFace}>
+				<PluginSlotsContext.Provider value={fills}>
+					<FlowsWindowContext.Provider value={FIXTURE_WINDOW}>
+						<FlowWindowContext.Provider value={FIXTURE_WINDOW}>
+							<div className="wg-studio wg-root wg-shell is-flat" style={{ height: "100%" }}>
 								<Slot loading={null}>
-									<FrameStart />
+									<TitleBar />
 								</Slot>
-								<div className="wg-shell-app-zone">
-									<PageZone isBoard={isBoard} />
+								<div className="wg-shell-body">
+									<Slot loading={null}>
+										<FrameStart />
+									</Slot>
+									<div className="wg-shell-app-zone">
+										<PageZone isBoard={isBoard} />
+									</div>
 								</div>
 							</div>
-						</div>
-					</FlowWindowContext.Provider>
-				</FlowsWindowContext.Provider>
-			</PluginSlotsContext.Provider>
+						</FlowWindowContext.Provider>
+					</FlowsWindowContext.Provider>
+				</PluginSlotsContext.Provider>
+			</TabFaceContext.Provider>
 		</RuntimeProvider>,
 	);
 }

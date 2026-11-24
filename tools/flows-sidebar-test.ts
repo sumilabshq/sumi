@@ -14,6 +14,11 @@ const namesOf = (selector: string): string =>
 
 const count = (selector: string): string => `document.querySelectorAll(${JSON.stringify(selector)}).length`;
 
+const MARK_ALL_READ = "section[aria-label=Inbox] button[aria-label='Mark all as read']";
+const CLEAR_INBOX = `document.querySelector(${JSON.stringify(MARK_ALL_READ)}).click()`;
+const ALIGN_TOLERANCE_PX = 0.5;
+const markAllReadDrift = `(() => { const centreX = (box) => box.left + box.width / 2; const button = centreX(document.querySelector(${JSON.stringify(MARK_ALL_READ)}).getBoundingClientRect()); const marks = [...document.querySelectorAll("section[aria-label=Inbox] .sumi-flows-status")].map((mark) => centreX(mark.getBoundingClientRect())); return marks.length === 0 ? null : Math.max(...marks.map((mark) => Math.abs(mark - button))); })()`;
+
 const clickText = (selector: string, text: string): string =>
 	`[...document.querySelectorAll(${JSON.stringify(selector)})].find((one) => one.textContent === ${JSON.stringify(text)}).click()`;
 
@@ -54,9 +59,11 @@ async function inboxRows(): Promise<void> {
 			"Sprint board",
 		]);
 		check(
-			"Inbox title row is the label and Clear, no count",
-			await page.ask(`document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent`),
-			"InboxClear",
+			"Inbox title row is the label and the Mark all as read eye, no count",
+			await page.ask(
+				`[document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent, document.querySelectorAll(${JSON.stringify(MARK_ALL_READ)}).length]`,
+			),
+			["Inbox", 1],
 		);
 		check("Show more is offered", await page.ask(count(".sumi-flows-more")), 1);
 		await page.ask(`document.querySelector(".sumi-flows-more").click()`);
@@ -106,7 +113,13 @@ async function inboxOpening(): Promise<void> {
 
 async function inboxClearing(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
-		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
+		const drift = (await page.ask(markAllReadDrift)) as number | null;
+		check(
+			`the Mark all as read eye centres on the rows' status column (drift ${drift}px)`,
+			drift !== null && drift <= ALIGN_TOLERANCE_PX,
+			true,
+		);
+		await page.ask(CLEAR_INBOX);
 		await waited(SETTLE_MS);
 		check("Clear leaves only Flows that wait for an answer", await page.ask(namesOf(INBOX)), [
 			"Design system",
@@ -127,7 +140,7 @@ async function inboxClearing(): Promise<void> {
 	});
 	await inInbox("light", "inbox", async (page) => {
 		const label = `document.querySelector("section[aria-label=Inbox] .sumi-flows-label").textContent`;
-		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
+		await page.ask(CLEAR_INBOX);
 		await waited(SETTLE_MS);
 		await page.ask(`document.querySelector("[aria-label='Hide sidebar']").click()`);
 		await waited(SETTLE_MS);
@@ -143,7 +156,7 @@ async function inboxClearing(): Promise<void> {
 		]);
 	});
 	await inInbox("light", "inbox", async (page) => {
-		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
+		await page.ask(CLEAR_INBOX);
 		await waited(SETTLE_MS);
 		await page.ask(`window.__spoilUndo()`);
 		await page.ask(clickText(".sumi-flows-label-action", "Undo"));
@@ -160,7 +173,7 @@ async function inboxClearing(): Promise<void> {
 		);
 	});
 	await inInbox("light", "finished", async (page) => {
-		await page.ask(clickText(".sumi-flows-label-action", "Clear"));
+		await page.ask(CLEAR_INBOX);
 		await waited(SETTLE_MS);
 		check(
 			"Clear on a finished-only Inbox hides the whole section",
