@@ -2,7 +2,7 @@ import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins
 import { check, tally } from "./check-helpers.ts";
 
 const OLD_PLUGIN_IDS = ["tabs-view", "tab-strip", "tabs-sidebar", "panes", "workspace-switcher"];
-const FLOW_PLUGIN_IDS = ["flows-sidebar", "flow-strip", "flow-board", "flows-home"];
+const FLOW_PLUGIN_IDS = ["flows-sidebar", "flow-strip", "flow-board"];
 
 const resolved = startSumiPlugins(builtInPluginState());
 
@@ -16,7 +16,7 @@ function replacementOf(slot: string): string | undefined {
 
 check("the built-in profile starts with no refusal", resolved.refusals, []);
 check(
-	"the Flows sidebar, strip, board and Home start",
+	"the Flows sidebar, strip and board start",
 	FLOW_PLUGIN_IDS.filter((id) => resolved.startedIds.includes(id)),
 	FLOW_PLUGIN_IDS,
 );
@@ -31,7 +31,7 @@ check("the title row holds the sidebar title, then the Flow strip", addedTo("sum
 ]);
 check("the frame start holds the Flows sidebar alone", addedTo("sumi-host.frame-start"), ["FlowsSidebar"]);
 check("the pane board is the Flow board", replacementOf("sumi-host.pane-board"), "FlowBoard");
-check("an empty Flow draws Flows Home", replacementOf("flow-board.home"), "FlowsHome");
+check("an empty Flow keeps the board's own Home", replacementOf("flow-board.home"), undefined);
 check(
 	"the control menu holds no tabs or workspace row",
 	[addedTo("control-menu.rows"), addedTo("control-menu.top")],

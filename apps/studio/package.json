@@ -47,7 +47,6 @@
 		"@sumi/sessions-plugin": "0.1.0",
 		"@sumi/files-plugin": "0.1.0",
 		"@sumi/flow-board-plugin": "0.1.0",
-		"@sumi/flows-home-plugin": "0.1.0",
 		"@sumi/flow-strip-plugin": "0.1.0",
 		"@sumi/flows-sidebar-plugin": "0.1.0",
 		"@sumi/git-plugin": "0.1.0",
