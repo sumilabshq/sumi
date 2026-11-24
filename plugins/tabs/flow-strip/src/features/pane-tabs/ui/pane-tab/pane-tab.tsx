@@ -5,11 +5,12 @@ import { Icon } from "@widgetarium/kit";
 import type { FlowTab } from "../../../../shared/lib/flow-board-types.js";
 import { TAB_ATTRIBUTE } from "../../../../shared/lib/pane-dom.js";
 import { tabLabelOf } from "../../lib/tab-look.js";
+import type { TabFaceLook } from "../../lib/tab-look.js";
 import { RenameField } from "../rename-field/rename-field.js";
 
 export interface PaneTabProps {
 	readonly tab: FlowTab;
-	readonly art: string;
+	readonly face: TabFaceLook;
 	readonly isActive: boolean;
 	readonly isLabelled: boolean;
 	readonly isRenaming: boolean;
@@ -49,40 +50,48 @@ export function PaneTab(props: PaneTabProps): ReactElement {
 			onPointerDown={props.onPress}
 			onKeyDown={(event) => event.key === "Enter" && props.onShow()}
 		>
-			<TabFaceSlot tab={tab} art={props.art} label={label} />
+			<TabFaceSlot tab={tab} face={props.face} label={label} />
 			{isLabelled ? (
-				<TabText label={label} isRenaming={props.isRenaming} onRenamed={props.onRenamed} onClose={props.onClose} />
-			) : null}
-			<StatusDot mark={tab.mark} />
+				<TabText
+					label={label}
+					mark={tab.mark}
+					isRenaming={props.isRenaming}
+					onRenamed={props.onRenamed}
+					onClose={props.onClose}
+				/>
+			) : (
+				<StatusDot mark={tab.mark} />
+			)}
 		</div>
 	);
 }
 
 function TabFaceSlot({
 	tab,
-	art,
+	face,
 	label,
 }: {
 	readonly tab: FlowTab;
-	readonly art: string;
+	readonly face: TabFaceLook;
 	readonly label: string;
 }): ReactElement {
 	const TabFace = useTabFace();
 	return (
 		<span className="sumi-pane-tab-face">
-			<TabFace art={art} favicon={null} title={label} address={tab.address} mark={tab.mark} />
+			<TabFace {...face} title={label} address={tab.address} mark={tab.mark} />
 		</span>
 	);
 }
 
 interface TabTextProps {
 	readonly label: string;
+	readonly mark: string;
 	readonly isRenaming: boolean;
 	readonly onRenamed: (label: string | null) => void;
 	readonly onClose: () => void;
 }
 
-function TabText({ label, isRenaming, onRenamed, onClose }: TabTextProps): ReactElement {
+function TabText({ label, mark, isRenaming, onRenamed, onClose }: TabTextProps): ReactElement {
 	if (isRenaming) {
 		return <RenameField initial={label} onDone={onRenamed} />;
 	}
@@ -90,7 +99,10 @@ function TabText({ label, isRenaming, onRenamed, onClose }: TabTextProps): React
 	return (
 		<>
 			<span className="sumi-pane-tab-title">{label}</span>
-			<CloseButton onClose={onClose} />
+			<span className="sumi-pane-tab-end">
+				<StatusDot mark={mark} />
+				<CloseButton onClose={onClose} />
+			</span>
 		</>
 	);
 }

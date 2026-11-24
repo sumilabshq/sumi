@@ -1,4 +1,5 @@
-export const LABELLED_TAB_PX = 132;
+// TRADE-OFF: mirrors --tab-min-w plus the row gap; reading the token here would cost a style read per resize
+export const LABELLED_TAB_PX = 122;
 export const ICON_TAB_PX = 30;
 export const CONTROL_PX = 30;
 

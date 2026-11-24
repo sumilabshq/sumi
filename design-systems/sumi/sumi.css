@@ -120,6 +120,10 @@
 	--h-lg: 36px;
 	--icon: 13px;
 	--icon-sm: 12px;
+	--r-tab: 7px;
+	--tab-w: 176px;
+	--tab-min-w: 120px;
+	--tab-pad-x: 9px;
 	--header-h: 44px;
 	--sidebar-w: 280px;
 	--sidebar-min: 200px;

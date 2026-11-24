@@ -11,8 +11,9 @@
 
 .sumi-pane-tabs-list {
 	display: flex;
-	flex: none;
+	flex: 0 1 auto;
 	align-items: center;
+	min-width: 0;
 	gap: var(--space-0-5);
 }
 
@@ -41,14 +42,15 @@
 .sumi-pane-tab {
 	position: relative;
 	display: flex;
-	flex: none;
+	flex: 0 1 auto;
 	align-items: center;
 	gap: var(--space-1-5);
 	box-sizing: border-box;
-	max-width: 132px;
+	width: var(--tab-w);
+	min-width: var(--tab-min-w);
 	height: var(--h-sm);
-	padding: var(--space-none) var(--space-2-5);
-	border-radius: var(--r-md);
+	padding: var(--space-none) var(--tab-pad-x);
+	border-radius: var(--r-tab);
 	background: var(--sunken);
 	color: var(--text-3);
 	font: var(--fw-ui) var(--fs-13) / 1 var(--font-ui);
@@ -73,8 +75,10 @@
 }
 
 .sumi-pane-tab[data-mode="icon"] {
+	flex: none;
 	justify-content: center;
 	width: var(--h-sm);
+	min-width: 0;
 	padding: var(--space-none);
 }
 
@@ -83,34 +87,35 @@
 }
 
 .sumi-pane-tab-face {
+	--chat-tab-icon-size: var(--icon-sm);
 	display: flex;
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: var(--icon);
-	height: var(--icon);
+	width: var(--icon-sm);
+	height: var(--icon-sm);
 	overflow: hidden;
 }
 
+/* TRADE-OFF: !important beats the faces' inline pixel sizes; a size prop on TabFace is cleaner */
+.sumi-pane-tab-face > *,
 .sumi-pane-tab-face svg {
-	width: var(--icon);
-	height: var(--icon);
+	width: var(--icon-sm) !important;
+	height: var(--icon-sm) !important;
+	margin: var(--space-none);
 }
 
 .sumi-pane-tab-title {
-	flex: 0 1 auto;
+	flex: 1 1 auto;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.sumi-pane-tab:hover .sumi-pane-tab-title {
-	mask-image: linear-gradient(to right, black calc(100% - 22px), transparent calc(100% - 6px));
-}
-
 .sumi-pane-tab-rename {
 	box-sizing: border-box;
-	width: 84px;
+	flex: 1 1 auto;
+	width: 0;
 	min-width: 0;
 	padding: var(--space-none);
 	border: 0;
@@ -121,6 +126,18 @@
 	letter-spacing: inherit;
 }
 
+.sumi-pane-tab-end {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: var(--space-4);
+	height: var(--space-4);
+}
+
+.sumi-pane-tab-end > * {
+	grid-area: 1 / 1;
+}
+
 .sumi-pane-tab-dot {
 	flex: none;
 	width: var(--space-2);
@@ -128,8 +145,8 @@
 	border-radius: var(--r-full);
 }
 
-.sumi-pane-tab:hover .sumi-pane-tab-dot {
-	margin-inline-end: var(--space-4-5);
+.sumi-pane-tab:is(:hover, :focus-visible) .sumi-pane-tab-end .sumi-pane-tab-dot {
+	visibility: hidden;
 }
 
 .sumi-pane-tab[data-mode="icon"] .sumi-pane-tab-dot {
@@ -153,30 +170,23 @@
 }
 
 .sumi-pane-tab-close {
-	position: absolute;
-	top: 50%;
-	right: var(--space-1);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--space-4-5);
-	height: var(--space-4-5);
+	width: var(--space-4);
+	height: var(--space-4);
 	margin: var(--space-none);
 	padding: var(--space-none);
 	border: 0;
-	border-radius: var(--r-sm);
+	border-radius: var(--r-xs);
 	background: transparent;
 	color: var(--text-3);
-	opacity: 0;
-	pointer-events: none;
-	transform: translateY(-50%);
+	visibility: hidden;
 	cursor: default;
 }
 
-.sumi-pane-tab:hover .sumi-pane-tab-close,
-.sumi-pane-tab:focus-visible .sumi-pane-tab-close {
-	opacity: 1;
-	pointer-events: auto;
+.sumi-pane-tab:is(:hover, :focus-visible) .sumi-pane-tab-close {
+	visibility: visible;
 }
 
 .sumi-pane-tab-close:hover {

@@ -4,6 +4,7 @@ import type { FlowTab } from "../../../../shared/lib/flow-board-types.js";
 import { focusNeighbourTab } from "../../lib/tab-arrow-focus.js";
 import type { TabFit } from "../../lib/tab-fit.js";
 import { tabLabelOf } from "../../lib/tab-look.js";
+import type { TabFaceLook } from "../../lib/tab-look.js";
 import { PaneTab } from "../pane-tab/pane-tab.js";
 
 export interface PaneTabListProps {
@@ -12,7 +13,7 @@ export interface PaneTabListProps {
 	readonly activeId: string | null;
 	readonly renamingId: string | null;
 	readonly liftedId: string | null;
-	readonly artOf: (tab: FlowTab) => string;
+	readonly faceOf: (tab: FlowTab) => TabFaceLook;
 	readonly onShow: (tabId: string) => void;
 	readonly onClose: (tabId: string) => void;
 	readonly onMenu: (tabId: string, event: MouseEvent<HTMLElement>) => void;
@@ -31,7 +32,7 @@ export function PaneTabList(props: PaneTabListProps): ReactElement {
 					<PaneTab
 						key={tab.id}
 						tab={tab}
-						art={props.artOf(tab)}
+						face={props.faceOf(tab)}
 						isActive={tab.id === activeId}
 						isLabelled={fit.labelled.has(tab.id) || tab.id === renamingId}
 						isRenaming={tab.id === renamingId}

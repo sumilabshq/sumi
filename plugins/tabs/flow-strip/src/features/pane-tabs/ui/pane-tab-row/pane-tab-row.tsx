@@ -6,7 +6,7 @@ import type { FlowTab } from "../../../../shared/lib/flow-board-types.js";
 import { PANE_ROW_ATTRIBUTE } from "../../../../shared/lib/pane-dom.js";
 import { tabFitOf } from "../../lib/tab-fit.js";
 import { tabMenuSpotOf } from "../../lib/tab-menu-spot.js";
-import { useTabArt } from "../../lib/tab-look.js";
+import { useTabFaceOf } from "../../lib/tab-look.js";
 import { usePaneTabActs } from "../../lib/use-pane-tab-acts.js";
 import type { PaneTabActs } from "../../lib/use-pane-tab-acts.js";
 import { useRowWidth } from "../../lib/use-row-width.js";
@@ -54,7 +54,7 @@ function PaneTabRowBody({ flowId, paneId, tabs, activeTabId, notice, onNotice }:
 	const row = useRef<HTMLDivElement | null>(null);
 	const width = useRowWidth(row);
 	const acts = usePaneTabActs({ flowId, paneId, tabs });
-	const artOf = useTabArt();
+	const faceOf = useTabFaceOf();
 	const drag = useTabDrag({ onDrop: acts.drop });
 	const [menu, setMenu] = useState<TabMenuAt | null>(null);
 	const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -72,7 +72,7 @@ function PaneTabRowBody({ flowId, paneId, tabs, activeTabId, notice, onNotice }:
 				activeId={activeId}
 				renamingId={renamingId}
 				liftedId={drag.lifted?.tabId ?? null}
-				artOf={artOf}
+				faceOf={faceOf}
 				onShow={acts.show}
 				onClose={acts.close}
 				onMenu={(tabId, event) => {
@@ -90,7 +90,7 @@ function PaneTabRowBody({ flowId, paneId, tabs, activeTabId, notice, onNotice }:
 				}}
 			/>
 			{fit.hidden.length === 0 ? null : (
-				<OverflowMenu tabs={tabs.filter(({ id }) => fit.hidden.includes(id))} artOf={artOf} onShow={acts.show} />
+				<OverflowMenu tabs={tabs.filter(({ id }) => fit.hidden.includes(id))} faceOf={faceOf} onShow={acts.show} />
 			)}
 			<Button
 				shape="square"
