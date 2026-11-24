@@ -7126,11 +7126,6 @@ body.wg-tree-carrying .wg-tile-body {
 	margin-right: var(--space-0-5, 4px);
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-mine-line .wg-studio-ai-round {
-	width: 24px;
-	height: 24px;
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-answer {
 	position: relative;
 	padding-block-end: 22px;
@@ -7159,12 +7154,6 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-answer:is(:hover, :focus-within) .wg-studio-ai-answer-line {
 	opacity: 1;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-answer-line .wg-studio-ai-round {
-	width: 24px;
-	height: 24px;
-	margin-inline: -5px;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-pictures {
@@ -7307,30 +7296,6 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-fill {
 	flex: 1 1 auto;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-button {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: 36px;
-	height: 36px;
-	padding: 0;
-	border: none;
-	border-radius: var(--r-full, 999px);
-	background: transparent;
-	box-shadow: none;
-	color: var(--viewer-ink-2);
-	cursor: pointer;
-	transition:
-		background var(--dur-fast, 120ms) var(--ease-emphasized, ease),
-		color var(--dur-fast, 120ms) var(--ease-emphasized, ease);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-viewer-button:hover {
-	background: var(--viewer-hover);
-	color: var(--viewer-ink);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-stage {
@@ -7577,36 +7542,6 @@ body.wg-tree-carrying .wg-tile-body {
 	rotate: 90deg;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-round,
-:is(.wg-root, .wg-portal) .wg-studio-ai-pill {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	height: 32px;
-	border: none;
-	border-radius: var(--control-corner);
-	background: var(--raise);
-	box-shadow: none;
-	color: var(--foreground);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-round {
-	width: 32px;
-	padding: 0;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-round.is-button {
-	background: none;
-	color: var(--muted-foreground);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-round.is-button:hover {
-	background: var(--hover, var(--fill-hover));
-	color: var(--foreground);
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-list {
 	display: flex;
 	flex-direction: column;
@@ -7799,24 +7734,6 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-line.is-removed {
 	background: var(--error-wash);
 	color: var(--error-ink);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-pill {
-	padding: 0 12px;
-	font-family: inherit;
-	font-size: 12px;
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-pill:hover {
-	background: var(--fill-hover);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-pill.is-l {
-	height: 52px;
-	padding: 0 20px;
-	font-size: 13px;
-	font-weight: var(--font-medium, 500);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-running {
@@ -14251,57 +14168,9 @@ body.wg-tree-carrying .wg-tile-body {
 	min-width: 0;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-plus {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: var(--h-sm);
-	height: var(--h-sm);
-	padding: 0;
-	border: none;
-	border-radius: var(--r-sm);
-	background: none;
-	box-shadow: none;
-	color: var(--text-2);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-plus:hover,
-:is(.wg-root, .wg-portal) .wg-studio-ai-plus.is-on {
-	background: var(--hover);
-	color: var(--text);
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-chevron {
 	display: inline-flex;
 	color: inherit;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-send {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: var(--h-sm);
-	height: var(--h-sm);
-	padding: 0;
-	border: none;
-	border-radius: var(--r-full);
-	background: var(--accent-base);
-	box-shadow: none;
-	color: var(--on-accent);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle {
-	background: var(--active);
-	color: var(--text-3);
-	cursor: default;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-streaming {
-	background: var(--text);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-stop-square {
@@ -14493,34 +14362,6 @@ body.wg-tree-carrying .wg-tile-body {
 	font: var(--fw-regular) var(--fs-12) / 1.4 var(--font-ui);
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-card-remove {
-	position: absolute;
-	top: -6px;
-	right: -6px;
-	z-index: 3;
-	display: none;
-	align-items: center;
-	justify-content: center;
-	width: 18px;
-	height: 18px;
-	padding: 0;
-	border: none;
-	border-radius: var(--r-full);
-	background: var(--text);
-	box-shadow: none;
-	color: var(--plate);
-	cursor: pointer;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-card-remove svg {
-	stroke-width: 2.5;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-card:hover .wg-studio-ai-card-remove,
-:is(.wg-root, .wg-portal) .wg-studio-ai-card:focus-within .wg-studio-ai-card-remove {
-	display: inline-flex;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments-more {
