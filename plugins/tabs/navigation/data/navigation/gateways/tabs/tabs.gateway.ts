@@ -9,6 +9,7 @@ export abstract class TabsGateway {
 	abstract movePlaces<T>(move: MovePlaces<T>): Promise<T>;
 	abstract movePlacesIn<T>(workspaceId: string, move: MovePlaces<T>): Promise<T>;
 	abstract placedTabsChanged(listener: () => void): () => void;
+	abstract flowsChanged(listener: () => void): () => void;
 
 	async placedTabs(): Promise<PlacedTabs> {
 		return (await this.places()).tabs;

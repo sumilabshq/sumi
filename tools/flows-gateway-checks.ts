@@ -195,6 +195,40 @@ async function tabWritesKeepFlowsChecks(): Promise<void> {
 	check("and writes the new tabs", Object(keptDoc(fake)["tabs"])["minted"], fixturePlaced().minted + 1);
 }
 
+async function flowsChangedChecks(first: FlowsDoc | null): Promise<void> {
+	if (first === null) {
+		throw new Error("no converted flows to watch");
+	}
+
+	const fake = seeded();
+	fake.conversionRefusal = null;
+	const tabs = gatewayOver(fake.invoke, true);
+	await heard(() => tabs.places());
+	const heardFlows: string[] = [];
+	const heardTabs: string[] = [];
+	tabs.flowsChanged(() => void heardFlows.push("flows"));
+	tabs.placedTabsChanged(() => void heardTabs.push("tabs"));
+	await heard(() => Promise.resolve());
+	await heard(() =>
+		tabs.movePlacedTabs((now) => ({ next: { ...now, minted: now.minted + 1 }, reason: "a tab command", answer: null })),
+	);
+	await heard(() =>
+		tabs.movePlaces((now) => ({
+			next: {
+				tabs: now.tabs,
+				flows: { ...first, flows: first.flows.map((flow, at) => (at === 0 ? { ...flow, name: "Renamed" } : flow)) },
+			},
+			reason: "flows change",
+			answer: null,
+		})),
+	);
+	check(
+		"a gateway tells a flows change and not a tab change to flowsChanged",
+		[heardFlows.length, heardTabs.length],
+		[1, 2],
+	);
+}
+
 async function unreadableFlowsChecks(): Promise<void> {
 	const fake = seeded({ flows: { v: 99, junk: true } });
 	fake.conversionRefusal = null;
@@ -244,6 +278,7 @@ const converted = await convertedChecks();
 await rerunChecks(converted);
 await crashChecks(converted);
 await tabWritesKeepFlowsChecks();
+await flowsChangedChecks(converted);
 await unreadableFlowsChecks();
 await memoryChecks(converted);
 console.log(tally.failed ? `flows gateway: ${tally.failed} check(s) failed` : "flows gateway: all checks passed");

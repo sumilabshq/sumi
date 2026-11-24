@@ -2,6 +2,8 @@ import type { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { PlacedTabsSchema } from "../../../shared/schema/tabs.schema.js";
 import { emptyPlacedTabs } from "../../../shared/lib/tabs/kept-tabs.js";
 import type { MovePlaces, PlacedPlaces } from "../../../shared/lib/flows/flow-moves.js";
+import { reconciling } from "../../../shared/lib/flows/flow-reconcile.js";
+import type { ReconcileFacts } from "../../../shared/lib/flows/flow-reconcile.js";
 import { windowListsFolded } from "./legacy-tabs.js";
 import { commitPlaces, placesIn } from "./kept-places.js";
 import type { KeptNavigation } from "./kept-places.js";
@@ -18,6 +20,7 @@ export type { KeptNavigation } from "./kept-places.js";
 export interface KeptWorkspaces {
 	readonly ownId: string;
 	readonly navigationOf: (workspaceId: string) => Promise<HeldDoc<KeptNavigation>>;
+	readonly reconcileFacts?: () => ReconcileFacts | null;
 }
 
 export class TauriTabsGateway extends TabsGateway {
@@ -44,17 +47,35 @@ export class TauriTabsGateway extends TabsGateway {
 	}
 
 	override async movePlaces<T>(move: MovePlaces<T>): Promise<T> {
-		return commitPlaces(await this.ready, move);
+		return commitPlaces(await this.ready, reconciling(move, this.workspaces.reconcileFacts?.() ?? null));
 	}
 
 	override placedTabsChanged(listener: () => void): () => void {
+		return this.watched(() => listener);
+	}
+
+	override flowsChanged(listener: () => void): () => void {
+		return this.watched((kept) => {
+			let seen = kept.now().flows;
+			return () => {
+				const now = kept.now().flows;
+
+				if (now !== seen) {
+					seen = now;
+					listener();
+				}
+			};
+		});
+	}
+
+	private watched(listenerOf: (kept: HeldDoc<KeptNavigation>) => () => void): () => void {
 		const watching = {
 			isStopped: false,
 			stop: (): void => undefined,
 		};
 		void this.ready.then((kept) => {
 			if (!watching.isStopped) {
-				watching.stop = kept.watch(listener);
+				watching.stop = kept.watch(listenerOf(kept));
 			}
 		});
 		return () => {

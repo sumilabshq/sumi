@@ -16,6 +16,7 @@ import { ListedPlacedAppsGateway } from "../placed-apps/listed.gateway.js";
 import type { PlacedAppsGateway } from "../placed-apps/placed-apps.gateway.js";
 import { IS_FLOWS_CONVERSION_ON } from "../../shared/host/places.host.js";
 import type { PlacesConfig } from "../../shared/host/places.host.js";
+import { placedAppsOf } from "../../shared/lib/tabs/app-abilities.js";
 import { PlacedTabsSchema } from "../../shared/schema/tabs.schema.js";
 import type { PlacedTabs } from "../../shared/schema/tabs.schema.js";
 
@@ -47,6 +48,7 @@ export function keptPlacesParts(
 		tabs: new TauriTabsGateway({
 			ownId: workspaceId,
 			navigationOf: (anyWorkspaceId) => heldNavigationOf(store, anyWorkspaceId, { isOn: isFlowsConversionOn, apps }),
+			reconcileFacts: () => ({ apps: placedAppsOf(apps), now: Date.now }),
 		}),
 		placedApps: new ListedPlacedAppsGateway(apps),
 	};

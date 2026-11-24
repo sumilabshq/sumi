@@ -23,14 +23,15 @@ export function placesIn(kept: HeldDoc<KeptNavigation>): PlacedPlaces {
 }
 
 export async function commitPlaces<T>(kept: HeldDoc<KeptNavigation>, move: MovePlaces<T>): Promise<T> {
-	const moved = move(placesIn(kept));
+	const was = placesIn(kept);
+	const moved = move(was);
 
 	if (moved.next === null) {
 		return moved.answer;
 	}
 
 	const { tabs, flows } = moved.next;
-	kept.change(flows === null ? { tabs } : { tabs, flows }, `navigation ${moved.reason}`);
+	kept.change(flows === null || flows === was.flows ? { tabs } : { tabs, flows }, `navigation ${moved.reason}`);
 	await kept.flush();
 	return moved.answer;
 }
