@@ -1,0 +1,29 @@
+{
+	"name": "@sumi/flow-board-plugin",
+	"version": "0.1.0",
+	"description": "Flow board: draws the open Flow's split, one page per tab kept alive, the tab rows of the lower panes and the split edges",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/flow-strip-plugin": "0.1.0",
+		"@sumi/navigation-plugin": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/app-host": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/navigation": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

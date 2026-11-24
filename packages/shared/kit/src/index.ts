@@ -64,6 +64,7 @@ export {
 	usePopover,
 } from "./components/popover";
 export { PopoverLabel } from "./components/popover-label";
+export { SpotMenu } from "./components/spot-menu";
 
 export { Progress, ProgressBar, StatusProgress } from "./components/progress";
 export { ProgressRing } from "./components/progress-ring";

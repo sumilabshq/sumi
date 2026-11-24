@@ -25,6 +25,8 @@ export const LINTED_ROOTS: readonly string[] = [
 export const SKIPPED_PATHS: readonly string[] = [
 	"packages/shared/kit/src/emojis/emoji-table.ts",
 	"packages/shared/kit/src/icons/icon-table.ts",
+	"packages/shared/kit/src/icons/filled-icon-table.ts",
+	"packages/shared/kit/src/emojis/fluent-3d-table.ts",
 ];
 
 export const ALLOWED_COMMENT_PREFIXES: readonly string[] = ["TODO:", "TRADE-OFF:"];

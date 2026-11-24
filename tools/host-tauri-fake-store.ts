@@ -37,6 +37,7 @@ export class FakeStore {
 	readonly known = new Map<string, WorkspaceEntry>();
 	readonly quarantinedOnce = new Map<string, string>();
 	refusesFirst = false;
+	conversionRefusal: string | null = "the fake store allows no conversion";
 	answerOverride: unknown = undefined;
 
 	invoke: Invoke = async (command, args) => {
@@ -65,6 +66,7 @@ export class FakeStore {
 			read_lines: () => this.readLines(key),
 			take_entry: () => this.takeEntry(key, String(args["key"])),
 			list_workspaces: () => [...this.known.values()],
+			conversion_refusal: () => this.conversionRefusal,
 			rename_workspace: () => null,
 			attach_workspace_folder: () => this.known.get(String(args["id"])) ?? null,
 			mark_workspace_opened: () => this.known.get(String(args["id"])) ?? refuse({ code: "no-workspace" }),

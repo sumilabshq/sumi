@@ -15,6 +15,7 @@ Sumi is a quiet tool that gives the screen to the work. Five aims, in this order
 Today's answers to the aims. Each may change when a better answer serves the same aims; none is a direction to push further.
 
 - **Soft corners from one scale.** A frame takes its corner from `--r-*` (4, 6, 8, 12, 14, 16px): a plate 14, a control 8, a chip 6. The mascot stays square: the clover is drawn in square cells. A corner written as a number in a sheet is debt; many frames still carry a literal 0 and move to the scale as they are touched.
+- **The page panel.** The approved Flows redesign (canvas `tab-215`) overrides square frames here: the page is one white panel on the grey `--frame`, radius 10 (`--r-page`), inset `--frame-gap` (8px) from the window, no border, `--shadow-page`; split panes share it with a 1px `--divider`.
 - **One surface, no shadows, lines edge to edge.** Depth and boxes compete with content.
 - **Icons in one colour.** An icon's margin lives in the icon itself, so an author can draw it to the box's full size.
 
@@ -58,7 +59,7 @@ Everything else is fixed. The delight layers are drawn on the canvas's "Delight"
 
 ## Typography Rules
 
-IBM Plex Sans for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme; IBM Plex Serif, the one serif, for the voice: greetings, empty pages and a document's title. Plex Serif carries Cyrillic in roman and italic.
+Inter (variable, weight 400, letter-spacing -0.01em) for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme; IBM Plex Serif, the one serif, for the voice: greetings, empty pages and a document's title. Plex Serif carries Cyrillic in roman and italic.
 
 | Step       | Size / weight      | Use                                                       |
 | ---------- | ------------------ | --------------------------------------------------------- |
@@ -66,7 +67,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 | Page title | 30 / 500 serif     | a document's title in a pane                              |
 | Workspace  | 15 / 600           | the workspace name in the sidebar                         |
 | Chat       | 14 / 400, line 1.6 | every message, tool row, table, question and the composer |
-| UI         | 13 / 400           | sidebar rows, headers, menus, options                     |
+| UI         | 12.5 / 400         | sidebar rows, headers, menus, options                     |
 | Code       | 13 / 400 mono      | code blocks, inline code, commands in tool rows           |
 | Label      | 12 / 400           | section labels in the sidebar                             |
 
@@ -78,7 +79,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 ## Component Stylings
 
 - **Row** (sidebar, menu, list): 30px, a 6px corner (`--r-sm`), hover by the menu glide, a 16px solid icon, 10px gap. Hover and keyboard focus: one light fill. Pressed: a stronger fill. Selected: the soft fill and 500.
-- **Icons**: Sumi's own apps use solid drawn icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
+- **Icons**: Hugeicons stroke-rounded at 12 to 13px, stroke 1.5; the kit's own apps may still draw solid icons on a 16px grid; sites use their real favicon turned into a one-colour mask; controls (search, close, chevron) stay thin line icons, so a control never looks like content.
 - **Code block**: filled with the soft step, no border, mono 13px, syntax in muted colours, copy and wrap icons at the right.
 - **Inline code**: the soft fill, mono 13px, square, padding 2px 5px.
 - **Link**: ink-coloured text, underline on hover. A file path is a link and looks the same.
@@ -91,7 +92,7 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 - **Questions**: one kind only, every question required. A block with the soft fill, the last thing in the chat: the mascot and "Sumi is waiting for you 1 of N", the question in 600, a line of why, numbered options (press 1–9, the number a filled square), "Or answer in your own words" with the caret, the next question as one quiet row. An answered question becomes a tool-group-like row "Asked 1 question" with the question and answer under the tree. Scrolled away from it, the arrow that scrolls to the latest message says "Back to questions".
 - **Composer**: the caret (a yellow block when focused, an outlined block when not), the hint, expand at the top right; below, `+` attach, model, effort, mode, folder, usage bar, and Send at the right.
 - **Send**: the one solid control: ink square with a paper arrow; an outline when the input is empty; a stop square while the agent works.
-- **Popup**: opaque paper in the double frame (Cube grammar), no shadow, no blur, rows 32px; a divider runs edge to edge; the highlighted row is the inverted block; the picked item ends with the mascot mark.
+- **Popup**: opaque paper, radius 10 (`--r-menu`), 1px `--line-menu` border, `--shadow-menu`, no blur, rows 32px; it scales from 0.85 to full out of its trigger in 70ms and back in 70ms; a divider runs edge to edge; the highlighted row is the inverted block; the picked item ends with the mascot mark.
 - **Data marks** (a plugin): `{meter done/total}` squares, the rest empty; `{meter passed/failed/total}` adds red ones; `{bar N%}`; `{trend a b c …}`; `{ok}` green, `{progress}` blue, `{fail}` red, `{neutral}` white, `{skip}` outline. The text always says the number too.
 
 ## Layout Principles
@@ -106,13 +107,14 @@ IBM Plex Sans for everything people read; JetBrains Mono for code, commands, fil
 
 ## Depth & Elevation
 
-| Level        | What                        | Anatomy                                                                                                                                        |
-| ------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Paper        | the window, sidebars, panes | one colour, no edge; a fractal-noise grain at 8% and a radial light at 5% ink from the top centre, over everything, never catching the pointer |
-| Popup        | menus, pickers              | paper in the double frame, no shadow                                                                                                           |
-| Command menu | the ⌘K menu                 | covers the whole window in the paper colour; no shadow, no blur                                                                                |
+| Level        | What                          | Anatomy                                                                                                                                        |
+| ------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Paper        | the window, sidebars, panes   | one colour, no edge; a fractal-noise grain at 8% and a radial light at 5% ink from the top centre, over everything, never catching the pointer |
+| Page         | the active tab, the main page | no border, `--shadow-page`: a 0.5px hairline and a 1px lift                                                                                    |
+| Popup        | menus, pickers                | paper, 1px `--line-menu` border, radius 10, `--shadow-menu`                                                                                    |
+| Command menu | the ⌘K menu                   | covers the whole window in the paper colour; no shadow, no blur                                                                                |
 
-Nothing casts a shadow. A line stands between panes, under a table header and as the two chat dividers; a code block is filled, never outlined.
+Only the active tab, the main page and popups cast a shadow. A line stands between panes, under a table header and as the two chat dividers; a code block is filled, never outlined.
 
 ## Do's and Don'ts
 
@@ -194,3 +196,5 @@ The mascot, a square with an eye, is the alphabet: a few signs taken from it rep
 - The ink anywhere its role does not list; a gradient but the working line, the shimmer and the top light; a violet accent nobody chose; a rainbow glow.
 - A third grey, a second text size inside the chat, bold for anything but a heading.
 - A status in an uppercase badge.
+
+Owner override: UI text 400 weight and Inter sized to match the old Plex 13px.

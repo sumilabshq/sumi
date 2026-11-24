@@ -22,7 +22,6 @@ const SOURCES = [
 	"plugins/ai/permission-mode/src",
 	"plugins/ai/plan-usage/src",
 	"plugins/ai/model-picker/src",
-	"plugins/ai/effort-picker/src",
 	"plugins/control-menu/src",
 	"plugins/ai/sessions/src",
 	"plugins/tabs/tab-strip/src",
@@ -77,6 +76,34 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
 	"@sumi/chat-title-plugin/head-title.css":
 		"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
+	"@sumi/flows-sidebar-plugin/flows-sidebar.css":
+		"plugins/tabs/flows-sidebar/src/features/flows-column/ui/flows-sidebar/flows-sidebar.css",
+	"@sumi/flow-strip-plugin/pane-tab-row.css":
+		"plugins/tabs/flow-strip/src/features/pane-tabs/ui/pane-tab-row/pane-tab-row.css",
+	"@sumi/flow-strip-plugin/flow-strip.css":
+		"plugins/tabs/flow-strip/src/features/flow-header/ui/flow-strip/flow-strip.css",
+	"@sumi/flow-board-plugin/flow-board.css":
+		"plugins/tabs/flow-board/src/features/flow-board/ui/flow-board/flow-board.css",
+	"@sumi/flows-home-plugin/flows-home.css":
+		"plugins/tabs/flows-home/src/features/home/ui/flows-home/flows-home.css",
+	"@sumi/flows-home-plugin/edit-toggle.css":
+		"plugins/tabs/flows-home/src/features/home/ui/edit-toggle/edit-toggle.css",
+	"@sumi/flows-home-plugin/launcher-field.css":
+		"plugins/tabs/flows-home/src/features/launcher/ui/launcher-field/launcher-field.css",
+	"@sumi/flows-home-plugin/setup-tiles.css":
+		"plugins/tabs/flows-home/src/features/setups/ui/setup-tiles/setup-tiles.css",
+	"@sumi/flows-home-plugin/setup-thumb.css":
+		"plugins/tabs/flows-home/src/features/setups/ui/setup-thumb/setup-thumb.css",
+	"@sumi/flows-home-plugin/app-tiles.css":
+		"plugins/tabs/flows-home/src/features/apps/ui/app-tiles/app-tiles.css",
+	"@sumi/flows-home-plugin/continue-rows.css":
+		"plugins/tabs/flows-home/src/features/continue/ui/continue-rows/continue-rows.css",
+	"@sumi/flows-home-plugin/tile-chrome.css":
+		"plugins/tabs/flows-home/src/shared/ui/tile-chrome/tile-chrome.css",
+	"@sumi/flows-home-plugin/app-icon.css":
+		"plugins/tabs/flows-home/src/shared/ui/app-icon/app-icon.css",
+	"@sumi/flows-home-plugin/home-section.css":
+		"plugins/tabs/flows-home/src/shared/ui/home-section/home-section.css",
 	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
 	"@sumi/pinned-tabs-plugin/pinned-tabs.css":
 		"plugins/tabs/pinned-tabs/src/features/pinned-tabs/ui/pinned-tabs/pinned-tabs.css",
@@ -122,8 +149,6 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-menu.css",
 	"@sumi/model-picker-plugin/model-button.css":
 		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-button.css",
-	"@sumi/effort-picker-plugin/effort-button.css":
-		"plugins/ai/effort-picker/src/features/effort-picker/ui/effort-button/effort-button.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
 const ENTRY = `@layer theme, base, components, utilities;
@@ -151,7 +176,6 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/slash-commands-plugin/slash-commands.css";
 @import "@sumi/model-picker-plugin/model-menu.css";
 @import "@sumi/model-picker-plugin/model-button.css";
-@import "@sumi/effort-picker-plugin/effort-button.css";
 @import "@sumi/plan-usage-plugin/usage-button.css";
 @import "@sumi/chat-plugin/new-chat-row.css";
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
@@ -160,6 +184,20 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sessions-plugin/sessions-popover.css";
 @import "@sumi/sessions-plugin/sessions-chevron.css";
 @import "@sumi/chat-title-plugin/head-title.css";
+@import "@sumi/flows-sidebar-plugin/flows-sidebar.css";
+@import "@sumi/flow-strip-plugin/pane-tab-row.css";
+@import "@sumi/flow-strip-plugin/flow-strip.css";
+@import "@sumi/flow-board-plugin/flow-board.css";
+@import "@sumi/flows-home-plugin/flows-home.css";
+@import "@sumi/flows-home-plugin/edit-toggle.css";
+@import "@sumi/flows-home-plugin/launcher-field.css";
+@import "@sumi/flows-home-plugin/setup-tiles.css";
+@import "@sumi/flows-home-plugin/setup-thumb.css";
+@import "@sumi/flows-home-plugin/app-tiles.css";
+@import "@sumi/flows-home-plugin/continue-rows.css";
+@import "@sumi/flows-home-plugin/tile-chrome.css";
+@import "@sumi/flows-home-plugin/app-icon.css";
+@import "@sumi/flows-home-plugin/home-section.css";
 @import "@sumi/tab-strip-plugin/tab-strip.css";
 @import "@sumi/pinned-tabs-plugin/pinned-tabs.css";
 @import "@sumi/tab-groups-plugin/group-editor.css";

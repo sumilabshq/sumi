@@ -12,7 +12,7 @@ import {
 	ReopenClosedAskSchema,
 	TabAskSchema,
 } from "../../shared/schema/tab-asks.schema.js";
-import { duplicatePlan, openBelowPlan, openPlan, reopenPlan } from "./lib/opening-plans.js";
+import { duplicatePlan, openBelowPlan, openPlan, reopenPlan } from "../../shared/lib/showing/opening-plans.js";
 import { resolvedAppOf } from "../../shared/lib/tabs/app-abilities.js";
 import { navigatePlan, resolvedTargetOf } from "./lib/navigating-plans.js";
 import { openedOnce } from "./lib/once-plans.js";

@@ -20,6 +20,18 @@ export function placesWindowHere(search: string | null, workspaceId: string): st
 	return placesWindowOf(search === null ? MAIN_STUDIO_WINDOW : studioWindowOf(search).label, workspaceId);
 }
 
+export interface PlacesWindowPage {
+	readonly platform: string;
+	readonly search: string;
+	readonly workspaceId: string;
+}
+
+const SEARCH_PLATFORM = "tauri";
+
+export function placesWindowOfPage({ platform, search, workspaceId }: PlacesWindowPage): string {
+	return placesWindowHere(platform === SEARCH_PLATFORM ? search : null, workspaceId);
+}
+
 export function labelOfPlacesWindow(placesWindow: string): string {
 	return placesWindow.split(PLACES_WINDOW_JOIN)[0] ?? placesWindow;
 }

@@ -1,0 +1,661 @@
+.wg-root.sumi-flows-column {
+	display: flex;
+	flex: none;
+	width: auto;
+	min-height: 0;
+}
+
+.wg-root.sumi-flows-column .wg-kit-side-rail {
+	background: none;
+}
+
+.sumi-flows-title {
+	display: flex;
+	align-items: center;
+	gap: var(--space-0-5);
+	height: 100%;
+	pointer-events: auto;
+}
+
+.sumi-flows-title[data-docked] {
+	box-sizing: border-box;
+	flex: none;
+	padding-inline-end: var(--space-1-5);
+}
+
+.sumi-flows-title-acts {
+	display: flex;
+	align-items: center;
+	gap: var(--space-0-5);
+	margin-inline-start: auto;
+}
+
+.wg-root.sumi-flows-hidden {
+	position: relative;
+	flex: none;
+	width: 0;
+}
+
+.sumi-flows-edge {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 3;
+	width: var(--space-1-5);
+}
+
+.sumi-flows-float {
+	position: absolute;
+	top: var(--header-h);
+	bottom: var(--space-1-5);
+	left: var(--space-1-5);
+	z-index: 5;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+	background: var(--surface-menu);
+	border: 1px solid var(--line-menu);
+	border-radius: var(--r-menu);
+	box-shadow: var(--shadow-menu);
+	transform-origin: left top;
+	animation: sumi-flows-float-in 70ms var(--ease-out-expo);
+}
+
+.sumi-flows-float[data-leaving] {
+	pointer-events: none;
+	animation: sumi-flows-float-out 70ms var(--ease-out-expo) forwards;
+}
+
+@keyframes sumi-flows-float-in {
+	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+}
+
+@keyframes sumi-flows-float-out {
+	to {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+}
+
+.sumi-flows {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: var(--space-px);
+	box-sizing: border-box;
+	min-height: 0;
+	padding: var(--space-2);
+	overflow-y: auto;
+	font-family: var(--font-ui);
+	font-size: var(--fs-13);
+	font-weight: var(--fw-regular);
+	letter-spacing: var(--tracking-ui);
+}
+
+.sumi-flows-section {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-px);
+}
+
+.sumi-flows-section + .sumi-flows-section {
+	margin-top: var(--space-2);
+}
+
+.sumi-flows-folder {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-px);
+	margin-top: var(--space-1-5);
+}
+
+.sumi-flows-trigger {
+	display: contents;
+}
+
+.sumi-flows-label {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-sizing: border-box;
+	height: var(--h-xs);
+	padding: 0 0 0 var(--space-2);
+	font-size: var(--fs-12);
+	color: var(--text-3);
+}
+
+.sumi-flows-label-action {
+	margin-inline-end: var(--space-2);
+	padding: 0 var(--space-1);
+	font: inherit;
+	color: inherit;
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-xs);
+}
+
+.sumi-flows-label-action:is(:hover, :focus-visible) {
+	color: var(--text);
+}
+
+.sumi-flows-row {
+	position: relative;
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	height: var(--h-sm);
+	padding-inline-end: var(--space-2);
+	color: var(--text-2);
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-row:is(:hover, :focus-within),
+.sumi-flows-row[data-drop] {
+	color: var(--text);
+	background: var(--hover);
+}
+
+.sumi-flows-row[data-current] {
+	color: var(--text);
+	background: var(--group-plain);
+}
+
+.sumi-flows-row-main {
+	display: flex;
+	flex: 1 1 auto;
+	gap: var(--space-2);
+	align-items: center;
+	min-width: 0;
+	height: 100%;
+	padding: 0 0 0 var(--space-2);
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: inherit;
+}
+
+.sumi-flows-row-main:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: -2px;
+}
+
+.sumi-flows-row[data-indented] .sumi-flows-row-main {
+	padding-inline-start: calc(var(--space-2) * 3 + var(--space-px));
+}
+
+.sumi-flows-glyph {
+	display: grid;
+	flex: none;
+	grid-template: 100% / 100%;
+	place-items: center;
+	width: var(--icon);
+	height: var(--icon);
+}
+
+.sumi-flows-dot {
+	display: block;
+	width: 6px;
+	height: 6px;
+	border-radius: var(--r-full);
+	box-shadow: inset 0 0 0 1.25px var(--line-strong);
+}
+
+.sumi-flows-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sumi-flows-sub {
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--fs-12);
+	color: var(--text-3);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sumi-flows-chevron {
+	display: none;
+	flex: none;
+	grid-template: 100% / 100%;
+	place-items: center;
+	width: var(--icon);
+	height: var(--icon);
+}
+
+.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-glyph {
+	display: none;
+}
+
+.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-chevron {
+	display: grid;
+}
+
+.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-status {
+	display: none;
+}
+
+.sumi-flows-add {
+	display: none;
+	flex: none;
+	place-items: center;
+	width: 20px;
+	height: 20px;
+	margin-inline-end: calc(var(--space-1) * -1);
+	padding: 0;
+	color: var(--text-2);
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-xs);
+}
+
+.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-add {
+	display: grid;
+}
+
+.sumi-flows-add:hover {
+	color: var(--text);
+	background: var(--hover);
+}
+
+.sumi-flows-status {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: var(--icon-sm);
+	height: var(--icon-sm);
+	margin-inline-start: var(--space-2);
+}
+
+.sumi-flows-status[data-status="asking"]::before,
+.sumi-flows-status[data-status="failed"]::before {
+	width: 6px;
+	height: 6px;
+	content: "";
+	border-radius: var(--r-full);
+}
+
+.sumi-flows-status[data-status="asking"]::before {
+	background: var(--status-question);
+}
+
+.sumi-flows-status[data-status="failed"]::before {
+	background: var(--status-blocked);
+}
+
+.sumi-flows-status[data-status="unread"] {
+	color: var(--status-done);
+}
+
+.sumi-flows-ring {
+	animation: sumi-flows-spin 900ms linear infinite;
+}
+
+.sumi-flows-ring-track,
+.sumi-flows-ring-arc {
+	fill: none;
+	stroke-width: 2;
+}
+
+.sumi-flows-ring-track {
+	stroke: var(--divider);
+}
+
+.sumi-flows-ring-arc {
+	stroke: var(--text-2);
+	stroke-linecap: round;
+}
+
+@keyframes sumi-flows-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sumi-flows-ring,
+	.sumi-flows-float {
+		animation: none;
+	}
+}
+
+.sumi-flows-more {
+	box-sizing: border-box;
+	height: var(--h-xs);
+	padding: 0 0 0 calc(var(--space-2) * 2 + var(--icon));
+	font: inherit;
+	font-size: var(--fs-12);
+	color: var(--text-3);
+	text-align: left;
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-more:is(:hover, :focus-visible) {
+	color: var(--text);
+}
+
+.sumi-flows-field {
+	display: flex;
+	gap: var(--space-2);
+	align-items: center;
+	box-sizing: border-box;
+	height: var(--h-sm);
+	padding: 0 var(--space-2) 0 var(--space-1);
+	background: var(--plate);
+	border: 1px solid var(--line-menu);
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-field-icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	color: var(--text-2);
+	cursor: pointer;
+	background: var(--hover);
+	border: 0;
+	border-radius: var(--r-xs);
+}
+
+.sumi-flows-field-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0;
+	font: inherit;
+	color: var(--text);
+	background: transparent;
+	border: 0;
+	outline: 0;
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="red"] {
+	--folder-color: var(--red);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="orange"] {
+	--folder-color: var(--orange);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="amber"] {
+	--folder-color: var(--yellow);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="green"] {
+	--folder-color: var(--green);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="teal"] {
+	--folder-color: var(--cyan);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="blue"] {
+	--folder-color: var(--blue);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="purple"] {
+	--folder-color: var(--purple);
+}
+
+:is(.sumi-flows-row, .sumi-flows-field, .sumi-flows-picker-color)[data-color="pink"] {
+	--folder-color: var(--pink);
+}
+
+.sumi-flows-row[data-color] :is(.sumi-flows-glyph, .sumi-flows-name),
+.sumi-flows-field[data-color] .sumi-flows-field-icon {
+	color: var(--folder-color);
+}
+
+.sumi-flows-picker-colors {
+	display: flex;
+	justify-content: space-between;
+	height: var(--h-xs);
+	padding: 0 var(--space-1);
+}
+
+.sumi-flows-picker-color {
+	--folder-color: transparent;
+	display: grid;
+	place-items: center;
+	width: var(--h-xs);
+	height: var(--h-xs);
+	padding: 0;
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-full);
+}
+
+.sumi-flows-picker-color::before {
+	width: 12px;
+	height: 12px;
+	content: "";
+	background: var(--folder-color);
+	border-radius: var(--r-full);
+	box-shadow: inset 0 0 0 1.25px var(--line-strong);
+}
+
+.sumi-flows-picker-color[data-color]::before {
+	box-shadow: none;
+}
+
+.sumi-flows-picker-color:hover {
+	background: var(--hover);
+}
+
+.sumi-flows-picker-color[aria-checked="true"] {
+	box-shadow: inset 0 0 0 1.5px var(--text-2);
+}
+
+.sumi-flows-glyph[data-scale="choice"] {
+	width: 22px;
+	height: 22px;
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) {
+	--pop-motion: scale;
+	min-width: 0;
+	padding: 0;
+	font-family: var(--font-ui);
+	font-size: var(--fs-13);
+	font-weight: var(--fw-ui);
+	letter-spacing: var(--tracking-ui);
+	background: var(--surface-menu);
+	border: 1px solid var(--line-menu);
+	border-radius: var(--r-menu);
+	box-shadow: var(--shadow-menu);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) > .wg-kit-pop-inner {
+	padding: 0;
+}
+
+.sumi-flows-picker {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+	box-sizing: content-box;
+	width: calc(var(--h-sm) * 9);
+	padding: var(--space-1);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-seg.sumi-flows-picker-tabs {
+	--seg-pad: 2px;
+	background: var(--fill);
+	display: flex;
+	border-radius: calc(var(--r-sm) + 2px);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-seg.sumi-flows-picker-tabs button {
+	flex: 1 1 0;
+	height: var(--h-xs);
+	padding: 0 var(--space-2);
+	font-size: var(--fs-13);
+	font-weight: var(--fw-ui);
+	letter-spacing: var(--tracking-ui);
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-picker-search {
+	display: flex;
+	gap: var(--space-1);
+	align-items: center;
+}
+
+.sumi-flows-picker-field {
+	display: flex;
+	flex: 1 1 auto;
+	gap: var(--space-2);
+	align-items: center;
+	box-sizing: border-box;
+	min-width: 0;
+	height: var(--h-sm);
+	padding: 0 var(--space-2);
+	color: var(--text-3);
+	background: var(--fill);
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-picker-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0;
+	font: inherit;
+	color: var(--text);
+	background: transparent;
+	border: 0;
+	outline: 0;
+}
+
+.sumi-flows-picker-input::placeholder {
+	color: var(--text-3);
+}
+
+.sumi-flows-picker-remove {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: var(--h-sm);
+	height: var(--h-sm);
+	padding: 0;
+	color: var(--text-2);
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-picker-remove:hover:not(:disabled) {
+	color: var(--text);
+	background: var(--hover);
+}
+
+.sumi-flows-picker-remove:disabled {
+	color: var(--text-3);
+	cursor: default;
+}
+
+.sumi-flows-picker-grid {
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: none;
+}
+
+.sumi-flows-picker-rows {
+	position: relative;
+}
+
+.sumi-flows-picker-row {
+	position: absolute;
+	left: 0;
+	display: grid;
+	grid-template-columns: repeat(9, var(--h-sm));
+	height: var(--h-sm);
+}
+
+.sumi-flows-picker-choice {
+	display: grid;
+	place-items: center;
+	width: var(--h-sm);
+	height: var(--h-sm);
+	padding: 0;
+	color: var(--text-2);
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-sm);
+}
+
+.sumi-flows-picker-choice:hover,
+.sumi-flows-picker-choice[data-active] {
+	color: var(--text);
+	background: var(--hover);
+}
+
+.sumi-flows-picker-choice[aria-selected="true"] {
+	color: var(--text);
+	background: var(--group-plain);
+}
+
+.sumi-flows-picker-none {
+	display: grid;
+	place-items: center;
+	height: calc(var(--h-sm) * 7);
+	margin: 0;
+	color: var(--text-3);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop.sumi-flows-chats {
+	box-sizing: border-box;
+	width: auto;
+	min-width: 176px;
+	font-size: var(--fs-12);
+	font-weight: var(--fw-ui);
+	letter-spacing: var(--tracking-ui);
+}
+
+.sumi-flows-chats-head {
+	display: flex;
+	align-items: center;
+	height: var(--h-xs);
+	padding: 0 var(--space-2);
+	color: var(--text-3);
+}
+
+.sumi-flows-chats-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	min-height: var(--h-sm);
+	padding: 0 var(--space-2);
+	color: var(--text-2);
+}
+
+.sumi-flows-menu-colors {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+	padding: var(--space-1) var(--space-2);
+}
+
+.sumi-flows-menu-label {
+	font-size: var(--fs-12);
+	color: var(--text-3);
+}

@@ -1,27 +1,26 @@
-import { z } from "zod";
 import type { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { PlacedTabsSchema } from "../../../shared/schema/tabs.schema.js";
-import type { PlacedTabs } from "../../../shared/schema/tabs.schema.js";
 import { emptyPlacedTabs } from "../../../shared/lib/tabs/kept-tabs.js";
-import type { MovePlacedTabs } from "../../../shared/lib/settling/settling.js";
+import type { MovePlaces, PlacedPlaces } from "../../../shared/lib/flows/flow-moves.js";
+import { reconciling } from "../../../shared/lib/flows/flow-reconcile.js";
+import type { ReconcileFacts } from "../../../shared/lib/flows/flow-reconcile.js";
 import { windowListsFolded } from "./legacy-tabs.js";
+import { commitPlaces, placesIn } from "./kept-places.js";
+import type { KeptNavigation } from "./kept-places.js";
+import { TabsGateway } from "../tabs.gateway.js";
 
 export { workspaceTabsOf } from "./legacy-tabs.js";
 export { groupEntriesOf } from "./group-entries.js";
 export { oldViewsOf, viewsCarried } from "./carried-panes.js";
-import { TabsGateway } from "../tabs.gateway.js";
-
-export const KeptNavigationSchema = z.looseObject({
-	tabs: z.unknown().optional(),
-	unreadableTabs: z.unknown().optional(),
-	panesCarried: z.boolean().optional(),
-});
-
-export type KeptNavigation = z.infer<typeof KeptNavigationSchema>;
+export { KeptNavigationSchema } from "./kept-places.js";
+export { flowsConverted } from "./flows-conversion.js";
+export type { FlowsConversionFacts } from "./flows-conversion.js";
+export type { KeptNavigation } from "./kept-places.js";
 
 export interface KeptWorkspaces {
 	readonly ownId: string;
 	readonly navigationOf: (workspaceId: string) => Promise<HeldDoc<KeptNavigation>>;
+	readonly reconcileFacts?: () => ReconcileFacts | null;
 }
 
 export class TauriTabsGateway extends TabsGateway {
@@ -36,38 +35,47 @@ export class TauriTabsGateway extends TabsGateway {
 		return this.workspaces.ownId;
 	}
 
-	override movePlacedTabsIn<T>(workspaceId: string, move: MovePlacedTabs<T>): Promise<T> {
+	override movePlacesIn<T>(workspaceId: string, move: MovePlaces<T>): Promise<T> {
 		return new TauriTabsGateway({
 			...this.workspaces,
 			ownId: workspaceId,
-		}).movePlacedTabs(move);
+		}).movePlaces(move);
 	}
 
-	override async placedTabs(): Promise<PlacedTabs> {
-		return placedIn(await this.ready);
+	override async places(): Promise<PlacedPlaces> {
+		return placesIn((await this.ready).now());
 	}
 
-	override async movePlacedTabs<T>(move: MovePlacedTabs<T>): Promise<T> {
-		const kept = await this.ready;
-		const moved = move(placedIn(kept));
-
-		if (moved.next === null) {
-			return moved.answer;
-		}
-
-		kept.change({ tabs: moved.next }, `navigation ${moved.reason}`);
-		await kept.flush();
-		return moved.answer;
+	override async movePlaces<T>(move: MovePlaces<T>): Promise<T> {
+		return commitPlaces(await this.ready, reconciling(move, this.workspaces.reconcileFacts?.() ?? null));
 	}
 
 	override placedTabsChanged(listener: () => void): () => void {
+		return this.watched(() => listener);
+	}
+
+	override flowsChanged(listener: () => void): () => void {
+		return this.watched((kept) => {
+			let seen = kept.now().flows;
+			return () => {
+				const now = kept.now().flows;
+
+				if (now !== seen) {
+					seen = now;
+					listener();
+				}
+			};
+		});
+	}
+
+	private watched(listenerOf: (kept: HeldDoc<KeptNavigation>) => () => void): () => void {
 		const watching = {
 			isStopped: false,
 			stop: (): void => undefined,
 		};
 		void this.ready.then((kept) => {
 			if (!watching.isStopped) {
-				watching.stop = kept.watch(listener);
+				watching.stop = kept.watch(listenerOf(kept));
 			}
 		});
 		return () => {
@@ -75,10 +83,6 @@ export class TauriTabsGateway extends TabsGateway {
 			watching.stop();
 		};
 	}
-}
-
-function placedIn(kept: HeldDoc<KeptNavigation>): PlacedTabs {
-	return PlacedTabsSchema.parse(kept.now().tabs);
 }
 
 async function readyTabsIn(kept: HeldDoc<KeptNavigation>): Promise<HeldDoc<KeptNavigation>> {

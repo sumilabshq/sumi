@@ -36,6 +36,16 @@
 			"types": "./dist/icons/icon-markup.d.ts",
 			"default": "./dist/icons/icon-markup.js"
 		},
+		"./filled-icons": {
+			"source": "./src/icons/filled-icons.ts",
+			"types": "./dist/icons/filled-icons.d.ts",
+			"default": "./dist/icons/filled-icons.js"
+		},
+		"./fluent-emojis": {
+			"source": "./src/emojis/fluent-emojis.ts",
+			"types": "./dist/emojis/fluent-emojis.d.ts",
+			"default": "./dist/emojis/fluent-emojis.js"
+		},
 		"./emoji-table": {
 			"source": "./src/emojis/emoji-table.ts",
 			"types": "./dist/emojis/emoji-table.d.ts",

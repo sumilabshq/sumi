@@ -1,0 +1,241 @@
+.sumi-pane-tabs {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--space-0-5);
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	height: var(--h-sm);
+}
+
+.sumi-pane-tabs-list {
+	display: flex;
+	flex: 0 1 auto;
+	align-items: center;
+	min-width: 0;
+	gap: var(--space-0-5);
+}
+
+.sumi-pane-tabs-more {
+	display: flex;
+	flex: none;
+}
+
+.sumi-pane-tabs-notice {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	padding: var(--space-none) var(--space-2-5);
+	overflow: hidden;
+	background: var(--frame);
+	color: var(--text-2);
+	font: var(--fw-ui) var(--fs-13) / 1 var(--font-ui);
+	letter-spacing: var(--tracking-ui);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: default;
+}
+
+.sumi-pane-tab {
+	position: relative;
+	display: flex;
+	flex: 0 1 auto;
+	align-items: center;
+	gap: var(--space-1-5);
+	box-sizing: border-box;
+	width: var(--tab-w);
+	min-width: var(--tab-min-w);
+	height: var(--h-sm);
+	padding: var(--space-none) var(--tab-pad-x);
+	border-radius: var(--r-tab);
+	background: var(--sunken);
+	color: var(--text-3);
+	font: var(--fw-tab) var(--fs-13) / 1 var(--font-ui);
+	letter-spacing: var(--tracking-ui);
+	white-space: nowrap;
+	cursor: default;
+	user-select: none;
+	-webkit-user-select: none;
+	transition:
+		background-color var(--dur-out) var(--ease-touch),
+		color var(--dur-out) var(--ease-touch);
+}
+
+.sumi-pane-tab:hover {
+	color: var(--text-2);
+}
+
+.sumi-pane-tab[data-active] {
+	background: var(--plate);
+	box-shadow: var(--shadow-page);
+	color: var(--text);
+}
+
+.sumi-pane-tab[data-mode="icon"] {
+	flex: none;
+	justify-content: center;
+	width: var(--h-sm);
+	min-width: 0;
+	padding: var(--space-none);
+}
+
+.sumi-pane-tab[data-lifted] {
+	opacity: 0.4;
+}
+
+.sumi-pane-tab-face {
+	--chat-tab-icon-size: var(--icon-sm);
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: var(--icon-sm);
+	height: var(--icon-sm);
+	overflow: hidden;
+}
+
+/* TRADE-OFF: !important beats the faces' inline pixel sizes; a size prop on TabFace is cleaner */
+.sumi-pane-tab-face > *,
+.sumi-pane-tab-face svg {
+	width: var(--icon-sm) !important;
+	height: var(--icon-sm) !important;
+	margin: var(--space-none);
+}
+
+.sumi-pane-tab-face :is(span, svg, img, canvas) {
+	max-width: 100% !important;
+	max-height: 100% !important;
+	object-fit: contain;
+}
+
+.sumi-pane-tab-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sumi-pane-tab-rename {
+	box-sizing: border-box;
+	flex: 1 1 auto;
+	width: 0;
+	min-width: 0;
+	padding: var(--space-none);
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: var(--text);
+	font: inherit;
+	letter-spacing: inherit;
+}
+
+.sumi-pane-tab-end {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: var(--space-4);
+	height: var(--space-4);
+}
+
+.sumi-pane-tab-end > * {
+	grid-area: 1 / 1;
+}
+
+.sumi-pane-tab-dot {
+	flex: none;
+	width: var(--space-2);
+	height: var(--space-2);
+	border-radius: var(--r-full);
+}
+
+.sumi-pane-tab:is(:hover, :focus-visible) .sumi-pane-tab-end .sumi-pane-tab-dot {
+	visibility: hidden;
+}
+
+.sumi-pane-tab[data-mode="icon"] .sumi-pane-tab-dot {
+	position: absolute;
+	top: var(--space-1-5);
+	right: var(--space-1-5);
+	width: var(--space-1-5);
+	height: var(--space-1-5);
+}
+
+.sumi-pane-tab-dot[data-mark="unread"] {
+	background: var(--status-done);
+}
+
+.sumi-pane-tab-dot[data-mark="asking"] {
+	background: var(--status-question);
+}
+
+.sumi-pane-tab-dot[data-mark="failed"] {
+	background: var(--status-blocked);
+}
+
+.sumi-pane-tab-close {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--space-4);
+	height: var(--space-4);
+	margin: var(--space-none);
+	padding: var(--space-none);
+	border: 0;
+	border-radius: var(--r-xs);
+	background: transparent;
+	color: var(--text-3);
+	visibility: hidden;
+	cursor: default;
+}
+
+.sumi-pane-tab:is(:hover, :focus-visible) .sumi-pane-tab-close {
+	visibility: visible;
+}
+
+.sumi-pane-tab-close:hover {
+	background: var(--hover);
+	color: var(--text);
+}
+
+.sumi-pane-ghost {
+	position: fixed;
+	z-index: 90;
+	box-sizing: border-box;
+	height: var(--h-sm);
+	padding: var(--space-none) var(--space-2-5);
+	border-radius: var(--r-md);
+	background: var(--plate);
+	box-shadow: var(--shadow-page);
+	color: var(--text);
+	font: var(--fw-ui) var(--fs-13) / var(--h-sm) var(--font-ui);
+	letter-spacing: var(--tracking-ui);
+	white-space: nowrap;
+	pointer-events: none;
+	transform: translate(var(--space-none), -50%);
+}
+
+.sumi-pane-insert {
+	position: fixed;
+	z-index: 90;
+	border-radius: var(--r-full);
+	background: var(--text);
+	pointer-events: none;
+}
+
+.sumi-pane-zone {
+	position: fixed;
+	z-index: 89;
+	border-radius: var(--r-md);
+	background: var(--active);
+	pointer-events: none;
+}
+
+.sumi-pane-menu-spot {
+	position: fixed;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}

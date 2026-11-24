@@ -1,7 +1,7 @@
 {
 	"name": "@sumi/model-picker-plugin",
 	"version": "0.1.0",
-	"description": "Model picker: the chat footer's provider and model menu",
+	"description": "Model picker: the chat footer's provider, model and effort menu",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"exports": {

@@ -10,7 +10,6 @@ export const COMPOSER_SHEET_SOURCES: readonly string[] = [
 	"plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant-utilities.css",
 	"plugins/ai/plan-usage/src/features/plan-usage/ui/usage-button/usage-button.css",
 	"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-button.css",
-	"plugins/ai/effort-picker/src/features/effort-picker/ui/effort-button/effort-button.css",
 	"plugins/ai/composer-expand/src/features/composer-expand/ui/expand-frame/expand-frame.css",
 	"plugins/ai/composer-expand/src/features/composer-expand/ui/expand-toggle/expand-toggle.css",
 ];

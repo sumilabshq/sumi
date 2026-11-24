@@ -103,7 +103,7 @@
 	--standout: var(--pink);
 	--highlight: var(--yellow);
 
-	--font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	--font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 	--font-serif: "IBM Plex Serif", Georgia, serif;
 	--font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 	--type-xs: 12px;

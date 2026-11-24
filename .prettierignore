@@ -7,6 +7,8 @@ packages/shared/kit/assets
 .omc
 packages/shared/kit/src/emojis/emoji-table.ts
 packages/shared/kit/src/icons/icon-table.ts
+packages/shared/kit/src/icons/filled-icon-table.ts
+packages/shared/kit/src/emojis/fluent-3d-table.ts
 tools/fixture
 tools/fixture-boards
 tools/fixture-react

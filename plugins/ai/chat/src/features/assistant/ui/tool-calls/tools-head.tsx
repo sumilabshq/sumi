@@ -22,9 +22,10 @@ export function ToolsHead({ calls, faces, isOpen, onToggle }: ToolsHeadProps): R
 	const failed = failuresIn(calls);
 	const spanMs = callsSpanMs(calls);
 	const changed = changedLinesOf(faces);
+	const known = knownFacesOf(calls, faces);
 	return (
 		<button className="wg-studio-ai-tools-head" type="button" aria-expanded={isOpen} onClick={onToggle}>
-			<span className="wg-studio-ai-tools-said">{toolsSummaryOf(knownFacesOf(calls, faces))}</span>
+			<span className="wg-studio-ai-tools-said">{toolsSummaryOf(known)}</span>
 			{changed === null ? null : <LineCounts added={changed.added} removed={changed.removed} />}
 			{failed === 0 ? null : (
 				<span className="wg-studio-ai-tools-failed">{SOME_FAILED.replace("{count}", String(failed))}</span>

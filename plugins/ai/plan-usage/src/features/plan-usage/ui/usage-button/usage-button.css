@@ -28,11 +28,11 @@
 .sumi-usage-meter-head {
 	display: flex;
 	justify-content: space-between;
-	font: var(--fw-regular) var(--fs-13) / 1.4 var(--font-ui);
+	font: var(--fw-ui) var(--fs-13) / 1.4 var(--font-ui);
 }
 
 .sumi-usage-meter-head b {
-	font-weight: var(--fw-regular);
+	font-weight: var(--fw-ui);
 }
 
 .sumi-usage-meter-head span {

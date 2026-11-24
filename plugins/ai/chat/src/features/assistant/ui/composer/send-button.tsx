@@ -16,6 +16,7 @@ const SAVE = "Save the queued message";
 const STOP = "Stop";
 const ENTER = "↵";
 const ESCAPE = "esc";
+const SEND_GLYPH_PX = 12;
 
 export function SendButton({ state, isEditing, onSend, onStop }: SendButtonProps): ReactElement {
 	const isStreaming = state === "streaming" && !isEditing;
@@ -50,10 +51,10 @@ export function SendButton({ state, isEditing, onSend, onStop }: SendButtonProps
 
 function SendGlyph({ isEditing }: { readonly isEditing: boolean }): ReactElement {
 	if (isEditing) {
-		return <Icon name="tick" size={16} />;
+		return <Icon name="tick" size={SEND_GLYPH_PX} />;
 	}
 
-	return <Icon name="arrow-up" size={16} />;
+	return <Icon name="arrow-up" size={SEND_GLYPH_PX} />;
 }
 
 function saidOf(state: SendState, isEditing: boolean): string {

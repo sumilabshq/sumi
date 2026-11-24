@@ -9,23 +9,24 @@ export interface FinishLineProps {
 }
 
 const OUTCOME_SAID: Readonly<Record<TurnOutcome, string>> = {
-	done: "Done",
+	done: "Worked for",
+	stopped: "Stopped after",
+	failed: "Failed after",
+};
+const OUTCOME_ALONE: Readonly<Record<TurnOutcome, string>> = {
+	done: "Worked",
 	stopped: "Stopped",
 	failed: "Failed",
 };
-const ENDED_IN = "{outcome} in {took}";
+const ENDED_IN = "{outcome} {took}";
 
 export function FinishLine({ turn, outcome }: FinishLineProps): ReactElement {
-	return (
-		<div className={`wg-studio-ai-finish is-${outcome}`}>
-			<span className="wg-studio-ai-finish-mark" aria-hidden={true} />
-			<span className="wg-studio-ai-finish-said">{endedSaid(turn, outcome)}</span>
-		</div>
-	);
+	return <div className={`wg-studio-ai-finish is-${outcome}`}>{endedSaid(turn, outcome)}</div>;
 }
 
 function endedSaid(turn: AssistantTurn, outcome: TurnOutcome): string {
 	const spanMs = turnSpanMs(turn);
-	const said = OUTCOME_SAID[outcome];
-	return spanMs === null ? said : ENDED_IN.replace("{outcome}", said).replace("{took}", saidElapsed(spanMs));
+	return spanMs === null
+		? OUTCOME_ALONE[outcome]
+		: ENDED_IN.replace("{outcome}", OUTCOME_SAID[outcome]).replace("{took}", saidElapsed(spanMs));
 }

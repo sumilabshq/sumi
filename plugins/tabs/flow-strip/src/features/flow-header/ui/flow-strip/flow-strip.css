@@ -1,0 +1,24 @@
+.sumi-flow-strip {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 100%;
+}
+
+.sumi-flow-strip-rows {
+	position: absolute;
+	inset: 0;
+}
+
+.sumi-flow-strip-pane {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.sumi-flow-strip-pane .sumi-pane-tabs > * {
+	pointer-events: auto;
+}

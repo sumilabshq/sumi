@@ -1,0 +1,48 @@
+.sumi-home {
+	color: var(--text);
+	font: var(--fw-ui) var(--fs-13) / 20px var(--font-ui);
+	letter-spacing: var(--tracking-ui);
+}
+
+:where(.sumi-home button) {
+	padding: var(--space-none);
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	letter-spacing: inherit;
+}
+
+.sumi-home-scroll {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+.sumi-home-column {
+	width: 640px;
+	max-width: 100%;
+	margin: var(--space-none) auto;
+	padding: var(--space-12) var(--space-none) var(--space-12);
+}
+
+.sumi-home-head {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: var(--space-4-5);
+}
+
+.sumi-home-question {
+	margin: var(--space-2) var(--space-none) var(--space-none);
+	font-size: var(--fs-20);
+	font-weight: var(--fw-semi);
+	line-height: 28px;
+	letter-spacing: -0.02em;
+}
+
+.sumi-home[data-editing] .sumi-home-head,
+.sumi-home[data-editing] .sumi-home-ring,
+.sumi-home[data-editing] .sumi-home-continue {
+	opacity: 0.45;
+}

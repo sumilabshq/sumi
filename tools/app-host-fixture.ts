@@ -1,6 +1,6 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime, StartableModule } from "../packages/shared/data-framework/src/index.ts";
 import { appHost as appHostModule } from "../plugins/tabs/navigation/data/app-host/generated/module.ts";
 import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/memory.gateway.ts";
 import type { StudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/studio-window.gateway.ts";
@@ -128,6 +128,7 @@ export interface StudioSeed {
 	readonly tree?: PaneTree;
 	readonly chatTitle?: string;
 	readonly isAppsInCore?: boolean;
+	readonly extraModules?: readonly StartableModule[];
 }
 
 export function appHostFakesOf({ studioWindow }: StudioSeed): AppHostFakes {
@@ -154,6 +155,7 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 			layoutModule({ injects: { ...layout } }),
 			workspaces({ injects: workspacesOf(seed.chatTitle ?? null) }),
 			...PLUGIN_WINDOW_MODULES,
+			...(seed.extraModules ?? []),
 		)
 		.imports(placesContract({ over: core }), tabGroups({ over: core }), chatFacts({ over: core }), ...(isAppsInCore ? [appsContract({ over: core })] : []))
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });

@@ -1,0 +1,32 @@
+.sumi-home-thumb {
+	display: flex;
+	height: 82px;
+	overflow: hidden;
+	border-radius: var(--r-md);
+}
+
+.sumi-home-split {
+	display: flex;
+	flex: 1;
+	gap: var(--space-px);
+	min-width: 0;
+}
+
+.sumi-home-split[data-dir="column"] {
+	flex-direction: column;
+}
+
+.sumi-home-part {
+	display: flex;
+	min-width: 0;
+	min-height: 0;
+}
+
+.sumi-home-cell {
+	display: grid;
+	flex: 1;
+	place-items: center;
+	background: var(--soft);
+	color: var(--text-3);
+	transition: background-color var(--dur-hover) var(--ease-emphasized);
+}

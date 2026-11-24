@@ -1,3 +1,10 @@
 :is(.wg-root, .wg-portal) .wg-kit-btn.sumi-model-trigger {
-	--option-pad-end: var(--space-px);
+	--option-pad-start: var(--space-1-5);
+	--option-pad-end: var(--space-1-5);
+	gap: calc(var(--space-1) + var(--space-px));
+	color: var(--text);
+}
+
+.sumi-model-effort {
+	color: var(--text-3);
 }

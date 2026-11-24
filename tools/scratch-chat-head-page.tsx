@@ -5,7 +5,10 @@ import { RuntimeProvider, localTransport, runtime } from "../packages/shared/dat
 import { SlotFills } from "../packages/shared/plugin-framework/src/index.ts";
 import { PluginSlotsContext } from "../packages/shared/plugin-framework/src/react/index.ts";
 import type { Workspace } from "../packages/domain/workspaces/generated/contract.ts";
-import { firstChats, memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
+import {
+	firstChats,
+	memoryWorkspacesParts,
+} from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
 import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 import { ChatHead } from "../plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-head.tsx";
@@ -26,7 +29,8 @@ const [first] = kept.chats;
 const LONG = "Investigate why the composer usage meter drifts after a long session with many parallel agents and tools";
 const TITLES: Readonly<Record<string, string>> = { short: "Chat header with sessions", long: LONG };
 const variant = new URLSearchParams(location.search).get("v") ?? "short";
-const chats = first === undefined ? kept : { ...kept, chats: [{ ...first, title: TITLES[variant] ?? TITLES.short ?? null }] };
+const chats =
+	first === undefined ? kept : { ...kept, chats: [{ ...first, title: TITLES[variant] ?? TITLES.short ?? null }] };
 const chatId = first?.id ?? "none";
 
 const windowApp = runtime()
@@ -48,12 +52,24 @@ const fills = new SlotFills([
 	{ slot: "chat.head-title", pluginId: "chat-title", kind: "replace" as const, component: HeadTitle },
 	{ slot: "chat.head-tools", pluginId: "sessions", kind: "add" as const, component: SessionsChevron },
 	{ slot: "chat.empty-options", pluginId: "sessions", kind: "add" as const, component: SessionsPicker },
-	{ slot: "chat.field-options", pluginId: "model-picker", kind: "add" as const, component: () => <StubPicker said="Opus" /> },
-	{ slot: "chat.field-options", pluginId: "effort-picker", kind: "add" as const, component: () => <StubPicker said="Medium" /> },
-	{ slot: "chat.field-options", pluginId: "permission-mode", kind: "add" as const, component: () => <StubPicker said="Auto" /> },
+	{
+		slot: "chat.field-options",
+		pluginId: "model-picker",
+		kind: "add" as const,
+		component: () => <StubPicker said="Opus" />,
+	},
+	{
+		slot: "chat.field-options",
+		pluginId: "permission-mode",
+		kind: "add" as const,
+		component: () => <StubPicker said="Auto" />,
+	},
 ]);
 
-const MESSAGES = Array.from({ length: 14 }, (_, at) => `Message ${String(at + 1)}: a line of the conversation scrolled under the header.`);
+const MESSAGES = Array.from(
+	{ length: 14 },
+	(_, at) => `Message ${String(at + 1)}: a line of the conversation scrolled under the header.`,
+);
 
 function Demo(): ReactElement {
 	const isEmpty = variant === "empty";
@@ -66,9 +82,7 @@ function Demo(): ReactElement {
 							<div className="wg-root wg-studio-ai-host">
 								<div className={`wg-studio-ai${isEmpty ? " is-empty" : ""}`}>
 									{isEmpty ? null : <ChatHead chatId={chatId} />}
-									<div className="demo-scroll">
-										{isEmpty ? null : MESSAGES.map((said) => <p key={said}>{said}</p>)}
-									</div>
+									<div className="demo-scroll">{isEmpty ? null : MESSAGES.map((said) => <p key={said}>{said}</p>)}</div>
 									<div className="demo-composer">
 										<div className="wg-studio-ai-strip">
 											<ComposerOptions chat={chatId} surface="chat" isEmptyChat={isEmpty} />

@@ -38,10 +38,10 @@ function codeOf(letters: string): readonly ArtShape[] {
 			attrs: {
 				x: "16",
 				y: "15.4",
-				"text-anchor": "end",
-				"font-family": "JetBrains Mono, monospace",
-				"font-size": letters.length > 2 ? "6.2" : "7.6",
-				"font-weight": "700",
+				textAnchor: "end",
+				fontFamily: "JetBrains Mono, monospace",
+				fontSize: letters.length > 2 ? "6.2" : "7.6",
+				fontWeight: "700",
 				fill: CUT_INK,
 			},
 			text: letters,
@@ -56,7 +56,7 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		{
 			tag: "circle",
 			isCut: CUT,
-			attrs: { cx: "7", cy: "7", r: "5.6", fill: "none", stroke: CUT_INK, "stroke-width": "1.2" },
+			attrs: { cx: "7", cy: "7", r: "5.6", fill: "none", stroke: CUT_INK, strokeWidth: "1.2" },
 		},
 	],
 	tasks: [
@@ -67,9 +67,9 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 			attrs: {
 				d: "M5.4 7.2l1.3 1.3 2.2-2.4M5.4 12.6l1.3 1.3 2.2-2.4M11 7.4h3.6M11 12.8h3.6",
 				stroke: CUT_INK,
-				"stroke-width": "1.5",
-				"stroke-linecap": "round",
-				"stroke-linejoin": "round",
+				strokeWidth: "1.5",
+				strokeLinecap: "round",
+				strokeLinejoin: "round",
 				fill: "none",
 			},
 		},
@@ -82,7 +82,7 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 			attrs: {
 				d: "M2.6 10h14.8M10 2.2c2.2 2.1 3.2 4.7 3.2 7.8s-1 5.7-3.2 7.8M10 2.2C7.8 4.3 6.8 6.9 6.8 10s1 5.7 3.2 7.8",
 				stroke: CUT_INK,
-				"stroke-width": "1.4",
+				strokeWidth: "1.4",
 				fill: "none",
 			},
 		},
@@ -93,8 +93,8 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 			attrs: {
 				d: "M6 6v8M14 9.2v.8a4 4 0 0 1-4 4H8.2",
 				stroke: INK,
-				"stroke-width": "2",
-				"stroke-linecap": "round",
+				strokeWidth: "2",
+				strokeLinecap: "round",
 				fill: "none",
 			},
 		},
@@ -127,8 +127,8 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 				r: "4.2",
 				fill: "none",
 				stroke: CUT_INK,
-				"stroke-width": "1.8",
-				"stroke-dasharray": "2.2 1.1",
+				strokeWidth: "1.8",
+				strokeDasharray: "2.2 1.1",
 			},
 		},
 		{ tag: "circle", isCut: CUT, attrs: { cx: "10", cy: "10", r: "1.6", fill: CUT_INK } },
@@ -139,7 +139,7 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		{
 			tag: "path",
 			isCut: CUT,
-			attrs: { d: "M7 10h6M7 13h4", stroke: CUT_INK, "stroke-width": "1.6", "stroke-linecap": "round", fill: "none" },
+			attrs: { d: "M7 10h6M7 13h4", stroke: CUT_INK, strokeWidth: "1.6", strokeLinecap: "round", fill: "none" },
 		},
 	],
 	table: [
@@ -148,7 +148,7 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		{
 			tag: "path",
 			isCut: CUT,
-			attrs: { d: "M7 9h6v6H7zM7 12h6M10 9v6", stroke: CUT_INK, "stroke-width": "1.3", fill: "none" },
+			attrs: { d: "M7 9h6v6H7zM7 12h6M10 9v6", stroke: CUT_INK, strokeWidth: "1.3", fill: "none" },
 		},
 	],
 	"code-ts": codeOf("TS"),
@@ -168,9 +168,9 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 			attrs: {
 				d: "m4.5 6.8 5 5M3.7 11.8l5-5 1.7-2.5M2 4.3h10M6 2h.8M18 18l-4.2-8.4L9.6 18M11.3 14.8h5",
 				stroke: INK,
-				"stroke-width": "1.8",
-				"stroke-linecap": "round",
-				"stroke-linejoin": "round",
+				strokeWidth: "1.8",
+				strokeLinecap: "round",
+				strokeLinejoin: "round",
 				fill: "none",
 			},
 		},

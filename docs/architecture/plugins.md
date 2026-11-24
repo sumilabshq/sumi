@@ -281,7 +281,7 @@ plugins/<name>/
 
 A plugin has no `data/` folder: it owns no data. A module is `modules/<name>/`, a data module package ([placement.md](placement.md#a-data-module)).
 
-**Groups.** Plugins of one area may stand in a group folder, `plugins/<group>/<name>/`: a folder with no `package.json` and no `src/` that holds only plugin folders. `plugins/ai/` groups the agent and its chat (`chat`, `mcp`, `questions`, `composer-expand`, `slash-commands` and the composer options `permission-mode`, `plan-usage`, `model-picker`, `effort-picker`). A group is a place on disk only: it is no plugin, owns nothing and is named nowhere in code. The root `package.json` lists `plugins/<group>/*` as workspaces.
+**Groups.** Plugins of one area may stand in a group folder, `plugins/<group>/<name>/`: a folder with no `package.json` and no `src/` that holds only plugin folders. `plugins/ai/` groups the agent and its chat (`chat`, `mcp`, `questions`, `composer-expand`, `slash-commands` and the composer options `permission-mode`, `plan-usage`, `model-picker`). A group is a place on disk only: it is no plugin, owns nothing and is named nowhere in code. The root `package.json` lists `plugins/<group>/*` and `plugins/<group>/*/data/*` as workspaces.
 
 Apart from `plugin.ts`, `index.ts` and `generated/`, `src/` is a client package's inside ([placement.md](placement.md#a-client-package), [views.md](views.md)): one file per thing, each where its kind and its users put it.
 
