@@ -20843,6 +20843,17 @@ body:has(.wg-cm-layer) {
 	height: 100%;
 	pointer-events: auto;
 }
+.sumi-flows-title[data-docked] {
+	box-sizing: border-box;
+	flex: none;
+	padding-inline-end: var(--space-1-5);
+}
+.sumi-flows-title-acts {
+	display: flex;
+	align-items: center;
+	gap: var(--space-0-5);
+	margin-inline-start: auto;
+}
 .wg-root.sumi-flows-hidden {
 	position: relative;
 	flex: none;
