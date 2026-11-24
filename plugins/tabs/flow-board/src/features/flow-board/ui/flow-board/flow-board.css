@@ -1,0 +1,54 @@
+.sumi-flow-board {
+	position: relative;
+	display: flex;
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: 0;
+}
+
+.sumi-flow-page {
+	position: absolute;
+	display: flex;
+	min-width: 0;
+	min-height: 0;
+	content-visibility: hidden;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.sumi-flow-page[data-active] {
+	content-visibility: visible;
+	visibility: visible;
+	pointer-events: auto;
+}
+
+.sumi-flow-page > .wg-shell-plate {
+	flex: 1 1 0;
+	width: auto;
+	min-width: 0;
+}
+
+.sumi-flow-row {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.sumi-flow-edge {
+	position: absolute;
+	z-index: 1;
+	touch-action: none;
+}
+
+.sumi-flow-edge[data-dir="row"] {
+	width: var(--space-2);
+	margin-left: calc(var(--space-1) * -1);
+	cursor: col-resize;
+}
+
+.sumi-flow-edge[data-dir="column"] {
+	height: var(--space-2);
+	margin-top: calc(var(--space-1) * -1);
+	cursor: row-resize;
+}

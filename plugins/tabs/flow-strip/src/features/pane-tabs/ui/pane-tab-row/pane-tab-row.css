@@ -1,0 +1,225 @@
+.sumi-pane-tabs {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--space-0-5);
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	height: var(--h-sm);
+}
+
+.sumi-pane-tabs-list {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--space-0-5);
+}
+
+.sumi-pane-tabs-more {
+	display: flex;
+	flex: none;
+}
+
+.sumi-pane-tabs-notice {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	padding: var(--space-none) var(--space-2-5);
+	overflow: hidden;
+	background: var(--frame);
+	color: var(--text-2);
+	font: var(--fw-ui) var(--fs-13) / 1 var(--font-ui);
+	letter-spacing: var(--tracking-ui);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: default;
+}
+
+.sumi-pane-tab {
+	position: relative;
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--space-1-5);
+	box-sizing: border-box;
+	max-width: 132px;
+	height: var(--h-sm);
+	padding: var(--space-none) var(--space-2-5);
+	border-radius: var(--r-md);
+	background: var(--sunken);
+	color: var(--text-3);
+	font: var(--fw-ui) var(--fs-13) / 1 var(--font-ui);
+	letter-spacing: var(--tracking-ui);
+	white-space: nowrap;
+	cursor: default;
+	user-select: none;
+	-webkit-user-select: none;
+	transition:
+		background-color var(--dur-out) var(--ease-touch),
+		color var(--dur-out) var(--ease-touch);
+}
+
+.sumi-pane-tab:hover {
+	color: var(--text-2);
+}
+
+.sumi-pane-tab[data-active] {
+	background: var(--plate);
+	box-shadow: var(--shadow-page);
+	color: var(--text);
+}
+
+.sumi-pane-tab[data-mode="icon"] {
+	justify-content: center;
+	width: var(--h-sm);
+	padding: var(--space-none);
+}
+
+.sumi-pane-tab[data-lifted] {
+	opacity: 0.4;
+}
+
+.sumi-pane-tab-face {
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: var(--icon);
+	height: var(--icon);
+	overflow: hidden;
+}
+
+.sumi-pane-tab-face svg {
+	width: var(--icon);
+	height: var(--icon);
+}
+
+.sumi-pane-tab-title {
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sumi-pane-tab:hover .sumi-pane-tab-title {
+	mask-image: linear-gradient(to right, black calc(100% - 22px), transparent calc(100% - 6px));
+}
+
+.sumi-pane-tab-rename {
+	box-sizing: border-box;
+	width: 84px;
+	min-width: 0;
+	padding: var(--space-none);
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: var(--text);
+	font: inherit;
+	letter-spacing: inherit;
+}
+
+.sumi-pane-tab-dot {
+	flex: none;
+	width: var(--space-2);
+	height: var(--space-2);
+	border-radius: var(--r-full);
+}
+
+.sumi-pane-tab:hover .sumi-pane-tab-dot {
+	margin-inline-end: var(--space-4-5);
+}
+
+.sumi-pane-tab[data-mode="icon"] .sumi-pane-tab-dot {
+	position: absolute;
+	top: var(--space-1-5);
+	right: var(--space-1-5);
+	width: var(--space-1-5);
+	height: var(--space-1-5);
+}
+
+.sumi-pane-tab-dot[data-mark="unread"] {
+	background: var(--status-done);
+}
+
+.sumi-pane-tab-dot[data-mark="asking"] {
+	background: var(--status-question);
+}
+
+.sumi-pane-tab-dot[data-mark="failed"] {
+	background: var(--status-blocked);
+}
+
+.sumi-pane-tab-close {
+	position: absolute;
+	top: 50%;
+	right: var(--space-1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--space-4-5);
+	height: var(--space-4-5);
+	margin: var(--space-none);
+	padding: var(--space-none);
+	border: 0;
+	border-radius: var(--r-sm);
+	background: transparent;
+	color: var(--text-3);
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(-50%);
+	cursor: default;
+}
+
+.sumi-pane-tab:hover .sumi-pane-tab-close,
+.sumi-pane-tab:focus-visible .sumi-pane-tab-close {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.sumi-pane-tab-close:hover {
+	background: var(--hover);
+	color: var(--text);
+}
+
+.sumi-pane-ghost {
+	position: fixed;
+	z-index: 90;
+	box-sizing: border-box;
+	height: var(--h-sm);
+	padding: var(--space-none) var(--space-2-5);
+	border-radius: var(--r-md);
+	background: var(--plate);
+	box-shadow: var(--shadow-page);
+	color: var(--text);
+	font: var(--fw-ui) var(--fs-13) / var(--h-sm) var(--font-ui);
+	letter-spacing: var(--tracking-ui);
+	white-space: nowrap;
+	pointer-events: none;
+	transform: translate(var(--space-none), -50%);
+}
+
+.sumi-pane-insert {
+	position: fixed;
+	z-index: 90;
+	border-radius: var(--r-full);
+	background: var(--text);
+	pointer-events: none;
+}
+
+.sumi-pane-zone {
+	position: fixed;
+	z-index: 89;
+	border-radius: var(--r-md);
+	background: var(--active);
+	pointer-events: none;
+}
+
+.sumi-pane-menu-spot {
+	position: fixed;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
