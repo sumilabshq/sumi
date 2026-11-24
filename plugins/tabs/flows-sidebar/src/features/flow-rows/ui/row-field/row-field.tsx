@@ -2,6 +2,7 @@ import { createElement as h, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { Popover, PopoverContent } from "@widgetarium/kit";
 import type { FlowIcon } from "@widgetarium/navigation/contract";
+import { usePeekHold } from "../../../../shared/lib/peek-hold.js";
 import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import type { FlowGlyphProps } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import { useFieldDraft } from "../../lib/use-field-draft.js";
@@ -21,6 +22,7 @@ export interface RowFieldProps {
 export function RowField({ name, icon, fallback, onCommit, onIcon, onDone }: RowFieldProps): ReactElement {
 	const [isPicking, setIsPicking] = useState(false);
 	const draft = useFieldDraft({ name, onCommit, onDone });
+	usePeekHold(true);
 	const pick = (picked: FlowIcon | null): void => {
 		setIsPicking(false);
 		onIcon(picked);

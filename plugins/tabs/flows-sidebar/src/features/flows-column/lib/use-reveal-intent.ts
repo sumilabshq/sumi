@@ -1,12 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { appHost } from "@widgetarium/app-host/contract";
-
-export const CONCEAL_DELAY_MS = 250;
+import type { PeekHold } from "../../../shared/lib/peek-hold.js";
+import { RevealControl } from "./reveal-control.js";
 
 export interface RevealIntent {
 	readonly panel: RefObject<HTMLDivElement | null>;
+	readonly hold: PeekHold;
 	onEnter(): void;
 	onLeave(): void;
 }
@@ -15,34 +16,25 @@ export function useRevealIntent(): RevealIntent {
 	const peek = useCommand(appHost.frameSides.peek);
 	const conceal = useCommand(appHost.frameSides.conceal);
 	const panel = useRef<HTMLDivElement | null>(null);
-	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const cancel = (): void => {
-		if (timer.current !== null) {
-			clearTimeout(timer.current);
-			timer.current = null;
-		}
-	};
+	const latest = useRef({ peek, conceal });
+	latest.current = { peek, conceal };
+	const [control] = useState(
+		() =>
+			new RevealControl({
+				peek: () => void latest.current.peek.run({ side: "left" }),
+				conceal: () => void latest.current.conceal.run({ side: "left" }),
+				isPointerInside: () => panel.current?.matches(":hover") === true,
+			}),
+	);
 
-	useEffect(() => cancel, []);
+	useEffect(() => () => control.dispose(), [control]);
+
+	const hold = useMemo<PeekHold>(() => () => control.hold(), [control]);
 
 	return {
 		panel,
-		onEnter: () => {
-			cancel();
-			void peek.run({ side: "left" });
-		},
-		onLeave: () => {
-			cancel();
-			timer.current = setTimeout(() => {
-				if (!isTyping(panel.current)) {
-					void conceal.run({ side: "left" });
-				}
-			}, CONCEAL_DELAY_MS);
-		},
+		hold,
+		onEnter: () => control.enter(),
+		onLeave: () => control.leave(),
 	};
-}
-
-function isTyping(panel: HTMLElement | null): boolean {
-	const focused = document.activeElement;
-	return panel !== null && focused instanceof HTMLInputElement && panel.contains(focused);
 }

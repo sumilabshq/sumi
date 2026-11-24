@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import type { DragEvent } from "react";
+import { usePeekHold } from "./peek-hold.js";
 import type { FlowActs, FlowPlace } from "./use-flow-acts.js";
 
 export type DropTarget =
@@ -26,9 +27,12 @@ export interface TargetProps {
 
 export function useFlowDrag(move: FlowActs["move"]): FlowDrag {
 	const draggingId = useRef<string | null>(null);
+	const [isDragging, setIsDragging] = useState(false);
 	const [overKey, setOverKey] = useState<string | null>(null);
+	usePeekHold(isDragging);
 	const reset = (): void => {
 		draggingId.current = null;
+		setIsDragging(false);
 		setOverKey(null);
 	};
 	return {
@@ -39,6 +43,7 @@ export function useFlowDrag(move: FlowActs["move"]): FlowDrag {
 				event.dataTransfer.effectAllowed = "move";
 				event.dataTransfer.setData("text/plain", flowId);
 				draggingId.current = flowId;
+				setIsDragging(true);
 			},
 			onDragEnd: reset,
 		}),

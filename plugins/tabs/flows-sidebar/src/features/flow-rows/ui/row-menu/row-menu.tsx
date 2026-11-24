@@ -1,6 +1,7 @@
-import { createElement as h } from "react";
+import { createElement as h, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@widgetarium/kit";
+import { usePeekHold } from "../../../../shared/lib/peek-hold.js";
 
 export interface RowMenuItem {
 	readonly label: string;
@@ -14,8 +15,10 @@ export interface RowMenuProps {
 }
 
 export function RowMenu({ items, children }: RowMenuProps): ReactElement {
+	const [isOpen, setIsOpen] = useState(false);
+	usePeekHold(isOpen);
 	return (
-		<ContextMenu>
+		<ContextMenu onOpenChange={setIsOpen}>
 			<ContextMenuTrigger className="sumi-flows-trigger">{children}</ContextMenuTrigger>
 			<ContextMenuContent>
 				{items.map((item) => (
