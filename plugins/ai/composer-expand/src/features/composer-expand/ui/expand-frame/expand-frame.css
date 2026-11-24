@@ -58,6 +58,7 @@
 
 /* TRADE-OFF: !important outranks the chat's inline fitted height; a box-height slot would be cleaner */
 .sumi-composer-expand.is-expanded .wg-studio-ai-field .wg-studio-ai-box {
+	align-self: stretch;
 	height: auto !important;
 	max-height: none;
 	overflow-y: auto !important;

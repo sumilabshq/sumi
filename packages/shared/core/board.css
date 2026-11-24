@@ -20172,6 +20172,7 @@ body:has(.wg-cm-layer) {
 	padding-block-start: var(--space-6);
 }
 .sumi-composer-expand.is-expanded .wg-studio-ai-field .wg-studio-ai-box {
+	align-self: stretch;
 	height: auto !important;
 	max-height: none;
 	overflow-y: auto !important;
