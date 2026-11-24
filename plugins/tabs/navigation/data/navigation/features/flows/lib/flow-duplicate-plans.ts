@@ -22,7 +22,11 @@ const NO_FLOW = 'no flow "{id}" stands here';
 const HELD_ELSEWHERE = 'the flow "{id}" is open in window {window}: only that window duplicates it';
 const NO_EFFECTS: Settled<string>["effects"] = [];
 
-export function duplicateFlowMove(ask: DuplicateFlowAsk, apps: PlacedApps, birth: FlowBirth): MovePlaces<FlowDuplicated> {
+export function duplicateFlowMove(
+	ask: DuplicateFlowAsk,
+	apps: PlacedApps,
+	birth: FlowBirth,
+): MovePlaces<FlowDuplicated> {
 	const tabsCopying = (ids: readonly string[]): MovePlaces<Answer<Settled<CopyOfTab>>> =>
 		tabsMoveAsPlaces(settlingWith(ask.at, apps, tabCopiesPlan(ids)));
 	return (now) => {
@@ -75,7 +79,10 @@ interface CopyMoment {
 	readonly birth: FlowBirth;
 }
 
-function withCopyAdded({ now, flow, birth }: CopyMoment, copied: PlacesMove<Answer<Settled<CopyOfTab>>> | null): PlacesMove<FlowDuplicated> {
+function withCopyAdded(
+	{ now, flow, birth }: CopyMoment,
+	copied: PlacesMove<Answer<Settled<CopyOfTab>>> | null,
+): PlacesMove<FlowDuplicated> {
 	const flows = copied?.next?.flows ?? now.flows;
 	const place = flows === null ? null : placeAfterFlow(flows, flow.id);
 
@@ -91,6 +98,7 @@ function withCopyAdded({ now, flow, birth }: CopyMoment, copied: PlacesMove<Answ
 		layout: layoutWithFreshIds(layoutWithTabsRenamed(flow.layout, copyOfTab), mintedAcross(flows)),
 		createdAt: birth.at,
 		lastOpenedAt: birth.at,
+		archivedAt: null,
 	};
 	return {
 		next: { tabs: copied?.next?.tabs ?? now.tabs, flows: withFlowAdded(flows, copy, place) },

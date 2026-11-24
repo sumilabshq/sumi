@@ -280,6 +280,7 @@ function flowOf({ id, name, layout }: FlowFacts, { source }: Context): Flow {
 		layout,
 		createdAt: source.now,
 		lastOpenedAt: source.now,
+		archivedAt: null,
 	};
 }
 

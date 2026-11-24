@@ -59,6 +59,7 @@ export function createFlowPlan(ask: CreateFlowAsk, birth: FlowBirth): FlowsPlan<
 			layout: layoutOfTabs({ flowId: birth.id, mainTabId: "", tabIds: [] }),
 			createdAt: birth.at,
 			lastOpenedAt: birth.at,
+			archivedAt: null,
 		};
 		return {
 			flows: withFlowAdded(flows, flow, ask.place),
