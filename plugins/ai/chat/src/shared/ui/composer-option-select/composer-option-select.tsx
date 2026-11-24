@@ -2,15 +2,18 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { assistant } from "@widgetarium/assistant/contract";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@widgetarium/kit";
+import { Icon, Select, SelectContent, SelectItem, SelectTrigger } from "@widgetarium/kit";
 import type { ButtonForm } from "@widgetarium/kit";
 import type { ComposerOptionProps } from "../composer-options/composer-options.js";
+
+const CHIP_ICON_PX = 13;
 
 export interface ComposerOptionSelectProps extends ComposerOptionProps {
 	readonly optionKey: string;
 	readonly align: "start" | "end";
 	readonly className?: string;
 	readonly form?: ButtonForm;
+	readonly icons?: Readonly<Record<string, string>>;
 }
 
 export function ComposerOptionSelect({
@@ -19,6 +22,7 @@ export function ComposerOptionSelect({
 	align,
 	className,
 	form,
+	icons,
 }: ComposerOptionSelectProps): ReactElement | null {
 	const options = useOptionalQuery(assistant.runners.getOptions, { chat }).data ?? [];
 	const choose = useCommand(assistant.runners.chooseOption);
@@ -36,6 +40,7 @@ export function ComposerOptionSelect({
 			onValueChange={(value) => void choose.run({ chat, key: optionKey, value: String(value) })}
 		>
 			<SelectTrigger variant="ghost" size="xs" className={className} form={form} aria-label={shown.option.label}>
+				{icons?.[shown.value] ? <Icon name={icons[shown.value] ?? ""} size={CHIP_ICON_PX} /> : null}
 				{picked?.label ?? shown.value}
 			</SelectTrigger>
 			<SelectContent className="is-compact" side="top" align={align}>

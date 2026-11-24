@@ -146,11 +146,13 @@ mail-badge
 mail-clock
 mail-pen
 martini
+maximize
 message-circle-dashed-check
 messages-circle
 mic-audio-lines
 mic-signal
 midi-port
+minimize
 monitor-pc
 mop
 mop-sparkles
