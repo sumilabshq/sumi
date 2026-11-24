@@ -2,7 +2,7 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { navigation as definition } from "../module.js";
 import { board as flowPanesBoard, closePane, focus, moveTab, rereadBoardOnFlows, rereadBoardOnTabs, resize as flowPanesResize, showTab, split } from "../features/flow-panes/requests.js";
-import { adoptChats, create as flowsCreate, duplicate as flowsDuplicate, move as flowsMove, one, open, openTab as flowsOpenTab, remove as flowsRemove, rename as flowsRename, rereadFlowMarks, rereadFlows, setIcon as flowsSetIcon, sidebar as flowsSidebar } from "../features/flows/requests.js";
+import { adoptChats, archive, archived, create as flowsCreate, duplicate as flowsDuplicate, move as flowsMove, one, open, openTab as flowsOpenTab, remove as flowsRemove, rename as flowsRename, rereadFlowMarks, rereadFlows, setIcon as flowsSetIcon, sidebar as flowsSidebar, unarchive } from "../features/flows/requests.js";
 import { create as foldersCreate, remove as foldersRemove, rename as foldersRename, setBaseDir, setColor, setIcon as foldersSetIcon, toggle } from "../features/folders/requests.js";
 import { clear, rereadInbox, rereadInboxMarks, rows as inboxRows, undoClear } from "../features/inbox/requests.js";
 import { aim, board as panesBoard, close, closeShowingPanes, closeShown as panesCloseShown, dropGoneTabs, openShown, place as panesPlace, placementPreview, rereadBoard, resizeSplit, showChat, showInTarget } from "../features/panes/requests.js";
@@ -51,6 +51,8 @@ export const navigation = handledModule(definition, [
 	named("flow-panes.show-tab", showTab),
 	named("flow-panes.split", split),
 	named("flows.adopt-chats", adoptChats),
+	named("flows.archive", archive),
+	named("flows.archived", archived),
 	named("flows.create", flowsCreate),
 	named("flows.duplicate", flowsDuplicate),
 	named("flows.flows-changed", flowsChanged),
@@ -62,6 +64,7 @@ export const navigation = handledModule(definition, [
 	named("flows.rename", flowsRename),
 	named("flows.set-icon", flowsSetIcon),
 	named("flows.sidebar", flowsSidebar),
+	named("flows.unarchive", unarchive),
 	named("folders.create", foldersCreate),
 	named("folders.remove", foldersRemove),
 	named("folders.rename", foldersRename),

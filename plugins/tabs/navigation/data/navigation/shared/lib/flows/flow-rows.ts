@@ -3,6 +3,7 @@ import type { Flow, FlowFolder, FlowStatus, FlowsDoc } from "../../schema/flows.
 import type { GroupHue, PlacedTabs } from "../../schema/tabs.schema.js";
 import { isChatTab } from "../tabs/app-abilities.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
+import { isArchived } from "./flow-docs.js";
 import { flowTabIdsOf } from "./flow-nodes.js";
 import { flowStatusOf } from "./flow-status.js";
 
@@ -61,7 +62,7 @@ export function flowRowOf(flow: Flow, facts: RowFacts): FlowRow {
 export function folderRowOf(folder: FlowFolder, facts: RowFacts): FolderRow {
 	const flows = folder.flowIds.flatMap((id) => {
 		const flow = facts.doc.flows.find((one) => one.id === id);
-		return flow === undefined ? [] : [flowRowOf(flow, facts)];
+		return flow === undefined || isArchived(flow) ? [] : [flowRowOf(flow, facts)];
 	});
 	return {
 		id: folder.id,

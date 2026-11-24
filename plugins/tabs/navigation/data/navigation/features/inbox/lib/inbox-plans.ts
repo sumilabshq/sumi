@@ -1,3 +1,4 @@
+import { isArchived } from "../../../shared/lib/flows/flow-docs.js";
 import type { FlowRow, RowFacts } from "../../../shared/lib/flows/flow-rows.js";
 import { flowRowOf } from "../../../shared/lib/flows/flow-rows.js";
 import { READ_ON_OPEN, marksCleared, marksRestored } from "../../../shared/lib/flows/flow-marks.js";
@@ -21,6 +22,7 @@ const NOTHING_TO_UNDO = 'nothing to undo for the clear "{id}"';
 
 export function inboxRowsOf(facts: RowFacts): readonly FlowRow[] {
 	return facts.doc.flows
+		.filter((flow) => !isArchived(flow))
 		.map((flow) => flowRowOf(flow, facts))
 		.filter(
 			(row) =>

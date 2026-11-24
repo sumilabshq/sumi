@@ -1,6 +1,11 @@
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
+import { FlowsDocSchema } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
-import type { FlowFolder, FlowNode, FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
+import type {
+	FlowFolder,
+	FlowNode,
+	FlowsDoc,
+} from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { folderColorsFillMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
 import { atOf } from "./flows-asks.ts";
@@ -354,12 +359,18 @@ async function duplicateChecks(): Promise<void> {
 		[true, false, copyTabIds.length, true],
 	);
 	console.warn = warnBefore;
-	const layoutIds = (flow: typeof copy): string[] => (flow === undefined ? [] : [...flowPanesOf(flow).map(({ id }) => id), ...splitIdsOf(flow.layout.root)]);
+	const layoutIds = (flow: typeof copy): string[] =>
+		flow === undefined ? [] : [...flowPanesOf(flow).map(({ id }) => id), ...splitIdsOf(flow.layout.root)];
 	const originalIds = original === undefined ? [] : layoutIds(original);
 	const copyIds = layoutIds(copy);
 	check(
 		"a copy shares no pane or split id with the original, keeps its focus, and healing stays silent",
-		[copyIds.length === originalIds.length, copyIds.some((id) => originalIds.includes(id)), copy !== undefined && flowPanesOf(copy).some(({ id }) => id === copy.layout.focusedPaneId), warned],
+		[
+			copyIds.length === originalIds.length,
+			copyIds.some((id) => originalIds.includes(id)),
+			copy !== undefined && flowPanesOf(copy).some(({ id }) => id === copy.layout.focusedPaneId),
+			warned,
+		],
 		[true, false, true, []],
 	);
 	check("every law holds after the duplicate", await lawsOf(stand), []);
@@ -588,6 +599,51 @@ async function removeNoOpCloseChecks(): Promise<void> {
 	);
 }
 
+async function archiveChecks(): Promise<void> {
+	const stand = standOver(true);
+	const flowId = chatFlow(2);
+	const at = atOf(MAIN);
+	const tabsBefore = (await stand.tabs.places()).tabs.tabs.length;
+	const inInbox = async (): Promise<boolean> =>
+		(await stand.app.send(navigation.inbox.rows, undefined)).rows.some(({ id }) => id === flowId);
+	const inSidebar = async (): Promise<boolean> =>
+		(await stand.app.send(navigation.flows.sidebar, { window: MAIN })).looseFlows.some(({ id }) => id === flowId);
+	check(
+		"a flow with an unread chat shows in the sidebar and the inbox",
+		[await inSidebar(), await inInbox()],
+		[true, true],
+	);
+	await stand.app.send(navigation.flows.archive, { flowId });
+	check(
+		"archive leaves the flow out of the sidebar and the inbox",
+		[await inSidebar(), await inInbox()],
+		[false, false],
+	);
+	const archived = await stand.app.send(navigation.flows.archived, undefined);
+	check(
+		"flows.archived lists it with archivedAt",
+		[archived.flows.map(({ id }) => id), (archived.flows[0]?.archivedAt ?? 0) > 0],
+		[[flowId], true],
+	);
+	check(
+		"an archived flow keeps its tabs and layout in the doc",
+		[(await stand.tabs.places()).tabs.tabs.length, (await flowsIn(stand)).flows.some(({ id }) => id === flowId)],
+		[tabsBefore, true],
+	);
+	check(
+		"an archived flow cannot be opened",
+		(await refusalOf(() => stand.app.send(navigation.flows.open, { window: MAIN, flowId, at }))).includes("archived"),
+		true,
+	);
+	await stand.app.send(navigation.flows.unarchive, { flowId });
+	check("unarchive brings it back to the sidebar and the inbox", [await inSidebar(), await inInbox()], [true, true]);
+	check("and empties flows.archived", (await stand.app.send(navigation.flows.archived, undefined)).flows, []);
+	check("every law holds after archive and unarchive", await lawsOf(stand), []);
+	const { archivedAt: _dropped, ...oldFlow } = (await flowsIn(stand)).flows[0] ?? emptyFlow();
+	const old = FlowsDocSchema.parse({ ...(await flowsIn(stand)), flows: [oldFlow] });
+	check("a doc written before archivedAt reads it as null", old.flows[0]?.archivedAt, null);
+}
+
 async function moveBeforeItselfChecks(): Promise<void> {
 	const stand = standOver(true);
 	const before = (await flowsIn(stand)).looseFlowIds;
@@ -620,5 +676,6 @@ await reconcileChecks();
 await healingChecks();
 await removeNoOpCloseChecks();
 await moveBeforeItselfChecks();
+await archiveChecks();
 console.log(tally.failed ? `flows commands: ${tally.failed} check(s) failed` : "flows commands: all checks passed");
 process.exit(tally.failed ? 1 : 0);

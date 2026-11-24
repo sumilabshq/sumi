@@ -1,5 +1,5 @@
 import { labelOfPlacesWindow } from "@widgetarium/behaviors";
-import { flowOfId, withFlowChanged } from "../../../shared/lib/flows/flow-docs.js";
+import { flowOfId, isArchived, withFlowChanged } from "../../../shared/lib/flows/flow-docs.js";
 import { READ_ON_OPEN, marksCleared, marksSaid } from "../../../shared/lib/flows/flow-marks.js";
 import { chatTabsOf, flowHolderOf } from "../../../shared/lib/flows/flow-rows.js";
 import { refusal } from "../../../shared/lib/settling/settling.js";
@@ -22,6 +22,7 @@ export interface OpeningMoment {
 }
 
 const NO_FLOW = 'no flow "{id}" stands here';
+const ARCHIVED = 'the flow "{id}" is archived: unarchive it to open it';
 const NO_EFFECTS: TabsSettled = { effects: [] };
 
 export interface FlowOpening {
@@ -73,6 +74,10 @@ export function openFlowPlan(ask: OpenFlowAsk, { apps, at }: OpeningMoment): Flo
 
 		if (flow === undefined) {
 			return refusal(NO_FLOW.replace("{id}", ask.flowId));
+		}
+
+		if (isArchived(flow)) {
+			return refusal(ARCHIVED.replace("{id}", ask.flowId));
 		}
 
 		const holder = flowHolderOf(tabs, flows, ask);
