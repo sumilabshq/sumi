@@ -11,5 +11,5 @@ const MODE_ICONS = {
 } as const;
 
 export function ModeButton(props: ComposerOptionProps): ReactElement {
-	return <ComposerOptionSelect {...props} optionKey="mode" align="start" form="round" icons={MODE_ICONS} />;
+	return <ComposerOptionSelect {...props} optionKey="mode" align="start" icons={MODE_ICONS} />;
 }

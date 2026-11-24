@@ -1100,10 +1100,6 @@
 	display: contents;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-strip > :first-child .wg-kit-btn > .wg-kit-icon-glyph:first-child {
-	display: none;
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar :is(.wg-kit-btn, .wg-kit-select-trigger):not(.wg-kit-icon) {
 	height: var(--h-xs);
 	padding-inline: var(--option-pad-start, var(--space-2)) var(--option-pad-end, var(--space-2));
