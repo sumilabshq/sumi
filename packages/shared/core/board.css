@@ -398,6 +398,10 @@
 		--h-lg: 36px;
 		--icon: 13px;
 		--icon-sm: 12px;
+		--r-tab: 7px;
+		--tab-w: 176px;
+		--tab-min-w: 120px;
+		--tab-pad-x: 9px;
 		--header-h: 44px;
 		--sidebar-w: 280px;
 		--sidebar-min: 200px;
@@ -2830,6 +2834,22 @@ body {
 	justify-content: center;
 	width: var(--icon, 16px);
 	height: var(--icon, 16px);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop-spot {
+	position: fixed;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop-item.is-destructive,
+:is(.wg-root, .wg-portal) .wg-kit-pop-item.is-destructive > .wg-kit-pop-icon {
+	color: var(--danger, var(--destructive));
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop-item.is-destructive:is(:hover, :focus-visible, [data-highlighted])::before {
+	background: var(--danger-wash, var(--error-wash));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-label {
@@ -12603,10 +12623,10 @@ body.wg-tree-carrying .wg-tile-body {
 	padding-inline-start: calc(2 * var(--size-4-3, 12px) + 16px);
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"] {
-	color: var(--destructive);
+	color: var(--danger, var(--destructive));
 }
-:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"]:hover::before {
-	background: var(--error-wash);
+:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"]:is(:hover, :focus-visible)::before {
+	background: var(--danger-wash, var(--error-wash));
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop-item[aria-checked="mixed"] .wg-kit-pop-tick {
 	opacity: 1;
@@ -14841,7 +14861,6 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) :is(.wg-kit-pop, .wg-kit-menu) {
 	box-sizing: border-box;
-	min-width: 250px;
 	--pop-pad: 0px;
 	--pop-motion: scale;
 	padding: 4px;
@@ -15073,6 +15092,17 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item > :is(svg, .wg-kit-pop-icon) {
 	flex: none;
 	color: var(--text-3);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-destructive,
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-destructive > :is(svg, .wg-kit-pop-icon) {
+	color: var(--danger);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio)
+	.wg-kit-pop:has(.wg-kit-pop-item.is-destructive:is(:hover, :focus-visible, [data-highlighted]))
+	.wg-kit-pop-glide {
+	background: var(--danger-wash);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item::before {
@@ -20896,11 +20926,12 @@ body:has(.wg-cm-layer) {
 	justify-content: space-between;
 	box-sizing: border-box;
 	height: var(--h-xs);
-	padding: 0 var(--space-2);
+	padding: 0 0 0 var(--space-2);
 	font-size: var(--fs-12);
 	color: var(--text-3);
 }
 .sumi-flows-label-action {
+	margin-inline-end: var(--space-2);
 	padding: 0 var(--space-1);
 	font: inherit;
 	color: inherit;
@@ -21209,8 +21240,9 @@ body:has(.wg-cm-layer) {
 }
 .sumi-pane-tabs-list {
 	display: flex;
-	flex: none;
+	flex: 0 1 auto;
 	align-items: center;
+	min-width: 0;
 	gap: var(--space-0-5);
 }
 .sumi-pane-tabs-more {
@@ -21236,14 +21268,15 @@ body:has(.wg-cm-layer) {
 .sumi-pane-tab {
 	position: relative;
 	display: flex;
-	flex: none;
+	flex: 0 1 auto;
 	align-items: center;
 	gap: var(--space-1-5);
 	box-sizing: border-box;
-	max-width: 132px;
+	width: var(--tab-w);
+	min-width: var(--tab-min-w);
 	height: var(--h-sm);
-	padding: var(--space-none) var(--space-2-5);
-	border-radius: var(--r-md);
+	padding: var(--space-none) var(--tab-pad-x);
+	border-radius: var(--r-tab);
 	background: var(--sunken);
 	color: var(--text-3);
 	font: var(--fw-ui) var(--fs-13) / 1 var(--font-ui);
@@ -21265,38 +21298,41 @@ body:has(.wg-cm-layer) {
 	color: var(--text);
 }
 .sumi-pane-tab[data-mode="icon"] {
+	flex: none;
 	justify-content: center;
 	width: var(--h-sm);
+	min-width: 0;
 	padding: var(--space-none);
 }
 .sumi-pane-tab[data-lifted] {
 	opacity: 0.4;
 }
 .sumi-pane-tab-face {
+	--chat-tab-icon-size: var(--icon-sm);
 	display: flex;
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: var(--icon);
-	height: var(--icon);
+	width: var(--icon-sm);
+	height: var(--icon-sm);
 	overflow: hidden;
 }
+.sumi-pane-tab-face > *,
 .sumi-pane-tab-face svg {
-	width: var(--icon);
-	height: var(--icon);
+	width: var(--icon-sm) !important;
+	height: var(--icon-sm) !important;
+	margin: var(--space-none);
 }
 .sumi-pane-tab-title {
-	flex: 0 1 auto;
+	flex: 1 1 auto;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.sumi-pane-tab:hover .sumi-pane-tab-title {
-	mask-image: linear-gradient(to right, black calc(100% - 22px), transparent calc(100% - 6px));
-}
 .sumi-pane-tab-rename {
 	box-sizing: border-box;
-	width: 84px;
+	flex: 1 1 auto;
+	width: 0;
 	min-width: 0;
 	padding: var(--space-none);
 	border: 0;
@@ -21306,14 +21342,24 @@ body:has(.wg-cm-layer) {
 	font: inherit;
 	letter-spacing: inherit;
 }
+.sumi-pane-tab-end {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: var(--space-4);
+	height: var(--space-4);
+}
+.sumi-pane-tab-end > * {
+	grid-area: 1 / 1;
+}
 .sumi-pane-tab-dot {
 	flex: none;
 	width: var(--space-2);
 	height: var(--space-2);
 	border-radius: var(--r-full);
 }
-.sumi-pane-tab:hover .sumi-pane-tab-dot {
-	margin-inline-end: var(--space-4-5);
+.sumi-pane-tab:is(:hover, :focus-visible) .sumi-pane-tab-end .sumi-pane-tab-dot {
+	visibility: hidden;
 }
 .sumi-pane-tab[data-mode="icon"] .sumi-pane-tab-dot {
 	position: absolute;
@@ -21332,29 +21378,22 @@ body:has(.wg-cm-layer) {
 	background: var(--status-blocked);
 }
 .sumi-pane-tab-close {
-	position: absolute;
-	top: 50%;
-	right: var(--space-1);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--space-4-5);
-	height: var(--space-4-5);
+	width: var(--space-4);
+	height: var(--space-4);
 	margin: var(--space-none);
 	padding: var(--space-none);
 	border: 0;
-	border-radius: var(--r-sm);
+	border-radius: var(--r-xs);
 	background: transparent;
 	color: var(--text-3);
-	opacity: 0;
-	pointer-events: none;
-	transform: translateY(-50%);
+	visibility: hidden;
 	cursor: default;
 }
-.sumi-pane-tab:hover .sumi-pane-tab-close,
-.sumi-pane-tab:focus-visible .sumi-pane-tab-close {
-	opacity: 1;
-	pointer-events: auto;
+.sumi-pane-tab:is(:hover, :focus-visible) .sumi-pane-tab-close {
+	visibility: visible;
 }
 .sumi-pane-tab-close:hover {
 	background: var(--hover);
