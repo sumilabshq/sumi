@@ -21391,12 +21391,18 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	min-width: 0;
 }
+.sumi-flow-strip-pane .sumi-pane-tabs > * {
+	pointer-events: auto;
+}
 .sumi-flow-board {
 	position: relative;
 	display: flex;
 	flex: 1 1 0;
 	min-width: 0;
 	min-height: 0;
+}
+.wg-shell:has([data-title-floats]) .sumi-flow-board {
+	margin-top: var(--header-h);
 }
 .sumi-flow-page {
 	position: absolute;

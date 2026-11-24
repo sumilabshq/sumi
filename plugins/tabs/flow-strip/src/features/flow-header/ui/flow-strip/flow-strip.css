@@ -18,3 +18,7 @@
 	align-items: center;
 	min-width: 0;
 }
+
+.sumi-flow-strip-pane .sumi-pane-tabs > * {
+	pointer-events: auto;
+}

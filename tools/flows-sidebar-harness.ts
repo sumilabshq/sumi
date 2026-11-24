@@ -1,15 +1,32 @@
 import { readFileSync } from "node:fs";
 import http from "node:http";
 import path from "node:path";
+import { z } from "zod";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
+const TauriConfigSchema = z.object({
+	app: z.object({
+		windows: z.array(z.object({ trafficLightPosition: z.object({ x: z.number(), y: z.number() }).optional() })),
+	}),
+});
 const SIDEBAR_SHEET = "plugins/tabs/flows-sidebar/src/features/flows-column/ui/flows-sidebar/flows-sidebar.css";
 const SHEETS = ["design-systems/sumi/sumi.css", ...BROWSER_SHEET_SOURCES, SIDEBAR_SHEET];
-const PAGE_CSS =
-	".flows-page-plate{flex:1;margin:0 8px 8px 0;border-radius:10px;background:var(--plate);box-shadow:var(--shadow-page)} .wg-shell{--shell-chrome-left:72px}";
+const TAURI_CONFIG = "apps/tauri/src-tauri/tauri.conf.json";
+const TRAFFIC_LIGHTS_GROUP_PX = 60;
+const TRAFFIC_LIGHTS_BUTTON_PX = 14;
+const TRAFFIC_LIGHTS_TOP_OFFSET_PX = 9;
+
+export interface TrafficLights {
+	readonly rightEdgePx: number;
+	readonly centreYPx: number;
+}
+
+export const TRAFFIC_LIGHTS: TrafficLights = trafficLightsOf();
+
+const PAGE_CSS = `.flows-page-plate{flex:1;margin:0 8px 8px 0;border-radius:10px;background:var(--plate);box-shadow:var(--shadow-page)} .wg-shell{--shell-chrome-left:${TRAFFIC_LIGHTS.rightEdgePx}px}`;
 const SETTLE_MS = 1500;
 
 export interface OpenedSidebar {
@@ -78,4 +95,13 @@ function htmlOf(bundled: string, theme: string): string {
 	const dark = theme === "dark" ? " dark" : "";
 	const script = bundled.replaceAll("</script", "<\\/script");
 	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body class="theme-${theme}${dark}" style="margin:0;background:var(--frame)"><div id="frame" style="width:1000px;height:640px"></div><script>${script}</script></body></html>`;
+}
+
+function trafficLightsOf(): TrafficLights {
+	const config = TauriConfigSchema.parse(JSON.parse(readFileSync(path.join(REPO, TAURI_CONFIG), "utf8")));
+	const { x, y } = config.app.windows[0]?.trafficLightPosition ?? { x: 0, y: 0 };
+	return {
+		rightEdgePx: x + TRAFFIC_LIGHTS_GROUP_PX,
+		centreYPx: y - TRAFFIC_LIGHTS_TOP_OFFSET_PX + TRAFFIC_LIGHTS_BUTTON_PX / 2,
+	};
 }

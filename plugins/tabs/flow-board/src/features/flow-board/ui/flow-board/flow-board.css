@@ -6,6 +6,10 @@
 	min-height: 0;
 }
 
+.wg-shell:has([data-title-floats]) .sumi-flow-board {
+	margin-top: var(--header-h);
+}
+
 .sumi-flow-page {
 	position: absolute;
 	display: flex;

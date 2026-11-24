@@ -1,4 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { hasOwnDrag, isControl } from "./window-drag-target.js";
 
 const TITLE_BAND_PX = 60;
 const PRIMARY_BUTTON = 0;
@@ -6,10 +7,6 @@ const NO_BUTTONS = 0;
 const DOUBLE_PRESS = 2;
 const KEYBOARD_CLICK = 0;
 const PULL_PX = 4;
-const OWN_DRAG_SELECTOR = "input, textarea, select, [contenteditable=true], [draggable=true], [data-own-drag]";
-const OWN_DRAG_CURSORS: ReadonlySet<string> = new Set(["text", "grab", "col-resize", "ew-resize"]);
-const CONTROL_SELECTOR = "button, a, summary, [role=button], [role=tab], [role=menuitem]";
-const CONTROL_CURSOR = "pointer";
 
 export function followWindowDrag(): void {
 	document.addEventListener("mousedown", dragWindowOnPress);
@@ -37,14 +34,6 @@ function dragWindowOnPress(event: MouseEvent): void {
 
 function isTitleBandPress(event: MouseEvent): boolean {
 	return event.button === PRIMARY_BUTTON && event.clientY <= TITLE_BAND_PX;
-}
-
-function hasOwnDrag(target: Element): boolean {
-	return target.closest(OWN_DRAG_SELECTOR) !== null || OWN_DRAG_CURSORS.has(getComputedStyle(target).cursor);
-}
-
-function isControl(target: Element): boolean {
-	return target.closest(CONTROL_SELECTOR) !== null || getComputedStyle(target).cursor === CONTROL_CURSOR;
 }
 
 function takeWindowOncePulled(press: MouseEvent, take: () => void): void {

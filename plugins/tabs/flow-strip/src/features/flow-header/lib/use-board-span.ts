@@ -5,6 +5,7 @@ import { BOARD_ATTRIBUTE } from "../../../shared/lib/pane-dom.js";
 export interface BoardSpan {
 	readonly left: number;
 	readonly width: number;
+	readonly reach: number;
 }
 
 export function useBoardSpan(origin: RefObject<HTMLElement | null>): BoardSpan | null {
@@ -40,10 +41,11 @@ function spanOf(origin: HTMLElement | null): BoardSpan | null {
 	return {
 		left: there.left - own.left,
 		width: there.width,
+		reach: own.width,
 	};
 }
 
 function keptSpan(was: BoardSpan | null, now: BoardSpan | null): BoardSpan | null {
-	const isSame = was?.left === now?.left && was?.width === now?.width;
+	const isSame = was?.left === now?.left && was?.width === now?.width && was?.reach === now?.reach;
 	return isSame ? was : now;
 }

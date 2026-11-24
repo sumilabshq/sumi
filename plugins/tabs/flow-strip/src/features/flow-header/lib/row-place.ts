@@ -12,8 +12,11 @@ export function rowPlaceOf(frame: Frame, span: BoardSpan | null): CSSProperties 
 		};
 	}
 
+	const paneLeft = span.left + frame.left * span.width;
+	const startPx = Math.max(paneLeft, 0);
+	const endPx = Math.min(paneLeft + frame.width * span.width, span.reach);
 	return {
-		left: `calc(${span.left + frame.left * span.width}px + ${GUTTER})`,
-		width: `calc(${frame.width * span.width}px - 2 * ${GUTTER})`,
+		left: `calc(${startPx}px + ${GUTTER})`,
+		width: `calc(${Math.max(endPx - startPx, 0)}px - 2 * ${GUTTER})`,
 	};
 }
