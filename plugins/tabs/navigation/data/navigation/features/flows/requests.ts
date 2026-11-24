@@ -26,6 +26,7 @@ import {
 } from "../../shared/schema/flow-asks.schema.js";
 import { OpenedTabSettledSchema, TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import { adoptChatsMove } from "./lib/adopt-plans.js";
+import { deleteFlowMove } from "./lib/flow-delete-plans.js";
 import { duplicateFlowMove } from "./lib/flow-duplicate-plans.js";
 import { openFlowMove } from "./lib/flow-open-plans.js";
 import { openFlowTabMove } from "./lib/flow-tab-plans.js";
@@ -141,6 +142,15 @@ export const unarchive = command()
 	.handle(async (ask, { tabs }) => {
 		answered(await tabs.movePlaces(flowsMove(unarchiveFlowPlan(ask))));
 	});
+
+export const deleteFlow = command()
+	.public()
+	.input(RemoveFlowAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs, placedApps }) =>
+		answered(await tabs.movePlaces(deleteFlowMove(ask, placedApps.placedApps()))),
+	);
 
 export const adoptChats = command()
 	.public()

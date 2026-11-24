@@ -5,6 +5,10 @@ export const FlowIdAskSchema = z.object({
 	flowId: z.string().min(1),
 });
 
+export const FolderIdAskSchema = z.object({
+	folderId: z.string().min(1),
+});
+
 export const FlowCopiedSchema = z.object({
 	flowId: z.string(),
 });

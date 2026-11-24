@@ -1285,6 +1285,11 @@ export const navigation = moduleContract("navigation", Server, {
 			.public()
 			.input(FlowAskSchema)
 			.idempotencyKey(Repeatable)),
+		deleteFlow: named("flows.delete-flow", command()
+			.public()
+			.input(RemoveFlowAskSchema)
+			.output(TabsSettledSchema)
+			.idempotencyKey(Repeatable)),
 		adoptChats: named("flows.adopt-chats", command()
 			.public()
 			.input(AdoptChatsAskSchema)

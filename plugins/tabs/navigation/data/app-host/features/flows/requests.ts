@@ -3,8 +3,10 @@ import { command } from "#module";
 import { navigation } from "@widgetarium/navigation/contract";
 import { tabsSettled } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
+import { deleteFlowWithChats, failureOfDeleting } from "./lib/flow-deleting.js";
+import { deleteFolderWithFlows } from "./lib/folder-deleting.js";
 import { OpenedTabSchema } from "../../shared/schema/app-tab.schema.js";
-import { FlowCopiedSchema, FlowTabToOpenSchema, FlowIdAskSchema } from "../../shared/schema/flow-ask.schema.js";
+import { FlowCopiedSchema, FlowTabToOpenSchema, FlowIdAskSchema, FolderIdAskSchema } from "../../shared/schema/flow-ask.schema.js";
 
 export const open = command()
 	.public()
@@ -24,6 +26,31 @@ export const remove = command()
 		await settleAsked({ injects, send, told: () => emit(tabsSettled) }, (at) =>
 			send(navigation.flows.remove, { at, flowId }),
 		);
+	});
+
+export const deleteFlow = command()
+	.public()
+	.input(FlowIdAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ flowId }, { send, emit, ...injects }) => {
+		const deleted = await deleteFlowWithChats({ injects, send, told: () => emit(tabsSettled) }, flowId);
+		const failure = failureOfDeleting([deleted]);
+
+		if (failure !== null) {
+			throw failure;
+		}
+	});
+
+export const deleteFolder = command()
+	.public()
+	.input(FolderIdAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ folderId }, { send, emit, ...injects }) => {
+		const failure = await deleteFolderWithFlows({ injects, send, told: () => emit(tabsSettled) }, folderId);
+
+		if (failure !== null) {
+			throw failure;
+		}
 	});
 
 export const duplicate = command()
