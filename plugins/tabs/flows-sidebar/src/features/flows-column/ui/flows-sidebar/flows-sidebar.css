@@ -549,10 +549,6 @@
 	font-size: var(--fs-13);
 	font-weight: var(--fw-ui);
 	letter-spacing: var(--tracking-ui);
-	background: var(--surface-menu);
-	border: 1px solid var(--line-menu);
-	border-radius: var(--r-menu);
-	box-shadow: var(--shadow-menu);
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) > .wg-kit-pop-inner {

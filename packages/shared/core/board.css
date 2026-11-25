@@ -287,7 +287,7 @@
 		--text: #151513;
 		--text-2: rgba(21, 21, 19, 0.76);
 		--text-3: rgba(21, 21, 19, 0.62);
-		--hover: rgba(21, 21, 19, 0.045);
+		--hover: rgba(0, 0, 0, 0.04);
 		--active: rgba(21, 21, 19, 0.12);
 		--line: #d0d0d0;
 		--divider: #ebebeb;
@@ -317,10 +317,10 @@
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
 		--shadow-page: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 1px 1.5px rgba(0, 0, 0, 0.1);
-		--shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+		--shadow-menu: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 		--line-menu: rgba(0, 0, 0, 0.09);
 		--surface-menu: #ffffff;
-		--r-menu: 10px;
+		--r-menu: 8px;
 		--r-page: 10px;
 		--blur-pop: none;
 		--blur-corner: blur(10px);
@@ -474,8 +474,8 @@
 		--overlay: #000000;
 		--text: #e9e6de;
 		--text-2: rgba(233, 230, 222, 0.7);
-		--text-3: rgba(233, 230, 222, 0.5);
-		--hover: rgba(233, 230, 222, 0.05);
+		--text-3: rgba(233, 230, 222, 0.65);
+		--hover: oklch(0.269 0 0);
 		--active: rgba(233, 230, 222, 0.13);
 		--line: #32312f;
 		--divider: #1a1a1a;
@@ -502,8 +502,8 @@
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
 		--shadow-page: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 1px 1.5px rgba(0, 0, 0, 0.7);
-		--shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.45);
-		--line-menu: rgba(255, 255, 255, 0.09);
+		--shadow-menu: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+		--line-menu: rgba(255, 255, 255, 0.1);
 		--surface-menu: #17181b;
 
 		--selected: var(--soft);
@@ -637,15 +637,15 @@
 		--text: #151513;
 		--text-2: rgba(21, 21, 19, 0.76);
 		--text-3: rgba(21, 21, 19, 0.62);
-		--hover: rgba(21, 21, 19, 0.045);
+		--hover: rgba(0, 0, 0, 0.04);
 		--active: rgba(21, 21, 19, 0.12);
 	}
 
 	.sumi-ink-light {
 		--text: #e9e6de;
 		--text-2: rgba(233, 230, 222, 0.7);
-		--text-3: rgba(233, 230, 222, 0.5);
-		--hover: rgba(233, 230, 222, 0.05);
+		--text-3: rgba(233, 230, 222, 0.65);
+		--hover: oklch(0.269 0 0);
 		--active: rgba(233, 230, 222, 0.13);
 	}
 
@@ -691,7 +691,7 @@
 		--wash: 10%;
 		--wash-hover: 16%;
 		--l-wash-ink: 0;
-		--a-control-hover: 0.035;
+		--a-control-hover: 0.04;
 		--a-control-open: 0.06;
 		--a-control-ink: 0.6;
 		--l-tone: 0.55;
@@ -2730,9 +2730,7 @@ body {
 	pointer-events: none;
 	overflow: hidden;
 	--pop-pad: 0px;
-	/* A PANEL IS NEVER NARROWER THAN WHAT IT OPENED FROM. Over the trigger, a narrow panel
-	   left the control sticking out from under it; 200 is the floor, the anchor is the rule. */
-	min-width: max(200px, var(--anchor-width, 200px));
+	min-width: max(128px, var(--anchor-width, 128px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop.is-open {
@@ -2810,7 +2808,7 @@ body {
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-inner {
-	padding: var(--size-4-2, 8px);
+	padding: var(--size-2-2, 4px);
 	display: flex;
 	flex-direction: column;
 }
@@ -2821,15 +2819,16 @@ body {
 	align-items: center;
 	justify-content: flex-start;
 	width: 100%;
-	gap: var(--size-4-3, 12px);
-	padding: var(--size-4-2, 8px) var(--size-4-3, 12px);
+	gap: var(--space-2, 8px);
+	padding: var(--space-1-5, 6px) var(--space-2, 8px);
 	border: none;
-	border-radius: var(--item);
+	border-radius: var(--r-sm, 6px);
 	cursor: pointer;
 	font-family: inherit;
-	font-size: var(--text-m);
-	font-weight: var(--font-medium, 500);
-	color: var(--foreground);
+	font-size: var(--fs-14, 14px);
+	font-weight: var(--fw-regular, 400);
+	line-height: 20px;
+	color: var(--text, var(--foreground));
 	text-align: left;
 }
 
@@ -2884,8 +2883,8 @@ body {
 	top: 0;
 	left: 0;
 	z-index: 0;
-	border-radius: var(--item);
-	background: var(--control-fill-hover);
+	border-radius: var(--r-sm, 6px);
+	background: var(--control-hover);
 	pointer-events: none;
 	opacity: 0;
 }
@@ -2910,7 +2909,6 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-pop-tick {
 	margin-left: auto;
 	flex: none;
-	color: var(--text);
 	opacity: 0;
 }
 
@@ -2967,12 +2965,12 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-pop-sep {
 	flex: none;
 	height: 1px;
-	background: var(--line-faint);
+	background: var(--line-menu);
 	margin: var(--size-2-2, 4px) calc(-1 * var(--pop-pad, 0px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-inner .wg-kit-pop-sep {
-	margin-inline: calc(-1 * var(--size-4-2, 8px));
+	margin-inline: calc(-1 * var(--size-2-2, 4px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-search {
@@ -3634,7 +3632,7 @@ body {
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-item::before {
-	border-radius: var(--item);
+	border-radius: var(--r-sm, 6px);
 }
 :is(.wg-root, .wg-portal) .wg-kit-cal-day:hover::before {
 	background: var(--background-modifier-hover);
@@ -3656,7 +3654,7 @@ body {
 	background: var(--control-fill-hover);
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop-item:hover::before {
-	background: var(--background-modifier-hover);
+	background: var(--control-hover);
 }
 :is(.wg-root, .wg-portal) .wg-kit-row.is-pressable:hover::before {
 	background: var(--background-modifier-hover);
@@ -4595,7 +4593,7 @@ body {
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-item:focus-visible::before {
-	box-shadow: inset 0 0 0 1px var(--focus-ring);
+	background: var(--control-hover);
 }
 
 /* ═══════════════ THE SETTINGS WINDOW ═══════════════
@@ -12551,10 +12549,10 @@ body.wg-tree-carrying .wg-tile-body {
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-menu {
-	min-width: max(200px, var(--anchor-width, 200px));
+	min-width: max(128px, var(--anchor-width, 128px));
 	max-height: var(--pop-available-height, 70vh);
 	overflow-y: auto;
-	padding: var(--size-4-2, 8px);
+	padding: var(--size-2-2, 4px);
 	border: 1px solid var(--line-menu);
 	border-radius: var(--r-menu);
 	background: var(--surface-menu);
@@ -12567,13 +12565,14 @@ body.wg-tree-carrying .wg-tile-body {
 	user-select: none;
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-item.is-sub-trigger[data-state="open"]::before {
-	background: var(--background-modifier-hover);
+	background: var(--control-hover);
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-item[data-inset],
 :is(.wg-root, .wg-portal) .wg-kit-menu-label[data-inset] {
-	padding-inline-start: calc(2 * var(--size-4-3, 12px) + 16px);
+	padding-inline-start: calc(2 * var(--space-2, 8px) + 16px);
 }
-:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"] {
+:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"],
+:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"] > :is(svg, .wg-kit-pop-icon) {
 	color: var(--danger, var(--destructive));
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"]:is(:hover, :focus-visible)::before {
@@ -12586,15 +12585,44 @@ body.wg-tree-carrying .wg-tile-body {
 	margin-inline-start: auto;
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-label {
-	padding: var(--size-4-2, 8px) var(--size-4-3, 12px) var(--size-2-2, 4px);
-	font-size: var(--text-s);
-	font-weight: var(--font-semibold, 600);
-	color: var(--muted-foreground);
+	padding: var(--space-1-5, 6px) var(--space-2, 8px);
+	font-size: var(--fs-14, 14px);
+	font-weight: var(--fw-medium, 500);
+	line-height: 20px;
+	color: var(--text, var(--foreground));
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-shortcut {
 	margin-inline-start: auto;
-	font-size: var(--text-xs);
-	color: var(--muted-foreground);
+	font-size: var(--fs-12, 12px);
+	letter-spacing: 0.1em;
+	color: var(--text-3, var(--muted-foreground));
+}
+:is(.wg-root, .wg-portal) .wg-kit-pop-item > :is(svg, .wg-kit-pop-icon),
+:is(.wg-root, .wg-portal) .wg-kit-pop-item .wg-kit-pop-tick,
+:is(.wg-root, .wg-portal) .wg-kit-pop-item .wg-kit-menu-chevron {
+	color: var(--text-3, var(--muted-foreground));
+}
+:is(.wg-root, .wg-portal) .wg-kit-pop-item .wg-kit-icon-glyph {
+	width: 16px;
+	height: 16px;
+	--icon-stroke: 2;
+}
+:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
+	transition:
+		opacity 100ms ease-out,
+		scale 100ms ease-out;
+	transform-origin: var(--pop-origin, top left);
+}
+:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu[data-state="closed"] {
+	opacity: 0;
+	scale: 1;
+	transition: none;
+}
+@starting-style {
+	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
+		opacity: 0;
+		scale: 0.95;
+	}
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-tooltip {
@@ -14739,14 +14767,13 @@ body.wg-tree-carrying .wg-tile-body {
 	--pop-pad: 0px;
 	--pop-motion: scale;
 	padding: 4px;
-	line-height: 1.5;
 	border: 1px solid var(--line-menu);
 	border-radius: var(--r-menu);
 	background: var(--surface-menu);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	box-shadow: var(--shadow-menu);
-	font-size: var(--fs-13);
+	font-size: var(--fs-14);
 	color: var(--text);
 }
 
@@ -14790,7 +14817,7 @@ body.wg-tree-carrying .wg-tile-body {
 	left: 0;
 	z-index: 0;
 	border-radius: var(--r-sm);
-	background: var(--group-plain);
+	background: var(--control-hover);
 	pointer-events: none;
 	opacity: 0;
 }
@@ -14882,29 +14909,15 @@ body.wg-tree-carrying .wg-tile-body {
 	outline: none;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-menu-label {
-	padding: var(--space-1-5) var(--space-2) var(--space-0-5);
-	font-size: var(--fs-12);
-	font-weight: var(--fw-regular);
-	color: var(--text-3);
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item {
 	position: relative;
 	z-index: 1;
-	gap: 10px;
-	min-height: var(--h-md);
-	padding: 0 var(--space-2);
-	font-size: var(--fs-13);
-	font-weight: var(--fw-regular);
-	line-height: 1.4;
 	white-space: nowrap;
-	color: var(--text);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact {
 	width: max-content;
-	min-width: 0;
+	min-width: 128px;
 	max-width: var(--pop-available-width, 100vw);
 }
 
@@ -14927,17 +14940,6 @@ body.wg-tree-carrying .wg-tile-body {
 	min-width: 0;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-menu-label {
-	padding: var(--space-1-5) var(--space-2) var(--space-0-5);
-	color: var(--text-3);
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-pop-item {
-	gap: var(--space-2);
-	min-height: var(--h-md);
-	padding-inline: var(--space-2);
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-pop-said {
 	gap: 0;
 }
@@ -14949,7 +14951,7 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-pop-tick {
 	width: 16px;
 	height: 16px;
-	color: var(--text);
+	color: var(--text-3);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-two {
@@ -14971,7 +14973,10 @@ body.wg-tree-carrying .wg-tile-body {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-destructive,
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-destructive > :is(svg, .wg-kit-pop-icon) {
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-destructive > :is(svg, .wg-kit-pop-icon),
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio)
+	.wg-kit-menu-item[data-variant="destructive"]
+	> :is(svg, .wg-kit-pop-icon) {
 	color: var(--danger);
 }
 
@@ -15001,18 +15006,13 @@ body.wg-tree-carrying .wg-tile-body {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-tick {
-	color: var(--text);
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-menu-shortcut {
-	font-size: var(--fs-12);
 	color: var(--text-3);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-sep {
 	height: 1px;
 	margin: var(--space-1) calc(-1 * var(--space-1));
-	background: var(--line);
+	background: var(--line-menu);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-edge {
@@ -18334,11 +18334,14 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai-turn {
 	gap: var(--space-3);
 }
+:is(.wg-root, .wg-portal) .wg-kit-select-trigger.is-warn {
+	color: var(--warning-text, var(--warning));
+}
 .wg-chat-app .wg-studio-ai-turn.is-mine {
 	gap: var(--space-1-5);
 }
 .wg-chat-app .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
-	max-width: min(400px, 80%);
+	max-width: 80%;
 	padding: var(--space-1-5) var(--space-2-5);
 	border-radius: 10px;
 	background: var(--soft);
@@ -20860,9 +20863,30 @@ body:has(.wg-cm-layer) {
 	letter-spacing: var(--tracking-ui);
 }
 .sumi-flows-section {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-px);
+}
+.sumi-flows-section[data-dragging] {
+	opacity: 0.35;
+}
+.sumi-flows-section[data-line]::before {
+	position: absolute;
+	inset-inline: 0;
+	height: 2px;
+	content: "";
+	background: var(--text);
+	border-radius: var(--r-full);
+}
+.sumi-flows-section[data-line="before"]::before {
+	top: calc(var(--space-1) * -1 - 1px);
+}
+.sumi-flows-section[data-line="after"]::before {
+	bottom: calc(var(--space-1) * -1 - 1px);
+}
+.sumi-flows-section > .sumi-flows-field {
+	height: var(--h-xs);
 }
 .sumi-flows-section + .sumi-flows-section {
 	margin-top: var(--space-2);
@@ -20909,10 +20933,49 @@ body:has(.wg-cm-layer) {
 	color: var(--text-2);
 	border-radius: var(--r-sm);
 }
-.sumi-flows-row:is(:hover, :focus-within),
-.sumi-flows-row[data-drop] {
+.sumi-flows-row:is(:hover, :focus-within) {
 	color: var(--text);
 	background: var(--hover);
+}
+:is(.sumi-flows-row, .sumi-flows-section)[data-drop] {
+	color: var(--text);
+	background: var(--hover);
+	border-radius: var(--r-md);
+	box-shadow: inset 0 0 0 1px var(--line-menu);
+}
+.sumi-flows-row-empty {
+	color: var(--text-3);
+}
+.sumi-flows-label-tools {
+	display: none;
+	gap: var(--space-px);
+	margin-inline-end: var(--space-1);
+}
+.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-tools {
+	display: flex;
+}
+.sumi-flows-label-tools .sumi-flows-add {
+	display: grid;
+	margin-inline-end: 0;
+}
+.sumi-flows-label-main {
+	display: flex;
+	flex: 1 1 auto;
+	gap: var(--space-1);
+	align-items: center;
+	min-width: 0;
+	height: 100%;
+	padding: 0;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+	background: none;
+	border: 0;
+}
+.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-main .sumi-flows-chevron,
+.sumi-flows-label[data-collapsed] .sumi-flows-label-main .sumi-flows-chevron {
+	display: grid;
 }
 .sumi-flows-row[data-current] {
 	color: var(--text);
@@ -21183,10 +21246,6 @@ body:has(.wg-cm-layer) {
 	font-size: var(--fs-13);
 	font-weight: var(--fw-ui);
 	letter-spacing: var(--tracking-ui);
-	background: var(--surface-menu);
-	border: 1px solid var(--line-menu);
-	border-radius: var(--r-menu);
-	box-shadow: var(--shadow-menu);
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) > .wg-kit-pop-inner {
 	padding: 0;
@@ -21337,6 +21396,14 @@ body:has(.wg-cm-layer) {
 	flex-direction: column;
 	gap: var(--space-1);
 	padding: var(--space-1) var(--space-2);
+}
+.sumi-flows-menu-moves {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-px);
+}
+.sumi-flows-menu-moves > .sumi-flows-menu-label {
+	padding: var(--space-1) var(--space-2) 0;
 }
 .sumi-flows-menu-label {
 	font-size: var(--fs-12);
