@@ -1,4 +1,4 @@
-import { existsSync, globSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { globSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import { paged, waited } from "./chrome-ask.ts";
@@ -9,26 +9,13 @@ const OUT = "/tmp/settings-shots";
 const WIDTHS = [1160, 720, 440];
 const ALWAYS_ON = ["settings"];
 
-const STUDIO_PLUGINS = readFileSync("apps/studio/src/plugins/sumi-plugins.ts", "utf8");
-const INSTALLED_NAMES = STUDIO_PLUGINS.match(/const INSTALLED_PLUGINS = \[([^\]]*)\]/)?.[1]?.match(/\w+/g) ?? [];
-const packageOf = (name: string): string | undefined =>
-	STUDIO_PLUGINS.match(new RegExp(`import \\{[^}]*\\b${name}\\b[^}]*\\} from "(@sumi/[^"]+)"`))?.[1];
-const folderOfPackage = new Map(
-	globSync("plugins/**/package.json")
-		.filter((file) => !file.includes("node_modules"))
-		.map((file) => [JSON.parse(readFileSync(file, "utf8")).name as string, path.dirname(file)]),
-);
-const installedFolders = INSTALLED_NAMES.flatMap((name) => {
-	const folder = folderOfPackage.get(packageOf(name) ?? "");
-	return folder === undefined ? [] : [folder];
-});
-const catalogue = installedFolders
-	.filter((folder) => existsSync(`${folder}/metadata.json`))
-	.map((folder) => ({
-		id: path.basename(folder),
-		metadata: JSON.parse(readFileSync(`${folder}/metadata.json`, "utf8")),
+const catalogue = globSync("plugins/**/metadata.json")
+	.filter((file) => !file.includes("node_modules"))
+	.map((file) => ({
+		id: path.basename(path.dirname(file)),
+		metadata: JSON.parse(readFileSync(file, "utf8")),
 		requires: [],
-		alwaysOn: ALWAYS_ON.includes(path.basename(folder)),
+		alwaysOn: ALWAYS_ON.includes(path.basename(path.dirname(file))),
 	}));
 const bundle = await bundleOf("tools/settings-page.tsx");
 const FRESH_SHEETS = ["packages/shared/core/board.css", "apps/studio/dist/studio.css"];
@@ -64,7 +51,7 @@ for (const width of WIDTHS) {
 				`(() => { const f = ${field}; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(f, ${JSON.stringify(words)}); f.dispatchEvent(new Event("input", { bubbles: true })); return true; })()`;
 			const keyed = (key: string): string =>
 				`${field}.dispatchEvent(new KeyboardEvent("keydown", { key: ${JSON.stringify(key)}, bubbles: true, cancelable: true }))`;
-			const items = `[...document.querySelectorAll(".sumi-settings-nav .wg-kit-side-menu-button")].map((one) => one.textContent)`;
+			const items = `[...document.querySelectorAll(".sumi-settings-nav .sumi-settings-item")].map((one) => one.textContent)`;
 			const searched: Record<string, unknown> = {};
 			await page.ask(
 				`window.dispatchEvent(new KeyboardEvent("keydown", { key: "f", metaKey: true, bubbles: true, cancelable: true })); true`,
@@ -85,7 +72,7 @@ for (const width of WIDTHS) {
 			await page.ask(keyed("Enter"));
 			await waited(300);
 			searched.afterEnter = await page.ask(
-				`({ crumb: document.querySelector(".sumi-settings-body h1").textContent, query: ${field}.value })`,
+				`({ crumb: document.querySelector(".sumi-settings-crumb-now").textContent, query: ${field}.value })`,
 			);
 			console.log(JSON.stringify(searched));
 			await page.ask(

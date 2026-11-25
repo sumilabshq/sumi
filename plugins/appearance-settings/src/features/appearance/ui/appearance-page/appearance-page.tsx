@@ -1,6 +1,5 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Heading } from "@widgetarium/kit";
 import { FontPicker } from "../font-picker/font-picker.js";
 import { InkPicker } from "../ink-picker/ink-picker.js";
 import { ThemePicker } from "../theme-picker/theme-picker.js";
@@ -8,7 +7,7 @@ import { ThemePicker } from "../theme-picker/theme-picker.js";
 export function AppearancePage(): ReactElement {
 	return (
 		<div className="sumi-appearance">
-			<Heading level={1}>Appearance</Heading>
+			<h1 className="sumi-settings-page-title">Appearance</h1>
 			<p className="sumi-appearance-lede">How Sumi looks on this computer. Every change shows at once.</p>
 			<ThemePicker />
 			<InkPicker />

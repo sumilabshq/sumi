@@ -1,7 +1,7 @@
 import { createElement as h, useCallback, useState } from "react";
 import type { ReactElement } from "react";
 import { useSettingsDetail, useSettingsTab, useWindowApp } from "@sumi/settings-plugin";
-import { Button, Heading, Icon } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 import type { Runtime } from "@widgetarium/data-framework";
 import { CloverGlyph } from "../../../../shared/ui/clover-glyph/clover-glyph.js";
 import { useBuildsPlugin } from "../../lib/use-builds-plugin.js";
@@ -80,7 +80,7 @@ function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 				{banner}
 				<div className="sumi-plugins-top">
 					<div>
-						<Heading level={1}>Plugins</Heading>
+						<h1 className="sumi-settings-page-title">Plugins</h1>
 						<p className="sumi-plugins-lede">
 							Each plugin adds one feature to Sumi. Switch one off and it leaves everywhere it appeared.
 						</p>

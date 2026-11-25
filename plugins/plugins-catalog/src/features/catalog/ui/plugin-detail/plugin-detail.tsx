@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { Heading, Icon, Switch } from "@widgetarium/kit";
+import { Icon, Switch } from "@widgetarium/kit";
 import type { RegistryEntry } from "../../lib/registry-types.js";
 import { PluginPreview } from "../plugin-preview/plugin-preview.js";
 import { PluginProperties } from "./plugin-properties.js";
@@ -30,14 +30,14 @@ export function PluginDetail({ entry, onSwitch }: PluginDetailProps): ReactEleme
 				<span className="sumi-plugins-hero-fade-y" />
 				<div className="sumi-plugins-identity">
 					<div>
-						<Heading level={1} className="sumi-plugins-title">
+						<h1 className="sumi-plugins-title">
 							{metadata.title}
 							{metadata.official ? (
 								<span className="sumi-plugins-badge is-large">
 									<Icon name="tick" size={11} />
 								</span>
 							) : null}
-						</Heading>
+						</h1>
 						<div className="sumi-plugins-detail-desc">{metadata.description}</div>
 					</div>
 					<span className="sumi-plugins-detail-switch">

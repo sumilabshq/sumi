@@ -20,22 +20,112 @@
 	min-height: 0;
 }
 
-.sumi-settings-left {
+.sumi-settings-crumb {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 3;
 	display: flex;
-	flex: none;
-	width: 220px;
+	max-width: 100%;
+	box-sizing: border-box;
+	align-items: center;
+	gap: 6px;
+	height: 44px;
+	padding: 0 16px;
+	color: var(--text-3);
+	white-space: nowrap;
 }
 
-.sumi-settings .wg-kit-side.sumi-settings-nav {
-	flex: 1;
-	min-width: 0;
-	--card-corner: 0;
-	padding-top: var(--space-2);
+.sumi-settings-crumb-back,
+.sumi-settings-crumb-button {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+
+.sumi-settings-crumb-back:hover {
+	color: var(--text);
+}
+
+.sumi-settings-crumb-button {
+	display: none;
+}
+
+.sumi-settings-crumb-now {
+	color: var(--text);
+}
+
+.sumi-settings-left {
+	position: relative;
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	width: 220px;
+	padding-top: 44px;
+}
+
+.sumi-settings-left::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 1px;
+	background: linear-gradient(transparent, var(--divider) 64px);
+}
+
+.sumi-settings-nav {
+	display: flex;
+	flex-direction: column;
+	padding: 6px 8px;
 	overflow-y: auto;
 }
 
 .sumi-settings-search {
-	padding: 0 var(--space-1) var(--space-2);
+	margin-bottom: 8px;
+}
+
+.sumi-settings-group {
+	display: flex;
+	flex-direction: column;
+}
+
+.sumi-settings-group-label {
+	margin: 0;
+	padding: 10px 8px 4px;
+	color: var(--text-3);
+	font-size: var(--fs-12);
+}
+
+.sumi-settings-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	height: 30px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: var(--r-sm);
+	background: transparent;
+	color: var(--text);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.sumi-settings-item .wg-kit-icon-glyph {
+	color: var(--text-3);
+}
+
+.sumi-settings-item[aria-current="page"] {
+	background: var(--sunken);
+	font-weight: 500;
+}
+
+.sumi-settings-item[aria-current="page"] .wg-kit-icon-glyph {
+	color: var(--text);
 }
 
 .sumi-settings-main {
@@ -46,25 +136,46 @@
 	min-width: 0;
 }
 
+.sumi-settings-crumb-menu {
+	position: absolute;
+	top: 100%;
+	left: 16px;
+	z-index: 4;
+	display: flex;
+	flex-direction: column;
+	min-width: 200px;
+	padding: 4px;
+	border-radius: var(--r-lg);
+	background: var(--plate);
+	box-shadow: var(--shadow-pop);
+}
+
 .sumi-settings-body {
 	flex: 1;
 	min-height: 0;
+	padding-top: 44px;
 	overflow-y: auto;
 }
 
-.sumi-settings-trail {
-	display: none;
-	align-items: center;
-	gap: var(--space-2);
-	padding: var(--space-3) var(--space-5) 0;
+.sumi-settings .sumi-settings-body.wg-kit-scroll-fade {
+	--fade-size: 56px;
 }
 
-.sumi-settings[data-detail] .sumi-settings-trail {
-	display: flex;
+.sumi-settings-page-title {
+	margin: 0;
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.3;
 }
 
-.sumi-settings-pages {
-	display: none;
+@container sumi-settings (min-width: 900px) {
+	.sumi-settings[data-detail] .sumi-settings-crumb {
+		width: 220px;
+	}
+
+	.sumi-settings[data-detail] .sumi-settings-body {
+		padding-top: 0;
+	}
 }
 
 @container sumi-settings (max-width: 899px) {
@@ -72,10 +183,19 @@
 		width: 48px;
 	}
 
-	.sumi-settings .wg-kit-side .sumi-settings-search,
+	.sumi-settings-nav {
+		padding-inline: 6px;
+	}
+
+	.sumi-settings-search,
 	.sumi-settings-item-text,
-	.sumi-settings .wg-kit-side.is-chrome .wg-kit-side-label {
+	.sumi-settings-group-label {
 		display: none;
+	}
+
+	.sumi-settings-item {
+		justify-content: center;
+		padding: 0;
 	}
 }
 
@@ -84,8 +204,16 @@
 		display: none;
 	}
 
-	.sumi-settings-trail,
-	.sumi-settings-pages {
+	.sumi-settings-crumb-button {
 		display: flex;
+	}
+
+	.sumi-settings-crumb-menu .sumi-settings-item-text {
+		display: inline;
+	}
+
+	.sumi-settings-crumb-menu .sumi-settings-item {
+		justify-content: flex-start;
+		padding: 0 10px;
 	}
 }
