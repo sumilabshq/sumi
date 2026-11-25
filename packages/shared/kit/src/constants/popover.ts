@@ -52,12 +52,6 @@ export const CAPTURE_PAST_THE_EDITOR_SHIELD = true;
 
 export const POPOVER_ITEM = ".wg-kit-pop-item:not([disabled])";
 
-export const SCALE_MS = 100;
-
-export const SCALE_FROM = 0.95;
-
-export const SCALE_EASING = "ease-out";
-
 export const EXIT_GUARD_MS = 400;
 
 export const GROW_MS = 420;

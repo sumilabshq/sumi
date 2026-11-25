@@ -317,10 +317,12 @@
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
 		--shadow-page: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 1px 1.5px rgba(0, 0, 0, 0.1);
-		--shadow-menu: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+		--shadow-menu:
+			0 0 0 1px oklch(0.946 0.003 264.5), 0 17.54px 23.39px #0000000a, 0 9.4px 12.5px #00000008, 0 5.25px 7px #00000005,
+			0 2.79px 3.72px -2px #00000003, 0 1.16px 1.5px #00000003;
 		--line-menu: rgba(0, 0, 0, 0.09);
 		--surface-menu: #ffffff;
-		--r-menu: 8px;
+		--r-menu: 10px;
 		--r-page: 10px;
 		--blur-pop: none;
 		--blur-corner: blur(10px);
@@ -502,7 +504,7 @@
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
 		--shadow-page: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 1px 1.5px rgba(0, 0, 0, 0.7);
-		--shadow-menu: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+		--shadow-menu: 0 0 0 1px oklch(1 0 0 / 0.13), 0 2px 10px oklch(0 0 0 / 0.22);
 		--line-menu: rgba(255, 255, 255, 0.1);
 		--surface-menu: #17181b;
 
@@ -2719,23 +2721,43 @@ body {
 	visibility: visible;
 	position: fixed;
 	z-index: var(--float-z, 60);
-	border: 1px solid var(--line-menu);
+	border: none;
 	border-radius: var(--r-menu);
 	background: var(--surface-menu);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	box-shadow: var(--shadow-menu);
-	transform-origin: top left;
+	transform-origin: var(--pop-origin, top left);
 	opacity: 0;
 	pointer-events: none;
 	overflow: hidden;
 	--pop-pad: 0px;
+	--pop-motion: scale;
 	min-width: max(224px, var(--anchor-width, 224px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop.is-open {
 	opacity: 1;
 	pointer-events: auto;
+	animation: wg-kit-pop-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes wg-kit-pop-in {
+	from {
+		opacity: 0;
+		scale: 0.95;
+	}
+	to {
+		opacity: 1;
+		scale: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:is(.wg-root, .wg-portal) .wg-kit-pop.is-open,
+	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
+		animation: none;
+	}
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-help {
@@ -2820,7 +2842,8 @@ body {
 	justify-content: flex-start;
 	width: 100%;
 	gap: var(--space-2, 8px);
-	padding: var(--space-1-5, 6px) var(--space-2, 8px);
+	height: 30px;
+	padding: 0 var(--space-2, 8px);
 	border: none;
 	border-radius: var(--r-sm, 6px);
 	cursor: pointer;
@@ -2832,8 +2855,20 @@ body {
 	text-align: left;
 }
 
+:is(.wg-root, .wg-portal) :is(.wg-kit-pop, .wg-kit-menu) .wg-kit-pop-item {
+	z-index: 1;
+}
+
+:is(.wg-root, .wg-portal)
+	.wg-kit-pop:has(.wg-kit-pop-item > .wg-kit-pop-icon)
+	.wg-kit-pop-item:not(:has(> .wg-kit-pop-icon)) {
+	padding-inline-start: calc(2 * var(--space-2, 8px) + 14px);
+}
+
 :is(.wg-root, .wg-portal) .wg-kit-pop-item.is-two {
 	align-items: flex-start;
+	height: auto;
+	padding-block: var(--space-1-5, 6px);
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-said {
@@ -2881,12 +2916,33 @@ body {
 	display: block;
 	position: absolute;
 	top: 0;
+	right: 0;
 	left: 0;
 	z-index: 0;
+	height: 0;
 	border-radius: var(--r-sm, 6px);
 	background: var(--control-hover);
 	pointer-events: none;
 	opacity: 0;
+	transition:
+		top 220ms cubic-bezier(0.23, 1, 0.32, 1),
+		height 220ms cubic-bezier(0.23, 1, 0.32, 1),
+		opacity 150ms ease;
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-menu > .wg-kit-pop-glide {
+	right: var(--size-2-2, 4px);
+	left: var(--size-2-2, 4px);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop-glide[data-tone="danger"] {
+	background: var(--danger-wash, var(--error-wash));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:is(.wg-root, .wg-portal) .wg-kit-pop-glide {
+		transition: none;
+	}
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-sub {
@@ -12556,7 +12612,7 @@ body.wg-tree-carrying .wg-tile-body {
 	max-height: var(--pop-available-height, 70vh);
 	overflow-y: auto;
 	padding: var(--size-2-2, 4px);
-	border: 1px solid var(--line-menu);
+	border: none;
 	border-radius: var(--r-menu);
 	background: var(--surface-menu);
 	backdrop-filter: none;
@@ -12578,8 +12634,10 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"] > :is(svg, .wg-kit-pop-icon) {
 	color: var(--danger, var(--destructive));
 }
-:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"]:is(:hover, :focus-visible)::before {
-	background: var(--danger-wash, var(--error-wash));
+:is(.wg-root, .wg-portal)
+	:is(.wg-kit-pop, .wg-kit-menu)
+	.wg-kit-pop-item:is(:hover, :focus-visible, [data-highlighted], [aria-current="true"])::before {
+	background: transparent;
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop-item[aria-checked="mixed"] .wg-kit-pop-tick {
 	opacity: 1;
@@ -12604,13 +12662,10 @@ body.wg-tree-carrying .wg-tile-body {
 	color: var(--text-3, var(--muted-foreground));
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop-item > :is(svg, .wg-kit-pop-icon),
-:is(.wg-root, .wg-portal) .wg-kit-pop-item .wg-kit-pop-tick,
 :is(.wg-root, .wg-portal) .wg-kit-pop-item .wg-kit-menu-chevron {
 	color: var(--text-3, var(--muted-foreground));
 }
-:is(.wg-root, .wg-portal)
-	.wg-kit-pop-item
-	:is(.wg-kit-icon, .wg-kit-icon-glyph, .wg-kit-pop-tick, .wg-kit-menu-chevron) {
+:is(.wg-root, .wg-portal) .wg-kit-pop-item :is(.wg-kit-icon, .wg-kit-icon-glyph, .wg-kit-menu-chevron) {
 	width: 14px;
 	height: 14px;
 	flex: none;
@@ -12618,21 +12673,29 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-kit-pop-item .wg-kit-icon-glyph {
 	--icon-stroke: 1.75;
 }
+:is(.wg-root, .wg-portal) :is(.wg-kit-pop, .wg-kit-menu) .wg-kit-pop-item .wg-kit-pop-tick.wg-kit-icon-glyph {
+	--icon-stroke: 2.5;
+	width: 13px;
+	height: 13px;
+	color: var(--text, var(--foreground));
+}
+:is(.wg-root, .wg-portal) .wg-kit-menu .wg-kit-pop-sep {
+	margin-inline: calc(-1 * var(--size-2-2, 4px));
+}
 :is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
-	transition:
-		opacity 100ms ease-out,
-		scale 100ms ease-out;
+	transition: none;
 	transform-origin: var(--pop-origin, top left);
+	animation: wg-kit-pop-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 :is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu[data-state="closed"] {
 	opacity: 0;
 	scale: 1;
-	transition: none;
+	animation: none;
 }
 @starting-style {
 	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
-		opacity: 0;
-		scale: 0.95;
+		opacity: 1;
+		scale: 1;
 	}
 }
 
@@ -14779,7 +14842,7 @@ body.wg-tree-carrying .wg-tile-body {
 	--pop-pad: 0px;
 	--pop-motion: scale;
 	padding: 4px;
-	border: 1px solid var(--line-menu);
+	border: none;
 	border-radius: var(--r-menu);
 	background: var(--surface-menu);
 	backdrop-filter: none;
@@ -14820,18 +14883,6 @@ body.wg-tree-carrying .wg-tile-body {
 	fill: none;
 	stroke: var(--line);
 	stroke-width: 1;
-}
-
-:is(.wg-studio, .wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-glide {
-	display: block;
-	position: absolute;
-	top: 0;
-	left: 0;
-	z-index: 0;
-	border-radius: var(--r-sm);
-	background: var(--control-hover);
-	pointer-events: none;
-	opacity: 0;
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .wg-kit-field,
@@ -14960,12 +15011,6 @@ body.wg-tree-carrying .wg-tile-body {
 	border-radius: var(--r-sm);
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-pop-tick {
-	width: 14px;
-	height: 14px;
-	color: var(--text-3);
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-two {
 	align-items: center;
 	padding-block: var(--space-1);
@@ -14992,12 +15037,6 @@ body.wg-tree-carrying .wg-tile-body {
 	color: var(--danger);
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio)
-	.wg-kit-pop:has(.wg-kit-pop-item.is-destructive:is(:hover, :focus-visible, [data-highlighted]))
-	.wg-kit-pop-glide {
-	background: var(--danger-wash);
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item::before {
 	border-radius: var(--r-sm);
 	transition: background-color var(--dur-hover) var(--ease-emphasized);
@@ -15014,10 +15053,6 @@ body.wg-tree-carrying .wg-tile-body {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item:is([disabled], [data-disabled]) svg {
-	color: var(--text-3);
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-tick {
 	color: var(--text-3);
 }
 
@@ -20838,7 +20873,6 @@ body:has(.wg-cm-layer) {
 	min-height: 0;
 	overflow: hidden;
 	background: var(--surface-menu);
-	border: 1px solid var(--line-menu);
 	border-radius: var(--r-menu);
 	box-shadow: var(--shadow-menu);
 	transform-origin: left top;
