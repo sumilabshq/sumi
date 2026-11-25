@@ -125,6 +125,7 @@ function coreServedOver({ workspace, listener, store, plugins }: CoreServing): R
 			env: {
 				FILES_STORE: "tauri",
 				TERMINAL_STORE: "tauri",
+				HAPTICS_HOST: "tauri",
 			},
 			scope: { workspaceId: workspace },
 		});

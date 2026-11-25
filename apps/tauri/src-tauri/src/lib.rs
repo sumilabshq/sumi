@@ -5,6 +5,7 @@ pub mod assistant;
 pub mod browser;
 pub mod drive_files;
 pub mod files;
+pub mod haptics;
 pub mod login_path;
 pub mod path_guard;
 pub mod process_runs;

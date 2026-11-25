@@ -1,0 +1,38 @@
+{
+	"name": "@widgetarium/haptics",
+	"version": "0.1.0",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		"./contract": {
+			"source": "./generated/contract.ts",
+			"types": "./dist/generated/contract.d.ts",
+			"default": "./dist/generated/contract.js"
+		},
+		"./implementation": {
+			"server": "./generated/module.ts",
+			"source": "./generated/module.ts"
+		}
+	},
+	"imports": {
+		"#module": {
+			"source": "./generated/command.ts",
+			"types": "./dist/generated/command.d.ts",
+			"default": "./dist/generated/command.js"
+		}
+	},
+	"dependencies": {
+		"@tauri-apps/api": "^2.12.4",
+		"@widgetarium/data-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}
