@@ -2012,7 +2012,16 @@ body {
 }
 :is(.wg-root, .wg-portal) .wg-kit-tree-list-item:last-child::before {
 	bottom: auto;
-	height: calc(var(--h-md) / 2);
+	height: 50%;
+}
+:is(.wg-root, .wg-portal) .wg-kit-tree-list-item::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: var(--space-1);
+	width: 10px;
+	height: 1px;
+	background: var(--tree);
 }
 
 @keyframes wg-kit-spin {
