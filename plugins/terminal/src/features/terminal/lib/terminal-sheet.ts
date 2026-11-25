@@ -1,6 +1,6 @@
 export const TERMINAL_SHEET = `
 .wg-terminal { position: relative; display: flex; flex-direction: column; flex: 1; gap: 8px; height: 100%; min-height: 0; box-sizing: border-box; margin: 0; padding: 12px 16px; background: var(--plate); color: var(--text); overflow: hidden; }
-.wg-terminal-note { margin: 0; color: var(--text-2); font-family: var(--font-code); font-size: 13px; }
+.wg-terminal-note { margin: 0; color: var(--text-2); font-family: var(--font-code); font-size: var(--fs-13); }
 .wg-terminal-screen { position: relative; flex: 1; min-height: 0; overflow: hidden; }
 .xterm { cursor: text; position: relative; user-select: none; -webkit-user-select: none; height: 100%; }
 .xterm.focus, .xterm:focus { outline: none; }

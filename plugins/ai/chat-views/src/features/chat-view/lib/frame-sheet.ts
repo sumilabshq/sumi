@@ -216,7 +216,7 @@ ol.steps > li > .media { width: 240px; margin: 8px 0 0; }
 table.chart.is-drawn { display: none; }
 .chart-view { display: flex; flex-direction: column; gap: 8px; }
 .chart-view svg { display: block; width: 100%; height: auto; overflow: visible; }
-.chart-view text { fill: var(--text-3); font-size: 11px; font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+.chart-view text { fill: var(--text-3); font-size: var(--fs-11); font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
 .chart-axis { stroke: var(--line); stroke-width: 1; }
 .chart-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--text-3); }
 .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }

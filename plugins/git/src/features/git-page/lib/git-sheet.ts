@@ -53,7 +53,7 @@ export const GIT_SHEET = `
 .wg-git-base { font-weight: var(--fw-medium); }
 .wg-git-gap { flex: 1; }
 .wg-git-hidden { height: 28px; display: flex; align-items: center; gap: 8px; padding-left: 72px; font-size: var(--fs-12); color: var(--text-3); background: var(--sunken); }
-.wg-git-ln { --git-num-w: max(48px, calc(var(--git-digits, 3) * 1ch + 20px)); display: grid; grid-template-columns: var(--git-num-w) var(--git-num-w) 22px minmax(0, 1fr); font: var(--fw-regular) 12.5px/20px var(--font-code); }
+.wg-git-ln { --git-num-w: max(48px, calc(var(--git-digits, 3) * 1ch + 20px)); display: grid; grid-template-columns: var(--git-num-w) var(--git-num-w) 22px minmax(0, 1fr); font: var(--fw-regular) var(--fs-13)/20px var(--font-code); }
 .wg-git-ln[data-line="added"] { background: color-mix(in srgb, var(--success-text) 9%, transparent); }
 .wg-git-ln[data-line="removed"] { background: color-mix(in srgb, var(--danger) 8%, transparent); }
 .wg-git-n { padding-right: 10px; text-align: right; color: var(--text-3); font-variant-numeric: tabular-nums; user-select: none; }
