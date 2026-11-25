@@ -3495,6 +3495,7 @@ body {
 		.is-outline,
 		.is-wash,
 		.is-page,
+		.is-lifted,
 		.is-raised,
 		.is-overlay,
 		.wg-kit-glass
@@ -3608,6 +3609,18 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-btn.is-page::before {
 	background: var(--page);
 	box-shadow: none;
+}
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted {
+	color: var(--muted-foreground);
+}
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted::before {
+	background: var(--page);
+	box-shadow:
+		inset 0 0 0 1px var(--line),
+		var(--shadow-menu);
+}
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted:hover::before {
+	background: linear-gradient(var(--hover), var(--hover)), var(--page);
 }
 :is(.wg-root, .wg-portal) .wg-kit-btn.is-outline.is-muted {
 	color: var(--muted-foreground);
