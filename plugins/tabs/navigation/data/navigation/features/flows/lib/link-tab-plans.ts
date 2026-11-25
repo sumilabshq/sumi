@@ -14,6 +14,7 @@ import { layoutWithTab } from "../../../shared/lib/flows/flow-panes.js";
 import { settlingWith } from "../../../shared/lib/settling/settling.js";
 import type { Answer, Settled } from "../../../shared/lib/settling/settling.js";
 import { openPlan } from "../../../shared/lib/showing/opening-plans.js";
+import { resolvedAppOf } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import { chatIdOf } from "../../../shared/lib/tabs/host-tabs.js";
 import type { OpenLinkTabAskSchema } from "../../../shared/schema/flow-asks.schema.js";
@@ -44,15 +45,15 @@ export function openLinkTabMove(ask: OpenLinkTabAsk, apps: PlacedApps): MovePlac
 			return refusedMove(NO_HOME.replace("{id}", ask.homeId));
 		}
 
-		const heldId = heldTabIdOf(now, home.flow, ask);
-		return heldId === undefined
-			? openedBeside(now, { ask, apps, home, homeTabId })
-			: shownHeld(now, home.flow, heldId);
+		const heldId = heldTabIdOf(now, home.flow, ask, apps);
+		return heldId === undefined ? openedBeside(now, { ask, apps, home, homeTabId }) : shownHeld(now, home.flow, heldId);
 	};
 }
 
 function homeTabIdOf({ tabs }: PlacedPlaces, apps: PlacedApps, homeId: string): string {
-	return (tabs.tabs.find(({ id }) => id === homeId) ?? tabs.tabs.find((tab) => chatIdOf(apps, tab) === homeId))?.id ?? homeId;
+	return (
+		(tabs.tabs.find(({ id }) => id === homeId) ?? tabs.tabs.find((tab) => chatIdOf(apps, tab) === homeId))?.id ?? homeId
+	);
 }
 
 function linkHomeOf(doc: FlowsDoc, tabId: string): LinkHome | undefined {
@@ -67,14 +68,25 @@ function linkHomeOf(doc: FlowsDoc, tabId: string): LinkHome | undefined {
 	return undefined;
 }
 
-function heldTabIdOf({ tabs }: PlacedPlaces, flow: Flow, { app, address }: OpenLinkTabAsk): string | undefined {
+function heldTabIdOf(
+	{ tabs }: PlacedPlaces,
+	flow: Flow,
+	{ app, address }: OpenLinkTabAsk,
+	apps: PlacedApps,
+): string | undefined {
 	const inFlow = new Set(flowTabIdsOf(flow));
-	return tabs.tabs.find((tab) => inFlow.has(tab.id) && tab.app === app && tab.lastAddress === address)?.id;
+	const opensIn = resolvedAppOf(apps, app, address);
+	return tabs.tabs.find((tab) => inFlow.has(tab.id) && tab.app === opensIn && tab.lastAddress === address)?.id;
 }
 
 function shownHeld(now: PlacedPlaces, flow: Flow, heldId: string): PlacesMove<LinkTabAnswer> {
 	const answer: LinkTabAnswer = { isRefused: false, value: { effects: [], extra: heldId } };
-	return withLayoutEdited(now, { flow, edit: layoutWithTabShown(flow.layout, heldId), answer, said: `shows the held ${heldId}` });
+	return withLayoutEdited(now, {
+		flow,
+		edit: layoutWithTabShown(flow.layout, heldId),
+		answer,
+		said: `shows the held ${heldId}`,
+	});
 }
 
 interface BesideOpening {
@@ -95,7 +107,12 @@ function openedBeside(now: PlacedPlaces, { ask, apps, home, homeTabId }: BesideO
 	const tabId = opened.answer.value.extra;
 	const answer: LinkTabAnswer = opened.answer;
 	const edit = layoutBesideOf(home, { tabId, besideTabId: homeTabId, place: ask.place });
-	return withLayoutEdited(opened.next, { flow: home.flow, edit, answer, said: `${opened.reason}; ${tabId} ${ask.place}` });
+	return withLayoutEdited(opened.next, {
+		flow: home.flow,
+		edit,
+		answer,
+		said: `${opened.reason}; ${tabId} ${ask.place}`,
+	});
 }
 
 interface BesidePlacing {

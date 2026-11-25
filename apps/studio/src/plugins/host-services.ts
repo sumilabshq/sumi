@@ -1,4 +1,8 @@
 import { prefixedModule } from "@widgetarium/data-framework";
+import { fileSystem, haptics, terminal } from "@sumi/contract";
+import { fileSystem as fileSystemModule } from "@widgetarium/file-system/implementation";
+import { haptics as hapticsModule } from "@widgetarium/haptics/implementation";
+import { terminal as terminalModule } from "@widgetarium/terminal/implementation";
 import type { CallerFacts } from "@widgetarium/plugin-framework";
 import type { Agents, Backend, Shell, Windows } from "@sumi/sumi-host-plugin";
 import type {
@@ -25,9 +29,15 @@ export interface HostRegistrations {
 	readonly agentMcpServers: AgentMcpServer[];
 }
 
+const HOST_CAPABILITIES: readonly BackgroundModule[] = [
+	{ contract: fileSystem, prefix: null, moduleOf: () => fileSystemModule },
+	{ contract: terminal, prefix: null, moduleOf: () => terminalModule },
+	{ contract: haptics, prefix: null, moduleOf: () => hapticsModule },
+];
+
 export function emptyHostRegistrations(): HostRegistrations {
 	return {
-		backgroundModules: [],
+		backgroundModules: [...HOST_CAPABILITIES],
 		windowModules: [],
 		windowServerModules: [],
 		tabPages: [],

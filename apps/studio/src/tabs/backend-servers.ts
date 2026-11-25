@@ -1,7 +1,6 @@
 import { prefixedModule, runtime } from "@widgetarium/data-framework";
 import type { RemoteModule, RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import type { BackgroundModule, HostServer } from "../plugins/sumi-plugins.js";
-import { HOST_CAPABILITY_CONTRACTS } from "./studio-app.js";
 
 export interface BackendServersAsk {
 	readonly workspaceId: string;
@@ -19,10 +18,7 @@ const SERVING = "[studio-core] workspace {workspace}: server {server} none → s
 const NOT_SERVING = "[studio-core] workspace {workspace}: server {server} none → failed; the core runs on";
 
 export function startBackendServers({ workspaceId, core, backgroundModules, servers }: BackendServersAsk): void {
-	const imports = [
-		...HOST_CAPABILITY_CONTRACTS.map((contract) => contract({ over: core })),
-		...backgroundModules.map(({ contract, prefix }) => contract({ over: core, prefix })),
-	];
+	const imports = backgroundModules.map(({ contract, prefix }) => contract({ over: core, prefix }));
 
 	for (const server of servers) {
 		startServerOrReport(server, { workspaceId, imports });

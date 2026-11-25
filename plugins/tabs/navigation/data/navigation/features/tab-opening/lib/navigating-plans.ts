@@ -58,7 +58,7 @@ const NOT_LISTED = 'the tab "{id}" stands in no list';
 const NO_FROM = "this-tab needs from: the tab whose place the target takes";
 const NOT_A_PAGE_APP = "a tab of {app} cannot be opened: {app} draws no page in a tab";
 
-export function resolvedTargetOf(apps: PlacedApps, target: NavigationTarget): NavigationTarget {
+function resolvedTargetOf(apps: PlacedApps, target: NavigationTarget): NavigationTarget {
 	if (target.kind === "tab") {
 		return target;
 	}
@@ -69,8 +69,10 @@ export function resolvedTargetOf(apps: PlacedApps, target: NavigationTarget): Na
 	};
 }
 
-export function navigatePlan({ target, where, from }: Navigation): ExtraPlan<string> {
+export function navigatePlan({ target: asked, where, from }: Navigation): ExtraPlan<string> {
 	return (showing, facts) => {
+		const target = resolvedTargetOf(showing.moment.apps, asked);
+
 		if (where === "new-tab") {
 			return newTabNavigated(showing, facts, target);
 		}
