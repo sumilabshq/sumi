@@ -3772,6 +3772,9 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-ghost:hover::before {
 	background: var(--control-fill-hover);
 }
+:is(.wg-root, .wg-portal) .wg-kit-icon.is-ghost.is-xxs:hover {
+	color: var(--control-glyph-on);
+}
 :is(.wg-root, .wg-portal)
 	.wg-kit-icon.is-ghost:is(
 		[data-state="open"],
