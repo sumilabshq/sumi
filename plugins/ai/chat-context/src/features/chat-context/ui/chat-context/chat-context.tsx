@@ -58,34 +58,38 @@ export function ContextBar({ folder }: { readonly folder: string }): ReactNode {
 
 	return (
 		<>
-			<Popover open={opener === "chip"} onOpenChange={openerChanged("chip")} isPortaled>
-				<PopoverTrigger asChild aria-haspopup="menu">
-					<Pressable variant="ghost" tone="faint" className="sumi-chat-context-chip" label={context.folder}>
-						<Icon name={chip.icon} size={CHIP_ICON_PX} />
-						<span className="sumi-chat-context-label">{chip.label}</span>
-					</Pressable>
-				</PopoverTrigger>
-				<PopoverContent side="bottom" align="start" className="sumi-chat-context-pop">
-					{menu}
-				</PopoverContent>
-			</Popover>
-			<Popover open={opener === "more"} onOpenChange={openerChanged("more")} isPortaled>
-				<PopoverTrigger asChild aria-haspopup="menu">
-					<Button
-						shape="square"
-						emphasis="ghost"
-						size="xs"
-						label={MORE}
-						className="sumi-chat-context-more"
-						{...tooltipMarks({ said: MORE })}
-					>
-						<Icon name="ellipsis" size={MORE_ICON_PX} />
-					</Button>
-				</PopoverTrigger>
-				<PopoverContent side="bottom" align="end" className="sumi-chat-context-pop">
-					{menu}
-				</PopoverContent>
-			</Popover>
+			<span className="sumi-chat-context-chip-slot">
+				<Popover open={opener === "chip"} onOpenChange={openerChanged("chip")} isPortaled>
+					<PopoverTrigger asChild aria-haspopup="menu">
+						<Pressable variant="ghost" tone="faint" className="sumi-chat-context-chip" label={context.folder}>
+							<Icon name={chip.icon} size={CHIP_ICON_PX} />
+							<span className="sumi-chat-context-label">{chip.label}</span>
+						</Pressable>
+					</PopoverTrigger>
+					<PopoverContent side="bottom" align="start" className="sumi-chat-context-pop">
+						{menu}
+					</PopoverContent>
+				</Popover>
+			</span>
+			<span className="sumi-chat-context-more-slot">
+				<Popover open={opener === "more"} onOpenChange={openerChanged("more")} isPortaled>
+					<PopoverTrigger asChild aria-haspopup="menu">
+						<Button
+							shape="square"
+							emphasis="ghost"
+							size="xs"
+							label={MORE}
+							className="sumi-chat-context-more"
+							{...tooltipMarks({ said: MORE })}
+						>
+							<Icon name="ellipsis" size={MORE_ICON_PX} />
+						</Button>
+					</PopoverTrigger>
+					<PopoverContent side="bottom" align="end" className="sumi-chat-context-pop">
+						{menu}
+					</PopoverContent>
+				</Popover>
+			</span>
 		</>
 	);
 }

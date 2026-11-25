@@ -100,10 +100,21 @@ function Context(): ReactElement | null {
 	return variant === "none" ? null : <ContextBar folder={FOLDER} />;
 }
 
+const sessionsFill = {
+	slot: "chat.head-tools",
+	pluginId: "sessions",
+	kind: "add" as const,
+	component: SessionsChevron,
+};
+const contextFill = { slot: "chat.head-tools", pluginId: "chat-context", kind: "add" as const, component: Context };
+const toolFills =
+	new URLSearchParams(location.search).get("fills") === "context-first"
+		? [contextFill, sessionsFill]
+		: [sessionsFill, contextFill];
+
 const fills = new SlotFills([
 	{ slot: "chat.head-title", pluginId: "chat-title", kind: "replace" as const, component: HeadTitle },
-	{ slot: "chat.head-tools", pluginId: "sessions", kind: "add" as const, component: SessionsChevron },
-	{ slot: "chat.head-tools", pluginId: "chat-context", kind: "add" as const, component: Context },
+	...toolFills,
 ]);
 
 const MESSAGES = Array.from(
