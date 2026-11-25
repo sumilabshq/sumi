@@ -350,6 +350,21 @@
 	margin-inline-start: var(--space-2);
 }
 
+.sumi-flows-row .sumi-flows-close {
+	display: none;
+	flex: none;
+	margin-inline: calc(var(--space-2) - (var(--control-xxs) - var(--icon-sm)) / 2)
+		calc((var(--icon-sm) - var(--control-xxs)) / 2);
+}
+
+.sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-status {
+	display: none;
+}
+
+.sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-close {
+	display: inline-flex;
+}
+
 .sumi-flows-status[data-status="asking"]::before,
 .sumi-flows-status[data-status="failed"]::before {
 	width: 6px;

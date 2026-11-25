@@ -68,6 +68,7 @@ export async function openedSidebar(
 	theme: string,
 	scene: string,
 	size: PageSize = HARNESS_SIZE,
+	pixelRatio = 1,
 ): Promise<OpenedSidebar> {
 	const html = htmlOf(bundled, theme, size);
 	const server = http.createServer((_request, response) => {
@@ -77,7 +78,7 @@ export async function openedSidebar(
 	await new Promise<void>((listening) => server.listen(0, "127.0.0.1", listening));
 	const address = server.address();
 	const port = typeof address === "object" && address !== null ? address.port : 0;
-	const page = await pagedWithRetry(`http://127.0.0.1:${port}/#${scene}`, size);
+	const page = await pagedWithRetry(`http://127.0.0.1:${port}/#${scene}`, size, pixelRatio);
 	await waited(SETTLE_MS);
 	return {
 		page,
@@ -88,8 +89,8 @@ export async function openedSidebar(
 	};
 }
 
-async function pagedWithRetry(file: string, size: PageSize): Promise<AskedPage> {
-	const asked = { size, hearsFailures: true };
+async function pagedWithRetry(file: string, size: PageSize, pixelRatio: number): Promise<AskedPage> {
+	const asked = { size, hearsFailures: true, pixelRatio };
 
 	try {
 		return await paged(file, "flows sidebar", asked);

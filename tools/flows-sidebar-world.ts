@@ -1,5 +1,6 @@
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
+import { assistant as assistantContract } from "../plugins/ai/agent/data/assistant/generated/contract.ts";
 import { appHost as appHostModule } from "../plugins/tabs/navigation/data/app-host/generated/module.ts";
 import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { NoCoreChangesGateway } from "../plugins/tabs/navigation/data/app-host/gateways/core-changes/none.gateway.ts";
@@ -55,6 +56,7 @@ interface WorldSpec {
 export interface SidebarWorld {
 	readonly app: Runtime;
 	readonly sidePeeks: MemorySidePeeksGateway;
+	readonly stoppedTurns: readonly unknown[];
 	spoilUndo(): Promise<void>;
 }
 
@@ -73,6 +75,14 @@ export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld>
 	});
 	const sidePeeks = new MemorySidePeeksGateway();
 	const core = placesLinkOf(places, [PluginAppsModule]);
+	const stoppedTurns: unknown[] = [];
+	const assistantFake: RemoteTransport = {
+		call: (call) => {
+			stoppedTurns.push(call.sent);
+			return Promise.resolve({ ok: true, output: undefined });
+		},
+		changes: () => () => undefined,
+	};
 	const app = runtime()
 		.modules(
 			appHostModule({
@@ -98,11 +108,13 @@ export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld>
 			tabGroups({ over: core }),
 			chatFacts({ over: core }),
 			appsContract({ over: core }),
+			assistantContract({ over: assistantFake }),
 		)
 		.start({ platform: "browser", scope: { workspaceId: "fixture" } });
 	return {
 		app,
 		sidePeeks,
+		stoppedTurns,
 		spoilUndo: () =>
 			places.movePlaces((now) => ({
 				next: now.flows === null ? null : { tabs: now.tabs, flows: { ...now.flows, inboxUndo: null } },

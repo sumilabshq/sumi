@@ -36,6 +36,7 @@ const NO_BOUNDS = { left: { leastPx: 0, usualPx: 0 }, chat: { leastPx: 0, usualP
 declare global {
 	interface Window {
 		__spoilUndo: () => Promise<void>;
+		__stoppedTurns: readonly unknown[];
 		__flowsSidebar: () => Promise<unknown>;
 		__projects: (request: keyof typeof navigation.projects, ask: unknown) => Promise<unknown>;
 		__chrome: {
@@ -112,6 +113,7 @@ async function main(): Promise<void> {
 	}
 
 	window.__spoilUndo = world.spoilUndo;
+	window.__stoppedTurns = world.stoppedTurns;
 	window.__projects = (request, ask) => world.app.send(navigation.projects[request] as never, ask as never);
 	window.__flowsSidebar = () => world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
 

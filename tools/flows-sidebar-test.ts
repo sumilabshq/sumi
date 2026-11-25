@@ -3,6 +3,7 @@ import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
 import { bundleOf } from "./harness.ts";
 import { doubleClickOn, hoverOn, openedSidebar, pressOn, rowOf } from "./flows-sidebar-harness.ts";
+import { boxOf, closeOf, dialogFitOf, IDLE_SESSION, RUNNING_SESSION, SESSION_ROW } from "./close-session-probe.ts";
 
 const INBOX = "section[aria-label=Inbox] .sumi-flows-row";
 const FLOWS = "section[aria-label=General] .sumi-flows-row";
@@ -485,7 +486,7 @@ async function deleting(): Promise<void> {
 			),
 			true,
 		);
-		await page.ask(clickText("[role=alertdialog] button", "Delete flow"));
+		await page.ask(`document.querySelector("[role=alertdialog] [data-slot=alert-dialog-action]").click()`);
 		await waited(SETTLE_MS * 2);
 		check(
 			"Delete flow takes the Flow out of the sidebar",
@@ -493,6 +494,112 @@ async function deleting(): Promise<void> {
 			false,
 		);
 		check("and out of Inbox", ((await page.ask(namesOf(INBOX))) as string[]).includes("Plugin layout"), false);
+	});
+}
+
+const KEY_HINT_TOLERANCE_PX = 0.5;
+const KEY_HINT_PX = 18;
+const KEY_HINT_INSET_PX = 5;
+const ALERT_WIDTH_PX = 340;
+
+const near = (got: number, want: number): boolean => Math.abs(got - want) <= KEY_HINT_TOLERANCE_PX;
+
+const lookOf = (expression: string): string =>
+	`(() => { const one = ${expression}; return one === null ? null : [getComputedStyle(one).display, getComputedStyle(one).color]; })()`;
+
+async function pressClose(page: AskedPage, name: string): Promise<void> {
+	await hoverOn(page, SESSION_ROW, name, 300);
+	const close = await boxOf(page, closeOf(name));
+	await page.press(close.x + close.width / 2, close.y + close.height / 2);
+	await waited(SETTLE_MS);
+}
+
+async function closingSessions(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		const status = `${rowOf(SESSION_ROW, RUNNING_SESSION)}.querySelector(".sumi-flows-status")`;
+		check("at rest a session row shows its status and no ×", [
+			((await page.ask(lookOf(status))) as string[] | null)?.[0],
+			((await page.ask(lookOf(closeOf(RUNNING_SESSION)))) as string[] | null)?.[0],
+		], ["grid", "none"]);
+		await hoverOn(page, SESSION_ROW, RUNNING_SESSION, 300);
+		check(
+			"HOVER SWAPS THE STATUS FOR AN ARCHIVE ×, 20 PX",
+			[
+				((await page.ask(lookOf(status))) as string[] | null)?.[0],
+				await page.ask(`${closeOf(RUNNING_SESSION)}.getAttribute("aria-label")`),
+				(await boxOf(page, closeOf(RUNNING_SESSION))).width,
+			],
+			["none", "Archive session", 20],
+		);
+		const restInk = ((await page.ask(lookOf(closeOf(RUNNING_SESSION)))) as string[])[1];
+		const close = await boxOf(page, closeOf(RUNNING_SESSION));
+		await page.hover(close.x + close.width / 2, close.y + close.height / 2);
+		await waited(300);
+		const hoverInk = ((await page.ask(lookOf(closeOf(RUNNING_SESSION)))) as string[])[1];
+		check("the × reads muted at rest and darker under the pointer", restInk !== hoverInk, true);
+		const opened = await page.ask(`document.querySelector("[aria-current=true] .sumi-flows-name")?.textContent ?? null`);
+		await page.press(close.x + close.width / 2, close.y + close.height / 2);
+		await waited(SETTLE_MS);
+		check(
+			"A RUNNING SESSION ASKS FIRST, and the press does not open its row",
+			[
+				await page.ask(`document.querySelector("[role=alertdialog] h2")?.textContent ?? null`),
+				await page.ask(`document.querySelector("[aria-current=true] .sumi-flows-name")?.textContent ?? null`),
+			],
+			["Stop and archive this session?", opened],
+		);
+		const fit = await dialogFitOf(page);
+		check("the confirm is 340 px wide with no border", [fit.width, fit.border], [ALERT_WIDTH_PX, "0px"]);
+		check(
+			"KEY HINTS: Esc and ↵, 18 px tall, text centred with equal space left and right, nothing cut",
+			fit.hints.map((hint) => [
+				hint.text,
+				hint.height,
+				near(hint.padStart, hint.padEnd) ? "centred" : `${hint.padStart}|${hint.padEnd}`,
+				hint.textInside,
+			]),
+			[
+				["Esc", KEY_HINT_PX, "centred", true],
+				["↵", KEY_HINT_PX, "centred", true],
+			],
+		);
+		check(
+			"each key hint sits 5 px from its button's right, top and bottom edges",
+			fit.hints.map((hint) =>
+				[hint.fromButtonEnd, hint.fromButtonTop, hint.fromButtonBottom].every((gap) => near(gap, KEY_HINT_INSET_PX)),
+			),
+			[true, true],
+		);
+		await page.ask(`document.querySelector("[data-slot=alert-dialog-cancel]").click()`);
+		await waited(SETTLE_MS);
+		check(
+			"Cancel keeps the session and stops nothing",
+			[
+				((await page.ask(namesOf(SESSION_ROW))) as string[]).includes(RUNNING_SESSION),
+				await page.ask("window.__stoppedTurns.length"),
+			],
+			[true, 0],
+		);
+		await pressClose(page, RUNNING_SESSION);
+		await page.pressEnter();
+		await waited(SETTLE_MS * 2);
+		check(
+			"ENTER CONFIRMS: the running chat is stopped and the session leaves the sidebar",
+			[
+				await page.ask("window.__stoppedTurns.length"),
+				((await page.ask(namesOf(SESSION_ROW))) as string[]).includes(RUNNING_SESSION),
+			],
+			[1, false],
+		);
+		await pressClose(page, IDLE_SESSION);
+		check(
+			"AN IDLE SESSION ARCHIVES AT ONCE, no dialog",
+			[
+				await page.ask(`document.querySelectorAll("[role=alertdialog][data-state=open]").length`),
+				((await page.ask(namesOf(SESSION_ROW))) as string[]).includes(IDLE_SESSION),
+			],
+			[0, false],
+		);
 	});
 }
 
@@ -861,6 +968,7 @@ await peekHolds();
 await dragging();
 await editingIcon();
 await deleting();
+await closingSessions();
 await folderMenuAndArchive();
 await projects();
 await collapsing();

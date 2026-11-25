@@ -9,6 +9,7 @@ import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
 import { FLOW_RENAME_KEYS, RENAME_KEY, renamesOn } from "../../lib/rename-keys.js";
 import { ChatsHover } from "../chats-panel/chats-panel.js";
+import { CloseFlowButton } from "../close-flow/close-flow-button.js";
 import { RowField } from "../row-field/row-field.js";
 import { MoveToSection } from "../move-to-section/move-to-section.js";
 import { RowMenu } from "../row-menu/row-menu.js";
@@ -101,6 +102,7 @@ export function FlowRowView({
 								<span className="sumi-flows-name">{flow.name}</span>
 							</button>
 							<StatusMark status={flow.status} />
+							<CloseFlowButton flow={flow} acts={acts} />
 						</div>
 					)}
 				</ChatsHover>
