@@ -103,7 +103,7 @@ function htmlOf(bundled: string, theme: string, [width, height]: PageSize): stri
 	const sheets = SHEETS.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
 	const dark = theme === "dark" ? " dark" : "";
 	const script = bundled.replaceAll("</script", "<\\/script");
-	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body class="theme-${theme}${dark}" style="margin:0;background:var(--frame)"><div class="${STUDIO_PORTAL_LAYER}"></div><div id="frame" style="width:${width}px;height:${height}px"></div><script>${script}</script></body></html>`;
+	return `<!doctype html><html class="theme-${theme}${dark}"><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body class="theme-${theme}${dark}" style="margin:0;background:var(--frame)"><div class="${STUDIO_PORTAL_LAYER}"></div><div id="frame" style="width:${width}px;height:${height}px"></div><script>${script}</script></body></html>`;
 }
 
 function trafficLightsOf(): TrafficLights {
