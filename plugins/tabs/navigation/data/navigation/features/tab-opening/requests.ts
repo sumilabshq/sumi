@@ -13,7 +13,6 @@ import {
 	TabAskSchema,
 } from "../../shared/schema/tab-asks.schema.js";
 import { duplicatePlan, openBelowPlan, openPlan, reopenPlan } from "../../shared/lib/showing/opening-plans.js";
-import { resolvedAppOf } from "../../shared/lib/tabs/app-abilities.js";
 import { navigateMove } from "./lib/navigating-moves.js";
 import { openedOnce } from "./lib/once-plans.js";
 
@@ -22,14 +21,9 @@ export const openTab = command()
 	.input(OpenTabAskSchema)
 	.output(OpenedTabSettledSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ at, ...ask }, { tabs, placedApps }) => {
-		const apps = placedApps.placedApps();
-		return openedOf(
-			await tabs.movePlacedTabs(
-				settlingWith(at, apps, openPlan({ ...ask, app: resolvedAppOf(apps, ask.app, ask.address) })),
-			),
-		);
-	});
+	.handle(async ({ at, ...ask }, { tabs, placedApps }) =>
+		openedOf(await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), openPlan(ask)))),
+	);
 
 export const navigate = command()
 	.public()

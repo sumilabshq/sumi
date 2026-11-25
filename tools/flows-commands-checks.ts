@@ -14,6 +14,7 @@ import type {
 import { folderColorsFillMove } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-moves.ts";
 import { HOME_TAB_APP } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-home-tabs.ts";
 import { BARE_SCREEN } from "./places-fixture.ts";
+import type { PlacedApp } from "../plugins/tabs/navigation/data/navigation/shared/host/places.host.ts";
 import { atOf } from "./flows-asks.ts";
 import { chatIdOf } from "./flows-fixture.ts";
 import { MAIN, SIDE, chatFlow, flowsIn, lawsOf, refusalOf, standOver } from "./flows-stand.ts";
@@ -993,6 +994,42 @@ async function linkTabChecks(): Promise<void> {
 	check("every law holds after the link opens", await lawsOf(stand), []);
 }
 
+const FILE_LINK_APP: PlacedApp = {
+	id: "file",
+	title: "File",
+	newTabTitle: null,
+	art: null,
+	artOf: null,
+	handoffAppOf: (path) => (path.endsWith(".md") ? "browser" : null),
+	abilities: { isChat: false, navigates: false, splits: false, runsInPage: false, keepsRecord: false },
+};
+
+async function handoffLinkTabChecks(): Promise<void> {
+	const stand = standOver(true, [FILE_LINK_APP]);
+	const link = {
+		at: atOf(MAIN),
+		homeId: chatIdOf(1),
+		app: "file",
+		address: "/notes/legacy.md",
+		place: "beside",
+	} as const;
+	const opened = await stand.app.send(navigation.flows.openLinkTab, link);
+	const placed = (await stand.tabs.places()).tabs.tabs;
+	const tab = placed.find(({ id }) => id === opened.id);
+	check(
+		"a link to an app that hands off opens a tab of the handoff app",
+		[tab?.app, tab?.lastAddress],
+		["browser", "/notes/legacy.md"],
+	);
+	const again = await stand.app.send(navigation.flows.openLinkTab, link);
+	check(
+		"pressing it again shows that tab and opens no other",
+		[again.id, (await stand.tabs.places()).tabs.tabs.length],
+		[opened.id, placed.length],
+	);
+	check("every law holds after a handed-off link opens", await lawsOf(stand), []);
+}
+
 async function shownIn(stand: Stand): Promise<string | undefined> {
 	return (await flowsIn(stand)).windowFlows[MAIN];
 }
@@ -1086,6 +1123,7 @@ await deleteChecks();
 await folderDeleteChecks();
 await ungroupChecks();
 await linkTabChecks();
+await handoffLinkTabChecks();
 await closingChecks();
 await folderShownChecks();
 console.log(tally.failed ? `flows commands: ${tally.failed} check(s) failed` : "flows commands: all checks passed");
