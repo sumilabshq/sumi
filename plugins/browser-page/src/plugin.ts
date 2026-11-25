@@ -8,8 +8,10 @@ import { BROWSER_PAGE_ICON } from "./features/browser-page/lib/browser-page-icon
 import { LazyBrowserPageView } from "./features/browser-page/lib/lazy-browser-page-view.js";
 import { webPageServingOf } from "./features/web-page/lib/web-page-serving.js";
 import { ReloadPageAction } from "./features/web-page/ui/reload-page-action/reload-page-action.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const browserPage = plugin("browser-page")
+	.describe(metadata)
 	.require(shell, apps, agent)
 	.apply((app) => {
 		app.use(apps).app({

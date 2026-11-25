@@ -10,8 +10,10 @@ import { VIEW_TEMPLATES } from "./features/chat-view/lib/view-templates.js";
 import { chatViewOf } from "./features/chat-view/ui/chat-view/chat-view.js";
 import { VIEW_FRAME_HEIGHT } from "./features/chat-view/ui/view-frame/view-frame.js";
 import { CODE_PART } from "./features/code-part/lib/code-part.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const chatViews = plugin("chat-views")
+	.describe(metadata)
 	.require(agent, mcpApps)
 	.apply((app) => {
 		const parts: ViewPart[] = [CODE_PART];

@@ -1,0 +1,17 @@
+{
+	"title": "Slash commands",
+	"description": "Type a slash in the composer to run a command.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat composer",
+			"what": "A slash command menu"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

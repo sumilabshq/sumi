@@ -1,3 +1,4 @@
+import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { createElement as h, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ComponentType, ReactElement, RefObject } from "react";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
@@ -80,6 +81,7 @@ export interface StudioStart extends ProjectStart {
 	readonly core?: RemoteTransport;
 	readonly platform?: Platform;
 	readonly appearance?: StudioAppearance;
+	readonly appearanceStore?: StoreClient;
 	readonly appPageUrlOf?: AppPageUrlOf;
 	readonly plugins?: ResolvedPlugins;
 }
@@ -118,9 +120,10 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 			core,
 			backgroundModules: plugins.backgroundModules,
 			windowModules: plugins.windowModules,
+			registry: { catalogue: plugins.catalogue, startedIds: plugins.startedIds },
 		});
 	const state = start.state ?? createStudioState(studioApp);
-	const appearance = start.appearance ?? startStudioAppearance(window);
+	const appearance = start.appearance ?? startStudioAppearance(window, start.appearanceStore);
 	const chatsColumn = createChatsColumnApp(studioApp);
 	const platform = start.platform ?? "browser";
 	const windowOffers: WindowOffers = {

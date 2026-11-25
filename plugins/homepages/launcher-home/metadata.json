@@ -1,0 +1,22 @@
+{
+	"title": "Launcher home",
+	"description": "A home page that shows a launcher of your apps.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Home page choices",
+			"what": "A launcher home page"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Launcher setups",
+			"how": "through the window setups module"
+		}
+	],
+	"source": null,
+	"readme": null
+}

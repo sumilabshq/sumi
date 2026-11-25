@@ -1,9 +1,11 @@
+import type { Runtime } from "@widgetarium/data-framework";
 import { runtime, localTransport, orpcTransport } from "@widgetarium/data-framework";
 import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import { appearance as appearanceContract } from "../packages/state/appearance/generated/contract.ts";
 import type { SystemScheme } from "../packages/state/appearance/generated/module.ts";
 import { appearance as appearanceModule } from "../packages/state/appearance/generated/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
+import { StoreClient, memoryStoreInvoke } from "../packages/shared/behaviors/tauri-store.ts";
 import { check, tally } from "./check-helpers.ts";
 
 class FakeSystemScheme implements SystemScheme {
@@ -84,6 +86,56 @@ check(
 	"a system scheme change reaches listeners as a re-read of theme",
 	heard.includes("appearance.theme.current"),
 	true,
+);
+
+async function fontsOf(): Promise<unknown> {
+	const answer = await studio.send(appearanceContract.fonts.current);
+	return answer.ok
+		? [answer.output.ui.chosen.family, answer.output.ui.isDefault, answer.output.code.chosen.family]
+		: answer.reason;
+}
+
+check("fonts are the defaults while nothing is chosen", await fontsOf(), ["IBM Plex Sans", true, "JetBrains Mono"]);
+await studio.send(appearanceContract.fonts.choose, { role: "ui", family: "Verdana" });
+check("a chosen font is what is read", await fontsOf(), ["Verdana", false, "JetBrains Mono"]);
+const unknownFont = await studio.send(appearanceContract.fonts.choose, { role: "code", family: "Verdana" });
+check("a font not offered for a role is refused", unknownFont.ok, false);
+const fontByApp = await frame.send(appearanceContract.fonts.choose, { role: "ui", family: "Arial" });
+check("an app cannot choose Sumi's fonts", fontByApp.ok ? "chosen" : fontByApp.code, "forbidden");
+await studio.send(appearanceContract.fonts.choose, { role: "ui", family: null });
+check("null goes back to the default", await fontsOf(), ["IBM Plex Sans", true, "JetBrains Mono"]);
+
+const store = new StoreClient(memoryStoreInvoke());
+
+function keptAppearance(): Runtime {
+	const started = runtime()
+		.modules(appearanceModule({ systemScheme: system, tauri: { store } }))
+		.start({ platform: "server", env: {}, scope: { workspaceId: "kept" } });
+	const kept = localTransport();
+	kept.serve(started, { authenticate });
+	return runtime()
+		.imports(appearanceContract({ over: kept }))
+		.start();
+}
+
+const first = keptAppearance();
+await new Promise((settled) => setTimeout(settled, 50));
+await first.send(appearanceContract.theme.choose, { choice: "dark" });
+await first.send(appearanceContract.fonts.choose, { role: "code", family: "Menlo" });
+await new Promise((settled) => setTimeout(settled, 600));
+const second = keptAppearance();
+await new Promise((settled) => setTimeout(settled, 100));
+const keptTheme = await second.send(appearanceContract.theme.current);
+const keptFonts = await second.send(appearanceContract.fonts.current);
+check(
+	"the theme choice is read back after a restart",
+	keptTheme.ok ? keptTheme.output.choice : keptTheme.reason,
+	"dark",
+);
+check(
+	"the font choice is read back after a restart",
+	keptFonts.ok ? keptFonts.output.code.chosen.family : keptFonts.reason,
+	"Menlo",
 );
 
 console.log(tally.failed ? `appearance theme: ${tally.failed} check(s) failed` : "appearance theme: all checks passed");

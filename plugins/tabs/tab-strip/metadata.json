@@ -1,0 +1,30 @@
+{
+	"title": "Tab strip",
+	"description": "Shows your tabs in the window header.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Tabs view",
+			"what": "A Tabs in header view"
+		},
+		{
+			"where": "Control menu",
+			"what": "Tab strip rows"
+		},
+		{
+			"where": "Window overlay",
+			"what": "Tab keyboard shortcuts and a group menu"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Tabs",
+			"how": "through the navigation plugin"
+		}
+	],
+	"source": null,
+	"readme": "Tabs appear along the window header.\nChoose this view from the control menu."
+}

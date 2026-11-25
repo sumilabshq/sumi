@@ -1,0 +1,22 @@
+{
+	"title": "Keyboard language",
+	"description": "Shows the active keyboard language in the chat composer.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat composer",
+			"what": "A language tag"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Keyboard layout",
+			"how": "through the system input source"
+		}
+	],
+	"source": null,
+	"readme": null
+}

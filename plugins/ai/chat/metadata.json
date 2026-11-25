@@ -1,0 +1,38 @@
+{
+	"title": "Chat",
+	"description": "Talk to the AI assistant in tabs, with a chat page and an Ask entry in the command menu.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Apps",
+			"what": "The chat app, hidden from the app list"
+		},
+		{
+			"where": "Sidebar",
+			"what": "A new session row"
+		},
+		{
+			"where": "Command menu",
+			"what": "The Ask door and page"
+		},
+		{
+			"where": "Chat",
+			"what": "Slots other chat plugins fill"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Chat history",
+			"how": "through the window store"
+		},
+		{
+			"what": "Agent",
+			"how": "through the agent plugin"
+		}
+	],
+	"source": null,
+	"readme": "Chat with the assistant in a tab.\nOpen the command menu and choose Ask to start one."
+}

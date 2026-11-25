@@ -1,0 +1,26 @@
+{
+	"title": "Background agents",
+	"description": "Shows agents running in the background beside a chat and opens them in their own tab.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat, after the conversation",
+			"what": "A list of background agents"
+		},
+		{
+			"where": "Apps",
+			"what": "A hidden background agent chat app"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Agent chats",
+			"how": "through the chat plugin"
+		}
+	],
+	"source": null,
+	"readme": "Lists agents that keep working in the background.\nPress one to open its chat in a tab."
+}

@@ -1,0 +1,26 @@
+{
+	"title": "Sessions",
+	"description": "Browse and switch between past chat sessions.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat header",
+			"what": "A sessions chevron"
+		},
+		{
+			"where": "Empty chat",
+			"what": "A sessions picker"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Chat sessions",
+			"how": "through the window sessions module"
+		}
+	],
+	"source": null,
+	"readme": null
+}

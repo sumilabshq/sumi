@@ -1,15 +1,16 @@
 import type { SystemScheme } from "../../shared/host/system-scheme.host.js";
 import type { Scheme, ThemeChoice } from "../../shared/schema/theme.schema.js";
+import { memoryKept } from "../kept/kept.gateway.js";
+import type { Kept } from "../kept/kept.gateway.js";
 import { ThemeGateway } from "./theme.gateway.js";
 
-const SYSTEM_CHOICE: ThemeChoice = "system";
+export const SYSTEM_CHOICE: ThemeChoice = "system";
 
-// TODO: keep the choice in the workspace settings file; it lives as long as the window
 export class MediaThemeGateway extends ThemeGateway {
-	private held: ThemeChoice = SYSTEM_CHOICE;
-	private readonly listeners = new Set<() => void>();
-
-	constructor(private readonly system: SystemScheme) {
+	constructor(
+		private readonly system: SystemScheme,
+		private readonly kept: Kept<ThemeChoice> = memoryKept(SYSTEM_CHOICE),
+	) {
 		super();
 	}
 
@@ -18,20 +19,19 @@ export class MediaThemeGateway extends ThemeGateway {
 	}
 
 	override choice(): ThemeChoice {
-		return this.held;
+		return this.kept.now();
 	}
 
-	override saveChoice(choice: ThemeChoice): void {
-		this.held = choice;
-		this.listeners.forEach((listener) => listener());
+	override saveChoice(choice: ThemeChoice, reason: string): void {
+		this.kept.change(choice, reason);
 	}
 
 	override themeChanged(listener: () => void): () => void {
 		const systemSchemeChanged = (): void => listener();
-		this.listeners.add(listener);
+		const stopWatching = this.kept.watch(listener);
 		this.system.addEventListener("change", systemSchemeChanged);
 		return () => {
-			this.listeners.delete(listener);
+			stopWatching();
 			this.system.removeEventListener("change", systemSchemeChanged);
 		};
 	}

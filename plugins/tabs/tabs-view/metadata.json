@@ -1,0 +1,30 @@
+{
+	"title": "Tabs view",
+	"description": "Lets you choose where your tabs are shown.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Title bar",
+			"what": "The chosen tabs title"
+		},
+		{
+			"where": "Window frame start",
+			"what": "The chosen tabs side view"
+		},
+		{
+			"where": "Control menu",
+			"what": "View choice rows"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Chosen view",
+			"how": "through the tab-views backend module"
+		}
+	],
+	"source": null,
+	"readme": null
+}

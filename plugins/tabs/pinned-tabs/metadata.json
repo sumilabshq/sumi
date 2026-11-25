@@ -1,0 +1,30 @@
+{
+	"title": "Pinned tabs",
+	"description": "Pin tabs so they stay at the start of the tab strip.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Tab strip start",
+			"what": "Pinned tabs"
+		},
+		{
+			"where": "Tab strip tab end",
+			"what": "A pinned end"
+		},
+		{
+			"where": "Tab menu",
+			"what": "A pin item"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Pins",
+			"how": "through the pins backend module"
+		}
+	],
+	"source": null,
+	"readme": "Pin a tab from its menu.\nPinned tabs stay at the start of the strip."
+}

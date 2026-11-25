@@ -7,8 +7,10 @@ import { questions as questionsContract } from "@widgetarium/questions/contract"
 import { questions as questionsModule } from "@widgetarium/questions/implementation";
 import { BackToQuestions } from "./features/questions/ui/back-to-questions/back-to-questions.js";
 import { OpenQuestions } from "./features/questions/ui/questions-block/open-questions.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const questions = plugin("questions")
+	.describe(metadata)
 	.require(backend, chat, agent)
 	.apply((app) => {
 		app.use(backend).module(questionsModule, questionsContract);

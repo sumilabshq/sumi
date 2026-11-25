@@ -3,8 +3,10 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { LazyVideoView } from "./features/video/lib/lazy-video-view.js";
 import { VIDEO_ICON } from "./features/video/lib/video-icon.js";
 import { VIDEO_TYPES } from "./features/video/lib/video-types.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const videoViewer = plugin("video-viewer")
+	.describe(metadata)
 	.require(files)
 	.apply((app) => {
 		app.use(files).viewer({

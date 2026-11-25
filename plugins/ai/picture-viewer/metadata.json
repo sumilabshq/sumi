@@ -1,0 +1,17 @@
+{
+	"title": "Picture viewer",
+	"description": "Opens pictures from chat in a full-window viewer.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Window overlay",
+			"what": "A picture viewer layer"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

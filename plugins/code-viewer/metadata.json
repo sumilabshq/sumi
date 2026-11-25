@@ -1,0 +1,30 @@
+{
+	"title": "Code viewer",
+	"description": "Opens text and code files with highlighting and shows files in chat.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "File viewers",
+			"what": "A code viewer for text files"
+		},
+		{
+			"where": "Chat messages",
+			"what": "A file card with marked lines"
+		},
+		{
+			"where": "Agent tools",
+			"what": "A show-file tool"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Files",
+			"how": "through the core file-system module"
+		}
+	],
+	"source": null,
+	"readme": "Opens source and text files.\nUse the actions to wrap lines or copy the code."
+}

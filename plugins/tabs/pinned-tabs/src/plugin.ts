@@ -6,8 +6,10 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { PinMenuItem } from "./features/pinned-tabs/ui/pin-menu-item/pin-menu-item.js";
 import { PinnedEnd } from "./features/pinned-tabs/ui/pinned-end/pinned-end.js";
 import { PinnedTabs } from "./features/pinned-tabs/ui/pinned-tabs/pinned-tabs.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const pinnedTabs = plugin("pinned-tabs")
+	.describe(metadata)
 	.require(backend, tabStrip)
 	.apply((app) => {
 		app.use(backend).moduleOf(({ store }) => pinsModule({ store }), pinsContract);

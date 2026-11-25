@@ -1,0 +1,30 @@
+{
+	"title": "Chat titles",
+	"description": "Names chats automatically and lets you or the agent rename them.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat composer",
+			"what": "Automatic titling and a rename command"
+		},
+		{
+			"where": "Chat header",
+			"what": "A renameable title"
+		},
+		{
+			"where": "Agent tools",
+			"what": "A chat rename tool"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Chat titles",
+			"how": "through the chat plugin"
+		}
+	],
+	"source": null,
+	"readme": "Gives each chat a title after the first message.\nRename a chat from the header or with the rename command."
+}

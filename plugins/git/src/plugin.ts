@@ -14,8 +14,10 @@ import { CHANGES_CARD_HEIGHT, ChangesCard } from "./features/git-page/ui/changes
 import { RereadAction } from "./features/git-page/ui/reread-action/reread-action.js";
 import { WrapAction } from "./features/git-page/ui/wrap-action/wrap-action.js";
 import { FileListAction } from "./features/git-page/ui/file-list-action/file-list-action.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const git = plugin("git")
+	.describe(metadata)
 	.require(apps, agent, chat, mcpApps)
 	.apply((app) => {
 		app.use(apps).app({
@@ -39,6 +41,7 @@ export const git = plugin("git")
 			schema: ShownChangesSchema,
 			view: ChangesCard,
 			height: CHANGES_CARD_HEIGHT,
-			guide: "git-work_changes_show-changes: git changes as a card, any two sides: uncommitted, one commit, two commits or branches. One file opens as its diff, several as a list the person presses into. Use it instead of pasting a diff.",
+			guide:
+				"git-work_changes_show-changes: git changes as a card, any two sides: uncommitted, one commit, two commits or branches. One file opens as its diff, several as a list the person presses into. Use it instead of pasting a diff.",
 		});
 	});

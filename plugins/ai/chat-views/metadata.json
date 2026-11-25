@@ -1,0 +1,30 @@
+{
+	"title": "Chat views",
+	"description": "Lets the agent draw small custom views inside a chat.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat messages",
+			"what": "Agent-drawn views"
+		},
+		{
+			"where": "Agent tools",
+			"what": "Tools to read, save and show views"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Files",
+			"how": "through the core file-system module"
+		},
+		{
+			"what": "Terminal sessions",
+			"how": "through the core terminal module"
+		}
+	],
+	"source": null,
+	"readme": null
+}

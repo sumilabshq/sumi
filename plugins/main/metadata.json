@@ -1,0 +1,22 @@
+{
+	"title": "Browser",
+	"description": "The main browsing app that opens web addresses in tabs.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Apps",
+			"what": "A Browser app, hidden from the app list"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Network",
+			"how": "by loading web pages"
+		}
+	],
+	"source": null,
+	"readme": null
+}

@@ -1,0 +1,17 @@
+{
+	"title": "Effort picker",
+	"description": "Lets you choose how hard the agent thinks.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat options",
+			"what": "An effort button"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

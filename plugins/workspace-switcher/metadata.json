@@ -1,0 +1,29 @@
+{
+	"title": "Workspace switcher",
+	"description": "Switch between workspaces and move tabs and groups into them.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Control menu",
+			"what": "A workspace row"
+		},
+		{
+			"where": "Tab strip",
+			"what": "A workspace strip and move items"
+		},
+		{
+			"where": "Tabs sidebar",
+			"what": "A workspace strip"
+		},
+		{
+			"where": "Window overlay",
+			"what": "Workspace shortcuts"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": "Switch workspaces from the control menu.\nMove a tab or group to another workspace from its menu."
+}

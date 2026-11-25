@@ -1,0 +1,30 @@
+{
+	"title": "Questions",
+	"description": "Lets the agent ask you questions and wait for the answers.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat, before the live area",
+			"what": "Open questions"
+		},
+		{
+			"where": "Chat scroll button",
+			"what": "A back to questions label"
+		},
+		{
+			"where": "Agent tools",
+			"what": "An ask tool"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Answers",
+			"how": "through the questions backend module"
+		}
+	],
+	"source": null,
+	"readme": "The agent can pause and ask you questions.\nAnswer them in the chat."
+}

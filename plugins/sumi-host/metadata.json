@@ -1,0 +1,17 @@
+{
+	"title": "Sumi host",
+	"description": "The base the other plugins build on: the window, its slots, backend and shell.",
+	"type": "service",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [],
+	"reaches": [
+		{
+			"what": "Windows and backend",
+			"how": "through the Sumi shell"
+		}
+	],
+	"source": null,
+	"readme": null
+}

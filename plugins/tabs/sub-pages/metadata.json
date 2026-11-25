@@ -1,0 +1,25 @@
+{
+	"title": "Sub pages",
+	"description": "Shows pages opened from a tab beneath it.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Tab strip",
+			"what": "Sub page tools and menu items"
+		},
+		{
+			"where": "Tabs sidebar",
+			"what": "A fold control and assistant row"
+		},
+		{
+			"where": "Control menu",
+			"what": "An assistant row"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

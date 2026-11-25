@@ -9,7 +9,15 @@ interface AstNode {
 
 const PLUGIN_FILE = "src/plugin.ts";
 const INDEX_FILE = "src/index.ts";
-const ALLOWED_TOP = new Set(["src", "data", "node_modules", "package.json", "tsconfig.json", "LICENSE"]);
+const ALLOWED_TOP = new Set([
+	"src",
+	"data",
+	"node_modules",
+	"package.json",
+	"tsconfig.json",
+	"LICENSE",
+	"metadata.json",
+]);
 const SRC_TOP_FILES = new Set(["plugin.ts", "index.ts"]);
 const SRC_AREAS = new Set(["features", "shared"]);
 const GENERATED_FOLDER = "generated";
@@ -219,7 +227,10 @@ function entriesOf(folder: string): readonly FolderEntry[] {
 function topRefusalsOf(folder: string, at: (relative: string) => string): readonly string[] {
 	return readdirSync(folder)
 		.filter((entry) => !ALLOWED_TOP.has(entry) && !entry.startsWith("."))
-		.map((entry) => `${at(entry)}: a plugin holds only src/, data/, package.json, tsconfig.json and LICENSE`);
+		.map(
+			(entry) =>
+				`${at(entry)}: a plugin holds only src/, data/, package.json, tsconfig.json, metadata.json and LICENSE`,
+		);
 }
 
 function pluginFileRefusalsOf(folder: string, at: (relative: string) => string): readonly string[] {

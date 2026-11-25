@@ -1,0 +1,22 @@
+{
+	"title": "Working folder",
+	"description": "Lets you choose the folder the agent works in.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat options",
+			"what": "A folder button"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Folders",
+			"how": "through the system folder picker"
+		}
+	],
+	"source": null,
+	"readme": null
+}

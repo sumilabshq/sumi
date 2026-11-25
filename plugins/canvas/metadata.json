@@ -1,0 +1,30 @@
+{
+	"title": "Canvas",
+	"description": "A drawing canvas of boards and pages that you and the agent can both edit.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Apps",
+			"what": "A Canvas app"
+		},
+		{
+			"where": "Chat messages",
+			"what": "A live mini canvas"
+		},
+		{
+			"where": "Agent tools",
+			"what": "Tools to draw and read boards"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Canvas data",
+			"how": "through the artboards backend module"
+		}
+	],
+	"source": null,
+	"readme": "Draw boards on canvas pages.\nAsk the agent to draw or change them."
+}

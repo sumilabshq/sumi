@@ -1,0 +1,21 @@
+{
+	"title": "Navigation",
+	"description": "Keeps the tabs of the window and which apps they can open.",
+	"type": "service",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [],
+	"reaches": [
+		{
+			"what": "Tabs",
+			"how": "through the navigation backend module"
+		},
+		{
+			"what": "Window apps",
+			"how": "through the window app host"
+		}
+	],
+	"source": null,
+	"readme": null
+}

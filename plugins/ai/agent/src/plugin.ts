@@ -7,8 +7,10 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { agentToolsServeOf } from "./features/serve-mcp/lib/agent-tools-serve.js";
 import { hasOwnRuntime, mcpServeOf } from "./features/serve-mcp/lib/serve-mcp.js";
 import type { McpServerEntry } from "./features/serve-mcp/lib/serve-mcp.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const agent = plugin("agent")
+	.describe(metadata)
 	.require(windows, agents)
 	.apply((app) => {
 		const servers: McpServer[] = [];

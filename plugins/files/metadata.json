@@ -1,0 +1,26 @@
+{
+	"title": "Files",
+	"description": "Opens files in tabs with a viewer chosen by file type.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Apps",
+			"what": "A file link app"
+		},
+		{
+			"where": "File viewers",
+			"what": "The place viewers plug into"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Files",
+			"how": "through the viewer plugins"
+		}
+	],
+	"source": null,
+	"readme": "Opens a file in a viewer chosen by its type.\nViewers come from other plugins."
+}

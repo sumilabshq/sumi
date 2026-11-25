@@ -1,0 +1,17 @@
+{
+	"title": "Next prompt",
+	"description": "Suggests what to ask next in the chat composer.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat composer",
+			"what": "A next-prompt suggestion"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

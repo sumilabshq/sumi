@@ -1,0 +1,21 @@
+{
+	"title": "Composer expand",
+	"description": "Makes the chat composer bigger with a toggle.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat composer bar",
+			"what": "An expand toggle"
+		},
+		{
+			"where": "Chat frame",
+			"what": "The expanded layout"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

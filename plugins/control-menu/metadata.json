@@ -1,0 +1,17 @@
+{
+	"title": "Control menu",
+	"description": "A menu button in the title bar with quick controls.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Title bar end",
+			"what": "A control menu button"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

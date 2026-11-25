@@ -1,0 +1,26 @@
+{
+	"title": "Plugins",
+	"description": "See every built-in plugin, what it adds and reaches, and turn it on or off.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Settings",
+			"what": "The Plugins page"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Plugin state",
+			"how": "through the plugin registry module"
+		},
+		{
+			"what": "New chat",
+			"how": "opens a chat with the build-sumi-plugin skill"
+		}
+	],
+	"source": null,
+	"readme": "Browse the plugins Sumi ships with. A change applies after Sumi restarts."
+}

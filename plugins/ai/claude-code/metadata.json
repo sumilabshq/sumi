@@ -1,0 +1,22 @@
+{
+	"title": "Claude Code",
+	"description": "Runs chats through the Claude Code command-line agent.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Agent runners",
+			"what": "The Claude Code runner"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Claude Code CLI",
+			"how": "by starting it as a local process"
+		}
+	],
+	"source": null,
+	"readme": null
+}

@@ -1,0 +1,37 @@
+import { z } from "zod";
+
+export const PluginMetadataSchema = z.object({
+	title: z.string().min(1),
+	description: z.string().min(1),
+	type: z.enum(["visual", "agent", "service", "app"]),
+	preview: z.string().nullable(),
+	author: z.string().min(1),
+	official: z.boolean(),
+	adds: z.array(z.object({ where: z.string(), what: z.string() })),
+	reaches: z.array(z.object({ what: z.string(), how: z.string() })),
+	source: z.string().nullable(),
+	readme: z.string().nullable(),
+});
+
+export type PluginMetadata = z.infer<typeof PluginMetadataSchema>;
+
+export const RegistryEntrySchema = z.object({
+	id: z.string(),
+	metadata: PluginMetadataSchema.nullable(),
+	requires: z.array(z.string()),
+	enabled: z.boolean(),
+	alwaysOn: z.boolean(),
+});
+
+export type RegistryEntry = z.infer<typeof RegistryEntrySchema>;
+
+export const RegistrySchema = z.object({
+	plugins: z.array(RegistryEntrySchema),
+	restartNeeded: z.boolean(),
+});
+
+export const PluginIdInputSchema = z.object({ id: z.string().min(1) });
+
+export const DisablePlanSchema = z.object({ alsoOff: z.array(z.string()) });
+
+export const SetEnabledInputSchema = z.object({ id: z.string().min(1), enabled: z.boolean() });

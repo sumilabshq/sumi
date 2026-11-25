@@ -2,6 +2,43 @@
 import { Anywhere, Repeatable, command, moduleContract, named, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
+export const FontRoleSchema = z.enum(["heading", "ui", "code"]);
+
+export type FontRole = z.infer<typeof FontRoleSchema>;
+
+export const FontFamilySchema = z
+	.string()
+	.trim()
+	.min(1)
+	.max(80)
+	.regex(/^[A-Za-z0-9 .-]+$/);
+
+export const FontChoiceSchema = z.object({
+	family: FontFamilySchema,
+	stack: z.string(),
+});
+
+export type FontChoice = z.infer<typeof FontChoiceSchema>;
+
+export const FontRoleAnswerSchema = z.object({
+	chosen: FontChoiceSchema,
+	isDefault: z.boolean(),
+	available: z.array(FontChoiceSchema),
+});
+
+export const FontsSchema = z.object({
+	heading: FontRoleAnswerSchema,
+	ui: FontRoleAnswerSchema,
+	code: FontRoleAnswerSchema,
+});
+
+export type Fonts = z.infer<typeof FontsSchema>;
+
+export const ChooseFontInputSchema = z.object({
+	role: FontRoleSchema,
+	family: FontFamilySchema.nullable(),
+});
+
 export const SchemeSchema = z.enum(["light", "dark"]);
 
 export type Scheme = z.infer<typeof SchemeSchema>;
@@ -22,6 +59,15 @@ export const ChooseThemeInputSchema = z.object({
 });
 
 export const appearance = moduleContract("appearance", Anywhere, {
+	fonts: {
+		current: named("fonts.current", query()
+			.public()
+			.output(FontsSchema)),
+		choose: named("fonts.choose", command()
+			.public()
+			.input(ChooseFontInputSchema)
+			.idempotencyKey(Repeatable)),
+	},
 	theme: {
 		current: named("theme.current", query()
 			.public()

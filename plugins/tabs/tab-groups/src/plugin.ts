@@ -8,8 +8,10 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { GroupEditor } from "./features/group-menu/ui/group-editor/group-editor.js";
 import { GroupMenuItems } from "./features/group-menu/ui/group-menu-items/group-menu-items.js";
 import { NewGroupItem } from "./features/group-menu/ui/new-group-item/new-group-item.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const tabGroups = plugin("tab-groups")
+	.describe(metadata)
 	.require(backend, windows, navigation, tabStrip)
 	.apply((app) => {
 		const { placedApps } = app.use(navigation);

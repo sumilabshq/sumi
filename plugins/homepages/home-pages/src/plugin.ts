@@ -5,8 +5,10 @@ import { backend } from "@sumi/sumi-host-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
 import type { FilledHomePage } from "./features/home-pages/lib/filled-home-page.js";
 import { chosenHomeOf } from "./features/home-pages/ui/chosen-home/chosen-home.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const homePages = plugin("home-pages")
+	.describe(metadata)
 	.require(backend, commandMenu)
 	.apply((app) => {
 		const filled: FilledHomePage[] = [];

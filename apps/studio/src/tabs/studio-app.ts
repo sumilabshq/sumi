@@ -14,6 +14,8 @@ import type {
 } from "@widgetarium/data-framework";
 import { fileSystem, terminal } from "@sumi/contract";
 import { layout } from "@widgetarium/layout/implementation";
+import { plugins as pluginRegistry } from "@widgetarium/plugin-registry/implementation";
+import type { CatalogueEntry } from "@widgetarium/plugin-registry/implementation";
 import type { BoardFile } from "@widgetarium/tasks/implementation";
 import { fileSystem as fileSystemModule } from "@widgetarium/file-system/implementation";
 import { terminal as terminalModule } from "@widgetarium/terminal/implementation";
@@ -50,12 +52,18 @@ export interface StudioAppAsk {
 	readonly lent?: TauriStudioLent;
 	readonly backgroundModules: readonly BackgroundModule[];
 	readonly windowModules: readonly WindowModule[];
+	readonly registry?: PluginRegistryAsk;
+}
+
+export interface PluginRegistryAsk {
+	readonly catalogue: readonly CatalogueEntry[];
+	readonly startedIds: readonly string[];
 }
 
 export function startStudioApp(ask: StudioAppAsk): Runtime {
 	const served = ask.core ?? startCoreInProcess(ask.workspaceId, ask.backgroundModules);
 	const studioApp = runtime()
-		.modules(...studioModulesOf(ask.lent), ...windowModulesOf(ask))
+		.modules(...studioModulesOf(ask.lent, ask.registry), ...windowModulesOf(ask))
 		.imports(...ask.backgroundModules.map(({ contract, prefix }) => contract({ over: served, prefix })))
 		.start({ platform: ask.platform, scope: { workspaceId: ask.workspaceId } });
 	void restoreTabs(studioApp);
@@ -90,7 +98,19 @@ export async function restoreTabs(studioApp: Runtime): Promise<void> {
 	}
 }
 
-function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModule[] {
+function studioModulesOf(
+	lent: TauriStudioLent | undefined,
+	registry: PluginRegistryAsk | undefined,
+): readonly DeviceModule[] {
+	return [
+		...baseStudioModulesOf(lent),
+		...(registry === undefined
+			? []
+			: [pluginRegistry({ ...registry, ...(lent === undefined ? {} : { tauri: { store: lent.store } }) })]),
+	];
+}
+
+function baseStudioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModule[] {
 	if (lent === undefined) {
 		return [layout, browser, workspaces];
 	}

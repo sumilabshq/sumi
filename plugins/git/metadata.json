@@ -1,0 +1,30 @@
+{
+	"title": "Git",
+	"description": "Shows repository changes and history, and lets the agent show diffs in chat.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Apps",
+			"what": "A Git app"
+		},
+		{
+			"where": "Chat messages",
+			"what": "A changes card"
+		},
+		{
+			"where": "Agent tools",
+			"what": "Tools to read git changes"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Git repositories",
+			"how": "by running git in a terminal session"
+		}
+	],
+	"source": null,
+	"readme": "Shows uncommitted changes, commits and branches.\nThe agent can show a diff in chat."
+}

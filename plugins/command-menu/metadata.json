@@ -1,0 +1,34 @@
+{
+	"title": "Command menu",
+	"description": "A quick search and launcher for tabs, chats, apps and the web.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Window overlay",
+			"what": "The command menu"
+		},
+		{
+			"where": "Tab pages",
+			"what": "A home page"
+		},
+		{
+			"where": "Apps",
+			"what": "A hidden Home app"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Tabs, chats and apps",
+			"how": "through the window modules"
+		},
+		{
+			"what": "Web search",
+			"how": "by sending your query to a search page"
+		}
+	],
+	"source": null,
+	"readme": "Open it to find tabs, chats and apps or search the web.\nEach door has its own letter shortcut."
+}

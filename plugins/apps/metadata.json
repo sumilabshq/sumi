@@ -1,0 +1,30 @@
+{
+	"title": "Apps",
+	"description": "Keeps the list of apps and opens them in tabs.",
+	"type": "service",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Agent tools",
+			"what": "Tools to open and manage tabs"
+		},
+		{
+			"where": "Tab pages",
+			"what": "The app list page"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Tabs and groups",
+			"how": "through the navigation and tab-groups plugins"
+		},
+		{
+			"what": "App list",
+			"how": "through the backend store"
+		}
+	],
+	"source": null,
+	"readme": null
+}

@@ -1,0 +1,17 @@
+{
+	"title": "Sandbox mode",
+	"description": "Lets you choose whether the agent runs sandboxed.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat options",
+			"what": "A sandbox button"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

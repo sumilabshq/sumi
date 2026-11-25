@@ -1,0 +1,22 @@
+{
+	"title": "Panes",
+	"description": "Splits the window into panes that hold tabs side by side.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Window frame",
+			"what": "The pane board"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Tabs",
+			"how": "through the navigation plugin"
+		}
+	],
+	"source": null,
+	"readme": null
+}

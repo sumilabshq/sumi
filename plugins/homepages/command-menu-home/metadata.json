@@ -1,0 +1,17 @@
+{
+	"title": "Command menu home",
+	"description": "A home page that shows the command menu.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Home page choices",
+			"what": "A command menu home page"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

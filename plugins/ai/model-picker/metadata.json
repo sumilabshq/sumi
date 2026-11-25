@@ -1,0 +1,17 @@
+{
+	"title": "Model picker",
+	"description": "Lets you choose which model answers.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat options",
+			"what": "A model button"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

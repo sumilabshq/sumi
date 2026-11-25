@@ -13,8 +13,10 @@ import { DATA_MARKS_GUIDE } from "./features/assistant/lib/data-marks-guide.js";
 import type { ChatPageImportOf, ChatPageModuleOf } from "./features/chat-page/lib/chat-modules-of.js";
 import { chatTabPageOf } from "./features/chat-page/lib/chat-tab-page.js";
 import { NewSessionRow } from "./features/new-chat/ui/new-chat-row/new-chat-row.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const chat = plugin("chat")
+	.describe(metadata)
 	.require(sumiHost, backend, windows, shell, apps, commandMenu, agent, navigation)
 	.apply((app) => {
 		const pageImports: ChatPageImportOf[] = [];

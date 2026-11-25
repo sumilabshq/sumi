@@ -42,6 +42,7 @@ function without(files: Files, removed: string): Files {
 }
 
 check("every plugin in plugins/ follows the layout", layoutRefusalsOf("plugins"), []);
+check("a root metadata.json passes", refusalsOf({ ...GOOD, "metadata.json": "{}" }), []);
 check("a plugin laid out by the rule passes", refusalsOf(GOOD), []);
 check(
 	"a plugin with no modules needs no data/",
@@ -78,7 +79,7 @@ check(
 		"module/module.ts": "export const M = 1;\n",
 	}),
 	[
-		"plugins/notes/module: a plugin holds only src/, data/, package.json, tsconfig.json and LICENSE",
+		"plugins/notes/module: a plugin holds only src/, data/, package.json, tsconfig.json, metadata.json and LICENSE",
 		"plugins/notes/module/module.ts: a module lives only in data/<module>/",
 		"plugins/notes/module/package.json: a module lives only in data/<module>/",
 	],

@@ -6,8 +6,10 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { HOME_APP, homeTabPage } from "./features/command-menu/lib/home-tab-page.js";
 import { CommandMenuLayer } from "./features/command-menu/ui/command-menu-layer/command-menu-layer.js";
 import { windowAppProviderOf } from "./features/command-menu/ui/home-page/window-app-provider.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const commandMenu = plugin("command-menu")
+	.describe(metadata)
 	.require(windows, shell, apps)
 	.apply((app) => {
 		const doors: FilledDoor[] = [

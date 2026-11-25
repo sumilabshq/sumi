@@ -1,0 +1,17 @@
+{
+	"title": "Permission mode",
+	"description": "Lets you choose how much the agent may do without asking.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat options",
+			"what": "A mode button"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

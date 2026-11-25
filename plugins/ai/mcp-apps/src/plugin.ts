@@ -6,8 +6,10 @@ import { AddedViews } from "./features/call-views/lib/added-views.js";
 import { mcpAppsGuideOf } from "./features/call-views/lib/mcp-apps-guide.js";
 import { callViewsOf } from "./features/call-views/ui/call-views/call-views.js";
 import type { McpAppEntry } from "./shared/lib/mcp-app-entry.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const mcpApps = plugin("mcp-apps")
+	.describe(metadata)
 	.require(chat, agent)
 	.apply((app) => {
 		const views = new AddedViews();

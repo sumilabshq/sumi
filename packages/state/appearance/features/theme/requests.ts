@@ -1,16 +1,9 @@
-import { Repeatable, deny, guard } from "@widgetarium/data-framework";
+import { Repeatable } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { themeChanged } from "../../gateways/theme/theme.events.js";
 import { ChooseThemeInputSchema, ThemeSchema } from "../../shared/schema/theme.schema.js";
+import { StudioCallerGuard } from "../../shared/lib/studio-caller-guard.js";
 import { schemeOf } from "./lib/scheme.js";
-
-const NOT_FOR_APPS = "only Sumi itself chooses its theme; an app reads it";
-
-export const StudioCallerGuard = guard().handle(({ context }) => {
-	if (context.user !== null) {
-		deny(NOT_FOR_APPS);
-	}
-});
 
 export const current = query()
 	.public()

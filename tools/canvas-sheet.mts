@@ -106,6 +106,12 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/keyboard-language-plugin/keyboard-language-tag.css":
 		"plugins/ai/keyboard-language/src/features/keyboard-language/ui/keyboard-language-tag/keyboard-language-tag.css",
 	"@widgetarium/kit/side-panel.css": "packages/shared/kit/side-panel.css",
+	"@sumi/settings-plugin/settings-page.css":
+		"plugins/settings/src/features/settings/ui/settings-page/settings-page.css",
+	"@sumi/appearance-settings-plugin/appearance-page.css":
+		"plugins/appearance-settings/src/features/appearance/ui/appearance-page/appearance-page.css",
+	"@sumi/plugins-catalog-plugin/plugins-page.css":
+		"plugins/plugins-catalog/src/features/catalog/ui/plugins-page/plugins-page.css",
 	"@sumi/canvas-plugin/canvas-page.css": "plugins/canvas/src/features/canvas/ui/canvas-page/canvas-page.css",
 	"@sumi/canvas-plugin/top-row.css": "plugins/canvas/src/shared/ui/top-row/top-row.css",
 	"@sumi/canvas-plugin/canvas-home.css": "plugins/canvas/src/features/canvas-home/ui/canvas-home/canvas-home.css",
@@ -168,6 +174,9 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/panes-plugin/pane-tools.css";
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
+@import "@sumi/settings-plugin/settings-page.css";
+@import "@sumi/appearance-settings-plugin/appearance-page.css";
+@import "@sumi/plugins-catalog-plugin/plugins-page.css";
 @import "@sumi/canvas-plugin/canvas-page.css";
 @import "@sumi/canvas-plugin/top-row.css";
 @import "@sumi/canvas-plugin/canvas-home.css";

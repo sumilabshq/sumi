@@ -12,8 +12,10 @@ import { CodeCopyAction } from "./features/code/ui/code-copy-action/code-copy-ac
 import { FILE_CARD_HEIGHT, FileCard } from "./features/code/ui/file-card/file-card.js";
 import { ValuesAction } from "./features/code/ui/values-action/values-action.js";
 import { WrapAction } from "./features/code/ui/wrap-action/wrap-action.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const codeViewer = plugin("code-viewer")
+	.describe(metadata)
 	.require(files, agent, chat, mcpApps)
 	.apply((app) => {
 		app.use(files).viewer({
@@ -34,6 +36,7 @@ export const codeViewer = plugin("code-viewer")
 			schema: ShownFileSchema,
 			view: FileCard,
 			height: FILE_CARD_HEIGHT,
-			guide: "code-work_files_show-file: a whole text file with marked lines and short notes, opened at the first mark. Use it to point at code or config instead of pasting it.",
+			guide:
+				"code-work_files_show-file: a whole text file with marked lines and short notes, opened at the first mark. Use it to point at code or config instead of pasting it.",
 		});
 	});

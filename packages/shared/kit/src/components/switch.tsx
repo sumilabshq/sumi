@@ -12,6 +12,8 @@ export interface SwitchProps {
 	readonly label?: string | undefined;
 	readonly id?: string | undefined;
 	readonly className?: string | undefined;
+	readonly tone?: "default" | "mono";
+	readonly size?: "default" | "small";
 }
 
 export function Switch({
@@ -23,6 +25,8 @@ export function Switch({
 	label,
 	id,
 	className: cls,
+	tone = "default",
+	size = "default",
 }: SwitchProps): ReactElement {
 	const [isOn, setOn] = useControllableState({
 		prop: checked === undefined ? undefined : Boolean(checked),
@@ -43,7 +47,7 @@ export function Switch({
 			data-state={isOn ? "checked" : "unchecked"}
 			data-disabled={disabled ? "" : undefined}
 			disabled={disabled}
-			className={cn("wg-kit-switch", cls)}
+			className={cn("wg-kit-switch", tone === "mono" && "is-mono", size === "small" && "is-small", cls)}
 			onClick={() => setOn(!isOn)}
 		/>
 	);

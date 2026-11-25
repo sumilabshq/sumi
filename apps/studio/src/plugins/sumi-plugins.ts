@@ -1,5 +1,5 @@
 import { MemoryPluginStateStore, runtime } from "@widgetarium/plugin-framework";
-import type { PluginStateStore, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
+import type { Plugin, PluginStateStore, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
 import type { ComponentType } from "react";
 import type {
 	DeviceModule,
@@ -9,6 +9,7 @@ import type {
 	ServerRuns,
 	ServerSideModule,
 } from "@widgetarium/data-framework";
+import type { CatalogueEntry } from "@widgetarium/plugin-registry/implementation";
 import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
@@ -67,6 +68,9 @@ import { git } from "@sumi/git-plugin";
 import { htmlViewer } from "@sumi/html-viewer-plugin";
 import { imageViewer } from "@sumi/image-viewer-plugin";
 import { markdownViewer } from "@sumi/markdown-viewer-plugin";
+import { appearanceSettings } from "@sumi/appearance-settings-plugin";
+import { pluginsCatalog } from "@sumi/plugins-catalog-plugin";
+import { settings } from "@sumi/settings-plugin";
 import { terminal } from "@sumi/terminal-plugin";
 import { terminalCursor } from "@sumi/terminal-cursor-plugin";
 import { videoViewer } from "@sumi/video-viewer-plugin";
@@ -130,6 +134,7 @@ export interface ResolvedPlugins {
 	readonly servers: readonly HostServer[];
 	readonly agentMcpServers: readonly AgentMcpServer[];
 	readonly startedIds: readonly string[];
+	readonly catalogue: readonly CatalogueEntry[];
 	readonly refusals: readonly string[];
 	readonly notes: readonly string[];
 	readonly slotFills: SlotFills;
@@ -186,8 +191,36 @@ const INSTALLED_PLUGINS = [
 	workspaceSwitcher,
 	pinnedTabs,
 	subPages,
+	settings,
+	appearanceSettings,
+	pluginsCatalog,
 ];
-const ALWAYS_ON_PLUGINS = [sumiHost, navigation, panes, tabGroups, controlMenu, tabsView, tabStrip, apps, commandMenu, chat, main, agent, questions, tasks, mcpApps];
+const ALWAYS_ON_PLUGINS = [
+	sumiHost,
+	navigation,
+	panes,
+	tabGroups,
+	controlMenu,
+	tabsView,
+	tabStrip,
+	apps,
+	commandMenu,
+	chat,
+	main,
+	agent,
+	questions,
+	tasks,
+	mcpApps,
+];
+
+function catalogueOf(): readonly CatalogueEntry[] {
+	return INSTALLED_PLUGINS.map((installed: Plugin) => ({
+		id: installed.id,
+		metadata: installed.parts.metadata,
+		requires: installed.parts.requiredPlugins.map(({ id }) => id),
+		alwaysOn: ALWAYS_ON_PLUGINS.some(({ id }) => id === installed.id),
+	}));
+}
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
@@ -227,6 +260,9 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		workspaceSwitcher.id,
 		pinnedTabs.id,
 		subPages.id,
+		settings.id,
+		appearanceSettings.id,
+		pluginsCatalog.id,
 	],
 };
 
@@ -261,6 +297,7 @@ export function startSumiPlugins(
 		servers: registered.servers,
 		agentMcpServers: registered.agentMcpServers,
 		startedIds: started.startedIds,
+		catalogue: catalogueOf(),
 		refusals: started.refusals,
 		notes: started.notes,
 		slotFills: started.slotFills,

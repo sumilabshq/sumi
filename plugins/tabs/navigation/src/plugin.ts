@@ -4,8 +4,10 @@ import { navigation as navigationContract } from "@widgetarium/navigation/contra
 import { navigation as navigationModule } from "@widgetarium/navigation/implementation";
 import type { PlacedApp } from "@widgetarium/navigation/implementation";
 import { appHostOf } from "./features/navigation-modules/lib/app-host-of.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const navigation = plugin("navigation")
+	.describe(metadata)
 	.require(backend, windows)
 	.apply((app) => {
 		const placedApps: PlacedApp[] = [];

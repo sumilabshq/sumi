@@ -1,0 +1,22 @@
+{
+	"title": "Tabs sidebar",
+	"description": "Shows your tabs in a sidebar.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Tabs view",
+			"what": "A Tabs in sidebar view"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Tabs",
+			"how": "through the tab strip plugin"
+		}
+	],
+	"source": null,
+	"readme": "Tabs appear in a sidebar beside the page.\nChoose this view from the control menu."
+}

@@ -125,6 +125,7 @@ function startTauriStudioApp(
 		lent: tauriStudioLent(store),
 		backgroundModules: plugins.backgroundModules,
 		windowModules: plugins.windowModules,
+		registry: { catalogue: plugins.catalogue, startedIds: plugins.startedIds },
 	});
 }
 
@@ -186,6 +187,7 @@ async function readHeldDocs({ store, workspace }: StudioOpening): Promise<HeldWo
 function startedStudioOf(opening: StudioOpening, started: StartedParts): StartedStudio {
 	return startStudio(opening.project, {
 		appId: opening.workspace.id,
+		appearanceStore: opening.store,
 		studio: studioHostOf(opening, started.studioApp),
 		...startedPartsFieldsOf(started),
 	});

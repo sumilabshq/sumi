@@ -1,0 +1,17 @@
+{
+	"title": "Settings",
+	"description": "The place where Sumi is set up: pages for appearance, plugins and more.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "App list",
+			"what": "The Settings app"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": "Settings holds one page per area. Other plugins add their own pages to it."
+}

@@ -1,0 +1,17 @@
+{
+	"title": "Terminal cursor",
+	"description": "Draws a cursor over the window for terminal text.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Window overlay",
+			"what": "A terminal cursor layer"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

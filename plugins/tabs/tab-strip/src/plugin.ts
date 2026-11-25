@@ -7,8 +7,10 @@ import { ControlRows } from "./features/tab-strip/ui/control-rows/control-rows.j
 import { GroupMenu } from "./features/tab-strip/ui/group-menu/group-menu.js";
 import { TabKeys } from "./features/tab-strip/ui/tab-keys/tab-keys.js";
 import { TabStrip } from "./features/tab-strip/ui/tab-strip/tab-strip.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const tabStrip = plugin("tab-strip")
+	.describe(metadata)
 	.require(sumiHost, shell, controlMenu, navigation, tabsView)
 	.apply((app) => {
 		app.use(tabsView).view({

@@ -8,8 +8,10 @@ import { tasks as tasksContract } from "@widgetarium/tasks/contract";
 import { tasks as tasksModule } from "@widgetarium/tasks/implementation";
 import { LiveTaskRows } from "./features/chat-tasks/ui/live-task-rows/live-task-rows.js";
 import { LiveTasksCount } from "./features/chat-tasks/ui/live-tasks-count/live-tasks-count.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const tasks = plugin("tasks")
+	.describe(metadata)
 	.require(backend, apps, chat, agent)
 	.apply((app) => {
 		app.use(backend).moduleOf(({ file }) => tasksModule({ file }), tasksContract);

@@ -1,0 +1,34 @@
+{
+	"title": "Tab groups",
+	"description": "Group tabs, name and colour the groups.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Tab menu",
+			"what": "Group items"
+		},
+		{
+			"where": "Tab list menu",
+			"what": "A new group item"
+		},
+		{
+			"where": "Group menu",
+			"what": "A group editor"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Groups",
+			"how": "through the tab-groups backend module"
+		},
+		{
+			"what": "Tabs",
+			"how": "through the navigation plugin"
+		}
+	],
+	"source": null,
+	"readme": "Group tabs from the tab menu.\nEdit a group from its menu."
+}

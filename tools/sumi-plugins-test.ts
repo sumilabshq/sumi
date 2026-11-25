@@ -40,6 +40,7 @@ const offers = {
 };
 const SUMI_PLUGINS_TEST = "the sumi-plugins test";
 const APPS_SLOT_OWNERS = [
+	"plugins/settings/",
 	"plugins/apps/",
 	"plugins/terminal/",
 	"plugins/browser-page/",

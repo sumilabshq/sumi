@@ -1,0 +1,21 @@
+{
+	"title": "MCP apps",
+	"description": "Lets agent tools show live views inside chat messages.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat tool calls",
+			"what": "Views for tool results"
+		},
+		{
+			"where": "Agent prompt",
+			"what": "A guide listing the available views"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": null
+}

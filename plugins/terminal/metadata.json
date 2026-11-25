@@ -1,0 +1,22 @@
+{
+	"title": "Terminal",
+	"description": "A terminal in a tab.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Apps",
+			"what": "A Terminal app"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Terminal sessions",
+			"how": "by running a shell on your computer"
+		}
+	],
+	"source": null,
+	"readme": "Open a terminal in a tab.\nIt runs your shell."
+}

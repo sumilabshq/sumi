@@ -1,0 +1,22 @@
+{
+	"title": "HTML viewer",
+	"description": "Opens HTML files as a rendered page.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "File viewers",
+			"what": "An HTML viewer"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Files",
+			"how": "through the files plugin"
+		}
+	],
+	"source": null,
+	"readme": null
+}

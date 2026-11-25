@@ -4,8 +4,10 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { fileNameOf } from "./features/file-page/lib/file-name.js";
 import type { FileViewer } from "./features/viewer-choice/lib/file-viewer.js";
 import { fileLinkAppOf } from "./features/viewer-choice/lib/file-link-app.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const files = plugin("files")
+	.describe(metadata)
 	.require(apps)
 	.apply((app) => {
 		const viewers: FileViewer[] = [];

@@ -7,6 +7,7 @@ interface PluginParts {
 	readonly optionalPlugins: readonly Plugin[];
 	readonly requiredServices: readonly Service<unknown>[];
 	readonly optionalServices: readonly Service<unknown>[];
+	readonly metadata: unknown;
 }
 
 type Applying<Api> = (app: AnyApp) => Api;
@@ -75,6 +76,10 @@ export class PluginDraft<Required extends Dependency, Optional extends Dependenc
 		);
 	}
 
+	describe(metadata: unknown): PluginDraft<Required, Optional> {
+		return new PluginDraft<Required, Optional>(this.id, { ...this.parts, metadata }, this.slotOwnerId);
+	}
+
 	apply<A>(run: (app: App<Required, Optional>) => A): Plugin<A> {
 		return new Plugin<A>(this.id, this.parts, this.slotOwnerId, (app: AnyApp) => run(app));
 	}
@@ -86,6 +91,7 @@ export function plugin(id: string): PluginDraft<never, never> {
 		optionalPlugins: [],
 		requiredServices: [],
 		optionalServices: [],
+		metadata: null,
 	});
 }
 

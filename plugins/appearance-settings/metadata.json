@@ -1,0 +1,26 @@
+{
+	"title": "Appearance",
+	"description": "Choose the theme, the workspace colour and the fonts.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Settings",
+			"what": "The Appearance page"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Theme and fonts",
+			"how": "through the appearance module"
+		},
+		{
+			"what": "Workspace colour",
+			"how": "through the workspaces module"
+		}
+	],
+	"source": null,
+	"readme": "Pick light, dark or follow the system, give the workspace an ink, and choose the fonts for headings, the interface and code."
+}

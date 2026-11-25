@@ -1,0 +1,30 @@
+{
+	"title": "Tasks",
+	"description": "Tasks you and the agent can create, track and work through.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Apps",
+			"what": "A Tasks app"
+		},
+		{
+			"where": "Chat, live area",
+			"what": "A live tasks count and rows"
+		},
+		{
+			"where": "Agent tools",
+			"what": "Tools to create and update tasks"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Tasks",
+			"how": "through the tasks backend module and a file"
+		}
+	],
+	"source": null,
+	"readme": "Keep a list of tasks.\nThe agent can create and update them while it works."
+}

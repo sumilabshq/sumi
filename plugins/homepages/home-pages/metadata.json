@@ -1,0 +1,22 @@
+{
+	"title": "Home pages",
+	"description": "Lets you choose what a new tab shows.",
+	"type": "service",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Command menu home",
+			"what": "The chosen home page"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Chosen home page",
+			"how": "through the backend store"
+		}
+	],
+	"source": null,
+	"readme": null
+}

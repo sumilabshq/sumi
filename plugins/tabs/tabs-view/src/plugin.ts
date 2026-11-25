@@ -6,8 +6,10 @@ import { plugin } from "@widgetarium/plugin-framework";
 import type { TabView } from "./features/tabs-view/lib/tab-view.js";
 import { chosenSideOf, chosenTitleOf } from "./features/tabs-view/ui/chosen-view/chosen-view.js";
 import { viewRowsOf } from "./features/tabs-view/ui/view-rows/view-rows.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const tabsView = plugin("tabs-view")
+	.describe(metadata)
 	.require(backend, sumiHost, controlMenu)
 	.apply((app) => {
 		const views: TabView[] = [];

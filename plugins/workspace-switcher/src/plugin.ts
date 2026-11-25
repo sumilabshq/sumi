@@ -8,8 +8,10 @@ import { TabWorkspaceMove } from "./features/workspace-moves/ui/tab-workspace-mo
 import { WorkspaceControlRow } from "./features/workspace-switcher/ui/workspace-control-row/workspace-control-row.js";
 import { WorkspaceKeys } from "./features/workspace-switcher/ui/workspace-keys/workspace-keys.js";
 import { workspaceStripAt } from "./features/workspace-switcher/ui/workspace-strip/workspace-strip.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const workspaceSwitcher = plugin("workspace-switcher")
+	.describe(metadata)
 	.require(shell, controlMenu)
 	.optional(tabStrip, tabsSidebar)
 	.apply((app) => {

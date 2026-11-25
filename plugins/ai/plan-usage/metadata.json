@@ -1,0 +1,22 @@
+{
+	"title": "Plan usage",
+	"description": "Shows how much of your plan limit is used.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat options",
+			"what": "A usage button"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Plan usage",
+			"how": "through the agent runner"
+		}
+	],
+	"source": null,
+	"readme": null
+}

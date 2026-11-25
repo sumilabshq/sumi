@@ -1,0 +1,26 @@
+{
+	"title": "Chat images",
+	"description": "Shows images the agent mentions inline in chat messages.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat messages",
+			"what": "Image rendering for markdown images"
+		},
+		{
+			"where": "Agent prompt",
+			"what": "A short guide on showing images"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Image files",
+			"how": "through the chat message markdown"
+		}
+	],
+	"source": null,
+	"readme": null
+}

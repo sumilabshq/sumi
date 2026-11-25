@@ -1,0 +1,22 @@
+{
+	"title": "Agent",
+	"description": "The AI agent runtime that other plugins add tools, prompt parts and runners to.",
+	"type": "agent",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Assistant",
+			"what": "Runs the AI assistant and its tool servers"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Chat tool servers",
+			"how": "through MCP servers other plugins register"
+		}
+	],
+	"source": null,
+	"readme": null
+}

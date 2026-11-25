@@ -315,6 +315,10 @@ check(
 	true,
 );
 
+const described = plugin("described").describe({ title: "Described" });
+check("a plugin keeps the metadata it was described with", described.parts.metadata, { title: "Described" });
+check("a plugin never described has no metadata", plugin("bare").parts.metadata, null);
+
 if (tally.failed > 0) {
 	process.exit(1);
 }

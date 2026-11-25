@@ -8,8 +8,10 @@ import { HeadTitle } from "./features/head-title/ui/head-title/head-title.js";
 import { RenameCommand } from "./features/rename-command/ui/rename-command/rename-command.js";
 import { RENAME_GUIDE } from "./shared/lib/rename-guide.js";
 import { chatTitleProviderOf } from "./shared/ui/chat-title-provider/chat-title-provider.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const chatTitle = plugin("chat-title")
+	.describe(metadata)
 	.require(shell, chat, agent)
 	.apply((app) => {
 		app.use(shell).provider(chatTitleProviderOf);

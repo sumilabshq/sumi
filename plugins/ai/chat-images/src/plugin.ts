@@ -3,8 +3,10 @@ import { chat } from "@sumi/chat-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
 import { CHAT_IMAGES_GUIDE } from "./features/said-images/lib/chat-images-guide.js";
 import { SaidImages } from "./features/said-images/ui/said-images/said-images.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const chatImages = plugin("chat-images")
+	.describe(metadata)
 	.require(chat, agent)
 	.apply((app) => {
 		app.use(chat).slots.saidMarkdown.add(SaidImages);

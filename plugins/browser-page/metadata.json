@@ -1,0 +1,34 @@
+{
+	"title": "Browser page",
+	"description": "Opens web pages in a tab and lets the agent read them.",
+	"type": "app",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Apps",
+			"what": "A Browser app"
+		},
+		{
+			"where": "Page actions",
+			"what": "A reload action"
+		},
+		{
+			"where": "Agent tools",
+			"what": "Tools to read open pages"
+		}
+	],
+	"reaches": [
+		{
+			"what": "Network",
+			"how": "by loading web pages"
+		},
+		{
+			"what": "Open pages",
+			"how": "through the agent browser tools"
+		}
+	],
+	"source": null,
+	"readme": "Open a web page in a tab.\nThe agent can read the pages you open."
+}

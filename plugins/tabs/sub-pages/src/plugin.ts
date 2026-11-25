@@ -6,8 +6,10 @@ import { AssistantRow } from "./features/sub-pages/ui/assistant-row/assistant-ro
 import { SidebarFold } from "./features/sub-pages/ui/sidebar-fold/sidebar-fold.js";
 import { StripSubPages } from "./features/sub-pages/ui/strip-sub-pages/strip-sub-pages.js";
 import { SubPageMenuItems } from "./features/sub-pages/ui/sub-page-menu-items/sub-page-menu-items.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const subPages = plugin("sub-pages")
+	.describe(metadata)
 	.require(controlMenu, tabStrip, tabsSidebar)
 	.apply((app) => {
 		app.use(tabsSidebar).slots.tabActions.add(SidebarFold);

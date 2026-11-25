@@ -12,8 +12,10 @@ import { faceOf } from "./features/app-tab/lib/face-of.js";
 import { placedAppOf } from "./features/app-tab/lib/placed-app-of.js";
 import { titlesOfApps } from "./features/app-tab/lib/titles-of-apps.js";
 import { appLinkGuidesOf } from "./features/app-tab/lib/app-link-guides.js";
+import metadata from "../metadata.json" with { type: "json" };
 
 export const apps = plugin("apps")
+	.describe(metadata)
 	.require(backend, shell, agent, navigation, tabGroups)
 	.apply((app) => {
 		const filled: FilledApp[] = [];
