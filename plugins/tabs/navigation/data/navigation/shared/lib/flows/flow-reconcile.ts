@@ -12,6 +12,7 @@ import { flowBreaksOf } from "./flow-laws.js";
 import type { MovePlaces } from "./flow-moves.js";
 import { flowTabIdsOf } from "./flow-nodes.js";
 import { layoutWithTab, layoutWithoutTabs } from "./flow-panes.js";
+import { withShownKept } from "./flow-shown.js";
 
 export interface ReconcileFacts {
 	readonly apps: PlacedApps;
@@ -35,7 +36,7 @@ export function reconciling<T>(move: MovePlaces<T>, facts: ReconcileFacts | null
 			return moved;
 		}
 
-		const reconciled = placesReconciled({ tabs: moved.next.tabs, flows: moved.next.flows }, facts);
+		const reconciled = placesReconciled({ tabs: moved.next.tabs, flows: moved.next.flows }, facts, now.flows);
 
 		if (reconciled.said.length === 0) {
 			return { ...moved, next: { tabs: reconciled.tabs, flows: reconciled.flows } };
@@ -51,12 +52,13 @@ export function reconciling<T>(move: MovePlaces<T>, facts: ReconcileFacts | null
 	};
 }
 
-function placesReconciled(next: PlacesToReconcile, facts: ReconcileFacts): HomeTabsFilled {
+function placesReconciled(next: PlacesToReconcile, facts: ReconcileFacts, was: FlowsDoc | null): HomeTabsFilled {
 	const healed = flowsHealed(next.flows);
 	const colored = withFolderColorsFilled(healed.doc, next.tabs.groups);
 	const tidy = withoutGoneTabs(colored.doc, new Set(next.tabs.tabs.map(({ id }) => id)));
 	const adopted = withStraysAdopted({ doc: tidy, said: [...healed.said, ...colored.said] }, next.tabs, facts);
-	const homed = withHomeTabsInEmptyFlows({ tabs: next.tabs, flows: adopted.doc }, facts.apps);
+	const shown = withShownKept({ was, doc: adopted.doc, placed: next.tabs, now: facts.now() });
+	const homed = withHomeTabsInEmptyFlows({ tabs: next.tabs, flows: shown.doc }, facts.apps);
 	const breaks = flowBreaksOf(
 		homed.flows,
 		homed.tabs.tabs.map(({ id }) => id),
@@ -66,7 +68,7 @@ function placesReconciled(next: PlacesToReconcile, facts: ReconcileFacts): HomeT
 		refuseUnhealed(breaks, homed);
 	}
 
-	return { ...homed, said: [...adopted.said, ...homed.said] };
+	return { ...homed, said: [...adopted.said, ...shown.said, ...homed.said] };
 }
 
 function refuseUnhealed(breaks: readonly string[], state: PlacesToReconcile): never {

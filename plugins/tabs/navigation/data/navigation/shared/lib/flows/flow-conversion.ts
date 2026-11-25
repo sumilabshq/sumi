@@ -13,7 +13,7 @@ import type { TabGroup } from "../tabs/tab-lists.js";
 import { chatFlowIdOf, folderIdOf, groupFlowIdOf, tabFlowIdOf } from "./flow-ids.js";
 import { layoutOfPaneNode } from "./flow-layouts.js";
 import type { FlowMembers } from "./flow-layouts.js";
-import { flowBreaksOf } from "./flow-laws.js";
+import { flowShapeBreaksOf } from "./flow-laws.js";
 import { flowTabIdsOf } from "./flow-nodes.js";
 
 export interface ConversionSource {
@@ -89,7 +89,7 @@ export function flowsOf(source: ConversionSource): FlowsConverted {
 
 	const parts = partsOf({ source, trees: treesOf(placed) });
 	const doc = docOf(source, parts);
-	const docBreaks = flowBreaksOf(
+	const docBreaks = flowShapeBreaksOf(
 		doc,
 		placed.tabs.map(({ id }) => id),
 	);

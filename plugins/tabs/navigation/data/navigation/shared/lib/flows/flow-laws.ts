@@ -12,7 +12,28 @@ const NO_FOCUS = 'the flow "{flow}" focuses the pane "{pane}", which it does not
 const SPLIT_SHARES =
 	'the split "{split}" of the flow "{flow}" has {children} children and {shares} shares: a split holds two or more, one share each';
 
+const NO_SESSION = "no session stands outside the archive: at least one always does";
+const FLOW_WITHOUT_TAB = 'the flow "{id}" holds no tab: every flow holds at least one';
+const WINDOW_ON_GONE = 'the window "{window}" shows the flow "{id}", which is gone or archived';
+
 export function flowBreaksOf(doc: FlowsDoc, liveTabIds: readonly string[]): readonly string[] {
+	return [...flowShapeBreaksOf(doc, liveTabIds), ...sessionBreaksOf(doc)];
+}
+
+function sessionBreaksOf(doc: FlowsDoc): readonly string[] {
+	const isLive = (id: string): boolean => doc.flows.some((flow) => flow.id === id && flow.archivedAt === null);
+	return [
+		...(doc.flows.some(({ id }) => isLive(id)) ? [] : [NO_SESSION]),
+		...doc.flows
+			.filter((flow) => flowTabIdsOf(flow).length === 0)
+			.map(({ id }) => FLOW_WITHOUT_TAB.replace("{id}", id)),
+		...Object.entries(doc.windowFlows)
+			.filter(([, id]) => !isLive(id))
+			.map(([window, id]) => WINDOW_ON_GONE.replace("{window}", window).replace("{id}", id)),
+	];
+}
+
+export function flowShapeBreaksOf(doc: FlowsDoc, liveTabIds: readonly string[]): readonly string[] {
 	return [
 		...repeatedIdsOf(doc),
 		...tabPlacesBreaks(doc, liveTabIds),

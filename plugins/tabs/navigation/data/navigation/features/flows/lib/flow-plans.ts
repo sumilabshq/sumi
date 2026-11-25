@@ -7,7 +7,7 @@ import {
 	withoutFlow,
 } from "../../../shared/lib/flows/flow-docs.js";
 import { withHomeTabsInEmptyFlows } from "../../../shared/lib/flows/flow-home-tabs.js";
-import { layoutOfTabs } from "../../../shared/lib/flows/flow-layouts.js";
+import { blankFlowOf } from "../../../shared/lib/flows/flow-shown.js";
 import { flowHolderOf } from "../../../shared/lib/flows/flow-rows.js";
 import { flowTabIdsOf } from "../../../shared/lib/flows/flow-nodes.js";
 import { withTabsClosed } from "../../../shared/lib/showing/closing.js";
@@ -57,15 +57,7 @@ export function createFlowPlan(
 			return refusal(problem);
 		}
 
-		const flow = {
-			id: birth.id,
-			name: ask.name,
-			icon: null,
-			layout: layoutOfTabs({ flowId: birth.id, mainTabId: "", tabIds: [] }),
-			createdAt: birth.at,
-			lastOpenedAt: birth.at,
-			archivedAt: null,
-		};
+		const flow = blankFlowOf(birth.id, ask.name, birth.at);
 		const homed = withHomeTabsInEmptyFlows({ tabs, flows: withFlowAdded(flows, flow, ask.place) }, apps);
 		return {
 			flows: homed.flows,

@@ -903,6 +903,66 @@ async function linkTabChecks(): Promise<void> {
 	check("every law holds after the link opens", await lawsOf(stand), []);
 }
 
+async function shownIn(stand: Stand): Promise<string | undefined> {
+	return (await flowsIn(stand)).windowFlows[MAIN];
+}
+
+async function closingChecks(): Promise<void> {
+	const stand = standOver(true);
+	const at = atOf(MAIN);
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(3), at });
+	await stand.app.send(navigation.flows.archive, { flowId: chatFlow(3) });
+	check("archiving the shown session shows the one directly above it", await shownIn(stand), chatFlow(2));
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(1), at });
+	await stand.app.send(navigation.flows.archive, { flowId: chatFlow(1) });
+	check("with none above, the one directly below is shown", await shownIn(stand), chatFlow(2));
+	check("every law holds after the shown session is archived", await lawsOf(stand), []);
+
+	for (const { id } of (await flowsIn(stand)).flows) {
+		await stand.app.send(navigation.flows.archive, { flowId: id });
+	}
+
+	const last = await flowsIn(stand);
+	const shown = last.flows.find(({ id }) => id === last.windowFlows[MAIN]);
+	check(
+		"archiving the last session shows a new default session, loose in General, holding one Home tab",
+		[
+			shown?.id.startsWith("flow-default-"),
+			shown?.archivedAt,
+			last.looseFlowIds.includes(shown?.id ?? ""),
+			shown?.projectId,
+		],
+		[true, null, true, undefined],
+	);
+	check("and that session holds one Home tab", await appsOfFlow(stand, shown?.id ?? ""), [HOME_TAB_APP]);
+	check("every law holds after the last session is archived", await lawsOf(stand), []);
+	const homeId = flowTabIdsOf(shown ?? emptyFlow())[0] ?? "";
+	await stand.app.send(navigation.tabClosing.closeTab, { at, id: homeId });
+	const reopened = await appsOfFlow(stand, shown?.id ?? "");
+	check(
+		"closing a session's last tab leaves it one Home tab, and it stays shown",
+		[
+			reopened,
+			flowTabIdsOf((await flowsIn(stand)).flows.find(({ id }) => id === shown?.id) ?? emptyFlow()).includes(homeId),
+			await shownIn(stand),
+		],
+		[[HOME_TAB_APP], false, shown?.id],
+	);
+	check("every law holds after the last tab closes", await lawsOf(stand), []);
+}
+
+async function folderShownChecks(): Promise<void> {
+	const world = await sidebarWorldOf("quiet");
+	await world.app.send(appHost.flows.open, { flowId: "design-system" });
+	await world.app.send(appHost.flows.deleteFolder, { folderId: "sumi" });
+	const sidebar = await world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
+	check(
+		"deleting the folder of the shown session shows the session above the folder",
+		sidebar.ok && sidebar.output.windowFlowId,
+		"reading-list",
+	);
+}
+
 function never(): never {
 	throw new Error("the fixture holds no tab-94");
 }
@@ -935,5 +995,7 @@ await deleteChecks();
 await folderDeleteChecks();
 await ungroupChecks();
 await linkTabChecks();
+await closingChecks();
+await folderShownChecks();
 console.log(tally.failed ? `flows commands: ${tally.failed} check(s) failed` : "flows commands: all checks passed");
 process.exit(tally.failed ? 1 : 0);
