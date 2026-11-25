@@ -4,7 +4,6 @@ import { POPOVER_ITEM } from "../constants/popover";
 import type { Placement } from "../constants/popover";
 import { returnFocusTo } from "../utils/focus";
 import { endFold, enterPanel, exitPanel, keepPanelPlaced, restPanel } from "../utils/popover-motion";
-import { prefersReducedMotion } from "../utils/reduced-motion";
 import type { StopMotion } from "../utils/popover-motion";
 
 export interface PanelMotionAsk {
@@ -109,16 +108,11 @@ function foldAndRelease(panel: HTMLElement, anchor: HTMLElement, { stopExit, lat
 	return () => stopExiting(stopExit);
 }
 
-function closePanel(panel: HTMLElement, anchor: HTMLElement, done: () => void): StopMotion | null {
-	const finish = (): void => {
+function closePanel(panel: HTMLElement, anchor: HTMLElement, done: () => void): StopMotion {
+	return exitPanel(panel, () => {
 		endFold(panel, anchor);
 		done();
-	};
-	if (prefersReducedMotion()) {
-		finish();
-		return null;
-	}
-	return exitPanel(panel, anchor, finish);
+	});
 }
 
 function openPanel(panel: HTMLElement, anchor: HTMLElement, ask: PanelMotionAsk): StopMotion | undefined {

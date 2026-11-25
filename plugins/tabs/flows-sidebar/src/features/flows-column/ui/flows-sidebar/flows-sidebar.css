@@ -542,7 +542,6 @@
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) {
-	--pop-motion: scale;
 	min-width: 0;
 	padding: 0;
 	font-family: var(--font-ui);

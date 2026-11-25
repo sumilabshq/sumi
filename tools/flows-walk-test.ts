@@ -53,7 +53,7 @@ const menuLook = `(() => {
 		surface: [look.backgroundColor, look.borderTopWidth, look.borderTopColor, look.borderTopLeftRadius, look.boxShadow],
 		itemHeight: item.getBoundingClientRect().height,
 		iconPx: item.querySelector(".wg-kit-pop-icon svg").getBoundingClientRect().width,
-		motion: look.getPropertyValue("--pop-motion").trim(),
+		motion: [look.animationName, look.animationDuration, look.borderTopWidth].join(" "),
 	};
 })()`;
 
@@ -199,7 +199,7 @@ async function sameMenuChecks(page: AskedPage, theme: Theme): Promise<void> {
 	check(`${theme}: the row menu draws the tab menu's surface`, row.surface, tab.surface);
 	check(`${theme}: the row menu items are as tall as the tab menu's`, row.itemHeight, tab.itemHeight);
 	check(`${theme}: the row menu icons are 14px like the tab menu's`, [row.iconPx, tab.iconPx], [14, 14]);
-	check(`${theme}: the row menu and the tab menu share the scale motion`, [row.motion, tab.motion], ["scale", "scale"]);
+	check(`${theme}: the row menu and the tab menu fade and scale in 120ms with no border`, [row.motion, tab.motion], ["wg-kit-pop-in 0.12s 0px", "wg-kit-pop-in 0.12s 0px"]);
 }
 
 const resolvedColours = `(() => {

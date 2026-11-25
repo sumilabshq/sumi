@@ -775,21 +775,31 @@ async function collapsing(): Promise<void> {
 const FRAMES_RECORDED = 5;
 const FIRST_FRAME_DRIFT_PX = 1;
 
-const menuFrames = (target: string): string => `new Promise((done) => {
+const menuFrames = (target: string, atEdge = false): string => `new Promise((done) => {
 	const row = ${target};
 	const box = row.getBoundingClientRect();
-	row.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: box.left + 40, clientY: box.top + 10 }));
+	row.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: ${atEdge} ? innerWidth - 12 : box.left + 40, clientY: ${atEdge} ? innerHeight - 12 : box.top + 10 }));
 	const frames = [];
 	const read = () => {
 		const panel = document.querySelector("[role=menu]")?.closest(".wg-kit-pop, .wg-kit-float");
 		if (!panel) return null;
 		const rect = panel.getBoundingClientRect();
-		return { left: parseFloat(panel.style.left), top: parseFloat(panel.style.top), x: rect.left, y: rect.top };
+		const look = getComputedStyle(panel);
+		const [originX, originY] = look.transformOrigin.split(" ").map(parseFloat);
+		return { left: parseFloat(panel.style.left), top: parseFloat(panel.style.top), x: rect.left, y: rect.top, animation: look.animationName + " " + look.animationDuration, border: look.borderTopWidth, originX, originY };
 	};
 	const step = (count) => {
 		frames.push(read());
 		if (count < ${FRAMES_RECORDED}) requestAnimationFrame(() => step(count + 1));
-		else setTimeout(() => done({ frames, settled: read() }), 900);
+		else setTimeout(() => {
+			const settled = read();
+			const click = { x: ${atEdge} ? innerWidth - 12 : box.left + 40, y: ${atEdge} ? innerHeight - 12 : box.top + 10 };
+			document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+			requestAnimationFrame(() => {
+				const closing = read();
+				setTimeout(() => done({ frames, settled, click, closing, gone: read() === null }), 600);
+			});
+		}, 900);
 	};
 	requestAnimationFrame(() => step(1));
 })`;
@@ -799,13 +809,20 @@ interface MenuFrame {
 	readonly top: number;
 	readonly x: number;
 	readonly y: number;
+	readonly animation: string;
+	readonly border: string;
+	readonly originX: number;
+	readonly originY: number;
 }
 
-async function menusPlacedOnFirstFrame(): Promise<void> {
+async function menusPlacedOnFirstFrame(atEdge: boolean): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
-		const { frames, settled } = (await page.ask(menuFrames(rowOf(FLOWS, "Plugin layout")))) as {
+		const { frames, settled, click, closing, gone } = (await page.ask(menuFrames(rowOf(FLOWS, "Plugin layout"), atEdge))) as {
 			readonly frames: readonly (MenuFrame | null)[];
 			readonly settled: MenuFrame;
+			readonly click: { readonly x: number; readonly y: number };
+			readonly closing: MenuFrame | null;
+			readonly gone: boolean;
 		};
 		check(
 			"a row menu is in the DOM on the first frame",
@@ -817,10 +834,21 @@ async function menusPlacedOnFirstFrame(): Promise<void> {
 			frames.map((frame) => frame !== null && Math.abs(frame.left - settled.left) <= FIRST_FRAME_DRIFT_PX && Math.abs(frame.top - settled.top) <= FIRST_FRAME_DRIFT_PX),
 			frames.map(() => true),
 		);
+		console.log(`   ${atEdge ? "edge" : "corner"} menu frame 1: ${frames[0]?.animation}, border ${frames[0]?.border}, origin ${frames[0]?.originX},${frames[0]?.originY} for a click at ${click.x - settled.left},${click.y - settled.top}; closing: ${closing?.animation}`);
+		check("a row menu opens with a 120ms scale-and-fade from the first frame", frames[0]?.animation, "wg-kit-pop-in 0.12s");
+		check("and closes with the same 120ms in reverse", closing?.animation, "wg-kit-pop-out 0.12s");
+		check("and is unmounted once the close animation ends", gone, true);
+		check("a row menu has no border", settled.border, "0px");
+		check(
+			"a row menu scales from the click point, in its own coordinates (within 2px)",
+			[Math.abs(settled.originX - (click.x - settled.left)) <= 2, Math.abs(settled.originY - (click.y - settled.top)) <= 2],
+			[true, true],
+		);
 	});
 }
 
-await menusPlacedOnFirstFrame();
+await menusPlacedOnFirstFrame(false);
+await menusPlacedOnFirstFrame(true);
 await inboxRows();
 await inboxOpening();
 await inboxClearing();

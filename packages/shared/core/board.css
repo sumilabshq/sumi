@@ -317,9 +317,7 @@
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
 		--shadow-page: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 1px 1.5px rgba(0, 0, 0, 0.1);
-		--shadow-menu:
-			0 0 0 1px oklch(0.946 0.003 264.5), 0 17.54px 23.39px #0000000a, 0 9.4px 12.5px #00000008, 0 5.25px 7px #00000005,
-			0 2.79px 3.72px -2px #00000003, 0 1.16px 1.5px #00000003;
+		--shadow-menu: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08);
 		--line-menu: rgba(0, 0, 0, 0.09);
 		--surface-menu: #ffffff;
 		--r-menu: 10px;
@@ -497,7 +495,7 @@
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
 		--shadow-page: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 1px 1.5px rgba(0, 0, 0, 0.7);
-		--shadow-menu: 0 0 0 1px oklch(1 0 0 / 0.13), 0 2px 10px oklch(0 0 0 / 0.22);
+		--shadow-menu: 0 0 0 0.5px rgba(255, 255, 255, 0.06), 0 8px 28px rgba(0, 0, 0, 0.45);
 		--line-menu: rgba(255, 255, 255, 0.1);
 		--surface-menu: #17181b;
 
@@ -2739,20 +2737,19 @@ body {
 	pointer-events: none;
 	overflow: hidden;
 	--pop-pad: 0px;
-	--pop-motion: scale;
 	min-width: max(224px, var(--anchor-width, 224px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop.is-open {
 	opacity: 1;
 	pointer-events: auto;
-	animation: wg-kit-pop-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+	animation: wg-kit-pop-in 120ms ease-out both;
 }
 
 @keyframes wg-kit-pop-in {
 	from {
 		opacity: 0;
-		scale: 0.95;
+		scale: 0.96;
 	}
 	to {
 		opacity: 1;
@@ -2760,10 +2757,14 @@ body {
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	:is(.wg-root, .wg-portal) .wg-kit-pop.is-open,
-	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
-		animation: none;
+@keyframes wg-kit-pop-out {
+	from {
+		opacity: 1;
+		scale: 1;
+	}
+	to {
+		opacity: 0;
+		scale: 0.96;
 	}
 }
 
@@ -2820,19 +2821,14 @@ body {
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop.is-exiting {
 	pointer-events: none;
+	animation: wg-kit-pop-out 120ms ease-in both;
 }
-/* THE PEAK IS AUTHORED, NOT SOLVED. A seed is the trigger's box over the panel's, so its two axes
-   differ; a cubic-bezier overshoot would then be a different percentage on each one. Stated as
-   keyframes the peak is 105% of the FINAL size on both axes whatever the seed, and it rests at 1. */
-@keyframes wg-kit-pop-bloom {
-	from {
-		scale: var(--pop-seed-x, 1) var(--pop-seed-y, 1);
-	}
-	60% {
-		scale: 1.05 1.05;
-	}
-	to {
-		scale: 1 1;
+@media (prefers-reduced-motion: reduce) {
+	:is(.wg-root, .wg-portal) .wg-kit-pop.is-open,
+	:is(.wg-root, .wg-portal) .wg-kit-pop.is-exiting,
+	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu,
+	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu[data-state="closed"] {
+		animation: none;
 	}
 }
 
@@ -12722,12 +12718,10 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
 	transition: none;
 	transform-origin: var(--pop-origin, top left);
-	animation: wg-kit-pop-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+	animation: wg-kit-pop-in 120ms ease-out both;
 }
 :is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu[data-state="closed"] {
-	opacity: 0;
-	scale: 1;
-	animation: none;
+	animation: wg-kit-pop-out 120ms ease-in both;
 }
 @starting-style {
 	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
@@ -14877,7 +14871,6 @@ body.wg-tree-carrying .wg-tile-body {
 	box-sizing: border-box;
 	min-width: max(224px, var(--anchor-width, 224px));
 	--pop-pad: 0px;
-	--pop-motion: scale;
 	padding: 4px;
 	border: none;
 	border-radius: var(--r-menu);
@@ -21389,7 +21382,6 @@ body:has(.wg-cm-layer) {
 	height: 22px;
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) {
-	--pop-motion: scale;
 	min-width: 0;
 	padding: 0;
 	font-family: var(--font-ui);
