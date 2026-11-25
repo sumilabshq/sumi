@@ -52,10 +52,12 @@ export const ProjectSchema = z.object({
 	id: z.string().min(1),
 	name: z.string(),
 	baseFolder: z.string().min(1),
+	isCollapsed: z.boolean().optional(),
 });
 
 export const ProjectRowSchema = ProjectSchema.extend({
 	isGeneral: z.boolean(),
+	isCollapsed: z.boolean(),
 });
 
 export const ArchivedFlowSchema = z.object({
@@ -654,7 +656,10 @@ export const OpenedTabSettledSchema = z.object({
 
 export const OnceOpenedSchema = z.object({
 	id: z.string(),
-	heldBy: z.string().nullable().describe("the label of the window that holds the tab, when it is open in another window"),
+	heldBy: z
+		.string()
+		.nullable()
+		.describe("the label of the window that holds the tab, when it is open in another window"),
 	effects: z.array(TabEffectSchema),
 });
 
@@ -841,7 +846,9 @@ export type NavigationTarget = z.infer<typeof NavigationTargetSchema>;
 
 export const NavigationWhereSchema = z
 	.enum(["this-tab", "new-tab"])
-	.describe("this-tab puts the target in the place of the tab from, which closes; new-tab opens or shows it as its own tab");
+	.describe(
+		"this-tab puts the target in the place of the tab from, which closes; new-tab opens or shows it as its own tab",
+	);
 
 export const NavigateAskSchema = z.object({
 	at: TabsAskSchema,
@@ -1469,6 +1476,10 @@ export const navigation = moduleContract("navigation", Server, {
 		rename: named("projects.rename", command()
 			.public()
 			.input(RenameAskSchema)
+			.idempotencyKey(Repeatable)),
+		toggle: named("projects.toggle", command()
+			.public()
+			.input(ProjectAskSchema)
 			.idempotencyKey(Repeatable)),
 		setBaseFolder: named("projects.set-base-folder", command()
 			.public()

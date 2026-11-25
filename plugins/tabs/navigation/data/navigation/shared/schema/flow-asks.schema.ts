@@ -42,6 +42,7 @@ export const FolderRowSchema = z.object({
 
 export const ProjectRowSchema = ProjectSchema.extend({
 	isGeneral: z.boolean(),
+	isCollapsed: z.boolean(),
 });
 
 export const ArchivedFlowSchema = z.object({

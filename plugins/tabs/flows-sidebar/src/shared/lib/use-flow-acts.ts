@@ -30,6 +30,7 @@ export interface FlowActs {
 	readonly deleteFolder: (id: string) => void;
 	readonly createFolder: (name: string) => void;
 	readonly createProject: (name: string, flowId?: string) => void;
+	readonly toggleProject: (id: string) => void;
 	readonly renameProject: (id: string, name: string) => void;
 	readonly pickBaseFolder: (id: string) => void;
 	readonly removeProject: (id: string) => void;
@@ -63,6 +64,7 @@ export function useFlowActs(): FlowActs {
 	const removeFolder = useCommand(navigation.folders.remove);
 	const createFolder = useCommand(navigation.folders.create);
 	const createProject = useCommand(navigation.projects.create);
+	const toggleProject = useCommand(navigation.projects.toggle);
 	const renameProject = useCommand(navigation.projects.rename);
 	const setProjectBaseFolder = useCommand(navigation.projects.setBaseFolder);
 	const removeProject = useCommand(navigation.projects.remove);
@@ -89,6 +91,7 @@ export function useFlowActs(): FlowActs {
 				.run({ name, baseDir: null })
 				.then((made) => made.ok && requestFolderRename(made.output.folderId)),
 		createProject: (name, flowId) => void createProject.run({ name, flowId }).then(reported("create the project")),
+		toggleProject: (id) => void toggleProject.run({ id }),
 		renameProject: (id, name) => void renameProject.run({ id, name }).then(reported("rename the project")),
 		pickBaseFolder: (id) =>
 			void pickFolder.run().then((picked) => {

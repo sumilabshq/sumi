@@ -13,16 +13,25 @@ export interface ProjectHeadingProps {
 	readonly project: ProjectFacts;
 	readonly acts: FlowActs;
 	readonly drag: FlowDrag;
+	readonly onToggle: () => void;
 	readonly onNewSession: () => void;
 	readonly onRename: () => void;
 }
 
-export function ProjectHeading({ project, acts, drag, onNewSession, onRename }: ProjectHeadingProps): ReactElement {
+export function ProjectHeading({
+	project,
+	acts,
+	drag,
+	onToggle,
+	onNewSession,
+	onRename,
+}: ProjectHeadingProps): ReactElement {
 	const [at, setAt] = useState<MenuSpot | null>(null);
 	return (
 		<div
 			className="sumi-flows-label"
 			data-kind="project"
+			data-collapsed={project.isCollapsed ? "" : undefined}
 			onContextMenu={(event) => {
 				event.preventDefault();
 				event.stopPropagation();
@@ -30,7 +39,12 @@ export function ProjectHeading({ project, acts, drag, onNewSession, onRename }: 
 			}}
 			{...drag.sourceProps({ kind: "project", id: project.id })}
 		>
-			<span>{project.name}</span>
+			<button type="button" className="sumi-flows-label-main" aria-expanded={!project.isCollapsed} onClick={onToggle}>
+				<span>{project.name}</span>
+				<span className="sumi-flows-chevron">
+					<Icon name={project.isCollapsed ? "chevron-right" : "chevron-down"} size={TOOL_PX} />
+				</span>
+			</button>
 			<span className="sumi-flows-label-tools">
 				<button
 					type="button"

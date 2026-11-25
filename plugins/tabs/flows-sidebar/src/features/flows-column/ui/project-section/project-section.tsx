@@ -53,26 +53,31 @@ export function ProjectSection({ project, nextProjectId, sidebar, acts, drag }: 
 					project={project}
 					acts={acts}
 					drag={drag}
+					onToggle={() => acts.toggleProject(project.id)}
 					onNewSession={newSession}
 					onRename={() => setIsRenaming(true)}
 				/>
 			)}
-			{flows.map((flow) => (
-				<FlowRowView
-					key={flow.id}
-					flow={flow}
-					folderId={null}
-					projectId={project.id}
-					isCurrent={flow.id === sidebar.windowFlowId}
-					sidebar={sidebar}
-					acts={acts}
-					drag={drag}
-				/>
-			))}
-			{folders.map((folder) => (
-				<FolderBlock key={folder.id} folder={folder} project={project} sidebar={sidebar} acts={acts} drag={drag} />
-			))}
-			{flows.length === 0 && folders.length === 0 ? (
+			{project.isCollapsed
+				? null
+				: flows.map((flow) => (
+						<FlowRowView
+							key={flow.id}
+							flow={flow}
+							folderId={null}
+							projectId={project.id}
+							isCurrent={flow.id === sidebar.windowFlowId}
+							sidebar={sidebar}
+							acts={acts}
+							drag={drag}
+						/>
+					))}
+			{project.isCollapsed
+				? null
+				: folders.map((folder) => (
+						<FolderBlock key={folder.id} folder={folder} project={project} sidebar={sidebar} acts={acts} drag={drag} />
+					))}
+			{!project.isCollapsed && flows.length === 0 && folders.length === 0 ? (
 				<div className="sumi-flows-row" data-kind="new">
 					<button type="button" className="sumi-flows-row-main sumi-flows-row-empty" onClick={newSession}>
 						<span className="sumi-flows-glyph">

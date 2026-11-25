@@ -696,7 +696,17 @@ async function projectChecks(): Promise<void> {
 	check(
 		"rename and base folder change the project",
 		(await sidebar()).projects.find(({ id }) => id === projectId),
-		{ id: projectId, name: "Renamed", baseFolder: "~/Work/renamed", isGeneral: false },
+		{ id: projectId, name: "Renamed", baseFolder: "~/Work/renamed", isCollapsed: false, isGeneral: false },
+	);
+	const collapsedOf = async (): Promise<boolean | undefined> =>
+		(await sidebar()).projects.find(({ id }) => id === projectId)?.isCollapsed;
+	await stand.app.send(navigation.projects.toggle, { id: projectId });
+	const afterFirst = await collapsedOf();
+	await stand.app.send(navigation.projects.toggle, { id: projectId });
+	check(
+		"toggle collapses the project and the next toggle expands it",
+		[afterFirst, await collapsedOf()],
+		[true, false],
 	);
 	const joined = await stand.app.send(navigation.projects.create, { name: "Fresh", flowId: chatFlow(3) });
 	check(

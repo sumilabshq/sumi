@@ -41,7 +41,11 @@ export function sidebarOf({ tabs, flows }: PlacedPlaces, apps: PlacedApps, windo
 			return flow === undefined || isArchived(flow) ? [] : [flowRowOf(flow, facts)];
 		}),
 		folders: flows.folders.map((folder) => folderRowOf(folder, facts)),
-		projects: projectsOf(flows).map((project) => ({ ...project, isGeneral: project.id === GENERAL_PROJECT_ID })),
+		projects: projectsOf(flows).map((project) => ({
+			...project,
+			isGeneral: project.id === GENERAL_PROJECT_ID,
+			isCollapsed: project.isCollapsed ?? false,
+		})),
 		windowFlowId,
 		windowProjectId: windowFlow === undefined ? GENERAL_PROJECT_ID : projectIdOfFlow(flows, windowFlow),
 	};

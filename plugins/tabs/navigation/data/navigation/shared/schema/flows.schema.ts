@@ -72,6 +72,7 @@ export const ProjectSchema = z.object({
 	id: z.string().min(1),
 	name: z.string(),
 	baseFolder: z.string().min(1),
+	isCollapsed: z.boolean().optional(),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;

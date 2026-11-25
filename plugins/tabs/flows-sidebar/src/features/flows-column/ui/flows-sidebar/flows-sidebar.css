@@ -212,6 +212,27 @@
 	margin-inline-end: 0;
 }
 
+.sumi-flows-label-main {
+	display: flex;
+	flex: 1 1 auto;
+	gap: var(--space-1);
+	align-items: center;
+	min-width: 0;
+	height: 100%;
+	padding: 0;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+	background: none;
+	border: 0;
+}
+
+.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-main .sumi-flows-chevron,
+.sumi-flows-label[data-collapsed] .sumi-flows-label-main .sumi-flows-chevron {
+	display: grid;
+}
+
 .sumi-flows-row[data-current] {
 	color: var(--text);
 	background: var(--group-plain);

@@ -3,10 +3,10 @@ import { handledModule, named } from "@widgetarium/data-framework";
 import { navigation as definition } from "../module.js";
 import { board as flowPanesBoard, closePane, focus, moveTab, rereadBoardOnFlows, rereadBoardOnTabs, resize as flowPanesResize, showTab, split } from "../features/flow-panes/requests.js";
 import { adoptChats, archive, archived, create as flowsCreate, deleteFlow, duplicate as flowsDuplicate, move as flowsMove, one, open, openLinkTab, openTab as flowsOpenTab, remove as flowsRemove, rename as flowsRename, rereadFlowMarks, rereadFlows, setIcon as flowsSetIcon, sidebar as flowsSidebar, unarchive } from "../features/flows/requests.js";
-import { create as foldersCreate, remove as foldersRemove, rename as foldersRename, setBaseDir, setColor, setIcon as foldersSetIcon, toggle } from "../features/folders/requests.js";
+import { create as foldersCreate, remove as foldersRemove, rename as foldersRename, setBaseDir, setColor, setIcon as foldersSetIcon, toggle as foldersToggle } from "../features/folders/requests.js";
 import { clear, rereadInbox, rereadInboxMarks, rows as inboxRows, undoClear } from "../features/inbox/requests.js";
 import { aim, board as panesBoard, close, closeShowingPanes, closeShown as panesCloseShown, dropGoneTabs, openShown, place as panesPlace, placementPreview, rereadBoard, resizeSplit, showChat, showInTarget } from "../features/panes/requests.js";
-import { create as projectsCreate, moveFlow, moveFolder, remove as projectsRemove, rename as projectsRename, reorder, setBaseFolder } from "../features/projects/requests.js";
+import { create as projectsCreate, moveFlow, moveFolder, remove as projectsRemove, rename as projectsRename, reorder, setBaseFolder, toggle as projectsToggle } from "../features/projects/requests.js";
 import { all as setupsAll, remove as setupsRemove, rereadSetups, saveFrom, start } from "../features/setups/requests.js";
 import { place as splitsPlace, placeInView, remove as splitsRemove, reorderMember, rereadShown, resize as splitsResize, shown } from "../features/splits/requests.js";
 import { closeGroup, closeOthers, closeShown as tabClosingCloseShown, closeTab } from "../features/tab-closing/requests.js";
@@ -74,7 +74,7 @@ export const navigation = handledModule(definition, [
 	named("folders.set-base-dir", setBaseDir),
 	named("folders.set-color", setColor),
 	named("folders.set-icon", foldersSetIcon),
-	named("folders.toggle", toggle),
+	named("folders.toggle", foldersToggle),
 	named("inbox.clear", clear),
 	named("inbox.rows", inboxRows),
 	named("inbox.undo-clear", undoClear),
@@ -97,6 +97,7 @@ export const navigation = handledModule(definition, [
 	named("projects.rename", projectsRename),
 	named("projects.reorder", reorder),
 	named("projects.set-base-folder", setBaseFolder),
+	named("projects.toggle", projectsToggle),
 	named("setups.all", setupsAll),
 	named("setups.remove", setupsRemove),
 	named("setups.save-from", saveFrom),

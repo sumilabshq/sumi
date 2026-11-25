@@ -73,6 +73,23 @@ export function renameProjectPlan({ id, name }: RenameAsk): FlowsPlan<null> {
 	};
 }
 
+export function toggleProjectPlan({ id }: ProjectAsk): FlowsPlan<null> {
+	return ({ flows }) => {
+		const project = projectOfId(flows, id);
+
+		if (project === undefined) {
+			return refusal(NO_PROJECT.replace("{id}", id));
+		}
+
+		const isCollapsed = project.isCollapsed ?? false;
+		return {
+			flows: withProjectChanged(flows, id, { isCollapsed: !isCollapsed }),
+			reason: `project ${id} isCollapsed ${String(isCollapsed)} → ${String(!isCollapsed)}`,
+			value: null,
+		};
+	};
+}
+
 export function setProjectBaseFolderPlan({ id, baseFolder }: SetBaseFolderAsk): FlowsPlan<null> {
 	return ({ flows }) => {
 		const project = projectOfId(flows, id);

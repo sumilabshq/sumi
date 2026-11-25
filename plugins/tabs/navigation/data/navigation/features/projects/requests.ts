@@ -21,6 +21,7 @@ import {
 	renameProjectPlan,
 	reorderProjectsPlan,
 	setProjectBaseFolderPlan,
+	toggleProjectPlan,
 } from "./lib/project-plans.js";
 
 export const create = command()
@@ -41,6 +42,14 @@ export const rename = command()
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tabs }) => {
 		answered(await tabs.movePlaces(flowsMove(renameProjectPlan(ask))));
+	});
+
+export const toggle = command()
+	.public()
+	.input(ProjectAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs }) => {
+		answered(await tabs.movePlaces(flowsMove(toggleProjectPlan(ask))));
 	});
 
 export const setBaseFolder = command()
