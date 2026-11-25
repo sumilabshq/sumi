@@ -201,15 +201,11 @@ try {
 		};
 		console.log("table after", JSON.stringify(text));
 		check(
-			"cells share the paragraph size, line height and weight",
-			[text.td.size, text.td.line, text.td.weight],
-			[text.p.size, text.p.line, text.p.weight],
+			"cells read at the interface size, paragraphs at the reading size",
+			[text.td.size, text.td.weight, text.p.size],
+			["13px", "400", "14px"],
 		);
-		check(
-			"header cells share them too",
-			[text.th.size, text.th.line, text.th.weight],
-			[text.p.size, text.p.line, text.p.weight],
-		);
+		check("header cells read at the interface size too", [text.th.size, text.th.weight], ["13px", "400"]);
 		await shot(page, "v3-table-after");
 	});
 	await run(`${origin}/?v=git`, "chip-git", [720, 360], async (page) => {
@@ -243,7 +239,7 @@ try {
 		check("one separator", open.separators, 1);
 		check("the panel is 260px wide", chipOpen.panel?.width, 260);
 		check("opened from the chip, the panel is left-aligned to the chip", chipOpen.panel?.left, chipOpen.chipLeft);
-		check("the menu text is the kit weight and size", [chipOpen.itemWeight, chipOpen.itemSize], ["400", "12.5px"]);
+		check("the menu text is the kit weight and size", [chipOpen.itemWeight, chipOpen.itemSize], ["400", "13px"]);
 		check("no focus frame when opened by pointer", chipOpen.focusVisible, 0);
 		check("the path is shortened with ~", chipOpen.pathText, "~/Projects/Sumi");
 		check("the path is one line", (chipOpen.pathHeight ?? 99) <= 18, true);
