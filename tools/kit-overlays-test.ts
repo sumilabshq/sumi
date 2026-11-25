@@ -404,6 +404,83 @@ function menuItemNamed(text: string): Element {
 	return item;
 }
 
+const CLOSE_ANIMATION_DONE_MS = 260;
+
+function hiddenFrom(element: HTMLElement): string {
+	const surface = element.closest<HTMLElement>(".wg-kit-pop, .wg-kit-float") ?? element;
+	return surface.style.visibility === "hidden" || surface.hidden ? surface.className : "";
+}
+
+function shownPanel(slot: string): readonly [string | null, string] {
+	const panel = slotted(slot) as HTMLElement | null;
+	return [panel?.getAttribute("data-state") ?? null, panel === null ? "gone" : hiddenFrom(panel)];
+}
+
+async function reopensAfterClosing(name: string, slot: string, open: () => void | Promise<void>, closers: readonly (() => void)[]): Promise<void> {
+	const seen: (readonly [string | null, string])[] = [];
+	for (const close of closers) {
+		await open();
+		await settle();
+		seen.push(shownPanel(slot));
+		close();
+		await settle();
+		await wait(CLOSE_ANIMATION_DONE_MS);
+	}
+	check(
+		`${name} REOPENS VISIBLY AFTER EVERY CLOSE ANIMATION (3 cycles)`,
+		seen,
+		closers.map(() => ["open", ""]),
+	);
+}
+
+async function menusReopen(): Promise<void> {
+	await draw(h(kit.Popover, { trigger: h("button", { id: "pop-trigger" }, "T") }, h("button", null, "Inside")));
+	const popTrigger = found(document, "#pop-trigger");
+	await reopensAfterClosing("A POPOVER", "popover-content", () => fire(popTrigger, "click", { detail: 1 }), [
+		() => key(document.activeElement ?? popTrigger, "Escape"),
+		() => fire(outside, "pointerdown"),
+		() => fire(popTrigger, "click", { detail: 1 }),
+	]);
+	await draw(null);
+	await draw(dropdown(() => undefined, () => undefined, () => undefined));
+	const trigger = found(document, '[data-slot="dropdown-menu-trigger"]');
+	const openDropdown = (): void => fire(trigger, "click", { detail: 1 });
+	await reopensAfterClosing("A DROPDOWN MENU", "dropdown-menu-content", openDropdown, [
+		() => key(document.activeElement ?? trigger, "Escape"),
+		() => fire(outside, "pointerdown"),
+		() => fire(found(document, '[data-slot="dropdown-menu-item"]'), "click"),
+	]);
+	const openSub = async (): Promise<void> => {
+		openDropdown();
+		await settle();
+		key(found(document, '[data-slot="dropdown-menu-sub-trigger"]'), "ArrowRight");
+	};
+	await reopensAfterClosing("A SUB MENU", "dropdown-menu-sub-content", openSub, [
+		() => key(document.activeElement ?? trigger, "Escape"),
+		() => fire(outside, "pointerdown"),
+		() => fire(found(document, '[data-slot="dropdown-menu-sub-content"] [data-slot="dropdown-menu-item"]'), "click"),
+	]);
+	await draw(null);
+	await draw(
+		h(kit.ContextMenu, null, [
+			h(kit.ContextMenuTrigger, { key: "t" }, "Right click here"),
+			h(kit.ContextMenuContent, { key: "c" }, [h(kit.ContextMenuItem, { key: "b" }, "Back")]),
+		]),
+	);
+	const area = found(document, '[data-slot="context-menu-trigger"]');
+	await reopensAfterClosing(
+		"A CONTEXT MENU",
+		"context-menu-content",
+		() => fire(area, "contextmenu", { clientX: 120, clientY: 80 }),
+		[
+			() => key(document.activeElement ?? area, "Escape"),
+			() => fire(outside, "pointerdown"),
+			() => fire(found(document, '[data-slot="context-menu-item"]'), "click"),
+		],
+	);
+	await draw(null);
+}
+
 async function contextMenu(): Promise<void> {
 	await draw(
 		h(kit.ContextMenu, null, [
@@ -1103,6 +1180,7 @@ await tooltip();
 await hoverCard();
 await dropdownMenu();
 await contextMenu();
+await menusReopen();
 await menubar();
 await navigationMenu();
 await sheetAndAlert();

@@ -19,6 +19,7 @@ export function endFold(panel: HTMLElement, anchor: HTMLElement): void {
 }
 
 export function enterPanel(panel: HTMLElement, anchor: HTMLElement, placement: Placement): StopMotion | undefined {
+	panel.style.visibility = "";
 	placePopoverPanel(panel, anchor.getBoundingClientRect(), placement);
 	anchor.style.visibility = placement.hidesTrigger ? "hidden" : "";
 	return undefined;

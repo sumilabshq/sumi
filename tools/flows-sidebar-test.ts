@@ -514,6 +514,37 @@ async function pressClose(page: AskedPage, name: string): Promise<void> {
 	await waited(SETTLE_MS);
 }
 
+const MENU_LOOK = `[...document.querySelectorAll("[role=menu]")].map((menu) => { const look = getComputedStyle(menu); return [look.visibility, look.opacity, look.pointerEvents]; })`;
+
+async function rowMenuReopens(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		const openMenu = (): Promise<unknown> =>
+			page.ask(
+				`${rowOf(FLOWS, "Plugin layout")}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 60, clientY: 200 }))`,
+			);
+		const closers: readonly (() => Promise<unknown>)[] = [
+			() => page.pressKey("Escape"),
+			() => page.press(900, 600),
+			() => page.ask(clickText("[role=menuitem]", "Duplicate")),
+		];
+		const seen: unknown[] = [];
+
+		for (const close of closers) {
+			await openMenu();
+			await waited(SETTLE_MS);
+			seen.push(await page.ask(MENU_LOOK));
+			await close();
+			await waited(SETTLE_MS);
+		}
+
+		check(
+			"THE ROW MENU REOPENS VISIBLE, OPAQUE AND PRESSABLE after Escape, an outside press and an item press",
+			seen,
+			closers.map(() => [["visible", "1", "auto"]]),
+		);
+	});
+}
+
 async function closingSessions(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		const status = `${rowOf(SESSION_ROW, RUNNING_SESSION)}.querySelector(".sumi-flows-status")`;
@@ -969,6 +1000,7 @@ await dragging();
 await editingIcon();
 await deleting();
 await closingSessions();
+await rowMenuReopens();
 await folderMenuAndArchive();
 await projects();
 await collapsing();
