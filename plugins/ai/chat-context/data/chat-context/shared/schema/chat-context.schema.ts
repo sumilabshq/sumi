@@ -18,11 +18,6 @@ export const OpenInInputSchema = z.object({
 	editor: EditorSchema,
 });
 
-export const EnterInputSchema = z.object({
-	session: z.string().min(1).max(200),
-	folder: FolderPathSchema,
-});
-
 export const ChatContextSchema = z.object({
 	folder: FolderPathSchema,
 	name: z.string(),

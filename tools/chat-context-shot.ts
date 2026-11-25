@@ -127,9 +127,9 @@ try {
 		const open = (await page.ask(HEAD_PROBE)) as { menu: string[]; separators: number };
 		console.log("git menu", JSON.stringify(open));
 		check(
-			"the menu has folder, branch, computer, open in the first editor found, terminal",
+			"the menu has folder, branch, computer, open in the first editor found",
 			open.menu.map((text) => text),
-			["Sumi/Users/demo/Projects/Sumi", "feat/chat-context", "This Mac", "Open in Zed", "Open terminal here"],
+			["Sumi/Users/demo/Projects/Sumi", "feat/chat-context", "This Mac", "Open in Zed"],
 		);
 		check("one separator", open.separators, 1);
 		await shot(page, "chip-git-menu");

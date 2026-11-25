@@ -1,11 +1,9 @@
-import { Fragment, createElement as h, useContext, useState } from "react";
+import { Fragment, createElement as h, useState } from "react";
 import type { ReactNode } from "react";
 import { chatContext } from "@sumi/chat-context/contract";
-import { appHost } from "@widgetarium/app-host/contract";
 import { assistant } from "@widgetarium/assistant/contract";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { Button, Icon, Popover, PopoverContent, PopoverTrigger, Pressable, tooltipMarks } from "@widgetarium/kit";
-import { WindowAppContext } from "../../../../shared/lib/window-app-context.js";
 import { chipOf } from "../../lib/chip-of.js";
 import { ContextMenu } from "../context-menu/context-menu.js";
 
@@ -27,8 +25,6 @@ export function ContextBar({ folder }: { readonly folder: string }): ReactNode {
 	const reread = useCommand(chatContext.context.reread);
 	const reveal = useCommand(chatContext.context.reveal);
 	const openIn = useCommand(chatContext.context.openIn);
-	const enterIn = useCommand(chatContext.context.enterIn);
-	const windowApp = useContext(WindowAppContext);
 	const [isOpen, setOpen] = useState(false);
 	const chip = chipOf(context);
 
@@ -63,19 +59,6 @@ export function ContextBar({ folder }: { readonly folder: string }): ReactNode {
 						onOpenIn={(editor) => {
 							setOpen(false);
 							void openIn.run({ folder, editor });
-						}}
-						onOpenTerminal={() => {
-							setOpen(false);
-
-							if (windowApp === null) {
-								return;
-							}
-
-							void windowApp.send(appHost.tabActions.openTab, { app: "terminal" }).then((opened) => {
-								if (opened.ok) {
-									void enterIn.run({ session: opened.output.id, folder });
-								}
-							});
 						}}
 					/>
 				</PopoverContent>

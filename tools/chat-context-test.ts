@@ -106,12 +106,6 @@ check("a program that is not a known editor is refused", refused.ok, false);
 const revealed = await app.send(chatContextContract.context.reveal, { folder: repo });
 check("a folder is revealed in Finder with open -R", [revealed.ok, programs.opened.at(-1)?.args], [true, ["-R", repo]]);
 
-const entered = await app.send(chatContextContract.context.enterIn, { session: "tab-1", folder: "relative/folder" });
-check("a folder that is not an absolute path is refused before it reaches a shell", entered.ok, false);
-
-const shelled = await app.send(chatContextContract.context.enterIn, { session: "tab-1", folder: repo });
-check("a new terminal session is sent to the folder", shelled.ok, true);
-
 const storage = new Map<string, string>();
 const stored = new LocalStorageEditorChoiceGateway({
 	getItem: (key) => storage.get(key) ?? null,

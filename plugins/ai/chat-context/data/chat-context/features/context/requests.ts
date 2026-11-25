@@ -5,7 +5,6 @@ import type { Send } from "@widgetarium/data-framework";
 import { command, query } from "#module";
 import {
 	ChatContextSchema,
-	EnterInputSchema,
 	FINDER,
 	FOUND_EDITORS,
 	FolderInputSchema,
@@ -16,7 +15,6 @@ import type { Editor } from "../../shared/schema/chat-context.schema.js";
 const APPLICATIONS = "/Applications";
 const APP_SUFFIX = ".app";
 const OPEN_PROGRAM = "open";
-const NEW_TERMINAL_SIZE = { cols: 80, rows: 24 };
 const OPEN_FAILED = "{editor} could not open {folder}: {reason}";
 const REVEAL_FAILED = "Finder could not reveal {folder}: {reason}";
 
@@ -72,19 +70,6 @@ export const reveal = command()
 			return refuse(REVEAL_FAILED.replace("{folder}", folder).replace("{reason}", revealed.err.trim()));
 		}
 	});
-
-export const enterIn = command()
-	.public()
-	.input(EnterInputSchema)
-	.idempotencyKey(PerCall)
-	.handle(async ({ session, folder }, { send }) => {
-		await send(terminal.lines.resize, { session, ...NEW_TERMINAL_SIZE });
-		await send(terminal.lines.typeText, { session, keys: `cd ${shellQuoted(folder)}\r` });
-	});
-
-function shellQuoted(path: string): string {
-	return `'${path.replaceAll("'", `'\\''`)}'`;
-}
 
 async function branchAt(send: Send, folder: string): Promise<string | null> {
 	const head: ProgramOutput | null = await send(terminal.programs.run, {

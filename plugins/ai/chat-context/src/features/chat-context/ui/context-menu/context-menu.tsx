@@ -4,7 +4,6 @@ import type { ChatContext, Editor } from "@sumi/chat-context/contract";
 import { Button, Icon, Popover, PopoverContent, PopoverItem, PopoverSeparator, PopoverTrigger } from "@widgetarium/kit";
 
 export const OPEN_IN = "Open in {editor}";
-export const OPEN_TERMINAL = "Open terminal here";
 export const THIS_MAC = "This Mac";
 export const CHOOSE_APP = "Choose app";
 
@@ -14,10 +13,9 @@ export interface ContextMenuProps {
 	readonly context: ChatContext;
 	readonly onReveal: () => void;
 	readonly onOpenIn: (editor: Editor) => void;
-	readonly onOpenTerminal: () => void;
 }
 
-export function ContextMenu({ context, onReveal, onOpenIn, onOpenTerminal }: ContextMenuProps): ReactElement {
+export function ContextMenu({ context, onReveal, onOpenIn }: ContextMenuProps): ReactElement {
 	return (
 		<>
 			<PopoverItem
@@ -39,7 +37,6 @@ export function ContextMenu({ context, onReveal, onOpenIn, onOpenTerminal }: Con
 				</PopoverItem>
 				<EditorsSubmenu context={context} onOpenIn={onOpenIn} />
 			</div>
-			<PopoverItem onClick={onOpenTerminal}>{OPEN_TERMINAL}</PopoverItem>
 		</>
 	);
 }

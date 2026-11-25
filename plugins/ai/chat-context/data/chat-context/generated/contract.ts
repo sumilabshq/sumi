@@ -21,11 +21,6 @@ export const OpenInInputSchema = z.object({
 	editor: EditorSchema,
 });
 
-export const EnterInputSchema = z.object({
-	session: z.string().min(1).max(200),
-	folder: FolderPathSchema,
-});
-
 export const ChatContextSchema = z.object({
 	folder: FolderPathSchema,
 	name: z.string(),
@@ -52,10 +47,6 @@ export const chatContext = moduleContract("chat-context", Device, {
 		reveal: named("context.reveal", command()
 			.public()
 			.input(FolderInputSchema)
-			.idempotencyKey(PerCall)),
-		enterIn: named("context.enter-in", command()
-			.public()
-			.input(EnterInputSchema)
 			.idempotencyKey(PerCall)),
 	},
 });
