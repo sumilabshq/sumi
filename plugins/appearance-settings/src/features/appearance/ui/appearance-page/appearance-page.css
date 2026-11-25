@@ -281,6 +281,13 @@
 	padding: 4px;
 	border-radius: var(--r-lg);
 	background: var(--sunken);
+	transform-origin: top left;
+	animation: wg-kit-pop-in var(--dur-base) ease-out both;
+}
+
+.sumi-appearance-fontlist[data-leaving] {
+	pointer-events: none;
+	animation-name: wg-kit-pop-out;
 }
 
 .sumi-appearance-fontsearch {

@@ -19,7 +19,7 @@ export function FontPicker({ role, title, hint }: FontPickerProps): ReactElement
 	const fonts = useOptionalQuery(appearance.fonts.current).data?.[role];
 	const choose = useCommand(appearance.fonts.choose);
 	const [recent, remember] = useRecentFonts(role);
-	const [isListOpen, setListOpen] = useState(false);
+	const [list, setList] = useState<"closed" | "open" | "leaving">("closed");
 	const [words, setWords] = useState("");
 	const [hovered, setHovered] = useState<string | null>(null);
 
@@ -29,9 +29,17 @@ export function FontPicker({ role, title, hint }: FontPickerProps): ReactElement
 
 	const stackOf = (family: string): string =>
 		fonts.available.find((one) => one.family === family)?.stack ?? fonts.chosen.stack;
+	const closeList = (): void => {
+		setList("leaving");
+		setHovered(null);
+	};
+	const previewOf = (family: string): { readonly onMouseEnter: () => void; readonly onMouseLeave: () => void } => ({
+		onMouseEnter: () => setHovered(family),
+		onMouseLeave: () => setHovered(null),
+	});
 	const pick = (family: string): void => {
 		remember(family);
-		setListOpen(false);
+		closeList();
 		setWords("");
 		void choose.run({ role, family });
 	};
@@ -68,6 +76,7 @@ export function FontPicker({ role, title, hint }: FontPickerProps): ReactElement
 								className="sumi-appearance-font-tile"
 								style={{ fontFamily: stackOf(family) }}
 								aria-pressed={family === fonts.chosen.family}
+								{...previewOf(family)}
 								onClick={() => pick(family)}
 							>
 								Aa
@@ -77,26 +86,36 @@ export function FontPicker({ role, title, hint }: FontPickerProps): ReactElement
 						</div>
 					))}
 					<div className="sumi-appearance-font is-more">
-						<button type="button" className="sumi-appearance-font-tile" onClick={() => setListOpen(!isListOpen)}>
-							<Icon name="plus" size={20} />
+						<button
+							type="button"
+							className="sumi-appearance-font-tile"
+							aria-expanded={list === "open"}
+							onClick={() => (list === "open" ? closeList() : setList("open"))}
+						>
+							<Icon name={list === "open" ? "x" : "plus"} size={20} />
 						</button>
 						<span className="sumi-appearance-font-name">{ALL_FONTS}</span>
 						<span className="sumi-appearance-hint is-small">{`${fonts.available.length}, or upload`}</span>
 					</div>
 				</div>
-				{isListOpen ? (
+				{list === "closed" ? null : (
 					<div
 						className="sumi-appearance-fontlist"
+						data-leaving={list === "leaving" ? "" : undefined}
+						onAnimationEnd={() => {
+							if (list === "leaving") {
+								setList("closed");
+							}
+						}}
 						onKeyDown={(event) => {
 							if (event.key === "Escape") {
-								setListOpen(false);
+								closeList();
 							}
 
 							if (event.key === "Enter" && matching[0] !== undefined) {
 								pick(matching[0].family);
 							}
 						}}
-						onMouseLeave={() => setHovered(null)}
 					>
 						<input
 							autoFocus
@@ -111,14 +130,14 @@ export function FontPicker({ role, title, hint }: FontPickerProps): ReactElement
 								type="button"
 								className="sumi-appearance-fontrow"
 								style={{ fontFamily: one.stack }}
-								onMouseEnter={() => setHovered(one.family)}
+								{...previewOf(one.family)}
 								onClick={() => pick(one.family)}
 							>
 								{one.family}
 							</button>
 						))}
 					</div>
-				) : null}
+				)}
 			</div>
 		</section>
 	);

@@ -81,6 +81,38 @@ for (const width of WIDTHS) {
 			await waited(300);
 		}
 
+		if (width === 1160) {
+			const centre = async (selector: string, at = 0): Promise<[number, number]> =>
+				(await page.ask(
+					`(() => { const r = document.querySelectorAll(${JSON.stringify(selector)})[${at}].getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()`,
+				)) as [number, number];
+			const exampleFont = `getComputedStyle(document.querySelector(".sumi-appearance-example")).fontFamily`;
+			const fonts: Record<string, unknown> = { resting: await page.ask(exampleFont) };
+			const tile = await centre(".sumi-appearance-font:not(.is-more) .sumi-appearance-font-tile", 1);
+			await page.hover(...tile);
+			await waited(200);
+			fonts.hoverTile = await page.ask(exampleFont);
+			const more = await centre(".sumi-appearance-font.is-more .sumi-appearance-font-tile");
+			await page.press(...more);
+			await waited(300);
+			fonts.opened = await page.ask(
+				`({ expanded: document.querySelector(".sumi-appearance-font.is-more .sumi-appearance-font-tile").getAttribute("aria-expanded"), glyph: document.querySelector(".sumi-appearance-font.is-more .sumi-appearance-font-tile svg").innerHTML.slice(0, 60), list: !!document.querySelector(".sumi-appearance-fontlist"), anim: getComputedStyle(document.querySelector(".sumi-appearance-fontlist")).animationName })`,
+			);
+			writeFileSync(`${OUT}/fontlist-${width}.png`, await page.shoot());
+			const row = await centre(".sumi-appearance-fontrow", 2);
+			await page.hover(...row);
+			await waited(200);
+			fonts.hoverRow = await page.ask(exampleFont);
+			await page.press(...(await centre(".sumi-appearance-font.is-more .sumi-appearance-font-tile")));
+			await waited(50);
+			fonts.leaving = await page.ask(
+				`document.querySelector(".sumi-appearance-fontlist")?.getAttribute("data-leaving")`,
+			);
+			await waited(300);
+			fonts.closed = await page.ask(`!document.querySelector(".sumi-appearance-fontlist")`);
+			console.log(JSON.stringify(fonts));
+		}
+
 		await page.ask(`document.querySelector(".sumi-settings-body").scrollTop = 220; true`);
 		await waited(300);
 		writeFileSync(`${OUT}/appearance-scrolled-${width}.png`, await page.shoot());
