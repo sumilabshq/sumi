@@ -113,10 +113,10 @@
 		padding-inline-end: calc(var(--cv-spacing) * 3) !important;
 	}
 	.cv\:text-sm {
-		font-size: var(--type-s) !important;
+		font-size: var(--fs-13) !important;
 	}
 	.cv\:text-xs {
-		font-size: var(--type-xs) !important;
+		font-size: var(--fs-12) !important;
 	}
 	.cv\:leading-tight {
 		--tw-leading: var(--cv-leading-tight) !important;

@@ -17510,10 +17510,10 @@ body:has(.wg-cm-layer) {
 	border-radius: var(--r-lg);
 	background: var(--plate);
 	color: var(--text-3);
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
 }
 .sumi-launcher :is(.wg-cm-ghost, .wg-cm-input) {
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
 }
 .sumi-launcher .wg-cm-input {
 	color: var(--text);
@@ -17699,7 +17699,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--ai-gutter) var(--ai-gutter) var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-title {
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	font-weight: var(--font-semibold, 600);
 	color: var(--foreground);
 }
@@ -17762,7 +17762,7 @@ body:has(.wg-cm-layer) {
 	-webkit-user-select: none;
 	user-select: none;
 	color: var(--text-3, var(--muted-foreground));
-	font: var(--fw-regular, 400) var(--fs-12, 12px) / 16px var(--font-ui, inherit);
+	font: var(--fw-regular, 400) var(--fs-12) / 16px var(--font-ui, inherit);
 	opacity: 0;
 	transition: opacity var(--dur-base, 160ms) var(--ease-emphasized, ease);
 }
@@ -17796,7 +17796,7 @@ body:has(.wg-cm-layer) {
 	-webkit-user-select: none;
 	user-select: none;
 	color: var(--text-3, var(--muted-foreground));
-	font: var(--fw-regular, 400) var(--fs-12, 12px) / 16px var(--font-ui, inherit);
+	font: var(--fw-regular, 400) var(--fs-12) / 16px var(--font-ui, inherit);
 	opacity: 0;
 	transition: opacity var(--dur-base, 160ms) var(--ease-emphasized, ease);
 }
@@ -17841,7 +17841,7 @@ body:has(.wg-cm-layer) {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font: var(--fw-regular, 400) var(--fs-12, 12px) / 16px var(--font-ui, inherit);
+	font: var(--fw-regular, 400) var(--fs-12) / 16px var(--font-ui, inherit);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-picture img {
 	display: block;
@@ -17861,7 +17861,7 @@ body:has(.wg-cm-layer) {
 	-webkit-backdrop-filter: var(--blur-pop, none);
 	backdrop-filter: var(--blur-pop, none);
 	color: var(--text, var(--foreground));
-	font: var(--fw-medium, 500) var(--fs-11, 11px) / 1.2 var(--font-ui, inherit);
+	font: var(--fw-medium, 500) var(--fs-11) / 1.2 var(--font-ui, inherit);
 	text-align: start;
 	white-space: nowrap;
 	overflow: hidden;
@@ -17877,7 +17877,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-none) var(--space-1);
 	background: none;
 	color: var(--foreground);
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	line-height: 1.5;
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
@@ -17889,7 +17889,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-tail {
 	margin: var(--space-none);
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	line-height: 1.55;
 	color: var(--foreground);
 	white-space: pre-wrap;
@@ -17907,7 +17907,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown :is(h1, h2, h3, h4, h5, h6) {
 	margin: var(--space-3-5) var(--space-none) var(--space-1-5);
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	font-weight: var(--font-semibold, 600);
 	line-height: 1.3;
 	color: var(--foreground);
@@ -17931,7 +17931,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-px) var(--space-1);
 	border-radius: var(--control-corner);
 	background: var(--fill);
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--code-size);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown blockquote {
 	margin: var(--space-none) var(--space-none) var(--space-2);
@@ -17944,7 +17944,7 @@ body:has(.wg-cm-layer) {
 	width: 100%;
 	margin: var(--space-none) var(--space-none) var(--space-2);
 	overflow-x: auto;
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-13);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown img {
 	max-width: 100%;
@@ -17956,7 +17956,7 @@ body:has(.wg-cm-layer) {
 	border-top: 1px solid var(--card-edge);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown .copy-code-button {
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-12);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
 	padding: var(--space-2-5) var(--space-3);
@@ -18053,7 +18053,7 @@ body:has(.wg-cm-layer) {
 	height: 28px;
 	min-width: 0;
 	padding: var(--space-none) var(--space-1);
-	font: 400 13px var(--font-sans, inherit);
+	font: 400 var(--fs-13) var(--font-sans, inherit);
 	text-align: start;
 	cursor: pointer;
 }
@@ -18066,7 +18066,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-meta {
 	flex: none;
-	font-size: 12px;
+	font-size: var(--fs-12);
 	color: var(--muted-foreground);
 	white-space: nowrap;
 }
@@ -18080,7 +18080,7 @@ body:has(.wg-cm-layer) {
 	height: 26px;
 	padding: var(--space-none) var(--space-2-5);
 	border-radius: var(--control-corner);
-	font-size: 12px;
+	font-size: var(--fs-12);
 	white-space: nowrap;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-chip.is-passed {
@@ -18111,7 +18111,7 @@ body:has(.wg-cm-layer) {
 	min-width: 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-part-label {
-	font-size: 12px;
+	font-size: var(--fs-12);
 	color: var(--muted-foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-head {
@@ -18124,7 +18124,7 @@ body:has(.wg-cm-layer) {
 	flex-grow: 1;
 	min-width: 0;
 	overflow: hidden;
-	font-size: 13px;
+	font-size: var(--fs-13);
 	font-weight: var(--font-medium, 500);
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -18133,7 +18133,7 @@ body:has(.wg-cm-layer) {
 	padding-bottom: var(--space-2-5);
 	overflow-x: auto;
 	font-family: var(--font-mono);
-	font-size: 12px;
+	font-size: var(--fs-12);
 	line-height: 1.75;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-line {
@@ -18152,13 +18152,13 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-pill {
 	padding: var(--space-none) var(--space-3);
 	font-family: inherit;
-	font-size: 12px;
+	font-size: var(--fs-12);
 	cursor: pointer;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-pill.is-l {
 	height: 52px;
 	padding: var(--space-none) var(--space-5);
-	font-size: 13px;
+	font-size: var(--fs-13);
 	font-weight: var(--font-medium, 500);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-card {
@@ -18187,12 +18187,12 @@ body:has(.wg-cm-layer) {
 	min-width: 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-title {
-	font-size: 14px;
+	font-size: var(--fs-13);
 	font-weight: var(--font-medium, 500);
 	color: var(--error-ink);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-reason {
-	font-size: 12px;
+	font-size: var(--fs-12);
 	color: var(--error-ink);
 	overflow-wrap: anywhere;
 }
@@ -18210,14 +18210,14 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-title h3 {
 	margin: var(--space-none);
-	font-size: var(--h3-size, 1.25em);
+	font-size: var(--fs-16);
 	font-weight: var(--font-bold, 700);
 	color: var(--foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-title span,
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-sub {
 	color: var(--muted-foreground);
-	font-size: var(--text-m);
+	font-size: var(--fs-13);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-group {
 	display: flex;
@@ -18226,7 +18226,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-label {
 	padding: var(--space-none) var(--space-1);
-	font-size: var(--text-s);
+	font-size: var(--fs-12);
 	font-weight: var(--font-semibold, 600);
 	color: var(--muted-foreground);
 }
@@ -18266,7 +18266,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-px);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-name {
-	font-size: var(--text-l);
+	font-size: var(--fs-13);
 	font-weight: var(--font-semibold, 600);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-buttons {
@@ -18300,7 +18300,7 @@ body:has(.wg-cm-layer) {
 	margin: var(--space-none) max(var(--ai-gutter), calc((100% - var(--studio-chat-content, 100%)) / 2));
 	padding: var(--space-1-5) var(--space-2-5);
 	border-radius: var(--item);
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-12);
 	color: var(--error-ink);
 	overflow-wrap: anywhere;
 }
@@ -18316,13 +18316,13 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-empty-lead {
 	margin: var(--space-none);
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	font-weight: var(--font-semibold, 600);
 	color: var(--foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-empty-said {
 	margin: var(--space-none);
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-12);
 	line-height: 1.5;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-box {
@@ -18331,7 +18331,7 @@ body:has(.wg-cm-layer) {
 	resize: none;
 	padding: var(--space-none) var(--space-1-5) var(--space-none) var(--space-none);
 	font-family: inherit;
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	line-height: 1.6;
 	overflow-y: hidden;
 }
@@ -18344,7 +18344,7 @@ body:has(.wg-cm-layer) {
 	border-radius: var(--control-corner);
 	background: var(--fill);
 	color: var(--muted-foreground);
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-12);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-target-name {
 	overflow: hidden;
@@ -18358,7 +18358,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-2) var(--space-3);
 	border-radius: var(--plate-radius);
 	background: var(--group-fill);
-	font-size: var(--text-s);
+	font-size: var(--fs-12);
 	width: 100%;
 	height: auto;
 	border: 0;
@@ -18382,7 +18382,7 @@ body:has(.wg-cm-layer) {
 .wg-studio-ai-quiet {
 	margin: var(--space-none);
 	padding: var(--studio-edge);
-	font-size: var(--text-s);
+	font-size: var(--fs-12);
 	color: var(--muted-foreground);
 }
 .wg-chat-app .wg-studio-ai {
@@ -18404,7 +18404,7 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai-said {
 	padding: var(--space-none);
 	color: var(--text);
-	font: var(--fw-regular) var(--fs-13) / 21px var(--font-ui);
+	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
 }
 .wg-chat-app .wg-studio-ai-turn {
 	gap: var(--space-3);
@@ -18423,21 +18423,21 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(h1, h2) {
 	margin: var(--space-4) var(--space-none) var(--space-2);
-	font-size: 22px;
+	font-size: var(--fs-22);
 	font-weight: var(--font-semibold, 600);
 	letter-spacing: -0.02em;
-	line-height: 1.2;
+	line-height: 1.25;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(h3, h4, h5, h6) {
 	margin: var(--space-3-5) var(--space-none) var(--space-1-5);
-	font-size: 16px;
+	font-size: var(--fs-16);
 	font-weight: var(--font-semibold, 600);
-	line-height: 1.3;
+	line-height: 1.35;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :not(pre) > code {
 	padding: var(--space-px) var(--space-1);
 	background: var(--soft);
-	font-size: 12.5px;
+	font-size: var(--code-size);
 	-webkit-box-decoration-break: clone;
 	box-decoration-break: clone;
 }
@@ -18852,7 +18852,7 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-greet {
 	margin: var(--space-none);
 	color: var(--text);
-	font: var(--fw-medium) 22px / 1.3 var(--font-ui);
+	font: var(--fw-medium) var(--fs-22) / 1.3 var(--font-ui);
 	letter-spacing: -0.01em;
 	text-align: center;
 	text-wrap: balance;
@@ -18889,7 +18889,8 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-title {
 	overflow: hidden;
-	font-size: 15px;
+	font-size: var(--fs-16);
+	line-height: 1.35;
 	font-weight: var(--font-semibold, 600);
 	letter-spacing: -0.01em;
 	text-overflow: ellipsis;
@@ -19036,7 +19037,7 @@ body:has(.wg-cm-layer) {
 	border-bottom-width: 2px;
 	border-radius: var(--control-corner);
 	background: none;
-	font-size: 11px;
+	font-size: var(--fs-11);
 	color: var(--foreground);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown hr {
@@ -19088,7 +19089,7 @@ body:has(.wg-cm-layer) {
 	background: var(--accent-wash);
 	outline: 1.5px dashed var(--ring);
 	outline-offset: -1.5px;
-	font: 500 15px var(--font-sans);
+	font: 500 var(--fs-13) var(--font-sans);
 	color: var(--foreground);
 	pointer-events: none;
 }
@@ -19103,7 +19104,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-3);
 	padding: var(--space-none) var(--studio-edge, 8px);
 	color: var(--muted-foreground);
-	font: 500 13px var(--font-sans, inherit);
+	font: 500 var(--fs-13) var(--font-sans, inherit);
 }
 .wg-studio-ai-compact::before,
 .wg-studio-ai-compact::after {
@@ -19137,11 +19138,11 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-3-5) var(--space-4-5);
 	border-radius: var(--item);
 	background: var(--group-fill);
-	font-size: 13px;
+	font-size: var(--fs-13);
 }
 .wg-studio-ai-compact-summary .wg-studio-ai-said {
 	padding: var(--space-none);
-	font-size: 13px;
+	font-size: var(--fs-13);
 }
 @keyframes wg-studio-ai-thinking {
 	0%,
@@ -19838,10 +19839,10 @@ body:has(.wg-cm-layer) {
 		padding-inline-end: calc(var(--cv-spacing) * 3) !important;
 	}
 	.cv\:text-sm {
-		font-size: var(--type-s) !important;
+		font-size: var(--fs-13) !important;
 	}
 	.cv\:text-xs {
-		font-size: var(--type-xs) !important;
+		font-size: var(--fs-12) !important;
 	}
 	.cv\:leading-tight {
 		--tw-leading: var(--cv-leading-tight) !important;
@@ -19988,7 +19989,7 @@ body:has(.wg-cm-layer) {
 	border: 1px dashed var(--line-strong);
 	border-radius: var(--plate-radius);
 	color: var(--text-2);
-	font: var(--fw-regular) var(--fs-14) / 1.55 var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) / 1.45 var(--font-ui);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued-text {
 	white-space: pre-wrap;
@@ -20037,7 +20038,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-4) var(--space-4) var(--space-2);
 	background: var(--soft);
 	color: var(--text);
-	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) / 1.45 var(--font-ui);
 }
 :is(.wg-root, .wg-portal) .wg-questions-block-head {
 	display: flex;
@@ -20281,7 +20282,7 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	gap: var(--space-2);
 	height: var(--h-md);
-	font: var(--fw-regular) var(--fs-14) var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) var(--font-ui);
 }
 .sumi-background-agents-took,
 .sumi-background-agents-chevron {
@@ -20302,7 +20303,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-2);
 	width: 100%;
 	height: var(--h-md);
-	font: var(--fw-regular) var(--fs-14) var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) var(--font-ui);
 	white-space: nowrap;
 }
 .sumi-background-agent-title {
@@ -20345,7 +20346,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-agent-chat-note {
 	padding: var(--space-3) var(--space-8);
-	font: var(--fw-regular) var(--fs-14) var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) var(--font-ui);
 }
 :is(.wg-root, .wg-portal) .sumi-slash-mirror {
 	position: absolute;
