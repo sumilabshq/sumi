@@ -1,6 +1,6 @@
 import { POPOVER_ITEM } from "../constants/popover";
 
-const GLIDE_ITEM = `${POPOVER_ITEM}, [role^="menuitem"]:not([disabled]), [role="option"]:not([disabled])`;
+const GLIDE_ITEM = `${POPOVER_ITEM}, [role^="menuitem"]:not([disabled]), [role="option"]:not([disabled]), [data-glide-row]`;
 const DANGER_ITEM = ".is-destructive, [data-variant=\"destructive\"]";
 
 export function followHighlight(panel: HTMLElement): () => void {

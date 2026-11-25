@@ -512,6 +512,7 @@
 	background: none;
 	border: 0;
 	border-radius: var(--r-full);
+	transition: transform var(--press) var(--ease-standard);
 }
 
 .sumi-flows-picker-color::before {
@@ -528,7 +529,7 @@
 }
 
 .sumi-flows-picker-color:hover {
-	background: var(--hover);
+	transform: scale(1.15);
 }
 
 .sumi-flows-picker-color[aria-checked="true"] {
@@ -716,16 +717,21 @@
 }
 
 .sumi-flows-menu-colors {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-1);
-	padding: var(--space-1) var(--space-2);
 }
 
-.sumi-flows-menu-moves {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-px);
+.sumi-flows-menu-colors .sumi-flows-picker-colors {
+	align-items: center;
+	height: 30px;
+	padding: 0 var(--space-1);
+}
+
+.sumi-flows-menu-colors .sumi-flows-picker-color {
+	width: var(--space-5);
+	height: var(--space-5);
 }
 
 .sumi-flows-menu-label {
