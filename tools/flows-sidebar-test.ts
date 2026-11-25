@@ -578,6 +578,14 @@ async function projects(): Promise<void> {
 			await page.ask(`[[...document.querySelectorAll("[role=menuitem]")].filter((one) => one.textContent === "Move to").length, document.querySelectorAll("[role=menuitemradio]").length]`),
 			[1, 0],
 		);
+		const projectRows = `document.querySelectorAll("[role=menuitemradio]").length`;
+		await page.ask(`[...document.querySelectorAll("[role=menuitem]")].find((one) => one.textContent === "Move to").focus()`);
+		await page.pressKey("ArrowRight");
+		await waited(600);
+		check("ArrowRight on Move to opens the project submenu", await page.ask(projectRows), 2);
+		await page.pressKey("ArrowLeft");
+		await waited(700);
+		check("ArrowLeft closes the submenu and keeps the menu", await page.ask(`[${projectRows}, document.querySelectorAll("[role=menuitem]").length > 0]`), [0, true]);
 		await page.ask(clickText("[role=menuitem]", "Move to"));
 		await waited(500);
 		await page.ask(clickText("[role=menuitemradio]", "Alpha"));

@@ -31,7 +31,7 @@ const ANCHOR_GAP_MOST_PX = 12;
 const SETTLE_MS = 600;
 const DOUBLE_CLICK_GAP_MS = 150;
 const SPOT_NEAR_CORNER: readonly [number, number] = [1430, 890];
-const FLOWS = "section[aria-label=Flows] .sumi-flows-row";
+const FLOWS = "section[aria-label=General] .sumi-flows-row";
 const AUTO = '.wg-studio-ai-strip .wg-kit-btn[aria-label="Permission mode"]';
 const OPEN_POP = ".wg-kit-pop.is-open";
 const FIRST_TAB = ".sumi-flow-strip .sumi-pane-tab";

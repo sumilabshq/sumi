@@ -2717,6 +2717,11 @@ body {
 	min-width: 0;
 }
 
+:is(.wg-root, .wg-portal) .wg-kit-anchor:has(> .wg-kit-pop-item) {
+	display: flex;
+	width: 100%;
+}
+
 :is(.wg-root, .wg-portal) .wg-kit-pop {
 	visibility: visible;
 	position: fixed;
