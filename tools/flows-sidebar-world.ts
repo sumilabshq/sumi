@@ -5,6 +5,7 @@ import { appHost as appHostModule } from "../plugins/tabs/navigation/data/app-ho
 import { MemoryStudioWindowGateway } from "../plugins/tabs/navigation/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { NoCoreChangesGateway } from "../plugins/tabs/navigation/data/app-host/gateways/core-changes/none.gateway.ts";
 import { MemorySidePeeksGateway } from "../plugins/tabs/navigation/data/app-host/gateways/side-peeks/memory.gateway.ts";
+import { haptics as hapticsContract } from "../apps/tauri/capabilities/haptics/generated/contract.ts";
 import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 import { apps as appsContract } from "../plugins/apps/data/apps/generated/contract.ts";
 import { tabGroups } from "../plugins/tabs/tab-groups/data/tab-groups/generated/contract.ts";
@@ -57,6 +58,7 @@ export interface SidebarWorld {
 	readonly app: Runtime;
 	readonly sidePeeks: MemorySidePeeksGateway;
 	readonly stoppedTurns: readonly unknown[];
+	readonly taps: readonly unknown[];
 	spoilUndo(): Promise<void>;
 }
 
@@ -79,6 +81,14 @@ export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld>
 	const assistantFake: RemoteTransport = {
 		call: (call) => {
 			stoppedTurns.push(call.sent);
+			return Promise.resolve({ ok: true, output: undefined });
+		},
+		changes: () => () => undefined,
+	};
+	const taps: unknown[] = [];
+	const hapticsFake: RemoteTransport = {
+		call: (call) => {
+			taps.push(call.sent);
 			return Promise.resolve({ ok: true, output: undefined });
 		},
 		changes: () => () => undefined,
@@ -109,12 +119,14 @@ export async function sidebarWorldOf(scene: SidebarScene): Promise<SidebarWorld>
 			chatFacts({ over: core }),
 			appsContract({ over: core }),
 			assistantContract({ over: assistantFake }),
+			hapticsContract({ over: hapticsFake }),
 		)
 		.start({ platform: "browser", scope: { workspaceId: "fixture" } });
 	return {
 		app,
 		sidePeeks,
 		stoppedTurns,
+		taps,
 		spoilUndo: () =>
 			places.movePlaces((now) => ({
 				next: now.flows === null ? null : { tabs: now.tabs, flows: { ...now.flows, inboxUndo: null } },

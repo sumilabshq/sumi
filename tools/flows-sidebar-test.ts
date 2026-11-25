@@ -551,10 +551,14 @@ async function rowMenuReopens(): Promise<void> {
 async function closingSessions(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		const status = `${rowOf(SESSION_ROW, RUNNING_SESSION)}.querySelector(".sumi-flows-status")`;
-		check("at rest a session row shows its status and no ×", [
-			((await page.ask(lookOf(status))) as string[] | null)?.[0],
-			((await page.ask(lookOf(closeOf(RUNNING_SESSION)))) as string[] | null)?.[0],
-		], ["grid", "none"]);
+		check(
+			"at rest a session row shows its status and no ×",
+			[
+				((await page.ask(lookOf(status))) as string[] | null)?.[0],
+				((await page.ask(lookOf(closeOf(RUNNING_SESSION)))) as string[] | null)?.[0],
+			],
+			["grid", "none"],
+		);
 		await hoverOn(page, SESSION_ROW, RUNNING_SESSION, 300);
 		check(
 			"HOVER SWAPS THE STATUS FOR AN ARCHIVE ×, 20 PX",
@@ -571,7 +575,9 @@ async function closingSessions(): Promise<void> {
 		await waited(300);
 		const hoverInk = ((await page.ask(lookOf(closeOf(RUNNING_SESSION)))) as string[])[1];
 		check("the × reads muted at rest and darker under the pointer", restInk !== hoverInk, true);
-		const opened = await page.ask(`document.querySelector("[aria-current=true] .sumi-flows-name")?.textContent ?? null`);
+		const opened = await page.ask(
+			`document.querySelector("[aria-current=true] .sumi-flows-name")?.textContent ?? null`,
+		);
 		await page.press(close.x + close.width / 2, close.y + close.height / 2);
 		await waited(SETTLE_MS);
 		check(
@@ -666,6 +672,146 @@ async function folderMenuAndArchive(): Promise<void> {
 	});
 }
 
+const DROP_LINE = ".sumi-flows-drop-line";
+const FOLDER_FLOWS = ".sumi-flows-folder .sumi-flows-row[data-kind=flow]";
+const FOLDER_ROWS = ".sumi-flows-folder .sumi-flows-row";
+const LINE_TOLERANCE_PX = 1;
+const AFTER_TAP_MS = 60;
+const DRAG_SHOTS = "/tmp/drag-shots";
+
+const heldFlowDrag = (name: string): string =>
+	`(() => {
+		const transfer = new DataTransfer();
+		const send = (el, type, y) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer, clientY: y ?? 0 }));
+		const row = ${rowOf(FOLDER_FLOWS, name)};
+		send(row, "dragstart");
+		window.__drag = { send, row };
+	})()`;
+const dragOverOf = (selector: string, name: string, half: "upper" | "lower"): string =>
+	`(() => {
+		const target = ${rowOf(selector, name)};
+		const box = target.getBoundingClientRect();
+		const y = ${half === "upper" ? "box.top + 2" : "box.bottom - 2"};
+		window.__drag.send(target, "dragover", y);
+		Object.assign(window.__drag, { target, y });
+	})()`;
+const rowTops = `[...document.querySelectorAll(".sumi-flows-row:not(.sumi-flows-lifted)")].map((row) => row.getBoundingClientRect().top)`;
+const heldDrop = `(() => { const { send, row, target, y } = window.__drag; send(target, "drop", y); send(row, "dragend"); })()`;
+const heldEnd = `window.__drag.send(window.__drag.row, "dragend")`;
+const lineLook = `(() => {
+	const lines = [...document.querySelectorAll(${JSON.stringify(DROP_LINE)})];
+	if (lines.length !== 1) return { count: lines.length };
+	const box = lines[0].getBoundingClientRect();
+	const ring = getComputedStyle(lines[0], "::after");
+	const stroke = getComputedStyle(lines[0], "::before");
+	return { count: 1, y: box.top + box.height / 2, circleX: box.left + parseFloat(ring.width) / 2, circle: [ring.width, parseFloat(ring.borderTopWidth) >= 1, ring.borderTopColor === stroke.backgroundColor], stroke: stroke.height, right: box.right };
+})()`;
+const gapYOf = (upper: string, lower: string): string =>
+	`(${rowOf(FOLDER_ROWS, upper)}.getBoundingClientRect().bottom + ${rowOf(FOLDER_ROWS, lower)}.getBoundingClientRect().top) / 2`;
+const glyphXOf = (name: string): string =>
+	`(() => { const box = ${rowOf(FOLDER_FLOWS, name)}.querySelector(".sumi-flows-glyph").getBoundingClientRect(); return box.left + box.width / 2; })()`;
+
+interface LineLook {
+	readonly count: number;
+	readonly y?: number;
+	readonly circleX?: number;
+	readonly circle?: readonly [string, boolean, boolean];
+	readonly stroke?: string;
+}
+
+const isNear = (got: number | undefined, want: number): boolean =>
+	got !== undefined && Math.abs(got - want) <= LINE_TOLERANCE_PX;
+
+async function dropIndicator(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		const rowsBefore = await page.ask(rowTops);
+		await page.ask(heldFlowDrag("Composer redesign"));
+		const rowsLifted = await page.ask(rowTops);
+		await page.ask(dragOverOf(FOLDER_FLOWS, "Plugin layout", "upper"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"rows do not shift while dragging, the lifted copy included",
+			[rowsLifted, await page.ask(rowTops)],
+			[rowsBefore, rowsBefore],
+		);
+		const between = (await page.ask(lineLook)) as LineLook;
+		const gapY = (await page.ask(gapYOf("Design system", "Plugin layout"))) as number;
+		const glyphX = (await page.ask(glyphXOf("Plugin layout"))) as number;
+		check(
+			"DRAGGING A SESSION BETWEEN TWO ROWS SHOWS ONE LINE AT THE GAP, ITS 6px HOLLOW CIRCLE ON THE GLYPH COLUMN",
+			[between.count, isNear(between.y, gapY), isNear(between.circleX, glyphX), between.circle, between.stroke],
+			[1, true, true, ["6px", true, true], "2px"],
+		);
+		check(
+			"the dragged session fades",
+			await page.ask(`${rowOf(FOLDER_FLOWS, "Composer redesign")}.hasAttribute("data-dragging")`),
+			true,
+		);
+		check("the first gap fires one alignment haptic", await page.ask("window.__taps"), [{ pattern: "alignment" }]);
+		await page.ask(dragOverOf(FOLDER_FLOWS, "Plugin layout", "upper"));
+		await page.ask(dragOverOf(FOLDER_FLOWS, "Plugin layout", "lower"));
+		await waited(AFTER_TAP_MS);
+		const below = (await page.ask(lineLook)) as LineLook;
+		const lowerGapY = (await page.ask(gapYOf("Plugin layout", "Client project"))) as number;
+		check(
+			"moving to the next gap moves the one line and fires one more haptic, staying in a gap fires none",
+			[below.count, isNear(below.y, lowerGapY), await page.ask("window.__taps.length")],
+			[1, true, 2],
+		);
+		await page.ask(dragOverOf(".sumi-flows-row[data-kind=folder]", "Client project", "upper"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"hovering a folder outlines it and shows no line",
+			[
+				((await page.ask(lineLook)) as LineLook).count,
+				await page.ask(`${rowOf(".sumi-flows-row[data-kind=folder]", "Client project")}.hasAttribute("data-drop")`),
+				await page.ask("window.__taps.length"),
+			],
+			[0, true, 3],
+		);
+		await page.ask(dragOverOf(FOLDER_FLOWS, "Design system", "lower"));
+		await page.ask(heldDrop);
+		await waited(SETTLE_MS * 2);
+		check("dropping lands the session at the indicated gap", await page.ask(folderFlowsOf("Sumi")), [
+			"Design system",
+			"Composer redesign",
+			"Plugin layout",
+		]);
+		check(
+			"the drop clears the line and the fade",
+			await page.ask(`[${count(DROP_LINE)}, ${count("[data-dragging]")}]`),
+			[0, 0],
+		);
+	});
+}
+
+async function dragShots(): Promise<void> {
+	mkdirSync(DRAG_SHOTS, { recursive: true });
+
+	for (const theme of ["light", "dark"]) {
+		const opened = await openedSidebar(bundled, theme, "inbox", undefined, 2);
+
+		try {
+			const { page } = opened;
+			await page.ask(heldFlowDrag("Composer redesign"));
+			await page.ask(dragOverOf(FOLDER_FLOWS, "Plugin layout", "upper"));
+			await waited(SETTLE_MS);
+			writeFileSync(path.join(DRAG_SHOTS, `session-between-rows-${theme}.png`), await page.shoot());
+			await page.ask(dragOverOf(".sumi-flows-row[data-kind=folder]", "Client project", "upper"));
+			await waited(SETTLE_MS);
+			writeFileSync(path.join(DRAG_SHOTS, `hovering-folder-${theme}.png`), await page.shoot());
+			await page.ask(heldEnd);
+			await page.ask(`window.__projects("create", { name: "Alpha" })`);
+			await waited(SETTLE_MS);
+			await page.ask(projectDragOver("Alpha", "General", false));
+			await waited(SETTLE_MS);
+			writeFileSync(path.join(DRAG_SHOTS, `project-between-sections-${theme}.png`), await page.shoot());
+		} finally {
+			opened.stop();
+		}
+	}
+}
+
 const sectionNames = `[...document.querySelectorAll("section[aria-label]")].map((one) => one.getAttribute("aria-label"))`;
 const sectionRows = (section: string): string =>
 	`[...document.querySelectorAll(${JSON.stringify(`section[aria-label=${JSON.stringify(section)}] .sumi-flows-row`)})].map((one) => [one.dataset.kind, one.querySelector(".sumi-flows-name")?.textContent])`;
@@ -685,7 +831,14 @@ const projectDragOver = (source: string, target: string, isLowerHalf: boolean): 
 		send(section, "dragover", y);
 		window.__held = { send, heading, section, y };
 	})()`;
-const projectDragState = `(() => [[...document.querySelectorAll("section[data-line]")].map((one) => [one.getAttribute("aria-label"), one.dataset.line]), [...document.querySelectorAll("section[data-dragging]")].map((one) => one.getAttribute("aria-label"))])()`;
+const projectDragState = `(() => {
+	const lines = [...document.querySelectorAll(".sumi-flows-drop-line")];
+	const general = document.querySelector("section[aria-label=General]").getBoundingClientRect();
+	const box = lines[0]?.getBoundingClientRect();
+	const y = box === undefined ? null : box.top + box.height / 2;
+	const side = y === null ? null : y < general.top ? "above General" : y > general.bottom ? "below General" : "inside General";
+	return [lines.length, side, [...document.querySelectorAll("section[data-dragging]")].map((one) => one.getAttribute("aria-label"))];
+})()`;
 const projectDrop = `(() => { const { send, heading, section, y } = window.__held; send(section, "drop", y); send(heading, "dragend", 0); })()`;
 
 const droppedOnProject = (rowSelector: string, name: string, project: string): string =>
@@ -716,17 +869,25 @@ async function projects(): Promise<void> {
 		await waited(300);
 		check(
 			"the row menu has one Move to item and no project rows until it opens",
-			await page.ask(`[[...document.querySelectorAll("[role=menuitem]")].filter((one) => one.textContent === "Move to").length, document.querySelectorAll("[role=menuitemradio]").length]`),
+			await page.ask(
+				`[[...document.querySelectorAll("[role=menuitem]")].filter((one) => one.textContent === "Move to").length, document.querySelectorAll("[role=menuitemradio]").length]`,
+			),
 			[1, 0],
 		);
 		const projectRows = `document.querySelectorAll("[role=menuitemradio]").length`;
-		await page.ask(`[...document.querySelectorAll("[role=menuitem]")].find((one) => one.textContent === "Move to").focus()`);
+		await page.ask(
+			`[...document.querySelectorAll("[role=menuitem]")].find((one) => one.textContent === "Move to").focus()`,
+		);
 		await page.pressKey("ArrowRight");
 		await waited(600);
 		check("ArrowRight on Move to opens the project submenu", await page.ask(projectRows), 2);
 		await page.pressKey("ArrowLeft");
 		await waited(700);
-		check("ArrowLeft closes the submenu and keeps the menu", await page.ask(`[${projectRows}, document.querySelectorAll("[role=menuitem]").length > 0]`), [0, true]);
+		check(
+			"ArrowLeft closes the submenu and keeps the menu",
+			await page.ask(`[${projectRows}, document.querySelectorAll("[role=menuitem]").length > 0]`),
+			[0, true],
+		);
 		await page.ask(clickText("[role=menuitem]", "Move to"));
 		await waited(500);
 		await page.ask(clickText("[role=menuitemradio]", "Alpha"));
@@ -762,8 +923,9 @@ async function projects(): Promise<void> {
 		const dragged = await page.ask(projectDragState);
 		await page.ask(projectDrop);
 		await waited(SETTLE_MS);
-		check("dragging a heading shows a line before the target and fades the dragged section", dragged, [
-			[["General", "before"]],
+		check("dragging a heading shows one line above the target section and fades the dragged section", dragged, [
+			1,
+			"above General",
 			["Alpha"],
 		]);
 		check("dropping a project heading reorders the sections", await page.ask(sectionNames), [
@@ -773,8 +935,9 @@ async function projects(): Promise<void> {
 		]);
 		await page.ask(projectDragOver("Alpha", "General", true));
 		await waited(300);
-		check("a line after the last section shows where it lands", await page.ask(projectDragState), [
-			[["General", "after"]],
+		check("one line below the last section shows where it lands", await page.ask(projectDragState), [
+			1,
+			"below General",
 			["Alpha"],
 		]);
 		await page.ask(projectDrop);
@@ -816,11 +979,11 @@ async function projects(): Promise<void> {
 		await page.ask(clickText("[role=menuitem]", "New project"));
 		await waited(SETTLE_MS);
 		const renameField = `(() => { const input = document.querySelector(".sumi-flows-field-input"); return [input?.value, document.activeElement === input, input?.selectionStart, input?.selectionEnd]; })()`;
-		check(
-			"New project creates Untitled project at once",
-			await page.ask(sectionNames),
-			["Inbox", "General", "Untitled project"],
-		);
+		check("New project creates Untitled project at once", await page.ask(sectionNames), [
+			"Inbox",
+			"General",
+			"Untitled project",
+		]);
 		check("its heading is in rename with the name selected", await page.ask(renameField), [
 			"Untitled project",
 			true,
@@ -831,10 +994,11 @@ async function projects(): Promise<void> {
 			`document.querySelector(".sumi-flows-field-input").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }))`,
 		);
 		await waited(SETTLE_MS);
-		check("Escape keeps the name and closes the field", [
-			await page.ask(sectionNames),
-			await page.ask(count(".sumi-flows-field-input")),
-		], [["Inbox", "General", "Untitled project"], 0]);
+		check(
+			"Escape keeps the name and closes the field",
+			[await page.ask(sectionNames), await page.ask(count(".sumi-flows-field-input"))],
+			[["Inbox", "General", "Untitled project"], 0],
+		);
 		await page.ask(contextOn(`document.querySelector("section[aria-label=General]")`));
 		await waited(300);
 		await page.ask(clickText("[role=menuitem]", "New project"));
@@ -845,12 +1009,7 @@ async function projects(): Promise<void> {
 			"Untitled project",
 			"Untitled project 2",
 		]);
-		check("and renames it with the text selected", await page.ask(renameField), [
-			"Untitled project 2",
-			true,
-			0,
-			18,
-		]);
+		check("and renames it with the text selected", await page.ask(renameField), ["Untitled project 2", true, 0, 18]);
 		await page.typeText("Beta");
 		await page.pressEnter();
 		await waited(SETTLE_MS);
@@ -958,7 +1117,9 @@ interface MenuFrame {
 
 async function menusPlacedOnFirstFrame(atEdge: boolean): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
-		const { frames, settled, click, closing, gone } = (await page.ask(menuFrames(rowOf(FLOWS, "Plugin layout"), atEdge))) as {
+		const { frames, settled, click, closing, gone } = (await page.ask(
+			menuFrames(rowOf(FLOWS, "Plugin layout"), atEdge),
+		)) as {
 			readonly frames: readonly (MenuFrame | null)[];
 			readonly settled: MenuFrame;
 			readonly click: { readonly x: number; readonly y: number };
@@ -972,17 +1133,31 @@ async function menusPlacedOnFirstFrame(atEdge: boolean): Promise<void> {
 		);
 		check(
 			"a row menu's laid position never moves from the first frame on",
-			frames.map((frame) => frame !== null && Math.abs(frame.left - settled.left) <= FIRST_FRAME_DRIFT_PX && Math.abs(frame.top - settled.top) <= FIRST_FRAME_DRIFT_PX),
+			frames.map(
+				(frame) =>
+					frame !== null &&
+					Math.abs(frame.left - settled.left) <= FIRST_FRAME_DRIFT_PX &&
+					Math.abs(frame.top - settled.top) <= FIRST_FRAME_DRIFT_PX,
+			),
 			frames.map(() => true),
 		);
-		console.log(`   ${atEdge ? "edge" : "corner"} menu frame 1: ${frames[0]?.animation}, border ${frames[0]?.border}, origin ${frames[0]?.originX},${frames[0]?.originY} for a click at ${click.x - settled.left},${click.y - settled.top}; closing: ${closing?.animation}`);
-		check("a row menu opens with a 120ms scale-and-fade from the first frame", frames[0]?.animation, "wg-kit-pop-in 0.12s");
+		console.log(
+			`   ${atEdge ? "edge" : "corner"} menu frame 1: ${frames[0]?.animation}, border ${frames[0]?.border}, origin ${frames[0]?.originX},${frames[0]?.originY} for a click at ${click.x - settled.left},${click.y - settled.top}; closing: ${closing?.animation}`,
+		);
+		check(
+			"a row menu opens with a 120ms scale-and-fade from the first frame",
+			frames[0]?.animation,
+			"wg-kit-pop-in 0.12s",
+		);
 		check("and closes with the same 120ms in reverse", closing?.animation, "wg-kit-pop-out 0.12s");
 		check("and is unmounted once the close animation ends", gone, true);
 		check("a row menu has no border", settled.border, "0px");
 		check(
 			"a row menu scales from the click point, in its own coordinates (within 2px)",
-			[Math.abs(settled.originX - (click.x - settled.left)) <= 2, Math.abs(settled.originY - (click.y - settled.top)) <= 2],
+			[
+				Math.abs(settled.originX - (click.x - settled.left)) <= 2,
+				Math.abs(settled.originY - (click.y - settled.top)) <= 2,
+			],
 			[true, true],
 		);
 	});
@@ -1035,6 +1210,8 @@ await hoverPanel();
 await hiding();
 await peekHolds();
 await dragging();
+await dropIndicator();
+await dragShots();
 await editingIcon();
 await deleting();
 await closingSessions();

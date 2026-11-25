@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { dropKeyOf } from "../../../../shared/lib/flow-drag.js";
+import { dragKeyOf, intoKeyOf } from "../../../../shared/lib/flow-drag.js";
 import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import { NEW_SESSION, newSessionPlaceOf } from "../../../../shared/lib/flow-facts.js";
 import type {
@@ -38,9 +38,8 @@ export function ProjectSection({ project, nextProjectId, sidebar, acts, drag }: 
 			className="sumi-flows-section"
 			aria-label={project.name}
 			data-project={project.id}
-			data-drop={drag.overKey === dropKeyOf(target) ? "" : undefined}
-			data-dragging={drag.draggingKey === `project:${project.id}` ? "" : undefined}
-			data-line={lineOf(drag, project.id, nextProjectId)}
+			data-drop={drag.intoKey === intoKeyOf(target) ? "" : undefined}
+			data-dragging={drag.draggingKey === dragKeyOf({ kind: "project", id: project.id }) ? "" : undefined}
 			{...drag.targetProps(target)}
 		>
 			{isRenaming ? (
@@ -61,10 +60,11 @@ export function ProjectSection({ project, nextProjectId, sidebar, acts, drag }: 
 			)}
 			{project.isCollapsed
 				? null
-				: flows.map((flow) => (
+				: flows.map((flow, at) => (
 						<FlowRowView
 							key={flow.id}
 							flow={flow}
+							nextFlowId={flows[at + 1]?.id ?? null}
 							folderId={null}
 							projectId={project.id}
 							isCurrent={flow.id === sidebar.windowFlowId}
@@ -105,10 +105,11 @@ function FolderBlock({ folder, project, sidebar, acts, drag }: FolderBlockProps)
 		<div className="sumi-flows-folder">
 			<FolderRowView folder={folder} acts={acts} drag={drag} />
 			{folder.isOpen
-				? folder.flows.map((flow: FlowRowFacts) => (
+				? folder.flows.map((flow: FlowRowFacts, at) => (
 						<FlowRowView
 							key={flow.id}
 							flow={flow}
+							nextFlowId={folder.flows[at + 1]?.id ?? null}
 							folderId={folder.id}
 							projectId={project.id}
 							isCurrent={flow.id === sidebar.windowFlowId}
@@ -120,16 +121,4 @@ function FolderBlock({ folder, project, sidebar, acts, drag }: FolderBlockProps)
 				: null}
 		</div>
 	);
-}
-
-function lineOf(drag: FlowDrag, projectId: string, nextProjectId: string | null): "before" | "after" | undefined {
-	if (drag.projectLine === null) {
-		return undefined;
-	}
-
-	if (drag.projectLine.beforeId === projectId) {
-		return "before";
-	}
-
-	return drag.projectLine.beforeId === null && nextProjectId === null ? "after" : undefined;
 }

@@ -6,6 +6,7 @@ import { useFlowsSidebar } from "../../../../shared/lib/use-flows-sidebar.js";
 import { InboxSection } from "../../../inbox/ui/inbox-section/inbox-section.js";
 import { EmptySpaceMenu } from "../empty-space-menu/empty-space-menu.js";
 import { ProjectSections } from "../project-section/project-sections.js";
+import { DropLineMark } from "../drop-line-mark/drop-line-mark.js";
 
 export function SidebarBody(): ReactNode {
 	const sidebar = useFlowsSidebar();
@@ -20,6 +21,7 @@ export function SidebarBody(): ReactNode {
 		<EmptySpaceMenu sidebar={sidebar} acts={acts}>
 			<InboxSection sidebar={sidebar} acts={acts} />
 			<ProjectSections sidebar={sidebar} acts={acts} drag={drag} />
+			<DropLineMark line={drag.line} />
 		</EmptySpaceMenu>
 	);
 }

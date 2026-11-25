@@ -37,6 +37,7 @@ declare global {
 	interface Window {
 		__spoilUndo: () => Promise<void>;
 		__stoppedTurns: readonly unknown[];
+		__taps: readonly unknown[];
 		__flowsSidebar: () => Promise<unknown>;
 		__archive: (flowId: string) => Promise<unknown>;
 		__projects: (request: keyof typeof navigation.projects, ask: unknown) => Promise<unknown>;
@@ -107,6 +108,7 @@ async function main(): Promise<void> {
 
 	window.__spoilUndo = world.spoilUndo;
 	window.__stoppedTurns = world.stoppedTurns;
+	window.__taps = world.taps;
 	window.__projects = (request, ask) => world.app.send(navigation.projects[request] as never, ask as never);
 	window.__flowsSidebar = () => world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
 	window.__archive = (flowId) => world.app.send(navigation.flows.archive, { flowId });

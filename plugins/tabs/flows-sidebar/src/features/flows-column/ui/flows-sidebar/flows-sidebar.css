@@ -82,6 +82,7 @@
 }
 
 .sumi-flows {
+	position: relative;
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
@@ -103,25 +104,61 @@
 	gap: var(--space-px);
 }
 
-.sumi-flows-section[data-dragging] {
-	opacity: 0.35;
+.sumi-flows-drop-line {
+	position: absolute;
+	top: calc(var(--drop-y) - calc(var(--space-1-5) / 2));
+	left: calc(var(--drop-x) - calc(var(--space-1-5) / 2));
+	z-index: 1;
+	width: calc(var(--drop-width) + calc(var(--space-1-5) / 2));
+	height: var(--space-1-5);
+	pointer-events: none;
+	animation: sumi-flows-drop-in 80ms linear;
 }
 
-.sumi-flows-section[data-line]::before {
+.sumi-flows-drop-line::before {
 	position: absolute;
-	inset-inline: 0;
+	top: calc(calc(var(--space-1-5) / 2) - 1px);
+	right: 0;
+	left: var(--space-1-5);
 	height: 2px;
 	content: "";
 	background: var(--text);
-	border-radius: var(--r-full);
+	border-radius: var(--round);
 }
 
-.sumi-flows-section[data-line="before"]::before {
-	top: calc(var(--space-1) * -1 - 1px);
+.sumi-flows-drop-line::after {
+	position: absolute;
+	inset-block: 0;
+	left: 0;
+	box-sizing: border-box;
+	width: var(--space-1-5);
+	content: "";
+	background: var(--sidebar);
+	border: 1.5px solid var(--text);
+	border-radius: var(--round);
 }
 
-.sumi-flows-section[data-line="after"]::before {
-	bottom: calc(var(--space-1) * -1 - 1px);
+.sumi-flows-float .sumi-flows-drop-line::after {
+	background: var(--surface-menu);
+}
+
+@keyframes sumi-flows-drop-in {
+	from {
+		opacity: 0;
+	}
+}
+
+:is(.sumi-flows-row, .sumi-flows-label).sumi-flows-lifted {
+	position: fixed;
+	top: 0;
+	left: -100vw;
+	color: var(--text);
+	background: var(--surface-menu);
+	box-shadow: var(--lift-shadow);
+}
+
+:is(.sumi-flows-row, .sumi-flows-section)[data-dragging] {
+	opacity: 0.35;
 }
 
 .sumi-flows-section > .sumi-flows-field {

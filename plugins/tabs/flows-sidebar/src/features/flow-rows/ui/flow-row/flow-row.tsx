@@ -1,6 +1,6 @@
 import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement } from "react";
-import { dropKeyOf } from "../../../../shared/lib/flow-drag.js";
+import { dragKeyOf, intoKeyOf } from "../../../../shared/lib/flow-drag.js";
 import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FlowRowFacts, FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
@@ -22,6 +22,7 @@ function chatCountOf(count: number): string {
 
 export interface FlowRowViewProps {
 	readonly flow: FlowRowFacts;
+	readonly nextFlowId: string | null;
 	readonly folderId: string | null;
 	readonly projectId: string;
 	readonly sidebar: FlowsSidebarFacts;
@@ -32,6 +33,7 @@ export interface FlowRowViewProps {
 
 export function FlowRowView({
 	flow,
+	nextFlowId,
 	folderId,
 	projectId,
 	sidebar,
@@ -46,7 +48,7 @@ export function FlowRowView({
 		setOpensPicker(true);
 		setIsRenaming(true);
 	};
-	const target: DropTarget = { kind: "flow", flowId: flow.id, folderId, projectId };
+	const target: DropTarget = { kind: "flow", flowId: flow.id, nextFlowId, folderId, projectId };
 
 	if (isRenaming) {
 		return (
@@ -86,7 +88,8 @@ export function FlowRowView({
 							data-kind="flow"
 							data-indented={folderId === null ? undefined : ""}
 							data-current={isCurrent ? "" : undefined}
-							data-drop={drag.overKey === dropKeyOf(target) ? "" : undefined}
+							data-drop={drag.intoKey === intoKeyOf(target) ? "" : undefined}
+							data-dragging={drag.draggingKey === dragKeyOf({ kind: "flow", id: flow.id }) ? "" : undefined}
 							{...drag.sourceProps({ kind: "flow", id: flow.id })}
 							{...drag.targetProps(target)}
 						>
