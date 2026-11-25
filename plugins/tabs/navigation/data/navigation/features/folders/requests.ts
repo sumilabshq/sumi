@@ -7,6 +7,7 @@ import {
 	CreateFolderAskSchema,
 	FolderAskSchema,
 	FolderMadeSchema,
+	PlaceFolderAskSchema,
 	RenameAskSchema,
 	SetBaseDirAskSchema,
 	SetColorAskSchema,
@@ -14,6 +15,7 @@ import {
 } from "../../shared/schema/flow-asks.schema.js";
 import {
 	createFolderPlan,
+	placeFolderPlan,
 	removeFolderPlan,
 	renameFolderPlan,
 	setBaseDirPlan,
@@ -72,6 +74,14 @@ export const toggle = command()
 	.idempotencyKey(Repeatable)
 	.handle(async (ask, { tabs }) => {
 		answered(await tabs.movePlaces(flowsMove(toggleFolderPlan(ask))));
+	});
+
+export const place = command()
+	.public()
+	.input(PlaceFolderAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async (ask, { tabs }) => {
+		answered(await tabs.movePlaces(flowsMove(placeFolderPlan(ask))));
 	});
 
 export const remove = command()

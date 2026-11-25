@@ -48,6 +48,11 @@ export const FolderRowSchema = z.object({
 	projectId: z.string(),
 });
 
+export const TopItemSchema = z.object({
+	kind: z.enum(["flow", "folder"]),
+	id: z.string().min(1),
+});
+
 export const ProjectSchema = z.object({
 	id: z.string().min(1),
 	name: z.string(),
@@ -58,6 +63,7 @@ export const ProjectSchema = z.object({
 export const ProjectRowSchema = ProjectSchema.extend({
 	isGeneral: z.boolean(),
 	isCollapsed: z.boolean(),
+	items: z.array(TopItemSchema).readonly(),
 });
 
 export const ArchivedFlowSchema = z.object({
@@ -145,6 +151,7 @@ export const FlowPlaceSchema = z.object({
 	folderId: z.string().min(1).nullable(),
 	before: z.string().min(1).nullable(),
 	projectId: z.string().min(1).nullable().optional(),
+	beforeFolder: z.string().min(1).nullable().optional(),
 });
 
 export const CreateFlowAskSchema = z.object({
@@ -226,6 +233,11 @@ export const CreateFolderAskSchema = z.object({
 
 export const FolderAskSchema = z.object({
 	id: z.string().min(1),
+});
+
+export const PlaceFolderAskSchema = FolderAskSchema.extend({
+	projectId: z.string().min(1),
+	before: TopItemSchema.nullable(),
 });
 
 export const SetBaseDirAskSchema = FolderAskSchema.extend({
@@ -1397,6 +1409,10 @@ export const navigation = moduleContract("navigation", Server, {
 		toggle: named("folders.toggle", command()
 			.public()
 			.input(FolderAskSchema)
+			.idempotencyKey(Repeatable)),
+		place: named("folders.place", command()
+			.public()
+			.input(PlaceFolderAskSchema)
 			.idempotencyKey(Repeatable)),
 		remove: named("folders.remove", command()
 			.public()

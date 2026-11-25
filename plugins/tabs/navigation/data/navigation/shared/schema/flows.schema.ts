@@ -99,6 +99,7 @@ export const FlowFolderSchema = z.object({
 	isOpen: z.boolean(),
 	flowIds: z.array(z.string().min(1)),
 	projectId: z.string().min(1).optional(),
+	before: z.string().min(1).nullable().optional(),
 });
 
 export type FlowFolder = z.infer<typeof FlowFolderSchema>;

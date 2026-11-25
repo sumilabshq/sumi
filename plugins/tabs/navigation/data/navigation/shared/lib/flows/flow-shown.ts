@@ -1,9 +1,10 @@
 import { GENERAL_PROJECT_ID } from "../../schema/flows.schema.js";
 import type { Flow, FlowsDoc } from "../../schema/flows.schema.js";
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
-import { flowOfId, isArchived, withFlowAdded, withFlowChanged } from "./flow-docs.js";
+import { flowOfId, folderOfId, isArchived, withFlowAdded, withFlowChanged } from "./flow-docs.js";
 import { layoutOfTabs } from "./flow-layouts.js";
-import { projectIdOfFlow, projectIdOfFolder, projectsOf } from "./flow-projects.js";
+import { projectIdOfFlow, projectsOf } from "./flow-projects.js";
+import { topLevelOf } from "./flow-top-level.js";
 import { flowHolderOf } from "./flow-rows.js";
 
 export interface ShownKeeping {
@@ -48,13 +49,11 @@ export function isSessionLive(doc: FlowsDoc, flowId: string): boolean {
 
 export function sidebarOrderOf(doc: FlowsDoc): readonly string[] {
 	return projectsOf(doc)
-		.flatMap((project) => [
-			...doc.looseFlowIds.filter((id) => {
-				const flow = flowOfId(doc, id);
-				return flow !== undefined && projectIdOfFlow(doc, flow) === project.id;
-			}),
-			...doc.folders.filter((folder) => projectIdOfFolder(folder) === project.id).flatMap(({ flowIds }) => flowIds),
-		])
+		.flatMap((project) =>
+			topLevelOf(doc, project.id).flatMap(({ kind, id }) =>
+				kind === "flow" ? [id] : (folderOfId(doc, id)?.flowIds ?? []),
+			),
+		)
 		.filter((id) => isSessionLive(doc, id));
 }
 

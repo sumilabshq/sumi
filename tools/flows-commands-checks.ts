@@ -643,6 +643,86 @@ async function removeNoOpCloseChecks(): Promise<void> {
 	);
 }
 
+async function topLevelChecks(): Promise<void> {
+	const stand = standOver(true);
+	const sidebar = async () => stand.app.send(navigation.flows.sidebar, { window: MAIN });
+	const [one = "", other = ""] = (await sidebar()).folders.map(({ id }) => id);
+	const [a, b, c] = [chatFlow(1), chatFlow(2), chatFlow(3)];
+	const made = await stand.app.send(navigation.projects.create, { name: "Mixed" });
+	const projectId = made.projectId;
+
+	for (const flowId of [a, b, c]) {
+		await stand.app.send(navigation.projects.moveFlow, { flowId, projectId });
+	}
+
+	const itemsOf = async (): Promise<string[]> =>
+		((await sidebar()).projects.find(({ id }) => id === projectId)?.items ?? []).map(({ kind, id }) => `${kind}:${id}`);
+	check("a project lists its loose sessions in order", await itemsOf(), [`flow:${a}`, `flow:${b}`, `flow:${c}`]);
+	await stand.app.send(navigation.folders.place, { id: one, projectId, before: { kind: "flow", id: b } });
+	check("a folder placed before a session stands between sessions", await itemsOf(), [
+		`flow:${a}`,
+		`folder:${one}`,
+		`flow:${b}`,
+		`flow:${c}`,
+	]);
+	await stand.app.send(navigation.folders.place, { id: other, projectId, before: { kind: "folder", id: one } });
+	check("a folder placed before a folder stands before it", await itemsOf(), [
+		`flow:${a}`,
+		`folder:${other}`,
+		`folder:${one}`,
+		`flow:${b}`,
+		`flow:${c}`,
+	]);
+	await stand.app.send(navigation.folders.place, { id: other, projectId, before: null });
+	check("a folder placed before nothing stands last", await itemsOf(), [
+		`flow:${a}`,
+		`folder:${one}`,
+		`flow:${b}`,
+		`flow:${c}`,
+		`folder:${other}`,
+	]);
+	await stand.app.send(navigation.flows.move, {
+		flowId: c,
+		place: { folderId: null, before: null, beforeFolder: one },
+	});
+	check("a session placed before a folder stands before it", await itemsOf(), [
+		`flow:${a}`,
+		`flow:${c}`,
+		`folder:${one}`,
+		`flow:${b}`,
+		`folder:${other}`,
+	]);
+	await stand.app.send(navigation.projects.moveFlow, { flowId: b, projectId: "general" });
+	check("a session that leaves hands its folders to its next sibling, nothing jumps", await itemsOf(), [
+		`flow:${a}`,
+		`flow:${c}`,
+		`folder:${one}`,
+		`folder:${other}`,
+	]);
+	check(
+		"a folder placed before an unknown session is refused",
+		(
+			await refusalOf(() =>
+				stand.app.send(navigation.folders.place, { id: one, projectId, before: { kind: "flow", id: "nope" } }),
+			)
+		).includes("nope"),
+		true,
+	);
+	check(
+		"an unknown folder is refused",
+		(await refusalOf(() => stand.app.send(navigation.folders.place, { id: "nope", projectId, before: null }))).includes(
+			"nope",
+		),
+		true,
+	);
+	await stand.app.send(navigation.projects.moveFolder, { folderId: one, projectId: "general" });
+	check("a folder moved to another project leaves the order", await itemsOf(), [
+		`flow:${a}`,
+		`flow:${c}`,
+		`folder:${other}`,
+	]);
+}
+
 async function projectChecks(): Promise<void> {
 	const stand = standOver(true);
 	const sidebar = async () => stand.app.send(navigation.flows.sidebar, { window: MAIN });
@@ -696,7 +776,17 @@ async function projectChecks(): Promise<void> {
 	check(
 		"rename and base folder change the project",
 		(await sidebar()).projects.find(({ id }) => id === projectId),
-		{ id: projectId, name: "Renamed", baseFolder: "~/Work/renamed", isCollapsed: false, isGeneral: false },
+		{
+			id: projectId,
+			name: "Renamed",
+			baseFolder: "~/Work/renamed",
+			isCollapsed: false,
+			isGeneral: false,
+			items: [
+				{ kind: "flow", id: flowId },
+				{ kind: "folder", id: "folder-group-93" },
+			],
+		},
 	);
 	const collapsedOf = async (): Promise<boolean | undefined> =>
 		(await sidebar()).projects.find(({ id }) => id === projectId)?.isCollapsed;
@@ -991,6 +1081,7 @@ await removeNoOpCloseChecks();
 await moveBeforeItselfChecks();
 await archiveChecks();
 await projectChecks();
+await topLevelChecks();
 await deleteChecks();
 await folderDeleteChecks();
 await ungroupChecks();

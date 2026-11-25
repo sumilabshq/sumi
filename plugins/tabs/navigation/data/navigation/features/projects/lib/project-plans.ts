@@ -201,7 +201,7 @@ export function moveFolderToProjectPlan({ folderId, projectId }: MoveFolderAsk):
 
 		const next = storedProjectIdOf(projectId);
 		return {
-			flows: folder.projectId === next ? flows : withFolderChanged(flows, folderId, { projectId: next }),
+			flows: folder.projectId === next ? flows : withFolderChanged(flows, folderId, { projectId: next, before: null }),
 			reason: `folder ${folderId} project ${folder.projectId ?? GENERAL_PROJECT_ID} → ${projectId}, its ${folder.flowIds.length} flows follow`,
 			value: null,
 		};

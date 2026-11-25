@@ -1,9 +1,18 @@
-import { folderOfId, withFolderChanged, withFolderRemoved } from "../../../shared/lib/flows/flow-docs.js";
+import {
+	folderOfId,
+	folderPlaceProblemOf,
+	withFolderChanged,
+	withFolderPlaced,
+	withFolderRemoved,
+} from "../../../shared/lib/flows/flow-docs.js";
 import type { FlowsPlan } from "../../../shared/lib/flows/flow-moves.js";
+import { topLevelOf } from "../../../shared/lib/flows/flow-top-level.js";
 import { refusal } from "../../../shared/lib/settling/settling.js";
+import type { FlowsDoc } from "../../../shared/schema/flows.schema.js";
 import type {
 	CreateFolderAskSchema,
 	FolderAskSchema,
+	PlaceFolderAskSchema,
 	RenameAskSchema,
 	SetBaseDirAskSchema,
 	SetColorAskSchema,
@@ -13,6 +22,7 @@ import type { z } from "zod";
 
 type CreateFolderAsk = z.infer<typeof CreateFolderAskSchema>;
 type FolderAsk = z.infer<typeof FolderAskSchema>;
+type PlaceFolderAsk = z.infer<typeof PlaceFolderAskSchema>;
 type RenameAsk = z.infer<typeof RenameAskSchema>;
 type SetBaseDirAsk = z.infer<typeof SetBaseDirAskSchema>;
 type SetIconAsk = z.infer<typeof SetIconAskSchema>;
@@ -121,6 +131,34 @@ export function toggleFolderPlan({ id }: FolderAsk): FlowsPlan<null> {
 			value: null,
 		};
 	};
+}
+
+export function placeFolderPlan({ id, projectId, before }: PlaceFolderAsk): FlowsPlan<null> {
+	return ({ flows }) => {
+		const place = { projectId, before };
+		const problem = folderPlaceProblemOf(flows, id, place);
+
+		if (problem !== null) {
+			return refusal(problem);
+		}
+
+		if (before?.kind === "folder" && before.id === id) {
+			return { flows, reason: `folder ${id} asked to stand before itself, place skipped`, value: null };
+		}
+
+		const placed = withFolderPlaced(flows, id, place);
+		return {
+			flows: placed,
+			reason: `project ${projectId} top level [${topLevelNamesOf(flows, projectId)}] → [${topLevelNamesOf(placed, projectId)}] (folder ${id})`,
+			value: null,
+		};
+	};
+}
+
+function topLevelNamesOf(doc: FlowsDoc, projectId: string): string {
+	return topLevelOf(doc, projectId)
+		.map(({ kind, id }) => `${kind}:${id}`)
+		.join(", ");
 }
 
 export function removeFolderPlan({ id }: FolderAsk): FlowsPlan<null> {

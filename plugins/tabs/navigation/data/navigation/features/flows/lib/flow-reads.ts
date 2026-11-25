@@ -4,6 +4,8 @@ import type { PlacedPlaces } from "../../../shared/lib/flows/flow-moves.js";
 import { flowTabIdsOf } from "../../../shared/lib/flows/flow-nodes.js";
 import { projectIdOfFlow, projectsOf } from "../../../shared/lib/flows/flow-projects.js";
 import { flowRowOf, folderRowOf } from "../../../shared/lib/flows/flow-rows.js";
+import { isSessionLive } from "../../../shared/lib/flows/flow-shown.js";
+import { topLevelOf } from "../../../shared/lib/flows/flow-top-level.js";
 import { isChatTab } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import type {
@@ -45,6 +47,7 @@ export function sidebarOf({ tabs, flows }: PlacedPlaces, apps: PlacedApps, windo
 			...project,
 			isGeneral: project.id === GENERAL_PROJECT_ID,
 			isCollapsed: project.isCollapsed ?? false,
+			items: topLevelOf(flows, project.id).filter(({ kind, id }) => kind === "folder" || isSessionLive(flows, id)),
 		})),
 		windowFlowId,
 		windowProjectId: windowFlow === undefined ? GENERAL_PROJECT_ID : projectIdOfFlow(flows, windowFlow),
