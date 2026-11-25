@@ -655,11 +655,51 @@ async function projects(): Promise<void> {
 		await waited(300);
 		await page.ask(clickText("[role=menuitem]", "New project"));
 		await waited(SETTLE_MS);
-		check("New project opens a field at the end", await page.ask(count(".sumi-flows-field-input")), 1);
+		const renameField = `(() => { const input = document.querySelector(".sumi-flows-field-input"); return [input?.value, document.activeElement === input, input?.selectionStart, input?.selectionEnd]; })()`;
+		check(
+			"New project creates Untitled project at once",
+			await page.ask(sectionNames),
+			["Inbox", "General", "Untitled project"],
+		);
+		check("its heading is in rename with the name selected", await page.ask(renameField), [
+			"Untitled project",
+			true,
+			0,
+			16,
+		]);
+		await page.ask(
+			`document.querySelector(".sumi-flows-field-input").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }))`,
+		);
+		await waited(SETTLE_MS);
+		check("Escape keeps the name and closes the field", [
+			await page.ask(sectionNames),
+			await page.ask(count(".sumi-flows-field-input")),
+		], [["Inbox", "General", "Untitled project"], 0]);
+		await page.ask(contextOn(`document.querySelector("section[aria-label=General]")`));
+		await waited(300);
+		await page.ask(clickText("[role=menuitem]", "New project"));
+		await waited(SETTLE_MS);
+		check("a second press makes Untitled project 2", await page.ask(sectionNames), [
+			"Inbox",
+			"General",
+			"Untitled project",
+			"Untitled project 2",
+		]);
+		check("and renames it with the text selected", await page.ask(renameField), [
+			"Untitled project 2",
+			true,
+			0,
+			18,
+		]);
 		await page.typeText("Beta");
 		await page.pressEnter();
 		await waited(SETTLE_MS);
-		check("Enter creates the project", await page.ask(sectionNames), ["Inbox", "General", "Beta"]);
+		check("typing then Enter renames the project", await page.ask(sectionNames), [
+			"Inbox",
+			"General",
+			"Untitled project",
+			"Beta",
+		]);
 		await page.ask(droppedOnProject(`${FLOWS}[data-kind=flow]`, "Plugin layout", "Beta"));
 		await waited(SETTLE_MS);
 		check("dropping a session on a project section moves it there", await page.ask(sectionRows("Beta")), [

@@ -1,4 +1,4 @@
-import { createElement as h, useState } from "react";
+import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { dropKeyOf } from "../../../../shared/lib/flow-drag.js";
@@ -13,6 +13,7 @@ import type {
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 import { FlowRowView } from "../../../flow-rows/ui/flow-row/flow-row.js";
 import { FolderRowView } from "../../../flow-rows/ui/folder-row/folder-row.js";
+import { useProjectRenaming } from "../../../../shared/lib/project-rename-request.js";
 import { RowField } from "../../../flow-rows/ui/row-field/row-field.js";
 import { ProjectHeading } from "./project-heading.js";
 
@@ -27,7 +28,7 @@ export interface ProjectSectionProps {
 }
 
 export function ProjectSection({ project, nextProjectId, sidebar, acts, drag }: ProjectSectionProps): ReactElement {
-	const [isRenaming, setIsRenaming] = useState(false);
+	const [isRenaming, setIsRenaming] = useProjectRenaming(project.id);
 	const flows = sidebar.looseFlows.filter((flow) => flow.projectId === project.id);
 	const folders = sidebar.folders.filter((folder) => folder.projectId === project.id);
 	const target: DropTarget = { kind: "project", projectId: project.id, nextProjectId };

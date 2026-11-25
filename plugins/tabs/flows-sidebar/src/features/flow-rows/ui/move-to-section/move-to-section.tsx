@@ -2,7 +2,6 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, PopoverItem } from "@widgetarium/kit";
 import type { FlowRowFacts, FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
-import { requestProjectDraft } from "../../../../shared/lib/project-draft-request.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 
 const MOVE_TO = "Move to";
@@ -37,7 +36,7 @@ export function MoveToSection({ flow, sidebar, acts, onClose }: MoveToSectionPro
 				icon={<Icon name="plus" />}
 				onClick={() => {
 					onClose();
-					requestProjectDraft(flow.id);
+					acts.createProject(flow.id);
 				}}
 			>
 				{NEW_PROJECT}

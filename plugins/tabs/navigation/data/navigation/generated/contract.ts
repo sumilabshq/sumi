@@ -233,7 +233,7 @@ export const SetBaseDirAskSchema = FolderAskSchema.extend({
 });
 
 export const CreateProjectAskSchema = z.object({
-	name: z.string().trim().min(1),
+	name: z.string().trim().min(1).optional(),
 	baseFolder: z.string().min(1).optional(),
 	flowId: z.string().min(1).optional(),
 });

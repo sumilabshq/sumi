@@ -4,7 +4,6 @@ import { Icon, PopoverItem, SpotMenu } from "@widgetarium/kit";
 import type { MenuSpot } from "@widgetarium/kit";
 import { NEW_SESSION, newSessionPlaceOf } from "../../../../shared/lib/flow-facts.js";
 import type { FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
-import { requestProjectDraft } from "../../../../shared/lib/project-draft-request.js";
 import { usePeekHold } from "../../../../shared/lib/peek-hold.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 
@@ -63,7 +62,7 @@ export function EmptySpaceMenu({ sidebar, acts, children }: EmptySpaceMenuProps)
 							<PopoverItem
 								role="menuitem"
 								icon={<Icon name="layers" />}
-								onClick={() => pick(() => requestProjectDraft(null))}
+								onClick={() => pick(() => acts.createProject())}
 							>
 								{NEW_PROJECT}
 							</PopoverItem>

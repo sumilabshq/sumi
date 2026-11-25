@@ -6,6 +6,7 @@ import { navigation } from "@widgetarium/navigation/contract";
 import type { FlowIcon, GroupHue } from "@widgetarium/navigation/contract";
 
 import { requestFolderRename } from "./folder-rename-request.js";
+import { requestProjectRename } from "./project-rename-request.js";
 
 export type RowKind = "flow" | "folder";
 
@@ -29,7 +30,7 @@ export interface FlowActs {
 	readonly removeFolder: (id: string) => void;
 	readonly deleteFolder: (id: string) => void;
 	readonly createFolder: (name: string) => void;
-	readonly createProject: (name: string, flowId?: string) => void;
+	readonly createProject: (flowId?: string) => void;
 	readonly toggleProject: (id: string) => void;
 	readonly renameProject: (id: string, name: string) => void;
 	readonly pickBaseFolder: (id: string) => void;
@@ -90,7 +91,15 @@ export function useFlowActs(): FlowActs {
 			void createFolder
 				.run({ name, baseDir: null })
 				.then((made) => made.ok && requestFolderRename(made.output.folderId)),
-		createProject: (name, flowId) => void createProject.run({ name, flowId }).then(reported("create the project")),
+		createProject: (flowId) =>
+			void createProject.run({ flowId }).then((made) => {
+				if (made.ok) {
+					requestProjectRename(made.output.projectId);
+					return;
+				}
+
+				reported("create the project")(made);
+			}),
 		toggleProject: (id) => void toggleProject.run({ id }),
 		renameProject: (id, name) => void renameProject.run({ id, name }).then(reported("rename the project")),
 		pickBaseFolder: (id) =>

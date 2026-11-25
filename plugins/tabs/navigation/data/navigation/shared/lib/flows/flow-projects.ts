@@ -11,6 +11,20 @@ export function defaultBaseFolderOf(name: string): string {
 	return `~/Sumi/${name}`;
 }
 
+const UNTITLED_PROJECT = "Untitled project";
+
+export function untitledProjectNameOf(doc: FlowsDoc): string {
+	const taken = new Set(projectsOf(doc).map(({ name }) => name));
+	const numbered = (number: number): string => (number === 1 ? UNTITLED_PROJECT : `${UNTITLED_PROJECT} ${number}`);
+	let number = 1;
+
+	while (taken.has(numbered(number))) {
+		number += 1;
+	}
+
+	return numbered(number);
+}
+
 export function projectsOf(doc: FlowsDoc): readonly Project[] {
 	const stored = doc.projects ?? [];
 	return stored.some(({ id }) => id === GENERAL_PROJECT_ID) ? stored : [GENERAL_PROJECT, ...stored];

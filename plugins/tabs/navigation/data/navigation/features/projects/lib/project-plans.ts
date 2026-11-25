@@ -6,6 +6,7 @@ import {
 	projectOfId,
 	projectsOf,
 	storedProjectIdOf,
+	untitledProjectNameOf,
 	withProjects,
 } from "../../../shared/lib/flows/flow-projects.js";
 import { refusal } from "../../../shared/lib/settling/settling.js";
@@ -46,12 +47,13 @@ export function createProjectPlan(ask: CreateProjectAsk, id: string): FlowsPlan<
 			return refusal(NO_FLOW.replace("{id}", ask.flowId));
 		}
 
-		const project: Project = { id, name: ask.name, baseFolder: ask.baseFolder ?? defaultBaseFolderOf(ask.name) };
+		const name = ask.name ?? untitledProjectNameOf(flows);
+		const project: Project = { id, name, baseFolder: ask.baseFolder ?? defaultBaseFolderOf(name) };
 		const created = withProjects(flows, [...projectsOf(flows), project]);
 		const moved = ask.flowId === undefined ? created : withFlowInProject(created, ask.flowId, id);
 		return {
 			flows: moved,
-			reason: `projects ${projectsOf(flows).length} → ${projectsOf(created).length} (create ${id} "${ask.name}"${ask.flowId === undefined ? "" : `, flow ${ask.flowId} moved in`})`,
+			reason: `projects ${projectsOf(flows).length} → ${projectsOf(created).length} (create ${id} "${name}"${ask.flowId === undefined ? "" : `, flow ${ask.flowId} moved in`})`,
 			value: { projectId: id },
 		};
 	};
