@@ -7,7 +7,7 @@ import type { ProjectFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 import { ProjectMenu } from "./project-menu.js";
 
-const TOOL_PX = 13;
+const TOOL_PX = 12;
 
 export interface ProjectHeadingProps {
 	readonly project: ProjectFacts;
@@ -34,7 +34,7 @@ export function ProjectHeading({ project, acts, drag, onNewSession, onRename }: 
 			<span className="sumi-flows-label-tools">
 				<button
 					type="button"
-					className="sumi-flows-tool"
+					className="sumi-flows-add"
 					aria-label={`New session in ${project.name}`}
 					onClick={onNewSession}
 				>
@@ -42,7 +42,7 @@ export function ProjectHeading({ project, acts, drag, onNewSession, onRename }: 
 				</button>
 				<button
 					type="button"
-					className="sumi-flows-tool"
+					className="sumi-flows-add"
 					aria-label={`${project.name} menu`}
 					onClick={(event) => {
 						const box = event.currentTarget.getBoundingClientRect();

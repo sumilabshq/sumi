@@ -207,23 +207,9 @@
 	display: flex;
 }
 
-.sumi-flows-tool {
+.sumi-flows-label-tools .sumi-flows-add {
 	display: grid;
-	flex: none;
-	place-items: center;
-	width: 20px;
-	height: 20px;
-	padding: 0;
-	color: var(--text-2);
-	cursor: pointer;
-	background: none;
-	border: 0;
-	border-radius: var(--r-xs);
-}
-
-.sumi-flows-tool:is(:hover, :focus-visible) {
-	color: var(--text);
-	background: var(--hover);
+	margin-inline-end: 0;
 }
 
 .sumi-flows-row[data-current] {
