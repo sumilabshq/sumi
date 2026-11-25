@@ -1,0 +1,36 @@
+.sumi-chat-context-chip {
+	flex: 0 1 auto;
+	align-items: center;
+	gap: var(--space-1);
+	min-width: 0;
+	max-width: 240px;
+	padding: var(--space-0-5) var(--space-1-5);
+	white-space: nowrap;
+}
+
+.sumi-chat-context-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sumi-chat-context-more {
+	flex: none;
+	margin-inline-start: auto;
+}
+
+.sumi-chat-context-path {
+	min-width: 0;
+	max-width: 180px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sumi-chat-context-open {
+	display: flex;
+	align-items: center;
+}
+
+.sumi-chat-context-open-item {
+	flex: 1 1 auto;
+}

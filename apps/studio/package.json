@@ -64,6 +64,7 @@
 		"@sumi/plan-usage-plugin": "0.1.0",
 		"@sumi/questions-plugin": "0.1.0",
 		"@sumi/slash-commands-plugin": "0.1.0",
+		"@sumi/chat-context-plugin": "0.1.0",
 		"@sumi/chat-title-plugin": "0.1.0",
 		"@sumi/mcp-apps-plugin": "0.1.0",
 		"@sumi/next-prompt-plugin": "0.1.0",

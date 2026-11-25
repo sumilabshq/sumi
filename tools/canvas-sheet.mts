@@ -76,6 +76,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
 	"@sumi/chat-title-plugin/head-title.css":
 		"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
+	"@sumi/chat-context-plugin/chat-context.css":
+		"plugins/ai/chat-context/src/features/chat-context/ui/chat-context/chat-context.css",
 	"@sumi/flows-sidebar-plugin/flows-sidebar.css":
 		"plugins/tabs/flows-sidebar/src/features/flows-column/ui/flows-sidebar/flows-sidebar.css",
 	"@sumi/flow-strip-plugin/pane-tab-row.css":
@@ -164,6 +166,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sessions-plugin/sessions-popover.css";
 @import "@sumi/sessions-plugin/sessions-chevron.css";
 @import "@sumi/chat-title-plugin/head-title.css";
+@import "@sumi/chat-context-plugin/chat-context.css";
 @import "@sumi/flows-sidebar-plugin/flows-sidebar.css";
 @import "@sumi/flow-strip-plugin/pane-tab-row.css";
 @import "@sumi/flow-strip-plugin/flow-strip.css";

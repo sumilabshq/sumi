@@ -18329,11 +18329,14 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai-turn {
 	gap: var(--space-3);
 }
+:is(.wg-root, .wg-portal) .wg-kit-select-trigger.is-warn {
+	color: var(--warning-text, var(--warning));
+}
 .wg-chat-app .wg-studio-ai-turn.is-mine {
 	gap: var(--space-1-5);
 }
 .wg-chat-app .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
-	max-width: min(400px, 80%);
+	max-width: 80%;
 	padding: var(--space-1-5) var(--space-2-5);
 	border-radius: 10px;
 	background: var(--soft);
@@ -20767,6 +20770,37 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-none);
 	font: inherit;
 	letter-spacing: inherit;
+}
+.sumi-chat-context-chip {
+	flex: 0 1 auto;
+	align-items: center;
+	gap: var(--space-1);
+	min-width: 0;
+	max-width: 240px;
+	padding: var(--space-0-5) var(--space-1-5);
+	white-space: nowrap;
+}
+.sumi-chat-context-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.sumi-chat-context-more {
+	flex: none;
+	margin-inline-start: auto;
+}
+.sumi-chat-context-path {
+	min-width: 0;
+	max-width: 180px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.sumi-chat-context-open {
+	display: flex;
+	align-items: center;
+}
+.sumi-chat-context-open-item {
+	flex: 1 1 auto;
 }
 .wg-root.sumi-flows-column {
 	display: flex;

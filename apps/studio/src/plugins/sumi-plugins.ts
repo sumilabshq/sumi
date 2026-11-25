@@ -28,6 +28,7 @@ import { pinnedTabs } from "@sumi/pinned-tabs-plugin";
 import { subPages } from "@sumi/sub-pages-plugin";
 import { slashCommands } from "@sumi/slash-commands-plugin";
 import { chatTitle } from "@sumi/chat-title-plugin";
+import { chatContext } from "@sumi/chat-context-plugin";
 import { nextPrompt } from "@sumi/next-prompt-plugin";
 import { chatImages } from "@sumi/chat-images-plugin";
 import { chatViews } from "@sumi/chat-views-plugin";
@@ -162,6 +163,7 @@ const INSTALLED_PLUGINS = [
 	backgroundAgents,
 	slashCommands,
 	chatTitle,
+	chatContext,
 	nextPrompt,
 	chatImages,
 	chatViews,
@@ -218,6 +220,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		backgroundAgents.id,
 		slashCommands.id,
 		chatTitle.id,
+		chatContext.id,
 		nextPrompt.id,
 		chatImages.id,
 		chatViews.id,
