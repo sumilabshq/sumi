@@ -132,6 +132,10 @@
 	background: var(--card);
 }
 
+.sumi-plugins-card:hover {
+	--card: color-mix(in srgb, var(--text) 8%, var(--frame));
+}
+
 .sumi-plugins-card-open {
 	position: absolute;
 	inset: 0;

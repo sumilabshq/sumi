@@ -22934,6 +22934,9 @@ body:has(.wg-cm-layer) {
 	padding-top: 44px;
 	overflow-y: auto;
 }
+.sumi-settings .sumi-settings-body.wg-kit-scroll-fade {
+	--fade-size: 56px;
+}
 .sumi-settings-page-title {
 	margin: 0;
 	font-size: 24px;
@@ -23380,6 +23383,12 @@ body:has(.wg-cm-layer) {
 	overflow: hidden;
 	border-radius: var(--r-lg);
 	background: var(--card);
+}
+.sumi-plugins-card:hover {
+	--card: var(--text);
+	@supports (color: color-mix(in lab, red, red)) {
+		--card: color-mix(in srgb, var(--text) 8%, var(--frame));
+	}
 }
 .sumi-plugins-card-open {
 	position: absolute;
