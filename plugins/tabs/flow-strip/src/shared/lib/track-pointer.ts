@@ -17,17 +17,21 @@ export function trackPointer({ onMove, onEnd }: PointerWatch): void {
 			finish(null);
 		}
 	};
+	const blockSelection = (event: Event): void => event.preventDefault();
 	const finish = (point: Point | null): void => {
 		window.removeEventListener("pointermove", move);
 		window.removeEventListener("pointerup", up);
 		window.removeEventListener("pointercancel", cancel);
 		window.removeEventListener("keydown", escape);
+		document.removeEventListener("selectstart", blockSelection, true);
 		onEnd(point);
 	};
 	window.addEventListener("pointermove", move);
 	window.addEventListener("pointerup", up);
 	window.addEventListener("pointercancel", cancel);
 	window.addEventListener("keydown", escape);
+	document.addEventListener("selectstart", blockSelection, true);
+	document.getSelection()?.removeAllRanges();
 }
 
 function pointOf(event: PointerEvent): Point {
