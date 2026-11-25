@@ -11,8 +11,11 @@
 }
 
 .sumi-chat-context-chip {
+	display: flex;
 	flex: 0 1 auto;
 	align-items: center;
+	color: var(--muted-foreground);
+	cursor: default;
 	gap: calc(var(--space-1) + var(--space-px));
 	min-width: 0;
 	max-width: 240px;

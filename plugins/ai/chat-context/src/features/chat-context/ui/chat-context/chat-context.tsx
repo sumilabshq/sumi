@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { chatContext } from "@sumi/chat-context/contract";
 import { assistant } from "@widgetarium/assistant/contract";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
-import { Button, Icon, Popover, PopoverContent, PopoverTrigger, Pressable, tooltipMarks } from "@widgetarium/kit";
+import { Button, Icon, Popover, PopoverContent, PopoverTrigger, tooltipMarks } from "@widgetarium/kit";
 import { chipOf } from "../../lib/chip-of.js";
 import { ContextMenu } from "../context-menu/context-menu.js";
 
@@ -20,22 +20,20 @@ export function ChatContext({ chatId }: ChatContextProps): ReactNode {
 	return folder === null ? null : <ContextBar folder={folder} />;
 }
 
-type Opener = "chip" | "more";
-
 export function ContextBar({ folder }: { readonly folder: string }): ReactNode {
 	const context = useOptionalQuery(chatContext.context.read, { folder }).data ?? null;
 	const reread = useCommand(chatContext.context.reread);
 	const reveal = useCommand(chatContext.context.reveal);
 	const openIn = useCommand(chatContext.context.openIn);
-	const [opener, setOpener] = useState<Opener | null>(null);
-	const chip = chipOf(context);
+	const [isOpen, setOpen] = useState(false);
+	const branch = chipOf(context);
 
-	if (context === null || chip === null) {
+	if (context === null) {
 		return null;
 	}
 
-	const openerChanged = (which: Opener) => (next: boolean) => {
-		setOpener(next ? which : null);
+	const openChanged = (next: boolean) => {
+		setOpen(next);
 
 		if (next) {
 			void reread.run();
@@ -46,11 +44,11 @@ export function ContextBar({ folder }: { readonly folder: string }): ReactNode {
 		<ContextMenu
 			context={context}
 			onReveal={() => {
-				setOpener(null);
+				setOpen(false);
 				void reveal.run({ folder });
 			}}
 			onOpenIn={(editor) => {
-				setOpener(null);
+				setOpen(false);
 				void openIn.run({ folder, editor });
 			}}
 		/>
@@ -58,21 +56,16 @@ export function ContextBar({ folder }: { readonly folder: string }): ReactNode {
 
 	return (
 		<>
-			<span className="sumi-chat-context-chip-slot">
-				<Popover open={opener === "chip"} onOpenChange={openerChanged("chip")} isPortaled>
-					<PopoverTrigger asChild aria-haspopup="menu">
-						<Pressable variant="ghost" tone="faint" className="sumi-chat-context-chip" label={context.folder}>
-							<Icon name={chip.icon} size={CHIP_ICON_PX} />
-							<span className="sumi-chat-context-label">{chip.label}</span>
-						</Pressable>
-					</PopoverTrigger>
-					<PopoverContent side="bottom" align="start" className="sumi-chat-context-pop">
-						{menu}
-					</PopoverContent>
-				</Popover>
-			</span>
+			{branch === null ? null : (
+				<span className="sumi-chat-context-chip-slot">
+					<span className="sumi-chat-context-chip" title={context.folder}>
+						<Icon name="git-branch" size={CHIP_ICON_PX} />
+						<span className="sumi-chat-context-label">{branch}</span>
+					</span>
+				</span>
+			)}
 			<span className="sumi-chat-context-more-slot">
-				<Popover open={opener === "more"} onOpenChange={openerChanged("more")} isPortaled>
+				<Popover open={isOpen} onOpenChange={openChanged} isPortaled>
 					<PopoverTrigger asChild aria-haspopup="menu">
 						<Button
 							shape="square"
