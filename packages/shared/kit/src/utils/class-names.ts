@@ -72,7 +72,7 @@ const CARD_WORDS = {
 };
 
 const SIDEBAR_WORDS = {
-	mode: { full: "", minimal: "is-minimal" },
+	mode: { full: "", minimal: "is-minimal", quiet: "is-quiet" },
 	surface: { solid: "", glass: "is-glass", edge: "is-edge", soft: "is-soft", chrome: "is-chrome" },
 	at: { start: "", end: "is-end" },
 };

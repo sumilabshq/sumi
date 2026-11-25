@@ -15516,6 +15516,43 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	font-size: 13px;
 }
 
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-content {
+	gap: var(--space-1);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-group {
+	gap: var(--space-0-5);
+	padding: 0;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-label {
+	padding: var(--space-2-5) var(--space-2) var(--space-1);
+	font-size: var(--fs-12);
+	font-weight: var(--fw-regular);
+	color: var(--text-3);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-menu {
+	gap: 0;
+}
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-menu-button {
+	gap: var(--space-2-5);
+	min-height: var(--h-row);
+	padding-block: 0;
+	padding-inline: var(--space-2);
+	border-radius: var(--item);
+	font-size: var(--fs-13);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-menu-button > svg {
+	color: var(--text-3);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-row.is-selected::before {
+	background: var(--selected);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-row.is-selected {
+	color: var(--text);
+	font-weight: var(--fw-medium);
+}
+:is(.wg-root, .wg-portal) .wg-kit-side.is-quiet .wg-kit-side-row.is-selected > svg {
+	color: var(--text);
+}
 :is(.wg-root, .wg-portal) .wg-kit-side.is-chrome {
 	--card-pad: 0;
 	--side-fill: var(--frame);
@@ -22859,7 +22896,7 @@ body:has(.wg-cm-layer) {
 	}
 	.sumi-settings .wg-kit-side .sumi-settings-search,
 	.sumi-settings-item-text,
-	.sumi-settings .wg-kit-side.is-chrome .wg-kit-side-label {
+	.sumi-settings .wg-kit-side .wg-kit-side-label {
 		display: none;
 	}
 }
