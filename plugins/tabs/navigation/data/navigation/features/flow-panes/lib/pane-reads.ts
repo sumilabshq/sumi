@@ -2,6 +2,7 @@ import type { z } from "zod";
 import { flowOfId } from "../../../shared/lib/flows/flow-docs.js";
 import type { PlacedPlaces } from "../../../shared/lib/flows/flow-moves.js";
 import { flowTabIdsOf } from "../../../shared/lib/flows/flow-nodes.js";
+import { titleOf } from "../../../shared/lib/rows/tab-face.js";
 import { isChatTab } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import type { FlowBoardSchema } from "../../../shared/schema/flow-asks.schema.js";
@@ -24,7 +25,7 @@ export function flowBoardOf({ tabs, flows }: PlacedPlaces, apps: PlacedApps, flo
 			.map((tab) => ({
 				id: tab.id,
 				app: tab.app,
-				title: tab.title,
+				title: titleOf(apps, { app: tab.app, label: null, title: tab.title, address: null }),
 				label: tab.label,
 				address: tab.lastAddress,
 				mark: tab.mark,
