@@ -10,6 +10,7 @@ import { chatContext as chatContextContract } from "../plugins/ai/chat-context/d
 import { chatContext as chatContextModule } from "../plugins/ai/chat-context/data/chat-context/generated/module.ts";
 import { LocalStorageEditorChoiceGateway } from "../plugins/ai/chat-context/data/chat-context/gateways/editor-choice/local-storage.gateway.ts";
 import { MemoryEditorChoiceGateway } from "../plugins/ai/chat-context/data/chat-context/gateways/editor-choice/memory.gateway.ts";
+import { homeShortened } from "../plugins/ai/chat-context/src/features/chat-context/lib/home-shortened.ts";
 import { chipOf } from "../plugins/ai/chat-context/src/features/chat-context/lib/chip-of.ts";
 import { MemoryProcessesGateway } from "../apps/tauri/capabilities/terminal/gateways/processes/memory.gateway.ts";
 import { NodeProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/node.gateway.ts";
@@ -128,6 +129,10 @@ const plainContext = plain.ok ? plain.output : null;
 check("the chip shows the branch in a git folder", chipOf(repoContext), { icon: "git-branch", label: "main" });
 check("the chip shows the folder name without git", chipOf(plainContext), { icon: "folder", label: "notes" });
 check("no folder, no chip", chipOf(null), null);
+check("the home folder is written as ~ in a path", homeShortened("/Users/demo/Projects/Sumi"), "~/Projects/Sumi");
+check("the home folder itself is just ~", homeShortened("/Users/demo"), "~");
+check("a path outside home stays whole", homeShortened("/opt/tools"), "/opt/tools");
+check("a folder named like home further down stays whole", homeShortened("/srv/Users/demo"), "/srv/Users/demo");
 
 rmSync(parent, { recursive: true, force: true });
 console.log(tally.failed ? `chat context: ${tally.failed} check(s) failed` : "chat context: all checks passed");

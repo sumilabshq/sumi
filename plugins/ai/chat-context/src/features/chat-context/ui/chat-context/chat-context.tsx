@@ -20,60 +20,72 @@ export function ChatContext({ chatId }: ChatContextProps): ReactNode {
 	return folder === null ? null : <ContextBar folder={folder} />;
 }
 
+type Opener = "chip" | "more";
+
 export function ContextBar({ folder }: { readonly folder: string }): ReactNode {
 	const context = useOptionalQuery(chatContext.context.read, { folder }).data ?? null;
 	const reread = useCommand(chatContext.context.reread);
 	const reveal = useCommand(chatContext.context.reveal);
 	const openIn = useCommand(chatContext.context.openIn);
-	const [isOpen, setOpen] = useState(false);
+	const [opener, setOpener] = useState<Opener | null>(null);
 	const chip = chipOf(context);
 
 	if (context === null || chip === null) {
 		return null;
 	}
 
-	const setOpenAndReread = (next: boolean): void => {
-		setOpen(next);
+	const openerChanged = (which: Opener) => (next: boolean) => {
+		setOpener(next ? which : null);
 
 		if (next) {
 			void reread.run();
 		}
 	};
 
+	const menu = (
+		<ContextMenu
+			context={context}
+			onReveal={() => {
+				setOpener(null);
+				void reveal.run({ folder });
+			}}
+			onOpenIn={(editor) => {
+				setOpener(null);
+				void openIn.run({ folder, editor });
+			}}
+		/>
+	);
+
 	return (
 		<>
-			<Popover open={isOpen} onOpenChange={setOpenAndReread} isPortaled>
+			<Popover open={opener === "chip"} onOpenChange={openerChanged("chip")} isPortaled>
 				<PopoverTrigger asChild aria-haspopup="menu">
-					<Pressable variant="ghost" tone="muted" className="sumi-chat-context-chip" label={context.folder}>
+					<Pressable variant="ghost" tone="faint" className="sumi-chat-context-chip" label={context.folder}>
 						<Icon name={chip.icon} size={CHIP_ICON_PX} />
 						<span className="sumi-chat-context-label">{chip.label}</span>
 					</Pressable>
 				</PopoverTrigger>
 				<PopoverContent side="bottom" align="start" className="sumi-chat-context-pop">
-					<ContextMenu
-						context={context}
-						onReveal={() => {
-							setOpen(false);
-							void reveal.run({ folder });
-						}}
-						onOpenIn={(editor) => {
-							setOpen(false);
-							void openIn.run({ folder, editor });
-						}}
-					/>
+					{menu}
 				</PopoverContent>
 			</Popover>
-			<Button
-				shape="square"
-				emphasis="ghost"
-				size="xs"
-				label={MORE}
-				className="sumi-chat-context-more"
-				onClick={() => setOpenAndReread(!isOpen)}
-				{...tooltipMarks({ said: MORE })}
-			>
-				<Icon name="ellipsis" size={MORE_ICON_PX} />
-			</Button>
+			<Popover open={opener === "more"} onOpenChange={openerChanged("more")} isPortaled>
+				<PopoverTrigger asChild aria-haspopup="menu">
+					<Button
+						shape="square"
+						emphasis="ghost"
+						size="xs"
+						label={MORE}
+						className="sumi-chat-context-more"
+						{...tooltipMarks({ said: MORE })}
+					>
+						<Icon name="ellipsis" size={MORE_ICON_PX} />
+					</Button>
+				</PopoverTrigger>
+				<PopoverContent side="bottom" align="end" className="sumi-chat-context-pop">
+					{menu}
+				</PopoverContent>
+			</Popover>
 		</>
 	);
 }
