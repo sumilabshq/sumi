@@ -19233,7 +19233,8 @@ body:has(.wg-cm-layer) {
 	margin: var(--space-none);
 	min-width: 100%;
 	border-collapse: collapse;
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
+	line-height: 1.6;
 	font-variant-numeric: tabular-nums;
 	background: none;
 }
@@ -19247,7 +19248,7 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table th {
 	font-weight: var(--fw-regular);
-	color: var(--text-3);
+	color: var(--text-2);
 	white-space: nowrap;
 	border-bottom: 1px solid var(--line);
 }
