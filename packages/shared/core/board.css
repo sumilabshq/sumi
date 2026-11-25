@@ -3558,6 +3558,7 @@ body {
 		.is-outline,
 		.is-wash,
 		.is-page,
+		.is-lifted,
 		.is-raised,
 		.is-overlay,
 		.wg-kit-glass
@@ -3671,6 +3672,18 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-btn.is-page::before {
 	background: var(--page);
 	box-shadow: none;
+}
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted {
+	color: var(--muted-foreground);
+}
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted::before {
+	background: var(--page);
+	box-shadow:
+		inset 0 0 0 1px var(--line),
+		var(--shadow-menu);
+}
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted:hover::before {
+	background: linear-gradient(var(--hover), var(--hover)), var(--page);
 }
 :is(.wg-root, .wg-portal) .wg-kit-btn.is-outline.is-muted {
 	color: var(--muted-foreground);
@@ -4625,6 +4638,23 @@ body {
 		[aria-checked="true"]
 	) {
 	color: var(--foreground);
+}
+:is(.wg-root, .wg-portal) .wg-kit-press.is-faint {
+	color: var(--text-3, var(--muted-foreground));
+}
+:is(.wg-root, .wg-portal)
+	.wg-kit-press.is-faint:is(
+		:hover,
+		[data-highlighted],
+		[data-state="open"],
+		[aria-expanded="true"],
+		[aria-pressed="true"],
+		[aria-current="true"],
+		[aria-current="page"],
+		[aria-selected="true"],
+		[aria-checked="true"]
+	)::before {
+	background: var(--hover, var(--control-fill-hover));
 }
 :is(.wg-root, .wg-portal) .wg-kit-press.is-soft::before {
 	background: var(--fill);
@@ -19293,7 +19323,8 @@ body:has(.wg-cm-layer) {
 	margin: var(--space-none);
 	min-width: 100%;
 	border-collapse: collapse;
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
+	line-height: 1.6;
 	font-variant-numeric: tabular-nums;
 	background: none;
 }
@@ -19307,7 +19338,7 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table th {
 	font-weight: var(--fw-regular);
-	color: var(--text-3);
+	color: var(--text-2);
 	white-space: nowrap;
 	border-bottom: 1px solid var(--line);
 }
@@ -20826,6 +20857,66 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-none);
 	font: inherit;
 	letter-spacing: inherit;
+}
+.sumi-chat-context-chip-slot {
+	display: flex;
+	order: 1;
+	min-width: 0;
+}
+.sumi-chat-context-more-slot {
+	display: flex;
+	order: 2;
+	margin-inline-start: auto;
+}
+.sumi-chat-context-chip {
+	flex: 0 1 auto;
+	align-items: center;
+	gap: calc(var(--space-1) + var(--space-px));
+	min-width: 0;
+	max-width: 240px;
+	margin-inline-start: var(--space-2);
+	padding: var(--space-0-5) var(--space-1-5);
+	font-size: 13px;
+	white-space: nowrap;
+}
+.sumi-chat-context-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.sumi-chat-context-more {
+	flex: none;
+}
+.sumi-chat-context-pop {
+	box-sizing: border-box;
+	width: 260px;
+	min-width: 0;
+}
+.sumi-chat-context-name {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2-5);
+}
+.sumi-chat-context-folder-icon {
+	display: flex;
+	flex: none;
+	justify-content: center;
+	width: var(--icon);
+	color: var(--text-3);
+}
+.sumi-chat-context-path {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-inline-start: calc(var(--icon) + var(--space-2-5));
+}
+.sumi-chat-context-open {
+	display: flex;
+	align-items: center;
+}
+.sumi-chat-context-open-item {
+	flex: 1 1 auto;
 }
 .wg-root.sumi-flows-column {
 	display: flex;

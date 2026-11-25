@@ -19,6 +19,8 @@ export function ToEndButton(): ReactNode {
 	return (
 		<div className="wg-studio-ai-to-end">
 			<Button
+				variant="lifted"
+				form="round"
 				size="s"
 				className="wg-studio-ai-to-end-button"
 				aria-label={TO_END}

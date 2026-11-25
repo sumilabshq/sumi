@@ -1920,7 +1920,8 @@
 	margin: var(--space-none);
 	min-width: 100%;
 	border-collapse: collapse;
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
+	line-height: 1.6;
 	font-variant-numeric: tabular-nums;
 	background: none;
 }
@@ -1936,7 +1937,7 @@
 
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table th {
 	font-weight: var(--fw-regular);
-	color: var(--text-3);
+	color: var(--text-2);
 	white-space: nowrap;
 	border-bottom: 1px solid var(--line);
 }
@@ -2210,7 +2211,7 @@
 	box-shadow: none;
 }
 
-.wg-chat-app .wg-studio-ai-to-end-button {
+.wg-chat-app .wg-studio-ai-to-end .wg-studio-ai-to-end-button.wg-studio-ai-to-end-button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -2223,7 +2224,7 @@
 	cursor: pointer;
 }
 
-.wg-chat-app .wg-studio-ai-to-end-button:has(.wg-studio-ai-to-end-label:not(:empty)) {
+.wg-chat-app .wg-studio-ai-to-end .wg-studio-ai-to-end-button.wg-studio-ai-to-end-button:has(.wg-studio-ai-to-end-label:not(:empty)) {
 	padding: var(--space-none) var(--space-3) var(--space-none) var(--space-2);
 }
 

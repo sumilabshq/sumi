@@ -4,7 +4,7 @@ import { cn } from "../utils/cn";
 import { buttonPartOf } from "./slot";
 
 export type PressableVariant = "ghost" | "quiet" | "soft";
-export type PressableTone = "default" | "muted";
+export type PressableTone = "default" | "muted" | "faint";
 
 export interface PressableProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	readonly asChild?: boolean | undefined;
@@ -37,6 +37,7 @@ export function Pressable({
 				variant === "quiet" && "is-quiet",
 				variant === "soft" && "is-soft",
 				tone === "muted" && "is-muted",
+				tone === "faint" && "is-faint",
 				className,
 			)}
 		/>
