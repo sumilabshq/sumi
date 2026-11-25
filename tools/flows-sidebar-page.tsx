@@ -38,6 +38,7 @@ declare global {
 		__spoilUndo: () => Promise<void>;
 		__stoppedTurns: readonly unknown[];
 		__flowsSidebar: () => Promise<unknown>;
+		__archive: (flowId: string) => Promise<unknown>;
 		__projects: (request: keyof typeof navigation.projects, ask: unknown) => Promise<unknown>;
 		__chrome: {
 			readonly hasOwnDrag: (target: Element) => boolean;
@@ -61,15 +62,7 @@ function PageZone({ isBoard }: { readonly isBoard: boolean }): ReactElement {
 		return <div className="flows-page-plate" />;
 	}
 
-	return (
-		<PaneBoardSlot
-			drawn={drawnPlate}
-			empty={<div className="flows-page-plate" />}
-			chatPx={0}
-			bounds={NO_BOUNDS}
-			onChatPx={() => undefined}
-		/>
-	);
+	return <PaneBoardSlot drawn={drawnPlate} chatPx={0} bounds={NO_BOUNDS} onChatPx={() => undefined} />;
 }
 
 async function openedSplit(world: SidebarWorld, side: "right" | "bottom"): Promise<void> {
@@ -116,6 +109,7 @@ async function main(): Promise<void> {
 	window.__stoppedTurns = world.stoppedTurns;
 	window.__projects = (request, ask) => world.app.send(navigation.projects[request] as never, ask as never);
 	window.__flowsSidebar = () => world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
+	window.__archive = (flowId) => world.app.send(navigation.flows.archive, { flowId });
 
 	const holder = document.getElementById("frame");
 

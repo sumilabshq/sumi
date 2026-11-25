@@ -4,7 +4,6 @@ import type { FrameBounds } from "@widgetarium/layout/contract";
 
 export interface PaneBoardViews {
 	readonly drawn: (view: PaneView) => ReactNode;
-	readonly empty: ReactNode;
 }
 
 export interface PaneBoardProps extends PaneBoardViews {

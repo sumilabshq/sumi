@@ -17081,18 +17081,6 @@ body:has([data-browser-pages-live]),
 	background: linear-gradient(var(--divider), var(--divider)) center / 100% 1px no-repeat;
 	cursor: row-resize;
 }
-.wg-pane-empty {
-	position: absolute;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: var(--sunken);
-}
-.wg-pane-empty-actions {
-	display: flex;
-	gap: var(--space-2);
-}
 .wg-pane-note {
 	margin: auto;
 	color: var(--text-3);

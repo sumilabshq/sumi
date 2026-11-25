@@ -631,17 +631,8 @@ async function checksBoard(folder: string): Promise<void> {
 	}
 
 	check(
-		"closing every pane shows the empty board",
-		(await page.ask(`document.querySelector("[data-pane-empty]") !== null`)) === true,
-		await page.ask(PANES),
-	);
-	await page.ask(`document.querySelector('[data-pane-open="chat"]').click(); true`);
-	await waited(300);
-	check(
-		"Open chat brings the chat back as the whole board",
-		JSON.stringify(
-			await page.ask(`[...document.querySelectorAll("[data-pane-id]")].map((pane) => pane.dataset.paneView)`),
-		) === '["chat"]',
+		"closing every pane leaves a bare board, with no Open chat or Open tab buttons",
+		(await page.ask(`document.querySelector("[data-pane-empty], [data-pane-open]") === null`)) === true,
 		await page.ask(PANES),
 	);
 	page.close();

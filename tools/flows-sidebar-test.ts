@@ -1,3 +1,6 @@
+import { spawnSync } from "node:child_process";
+import { mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -985,6 +988,41 @@ async function menusPlacedOnFirstFrame(atEdge: boolean): Promise<void> {
 	});
 }
 
+const SHOTS = "/tmp/close-shots";
+const FALLBACK_PAGE = String.raw`"Open (chat|tab)"|wg-pane-empty|data-pane-empty|data-pane-open|EmptyPanes`;
+const FALLBACK_HOMES = ["apps/studio/src", "plugins/tabs", "plugins/sumi-host"];
+
+interface SidebarRows {
+	readonly looseFlows: readonly { readonly id: string }[];
+	readonly folders: readonly { readonly flows: readonly { readonly id: string }[] }[];
+}
+
+async function lastSessionReplaced(): Promise<void> {
+	await inInbox("light", "quiet+board", async (page) => {
+		const rows = (await page.ask("window.__flowsSidebar().then((answer) => answer.output)")) as SidebarRows;
+
+		for (const { id } of [...rows.looseFlows, ...rows.folders.flatMap(({ flows }) => flows)]) {
+			await page.ask(`window.__archive(${JSON.stringify(id)}).then(() => true)`);
+		}
+
+		await waited(SETTLE_MS);
+		mkdirSync(SHOTS, { recursive: true });
+		writeFileSync(path.join(SHOTS, "last-session-replaced.png"), await page.shoot());
+		check(
+			"ARCHIVING THE LAST SESSION SHOWS A NEW ONE: General holds one current New session, its Home tab on the board",
+			[
+				await page.ask(namesOf(`${FLOWS}[data-kind=flow]`)),
+				await page.ask(`document.querySelector("[aria-current=true] .sumi-flows-name")?.textContent ?? null`),
+				await page.ask(count(".sumi-pane-tab")),
+				await page.ask(count("[data-pane-open], [data-pane-empty]")),
+			],
+			[["New session"], "New session", 1, 0],
+		);
+	});
+	const found = spawnSync("grep", ["-rlE", FALLBACK_PAGE, ...FALLBACK_HOMES], { encoding: "utf8" }).stdout.trim();
+	check("no code path renders the Open chat / Open tab fallback page", found, "");
+}
+
 await menusPlacedOnFirstFrame(false);
 await menusPlacedOnFirstFrame(true);
 await inboxRows();
@@ -1004,6 +1042,7 @@ await rowMenuReopens();
 await folderMenuAndArchive();
 await projects();
 await collapsing();
+await lastSessionReplaced();
 
 if (tally.failed > 0) {
 	console.log(`${tally.failed} failed`);
