@@ -580,12 +580,56 @@ async function sheetAndAlert(): Promise<void> {
 	await settle();
 	check(
 		"AN ALERT DIALOG IGNORES ITS SCRIM AND FOCUSES CANCEL FIRST",
-		[slotted("alert-dialog-content")?.getAttribute("role"), stateOf("alert-dialog-content"), focusedText()],
-		["alertdialog", "open", "Cancel"],
+		[
+			slotted("alert-dialog-content")?.getAttribute("role"),
+			stateOf("alert-dialog-content"),
+			document.activeElement?.getAttribute("data-slot"),
+		],
+		["alertdialog", "open", "alert-dialog-cancel"],
+	);
+	check(
+		"its buttons carry their key hints: Esc on Cancel, Enter on the action",
+		[
+			found(document, '[data-slot="alert-dialog-cancel"] > .wg-kit-kbd:last-child').textContent,
+			found(document, '[data-slot="alert-dialog-action"] > .wg-kit-kbd:last-child').textContent,
+		],
+		["Esc", "↵"],
 	);
 	fire(found(document, '[data-slot="alert-dialog-action"]'), "click");
 	await settle();
 	check("its action closes it", [stateOf("alert-dialog-content"), said], ["closed", ["open false"]]);
+	await draw(null);
+	await alertDialogKeys();
+}
+
+async function alertDialogKeys(): Promise<void> {
+	const said: string[] = [];
+	const dialog = (): ReactNode =>
+		h(kit.AlertDialog, { defaultOpen: true, onOpenChange: (open: boolean) => said.push(`open ${open}`) }, [
+			h(kit.AlertDialogContent, { key: "c" }, [
+				h(kit.AlertDialogTitle, { key: "t" }, "Delete the note?"),
+				h(kit.AlertDialogFooter, { key: "f" }, [
+					h(kit.AlertDialogCancel, { key: "x" }, "Cancel"),
+					h(kit.AlertDialogAction, { key: "a", onClick: () => said.push("confirmed") }, "Delete"),
+				]),
+			]),
+		]);
+	await draw(dialog());
+	await settle();
+	key(document.activeElement, "Enter");
+	await settle();
+	check(
+		"ENTER CONFIRMS AN ALERT DIALOG even with Cancel focused",
+		[stateOf("alert-dialog-content"), said],
+		["closed", ["confirmed", "open false"]],
+	);
+	await draw(null);
+	said.length = 0;
+	await draw(dialog());
+	await settle();
+	key(document.activeElement, "Escape");
+	await settle();
+	check("Escape cancels it without confirming", [stateOf("alert-dialog-content"), said], ["closed", ["open false"]]);
 	await draw(null);
 }
 

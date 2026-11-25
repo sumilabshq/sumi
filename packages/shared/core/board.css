@@ -13136,10 +13136,65 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog {
 	top: 50%;
 	left: 50%;
-	width: min(440px, calc(100% - 32px));
+	gap: 16px;
+	width: min(340px, calc(100% - 32px));
 	max-height: calc(100% - 32px);
-	border-radius: var(--plate-radius);
+	padding: 16px;
+	border: 0;
+	border-radius: 12px;
+	background: var(--surface-menu, var(--popover));
+	box-shadow: var(--shadow-menu, var(--glass-edge));
 	transform: translate(-50%, -50%);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal-layer:has(> .wg-kit-modal.is-alert-dialog) > .wg-kit-modal-scrim {
+	background: rgb(0 0 0 / 8%);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-header {
+	gap: 4px;
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-title {
+	font-size: var(--fs-14);
+	font-weight: 600;
+	line-height: 20px;
+	letter-spacing: 0;
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-description {
+	font-size: var(--fs-13);
+	line-height: 19px;
+	color: var(--muted-foreground);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer {
+	gap: 6px;
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn {
+	--form-corner: 7px;
+	box-sizing: border-box;
+	gap: 8px;
+	height: 28px;
+	min-height: 0;
+	padding: 0 10px;
+	font-size: var(--fs-13);
+	font-weight: 500;
+	line-height: 18px;
+	white-space: nowrap;
+}
+:is(.wg-root, .wg-portal)
+	.wg-kit-modal.is-alert-dialog
+	.wg-kit-modal-footer
+	> .wg-kit-btn:has(> .wg-kit-kbd:last-child) {
+	padding-inline-end: 5px;
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn.is-outline {
+	color: var(--foreground);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn.is-danger {
+	color: var(--shine);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn.is-danger::before {
+	background: var(--destructive);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn.is-danger:hover::before {
+	background: color-mix(in oklch, var(--destructive) 88%, var(--foreground));
 }
 :is(.wg-root, .wg-portal) .wg-kit-modal.is-dialog {
 	top: 12vh;
