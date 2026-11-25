@@ -78,6 +78,8 @@ const PANEL_PROBE = `(() => {
 	const folder = document.querySelector(".sumi-chat-context-folder");
 	const path = document.querySelector(".sumi-chat-context-path");
 	const edge = (node) => node === null ? null : node.getBoundingClientRect();
+	const lineOf = (text) => { const range = document.createRange(); range.selectNodeContents(text); return range.getBoundingClientRect(); };
+	const mac = [...document.querySelectorAll(".sumi-chat-context-pop .wg-kit-pop-item")].find((one) => one.textContent.includes("This Mac")) ?? null;
 	const muted = document.createElement("i");
 	muted.style.color = "var(--text-3)";
 	document.body.append(muted);
@@ -102,8 +104,13 @@ const PANEL_PROBE = `(() => {
 		pathScrollFits: path === null ? null : path.scrollWidth <= path.clientWidth + 1,
 		folderTitle: folder === null ? null : folder.getAttribute("title"),
 		firstRowGap: item === null || panel === null ? null : edge(item).top - edge(panel).top,
-		iconMid: folder === null ? null : edge(folder.querySelector(".sumi-chat-context-folder-icon")).top + edge(folder.querySelector(".sumi-chat-context-folder-icon")).height / 2,
-		nameMid: folder === null ? null : edge(folder.querySelector(".sumi-chat-context-name")).top + edge(folder.querySelector(".sumi-chat-context-name")).height / 2,
+		iconMid: folder === null ? null : edge(folder.querySelector(".wg-kit-pop-icon")).top + edge(folder.querySelector(".wg-kit-pop-icon")).height / 2,
+		nameMid: folder === null ? null : edge(folder.querySelector(".wg-kit-pop-said")).top + edge(folder.querySelector(".wg-kit-pop-said")).height / 2,
+		folderIconLeft: folder === null ? null : edge(folder.querySelector(".wg-kit-pop-icon")).left,
+		macIconLeft: mac === null ? null : edge(mac.querySelector(".wg-kit-pop-icon")).left,
+		folderNameLeft: folder === null ? null : lineOf(folder.querySelector(".wg-kit-pop-said").firstChild).left,
+		macTextLeft: mac === null ? null : lineOf(mac.querySelector(".wg-kit-pop-label").firstChild).left,
+		pathLeft: path === null ? null : edge(path).left,
 	};
 })()`;
 const CLICK_ITEM = (text: string): string =>
@@ -130,6 +137,11 @@ interface Probe {
 	firstRowGap: number | null;
 	iconMid: number | null;
 	nameMid: number | null;
+	folderIconLeft: number | null;
+	macIconLeft: number | null;
+	folderNameLeft: number | null;
+	macTextLeft: number | null;
+	pathLeft: number | null;
 }
 
 const HEAD_GEOMETRY = `(() => {
@@ -245,10 +257,22 @@ try {
 		check("the path is one line", (chipOpen.pathHeight ?? 99) <= 18, true);
 		check("the first row is 4px or more under the panel top", (chipOpen.firstRowGap ?? 0) >= 4, true);
 		check(
-			"the folder icon centre sits on the name line centre",
+			"the folder icon centre sits on the centre of its name and path lines",
 			Math.abs((chipOpen.iconMid ?? 0) - (chipOpen.nameMid ?? 99)) <= 2,
 			true,
 		);
+		console.log("lefts", JSON.stringify({ folderIcon: chipOpen.folderIconLeft, macIcon: chipOpen.macIconLeft, folderName: chipOpen.folderNameLeft, macText: chipOpen.macTextLeft, path: chipOpen.pathLeft }));
+		check(
+			"the folder icon left edge equals the This Mac icon left edge (1px)",
+			Math.abs((chipOpen.folderIconLeft ?? 0) - (chipOpen.macIconLeft ?? 99)) <= 1,
+			true,
+		);
+		check(
+			"the folder name left equals the This Mac text left (1px)",
+			Math.abs((chipOpen.folderNameLeft ?? 0) - (chipOpen.macTextLeft ?? 99)) <= 1,
+			true,
+		);
+		check("the path line starts at the name left (1px)", Math.abs((chipOpen.pathLeft ?? 0) - (chipOpen.folderNameLeft ?? 99)) <= 1, true);
 		check("the folder row title is the full path", chipOpen.folderTitle, "/Users/demo/Projects/Sumi");
 		check("the path is never cut", chipOpen.pathScrollFits, true);
 		await shot(page, "v3-chip-menu");
@@ -317,7 +341,7 @@ try {
 		check("the long path is not clipped by the panel", long.pathScrollFits, true);
 		check("the first row is 4px or more under the panel top", (long.firstRowGap ?? 0) >= 4, true);
 		check(
-			"the folder icon centre sits on the name line centre",
+			"the folder icon centre sits on the centre of its name and path lines",
 			Math.abs((long.iconMid ?? 0) - (long.nameMid ?? 99)) <= 2,
 			true,
 		);

@@ -21,16 +21,12 @@ export function ContextMenu({ context, onReveal, onOpenIn }: ContextMenuProps): 
 		<>
 			<PopoverItem
 				className="sumi-chat-context-folder"
+				icon={<Icon name="folder" size={ICON_PX} />}
 				title={context.folder}
 				sub={<span className="sumi-chat-context-path">{pathShortened(context.folder)}</span>}
 				onClick={onReveal}
 			>
-				<span className="sumi-chat-context-name">
-					<span className="sumi-chat-context-folder-icon">
-						<Icon name="folder" size={ICON_PX} />
-					</span>
-					{context.name}
-				</span>
+				{context.name}
 			</PopoverItem>
 			{context.branch === null ? null : (
 				// TODO: switch branch from here
