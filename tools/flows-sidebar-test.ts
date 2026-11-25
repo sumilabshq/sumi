@@ -547,6 +547,18 @@ const projectDragOver = (source: string, target: string, isLowerHalf: boolean): 
 const projectDragState = `(() => [[...document.querySelectorAll("section[data-line]")].map((one) => [one.getAttribute("aria-label"), one.dataset.line]), [...document.querySelectorAll("section[data-dragging]")].map((one) => one.getAttribute("aria-label"))])()`;
 const projectDrop = `(() => { const { send, heading, section, y } = window.__held; send(section, "drop", y); send(heading, "dragend", 0); })()`;
 
+const droppedOnProject = (rowSelector: string, name: string, project: string): string =>
+	`(() => {
+		const transfer = new DataTransfer();
+		const send = (el, type) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer }));
+		const row = [...document.querySelectorAll(${JSON.stringify(rowSelector)})].find((one) => one.querySelector(".sumi-flows-name")?.textContent === ${JSON.stringify(name)});
+		const section = document.querySelector(${JSON.stringify(`section[aria-label=${JSON.stringify(project)}]`)});
+		send(row, "dragstart");
+		send(section, "dragover");
+		send(section, "drop");
+		send(row, "dragend");
+	})()`;
+
 async function projects(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		check("General is the only project section at first", await page.ask(sectionNames), ["Inbox", "General"]);
@@ -648,6 +660,17 @@ async function projects(): Promise<void> {
 		await page.pressEnter();
 		await waited(SETTLE_MS);
 		check("Enter creates the project", await page.ask(sectionNames), ["Inbox", "General", "Beta"]);
+		await page.ask(droppedOnProject(`${FLOWS}[data-kind=flow]`, "Plugin layout", "Beta"));
+		await waited(SETTLE_MS);
+		check("dropping a session on a project section moves it there", await page.ask(sectionRows("Beta")), [
+			["flow", "Plugin layout"],
+		]);
+		await page.ask(droppedOnProject(".sumi-flows-row[data-kind=folder]", "Personal", "Beta"));
+		await waited(SETTLE_MS);
+		check("dropping a folder on a project section moves it there", await page.ask(sectionRows("Beta")), [
+			["flow", "Plugin layout"],
+			["folder", "Personal"],
+		]);
 	});
 }
 
