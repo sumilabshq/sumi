@@ -198,7 +198,7 @@ async function sameMenuChecks(page: AskedPage, theme: Theme): Promise<void> {
 	await closeMenus(page);
 	check(`${theme}: the row menu draws the tab menu's surface`, row.surface, tab.surface);
 	check(`${theme}: the row menu items are as tall as the tab menu's`, row.itemHeight, tab.itemHeight);
-	check(`${theme}: the row menu icons are 13px like the tab menu's`, [row.iconPx, tab.iconPx], [13, 13]);
+	check(`${theme}: the row menu icons are 14px like the tab menu's`, [row.iconPx, tab.iconPx], [14, 14]);
 	check(`${theme}: the row menu and the tab menu share the scale motion`, [row.motion, tab.motion], ["scale", "scale"]);
 }
 
