@@ -87,10 +87,10 @@
 		--font-sans: var(--font-interface, ui-sans-serif, system-ui, sans-serif);
 		--font-serif: ui-serif, Georgia, serif;
 		--font-mono: var(--font-monospace, ui-monospace, Menlo, monospace);
-		--type-xs: 11px;
-		--type-s: var(--font-ui-smaller, 12px);
-		--type-m: var(--font-ui-small, 14px);
-		--type-l: var(--font-ui-medium, 16px);
+		--type-xs: 12px;
+		--type-s: 13px;
+		--type-m: 14px;
+		--type-l: 16px;
 		--gap-section: 40px;
 		--gap-plate: 8px;
 	}
@@ -348,15 +348,13 @@
 		--font-accent: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 		--font-code: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 		--font-voice: "IBM Plex Serif", Georgia, "Times New Roman", serif;
-		--fs-voice: 30px;
 		--font-features: normal;
 		--fs-11: 11px;
 		--fs-12: 12px;
-		--fs-13: 12.5px;
+		--fs-13: 13px;
 		--fs-14: 14px;
 		--fs-16: 16px;
-		--fs-20: 20px;
-		--fs-28: 24px;
+		--fs-22: 22px;
 		--fw-regular: 400;
 		--fw-medium: 500;
 		--fw-semi: 600;
@@ -441,15 +439,10 @@
 		--pick-edge: 0 0 0 0 transparent;
 		--blur-pick: none;
 		--tip-kbd: rgba(127, 127, 127, 0.35);
-		--fs-tip: 12px;
 		--h-tip: 28px;
 		--r-tip: var(--r-sm);
 		--tip-arrow: 8px;
 		--dur-out: 100ms;
-		--fs-15: 15px;
-		--fs-glyph: 18px;
-		--fs-glyph-lg: 22px;
-		--fs-17: 15px;
 
 		--chats-w: 280px;
 		--chat-w: 560px;
@@ -988,10 +981,10 @@
 		--font-sans: var(--font-interface, ui-sans-serif, system-ui, sans-serif);
 		--font-serif: ui-serif, Georgia, serif;
 		--font-mono: var(--font-monospace, ui-monospace, Menlo, monospace);
-		--type-xs: 11px;
-		--type-s: var(--font-ui-smaller, 12px);
-		--type-m: var(--font-ui-small, 14px);
-		--type-l: var(--font-ui-medium, 16px);
+		--type-xs: 12px;
+		--type-s: 13px;
+		--type-m: 14px;
+		--type-l: 16px;
 		--gap-section: 40px;
 		--gap-plate: 8px;
 	}
@@ -1150,19 +1143,19 @@
 	--section-gap: var(--gap-section);
 	--shine: #ffffff;
 	--badge-wash: 16%;
-	--h1-size: 32px;
+	--h1-size: 22px;
 	--h1-weight: 700;
 	--h1-line: 1.2;
 	--h1-tracking: -0.02em;
-	--h2-size: 26px;
+	--h2-size: 22px;
 	--h2-weight: 700;
 	--h2-line: 1.25;
 	--h2-tracking: -0.015em;
-	--h3-size-fixed: 21px;
+	--h3-size-fixed: 16px;
 	--h3-weight: 650;
 	--h3-line: 1.3;
 	--h3-tracking: -0.01em;
-	--h4-size: 18px;
+	--h4-size: 16px;
 	--h4-weight: 600;
 	--h4-line: 1.35;
 	--h4-tracking: -0.005em;
@@ -1170,7 +1163,7 @@
 	--h5-weight: 600;
 	--h5-line: 1.4;
 	--h5-tracking: 0em;
-	--h6-size: 14px;
+	--h6-size: 16px;
 	--h6-weight: 600;
 	--h6-line: 1.4;
 	--h6-tracking: 0em;
@@ -12764,7 +12757,7 @@ body.wg-tree-carrying .wg-tile-body {
 	border-radius: var(--r-tip);
 	background: var(--text);
 	color: var(--plate);
-	font-size: var(--fs-tip);
+	font-size: var(--fs-12);
 	font-weight: var(--fw-medium);
 	line-height: 1.4;
 }
@@ -14778,7 +14771,7 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-studio-ai-greet {
 	margin: 0;
 	color: var(--text);
-	font: var(--fw-semi) var(--fs-20) / 1.25 var(--font-ui);
+	font: var(--fw-semi) var(--fs-22) / 1.25 var(--font-ui);
 	letter-spacing: normal;
 	text-align: center;
 }
@@ -17162,7 +17155,7 @@ body:has([data-browser-pages-live]),
 	align-items: center;
 	gap: var(--cm-inset);
 	padding: var(--space-none) var(--cm-inset);
-	font-size: var(--fs-20);
+	font-size: var(--fs-13);
 	color: var(--text);
 }
 .wg-cm-input-wrap {
@@ -17174,13 +17167,13 @@ body:has([data-browser-pages-live]),
 .wg-cm-ghost,
 .wg-cm-input {
 	font: inherit;
-	font-size: var(--fs-20);
+	font-size: var(--fs-13);
 	line-height: 28px;
 	letter-spacing: inherit;
 }
 .wg-cm-field[data-cm-link] :is(.wg-cm-ghost, .wg-cm-input) {
 	font-family: var(--font-code);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 }
 .wg-cm-ghost {
 	position: absolute;
@@ -17503,7 +17496,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-launcher-question {
 	margin: var(--space-2) var(--space-none) var(--space-none);
-	font-size: var(--fs-20);
+	font-size: var(--fs-16);
 	font-weight: var(--fw-semi);
 	line-height: 28px;
 	letter-spacing: -0.02em;
@@ -19563,7 +19556,7 @@ body:has(.wg-cm-layer) {
 	background: none;
 	box-shadow: none;
 }
-.wg-chat-app .wg-studio-ai-to-end-button {
+.wg-chat-app .wg-studio-ai-to-end .wg-studio-ai-to-end-button.wg-studio-ai-to-end-button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -19575,7 +19568,9 @@ body:has(.wg-cm-layer) {
 	white-space: nowrap;
 	cursor: pointer;
 }
-.wg-chat-app .wg-studio-ai-to-end-button:has(.wg-studio-ai-to-end-label:not(:empty)) {
+.wg-chat-app
+	.wg-studio-ai-to-end
+	.wg-studio-ai-to-end-button.wg-studio-ai-to-end-button:has(.wg-studio-ai-to-end-label:not(:empty)) {
 	padding: var(--space-none) var(--space-3) var(--space-none) var(--space-2);
 }
 .wg-chat-app .wg-studio-ai-to-end-label:empty {
@@ -22396,7 +22391,7 @@ body:has(.wg-cm-layer) {
 	height: 36px;
 	min-height: 36px;
 	padding-inline: var(--ws-look-field-inset);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-semi);
 }
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-kit-portal-layer) .sumi-ws-look .sumi-ws-look-search {
@@ -22904,7 +22899,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-canvas-home-head h2 {
 	margin: var(--space-none);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-semi);
 }
 .sumi-canvas-home-quiet {
@@ -23048,7 +23043,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-canvas-home-empty h2 {
 	margin: var(--space-none);
-	font-size: var(--fs-17);
+	font-size: var(--fs-16);
 	font-weight: var(--fw-semi);
 }
 .sumi-canvas-home-empty p {

@@ -67,7 +67,7 @@ export const GIT_SHEET = `
 .wg-git-note { margin: 0; padding: 16px; color: var(--text-3); }
 .wg-git-empty { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: 22vh 0 48px; }
 .wg-git-empty > div { width: 400px; display: flex; flex-direction: column; }
-.wg-git-empty h1 { margin: 0; font-size: var(--fs-20); font-weight: var(--fw-semi); line-height: 1.3; }
+.wg-git-empty h1 { margin: 0; font-size: var(--fs-16); font-weight: var(--fw-semi); line-height: 1.3; }
 .wg-git-empty p { margin: 6px 0 20px; color: var(--text-2); }
 .wg-git-empty .wg-git-mlabel { padding: 16px 0 4px; }
 .wg-git-empty .wg-git-row { margin: 0 -10px; width: calc(100% + 20px); }

@@ -84,10 +84,10 @@
 	--font-sans: var(--font-interface, ui-sans-serif, system-ui, sans-serif);
 	--font-serif: "Source Serif 4", Newsreader, Georgia, serif;
 	--font-mono: var(--font-monospace, ui-monospace, Menlo, monospace);
-	--type-xs: 11px;
+	--type-xs: 12px;
 	--type-s: 13px;
 	--type-m: 14px;
-	--type-l: 15px;
+	--type-l: 16px;
 	--gap-section: 40px;
 	--gap-plate: 8px;
 }

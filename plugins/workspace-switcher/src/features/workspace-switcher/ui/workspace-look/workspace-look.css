@@ -52,7 +52,7 @@
 	height: 36px;
 	min-height: 36px;
 	padding-inline: var(--ws-look-field-inset);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-semi);
 }
 

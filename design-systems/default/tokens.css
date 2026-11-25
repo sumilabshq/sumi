@@ -86,10 +86,10 @@
 	--font-sans: var(--font-interface, ui-sans-serif, system-ui, sans-serif);
 	--font-serif: ui-serif, Georgia, serif;
 	--font-mono: var(--font-monospace, ui-monospace, Menlo, monospace);
-	--type-xs: 11px;
-	--type-s: var(--font-ui-smaller, 12px);
-	--type-m: var(--font-ui-small, 14px);
-	--type-l: var(--font-ui-medium, 16px);
+	--type-xs: 12px;
+	--type-s: 13px;
+	--type-m: 14px;
+	--type-l: 16px;
 	--gap-section: 40px;
 	--gap-plate: 8px;
 }

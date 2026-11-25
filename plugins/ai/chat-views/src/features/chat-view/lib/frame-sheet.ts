@@ -176,7 +176,7 @@ a.item:hover .title { color: var(--accent-text); }
 .muted { color: var(--text-3); }
 .num, .price { font-variant-numeric: tabular-nums; }
 .price { font-weight: var(--fw-semi); }
-.stat { font-size: var(--fs-20); font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; line-height: 1.3; }
+.stat { font-size: var(--fs-22); font-weight: var(--fw-semi); font-variant-numeric: tabular-nums; line-height: 1.3; }
 .success { color: var(--success-text); }
 .warning { color: var(--warning-text); }
 .error { color: var(--danger); }
@@ -296,7 +296,7 @@ ul.checklist > li::before { content: "\\200b"; }
 .walk-start { align-self: flex-start; }
 [data-walk].is-walking { min-height: 160px; }
 [data-walk].is-walking > li { display: none; }
-[data-walk].is-walking > li.is-current { display: block; padding-left: 0; font-size: var(--fs-20); line-height: 1.4; }
+[data-walk].is-walking > li.is-current { display: block; padding-left: 0; font-size: var(--fs-16); line-height: 1.4; }
 [data-walk].is-walking > li.is-current::before { display: none; }
 [data-walk].is-walking > li.is-current > .media { width: 100%; max-width: 360px; margin: 0 0 16px; }
 [data-walk].is-walking > li.is-current > h3 { margin-bottom: 4px; }

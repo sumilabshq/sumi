@@ -70,15 +70,13 @@
 	--font-accent: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 	--font-code: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 	--font-voice: "IBM Plex Serif", Georgia, "Times New Roman", serif;
-	--fs-voice: 30px;
 	--font-features: normal;
 	--fs-11: 11px;
 	--fs-12: 12px;
-	--fs-13: 12.5px;
+	--fs-13: 13px;
 	--fs-14: 14px;
 	--fs-16: 16px;
-	--fs-20: 20px;
-	--fs-28: 24px;
+	--fs-22: 22px;
 	--fw-regular: 400;
 	--fw-medium: 500;
 	--fw-semi: 600;
@@ -163,15 +161,10 @@
 	--pick-edge: 0 0 0 0 transparent;
 	--blur-pick: none;
 	--tip-kbd: rgba(127, 127, 127, 0.35);
-	--fs-tip: 12px;
 	--h-tip: 28px;
 	--r-tip: var(--r-sm);
 	--tip-arrow: 8px;
 	--dur-out: 100ms;
-	--fs-15: 15px;
-	--fs-glyph: 18px;
-	--fs-glyph-lg: 22px;
-	--fs-17: 15px;
 
 	--chats-w: 280px;
 	--chat-w: 560px;

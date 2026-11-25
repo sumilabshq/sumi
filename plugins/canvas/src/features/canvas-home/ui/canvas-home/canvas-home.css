@@ -42,7 +42,7 @@
 
 .sumi-canvas-home-head h2 {
 	margin: var(--space-none);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-semi);
 }
 
@@ -207,7 +207,7 @@
 
 .sumi-canvas-home-empty h2 {
 	margin: var(--space-none);
-	font-size: var(--fs-17);
+	font-size: var(--fs-16);
 	font-weight: var(--fw-semi);
 }
 
