@@ -2971,6 +2971,10 @@ body {
 	margin: var(--size-2-2, 4px) calc(-1 * var(--pop-pad, 0px));
 }
 
+:is(.wg-root, .wg-portal) .wg-kit-pop-inner .wg-kit-pop-sep {
+	margin-inline: calc(-1 * var(--size-4-2, 8px));
+}
+
 :is(.wg-root, .wg-portal) .wg-kit-pop-search {
 	display: flex;
 	flex-direction: column;
@@ -14899,8 +14903,9 @@ body.wg-tree-carrying .wg-tile-body {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact {
-	width: 248px;
+	width: max-content;
 	min-width: 0;
+	max-width: var(--pop-available-width, 100vw);
 }
 
 :is(.wg-root, .wg-portal, .wg-kit-portal-layer) .wg-kit-pop.is-size-s {
