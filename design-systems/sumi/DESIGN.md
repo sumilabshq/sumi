@@ -61,17 +61,20 @@ Everything else is fixed. The delight layers are drawn on the canvas's "Delight"
 
 Inter (variable, weight 400, letter-spacing -0.01em) for everything people read; JetBrains Mono for code, commands, file names inside code and the optional `mono` theme; IBM Plex Serif, the one serif, for the voice: greetings, empty pages and a document's title. Plex Serif carries Cyrillic in roman and italic.
 
-| Step       | Size / weight      | Use                                                       |
-| ---------- | ------------------ | --------------------------------------------------------- |
-| Voice      | 28–34 / 400 serif  | an empty page: two lines, the second italic in the ink    |
-| Page title | 30 / 500 serif     | a document's title in a pane                              |
-| Workspace  | 15 / 600           | the workspace name in the sidebar                         |
-| Chat       | 14 / 400, line 1.6 | every message, tool row, table, question and the composer |
-| UI         | 12.5 / 400         | sidebar rows, headers, menus, options                     |
-| Code       | 13 / 400 mono      | code blocks, inline code, commands in tool rows           |
-| Label      | 12 / 400           | section labels in the sidebar                             |
+One scale, one token per step; the token name is its value (`--fs-13` is 13px). A size outside it fails `npm run test:type-scale`.
 
-- One size per region: inside the chat everything is 14px; tool rows, tables, statuses and hints never shrink below it.
+| Token     | Size / line    | Use                                                                                                                                                                             |
+| --------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--fs-11` | 11 / 1.3       | counters, kbd, code-language labels, option numbers, drag ghost                                                                                                                 |
+| `--fs-12` | 12 / 1.4       | grey section labels, menu labels, paths, hints, chip meta, the queued Queued/Edit/Remove line, tool-part labels                                                                 |
+| `--fs-13` | 13 / 1.45      | all interface text: sidebar rows, menus, tabs, rows, chips, tables in replies, composer, questions, background agents, queued bubble, tool-call rows, command and control menus |
+| `--fs-14` | 14 / 1.6       | chat reading text: reply paragraphs and lists, the user's own messages                                                                                                          |
+| `--fs-16` | 16 / 1.35, 600 | chat title, page titles, reply h3 to h6                                                                                                                                         |
+| `--fs-22` | 22 / 1.25, 600 | reply h1 and h2, the empty-page greeting                                                                                                                                        |
+
+Code blocks and inline code: 13px mono (`--code-size`). Menus render weight 400 with grayscale antialiasing in both themes.
+
+- One size per role: interface text is 13 in the chat and out of it; only replies read at 14.
 - One weight: bold (600) only for headings and the open question. File names and commands are regular weight in full ink.
 - Two inks: full ink for content, ink-3 for everything secondary. Never a third grey.
 - No uppercase, no ellipsis written into text, no `·` between items: separate with spacing; crumbs use `/`.
