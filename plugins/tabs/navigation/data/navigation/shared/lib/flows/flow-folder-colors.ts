@@ -18,7 +18,11 @@ export function withFolderColorsFilled(doc: FlowsDoc, groups: readonly TabGroup[
 			return folder;
 		}
 
-		said.push(COLOR_FILLED.replace("{id}", folder.id).replace("{color}", group.hue ?? "none").replace("{group}", group.id));
+		said.push(
+			COLOR_FILLED.replace("{id}", folder.id)
+				.replace("{color}", group.hue ?? "none")
+				.replace("{group}", group.id),
+		);
 		return colored(folder, group.hue);
 	});
 	return said.length === 0 ? { doc, said } : { doc: { ...doc, folders }, said };

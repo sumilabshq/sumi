@@ -1,11 +1,20 @@
 import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "./host-tabs-moment.js";
-import { PAGE_HOLDS_GROUP, PAGE_WITH_SUB_PAGES, SUB_PAGE_HOLDS_PAGES, isMainPage, isPageList, isPlaceableList, subPageIdsOf } from "./sub-pages.js";
+import {
+	PAGE_HOLDS_GROUP,
+	PAGE_WITH_SUB_PAGES,
+	SUB_PAGE_HOLDS_PAGES,
+	isMainPage,
+	isPageList,
+	isPlaceableList,
+	subPageIdsOf,
+} from "./sub-pages.js";
 import type { PageListFacts } from "./sub-pages.js";
 import { chatOfGroup, flatTabIdsOf, isSectionList } from "./tab-lists.js";
 
 const LIST_OF_NO_WINDOW = 'the list "{list}" belongs to no main page: only the workspace and a main page own a list';
-const REFUSED_STANDING = 'the tab "{id}" cannot stand inside "{list}": a tab stands in the list of the workspace or of a main page';
+const REFUSED_STANDING =
+	'the tab "{id}" cannot stand inside "{list}": a tab stands in the list of the workspace or of a main page';
 const SUB_PAGE_REFUSED = 'the tab "{id}" cannot stand inside "{list}": {said}';
 const GROUP_IN_PAGE = 'the group "{id}" stands inside the page "{list}": {said}';
 const NOT_ONE_PLACE = 'the tab "{id}" stands in {count} places: a tab stands in exactly one list';
@@ -29,8 +38,14 @@ export function refuseStanding(facts: PageListFacts, tab: { readonly id: string 
 		return REFUSED_STANDING.replace("{id}", tab.id).replace("{list}", list);
 	}
 
-	const said = !isMainPage(facts, list) ? SUB_PAGE_HOLDS_PAGES : subPageIdsOf(facts, tab.id).length > 0 ? PAGE_WITH_SUB_PAGES : null;
-	return said === null ? null : SUB_PAGE_REFUSED.replace("{id}", tab.id).replace("{list}", list).replace("{said}", said);
+	const said = !isMainPage(facts, list)
+		? SUB_PAGE_HOLDS_PAGES
+		: subPageIdsOf(facts, tab.id).length > 0
+			? PAGE_WITH_SUB_PAGES
+			: null;
+	return said === null
+		? null
+		: SUB_PAGE_REFUSED.replace("{id}", tab.id).replace("{list}", list).replace("{said}", said);
 }
 
 export function tabBreaksOf(moment: TabLaws): readonly string[] {

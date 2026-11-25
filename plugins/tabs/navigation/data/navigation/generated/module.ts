@@ -6,6 +6,7 @@ import { adoptChats, archive, archived, create as flowsCreate, deleteFlow, dupli
 import { create as foldersCreate, remove as foldersRemove, rename as foldersRename, setBaseDir, setColor, setIcon as foldersSetIcon, toggle } from "../features/folders/requests.js";
 import { clear, rereadInbox, rereadInboxMarks, rows as inboxRows, undoClear } from "../features/inbox/requests.js";
 import { aim, board as panesBoard, close, closeShowingPanes, closeShown as panesCloseShown, dropGoneTabs, openShown, place as panesPlace, placementPreview, rereadBoard, resizeSplit, showChat, showInTarget } from "../features/panes/requests.js";
+import { create as projectsCreate, moveFlow, moveFolder, remove as projectsRemove, rename as projectsRename, reorder, setBaseFolder } from "../features/projects/requests.js";
 import { all as setupsAll, remove as setupsRemove, rereadSetups, saveFrom, start } from "../features/setups/requests.js";
 import { place as splitsPlace, placeInView, remove as splitsRemove, reorderMember, rereadShown, resize as splitsResize, shown } from "../features/splits/requests.js";
 import { closeGroup, closeOthers, closeShown as tabClosingCloseShown, closeTab } from "../features/tab-closing/requests.js";
@@ -89,6 +90,13 @@ export const navigation = handledModule(definition, [
 	named("panes.resize-split", resizeSplit),
 	named("panes.show-chat", showChat),
 	named("panes.show-in-target", showInTarget),
+	named("projects.create", projectsCreate),
+	named("projects.move-flow", moveFlow),
+	named("projects.move-folder", moveFolder),
+	named("projects.remove", projectsRemove),
+	named("projects.rename", projectsRename),
+	named("projects.reorder", reorder),
+	named("projects.set-base-folder", setBaseFolder),
 	named("setups.all", setupsAll),
 	named("setups.remove", setupsRemove),
 	named("setups.save-from", saveFrom),

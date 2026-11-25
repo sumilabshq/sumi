@@ -31,6 +31,7 @@ export const FlowRowSchema = z.object({
 	chats: z.array(FlowChatRowSchema).readonly(),
 	isOpen: z.boolean(),
 	lastOpenedAt: z.number(),
+	projectId: z.string(),
 });
 
 export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
@@ -44,6 +45,17 @@ export const FolderRowSchema = z.object({
 	isOpen: z.boolean(),
 	status: FlowStatusSchema.nullable(),
 	flows: z.array(FlowRowSchema).readonly(),
+	projectId: z.string(),
+});
+
+export const ProjectSchema = z.object({
+	id: z.string().min(1),
+	name: z.string(),
+	baseFolder: z.string().min(1),
+});
+
+export const ProjectRowSchema = ProjectSchema.extend({
+	isGeneral: z.boolean(),
 });
 
 export const ArchivedFlowSchema = z.object({
@@ -61,7 +73,9 @@ export const FlowsSidebarSchema = z.object({
 	isConverted: z.boolean(),
 	looseFlows: z.array(FlowRowSchema).readonly(),
 	folders: z.array(FolderRowSchema).readonly(),
+	projects: z.array(ProjectRowSchema).readonly(),
 	windowFlowId: z.string().nullable(),
+	windowProjectId: z.string(),
 });
 
 export const WindowFlowAskSchema = z.object({
@@ -116,6 +130,7 @@ export const FlowSchema = z.object({
 	createdAt: z.number().nonnegative(),
 	lastOpenedAt: z.number().nonnegative(),
 	archivedAt: z.number().nonnegative().nullable().default(null),
+	projectId: z.string().min(1).optional(),
 });
 
 export const FlowDetailSchema = z.object({
@@ -127,6 +142,7 @@ export const FlowDetailSchema = z.object({
 export const FlowPlaceSchema = z.object({
 	folderId: z.string().min(1).nullable(),
 	before: z.string().min(1).nullable(),
+	projectId: z.string().min(1).nullable().optional(),
 });
 
 export const CreateFlowAskSchema = z.object({
@@ -212,6 +228,37 @@ export const FolderAskSchema = z.object({
 
 export const SetBaseDirAskSchema = FolderAskSchema.extend({
 	baseDir: z.string().min(1).nullable(),
+});
+
+export const CreateProjectAskSchema = z.object({
+	name: z.string().trim().min(1),
+	baseFolder: z.string().min(1).optional(),
+	flowId: z.string().min(1).optional(),
+});
+
+export const ProjectAskSchema = z.object({
+	id: z.string().min(1),
+});
+
+export const SetProjectBaseFolderAskSchema = ProjectAskSchema.extend({
+	baseFolder: z.string().min(1),
+});
+
+export const ReorderProjectsAskSchema = ProjectAskSchema.extend({
+	before: z.string().min(1).nullable(),
+});
+
+export const MoveFlowToProjectAskSchema = FlowAskSchema.extend({
+	projectId: z.string().min(1),
+});
+
+export const MoveFolderToProjectAskSchema = z.object({
+	folderId: z.string().min(1),
+	projectId: z.string().min(1),
+});
+
+export const ProjectMadeSchema = z.object({
+	projectId: z.string(),
 });
 
 export const InboxRowsSchema = z.object({
@@ -411,6 +458,8 @@ export interface FlowSplit {
 export type FlowNode = FlowPane | FlowSplit;
 
 export type FlowLayout = z.infer<typeof FlowLayoutSchema>;
+
+export type Project = z.infer<typeof ProjectSchema>;
 
 export type Flow = z.infer<typeof FlowSchema>;
 
@@ -1409,6 +1458,37 @@ export const navigation = moduleContract("navigation", Server, {
 		dropGoneTabs: named("panes.drop-gone-tabs", command()
 			.public()
 			.input(HeldTabsInPanesAskSchema)
+			.idempotencyKey(Repeatable)),
+	},
+	projects: {
+		create: named("projects.create", command()
+			.public()
+			.input(CreateProjectAskSchema)
+			.output(ProjectMadeSchema)
+			.idempotencyKey(PerCall)),
+		rename: named("projects.rename", command()
+			.public()
+			.input(RenameAskSchema)
+			.idempotencyKey(Repeatable)),
+		setBaseFolder: named("projects.set-base-folder", command()
+			.public()
+			.input(SetProjectBaseFolderAskSchema)
+			.idempotencyKey(Repeatable)),
+		remove: named("projects.remove", command()
+			.public()
+			.input(ProjectAskSchema)
+			.idempotencyKey(Repeatable)),
+		reorder: named("projects.reorder", command()
+			.public()
+			.input(ReorderProjectsAskSchema)
+			.idempotencyKey(Repeatable)),
+		moveFlow: named("projects.move-flow", command()
+			.public()
+			.input(MoveFlowToProjectAskSchema)
+			.idempotencyKey(Repeatable)),
+		moveFolder: named("projects.move-folder", command()
+			.public()
+			.input(MoveFolderToProjectAskSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	setups: {

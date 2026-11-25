@@ -2,6 +2,7 @@ import type { z } from "zod";
 import { flowOfId, folderHolding, isArchived } from "../../../shared/lib/flows/flow-docs.js";
 import type { PlacedPlaces } from "../../../shared/lib/flows/flow-moves.js";
 import { flowTabIdsOf } from "../../../shared/lib/flows/flow-nodes.js";
+import { projectIdOfFlow, projectsOf } from "../../../shared/lib/flows/flow-projects.js";
 import { flowRowOf, folderRowOf } from "../../../shared/lib/flows/flow-rows.js";
 import { isChatTab } from "../../../shared/lib/tabs/app-abilities.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
@@ -10,6 +11,7 @@ import type {
 	FlowDetailSchema,
 	FlowsSidebarSchema,
 } from "../../../shared/schema/flow-asks.schema.js";
+import { GENERAL_PROJECT_ID } from "../../../shared/schema/flows.schema.js";
 
 type FlowsSidebar = z.infer<typeof FlowsSidebarSchema>;
 type FlowDetail = z.infer<typeof FlowDetailSchema>;
@@ -19,7 +21,9 @@ const NOT_CONVERTED: FlowsSidebar = {
 	isConverted: false,
 	looseFlows: [],
 	folders: [],
+	projects: [],
 	windowFlowId: null,
+	windowProjectId: GENERAL_PROJECT_ID,
 };
 
 export function sidebarOf({ tabs, flows }: PlacedPlaces, apps: PlacedApps, window: string): FlowsSidebar {
@@ -28,6 +32,8 @@ export function sidebarOf({ tabs, flows }: PlacedPlaces, apps: PlacedApps, windo
 	}
 
 	const facts = { placed: tabs, doc: flows, apps };
+	const windowFlowId = flows.windowFlows[window] ?? null;
+	const windowFlow = windowFlowId === null ? undefined : flowOfId(flows, windowFlowId);
 	return {
 		isConverted: true,
 		looseFlows: flows.looseFlowIds.flatMap((id) => {
@@ -35,7 +41,9 @@ export function sidebarOf({ tabs, flows }: PlacedPlaces, apps: PlacedApps, windo
 			return flow === undefined || isArchived(flow) ? [] : [flowRowOf(flow, facts)];
 		}),
 		folders: flows.folders.map((folder) => folderRowOf(folder, facts)),
-		windowFlowId: flows.windowFlows[window] ?? null,
+		projects: projectsOf(flows).map((project) => ({ ...project, isGeneral: project.id === GENERAL_PROJECT_ID })),
+		windowFlowId,
+		windowProjectId: windowFlow === undefined ? GENERAL_PROJECT_ID : projectIdOfFlow(flows, windowFlow),
 	};
 }
 

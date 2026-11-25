@@ -132,7 +132,9 @@ export function groupsUnder(
 export function withoutEntry(layout: TabLayout, gone: ListEntry): TabLayout {
 	const isKept = (entry: ListEntry): boolean => entry.kind !== gone.kind || entry.id !== gone.id;
 	return {
-		lists: Object.fromEntries(Object.entries(layout.lists).map(([chatId, entries]) => [chatId, entries.filter(isKept)])),
+		lists: Object.fromEntries(
+			Object.entries(layout.lists).map(([chatId, entries]) => [chatId, entries.filter(isKept)]),
+		),
 		groups: layout.groups.map((group) =>
 			group.entries.every(isKept)
 				? group

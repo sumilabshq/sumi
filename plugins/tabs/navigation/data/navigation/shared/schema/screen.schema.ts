@@ -86,7 +86,10 @@ export const OpenedTabSettledSchema = z.object({
 
 export const OnceOpenedSchema = z.object({
 	id: z.string(),
-	heldBy: z.string().nullable().describe("the label of the window that holds the tab, when it is open in another window"),
+	heldBy: z
+		.string()
+		.nullable()
+		.describe("the label of the window that holds the tab, when it is open in another window"),
 	effects: z.array(TabEffectSchema),
 });
 

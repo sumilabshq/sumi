@@ -6,6 +6,7 @@ const PANE_PREFIX = "pane-of-";
 const NEW_FLOW_PREFIX = "flow-new-";
 const STARTED_FLOW_PREFIX = "flow-setup-";
 const NEW_FOLDER_PREFIX = "folder-new-";
+const NEW_PROJECT_PREFIX = "project-new-";
 const NEW_SETUP_PREFIX = "setup-";
 
 export function chatFlowIdOf(chatId: string): string {
@@ -38,6 +39,10 @@ export function startedFlowIdOf(key: string): string {
 
 export function newFolderIdOf(key: string): string {
 	return `${NEW_FOLDER_PREFIX}${key}`;
+}
+
+export function newProjectIdOf(key: string): string {
+	return `${NEW_PROJECT_PREFIX}${key}`;
 }
 
 export function newSetupIdOf(key: string): string {

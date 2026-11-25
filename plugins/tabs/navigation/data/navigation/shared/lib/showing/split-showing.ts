@@ -48,7 +48,9 @@ export function withSplitFollowed(was: HostTabsMoment, showing: Showing, facts: 
 			return withSplitRefocused(showing, before, after);
 		}
 
-		return showing.effects.some((effect) => effect.kind === "show-split") ? showing : withSplitDrawn(showing, facts, after);
+		return showing.effects.some((effect) => effect.kind === "show-split")
+			? showing
+			: withSplitDrawn(showing, facts, after);
 	}
 
 	const hasLeft = showing.effects.some((effect) => effect.kind === LEAVE_SPLIT.kind);
