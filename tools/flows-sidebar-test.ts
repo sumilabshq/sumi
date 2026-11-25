@@ -5,7 +5,7 @@ import { bundleOf } from "./harness.ts";
 import { doubleClickOn, hoverOn, openedSidebar, pressOn, rowOf } from "./flows-sidebar-harness.ts";
 
 const INBOX = "section[aria-label=Inbox] .sumi-flows-row";
-const FLOWS = "section[aria-label=Flows] .sumi-flows-row";
+const FLOWS = "section[aria-label=General] .sumi-flows-row";
 const FOLDERS = ".sumi-flows-row[data-kind=folder]";
 const SETTLE_MS = 600;
 
@@ -222,7 +222,7 @@ async function rowsAndFolders(): Promise<void> {
 		await waited(SETTLE_MS * 2);
 		check(
 			"plus creates a Flow in its folder",
-			((await page.ask(folderFlowsOf("Personal"))) as string[]).includes("New flow"),
+			((await page.ask(folderFlowsOf("Personal"))) as string[]).includes("New session"),
 			true,
 		);
 	});
@@ -368,7 +368,7 @@ async function peekHolds(): Promise<void> {
 	});
 	await inInbox("light", "hidden", async (page) => {
 		await peeked(page);
-		await doubleClickOn(page, "section[aria-label=Flows] .sumi-flows-row-main", "Sprint board");
+		await doubleClickOn(page, "section[aria-label=General] .sumi-flows-row-main", "Sprint board");
 		await waited(300);
 		await page.hover(...AWAY);
 		await waited(PEEK_SETTLE_MS);
@@ -425,15 +425,15 @@ async function dragging(): Promise<void> {
 async function emptySpaceMenu(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await page.ask(
-			`document.querySelector("section[aria-label=Flows]").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 400 }))`,
+			`document.querySelector("section[aria-label=General]").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 400 }))`,
 		);
 		await waited(300);
 		check(
-			"right-clicking empty space offers New flow and New folder",
+			"right-clicking empty space offers New session, New folder and New project",
 			await page.ask(
 				`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`,
 			),
-			["New flow", "New folder"],
+			["New session", "New folder", "New project"],
 		);
 		await page.ask(clickText("[role=menuitem]", "New folder"));
 		await waited(SETTLE_MS * 2);
@@ -474,7 +474,7 @@ async function deleting(): Promise<void> {
 			await page.ask(
 				`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`,
 			),
-			["Rename", "Edit icon", "Duplicate", "Archive", "Delete flow"],
+			["Rename", "Edit icon", "Duplicate", "Archive", "New project…", "Delete flow"],
 		);
 		await page.ask(clickText("[role=menuitem]", "Delete flow"));
 		await waited(300);
@@ -525,6 +525,132 @@ async function folderMenuAndArchive(): Promise<void> {
 	});
 }
 
+const sectionNames = `[...document.querySelectorAll("section[aria-label]")].map((one) => one.getAttribute("aria-label"))`;
+const sectionRows = (section: string): string =>
+	`[...document.querySelectorAll(${JSON.stringify(`section[aria-label=${JSON.stringify(section)}] .sumi-flows-row`)})].map((one) => [one.dataset.kind, one.querySelector(".sumi-flows-name")?.textContent])`;
+const projectIdOf = (name: string): string =>
+	`(async () => (await window.__flowsSidebar()).projects.find((one) => one.name === ${JSON.stringify(name)}).id)()`;
+const contextOn = (target: string): string =>
+	`${target}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`;
+const projectDragOver = (source: string, target: string, isLowerHalf: boolean): string =>
+	`(() => {
+		const transfer = new DataTransfer();
+		const send = (el, type, y) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer, clientY: y }));
+		const heading = document.querySelector(${JSON.stringify(`section[aria-label=${JSON.stringify(source)}] .sumi-flows-label`)});
+		const section = document.querySelector(${JSON.stringify(`section[aria-label=${JSON.stringify(target)}]`)});
+		const box = section.getBoundingClientRect();
+		const y = ${isLowerHalf ? "box.bottom - 2" : "box.top + 2"};
+		send(heading, "dragstart", 0);
+		send(section, "dragover", y);
+		window.__held = { send, heading, section, y };
+	})()`;
+const projectDragState = `(() => [[...document.querySelectorAll("section[data-line]")].map((one) => [one.getAttribute("aria-label"), one.dataset.line]), [...document.querySelectorAll("section[data-dragging]")].map((one) => one.getAttribute("aria-label"))])()`;
+const projectDrop = `(() => { const { send, heading, section, y } = window.__held; send(section, "drop", y); send(heading, "dragend", 0); })()`;
+
+async function projects(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		check("General is the only project section at first", await page.ask(sectionNames), ["Inbox", "General"]);
+		await page.ask(`window.__projects("create", { name: "Alpha" })`);
+		await waited(SETTLE_MS);
+		check("a created project is a section after General", await page.ask(sectionNames), ["Inbox", "General", "Alpha"]);
+		check("an empty project shows one New session row", await page.ask(sectionRows("Alpha")), [["new", "New session"]]);
+		await pressOn(page, "section[aria-label=Alpha] .sumi-flows-row", "New session");
+		await waited(SETTLE_MS * 2);
+		check("pressing it creates a session in that project", await page.ask(sectionRows("Alpha")), [
+			["flow", "New session"],
+		]);
+		await page.ask(contextOn(rowOf(FLOWS, "Plugin layout")));
+		await waited(300);
+		await page.ask(clickText("[role=menuitemradio]", "Alpha"));
+		await waited(SETTLE_MS);
+		check(
+			"Move to puts the session in the chosen project",
+			[
+				((await page.ask(namesOf(FLOWS))) as string[]).includes("Plugin layout"),
+				((await page.ask(namesOf("section[aria-label=Alpha] .sumi-flows-row"))) as string[]).includes("Plugin layout"),
+			],
+			[false, true],
+		);
+		await page.ask(contextOn(rowOf("section[aria-label=Alpha] .sumi-flows-row", "Plugin layout")));
+		await waited(300);
+		check(
+			"Move to ticks the current project only",
+			await page.ask(
+				`[...document.querySelectorAll("[role=menuitemradio]")].map((one) => [one.textContent, one.getAttribute("aria-checked")])`,
+			),
+			[
+				["General", "false"],
+				["Alpha", "true"],
+			],
+		);
+		await page.pressKey("Escape");
+		await waited(300);
+		await page.ask(projectDragOver("Alpha", "General", false));
+		await waited(300);
+		const dragged = await page.ask(projectDragState);
+		await page.ask(projectDrop);
+		await waited(SETTLE_MS);
+		check("dragging a heading shows a line before the target and fades the dragged section", dragged, [
+			[["General", "before"]],
+			["Alpha"],
+		]);
+		check("dropping a project heading reorders the sections", await page.ask(sectionNames), [
+			"Inbox",
+			"Alpha",
+			"General",
+		]);
+		await page.ask(projectDragOver("Alpha", "General", true));
+		await waited(300);
+		check("a line after the last section shows where it lands", await page.ask(projectDragState), [
+			[["General", "after"]],
+			["Alpha"],
+		]);
+		await page.ask(projectDrop);
+		await waited(SETTLE_MS);
+		check("dropping below the last section puts the project last", await page.ask(sectionNames), [
+			"Inbox",
+			"General",
+			"Alpha",
+		]);
+		await page.ask(`document.querySelector("section[aria-label=Alpha] button[aria-label='Alpha menu']").click()`);
+		await waited(300);
+		check(
+			"the project menu offers Rename, Base folder with its path, Delete project",
+			await page.ask(`[...document.querySelectorAll("[role=menuitem]")].map((one) => one.textContent)`),
+			["RenameF2", "Base folder~/Sumi/Alpha", "Delete project"],
+		);
+		await page.ask(clickText("[role=menuitem]", "Delete project"));
+		await waited(SETTLE_MS);
+		check("deleting a project removes its section", await page.ask(sectionNames), ["Inbox", "General"]);
+		check(
+			"and moves its sessions to General",
+			((await page.ask(namesOf(FLOWS))) as string[]).includes("Plugin layout"),
+			true,
+		);
+		await page.ask(`document.querySelector("section[aria-label=General] button[aria-label='General menu']").click()`);
+		await waited(300);
+		check(
+			"General has no Delete project",
+			await page.ask(`[...document.querySelectorAll("[role=menuitem]")].map((one) => one.textContent)`),
+			["RenameF2", "Base folder~/Sumi/General"],
+		);
+		await page.pressKey("Escape");
+		const refused = await page.ask(
+			`window.__projects("remove", { id: "general" }).then((answer) => JSON.stringify(answer))`,
+		);
+		check("deleting General is an error, not a silent write", String(refused).includes("cannot be deleted"), true);
+		await page.ask(contextOn(`document.querySelector("section[aria-label=General]")`));
+		await waited(300);
+		await page.ask(clickText("[role=menuitem]", "New project"));
+		await waited(SETTLE_MS);
+		check("New project opens a field at the end", await page.ask(count(".sumi-flows-field-input")), 1);
+		await page.typeText("Beta");
+		await page.pressEnter();
+		await waited(SETTLE_MS);
+		check("Enter creates the project", await page.ask(sectionNames), ["Inbox", "General", "Beta"]);
+	});
+}
+
 await inboxRows();
 await inboxOpening();
 await inboxClearing();
@@ -538,6 +664,7 @@ await dragging();
 await editingIcon();
 await deleting();
 await folderMenuAndArchive();
+await projects();
 
 if (tally.failed > 0) {
 	console.log(`${tally.failed} failed`);

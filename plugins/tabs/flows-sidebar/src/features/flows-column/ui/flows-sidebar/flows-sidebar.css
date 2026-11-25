@@ -98,9 +98,35 @@
 }
 
 .sumi-flows-section {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-px);
+}
+
+.sumi-flows-section[data-dragging] {
+	opacity: 0.35;
+}
+
+.sumi-flows-section[data-line]::before {
+	position: absolute;
+	inset-inline: 0;
+	height: 2px;
+	content: "";
+	background: var(--text);
+	border-radius: var(--r-full);
+}
+
+.sumi-flows-section[data-line="before"]::before {
+	top: calc(var(--space-1) * -1 - 1px);
+}
+
+.sumi-flows-section[data-line="after"]::before {
+	bottom: calc(var(--space-1) * -1 - 1px);
+}
+
+.sumi-flows-section > .sumi-flows-field {
+	height: var(--h-xs);
 }
 
 .sumi-flows-section + .sumi-flows-section {
@@ -155,8 +181,47 @@
 	border-radius: var(--r-sm);
 }
 
-.sumi-flows-row:is(:hover, :focus-within),
-.sumi-flows-row[data-drop] {
+.sumi-flows-row:is(:hover, :focus-within) {
+	color: var(--text);
+	background: var(--hover);
+}
+
+:is(.sumi-flows-row, .sumi-flows-section)[data-drop] {
+	color: var(--text);
+	background: var(--hover);
+	border-radius: var(--r-md);
+	box-shadow: inset 0 0 0 1px var(--line-menu);
+}
+
+.sumi-flows-row-empty {
+	color: var(--text-3);
+}
+
+.sumi-flows-label-tools {
+	display: none;
+	gap: var(--space-px);
+	margin-inline-end: var(--space-1);
+}
+
+.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-tools {
+	display: flex;
+}
+
+.sumi-flows-tool {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	color: var(--text-2);
+	cursor: pointer;
+	background: none;
+	border: 0;
+	border-radius: var(--r-xs);
+}
+
+.sumi-flows-tool:is(:hover, :focus-visible) {
 	color: var(--text);
 	background: var(--hover);
 }
@@ -653,6 +718,16 @@
 	flex-direction: column;
 	gap: var(--space-1);
 	padding: var(--space-1) var(--space-2);
+}
+
+.sumi-flows-menu-moves {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-px);
+}
+
+.sumi-flows-menu-moves > .sumi-flows-menu-label {
+	padding: var(--space-1) var(--space-2) 0;
 }
 
 .sumi-flows-menu-label {

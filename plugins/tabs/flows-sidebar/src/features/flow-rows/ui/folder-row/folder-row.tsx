@@ -1,6 +1,7 @@
 import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement } from "react";
 import type { FlowDrag } from "../../../../shared/lib/flow-drag.js";
+import { NEW_SESSION } from "../../../../shared/lib/flow-facts.js";
 import type { FolderRowFacts } from "../../../../shared/lib/flow-facts.js";
 import { useFolderRenaming } from "../../../../shared/lib/folder-rename-request.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
@@ -11,7 +12,6 @@ import { RowMenu } from "../row-menu/row-menu.js";
 import { RENAME_KEY } from "../../lib/rename-keys.js";
 import { FolderLine } from "./folder-line.js";
 
-const NEW_FLOW = "New flow";
 const FOLDER_MENU = "Folder";
 const COLOR_LABEL = "Color";
 
@@ -30,7 +30,7 @@ export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): React
 	const [opensPicker, setOpensPicker] = useState(false);
 	const [isConfirming, setIsConfirming] = useState(false);
 	const addFlow = (): void => {
-		acts.create(NEW_FLOW, { folderId: folder.id, before: null });
+		acts.create(NEW_SESSION, { folderId: folder.id, before: null });
 
 		if (!folder.isOpen) {
 			acts.toggleFolder(folder.id);

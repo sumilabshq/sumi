@@ -26,6 +26,7 @@ export function FolderLine({ folder, drag, onToggle, onRename, onAdd }: FolderLi
 			data-kind="folder"
 			data-color={folder.color ?? undefined}
 			data-drop={drag.overKey === dropKeyOf(target) ? "" : undefined}
+			{...drag.sourceProps({ kind: "folder", id: folder.id })}
 			{...drag.targetProps(target)}
 		>
 			<button
@@ -42,7 +43,7 @@ export function FolderLine({ folder, drag, onToggle, onRename, onAdd }: FolderLi
 				<span className="sumi-flows-name">{folder.name}</span>
 			</button>
 			{folder.isOpen ? null : <StatusMark status={folder.status} />}
-			<button type="button" className="sumi-flows-add" aria-label={`New flow in ${folder.name}`} onClick={onAdd}>
+			<button type="button" className="sumi-flows-add" aria-label={`New session in ${folder.name}`} onClick={onAdd}>
 				<Icon name="plus" size={CHEVRON_PX} />
 			</button>
 		</div>

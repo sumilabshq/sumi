@@ -1,5 +1,6 @@
 import { useCommand } from "@widgetarium/data-framework";
 import { toast } from "@widgetarium/kit";
+import { fileSystem } from "@sumi/contract";
 import { appHost } from "@widgetarium/app-host/contract";
 import { navigation } from "@widgetarium/navigation/contract";
 import type { FlowIcon, GroupHue } from "@widgetarium/navigation/contract";
@@ -11,6 +12,7 @@ export type RowKind = "flow" | "folder";
 export interface FlowPlace {
 	readonly folderId: string | null;
 	readonly before: string | null;
+	readonly projectId?: string | null | undefined;
 }
 
 export interface FlowActs {
@@ -27,6 +29,13 @@ export interface FlowActs {
 	readonly removeFolder: (id: string) => void;
 	readonly deleteFolder: (id: string) => void;
 	readonly createFolder: (name: string) => void;
+	readonly createProject: (name: string, flowId?: string) => void;
+	readonly renameProject: (id: string, name: string) => void;
+	readonly pickBaseFolder: (id: string) => void;
+	readonly removeProject: (id: string) => void;
+	readonly reorderProject: (id: string, before: string | null) => void;
+	readonly moveToProject: (flowId: string, projectId: string) => void;
+	readonly moveFolderToProject: (folderId: string, projectId: string) => void;
 }
 
 function reported(what: string): (result: { readonly ok: boolean; readonly reason?: string }) => void {
@@ -53,6 +62,14 @@ export function useFlowActs(): FlowActs {
 	const toggleFolder = useCommand(navigation.folders.toggle);
 	const removeFolder = useCommand(navigation.folders.remove);
 	const createFolder = useCommand(navigation.folders.create);
+	const createProject = useCommand(navigation.projects.create);
+	const renameProject = useCommand(navigation.projects.rename);
+	const setProjectBaseFolder = useCommand(navigation.projects.setBaseFolder);
+	const removeProject = useCommand(navigation.projects.remove);
+	const reorderProject = useCommand(navigation.projects.reorder);
+	const moveFlowToProject = useCommand(navigation.projects.moveFlow);
+	const moveFolderToProject = useCommand(navigation.projects.moveFolder);
+	const pickFolder = useCommand(fileSystem.files.pickFolder);
 	const open = (flowId: string): void => void openFlow.run({ flowId });
 	return {
 		open,
@@ -71,5 +88,21 @@ export function useFlowActs(): FlowActs {
 			void createFolder
 				.run({ name, baseDir: null })
 				.then((made) => made.ok && requestFolderRename(made.output.folderId)),
+		createProject: (name, flowId) => void createProject.run({ name, flowId }).then(reported("create the project")),
+		renameProject: (id, name) => void renameProject.run({ id, name }).then(reported("rename the project")),
+		pickBaseFolder: (id) =>
+			void pickFolder.run().then((picked) => {
+				if (picked.ok && picked.output.path !== null) {
+					void setProjectBaseFolder
+						.run({ id, baseFolder: picked.output.path })
+						.then(reported("change the base folder"));
+				}
+			}),
+		removeProject: (id) => void removeProject.run({ id }).then(reported("delete the project")),
+		reorderProject: (id, before) => void reorderProject.run({ id, before }).then(reported("move the project")),
+		moveToProject: (flowId, projectId) =>
+			void moveFlowToProject.run({ flowId, projectId }).then(reported("move the session")),
+		moveFolderToProject: (folderId, projectId) =>
+			void moveFolderToProject.run({ folderId, projectId }).then(reported("move the folder")),
 	};
 }

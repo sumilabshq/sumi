@@ -131,6 +131,10 @@ export function reorderProjectsPlan({ id, before }: ReorderAsk): FlowsPlan<null>
 			return refusal(NO_BEFORE.replace("{id}", before));
 		}
 
+		if (before === id) {
+			return { flows, reason: `project ${id} asked to stand before itself, reorder skipped`, value: null };
+		}
+
 		const rest = projects.filter((project) => project.id !== id);
 		const at = before === null ? rest.length : rest.findIndex((project) => project.id === before);
 		const next = [...rest.slice(0, at), moved, ...rest.slice(at)];

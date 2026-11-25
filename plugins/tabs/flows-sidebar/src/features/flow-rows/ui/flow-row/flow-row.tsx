@@ -2,7 +2,7 @@ import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement } from "react";
 import { dropKeyOf } from "../../../../shared/lib/flow-drag.js";
 import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
-import type { FlowRowFacts } from "../../../../shared/lib/flow-facts.js";
+import type { FlowRowFacts, FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 import { ConfirmDelete } from "../../../../shared/ui/confirm-delete/confirm-delete.js";
 import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
@@ -10,6 +10,7 @@ import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
 import { FLOW_RENAME_KEYS, RENAME_KEY, renamesOn } from "../../lib/rename-keys.js";
 import { ChatsHover } from "../chats-panel/chats-panel.js";
 import { RowField } from "../row-field/row-field.js";
+import { MoveToSection } from "../move-to-section/move-to-section.js";
 import { RowMenu } from "../row-menu/row-menu.js";
 
 const FLOW_MENU = "Flow";
@@ -21,12 +22,22 @@ function chatCountOf(count: number): string {
 export interface FlowRowViewProps {
 	readonly flow: FlowRowFacts;
 	readonly folderId: string | null;
+	readonly projectId: string;
+	readonly sidebar: FlowsSidebarFacts;
 	readonly isCurrent: boolean;
 	readonly acts: FlowActs;
 	readonly drag: FlowDrag;
 }
 
-export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowViewProps): ReactElement {
+export function FlowRowView({
+	flow,
+	folderId,
+	projectId,
+	sidebar,
+	isCurrent,
+	acts,
+	drag,
+}: FlowRowViewProps): ReactElement {
 	const [isRenaming, setIsRenaming] = useState(false);
 	const [opensPicker, setOpensPicker] = useState(false);
 	const [isConfirming, setIsConfirming] = useState(false);
@@ -34,7 +45,7 @@ export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowVi
 		setOpensPicker(true);
 		setIsRenaming(true);
 	};
-	const target: DropTarget = { kind: "flow", flowId: flow.id, folderId };
+	const target: DropTarget = { kind: "flow", flowId: flow.id, folderId, projectId };
 
 	if (isRenaming) {
 		return (
@@ -57,6 +68,7 @@ export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowVi
 		<Fragment>
 			<RowMenu
 				label={FLOW_MENU}
+				section={(close) => <MoveToSection flow={flow} sidebar={sidebar} acts={acts} onClose={close} />}
 				items={[
 					{ label: "Rename", icon: "pencil-line", keys: RENAME_KEY, onSelect: () => setIsRenaming(true) },
 					{ label: "Edit icon", icon: "image", onSelect: editIcon },
@@ -74,7 +86,7 @@ export function FlowRowView({ flow, folderId, isCurrent, acts, drag }: FlowRowVi
 							data-indented={folderId === null ? undefined : ""}
 							data-current={isCurrent ? "" : undefined}
 							data-drop={drag.overKey === dropKeyOf(target) ? "" : undefined}
-							{...drag.sourceProps(flow.id)}
+							{...drag.sourceProps({ kind: "flow", id: flow.id })}
 							{...drag.targetProps(target)}
 						>
 							<button

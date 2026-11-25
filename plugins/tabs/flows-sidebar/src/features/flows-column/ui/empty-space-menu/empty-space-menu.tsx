@@ -2,13 +2,15 @@ import { createElement as h, useState } from "react";
 import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { Icon, PopoverItem, SpotMenu } from "@widgetarium/kit";
 import type { MenuSpot } from "@widgetarium/kit";
+import { NEW_SESSION, newSessionPlaceOf } from "../../../../shared/lib/flow-facts.js";
 import type { FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
+import { requestProjectDraft } from "../../../../shared/lib/project-draft-request.js";
 import { usePeekHold } from "../../../../shared/lib/peek-hold.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 
-const NEW_FLOW = "New flow";
 const NEW_FOLDER = "New folder";
-const MENU_LABEL = "Flows";
+const NEW_PROJECT = "New project";
+const MENU_LABEL = "Sessions";
 
 export interface EmptySpaceMenuProps {
 	readonly sidebar: FlowsSidebarFacts;
@@ -46,10 +48,10 @@ export function EmptySpaceMenu({ sidebar, acts, children }: EmptySpaceMenuProps)
 								role="menuitem"
 								icon={<Icon name="square-pen" />}
 								onClick={() =>
-									pick(() => acts.create(NEW_FLOW, { folderId: null, before: sidebar.looseFlows[0]?.id ?? null }))
+									pick(() => acts.create(NEW_SESSION, newSessionPlaceOf(sidebar, sidebar.windowProjectId)))
 								}
 							>
-								{NEW_FLOW}
+								{NEW_SESSION}
 							</PopoverItem>
 							<PopoverItem
 								role="menuitem"
@@ -57,6 +59,13 @@ export function EmptySpaceMenu({ sidebar, acts, children }: EmptySpaceMenuProps)
 								onClick={() => pick(() => acts.createFolder(NEW_FOLDER))}
 							>
 								{NEW_FOLDER}
+							</PopoverItem>
+							<PopoverItem
+								role="menuitem"
+								icon={<Icon name="layers" />}
+								onClick={() => pick(() => requestProjectDraft(null))}
+							>
+								{NEW_PROJECT}
 							</PopoverItem>
 						</div>
 					)}
