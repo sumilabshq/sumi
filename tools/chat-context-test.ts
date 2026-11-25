@@ -11,6 +11,7 @@ import { chatContext as chatContextModule } from "../plugins/ai/chat-context/dat
 import { LocalStorageEditorChoiceGateway } from "../plugins/ai/chat-context/data/chat-context/gateways/editor-choice/local-storage.gateway.ts";
 import { MemoryEditorChoiceGateway } from "../plugins/ai/chat-context/data/chat-context/gateways/editor-choice/memory.gateway.ts";
 import { homeShortened } from "../plugins/ai/chat-context/src/features/chat-context/lib/home-shortened.ts";
+import { pathShortened } from "../plugins/ai/chat-context/src/features/chat-context/lib/path-shortened.ts";
 import { chipOf } from "../plugins/ai/chat-context/src/features/chat-context/lib/chip-of.ts";
 import { MemoryProcessesGateway } from "../apps/tauri/capabilities/terminal/gateways/processes/memory.gateway.ts";
 import { NodeProgramsGateway } from "../apps/tauri/capabilities/terminal/gateways/programs/node.gateway.ts";
@@ -132,6 +133,27 @@ check("no folder, no chip", chipOf(null), null);
 check("the home folder is written as ~ in a path", homeShortened("/Users/demo/Projects/Sumi"), "~/Projects/Sumi");
 check("the home folder itself is just ~", homeShortened("/Users/demo"), "~");
 check("a path outside home stays whole", homeShortened("/opt/tools"), "/opt/tools");
+check("a short path is untouched", pathShortened("/Users/demo/Projects/Sumi"), "~/Projects/Sumi");
+check(
+	"a long path keeps the start and the last two segments",
+	pathShortened("/Users/demo/Projects/Sumilabs/Sumi-worktrees/chat-context/packages/shared/kit/src/components"),
+	"~/Projects/…/src/components",
+);
+check(
+	"a very long last segment drops to the last segment only",
+	pathShortened("/Users/demo/Projects/Sumilabs/shared/kit-components-library-of-everything"),
+	"~/…/kit-components-library-of-everything",
+);
+check(
+	"a long path outside home keeps its root",
+	pathShortened("/srv/data/archive/2026/reports/final-docs", 26),
+	"/srv/…/reports/final-docs",
+);
+check(
+	"a long path outside home drops to the last segment",
+	pathShortened("/srv/data/archive/2026/reports/final-docs", 20),
+	"/…/final-docs",
+);
 check("a folder named like home further down stays whole", homeShortened("/srv/Users/demo"), "/srv/Users/demo");
 
 rmSync(parent, { recursive: true, force: true });

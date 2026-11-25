@@ -2,7 +2,7 @@ import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { ChatContext, Editor } from "@sumi/chat-context/contract";
 import { Button, Icon, Popover, PopoverContent, PopoverItem, PopoverSeparator, PopoverTrigger } from "@widgetarium/kit";
-import { homeShortened } from "../../lib/home-shortened.js";
+import { pathShortened } from "../../lib/path-shortened.js";
 
 export const OPEN_IN = "Open in {editor}";
 export const THIS_MAC = "This Mac";
@@ -21,12 +21,16 @@ export function ContextMenu({ context, onReveal, onOpenIn }: ContextMenuProps): 
 		<>
 			<PopoverItem
 				className="sumi-chat-context-folder"
-				icon={<Icon name="folder" size={ICON_PX} />}
 				title={context.folder}
+				sub={<span className="sumi-chat-context-path">{pathShortened(context.folder)}</span>}
 				onClick={onReveal}
 			>
-				<span className="sumi-chat-context-name">{context.name}</span>
-				<PathText folder={context.folder} />
+				<span className="sumi-chat-context-name">
+					<span className="sumi-chat-context-folder-icon">
+						<Icon name="folder" size={ICON_PX} />
+					</span>
+					{context.name}
+				</span>
 			</PopoverItem>
 			{context.branch === null ? null : (
 				// TODO: switch branch from here
@@ -45,20 +49,6 @@ export function ContextMenu({ context, onReveal, onOpenIn }: ContextMenuProps): 
 				<EditorsSubmenu context={context} onOpenIn={onOpenIn} />
 			</div>
 		</>
-	);
-}
-
-function PathText({ folder }: { readonly folder: string }): ReactElement {
-	const parts = homeShortened(folder).split("/");
-	return (
-		<span className="sumi-chat-context-path">
-			{parts.map((part, at) => (
-				<Fragment key={`${String(at)}:${part}`}>
-					<span className="sumi-chat-context-part">{at < parts.length - 1 ? `${part}/` : part}</span>
-					{at < parts.length - 1 ? <wbr /> : null}
-				</Fragment>
-			))}
-		</span>
 	);
 }
 

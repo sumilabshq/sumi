@@ -98,13 +98,12 @@ const PANEL_PROBE = `(() => {
 		itemSize: item === null ? null : getComputedStyle(item).fontSize,
 		focusVisible: [...document.querySelectorAll(".sumi-chat-context-pop .wg-kit-pop-item")].filter((one) => one.matches(":focus-visible")).length,
 		pathText: path === null ? null : path.textContent,
-		pathSize: path === null ? null : getComputedStyle(path).fontSize + "/" + getComputedStyle(path).lineHeight,
-		pathColor: path === null ? null : getComputedStyle(path).color,
-		pathLines: path === null ? null : Math.round(edge(path).height / 16),
+		pathHeight: path === null ? null : edge(path).height,
 		pathScrollFits: path === null ? null : path.scrollWidth <= path.clientWidth + 1,
 		folderTitle: folder === null ? null : folder.getAttribute("title"),
-		wbr: path === null ? null : path.querySelectorAll("wbr").length,
-		iconTop: folder === null ? null : Math.round(edge(folder.querySelector(".wg-kit-pop-icon")).top - edge(folder).top),
+		firstRowGap: item === null || panel === null ? null : edge(item).top - edge(panel).top,
+		iconMid: folder === null ? null : edge(folder.querySelector(".sumi-chat-context-folder-icon")).top + edge(folder.querySelector(".sumi-chat-context-folder-icon")).height / 2,
+		nameMid: folder === null ? null : edge(folder.querySelector(".sumi-chat-context-name")).top + edge(folder.querySelector(".sumi-chat-context-name")).height / 2,
 	};
 })()`;
 const CLICK_ITEM = (text: string): string =>
@@ -125,12 +124,47 @@ interface Probe {
 	itemSize: string | null;
 	focusVisible: number;
 	pathText: string | null;
-	pathSize: string | null;
-	pathColor: string | null;
+	pathHeight: number | null;
 	pathScrollFits: boolean | null;
 	folderTitle: string | null;
-	wbr: number | null;
-	pathLines: number | null;
+	firstRowGap: number | null;
+	iconMid: number | null;
+	nameMid: number | null;
+}
+
+const HEAD_GEOMETRY = `(() => {
+	const head = document.querySelector(".wg-chat-head");
+	const [title, chevron, chip, more] = [".sumi-head-title", ".sumi-sessions-chevron", ".sumi-chat-context-chip", ".sumi-chat-context-more"].map((selector) => document.querySelector(selector));
+	const box = (node) => node.getBoundingClientRect();
+	const follows = (first, second) => Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
+	return {
+		domOrder: follows(title, chevron) && follows(chevron, chip),
+		visualOrder: box(title).right <= box(chevron).left + 1 && box(chevron).right <= box(chip).left + 1 && box(chip).right <= box(more).left + 1,
+		moreRight: box(more).right,
+		contentRight: box(head).right - parseFloat(getComputedStyle(head).paddingRight),
+		chipGap: box(chip).left - box(chevron).right,
+	};
+})()`;
+
+interface HeadGeometry {
+	domOrder: boolean;
+	visualOrder: boolean;
+	moreRight: number;
+	contentRight: number;
+	chipGap: number;
+}
+
+async function checkHead(page: AskedPage, label: string, domOrder: boolean): Promise<void> {
+	const head = (await page.ask(HEAD_GEOMETRY)) as HeadGeometry;
+	console.log(label, JSON.stringify(head));
+	check(`${label}: DOM order is title, chevron, chip`, head.domOrder, domOrder);
+	check(`${label}: drawn order is title, chevron, chip, more`, head.visualOrder, true);
+	check(
+		`${label}: more button right edge is the header content right edge`,
+		Math.abs(head.moreRight - head.contentRight) <= 1,
+		true,
+	);
+	check(`${label}: chip is 10px after the chevron`, Math.abs(head.chipGap - 10) <= 1, true);
 }
 
 async function shot(page: AskedPage, name: string): Promise<void> {
@@ -157,7 +191,7 @@ async function run(
 try {
 	await run(`${origin}/table-before`, "table-before", [600, 200], async (page) => {
 		console.log("table before", JSON.stringify(await page.ask(TEXT_PROBE)));
-		await shot(page, "v2-table-before");
+		await shot(page, "v3-table-before");
 	});
 	await run(`${origin}/table-after`, "table-after", [600, 200], async (page) => {
 		const text = (await page.ask(TEXT_PROBE)) as {
@@ -176,20 +210,21 @@ try {
 			[text.th.size, text.th.line, text.th.weight],
 			[text.p.size, text.p.line, text.p.weight],
 		);
-		await shot(page, "v2-table-after");
+		await shot(page, "v3-table-after");
 	});
 	await run(`${origin}/?v=git`, "chip-git", [720, 360], async (page) => {
 		const head = (await page.ask(HEAD_PROBE)) as Record<string, unknown>;
 		console.log("git chip", JSON.stringify(head));
 		check("the chip shows the branch in a git folder", [head["chip"], head["chipIcon"]], ["feat/chat-context", 1]);
 		check("the chip sits after the title", head["afterTitle"], true);
+		await checkHead(page, "header", true);
 		const rest = (await page.ask(PANEL_PROBE)) as Probe;
 		console.log("chip at rest", JSON.stringify(rest));
 		check("the chip has no background at rest", [rest.chipBackground, rest.chipFill], [TRANSPARENT, TRANSPARENT]);
 		check("the chip ink is the muted token", rest.chipColor, rest.token);
 		check("the chip text is 13px", rest.chipText, "13px");
 		check("the more button is 28px", [rest.more?.w, rest.more?.h], [28, 28]);
-		await shot(page, "v2-chip-rest");
+		await shot(page, "v3-chip-rest");
 		await page.ask(PRESS(".sumi-chat-context-chip"));
 		await waited(500);
 		const open = (await page.ask(HEAD_PROBE)) as { menu: string[]; separators: number };
@@ -210,13 +245,17 @@ try {
 		check("opened from the chip, the panel is left-aligned to the chip", chipOpen.panel?.left, chipOpen.chipLeft);
 		check("the menu text is the kit weight and size", [chipOpen.itemWeight, chipOpen.itemSize], ["400", "12.5px"]);
 		check("no focus frame when opened by pointer", chipOpen.focusVisible, 0);
-		check("the path is 12px on 16px", chipOpen.pathSize, "12px/16px");
-		check("the path wears the muted token", chipOpen.pathColor, chipOpen.token);
 		check("the path is shortened with ~", chipOpen.pathText, "~/Projects/Sumi");
-		check("the path has a break point after each slash", chipOpen.wbr, 2);
+		check("the path is one line", (chipOpen.pathHeight ?? 99) <= 18, true);
+		check("the first row is 4px or more under the panel top", (chipOpen.firstRowGap ?? 0) >= 4, true);
+		check(
+			"the folder icon centre sits on the name line centre",
+			Math.abs((chipOpen.iconMid ?? 0) - (chipOpen.nameMid ?? 99)) <= 2,
+			true,
+		);
 		check("the folder row title is the full path", chipOpen.folderTitle, "/Users/demo/Projects/Sumi");
 		check("the path is never cut", chipOpen.pathScrollFits, true);
-		await shot(page, "v2-chip-menu");
+		await shot(page, "v3-chip-menu");
 		await page.ask(CLICK_ITEM("Open in Zed"));
 		await waited(300);
 		check("pressing Open in runs open -a over the folder", await page.ask("window.__OPENED__.map((one) => one.args)"), [
@@ -233,10 +272,10 @@ try {
 			Math.round(more.more?.right ?? -2),
 		);
 		check("no focus frame when the more button opens it", more.focusVisible, 0);
-		await shot(page, "v2-more-menu");
+		await shot(page, "v3-more-menu");
 		await page.ask(PRESS(".sumi-chat-context-apps"));
 		await waited(400);
-		await shot(page, "v2-submenu");
+		await shot(page, "v3-submenu");
 		check(
 			"the submenu lists the editors found and Finder",
 			await page.ask(`[...document.querySelectorAll(".wg-kit-pop-item")].map((one) => one.textContent).slice(-3)`),
@@ -265,7 +304,7 @@ try {
 			open.menu.some((text) => text.includes("feat/")),
 			false,
 		);
-		await shot(page, "v2-plain-menu");
+		await shot(page, "v3-plain-menu");
 	});
 	await run(`${origin}/?v=long`, "chip-long", [720, 360], async (page) => {
 		await page.ask(PRESS(".sumi-chat-context-more"));
@@ -273,13 +312,38 @@ try {
 		const long = (await page.ask(PANEL_PROBE)) as Probe;
 		console.log("long path", JSON.stringify(long));
 		check("a long path keeps the panel at 260px", long.panel?.width, 260);
-		check("a long path wraps on slashes, never cut", [long.pathScrollFits, (long.pathLines ?? 0) > 1], [true, true]);
-		await shot(page, "v2-long-path");
+		check(
+			"a long path is one line, middle-cut with an ellipsis",
+			[(long.pathHeight ?? 99) <= 18, long.pathText?.includes("…")],
+			[true, true],
+		);
+		check("the long path keeps its start and end", long.pathText, "~/Projects/…/src/components");
+		check("the long path is not clipped by the panel", long.pathScrollFits, true);
+		check("the first row is 4px or more under the panel top", (long.firstRowGap ?? 0) >= 4, true);
+		check(
+			"the folder icon centre sits on the name line centre",
+			Math.abs((long.iconMid ?? 0) - (long.nameMid ?? 99)) <= 2,
+			true,
+		);
+		console.log(
+			"long path measures",
+			JSON.stringify({
+				pathHeight: long.pathHeight,
+				firstRowGap: long.firstRowGap,
+				iconMid: long.iconMid,
+				nameMid: long.nameMid,
+			}),
+		);
+		await shot(page, "v3-long-path");
+	});
+	await run(`${origin}/?v=git&fills=context-first`, "chip-context-first", [720, 360], async (page) => {
+		await checkHead(page, "header with the chat context registered first", false);
+		await shot(page, "v3-header-context-first");
 	});
 	await run(`${origin}/?v=none`, "chip-none", [720, 360], async (page) => {
 		const head = (await page.ask(HEAD_PROBE)) as Record<string, unknown>;
 		check("no working folder, no chip", [head["chip"], head["more"]], [null, null]);
-		await shot(page, "v2-chip-none");
+		await shot(page, "v3-chip-none");
 	});
 } finally {
 	server.close();
