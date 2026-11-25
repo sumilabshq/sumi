@@ -10,6 +10,7 @@ const SHOTS_AT = process.argv[2] ?? "/tmp/chat-context-shots";
 const BEFORE_SHEETS = ["/tmp/chat-context-board-before.css", "/tmp/chat-context-assistant-before.css"];
 const SHEETS = [
 	BOARD_SHEET,
+	"apps/studio/dist/studio.css",
 	"plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant.css",
 	"plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-page.css",
 	"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
@@ -30,7 +31,7 @@ const styles = SHEETS.map((sheet) => `<style>${readFileSync(sheet, "utf8")}</sty
 const pages = new Map<string, string>([
 	[
 		"/",
-		`<!doctype html><html><head><meta charset="utf-8">${styles}<style>${LAYOUT}</style></head><body class="wg-studio"><div id="root"></div><pre id="boom"></pre><script>${bundle}</script></body></html>`,
+		`<!doctype html><html><head><meta charset="utf-8">${styles}<style>${LAYOUT}</style></head><body class="wg-studio"><div class="wg-root wg-portal wg-kit-portal-layer is-studio"></div><div id="root"></div><pre id="boom"></pre><script>${bundle}</script></body></html>`,
 	],
 	[
 		"/table-after",
@@ -69,8 +70,68 @@ const HEAD_PROBE = `(() => {
 		boom: document.getElementById("boom").textContent,
 	};
 })()`;
+const PRESS = (selector: string): string =>
+	`(() => { document.querySelector(${JSON.stringify(selector)}).dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 })); return true; })()`;
+const PANEL_PROBE = `(() => {
+	const panel = document.querySelector(".sumi-chat-context-pop.is-open");
+	const item = document.querySelector(".sumi-chat-context-pop .wg-kit-pop-item");
+	const folder = document.querySelector(".sumi-chat-context-folder");
+	const path = document.querySelector(".sumi-chat-context-path");
+	const edge = (node) => node === null ? null : node.getBoundingClientRect();
+	const muted = document.createElement("i");
+	muted.style.color = "var(--text-3)";
+	document.body.append(muted);
+	const token = getComputedStyle(muted).color;
+	muted.remove();
+	const chip = document.querySelector(".sumi-chat-context-chip");
+	const more = document.querySelector(".sumi-chat-context-more");
+	return {
+		panel: panel === null ? null : { left: edge(panel).left, right: edge(panel).right, width: edge(panel).width },
+		more: more === null ? null : { right: edge(more).right, w: edge(more).width, h: edge(more).height, color: getComputedStyle(more).color },
+		chipLeft: chip === null ? null : edge(chip).left,
+		chipBackground: chip === null ? null : getComputedStyle(chip).backgroundColor,
+		chipFill: chip === null ? null : getComputedStyle(chip, "::before").backgroundColor,
+		chipColor: chip === null ? null : getComputedStyle(chip).color,
+		chipText: chip === null ? null : getComputedStyle(chip.querySelector(".sumi-chat-context-label")).fontSize,
+		token,
+		itemWeight: item === null ? null : getComputedStyle(item).fontWeight,
+		itemSize: item === null ? null : getComputedStyle(item).fontSize,
+		focusVisible: [...document.querySelectorAll(".sumi-chat-context-pop .wg-kit-pop-item")].filter((one) => one.matches(":focus-visible")).length,
+		pathText: path === null ? null : path.textContent,
+		pathSize: path === null ? null : getComputedStyle(path).fontSize + "/" + getComputedStyle(path).lineHeight,
+		pathColor: path === null ? null : getComputedStyle(path).color,
+		pathLines: path === null ? null : Math.round(edge(path).height / 16),
+		pathScrollFits: path === null ? null : path.scrollWidth <= path.clientWidth + 1,
+		folderTitle: folder === null ? null : folder.getAttribute("title"),
+		wbr: path === null ? null : path.querySelectorAll("wbr").length,
+		iconTop: folder === null ? null : Math.round(edge(folder.querySelector(".wg-kit-pop-icon")).top - edge(folder).top),
+	};
+})()`;
 const CLICK_ITEM = (text: string): string =>
 	`(() => { const item = [...document.querySelectorAll(".wg-kit-pop-item")].find((one) => one.textContent.includes(${JSON.stringify(text)})); item.click(); return true; })()`;
+
+const TRANSPARENT = "rgba(0, 0, 0, 0)";
+
+interface Probe {
+	panel: { left: number; right: number; width: number } | null;
+	more: { right: number; w: number; h: number } | null;
+	chipLeft: number | null;
+	chipBackground: string | null;
+	chipFill: string | null;
+	chipColor: string | null;
+	chipText: string | null;
+	token: string;
+	itemWeight: string | null;
+	itemSize: string | null;
+	focusVisible: number;
+	pathText: string | null;
+	pathSize: string | null;
+	pathColor: string | null;
+	pathScrollFits: boolean | null;
+	folderTitle: string | null;
+	wbr: number | null;
+	pathLines: number | null;
+}
 
 async function shot(page: AskedPage, name: string): Promise<void> {
 	const file = `${SHOTS_AT}/${name}.png`;
@@ -96,7 +157,7 @@ async function run(
 try {
 	await run(`${origin}/table-before`, "table-before", [600, 200], async (page) => {
 		console.log("table before", JSON.stringify(await page.ask(TEXT_PROBE)));
-		await shot(page, "table-before");
+		await shot(page, "v2-table-before");
 	});
 	await run(`${origin}/table-after`, "table-after", [600, 200], async (page) => {
 		const text = (await page.ask(TEXT_PROBE)) as {
@@ -115,34 +176,67 @@ try {
 			[text.th.size, text.th.line, text.th.weight],
 			[text.p.size, text.p.line, text.p.weight],
 		);
-		await shot(page, "table-after");
+		await shot(page, "v2-table-after");
 	});
 	await run(`${origin}/?v=git`, "chip-git", [720, 360], async (page) => {
 		const head = (await page.ask(HEAD_PROBE)) as Record<string, unknown>;
 		console.log("git chip", JSON.stringify(head));
 		check("the chip shows the branch in a git folder", [head["chip"], head["chipIcon"]], ["feat/chat-context", 1]);
 		check("the chip sits after the title", head["afterTitle"], true);
-		await page.ask(`(() => { document.querySelector(".sumi-chat-context-chip").click(); return true; })()`);
+		const rest = (await page.ask(PANEL_PROBE)) as Probe;
+		console.log("chip at rest", JSON.stringify(rest));
+		check("the chip has no background at rest", [rest.chipBackground, rest.chipFill], [TRANSPARENT, TRANSPARENT]);
+		check("the chip ink is the muted token", rest.chipColor, rest.token);
+		check("the chip text is 13px", rest.chipText, "13px");
+		check("the more button is 28px", [rest.more?.w, rest.more?.h], [28, 28]);
+		await shot(page, "v2-chip-rest");
+		await page.ask(PRESS(".sumi-chat-context-chip"));
 		await waited(500);
 		const open = (await page.ask(HEAD_PROBE)) as { menu: string[]; separators: number };
-		console.log("git menu", JSON.stringify(open));
+		const chipOpen = (await page.ask(PANEL_PROBE)) as Probe;
+		console.log("git menu", JSON.stringify(open), JSON.stringify(chipOpen));
 		check(
 			"the menu has folder, branch, computer, open in the first editor found",
 			open.menu.map((text) => text),
-			["Sumi/Users/demo/Projects/Sumi", "feat/chat-context", "This Mac", "Open in Zed"],
+			["Sumi~/Projects/Sumi", "feat/chat-context", "This Mac", "Open in Zed"],
+		);
+		check(
+			"no Open terminal here",
+			open.menu.some((text) => text.includes("terminal")),
+			false,
 		);
 		check("one separator", open.separators, 1);
-		await shot(page, "chip-git-menu");
+		check("the panel is 260px wide", chipOpen.panel?.width, 260);
+		check("opened from the chip, the panel is left-aligned to the chip", chipOpen.panel?.left, chipOpen.chipLeft);
+		check("the menu text is the kit weight and size", [chipOpen.itemWeight, chipOpen.itemSize], ["400", "12.5px"]);
+		check("no focus frame when opened by pointer", chipOpen.focusVisible, 0);
+		check("the path is 12px on 16px", chipOpen.pathSize, "12px/16px");
+		check("the path wears the muted token", chipOpen.pathColor, chipOpen.token);
+		check("the path is shortened with ~", chipOpen.pathText, "~/Projects/Sumi");
+		check("the path has a break point after each slash", chipOpen.wbr, 2);
+		check("the folder row title is the full path", chipOpen.folderTitle, "/Users/demo/Projects/Sumi");
+		check("the path is never cut", chipOpen.pathScrollFits, true);
+		await shot(page, "v2-chip-menu");
 		await page.ask(CLICK_ITEM("Open in Zed"));
 		await waited(300);
 		check("pressing Open in runs open -a over the folder", await page.ask("window.__OPENED__.map((one) => one.args)"), [
 			["-a", "Zed", "/Users/demo/Projects/Sumi"],
 		]);
-		await page.ask(`(() => { document.querySelector(".sumi-chat-context-more").click(); return true; })()`);
-		await waited(300);
-		await page.ask(`(() => { document.querySelector(".sumi-chat-context-apps").click(); return true; })()`);
+		await page.ask(PRESS(".sumi-chat-context-more"));
+		await waited(500);
+		const more = (await page.ask(PANEL_PROBE)) as Probe;
+		console.log("more menu", JSON.stringify(more));
+		check("the panel is 260px wide from the more button", more.panel?.width, 260);
+		check(
+			"opened from the more button, the panel right edge meets the button",
+			Math.round(more.panel?.right ?? -1),
+			Math.round(more.more?.right ?? -2),
+		);
+		check("no focus frame when the more button opens it", more.focusVisible, 0);
+		await shot(page, "v2-more-menu");
+		await page.ask(PRESS(".sumi-chat-context-apps"));
 		await waited(400);
-		await shot(page, "chip-git-submenu");
+		await shot(page, "v2-submenu");
 		check(
 			"the submenu lists the editors found and Finder",
 			await page.ask(`[...document.querySelectorAll(".wg-kit-pop-item")].map((one) => one.textContent).slice(-3)`),
@@ -150,7 +244,7 @@ try {
 		);
 		await page.ask(CLICK_ITEM("Cursor"));
 		await waited(400);
-		await page.ask(`(() => { document.querySelector(".sumi-chat-context-more").click(); return true; })()`);
+		await page.ask(PRESS(".sumi-chat-context-more"));
 		await waited(400);
 		check(
 			"the chosen editor names the item after it",
@@ -163,7 +257,7 @@ try {
 	await run(`${origin}/?v=plain`, "chip-plain", [720, 360], async (page) => {
 		const head = (await page.ask(HEAD_PROBE)) as Record<string, unknown>;
 		check("the chip shows the folder name without git", [head["chip"], head["chipIcon"]], ["notes", 1]);
-		await page.ask(`(() => { document.querySelector(".sumi-chat-context-more").click(); return true; })()`);
+		await page.ask(PRESS(".sumi-chat-context-more"));
 		await waited(500);
 		const open = (await page.ask(HEAD_PROBE)) as { menu: string[] };
 		check(
@@ -171,12 +265,21 @@ try {
 			open.menu.some((text) => text.includes("feat/")),
 			false,
 		);
-		await shot(page, "chip-plain-menu");
+		await shot(page, "v2-plain-menu");
+	});
+	await run(`${origin}/?v=long`, "chip-long", [720, 360], async (page) => {
+		await page.ask(PRESS(".sumi-chat-context-more"));
+		await waited(500);
+		const long = (await page.ask(PANEL_PROBE)) as Probe;
+		console.log("long path", JSON.stringify(long));
+		check("a long path keeps the panel at 260px", long.panel?.width, 260);
+		check("a long path wraps on slashes, never cut", [long.pathScrollFits, (long.pathLines ?? 0) > 1], [true, true]);
+		await shot(page, "v2-long-path");
 	});
 	await run(`${origin}/?v=none`, "chip-none", [720, 360], async (page) => {
 		const head = (await page.ask(HEAD_PROBE)) as Record<string, unknown>;
 		check("no working folder, no chip", [head["chip"], head["more"]], [null, null]);
-		await shot(page, "chip-none");
+		await shot(page, "v2-chip-none");
 	});
 } finally {
 	server.close();

@@ -32,7 +32,10 @@ import { reportsFailures } from "./page-harness.ts";
 reportsFailures();
 
 const variant = new URLSearchParams(location.search).get("v") ?? "git";
-const FOLDER = variant === "plain" ? "/Users/demo/notes" : "/Users/demo/Projects/Sumi";
+const LONG_FOLDER =
+	"/Users/demo/Projects/Sumilabs/Sumi-worktrees/chat-context-redesign/packages/shared/kit/src/components";
+const FOLDER =
+	variant === "plain" ? "/Users/demo/notes" : variant === "long" ? LONG_FOLDER : "/Users/demo/Projects/Sumi";
 const SEEDED: readonly Workspace[] = [{ id: "sumi", name: "Sumi", icon: null, ink: "yellow" }];
 const kept = firstChats();
 const [first] = kept.chats;
