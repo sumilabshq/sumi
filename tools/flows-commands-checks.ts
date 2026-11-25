@@ -78,11 +78,7 @@ async function flowCommandChecks(): Promise<void> {
 		made.flowId,
 	);
 	check("the new flow is one pane", flows.flows.find(({ id }) => id === made.flowId)?.layout.root.kind, "pane");
-	check(
-		"the new flow holds exactly one tab, a Home tab",
-		await appsOfFlow(stand, made.flowId),
-		[HOME_TAB_APP],
-	);
+	check("the new flow holds exactly one tab, a Home tab", await appsOfFlow(stand, made.flowId), [HOME_TAB_APP]);
 	check("every law holds after create", await lawsOf(stand), []);
 	check(
 		"a missing folder is refused",
@@ -420,11 +416,9 @@ async function reconcileChecks(): Promise<void> {
 		[chatIdOf(1)],
 	);
 	await stand.app.send(navigation.tabClosing.closeTab, { at, id: chatIdOf(1) });
-	check(
-		"a flow whose last tab closed stays, holding one Home tab",
-		await appsOfFlow(stand, chatFlow(1)),
-		[HOME_TAB_APP],
-	);
+	check("a flow whose last tab closed stays, holding one Home tab", await appsOfFlow(stand, chatFlow(1)), [
+		HOME_TAB_APP,
+	]);
 	check("every law holds after the closes", await lawsOf(stand), []);
 	const reopened = await stand.app.send(navigation.tabOpening.reopenClosed, { at, tabId: chatIdOf(1) });
 	check(
@@ -649,6 +643,103 @@ async function removeNoOpCloseChecks(): Promise<void> {
 	);
 }
 
+async function projectChecks(): Promise<void> {
+	const stand = standOver(true);
+	const sidebar = async () => stand.app.send(navigation.flows.sidebar, { window: MAIN });
+	const flowId = chatFlow(2);
+	const first = await sidebar();
+	check(
+		"General stands alone before any project is made",
+		first.projects.map(({ id, isGeneral }) => [id, isGeneral]),
+		[["general", true]],
+	);
+	check(
+		"a flow without a project belongs to General",
+		first.looseFlows.every(({ projectId }) => projectId === "general"),
+		true,
+	);
+	const made = await stand.app.send(navigation.projects.create, { name: "Sumi app" });
+	const projectId = made.projectId;
+	const created = await sidebar();
+	check(
+		"a project lands after General with the default base folder",
+		created.projects.map(({ id, baseFolder }) => [id, baseFolder]),
+		[
+			["general", "~/Sumi/General"],
+			[projectId, "~/Sumi/Sumi app"],
+		],
+	);
+	check(
+		"a new project holds no rows",
+		created.looseFlows.filter((row) => row.projectId === projectId),
+		[],
+	);
+	await stand.app.send(navigation.projects.moveFlow, { flowId, projectId });
+	const moved = await sidebar();
+	check("a flow moved to a project carries it", moved.looseFlows.find(({ id }) => id === flowId)?.projectId, projectId);
+	await stand.app.send(navigation.projects.moveFolder, { folderId: "folder-group-93", projectId });
+	const withFolder = await sidebar();
+	const folder = withFolder.folders.find(({ id }) => id === "folder-group-93");
+	check(
+		"moving a folder moves its flows with it",
+		[folder?.projectId, folder?.flows.length !== 0, folder?.flows.every(({ projectId: one }) => one === projectId)],
+		[projectId, true, true],
+	);
+	await stand.app.send(navigation.projects.reorder, { id: projectId, before: "general" });
+	check(
+		"reorder puts the project before General",
+		(await sidebar()).projects.map(({ id }) => id),
+		[projectId, "general"],
+	);
+	await stand.app.send(navigation.projects.rename, { id: projectId, name: "Renamed" });
+	await stand.app.send(navigation.projects.setBaseFolder, { id: projectId, baseFolder: "~/Work/renamed" });
+	check(
+		"rename and base folder change the project",
+		(await sidebar()).projects.find(({ id }) => id === projectId),
+		{ id: projectId, name: "Renamed", baseFolder: "~/Work/renamed", isCollapsed: false, isGeneral: false },
+	);
+	const collapsedOf = async (): Promise<boolean | undefined> =>
+		(await sidebar()).projects.find(({ id }) => id === projectId)?.isCollapsed;
+	await stand.app.send(navigation.projects.toggle, { id: projectId });
+	const afterFirst = await collapsedOf();
+	await stand.app.send(navigation.projects.toggle, { id: projectId });
+	check(
+		"toggle collapses the project and the next toggle expands it",
+		[afterFirst, await collapsedOf()],
+		[true, false],
+	);
+	const joined = await stand.app.send(navigation.projects.create, { name: "Fresh", flowId: chatFlow(3) });
+	check(
+		"a project made with a flow takes the flow in the same write",
+		(await sidebar()).looseFlows.find(({ id }) => id === chatFlow(3))?.projectId,
+		joined.projectId,
+	);
+	await stand.app.send(navigation.projects.remove, { id: projectId });
+	const removed = await sidebar();
+	check(
+		"deleting a project sends its flows and folders to General",
+		[
+			removed.projects.map(({ id }) => id),
+			removed.looseFlows.find(({ id }) => id === flowId)?.projectId,
+			removed.folders.find(({ id }) => id === "folder-group-93")?.projectId,
+		],
+		[["general", joined.projectId], "general", "general"],
+	);
+	check(
+		"General cannot be deleted",
+		(await refusalOf(() => stand.app.send(navigation.projects.remove, { id: "general" }))).includes(
+			"cannot be deleted",
+		),
+		true,
+	);
+	check(
+		"a flow cannot move to a project that is gone",
+		(await refusalOf(() => stand.app.send(navigation.projects.moveFlow, { flowId, projectId }))).includes("no project"),
+		true,
+	);
+	check("every law holds after the project moves", await lawsOf(stand), []);
+}
+
 async function archiveChecks(): Promise<void> {
 	const stand = standOver(true);
 	const flowId = chatFlow(2);
@@ -788,16 +879,88 @@ async function linkTabChecks(): Promise<void> {
 		[[chat, opened.id, ...before.slice(1)], opened.id],
 	);
 	const again = await stand.app.send(navigation.flows.openLinkTab, { ...link, place: "beside" });
-	check("a link already open in the flow shows that tab", [again.id, (await paneOfChat())?.tabIds.length], [opened.id, before.length + 1]);
-	const split = await stand.app.send(navigation.flows.openLinkTab, { ...link, address: "canvas://split-check", place: "split" });
+	check(
+		"a link already open in the flow shows that tab",
+		[again.id, (await paneOfChat())?.tabIds.length],
+		[opened.id, before.length + 1],
+	);
+	const split = await stand.app.send(navigation.flows.openLinkTab, {
+		...link,
+		address: "canvas://split-check",
+		place: "split",
+	});
 	const flow = (await flowsIn(stand)).flows.find(({ id }) => id === chatFlow(1)) ?? emptyFlow();
 	const root = flow.layout.root;
 	check(
 		"Open in split puts the new tab in a new pane to the right of the chat's pane",
-		[root.kind === "split" ? root.dir : null, root.kind === "split" ? root.children.length : 0, flowPanesOf(flow).at(-1)?.tabIds],
+		[
+			root.kind === "split" ? root.dir : null,
+			root.kind === "split" ? root.children.length : 0,
+			flowPanesOf(flow).at(-1)?.tabIds,
+		],
 		["row", 2, [split.id]],
 	);
 	check("every law holds after the link opens", await lawsOf(stand), []);
+}
+
+async function shownIn(stand: Stand): Promise<string | undefined> {
+	return (await flowsIn(stand)).windowFlows[MAIN];
+}
+
+async function closingChecks(): Promise<void> {
+	const stand = standOver(true);
+	const at = atOf(MAIN);
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(3), at });
+	await stand.app.send(navigation.flows.archive, { flowId: chatFlow(3) });
+	check("archiving the shown session shows the one directly above it", await shownIn(stand), chatFlow(2));
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId: chatFlow(1), at });
+	await stand.app.send(navigation.flows.archive, { flowId: chatFlow(1) });
+	check("with none above, the one directly below is shown", await shownIn(stand), chatFlow(2));
+	check("every law holds after the shown session is archived", await lawsOf(stand), []);
+
+	for (const { id } of (await flowsIn(stand)).flows) {
+		await stand.app.send(navigation.flows.archive, { flowId: id });
+	}
+
+	const last = await flowsIn(stand);
+	const shown = last.flows.find(({ id }) => id === last.windowFlows[MAIN]);
+	check(
+		"archiving the last session shows a new default session, loose in General, holding one Home tab",
+		[
+			shown?.id.startsWith("flow-default-"),
+			shown?.archivedAt,
+			last.looseFlowIds.includes(shown?.id ?? ""),
+			shown?.projectId,
+		],
+		[true, null, true, undefined],
+	);
+	check("and that session holds one Home tab", await appsOfFlow(stand, shown?.id ?? ""), [HOME_TAB_APP]);
+	check("every law holds after the last session is archived", await lawsOf(stand), []);
+	const homeId = flowTabIdsOf(shown ?? emptyFlow())[0] ?? "";
+	await stand.app.send(navigation.tabClosing.closeTab, { at, id: homeId });
+	const reopened = await appsOfFlow(stand, shown?.id ?? "");
+	check(
+		"closing a session's last tab leaves it one Home tab, and it stays shown",
+		[
+			reopened,
+			flowTabIdsOf((await flowsIn(stand)).flows.find(({ id }) => id === shown?.id) ?? emptyFlow()).includes(homeId),
+			await shownIn(stand),
+		],
+		[[HOME_TAB_APP], false, shown?.id],
+	);
+	check("every law holds after the last tab closes", await lawsOf(stand), []);
+}
+
+async function folderShownChecks(): Promise<void> {
+	const world = await sidebarWorldOf("quiet");
+	await world.app.send(appHost.flows.open, { flowId: "design-system" });
+	await world.app.send(appHost.flows.deleteFolder, { folderId: "sumi" });
+	const sidebar = await world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
+	check(
+		"deleting the folder of the shown session shows the session above the folder",
+		sidebar.ok && sidebar.output.windowFlowId,
+		"reading-list",
+	);
 }
 
 function never(): never {
@@ -827,9 +990,12 @@ await homeTabHealingChecks();
 await removeNoOpCloseChecks();
 await moveBeforeItselfChecks();
 await archiveChecks();
+await projectChecks();
 await deleteChecks();
 await folderDeleteChecks();
 await ungroupChecks();
 await linkTabChecks();
+await closingChecks();
+await folderShownChecks();
 console.log(tally.failed ? `flows commands: ${tally.failed} check(s) failed` : "flows commands: all checks passed");
 process.exit(tally.failed ? 1 : 0);

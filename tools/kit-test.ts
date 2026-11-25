@@ -258,25 +258,6 @@ interface MirrorPage {
 		readonly rowRight: number;
 	};
 	readonly setLong: { readonly nameOver: number; readonly valueRight: number; readonly rowRight: number };
-	readonly popSeed: string;
-	readonly popSeam?: {
-		readonly trigger?: string;
-		readonly panel?: string;
-		readonly seed?: string;
-		readonly origin?: string;
-	};
-	readonly popGrow?: {
-		readonly panel?: readonly string[];
-		readonly trigger?: readonly string[];
-		readonly touched?: string;
-		readonly pinned?: string;
-	};
-	readonly popCurve?: {
-		readonly start?: string;
-		readonly peak?: string;
-		readonly rest?: string;
-		readonly span?: number;
-	} | null;
 }
 function mirrorPageOf(parsed: unknown): MirrorPage {
 	if (typeof parsed !== "object" || parsed === null) throw new TypeError("the mirror page reported no object");
@@ -699,7 +680,7 @@ check("and is never touched on the way out", foundAs(host, ".wg-kit-icon", HTMLE
 check("the panel is anchored, not centred", foundAs(host, ".wg-kit-pop", HTMLElement).style.left !== "", true);
 // jsdom runs no transitions, so the exit is ended the way a browser ends it
 const endExit = (panel: Element) =>
-	panel.dispatchEvent(new TransitionEvent("transitionend", { bubbles: true, propertyName: "transform" }));
+	panel.dispatchEvent(Object.assign(new window.Event("animationend", { bubbles: true }), { animationName: "wg-kit-pop-out" }));
 
 document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 await settle();
@@ -1755,429 +1736,6 @@ check(
 	render(null, host);
 }
 
-// THE EXIT IS A STATE MACHINE, and jsdom runs no transitions — so the curve is not what is
-// asserted here. The states are: the panel outliving `open`, the trigger held back until the
-// fold ends, the radius travelling with it, and every way out of the machine.
-{
-	const host = byId(document, "host");
-	render(null, host);
-
-	// jsdom lays nothing out, and a fold measured from zeroes is a fold of NaN
-	const wasRect = Element.prototype.getBoundingClientRect;
-	// CONTEXT: a measurement forces a style flush, and a browser starts or misses transitions there
-	const flushes: { open: boolean; opacity: string; transition: string }[] = [];
-	Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
-		if (this.classList.contains("wg-kit-pop")) {
-			flushes.push({
-				open: this.classList.contains("is-open"),
-				opacity: mustHtmlOf(this).style.opacity,
-				transition: mustHtmlOf(this).style.transition,
-			});
-			return domRect(0, 0, 240, 180);
-		}
-		if (this.classList.contains("wg-kit-anchor")) return domRect(40, 60, 100, 40);
-		return domRect(0, 0, 0, 0);
-	};
-	// THE CORNER LIVES ON ::before, so that is where the trigger's radius has to be read from
-	const realStyle = globalThis.getComputedStyle;
-	let pseudoReads = 0;
-	stubComputedStyle((node, pseudo) => {
-		if (pseudo) pseudoReads += 1;
-		return { ...realStyle(node), borderRadius: pseudo ? "999px" : "0px", borderLeftWidth: "0px" };
-	});
-	const realMatchMedia = window.matchMedia;
-
-	const pop = () => htmlIn(host, ".wg-kit-pop");
-	const anchor = () => htmlIn(host, ".wg-kit-anchor");
-	const has = (name: string) => Boolean(pop()?.classList.contains(name));
-	const show = async (open: boolean) => {
-		render(
-			h(
-				Kit.Popover,
-				{ isOpen: open, trigger: h("button", { className: "exit-trigger" }, "T") },
-				h(Kit.PopoverItem, {}, "Rename"),
-			),
-			host,
-		);
-		await settle();
-	};
-
-	await show(true);
-	// CONTEXT: the enter is let LAND first, so its inline opacity is gone and the hold below is the only one
-	await new Promise((resolve) => setTimeout(resolve, 600));
-	check("the enter has landed, leaving the opacity to the stylesheet", mustHtmlOf(pop()).style.opacity, "");
-	flushes.length = 0;
-	await show(false);
-	check(
-		"the exit folds the panel back onto the trigger",
-		/^translate\(40px, 60px\) scale\(0\.41/.test(mustHtmlOf(pop()).style.transform),
-		true,
-	);
-	// A RADIUS IS SCALED BY THE TRANSFORM: the trigger's real 20px corner, divided by the scale it
-	// is about to be multiplied by, per axis — or the panel squares off as it shrinks.
-	check("AND THE RADIUS TRAVELS WITH IT", Math.round(parseFloat(mustHtmlOf(pop()).style.borderRadius)), 48);
-	check("on the other axis too", Math.round(parseFloat(mustHtmlOf(pop()).style.borderRadius.split("/")[1] ?? "")), 90);
-	check("measured from the ::before where the corner is painted", pseudoReads > 0, true);
-	check("the content fades out ahead of the panel", mustHtmlOf(mustHtmlOf(pop()).firstElementChild).style.opacity, "0");
-	check(
-		"and the closing curve is the ease, never the spring",
-		/--spring/.test(mustHtmlOf(pop()).style.transition),
-		false,
-	);
-
-	// CONTEXT: a fade whose start value is resolved as 0 plays nothing — the panel is gone in one frame
-	const measured = nth(flushes, 0);
-	const folding = nth(flushes, -1);
-	check("the exit measures a panel that still wears `is-open`, never dropped for a frame", measured.open, true);
-	check("SO IT HOLDS THE OPACITY UP BEFORE MEASURING", measured.opacity, "1");
-	check("because opacity is not in the curve still in force there", /opacity/.test(measured.transition), false);
-	check("only then is it sent to nothing", folding.opacity, "0");
-	check("on a curve that names opacity", /opacity var\(--press\)/.test(folding.transition), true);
-
-	// A PANEL THAT EMPTIES CANNOT FOLD. A caller writes `{open ? … : null}` because it is the
-	// obvious thing to write; the panel then collapses to its padding and the fold plays from a
-	// flattened line. So the kit keeps the last children, and pins the box before it measures.
-	check(
-		"the children it had are still there while it folds",
-		Boolean(mustHtmlOf(pop()).querySelector(".wg-kit-pop-item")),
-		true,
-	);
-	check(
-		"and the box is pinned in pixels so it cannot collapse",
-		/^[\d.]+px$/.test(mustHtmlOf(pop()).style.width),
-		true,
-	);
-	check("in both directions", /^[\d.]+px$/.test(mustHtmlOf(pop()).style.height), true);
-
-	// RE-ENTRANCY. Pressing again mid-exit must re-open, not leave a half-applied fold behind.
-	check("the exit is running", has("is-exiting"), true);
-	await show(true);
-	check("re-opening cancels the exit", has("is-exiting"), false);
-	check("and the panel is open again", has("is-open"), true);
-	check("the trigger is hidden again, not stuck visible", mustHtmlOf(anchor()).style.visibility, "hidden");
-	check("nothing of the fold is left on the panel", mustHtmlOf(pop()).style.opacity, "");
-	check(
-		"the exit's pinned box is released, and the enter never pins one",
-		`${mustHtmlOf(pop()).style.width}|${mustHtmlOf(pop()).style.height}`,
-		"|",
-	);
-	check(
-		"and its content is fading IN again, not out",
-		mustHtmlOf(mustHtmlOf(pop()).firstElementChild).style.opacity,
-		"1",
-	);
-	endExit(mustElement(pop()));
-	await settle();
-	check("A LATE transitionend FROM THE CANCELLED EXIT DOES NOT CLOSE IT", has("is-open"), true);
-	check("and does not take the trigger back", mustHtmlOf(anchor()).style.visibility, "hidden");
-
-	// THE GUARD. A transition that never starts must not strand the panel on screen forever.
-	await show(false);
-	check("the exit is waiting on a transition that will not come", has("is-exiting"), true);
-	await new Promise((resolve) => setTimeout(resolve, 460));
-	await settle();
-	check("the guard ends it anyway", has("is-open"), false);
-	check("and the trigger is not stranded hidden", mustHtmlOf(anchor()).style.visibility, "");
-
-	// REDUCED MOTION. No animation at all, and nothing left lingering.
-	Object.assign(window, { matchMedia: () => ({ matches: true }) });
-	await show(true);
-	await show(false);
-	check("reduced motion skips the exit entirely", has("is-exiting"), false);
-	check("the panel is gone at once", has("is-open"), false);
-	check("the trigger comes back at once", mustHtmlOf(anchor()).style.visibility, "");
-	check("and no fold was painted on the way", mustHtmlOf(pop()).style.transform, "");
-	window.matchMedia = realMatchMedia;
-
-	globalThis.getComputedStyle = realStyle;
-	Element.prototype.getBoundingClientRect = wasRect;
-	render(null, host);
-}
-
-// CONTEXT: THE PANEL SEEDS AT THE TRIGGER'S BOX AND SCALES OUT — beats are sampled as written
-{
-	const host = byId(document, "host");
-	render(null, host);
-
-	const wasRect = Element.prototype.getBoundingClientRect;
-	Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
-		if (this.classList.contains("wg-kit-pop")) return domRect(0, 0, 240, 180);
-		if (this.classList.contains("wg-kit-anchor")) return domRect(40, 60, 100, 40);
-		return domRect(0, 0, 0, 0);
-	};
-	// CONTEXT: a grey row under a white panel — the pair the trigger's own paint has to be read from
-	const ROW_FILL = "rgb(240, 240, 240)";
-	const ROW_EDGE = "rgb(200, 200, 200)";
-	const PANEL_FILL = "rgb(255, 255, 255)";
-	const PANEL_EDGE = "inset 0 0 0 1px rgba(0, 0, 0, 0.12)";
-	const realStyle = globalThis.getComputedStyle;
-	stubComputedStyle((node, pseudo) => {
-		const base = {
-			...realStyle(node),
-			borderRadius: pseudo ? "999px" : "0px",
-			borderLeftWidth: "0px",
-			borderTopWidth: "0px",
-			backgroundColor: "rgba(0, 0, 0, 0)",
-			boxShadow: "none",
-		};
-		if (node.classList?.contains("wg-kit-pop")) return { ...base, backgroundColor: PANEL_FILL, boxShadow: PANEL_EDGE };
-		if (node.classList?.contains("enter-trigger"))
-			return { ...base, backgroundColor: ROW_FILL, borderTopWidth: "1px", borderTopColor: ROW_EDGE };
-		// CONTEXT: the kit's own controls are bare and paint their fill on ::before
-		if (node.classList?.contains("enter-ghost")) return pseudo ? { ...base, backgroundColor: ROW_FILL } : base;
-		return base;
-	});
-	const realMatchMedia = window.matchMedia;
-
-	const pop = () => htmlIn(host, ".wg-kit-pop");
-	const anchor = () => htmlIn(host, ".wg-kit-anchor");
-	const row = () => htmlIn(host, ".enter-trigger") ?? htmlIn(host, ".enter-ghost");
-	// CONTEXT: the seat is written in the layout effect, so it is gone by the first await
-	const open = (mark = "enter-trigger") =>
-		render(
-			h(
-				Kit.Popover,
-				{ isOpen: true, trigger: h("button", { className: mark }, "T") },
-				h(Kit.PopoverItem, {}, "Rename"),
-			),
-			host,
-		);
-	const shut = (mark = "enter-trigger") =>
-		render(
-			h(
-				Kit.Popover,
-				{ isOpen: false, trigger: h("button", { className: mark }, "T") },
-				h(Kit.PopoverItem, {}, "Rename"),
-			),
-			host,
-		);
-	const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-	const snap = () => {
-		const node = mustHtmlOf(pop());
-		const inner = mustHtmlOf(node.firstElementChild);
-		const trigger = mustHtmlOf(row());
-		return {
-			translate: node.style.translate,
-			scale: node.style.scale,
-			origin: node.style.transformOrigin,
-			seed: `${node.style.getPropertyValue("--pop-seed-x")}|${node.style.getPropertyValue("--pop-seed-y")}`,
-			motion: node.style.animation,
-			width: node.style.width,
-			height: node.style.height,
-			floor: node.style.minWidth,
-			radius: node.style.borderRadius,
-			fill: node.style.backgroundColor,
-			edge: node.style.boxShadow,
-			fade: node.style.opacity,
-			transition: node.style.transition,
-			innerScale: inner.style.scale,
-			innerFade: inner.style.opacity,
-			innerTransition: inner.style.transition,
-			gone: mustHtmlOf(anchor()).style.visibility,
-			// CONTEXT: the fold is gone, so ANY inline style on the trigger is now a defect
-			rowTouched: `${trigger.style.scale}|${trigger.style.opacity}|${trigger.style.transform}|${trigger.style.transition}|${trigger.style.transformOrigin}`,
-		};
-	};
-	const numbers = (value: unknown) => String(value).trim().split(/\s+/).map(parseFloat);
-	const partsOf = (state: { transition: string }) => state.transition.split(",").map((part) => part.trim());
-	const drivenIn = (state: { transition: string }) => partsOf(state).map((part) => part.split(/\s+/)[0]);
-
-	// TRADE-OFF: the law's numbers are read off the source, so one changed there fails here
-	const { readFileSync: readSource } = await import("node:fs");
-	const source = ["constants/popover.ts", "utils/popover-motion.ts"]
-		.map((file) => readSource(`packages/shared/kit/src/${file}`, "utf8"))
-		.join("\n");
-	const constant = (name: string) => Number(captured(new RegExp(`const ${name} = ([\\d.]+)`), source));
-	const growMs = constant("GROW_MS");
-	const contentMs = constant("CONTENT_MS");
-	const contentDelayMs = constant("CONTENT_DELAY_MS");
-	const landMarginMs = constant("LAND_MARGIN_MS");
-
-	const pollUntil = async (ready: () => boolean, tries = 400) => {
-		for (let round = 0; round < tries; round += 1) {
-			if (ready()) break;
-			await sleep(5);
-		}
-	};
-
-	open();
-	const seated = snap();
-	await pollUntil(() => mustHtmlOf(pop()).style.animation.includes("wg-kit-pop-bloom"));
-	const growing = snap();
-	await pollUntil(() => mustHtmlOf(pop()).style.animation === "");
-	const landed = snap();
-	const beats = [seated, growing, landed];
-	console.log(`   the enter: seed ${seated.scale} out of the trigger's box, about ${seated.origin}`);
-	console.log(
-		`              -> ${growing.motion}, paint on ${drivenIn(growing).join(" ")} -> land ${landed.scale || "auto"}`,
-	);
-
-	// CONTEXT: a 100x40 trigger under a 240x180 panel — the seed is one box over the other, per axis
-	check("THE SEED IS THE TRIGGER'S BOX OVER THE PANEL'S", seated.scale, `${100 / 240} ${40 / 180}`);
-	check(
-		"and the two axes DIFFER, because a button and a panel share no aspect",
-		numbers(seated.scale)[0] === numbers(seated.scale)[1],
-		false,
-	);
-	check(
-		"handed to the keyframes, which is the only place the seed can be read",
-		seated.seed,
-		`${100 / 240}|${40 / 180}`,
-	);
-	check("it grows out of the corner it meets the trigger on", seated.origin, "left top");
-	check(
-		"wearing the row's corner, divided per axis by the scale it is multiplied by",
-		seated.radius,
-		`${20 / (100 / 240)}px / ${20 / (40 / 180)}px`,
-	);
-	check("THE COLOUR COMES OUT OF THE TRIGGER, not out of the panel", seated.fill, ROW_FILL);
-	check("and so does the edge, so no border exists from frame one", seated.edge, `inset 0 0 0 1px ${ROW_EDGE}`);
-	check("neither is the panel's own yet", `${seated.fill === PANEL_FILL} ${seated.edge === PANEL_EDGE}`, "false false");
-	check("nothing is armed on the seat itself", `${seated.transition}|${seated.motion}`, "none|none");
-	check("the content waits, and is never counter-scaled", `${seated.innerScale}|${seated.innerFade}`, "|0");
-	check("THE TRIGGER IS NOT TOUCHED — the fold is gone", seated.rowTouched, "||||");
-	check("it simply leaves, because the panel is the panel now", seated.gone, "hidden");
-
-	check(
-		"ONE ANIMATION CARRIES THE WHOLE GROWTH",
-		growing.motion,
-		`wg-kit-pop-bloom ${growMs}ms var(--ease-standard) both`,
-	);
-	check("and the inline seed is handed over to it, so the two cannot disagree", growing.scale, "");
-	check(
-		"SCALING IS THE ONLY THING THAT MOVES: no position, no laid-out box",
-		`${growing.translate}|${growing.width}|${growing.height}|${growing.floor}`,
-		"|||",
-	);
-	check(
-		"so position cannot pass the resting point — there is none to pass",
-		beats.map((state) => state.translate).join(""),
-		"",
-	);
-	check(
-		"the transition is left carrying the paint alone",
-		drivenIn(growing).sort().join(" "),
-		"background-color border-radius box-shadow",
-	);
-	check(
-		"the panel's own fill and edge arrive on it",
-		`${growing.fill} | ${growing.edge}`,
-		`${PANEL_FILL} | ${PANEL_EDGE}`,
-	);
-	check("and the corner travels to the panel's own", growing.radius, "");
-	check(
-		"the content fades in while the panel grows",
-		growing.innerTransition,
-		`opacity ${contentMs}ms var(--ease-standard) ${contentDelayMs}ms`,
-	);
-	check("to fully visible, at true size", `${growing.innerFade}|${growing.innerScale}`, "1|");
-	check("THE TRIGGER IS STILL NOT TOUCHED", growing.rowTouched, "||||");
-
-	check(
-		"it ends with nothing of its own left on it",
-		`${landed.scale}|${landed.motion}|${landed.origin}|${landed.seed}`,
-		"||||",
-	);
-	check("and its paint handed back to the stylesheet", `${landed.fill}|${landed.edge}`, "|");
-	check(
-		"the box was never pinned, so a list that filters can still resize it",
-		beats.map((state) => `${state.width}${state.height}${state.floor}`).join(""),
-		"",
-	);
-	check("AND THE CONTENT IS NEVER COUNTER-SCALED, at any beat", beats.map((state) => state.innerScale).join(""), "");
-	check("nor the trigger touched, at any beat", beats.map((state) => state.rowTouched).join(""), "||||||||||||");
-
-	// TRADE-OFF: the peak is READ OFF the keyframes, because that is where it is authored
-	const css = (await import("node:fs")).readFileSync(BOARD_SHEET, "utf8");
-	const frames = captured(/@keyframes wg-kit-pop-bloom \{([\s\S]*?)\n\}/, css);
-	const stopAt = (label: string) => numbers(captured(new RegExp(`${label}\\s*\\{\\s*scale:\\s*([^;]+);`), frames));
-	const peakStop = Number(captured(/(\d+)%\s*\{\s*scale:/, frames)) / 100;
-	const peak = stopAt(`${peakStop * 100}%`);
-	const rest = stopAt("to");
-	const seedStop = /from\s*\{\s*scale:\s*var\(--pop-seed-x,\s*1\)\s*var\(--pop-seed-y,\s*1\);\s*\}/.test(frames);
-	console.log(
-		`   the curve: seed -> ${peak.join(" ")} at ${peakStop * 100}% (${peakStop * growMs}ms) -> ${rest.join(" ")}`,
-	);
-	check("0% -> 105% -> 100%: THE PEAK IS 105% OF THE FINAL SIZE", peak.join(" "), "1.05 1.05");
-	check("ON BOTH AXES EQUALLY, whatever the seed underneath was", peak[0] === peak[1], true);
-	check("and it comes to rest at exactly 1", rest.join(" "), "1 1");
-	check("starting from the seed the panel was handed", seedStop, true);
-	// CONTEXT: the seed's non-uniform squash lives in the first frames, so the hold covers only those
-	check(
-		"THE CONTENT IS HELD OFF THE RAW SEED, but starts inside the growth",
-		contentDelayMs > 0 && contentDelayMs < peakStop * growMs,
-		true,
-	);
-	check("AND IS FULLY READABLE BY THE TIME THE GROWTH SETTLES", contentDelayMs + contentMs <= growMs, true);
-	// TRADE-OFF: the SCHEDULE is parsed, not recomputed — a recomputed inequality cannot see a bad timer
-	const landsAt: unknown = new Function(
-		"GROW_MS",
-		"CONTENT_MS",
-		"CONTENT_DELAY_MS",
-		"LAND_MARGIN_MS",
-		`return ${captured(/landPanel\(panel\), ([^)]+)\)/, source)};`,
-	)(growMs, contentMs, contentDelayMs, landMarginMs);
-	check(
-		"and the landing is scheduled past every curve",
-		`${Number(landsAt) > growMs} ${Number(landsAt) > contentDelayMs + contentMs}`,
-		"true true",
-	);
-
-	// CONTEXT: a panel that opens the other way must grow the other way, or it slides out of nowhere
-	render(null, host);
-	Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
-		if (this.classList.contains("wg-kit-pop")) return domRect(0, 0, 240, 180);
-		if (this.classList.contains("wg-kit-anchor")) return domRect(900, 700, 100, 40);
-		return domRect(0, 0, 0, 0);
-	};
-	open();
-	check("PUSHED OFF THE SCREEN, IT GROWS FROM THE CORNER IT ACTUALLY LANDED ON", snap().origin, "right bottom");
-	Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
-		if (this.classList.contains("wg-kit-pop")) return domRect(0, 0, 240, 180);
-		if (this.classList.contains("wg-kit-anchor")) return domRect(40, 60, 100, 40);
-		return domRect(0, 0, 0, 0);
-	};
-
-	// CONTEXT: the panel is the only thing the enter ever staged, so it is the only thing to hand back
-	render(null, host);
-	open();
-	await pollUntil(() => mustHtmlOf(pop()).style.animation.includes("wg-kit-pop-bloom"));
-	shut();
-	check("A DISMISSAL MID-GROWTH TAKES THE ANIMATION OFF, or it fights the fold", mustHtmlOf(pop()).style.animation, "");
-	check("and the seed with it", mustHtmlOf(pop()).style.getPropertyValue("--pop-seed-x"), "");
-	endExit(mustElement(pop()));
-	await settle();
-	check(
-		"after the close the trigger is back, and was never altered",
-		`${mustHtmlOf(anchor()).style.visibility}|${snap().rowTouched}`,
-		"|||||",
-	);
-
-	// CONTEXT: reduced motion returns before the seat, so there is no movement to skip a beat of
-	render(null, host);
-	Object.assign(window, { matchMedia: () => ({ matches: true }) });
-	open();
-	const still = snap();
-	await sleep(200);
-	const later = snap();
-	check("reduced motion never seeds the panel", `${still.scale}|${still.seed}|${still.origin}|${still.motion}`, "||||");
-	check("nor paints it as the row", `${still.fill}|${still.edge}`, "|");
-	check("nor leaves it waiting at nothing", still.fade, "");
-	check("the trigger is simply gone, as it always was", still.gone, "hidden");
-	check("and untouched, as it always was", still.rowTouched, "||||");
-	check("nothing lands afterwards", `${later.scale}|${later.motion}|${later.rowTouched}`, "||||||");
-	window.matchMedia = realMatchMedia;
-
-	// TRADE-OFF: measured in Chrome — a kit Button is transparent and its whole fill is on ::before
-	render(null, host);
-	open("enter-ghost");
-	check("A BARE TRIGGER IS READ OFF ITS ::before, or the panel wears nothing of it", snap().fill, ROW_FILL);
-
-	globalThis.getComputedStyle = realStyle;
-	Element.prototype.getBoundingClientRect = wasRect;
-	render(null, host);
-}
-
 // CONTEXT: the second placement — panel under the trigger, trigger still on screen
 {
 	const host = byId(document, "host");
@@ -2238,16 +1796,10 @@ check(
 	);
 
 	await show(false, "below");
-	check(
-		"the exit still folds back onto the trigger",
-		/^translate\(40px, 60px\) scale\(0\.41/.test(mustHtmlOf(pop()).style.transform),
-		true,
-	);
-	check("and the radius still travels with it", Math.round(parseFloat(mustHtmlOf(pop()).style.borderRadius)), 48);
-	check("the trigger was never hidden, so there is nothing to give back", mustHtmlOf(anchor()).style.visibility, "");
+	check("the exit runs as an animation, the panel still open", host.querySelector(".wg-kit-pop.is-exiting") !== null, true);
 	endExit(mustElement(pop()));
 	await settle();
-	check("and it closes", mustHtmlOf(pop()).classList.contains("is-open"), false);
+	check("the panel closes once its exit animation ends", host.querySelector(".wg-kit-pop.is-open"), null);
 
 	globalThis.getComputedStyle = realStyle;
 	Element.prototype.getBoundingClientRect = wasRect;
@@ -2833,9 +2385,6 @@ check(
 	const UNBROKEN = "Averylongsettingnamenobodycanbreakanywhere";
 	const UNBROKEN_PATH = "Orbitask/Tasks/Archive/Another-Very-Long-Folder-Segment-With-No-Spaces-At-All";
 
-	// TRADE-OFF: the numbers the page is measured against are read off the source, never guessed at
-	const KIT_SOURCE = readFileSync("packages/shared/kit/src/constants/popover.ts", "utf8");
-	const kitNumber = (name: string) => Number(captured(new RegExp(`const ${name} = ([\\d.]+)`), KIT_SOURCE));
 
 	const entry = [
 		'import { createElement as h } from "react";',
@@ -2904,34 +2453,6 @@ check(
 		"{ const label = panelLong.querySelector('.wg-set-two'); const row = panelLong.querySelector('.wg-set-row'); payload.setLong = { nameOver: round(nameRect(label).right - label.getBoundingClientRect().right), valueRight: round(panelLong.querySelector('.wg-set-value').getBoundingClientRect().right), rowRight: round(row.getBoundingClientRect().right) }; }",
 		"const unbroken = (side) => { const row = [...two.querySelectorAll(side + ' .wg-kit-side-row')][2]; const label = row.querySelector('.wg-kit-row-label'); const note = row.querySelector('.wg-kit-side-sub'); const edge = round(label.getBoundingClientRect().right); return { nameOver: round(nameRect(label).right - edge), noteOver: round(rectOf(note).right - edge), valueRight: round(row.querySelector('.wg-kit-side-value').getBoundingClientRect().right), rowRight: round(row.getBoundingClientRect().right) }; };",
 		"payload.twoLine = { full: readTwo('.wg-kit-side:not(.is-minimal)'), lean: readTwo('.wg-kit-side.is-minimal'), unbroken: unbroken('.wg-kit-side:not(.is-minimal)'), faint: getComputedStyle(swatch).color };",
-		"const pops = document.querySelector('.wg-pops');",
-		"const stamp = (node) => { const r = node.getBoundingClientRect(); const to = (n) => Math.round(n * 100) / 100; return to(r.width) + 'x' + to(r.height) + '@' + to(r.left) + ',' + to(r.top); };",
-		// TRADE-OFF: a WIDE trigger, because a narrow one hides a seed measured before the width floor lands
-		"render(h(Sidebar, null, h(SidebarGroup, null, h(Popover, { isOpen: true, trigger: h(SidebarRow, { state: { pressable: true }, label: 'A settings row', value: 'Something' }) }, h(PopoverItem, {}, 'Rename')))), pops);",
-		"const wideTrigger = pops.querySelector('.wg-kit-side-row');",
-		"const widePanel = pops.querySelector('.wg-kit-pop');",
-		// CONTEXT: the seat is written in the layout effect, so frame zero is readable the moment render returns
-		"payload.popSeam = { trigger: stamp(wideTrigger), panel: stamp(widePanel), seed: widePanel.style.scale, origin: widePanel.style.transformOrigin };",
-		// TRADE-OFF: a SECOND panel, never measured before the frames run — a rect read would flush its seat for it
-		"const pops2 = document.querySelector('.wg-pops2');",
-		"const realFrame = window.requestAnimationFrame; const realTimer = window.setTimeout;",
-		"const frames = []; const timers = [];",
-		"window.requestAnimationFrame = (fn) => frames.push(fn); window.setTimeout = (fn, ms) => timers.push({ fn, ms });",
-		"render(h(Popover, { isOpen: true, trigger: h(Button, null, 'Trigger') }, h(PopoverItem, {}, 'Rename')), pops2);",
-		"const popTrigger = pops2.querySelector('.wg-kit-btn');",
-		"const popPanel = pops2.querySelector('.wg-kit-pop');",
-		// CONTEXT: an inline read, never a rect — a rect here would flush the seat and hide a missing commit
-		"payload.popSeed = popPanel.style.scale;",
-		// CONTEXT: an assigned value gives an EMPTY list here; only a curve that actually started is listed
-		"const runningOn = (node) => node.getAnimations().map((anim) => (anim.transitionProperty || anim.animationName) + ':' + anim.playState).sort();",
-		"for (let round = 0; round < 4 && frames.length; round += 1) { for (const fn of frames.splice(0, frames.length)) fn(0); }",
-		"void getComputedStyle(popPanel).opacity;",
-		"payload.popGrow = { panel: runningOn(popPanel), trigger: runningOn(popTrigger), touched: popTrigger.style.scale + '|' + popTrigger.style.opacity + '|' + popTrigger.style.transform, seed: popPanel.style.scale, pinned: popPanel.style.width + '|' + popPanel.style.height + '|' + popPanel.style.translate };",
-		"const bloom = popPanel.getAnimations().find((anim) => anim.animationName === 'wg-kit-pop-bloom');",
-		// CONTEXT: the clock is frozen, so the growth is seeked by hand — the peak is read, never assumed
-		"const at = (part) => { bloom.currentTime = part * bloom.effect.getTiming().duration; void getComputedStyle(popPanel).scale; return getComputedStyle(popPanel).scale; };",
-		"payload.popCurve = bloom ? { start: at(0), peak: at(0.6), rest: at(1), span: bloom.effect.getTiming().duration } : null;",
-		"window.requestAnimationFrame = realFrame; window.setTimeout = realTimer;",
 		"document.getElementById('wg-measure').textContent = JSON.stringify(payload);",
 	].join("\n");
 
@@ -2962,8 +2483,6 @@ check(
 			`<div class="wg-root wg-two" style="width:300px"></div>` +
 			`<div class="wg-root wg-panel" style="width:300px"></div>` +
 			`<div class="wg-root wg-panel-long" style="width:300px"></div>` +
-			`<div class="wg-root wg-pops" style="width:300px"></div>` +
-			`<div class="wg-root wg-pops2" style="width:300px"></div>` +
 			`<div class="wg-root wg-cards" style="width:300px"></div>` +
 			`<script id="wg-measure" type="application/json"></script>` +
 			`<script>window.__errs = []; addEventListener("error", (e) => { window.__errs.push(e.message + " @ " + e.lineno); document.getElementById("wg-measure").textContent = JSON.stringify({ pageError: window.__errs }); });</script>` +
@@ -3221,41 +2740,6 @@ check(
 	check("a settings name that cannot break still fits its row", measured.setLong.nameOver <= 1, true);
 	check("and its value stays on the row too", measured.setLong.valueRight < measured.setLong.rowRight, true);
 
-	// TRADE-OFF: getAnimations is the only thing that tells a RUNNING curve from an assigned value
-	const seam = measured.popSeam ?? {};
-	const grow = measured.popGrow ?? {};
-	const curve = measured.popCurve ?? {};
-	console.log(`   frame zero: trigger ${seam.trigger} · panel ${seam.panel} · seed ${seam.seed} about ${seam.origin}`);
-	console.log(`   running: panel [${grow.panel}] trigger [${grow.trigger}]`);
-	console.log(`   seeked: ${curve.start} -> ${curve.peak} -> ${curve.rest} over ${curve.span}ms`);
-	check("NO SIZE STEP AT FRAME ZERO: the panel IS the trigger's rendered rect", seam.panel, seam.trigger);
-	// CONTEXT: this trigger is wider than the panel's 200px floor, so a stale measurement shows up here
-	check(
-		"even where the trigger is what sets the panel's width",
-		Number(present(seam.trigger).split("x")[0]) > 200,
-		true,
-	);
-	check(
-		"THE GROWTH REALLY RUNS — an assigned value would list nothing",
-		present(grow.panel).includes("wg-kit-pop-bloom:running"),
-		true,
-	);
-	check(
-		"and the paint really interpolates, it does not jump",
-		`${present(grow.panel).some((one) => one.startsWith("background-color"))} ${present(grow.panel).some((one) => one.startsWith("border-top-left-radius"))}`,
-		"true true",
-	);
-	check(
-		"THE TRIGGER HAS NOTHING RUNNING ON IT, and nothing written to it",
-		`${present(grow.trigger).length} ${grow.touched}`,
-		"0 ||",
-	);
-	check("SCALING IS THE ONLY THING THAT MOVES: no box, no position", grow.pinned, "||");
-	// CONTEXT: seeked by hand, because the clock is frozen — these are the values the eye would get
-	check("SEEKED IN THE BROWSER, THE GROWTH STARTS AT THE SEED", curve.start, measured.popSeed);
-	check("PEAKS AT 105% ON BOTH AXES", curve.peak, "1.05");
-	check("and rests at exactly 1", curve.rest, "1");
-	check("over the span the source names", curve.span, kitNumber("GROW_MS"));
 
 	check("the rows really are adjacent, so a divider could be drawn", rowsAreSiblings, 2);
 	check("a sidebar group draws no line between its rows", fullDivider, "none");

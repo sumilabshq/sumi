@@ -18,7 +18,7 @@
 
 .sumi-launcher-question {
 	margin: var(--space-2) var(--space-none) var(--space-none);
-	font-size: var(--fs-20);
+	font-size: var(--fs-16);
 	font-weight: var(--fw-semi);
 	line-height: 28px;
 	letter-spacing: -0.02em;
@@ -33,11 +33,11 @@
 	border-radius: var(--r-lg);
 	background: var(--plate);
 	color: var(--text-3);
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
 }
 
 .sumi-launcher :is(.wg-cm-ghost, .wg-cm-input) {
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
 }
 
 .sumi-launcher .wg-cm-input {

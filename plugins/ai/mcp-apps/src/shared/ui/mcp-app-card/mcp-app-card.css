@@ -28,7 +28,7 @@
 	padding: var(--space-2) var(--space-2) var(--space-none);
 	color: var(--text);
 	font-family: var(--font-ui);
-	font-size: 13px;
+	font-size: var(--fs-13);
 	line-height: 1.3;
 }
 
@@ -90,7 +90,7 @@
 
 .sumi-mcp-tag-meta {
 	color: var(--muted-foreground);
-	font-size: 12px;
+	font-size: var(--fs-12);
 	white-space: nowrap;
 }
 

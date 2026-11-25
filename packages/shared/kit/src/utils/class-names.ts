@@ -18,6 +18,7 @@ const BUTTON_WORDS = {
 		"outline-muted": "is-outline is-muted",
 		wash: "is-wash",
 		page: "is-page",
+		lifted: "is-lifted",
 		link: "is-plain",
 	},
 	size: {

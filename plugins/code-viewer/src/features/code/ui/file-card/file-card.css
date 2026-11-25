@@ -24,12 +24,12 @@
 	border-left: 2px solid var(--hue-amber);
 	background: color-mix(in oklch, var(--hue-amber) 8%, transparent);
 	color: var(--text);
-	font: 12.5px / 1.4 var(--font-ui);
+	font: var(--fs-13) / 1.4 var(--font-ui);
 	white-space: normal;
 }
 
 .sumi-file-card-note {
 	margin: var(--space-3);
 	color: var(--muted-foreground);
-	font-size: 13px;
+	font-size: var(--fs-13);
 }

@@ -1,0 +1,55 @@
+.sumi-chat-context-chip-slot {
+	display: flex;
+	order: 1;
+	min-width: 0;
+}
+
+.sumi-chat-context-more-slot {
+	display: flex;
+	order: 2;
+	margin-inline-start: auto;
+}
+
+.sumi-chat-context-chip {
+	flex: 0 1 auto;
+	align-items: center;
+	gap: calc(var(--space-1) + var(--space-px));
+	min-width: 0;
+	max-width: 240px;
+	margin-inline-start: var(--space-2);
+	padding: var(--space-0-5) var(--space-1-5);
+	font-size: var(--fs-13);
+	white-space: nowrap;
+}
+
+.sumi-chat-context-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sumi-chat-context-more {
+	flex: none;
+}
+
+.sumi-chat-context-pop {
+	box-sizing: border-box;
+	width: 260px;
+	min-width: 0;
+}
+
+.sumi-chat-context-path {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sumi-chat-context-open {
+	display: flex;
+	align-items: center;
+}
+
+.sumi-chat-context-open-item {
+	flex: 1 1 auto;
+}

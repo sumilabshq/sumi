@@ -22,6 +22,7 @@
 	"dependencies": {
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/tasks": "0.1.0",
+		"@widgetarium/haptics": "0.1.0",
 		"@widgetarium/terminal": "0.1.0"
 	},
 	"widgetarium": {

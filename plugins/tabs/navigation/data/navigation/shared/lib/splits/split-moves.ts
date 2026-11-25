@@ -3,8 +3,23 @@ import { SPLIT_MOST_MEMBERS } from "../../schema/splits.schema.js";
 import type { HostTabsMoment, MovedTabs } from "../tabs/host-tabs.js";
 import { heldTabOf, isPageTab, markShown, placeTab } from "../tabs/host-tabs.js";
 import { WORKSPACE_LIST, isSectionList, locationOf, placeAfterOf } from "../tabs/tab-lists.js";
-import { containerEntriesOf, firstAmong, shownSplitOf, splitOfTab, splitWithout, standsInSection } from "./split-members.js";
-import { branchIdsOf, isEdgeOf, leafOf, withBranchShare, withLeafPlaced, withLeafSwapped, withoutLeaf } from "./split-tree.js";
+import {
+	containerEntriesOf,
+	firstAmong,
+	shownSplitOf,
+	splitOfTab,
+	splitWithout,
+	standsInSection,
+} from "./split-members.js";
+import {
+	branchIdsOf,
+	isEdgeOf,
+	leafOf,
+	withBranchShare,
+	withLeafPlaced,
+	withLeafSwapped,
+	withoutLeaf,
+} from "./split-tree.js";
 import type { BranchShare, LeafSwap } from "./split-tree.js";
 
 export interface ViewPlacing {
@@ -57,7 +72,11 @@ export function placeInView(moment: HostTabsMoment, { tabId, targetTabId, side }
 		return target;
 	}
 
-	const freed = withoutMember(joinedBeside(liftedToTop(liftedToTop(moment, tabId), target.id), tabId, target.id), tabId, target.id);
+	const freed = withoutMember(
+		joinedBeside(liftedToTop(liftedToTop(moment, tabId), target.id), tabId, target.id),
+		tabId,
+		target.id,
+	);
 	const targetSplit = splitOfTab(freed, target.id);
 	const full = targetSplit === null ? null : fullRefusalOf(targetSplit, tabId);
 
@@ -239,7 +258,10 @@ function withRemainderInBlock(moment: HostTabsMoment, split: KeptSplit, leavingI
 		return moment;
 	}
 
-	return placeTab(moment, remaining, { chatId: location.chatId, groupId: location.groupId, before: anchor })?.moment ?? moment;
+	return (
+		placeTab(moment, remaining, { chatId: location.chatId, groupId: location.groupId, before: anchor })?.moment ??
+		moment
+	);
 }
 
 function shownAfterLeaving(moment: HostTabsMoment, { split, left, tabId }: Leaving): HostTabsMoment {

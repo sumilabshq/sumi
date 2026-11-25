@@ -1,10 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
+import { NEW_SESSION, newSessionPlaceOf } from "../../../../shared/lib/flow-facts.js";
 import { useFlowActs } from "../../../../shared/lib/use-flow-acts.js";
 import { useFlowsSidebar } from "../../../../shared/lib/use-flows-sidebar.js";
 
-const NEW_FLOW = "New flow";
 const ICON_PX = 16;
 
 export function NewFlowButton(): ReactElement {
@@ -15,9 +15,9 @@ export function NewFlowButton(): ReactElement {
 			shape="square"
 			emphasis="ghost"
 			size="xs"
-			label={NEW_FLOW}
-			{...tooltipMarks({ said: NEW_FLOW })}
-			onClick={() => acts.create(NEW_FLOW, { folderId: null, before: sidebar.looseFlows[0]?.id ?? null })}
+			label={NEW_SESSION}
+			{...tooltipMarks({ said: NEW_SESSION })}
+			onClick={() => acts.create(NEW_SESSION, newSessionPlaceOf(sidebar, sidebar.windowProjectId))}
 		>
 			<Icon name="square-pen" size={ICON_PX} />
 		</Button>

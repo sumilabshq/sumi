@@ -4,7 +4,7 @@
 	padding: var(--space-4) var(--space-4) var(--space-2);
 	background: var(--soft);
 	color: var(--text);
-	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) / 1.45 var(--font-ui);
 }
 
 :is(.wg-root, .wg-portal) .wg-questions-block-head {

@@ -5,6 +5,7 @@ import { isChatTab } from "../tabs/app-abilities.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 import { isArchived } from "./flow-docs.js";
 import { flowTabIdsOf } from "./flow-nodes.js";
+import { projectIdOfFlow, projectIdOfFolder } from "./flow-projects.js";
 import { flowStatusOf } from "./flow-status.js";
 
 type KeptTab = PlacedTabs["tabs"][number];
@@ -23,6 +24,7 @@ export interface FlowRow {
 	readonly chats: readonly FlowChatRow[];
 	readonly isOpen: boolean;
 	readonly lastOpenedAt: number;
+	readonly projectId: string;
 }
 
 export interface FolderRow {
@@ -34,6 +36,7 @@ export interface FolderRow {
 	readonly isOpen: boolean;
 	readonly status: FlowStatus | null;
 	readonly flows: readonly FlowRow[];
+	readonly projectId: string;
 }
 
 export interface RowFacts {
@@ -56,6 +59,7 @@ export function flowRowOf(flow: Flow, facts: RowFacts): FlowRow {
 		})),
 		isOpen: openFlowIdsOf(facts.placed, facts.doc).has(flow.id),
 		lastOpenedAt: flow.lastOpenedAt,
+		projectId: projectIdOfFlow(facts.doc, flow),
 	};
 }
 
@@ -73,6 +77,7 @@ export function folderRowOf(folder: FlowFolder, facts: RowFacts): FolderRow {
 		isOpen: folder.isOpen,
 		status: flowStatusOf(flows.flatMap(({ status }) => (status === null ? [] : [{ isChat: true, mark: status }]))),
 		flows,
+		projectId: projectIdOfFolder(folder),
 	};
 }
 

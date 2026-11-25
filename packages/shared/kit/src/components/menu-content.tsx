@@ -3,6 +3,7 @@ import type { HTMLAttributes, ReactElement } from "react";
 import { DEFAULT_SIDE_OFFSET } from "../constants/popover";
 import type { PopoverAlign, PopoverSide } from "../constants/popover";
 import { useMenuPanel } from "../hooks/use-menu-panel";
+import { usePopGlide } from "../hooks/use-pop-glide";
 import { useMenu } from "./menu-context";
 import { MenuPanel } from "./menu-panel";
 import { composeRefs } from "./slot";
@@ -25,6 +26,7 @@ export function MenuContent({
 }: MenuContentProps): ReactElement | null {
 	const menu = useMenu();
 	const { panelRef, isMounted } = useMenuPanel(menu, { side, align, sideOffset, alignOffset });
+	usePopGlide(panelRef, isMounted);
 	const registeredPanelRef = useMemo(() => composeRefs(panelRef, menu.panelRef), [panelRef, menu.panelRef]);
 	if (!isMounted) return null;
 	return <MenuPanel {...rest} menu={menu} panelRef={registeredPanelRef} />;

@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { FlowIconSchema, FlowLayoutSchema, FlowSchema, FlowStatusSchema, SetupSchema } from "./flows.schema.js";
+import {
+	FlowIconSchema,
+	FlowLayoutSchema,
+	FlowSchema,
+	FlowStatusSchema,
+	ProjectSchema,
+	SetupSchema,
+} from "./flows.schema.js";
 import { TabEffectSchema, TabsAskSchema } from "./screen.schema.js";
 import { SplitSideSchema } from "./splits.schema.js";
 import { AppKindSchema, GroupHueSchema, PageAppSchema, TabMarkSchema } from "./tabs.schema.js";
@@ -18,6 +25,7 @@ export const FlowRowSchema = z.object({
 	chats: z.array(FlowChatRowSchema).readonly(),
 	isOpen: z.boolean(),
 	lastOpenedAt: z.number(),
+	projectId: z.string(),
 });
 
 export const FolderRowSchema = z.object({
@@ -29,6 +37,12 @@ export const FolderRowSchema = z.object({
 	isOpen: z.boolean(),
 	status: FlowStatusSchema.nullable(),
 	flows: z.array(FlowRowSchema).readonly(),
+	projectId: z.string(),
+});
+
+export const ProjectRowSchema = ProjectSchema.extend({
+	isGeneral: z.boolean(),
+	isCollapsed: z.boolean(),
 });
 
 export const ArchivedFlowSchema = z.object({
@@ -46,7 +60,9 @@ export const FlowsSidebarSchema = z.object({
 	isConverted: z.boolean(),
 	looseFlows: z.array(FlowRowSchema).readonly(),
 	folders: z.array(FolderRowSchema).readonly(),
+	projects: z.array(ProjectRowSchema).readonly(),
 	windowFlowId: z.string().nullable(),
+	windowProjectId: z.string(),
 });
 
 export const WindowFlowAskSchema = z.object({
@@ -76,6 +92,7 @@ export const FlowDetailSchema = z.object({
 export const FlowPlaceSchema = z.object({
 	folderId: z.string().min(1).nullable(),
 	before: z.string().min(1).nullable(),
+	projectId: z.string().min(1).nullable().optional(),
 });
 
 export const CreateFlowAskSchema = z.object({
@@ -134,6 +151,37 @@ export const FolderAskSchema = z.object({
 
 export const SetBaseDirAskSchema = FolderAskSchema.extend({
 	baseDir: z.string().min(1).nullable(),
+});
+
+export const CreateProjectAskSchema = z.object({
+	name: z.string().trim().min(1).optional(),
+	baseFolder: z.string().min(1).optional(),
+	flowId: z.string().min(1).optional(),
+});
+
+export const ProjectAskSchema = z.object({
+	id: z.string().min(1),
+});
+
+export const SetProjectBaseFolderAskSchema = ProjectAskSchema.extend({
+	baseFolder: z.string().min(1),
+});
+
+export const ReorderProjectsAskSchema = ProjectAskSchema.extend({
+	before: z.string().min(1).nullable(),
+});
+
+export const MoveFlowToProjectAskSchema = FlowAskSchema.extend({
+	projectId: z.string().min(1),
+});
+
+export const MoveFolderToProjectAskSchema = z.object({
+	folderId: z.string().min(1),
+	projectId: z.string().min(1),
+});
+
+export const ProjectMadeSchema = z.object({
+	projectId: z.string(),
 });
 
 export const InboxRowsSchema = z.object({

@@ -113,7 +113,9 @@ function homeOf(moment: TabLayout, split: KeptSplit): string | null {
 
 	const focused = containerKeyOf(moment, split.focusedId);
 	const most = Math.max(0, ...counts.values());
-	return focused !== null && counts.get(focused) === most ? focused : (keys.find((key) => counts.get(key) === most) ?? null);
+	return focused !== null && counts.get(focused) === most
+		? focused
+		: (keys.find((key) => counts.get(key) === most) ?? null);
 }
 
 function shapeBreaksOf(split: KeptSplit): readonly string[] {

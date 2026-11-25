@@ -1,3 +1,3 @@
 {
-	"modules": ["file-system", "terminal", "apps", "navigation", "web-page", "assistant", "appearance", "questions"]
+	"modules": ["file-system", "terminal", "haptics", "apps", "navigation", "web-page", "assistant", "appearance", "questions"]
 }

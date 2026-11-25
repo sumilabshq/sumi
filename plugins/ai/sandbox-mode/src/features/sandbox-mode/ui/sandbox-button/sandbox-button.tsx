@@ -10,5 +10,5 @@ const SANDBOX_ICONS = {
 } as const;
 
 export function SandboxButton(props: ComposerOptionProps): ReactElement {
-	return <ComposerOptionSelect {...props} optionKey="sandbox" align="start" icons={SANDBOX_ICONS} />;
+	return <ComposerOptionSelect {...props} optionKey="sandbox" align="start" icons={SANDBOX_ICONS} warnValue="full" />;
 }

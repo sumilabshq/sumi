@@ -12,17 +12,18 @@ import type {
 	Runtime,
 	ServerRuns,
 } from "@widgetarium/data-framework";
-import { fileSystem, terminal } from "@sumi/contract";
+import { fileSystem, haptics, terminal } from "@sumi/contract";
 import { layout } from "@widgetarium/layout/implementation";
 import type { BoardFile } from "@widgetarium/tasks/implementation";
 import { fileSystem as fileSystemModule } from "@widgetarium/file-system/implementation";
+import { haptics as hapticsModule } from "@widgetarium/haptics/implementation";
 import { terminal as terminalModule } from "@widgetarium/terminal/implementation";
 import { workspaces } from "@widgetarium/workspaces/implementation";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import type { BackgroundModule, WindowModule } from "../plugins/sumi-plugins.js";
 import type { FrameCoreModule } from "./frame-routes.js";
 
-export const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [fileSystem, terminal];
+export const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [fileSystem, terminal, haptics];
 
 export function frameCoreModulesOf(backgroundModules: readonly BackgroundModule[]): readonly FrameCoreModule[] {
 	return [
@@ -76,7 +77,12 @@ export function startCoreInProcess(
 		file: boardFileInMemory(),
 	};
 	const core = runtime()
-		.modules(fileSystemModule, terminalModule, ...backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
+		.modules(
+			fileSystemModule,
+			terminalModule,
+			hapticsModule,
+			...backgroundModules.map(({ moduleOf }) => moduleOf(offers)),
+		)
 		.start({ platform: "server", env: {}, scope: { workspaceId } });
 	mountOrStop(core, (started) => local.serve(started, { authenticate: new AppCallerAuthenticate() }));
 	return local;

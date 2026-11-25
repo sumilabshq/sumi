@@ -87,10 +87,10 @@
 		--font-sans: var(--font-interface, ui-sans-serif, system-ui, sans-serif);
 		--font-serif: ui-serif, Georgia, serif;
 		--font-mono: var(--font-monospace, ui-monospace, Menlo, monospace);
-		--type-xs: 11px;
-		--type-s: var(--font-ui-smaller, 12px);
-		--type-m: var(--font-ui-small, 14px);
-		--type-l: var(--font-ui-medium, 16px);
+		--type-xs: 12px;
+		--type-s: 13px;
+		--type-m: 14px;
+		--type-l: 16px;
 		--gap-section: 40px;
 		--gap-plate: 8px;
 	}
@@ -287,7 +287,7 @@
 		--text: #151513;
 		--text-2: rgba(21, 21, 19, 0.76);
 		--text-3: rgba(21, 21, 19, 0.62);
-		--hover: rgba(21, 21, 19, 0.045);
+		--hover: rgba(0, 0, 0, 0.04);
 		--active: rgba(21, 21, 19, 0.12);
 		--line: #d0d0d0;
 		--divider: #ebebeb;
@@ -317,7 +317,7 @@
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
 		--shadow-page: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 1px 1.5px rgba(0, 0, 0, 0.1);
-		--shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+		--shadow-menu: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08);
 		--line-menu: rgba(0, 0, 0, 0.09);
 		--surface-menu: #ffffff;
 		--r-menu: 10px;
@@ -346,15 +346,13 @@
 		--font-accent: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 		--font-code: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 		--font-voice: "IBM Plex Serif", Georgia, "Times New Roman", serif;
-		--fs-voice: 30px;
 		--font-features: normal;
 		--fs-11: 11px;
 		--fs-12: 12px;
-		--fs-13: 12.5px;
+		--fs-13: 13px;
 		--fs-14: 14px;
 		--fs-16: 16px;
-		--fs-20: 20px;
-		--fs-28: 24px;
+		--fs-22: 22px;
 		--fw-regular: 400;
 		--fw-medium: 500;
 		--fw-semi: 600;
@@ -439,15 +437,10 @@
 		--pick-edge: 0 0 0 0 transparent;
 		--blur-pick: none;
 		--tip-kbd: rgba(127, 127, 127, 0.35);
-		--fs-tip: 12px;
 		--h-tip: 28px;
 		--r-tip: var(--r-sm);
 		--tip-arrow: 8px;
 		--dur-out: 100ms;
-		--fs-15: 15px;
-		--fs-glyph: 18px;
-		--fs-glyph-lg: 22px;
-		--fs-17: 15px;
 
 		--chats-w: 280px;
 		--chat-w: 560px;
@@ -474,8 +467,8 @@
 		--overlay: #000000;
 		--text: #e9e6de;
 		--text-2: rgba(233, 230, 222, 0.7);
-		--text-3: rgba(233, 230, 222, 0.5);
-		--hover: rgba(233, 230, 222, 0.05);
+		--text-3: rgba(233, 230, 222, 0.65);
+		--hover: oklch(0.269 0 0);
 		--active: rgba(233, 230, 222, 0.13);
 		--line: #32312f;
 		--divider: #1a1a1a;
@@ -502,8 +495,8 @@
 		--shadow-lift: 0 0 0 1px var(--line);
 		--shadow-float: none;
 		--shadow-page: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 1px 1.5px rgba(0, 0, 0, 0.7);
-		--shadow-menu: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.45);
-		--line-menu: rgba(255, 255, 255, 0.09);
+		--shadow-menu: 0 0 0 0.5px rgba(255, 255, 255, 0.06), 0 8px 28px rgba(0, 0, 0, 0.45);
+		--line-menu: rgba(255, 255, 255, 0.1);
 		--surface-menu: #17181b;
 
 		--selected: var(--soft);
@@ -637,15 +630,15 @@
 		--text: #151513;
 		--text-2: rgba(21, 21, 19, 0.76);
 		--text-3: rgba(21, 21, 19, 0.62);
-		--hover: rgba(21, 21, 19, 0.045);
+		--hover: rgba(0, 0, 0, 0.04);
 		--active: rgba(21, 21, 19, 0.12);
 	}
 
 	.sumi-ink-light {
 		--text: #e9e6de;
 		--text-2: rgba(233, 230, 222, 0.7);
-		--text-3: rgba(233, 230, 222, 0.5);
-		--hover: rgba(233, 230, 222, 0.05);
+		--text-3: rgba(233, 230, 222, 0.65);
+		--hover: oklch(0.269 0 0);
 		--active: rgba(233, 230, 222, 0.13);
 	}
 
@@ -691,7 +684,7 @@
 		--wash: 10%;
 		--wash-hover: 16%;
 		--l-wash-ink: 0;
-		--a-control-hover: 0.035;
+		--a-control-hover: 0.04;
 		--a-control-open: 0.06;
 		--a-control-ink: 0.6;
 		--l-tone: 0.55;
@@ -986,10 +979,10 @@
 		--font-sans: var(--font-interface, ui-sans-serif, system-ui, sans-serif);
 		--font-serif: ui-serif, Georgia, serif;
 		--font-mono: var(--font-monospace, ui-monospace, Menlo, monospace);
-		--type-xs: 11px;
-		--type-s: var(--font-ui-smaller, 12px);
-		--type-m: var(--font-ui-small, 14px);
-		--type-l: var(--font-ui-medium, 16px);
+		--type-xs: 12px;
+		--type-s: 13px;
+		--type-m: 14px;
+		--type-l: 16px;
 		--gap-section: 40px;
 		--gap-plate: 8px;
 	}
@@ -1148,19 +1141,19 @@
 	--section-gap: var(--gap-section);
 	--shine: #ffffff;
 	--badge-wash: 16%;
-	--h1-size: 32px;
+	--h1-size: 22px;
 	--h1-weight: 700;
 	--h1-line: 1.2;
 	--h1-tracking: -0.02em;
-	--h2-size: 26px;
+	--h2-size: 22px;
 	--h2-weight: 700;
 	--h2-line: 1.25;
 	--h2-tracking: -0.015em;
-	--h3-size-fixed: 21px;
+	--h3-size-fixed: 16px;
 	--h3-weight: 650;
 	--h3-line: 1.3;
 	--h3-tracking: -0.01em;
-	--h4-size: 18px;
+	--h4-size: 16px;
 	--h4-weight: 600;
 	--h4-line: 1.35;
 	--h4-tracking: -0.005em;
@@ -1168,7 +1161,7 @@
 	--h5-weight: 600;
 	--h5-line: 1.4;
 	--h5-tracking: 0em;
-	--h6-size: 14px;
+	--h6-size: 16px;
 	--h6-weight: 600;
 	--h6-line: 1.4;
 	--h6-tracking: 0em;
@@ -2017,7 +2010,16 @@ body {
 }
 :is(.wg-root, .wg-portal) .wg-kit-tree-list-item:last-child::before {
 	bottom: auto;
-	height: calc(var(--h-md) / 2);
+	height: 50%;
+}
+:is(.wg-root, .wg-portal) .wg-kit-tree-list-item::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: var(--space-1);
+	width: 10px;
+	height: 1px;
+	background: var(--tree);
 }
 
 @keyframes wg-kit-spin {
@@ -2715,29 +2717,55 @@ body {
 	min-width: 0;
 }
 
+:is(.wg-root, .wg-portal) .wg-kit-anchor:has(> .wg-kit-pop-item) {
+	display: flex;
+	width: 100%;
+}
+
 :is(.wg-root, .wg-portal) .wg-kit-pop {
 	visibility: visible;
 	position: fixed;
 	z-index: var(--float-z, 60);
-	border: 1px solid var(--line-menu);
+	border: none;
 	border-radius: var(--r-menu);
 	background: var(--surface-menu);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	box-shadow: var(--shadow-menu);
-	transform-origin: top left;
+	transform-origin: var(--pop-origin, top left);
 	opacity: 0;
 	pointer-events: none;
 	overflow: hidden;
 	--pop-pad: 0px;
-	/* A PANEL IS NEVER NARROWER THAN WHAT IT OPENED FROM. Over the trigger, a narrow panel
-	   left the control sticking out from under it; 200 is the floor, the anchor is the rule. */
-	min-width: max(200px, var(--anchor-width, 200px));
+	min-width: max(224px, var(--anchor-width, 224px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop.is-open {
 	opacity: 1;
 	pointer-events: auto;
+	animation: wg-kit-pop-in 120ms ease-out both;
+}
+
+@keyframes wg-kit-pop-in {
+	from {
+		opacity: 0;
+		scale: 0.96;
+	}
+	to {
+		opacity: 1;
+		scale: 1;
+	}
+}
+
+@keyframes wg-kit-pop-out {
+	from {
+		opacity: 1;
+		scale: 1;
+	}
+	to {
+		opacity: 0;
+		scale: 0.96;
+	}
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-help {
@@ -2793,24 +2821,19 @@ body {
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop.is-exiting {
 	pointer-events: none;
+	animation: wg-kit-pop-out 120ms ease-in both;
 }
-/* THE PEAK IS AUTHORED, NOT SOLVED. A seed is the trigger's box over the panel's, so its two axes
-   differ; a cubic-bezier overshoot would then be a different percentage on each one. Stated as
-   keyframes the peak is 105% of the FINAL size on both axes whatever the seed, and it rests at 1. */
-@keyframes wg-kit-pop-bloom {
-	from {
-		scale: var(--pop-seed-x, 1) var(--pop-seed-y, 1);
-	}
-	60% {
-		scale: 1.05 1.05;
-	}
-	to {
-		scale: 1 1;
+@media (prefers-reduced-motion: reduce) {
+	:is(.wg-root, .wg-portal) .wg-kit-pop.is-open,
+	:is(.wg-root, .wg-portal) .wg-kit-pop.is-exiting,
+	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu,
+	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu[data-state="closed"] {
+		animation: none;
 	}
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-inner {
-	padding: var(--size-4-2, 8px);
+	padding: var(--size-2-2, 4px);
 	display: flex;
 	flex-direction: column;
 }
@@ -2821,20 +2844,34 @@ body {
 	align-items: center;
 	justify-content: flex-start;
 	width: 100%;
-	gap: var(--size-4-3, 12px);
-	padding: var(--size-4-2, 8px) var(--size-4-3, 12px);
+	gap: var(--space-2, 8px);
+	height: 30px;
+	padding: 0 var(--space-2, 8px);
 	border: none;
-	border-radius: var(--item);
+	border-radius: var(--r-sm, 6px);
 	cursor: pointer;
 	font-family: inherit;
-	font-size: var(--text-m);
-	font-weight: var(--font-medium, 500);
-	color: var(--foreground);
+	font-size: var(--fs-13, 13px);
+	font-weight: var(--fw-regular, 400);
+	line-height: 18px;
+	color: var(--text, var(--foreground));
 	text-align: left;
+}
+
+:is(.wg-root, .wg-portal) :is(.wg-kit-pop, .wg-kit-menu) .wg-kit-pop-item {
+	z-index: 1;
+}
+
+:is(.wg-root, .wg-portal)
+	.wg-kit-pop:has(.wg-kit-pop-item > .wg-kit-pop-icon)
+	.wg-kit-pop-item:not(:has(> .wg-kit-pop-icon)) {
+	padding-inline-start: calc(2 * var(--space-2, 8px) + 14px);
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-item.is-two {
 	align-items: flex-start;
+	height: auto;
+	padding-block: var(--space-1-5, 6px);
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-said {
@@ -2850,8 +2887,8 @@ body {
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: var(--icon, 16px);
-	height: var(--icon, 16px);
+	width: 14px;
+	height: 14px;
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-spot {
@@ -2871,7 +2908,7 @@ body {
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-label {
-	flex: 1;
+	flex: 1 1 auto;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -2882,12 +2919,33 @@ body {
 	display: block;
 	position: absolute;
 	top: 0;
+	right: 0;
 	left: 0;
 	z-index: 0;
-	border-radius: var(--item);
-	background: var(--control-fill-hover);
+	height: 0;
+	border-radius: var(--r-sm, 6px);
+	background: var(--control-hover);
 	pointer-events: none;
 	opacity: 0;
+	transition:
+		top 220ms cubic-bezier(0.23, 1, 0.32, 1),
+		height 220ms cubic-bezier(0.23, 1, 0.32, 1),
+		opacity 150ms ease;
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-menu > .wg-kit-pop-glide {
+	right: var(--size-2-2, 4px);
+	left: var(--size-2-2, 4px);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop-glide[data-tone="danger"] {
+	background: var(--danger-wash, var(--error-wash));
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:is(.wg-root, .wg-portal) .wg-kit-pop-glide {
+		transition: none;
+	}
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-sub {
@@ -2910,7 +2968,6 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-pop-tick {
 	margin-left: auto;
 	flex: none;
-	color: var(--text);
 	opacity: 0;
 }
 
@@ -2967,8 +3024,12 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-pop-sep {
 	flex: none;
 	height: 1px;
-	background: var(--line-faint);
+	background: var(--line-menu);
 	margin: var(--size-2-2, 4px) calc(-1 * var(--pop-pad, 0px));
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop-inner .wg-kit-pop-sep {
+	margin-inline: calc(-1 * var(--size-2-2, 4px));
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-search {
@@ -3495,6 +3556,7 @@ body {
 		.is-outline,
 		.is-wash,
 		.is-page,
+		.is-lifted,
 		.is-raised,
 		.is-overlay,
 		.wg-kit-glass
@@ -3609,6 +3671,18 @@ body {
 	background: var(--page);
 	box-shadow: none;
 }
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted {
+	color: var(--muted-foreground);
+}
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted::before {
+	background: var(--page);
+	box-shadow:
+		inset 0 0 0 1px var(--line),
+		var(--shadow-menu);
+}
+:is(.wg-root, .wg-portal) .wg-kit-btn.is-lifted:hover::before {
+	background: linear-gradient(var(--hover), var(--hover)), var(--page);
+}
 :is(.wg-root, .wg-portal) .wg-kit-btn.is-outline.is-muted {
 	color: var(--muted-foreground);
 }
@@ -3630,7 +3704,7 @@ body {
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-item::before {
-	border-radius: var(--item);
+	border-radius: var(--r-sm, 6px);
 }
 :is(.wg-root, .wg-portal) .wg-kit-cal-day:hover::before {
 	background: var(--background-modifier-hover);
@@ -3652,7 +3726,7 @@ body {
 	background: var(--control-fill-hover);
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop-item:hover::before {
-	background: var(--background-modifier-hover);
+	background: var(--control-hover);
 }
 :is(.wg-root, .wg-portal) .wg-kit-row.is-pressable:hover::before {
 	background: var(--background-modifier-hover);
@@ -3697,6 +3771,9 @@ body {
 }
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-ghost:hover::before {
 	background: var(--control-fill-hover);
+}
+:is(.wg-root, .wg-portal) .wg-kit-icon.is-ghost.is-xxs:hover {
+	color: var(--control-glyph-on);
 }
 :is(.wg-root, .wg-portal)
 	.wg-kit-icon.is-ghost:is(
@@ -4139,14 +4216,30 @@ body {
 	box-shadow: 0 0 0 2px var(--ring);
 }
 
-:is(.wg-root, .wg-portal) .wg-kit-command-input kbd,
 :is(.wg-root, .wg-portal) .wg-kit-kbd {
-	padding: 2px 8px;
-	border-radius: 8px;
-	background: var(--fill);
-	color: var(--muted-foreground);
-	font-size: var(--text-xs);
+	box-sizing: border-box;
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	margin: 0;
+	padding: 0 6px;
+	border: 0;
+	border-radius: 5px;
+	background: color-mix(in oklch, currentColor 12%, transparent);
+	color: color-mix(in oklch, currentColor 70%, transparent);
 	font-family: inherit;
+	font-size: var(--fs-11);
+	font-weight: 500;
+	font-style: normal;
+	line-height: 1;
+	letter-spacing: 0;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	pointer-events: none;
+	user-select: none;
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-command-section {
@@ -4563,6 +4656,23 @@ body {
 	) {
 	color: var(--foreground);
 }
+:is(.wg-root, .wg-portal) .wg-kit-press.is-faint {
+	color: var(--text-3, var(--muted-foreground));
+}
+:is(.wg-root, .wg-portal)
+	.wg-kit-press.is-faint:is(
+		:hover,
+		[data-highlighted],
+		[data-state="open"],
+		[aria-expanded="true"],
+		[aria-pressed="true"],
+		[aria-current="true"],
+		[aria-current="page"],
+		[aria-selected="true"],
+		[aria-checked="true"]
+	)::before {
+	background: var(--hover, var(--control-fill-hover));
+}
 :is(.wg-root, .wg-portal) .wg-kit-press.is-soft::before {
 	background: var(--fill);
 }
@@ -4591,7 +4701,7 @@ body {
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-pop-item:focus-visible::before {
-	box-shadow: inset 0 0 0 1px var(--focus-ring);
+	background: var(--control-hover);
 }
 
 /* ═══════════════ THE SETTINGS WINDOW ═══════════════
@@ -11857,13 +11967,6 @@ body.wg-tree-carrying .wg-tile-body {
 	box-shadow: inset 0 0 0 1.5px var(--error);
 }
 
-:is(.wg-root, .wg-portal) .wg-kit-kbd {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--size-2-2, 4px);
-	pointer-events: none;
-	user-select: none;
-}
 :is(.wg-root, .wg-portal) .wg-kit-kbd-group {
 	display: inline-flex;
 	align-items: center;
@@ -12547,11 +12650,14 @@ body.wg-tree-carrying .wg-tile-body {
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-menu {
-	min-width: max(200px, var(--anchor-width, 200px));
+	box-sizing: border-box;
+	width: max-content;
+	min-width: max(224px, var(--anchor-width, 224px));
+	max-width: var(--pop-available-width, 100vw);
 	max-height: var(--pop-available-height, 70vh);
 	overflow-y: auto;
-	padding: var(--size-4-2, 8px);
-	border: 1px solid var(--line-menu);
+	padding: var(--size-2-2, 4px);
+	border: none;
 	border-radius: var(--r-menu);
 	background: var(--surface-menu);
 	backdrop-filter: none;
@@ -12563,17 +12669,20 @@ body.wg-tree-carrying .wg-tile-body {
 	user-select: none;
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-item.is-sub-trigger[data-state="open"]::before {
-	background: var(--background-modifier-hover);
+	background: var(--control-hover);
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-item[data-inset],
 :is(.wg-root, .wg-portal) .wg-kit-menu-label[data-inset] {
-	padding-inline-start: calc(2 * var(--size-4-3, 12px) + 16px);
+	padding-inline-start: calc(2 * var(--space-2, 8px) + 16px);
 }
-:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"] {
+:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"],
+:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"] > :is(svg, .wg-kit-pop-icon) {
 	color: var(--danger, var(--destructive));
 }
-:is(.wg-root, .wg-portal) .wg-kit-menu-item[data-variant="destructive"]:is(:hover, :focus-visible)::before {
-	background: var(--danger-wash, var(--error-wash));
+:is(.wg-root, .wg-portal)
+	:is(.wg-kit-pop, .wg-kit-menu)
+	.wg-kit-pop-item:is(:hover, :focus-visible, [data-highlighted], [aria-current="true"])::before {
+	background: transparent;
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop-item[aria-checked="mixed"] .wg-kit-pop-tick {
 	opacity: 1;
@@ -12582,15 +12691,55 @@ body.wg-tree-carrying .wg-tile-body {
 	margin-inline-start: auto;
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-label {
-	padding: var(--size-4-2, 8px) var(--size-4-3, 12px) var(--size-2-2, 4px);
-	font-size: var(--text-s);
-	font-weight: var(--font-semibold, 600);
-	color: var(--muted-foreground);
+	padding: var(--space-1-5, 6px) var(--space-2, 8px) var(--space-0-5, 2px);
+	font-size: var(--fs-12, 12px);
+	font-weight: var(--fw-medium, 500);
+	line-height: 16px;
+	color: var(--text-3, var(--muted-foreground));
 }
 :is(.wg-root, .wg-portal) .wg-kit-menu-shortcut {
+	flex: none;
 	margin-inline-start: auto;
-	font-size: var(--text-xs);
-	color: var(--muted-foreground);
+	font-size: var(--fs-12, 12px);
+	line-height: 16px;
+	white-space: nowrap;
+	letter-spacing: 0.1em;
+	color: var(--text-3, var(--muted-foreground));
+}
+:is(.wg-root, .wg-portal) .wg-kit-pop-item > :is(svg, .wg-kit-pop-icon),
+:is(.wg-root, .wg-portal) .wg-kit-pop-item .wg-kit-menu-chevron {
+	color: var(--text-3, var(--muted-foreground));
+}
+:is(.wg-root, .wg-portal) .wg-kit-pop-item :is(.wg-kit-icon, .wg-kit-icon-glyph, .wg-kit-menu-chevron) {
+	width: 14px;
+	height: 14px;
+	flex: none;
+}
+:is(.wg-root, .wg-portal) .wg-kit-pop-item .wg-kit-icon-glyph {
+	--icon-stroke: 1.75;
+}
+:is(.wg-root, .wg-portal) :is(.wg-kit-pop, .wg-kit-menu) .wg-kit-pop-item .wg-kit-pop-tick.wg-kit-icon-glyph {
+	--icon-stroke: 2.5;
+	width: 13px;
+	height: 13px;
+	color: var(--text, var(--foreground));
+}
+:is(.wg-root, .wg-portal) .wg-kit-menu .wg-kit-pop-sep {
+	margin-inline: calc(-1 * var(--size-2-2, 4px));
+}
+:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
+	transition: none;
+	transform-origin: var(--pop-origin, top left);
+	animation: wg-kit-pop-in 120ms ease-out both;
+}
+:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu[data-state="closed"] {
+	animation: wg-kit-pop-out 120ms ease-in both;
+}
+@starting-style {
+	:is(.wg-root, .wg-portal) .wg-kit-float.wg-kit-menu {
+		opacity: 1;
+		scale: 1;
+	}
 }
 
 :is(.wg-root, .wg-portal) .wg-kit-tooltip {
@@ -12623,7 +12772,7 @@ body.wg-tree-carrying .wg-tile-body {
 	border-radius: var(--r-tip);
 	background: var(--text);
 	color: var(--plate);
-	font-size: var(--fs-tip);
+	font-size: var(--fs-12);
 	font-weight: var(--fw-medium);
 	line-height: 1.4;
 }
@@ -12990,10 +13139,65 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog {
 	top: 50%;
 	left: 50%;
-	width: min(440px, calc(100% - 32px));
+	gap: 16px;
+	width: min(340px, calc(100% - 32px));
 	max-height: calc(100% - 32px);
-	border-radius: var(--plate-radius);
+	padding: 16px;
+	border: 0;
+	border-radius: 12px;
+	background: var(--surface-menu, var(--popover));
+	box-shadow: var(--shadow-menu, var(--glass-edge));
 	transform: translate(-50%, -50%);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal-layer:has(> .wg-kit-modal.is-alert-dialog) > .wg-kit-modal-scrim {
+	background: rgb(0 0 0 / 8%);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-header {
+	gap: 4px;
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-title {
+	font-size: var(--fs-14);
+	font-weight: 600;
+	line-height: 20px;
+	letter-spacing: 0;
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-description {
+	font-size: var(--fs-13);
+	line-height: 19px;
+	color: var(--muted-foreground);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer {
+	gap: 6px;
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn {
+	--form-corner: 7px;
+	box-sizing: border-box;
+	gap: 8px;
+	height: 28px;
+	min-height: 0;
+	padding: 0 10px;
+	font-size: var(--fs-13);
+	font-weight: 500;
+	line-height: 18px;
+	white-space: nowrap;
+}
+:is(.wg-root, .wg-portal)
+	.wg-kit-modal.is-alert-dialog
+	.wg-kit-modal-footer
+	> .wg-kit-btn:has(> .wg-kit-kbd:last-child) {
+	padding-inline-end: 5px;
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn.is-outline {
+	color: var(--foreground);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn.is-danger {
+	color: var(--shine);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn.is-danger::before {
+	background: var(--destructive);
+}
+:is(.wg-root, .wg-portal) .wg-kit-modal.is-alert-dialog .wg-kit-modal-footer > .wg-kit-btn.is-danger:hover::before {
+	background: color-mix(in oklch, var(--destructive) 88%, var(--foreground));
 }
 :is(.wg-root, .wg-portal) .wg-kit-modal.is-dialog {
 	top: 12vh;
@@ -14637,7 +14841,7 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-studio-ai-greet {
 	margin: 0;
 	color: var(--text);
-	font: var(--fw-semi) var(--fs-20) / 1.25 var(--font-ui);
+	font: var(--fw-semi) var(--fs-22) / 1.25 var(--font-ui);
 	letter-spacing: normal;
 	text-align: center;
 }
@@ -14732,17 +14936,18 @@ body.wg-tree-carrying .wg-tile-body {
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) :is(.wg-kit-pop, .wg-kit-menu) {
 	box-sizing: border-box;
+	min-width: max(224px, var(--anchor-width, 224px));
 	--pop-pad: 0px;
-	--pop-motion: scale;
 	padding: 4px;
-	line-height: 1.5;
-	border: 1px solid var(--line-menu);
+	border: none;
 	border-radius: var(--r-menu);
 	background: var(--surface-menu);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	box-shadow: var(--shadow-menu);
 	font-size: var(--fs-13);
+	font-weight: var(--fw-ui);
+	-webkit-font-smoothing: antialiased;
 	color: var(--text);
 }
 
@@ -14753,42 +14958,8 @@ body.wg-tree-carrying .wg-tile-body {
 	box-shadow: none;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-bent > .wg-kit-jelly {
-	display: block;
-	position: absolute;
-	top: -25px;
-	left: -25px;
-	z-index: -1;
-	overflow: visible;
-	pointer-events: none;
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-growing .wg-kit-pop-glide {
 	visibility: hidden;
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-jelly-edge {
-	fill: var(--overlay);
-	stroke: var(--line-strong);
-	stroke-width: 1;
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-jelly-rim {
-	fill: none;
-	stroke: var(--line);
-	stroke-width: 1;
-}
-
-:is(.wg-studio, .wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-glide {
-	display: block;
-	position: absolute;
-	top: 0;
-	left: 0;
-	z-index: 0;
-	border-radius: var(--r-sm);
-	background: var(--group-plain);
-	pointer-events: none;
-	opacity: 0;
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .wg-kit-field,
@@ -14878,29 +15049,16 @@ body.wg-tree-carrying .wg-tile-body {
 	outline: none;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-menu-label {
-	padding: var(--space-1-5) var(--space-2) var(--space-0-5);
-	font-size: var(--fs-12);
-	font-weight: var(--fw-regular);
-	color: var(--text-3);
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item {
 	position: relative;
 	z-index: 1;
-	gap: 10px;
-	min-height: var(--h-md);
-	padding: 0 var(--space-2);
-	font-size: var(--fs-13);
-	font-weight: var(--fw-regular);
-	line-height: 1.4;
 	white-space: nowrap;
-	color: var(--text);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact {
-	width: 248px;
-	min-width: 0;
+	width: max-content;
+	min-width: 224px;
+	max-width: var(--pop-available-width, 100vw);
 }
 
 :is(.wg-root, .wg-portal, .wg-kit-portal-layer) .wg-kit-pop.is-size-s {
@@ -14922,29 +15080,12 @@ body.wg-tree-carrying .wg-tile-body {
 	min-width: 0;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-menu-label {
-	padding: var(--space-1-5) var(--space-2) var(--space-0-5);
-	color: var(--text-3);
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-pop-item {
-	gap: var(--space-2);
-	min-height: var(--h-md);
-	padding-inline: var(--space-2);
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-pop-said {
 	gap: 0;
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-pop-item::before {
 	border-radius: var(--r-sm);
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-compact .wg-kit-pop-tick {
-	width: 16px;
-	height: 16px;
-	color: var(--text);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-two {
@@ -14966,14 +15107,11 @@ body.wg-tree-carrying .wg-tile-body {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-destructive,
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-destructive > :is(svg, .wg-kit-pop-icon) {
-	color: var(--danger);
-}
-
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item.is-destructive > :is(svg, .wg-kit-pop-icon),
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio)
-	.wg-kit-pop:has(.wg-kit-pop-item.is-destructive:is(:hover, :focus-visible, [data-highlighted]))
-	.wg-kit-pop-glide {
-	background: var(--danger-wash);
+	.wg-kit-menu-item[data-variant="destructive"]
+	> :is(svg, .wg-kit-pop-icon) {
+	color: var(--danger);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item::before {
@@ -14995,19 +15133,10 @@ body.wg-tree-carrying .wg-tile-body {
 	color: var(--text-3);
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-tick {
-	color: var(--text);
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-menu-shortcut {
-	font-size: var(--fs-12);
-	color: var(--text-3);
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-sep {
 	height: 1px;
 	margin: var(--space-1) calc(-1 * var(--space-1));
-	background: var(--line);
+	background: var(--line-menu);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-edge {
@@ -16952,18 +17081,6 @@ body:has([data-browser-pages-live]),
 	background: linear-gradient(var(--divider), var(--divider)) center / 100% 1px no-repeat;
 	cursor: row-resize;
 }
-.wg-pane-empty {
-	position: absolute;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: var(--sunken);
-}
-.wg-pane-empty-actions {
-	display: flex;
-	gap: var(--space-2);
-}
 .wg-pane-note {
 	margin: auto;
 	color: var(--text-3);
@@ -17075,7 +17192,7 @@ body:has([data-browser-pages-live]),
 	align-items: center;
 	gap: var(--cm-inset);
 	padding: var(--space-none) var(--cm-inset);
-	font-size: var(--fs-20);
+	font-size: var(--fs-13);
 	color: var(--text);
 }
 .wg-cm-input-wrap {
@@ -17087,13 +17204,13 @@ body:has([data-browser-pages-live]),
 .wg-cm-ghost,
 .wg-cm-input {
 	font: inherit;
-	font-size: var(--fs-20);
+	font-size: var(--fs-13);
 	line-height: 28px;
 	letter-spacing: inherit;
 }
 .wg-cm-field[data-cm-link] :is(.wg-cm-ghost, .wg-cm-input) {
 	font-family: var(--font-code);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 }
 .wg-cm-ghost {
 	position: absolute;
@@ -17416,7 +17533,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-launcher-question {
 	margin: var(--space-2) var(--space-none) var(--space-none);
-	font-size: var(--fs-20);
+	font-size: var(--fs-16);
 	font-weight: var(--fw-semi);
 	line-height: 28px;
 	letter-spacing: -0.02em;
@@ -17430,10 +17547,10 @@ body:has(.wg-cm-layer) {
 	border-radius: var(--r-lg);
 	background: var(--plate);
 	color: var(--text-3);
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
 }
 .sumi-launcher :is(.wg-cm-ghost, .wg-cm-input) {
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
 }
 .sumi-launcher .wg-cm-input {
 	color: var(--text);
@@ -17619,7 +17736,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--ai-gutter) var(--ai-gutter) var(--space-none);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-title {
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	font-weight: var(--font-semibold, 600);
 	color: var(--foreground);
 }
@@ -17682,7 +17799,7 @@ body:has(.wg-cm-layer) {
 	-webkit-user-select: none;
 	user-select: none;
 	color: var(--text-3, var(--muted-foreground));
-	font: var(--fw-regular, 400) var(--fs-12, 12px) / 16px var(--font-ui, inherit);
+	font: var(--fw-regular, 400) var(--fs-12) / 16px var(--font-ui, inherit);
 	opacity: 0;
 	transition: opacity var(--dur-base, 160ms) var(--ease-emphasized, ease);
 }
@@ -17716,7 +17833,7 @@ body:has(.wg-cm-layer) {
 	-webkit-user-select: none;
 	user-select: none;
 	color: var(--text-3, var(--muted-foreground));
-	font: var(--fw-regular, 400) var(--fs-12, 12px) / 16px var(--font-ui, inherit);
+	font: var(--fw-regular, 400) var(--fs-12) / 16px var(--font-ui, inherit);
 	opacity: 0;
 	transition: opacity var(--dur-base, 160ms) var(--ease-emphasized, ease);
 }
@@ -17761,7 +17878,7 @@ body:has(.wg-cm-layer) {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font: var(--fw-regular, 400) var(--fs-12, 12px) / 16px var(--font-ui, inherit);
+	font: var(--fw-regular, 400) var(--fs-12) / 16px var(--font-ui, inherit);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-picture img {
 	display: block;
@@ -17781,7 +17898,7 @@ body:has(.wg-cm-layer) {
 	-webkit-backdrop-filter: var(--blur-pop, none);
 	backdrop-filter: var(--blur-pop, none);
 	color: var(--text, var(--foreground));
-	font: var(--fw-medium, 500) var(--fs-11, 11px) / 1.2 var(--font-ui, inherit);
+	font: var(--fw-medium, 500) var(--fs-11) / 1.2 var(--font-ui, inherit);
 	text-align: start;
 	white-space: nowrap;
 	overflow: hidden;
@@ -17797,7 +17914,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-none) var(--space-1);
 	background: none;
 	color: var(--foreground);
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	line-height: 1.5;
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
@@ -17809,7 +17926,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-tail {
 	margin: var(--space-none);
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	line-height: 1.55;
 	color: var(--foreground);
 	white-space: pre-wrap;
@@ -17827,7 +17944,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown :is(h1, h2, h3, h4, h5, h6) {
 	margin: var(--space-3-5) var(--space-none) var(--space-1-5);
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	font-weight: var(--font-semibold, 600);
 	line-height: 1.3;
 	color: var(--foreground);
@@ -17838,7 +17955,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown li {
 	margin: var(--space-0-5) var(--space-none);
-	line-height: 1.5;
+	line-height: 1.6;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown pre {
 	margin: var(--space-none) var(--space-none) var(--space-2);
@@ -17851,7 +17968,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-px) var(--space-1);
 	border-radius: var(--control-corner);
 	background: var(--fill);
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--code-size);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown blockquote {
 	margin: var(--space-none) var(--space-none) var(--space-2);
@@ -17864,7 +17981,7 @@ body:has(.wg-cm-layer) {
 	width: 100%;
 	margin: var(--space-none) var(--space-none) var(--space-2);
 	overflow-x: auto;
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-13);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown img {
 	max-width: 100%;
@@ -17876,7 +17993,7 @@ body:has(.wg-cm-layer) {
 	border-top: 1px solid var(--card-edge);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown .copy-code-button {
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-12);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
 	padding: var(--space-2-5) var(--space-3);
@@ -17973,7 +18090,7 @@ body:has(.wg-cm-layer) {
 	height: 28px;
 	min-width: 0;
 	padding: var(--space-none) var(--space-1);
-	font: 400 13px var(--font-sans, inherit);
+	font: 400 var(--fs-13) var(--font-sans, inherit);
 	text-align: start;
 	cursor: pointer;
 }
@@ -17986,7 +18103,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-meta {
 	flex: none;
-	font-size: 12px;
+	font-size: var(--fs-12);
 	color: var(--muted-foreground);
 	white-space: nowrap;
 }
@@ -18000,7 +18117,7 @@ body:has(.wg-cm-layer) {
 	height: 26px;
 	padding: var(--space-none) var(--space-2-5);
 	border-radius: var(--control-corner);
-	font-size: 12px;
+	font-size: var(--fs-12);
 	white-space: nowrap;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-chip.is-passed {
@@ -18031,7 +18148,7 @@ body:has(.wg-cm-layer) {
 	min-width: 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-part-label {
-	font-size: 12px;
+	font-size: var(--fs-12);
 	color: var(--muted-foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-head {
@@ -18044,7 +18161,7 @@ body:has(.wg-cm-layer) {
 	flex-grow: 1;
 	min-width: 0;
 	overflow: hidden;
-	font-size: 13px;
+	font-size: var(--fs-13);
 	font-weight: var(--font-medium, 500);
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -18053,7 +18170,7 @@ body:has(.wg-cm-layer) {
 	padding-bottom: var(--space-2-5);
 	overflow-x: auto;
 	font-family: var(--font-mono);
-	font-size: 12px;
+	font-size: var(--fs-12);
 	line-height: 1.75;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-diff-line {
@@ -18072,13 +18189,13 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-pill {
 	padding: var(--space-none) var(--space-3);
 	font-family: inherit;
-	font-size: 12px;
+	font-size: var(--fs-12);
 	cursor: pointer;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-pill.is-l {
 	height: 52px;
 	padding: var(--space-none) var(--space-5);
-	font-size: 13px;
+	font-size: var(--fs-13);
 	font-weight: var(--font-medium, 500);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-card {
@@ -18107,12 +18224,12 @@ body:has(.wg-cm-layer) {
 	min-width: 0;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-title {
-	font-size: 14px;
+	font-size: var(--fs-13);
 	font-weight: var(--font-medium, 500);
 	color: var(--error-ink);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-reason {
-	font-size: 12px;
+	font-size: var(--fs-12);
 	color: var(--error-ink);
 	overflow-wrap: anywhere;
 }
@@ -18130,14 +18247,14 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-title h3 {
 	margin: var(--space-none);
-	font-size: var(--h3-size, 1.25em);
+	font-size: var(--fs-16);
 	font-weight: var(--font-bold, 700);
 	color: var(--foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-title span,
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-sub {
 	color: var(--muted-foreground);
-	font-size: var(--text-m);
+	font-size: var(--fs-13);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-group {
 	display: flex;
@@ -18146,7 +18263,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-label {
 	padding: var(--space-none) var(--space-1);
-	font-size: var(--text-s);
+	font-size: var(--fs-12);
 	font-weight: var(--font-semibold, 600);
 	color: var(--muted-foreground);
 }
@@ -18186,7 +18303,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-px);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-name {
-	font-size: var(--text-l);
+	font-size: var(--fs-13);
 	font-weight: var(--font-semibold, 600);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-spec-buttons {
@@ -18220,7 +18337,7 @@ body:has(.wg-cm-layer) {
 	margin: var(--space-none) max(var(--ai-gutter), calc((100% - var(--studio-chat-content, 100%)) / 2));
 	padding: var(--space-1-5) var(--space-2-5);
 	border-radius: var(--item);
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-12);
 	color: var(--error-ink);
 	overflow-wrap: anywhere;
 }
@@ -18236,13 +18353,13 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-empty-lead {
 	margin: var(--space-none);
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	font-weight: var(--font-semibold, 600);
 	color: var(--foreground);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-empty-said {
 	margin: var(--space-none);
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-12);
 	line-height: 1.5;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-box {
@@ -18251,7 +18368,7 @@ body:has(.wg-cm-layer) {
 	resize: none;
 	padding: var(--space-none) var(--space-1-5) var(--space-none) var(--space-none);
 	font-family: inherit;
-	font-size: var(--font-ui-small, 14px);
+	font-size: var(--fs-13);
 	line-height: 1.6;
 	overflow-y: hidden;
 }
@@ -18264,7 +18381,7 @@ body:has(.wg-cm-layer) {
 	border-radius: var(--control-corner);
 	background: var(--fill);
 	color: var(--muted-foreground);
-	font-size: var(--font-ui-smaller, 12px);
+	font-size: var(--fs-12);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-target-name {
 	overflow: hidden;
@@ -18278,7 +18395,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-2) var(--space-3);
 	border-radius: var(--plate-radius);
 	background: var(--group-fill);
-	font-size: var(--text-s);
+	font-size: var(--fs-12);
 	width: 100%;
 	height: auto;
 	border: 0;
@@ -18302,7 +18419,7 @@ body:has(.wg-cm-layer) {
 .wg-studio-ai-quiet {
 	margin: var(--space-none);
 	padding: var(--studio-edge);
-	font-size: var(--text-s);
+	font-size: var(--fs-12);
 	color: var(--muted-foreground);
 }
 .wg-chat-app .wg-studio-ai {
@@ -18324,37 +18441,40 @@ body:has(.wg-cm-layer) {
 .wg-chat-app .wg-studio-ai-said {
 	padding: var(--space-none);
 	color: var(--text);
-	font: var(--fw-regular) var(--fs-13) / 21px var(--font-ui);
+	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
 }
 .wg-chat-app .wg-studio-ai-turn {
 	gap: var(--space-3);
+}
+:is(.wg-root, .wg-portal) .wg-kit-select-trigger.is-warn {
+	color: var(--warning-text, var(--warning));
 }
 .wg-chat-app .wg-studio-ai-turn.is-mine {
 	gap: var(--space-1-5);
 }
 .wg-chat-app .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
-	max-width: min(400px, 80%);
+	max-width: 80%;
 	padding: var(--space-1-5) var(--space-2-5);
 	border-radius: 10px;
 	background: var(--soft);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(h1, h2) {
 	margin: var(--space-4) var(--space-none) var(--space-2);
-	font-size: 22px;
+	font-size: var(--fs-22);
 	font-weight: var(--font-semibold, 600);
 	letter-spacing: -0.02em;
-	line-height: 1.2;
+	line-height: 1.25;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(h3, h4, h5, h6) {
 	margin: var(--space-3-5) var(--space-none) var(--space-1-5);
-	font-size: 16px;
+	font-size: var(--fs-16);
 	font-weight: var(--font-semibold, 600);
-	line-height: 1.3;
+	line-height: 1.35;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :not(pre) > code {
 	padding: var(--space-px) var(--space-1);
 	background: var(--soft);
-	font-size: 12.5px;
+	font-size: var(--code-size);
 	-webkit-box-decoration-break: clone;
 	box-decoration-break: clone;
 }
@@ -18769,7 +18889,7 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-greet {
 	margin: var(--space-none);
 	color: var(--text);
-	font: var(--fw-medium) 22px / 1.3 var(--font-ui);
+	font: var(--fw-medium) var(--fs-22) / 1.3 var(--font-ui);
 	letter-spacing: -0.01em;
 	text-align: center;
 	text-wrap: balance;
@@ -18806,7 +18926,8 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-title {
 	overflow: hidden;
-	font-size: 15px;
+	font-size: var(--fs-16);
+	line-height: 1.35;
 	font-weight: var(--font-semibold, 600);
 	letter-spacing: -0.01em;
 	text-overflow: ellipsis;
@@ -18816,7 +18937,7 @@ body:has(.wg-cm-layer) {
 	display: block;
 	margin: var(--space-none);
 	padding-left: var(--space-none);
-	line-height: 1.65;
+	line-height: 1.6;
 	list-style: none;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(ul, ol) > li {
@@ -18953,7 +19074,7 @@ body:has(.wg-cm-layer) {
 	border-bottom-width: 2px;
 	border-radius: var(--control-corner);
 	background: none;
-	font-size: 11px;
+	font-size: var(--fs-11);
 	color: var(--foreground);
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown hr {
@@ -19005,7 +19126,7 @@ body:has(.wg-cm-layer) {
 	background: var(--accent-wash);
 	outline: 1.5px dashed var(--ring);
 	outline-offset: -1.5px;
-	font: 500 15px var(--font-sans);
+	font: 500 var(--fs-13) var(--font-sans);
 	color: var(--foreground);
 	pointer-events: none;
 }
@@ -19020,7 +19141,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-3);
 	padding: var(--space-none) var(--studio-edge, 8px);
 	color: var(--muted-foreground);
-	font: 500 13px var(--font-sans, inherit);
+	font: 500 var(--fs-13) var(--font-sans, inherit);
 }
 .wg-studio-ai-compact::before,
 .wg-studio-ai-compact::after {
@@ -19054,11 +19175,11 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-3-5) var(--space-4-5);
 	border-radius: var(--item);
 	background: var(--group-fill);
-	font-size: 13px;
+	font-size: var(--fs-13);
 }
 .wg-studio-ai-compact-summary .wg-studio-ai-said {
 	padding: var(--space-none);
-	font-size: 13px;
+	font-size: var(--fs-13);
 }
 @keyframes wg-studio-ai-thinking {
 	0%,
@@ -19233,7 +19354,8 @@ body:has(.wg-cm-layer) {
 	margin: var(--space-none);
 	min-width: 100%;
 	border-collapse: collapse;
-	font-size: var(--fs-14);
+	font-size: var(--fs-13);
+	line-height: 1.6;
 	font-variant-numeric: tabular-nums;
 	background: none;
 }
@@ -19247,7 +19369,7 @@ body:has(.wg-cm-layer) {
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table th {
 	font-weight: var(--fw-regular);
-	color: var(--text-3);
+	color: var(--text-2);
 	white-space: nowrap;
 	border-bottom: 1px solid var(--line);
 }
@@ -19472,7 +19594,7 @@ body:has(.wg-cm-layer) {
 	background: none;
 	box-shadow: none;
 }
-.wg-chat-app .wg-studio-ai-to-end-button {
+.wg-chat-app .wg-studio-ai-to-end .wg-studio-ai-to-end-button.wg-studio-ai-to-end-button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -19484,7 +19606,9 @@ body:has(.wg-cm-layer) {
 	white-space: nowrap;
 	cursor: pointer;
 }
-.wg-chat-app .wg-studio-ai-to-end-button:has(.wg-studio-ai-to-end-label:not(:empty)) {
+.wg-chat-app
+	.wg-studio-ai-to-end
+	.wg-studio-ai-to-end-button.wg-studio-ai-to-end-button:has(.wg-studio-ai-to-end-label:not(:empty)) {
 	padding: var(--space-none) var(--space-3) var(--space-none) var(--space-2);
 }
 .wg-chat-app .wg-studio-ai-to-end-label:empty {
@@ -19752,10 +19876,10 @@ body:has(.wg-cm-layer) {
 		padding-inline-end: calc(var(--cv-spacing) * 3) !important;
 	}
 	.cv\:text-sm {
-		font-size: var(--type-s) !important;
+		font-size: var(--fs-13) !important;
 	}
 	.cv\:text-xs {
-		font-size: var(--type-xs) !important;
+		font-size: var(--fs-12) !important;
 	}
 	.cv\:leading-tight {
 		--tw-leading: var(--cv-leading-tight) !important;
@@ -19902,7 +20026,7 @@ body:has(.wg-cm-layer) {
 	border: 1px dashed var(--line-strong);
 	border-radius: var(--plate-radius);
 	color: var(--text-2);
-	font: var(--fw-regular) var(--fs-14) / 1.55 var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) / 1.45 var(--font-ui);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-queued-text {
 	white-space: pre-wrap;
@@ -19951,7 +20075,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-4) var(--space-4) var(--space-2);
 	background: var(--soft);
 	color: var(--text);
-	font: var(--fw-regular) var(--fs-14) / 1.6 var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) / 1.45 var(--font-ui);
 }
 :is(.wg-root, .wg-portal) .wg-questions-block-head {
 	display: flex;
@@ -20172,6 +20296,7 @@ body:has(.wg-cm-layer) {
 	padding-block-start: var(--space-6);
 }
 .sumi-composer-expand.is-expanded .wg-studio-ai-field .wg-studio-ai-box {
+	align-self: stretch;
 	height: auto !important;
 	max-height: none;
 	overflow-y: auto !important;
@@ -20194,7 +20319,7 @@ body:has(.wg-cm-layer) {
 	align-items: center;
 	gap: var(--space-2);
 	height: var(--h-md);
-	font: var(--fw-regular) var(--fs-14) var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) var(--font-ui);
 }
 .sumi-background-agents-took,
 .sumi-background-agents-chevron {
@@ -20215,7 +20340,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-2);
 	width: 100%;
 	height: var(--h-md);
-	font: var(--fw-regular) var(--fs-14) var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) var(--font-ui);
 	white-space: nowrap;
 }
 .sumi-background-agent-title {
@@ -20258,7 +20383,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-agent-chat-note {
 	padding: var(--space-3) var(--space-8);
-	font: var(--fw-regular) var(--fs-14) var(--font-ui);
+	font: var(--fw-regular) var(--fs-13) var(--font-ui);
 }
 :is(.wg-root, .wg-portal) .sumi-slash-mirror {
 	position: absolute;
@@ -20766,6 +20891,53 @@ body:has(.wg-cm-layer) {
 	font: inherit;
 	letter-spacing: inherit;
 }
+.sumi-chat-context-chip-slot {
+	display: flex;
+	order: 1;
+	min-width: 0;
+}
+.sumi-chat-context-more-slot {
+	display: flex;
+	order: 2;
+	margin-inline-start: auto;
+}
+.sumi-chat-context-chip {
+	flex: 0 1 auto;
+	align-items: center;
+	gap: calc(var(--space-1) + var(--space-px));
+	min-width: 0;
+	max-width: 240px;
+	margin-inline-start: var(--space-2);
+	padding: var(--space-0-5) var(--space-1-5);
+	font-size: var(--fs-13);
+	white-space: nowrap;
+}
+.sumi-chat-context-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.sumi-chat-context-more {
+	flex: none;
+}
+.sumi-chat-context-pop {
+	box-sizing: border-box;
+	width: 260px;
+	min-width: 0;
+}
+.sumi-chat-context-path {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.sumi-chat-context-open {
+	display: flex;
+	align-items: center;
+}
+.sumi-chat-context-open-item {
+	flex: 1 1 auto;
+}
 .wg-root.sumi-flows-column {
 	display: flex;
 	flex: none;
@@ -20817,7 +20989,6 @@ body:has(.wg-cm-layer) {
 	min-height: 0;
 	overflow: hidden;
 	background: var(--surface-menu);
-	border: 1px solid var(--line-menu);
 	border-radius: var(--r-menu);
 	box-shadow: var(--shadow-menu);
 	transform-origin: left top;
@@ -20840,6 +21011,7 @@ body:has(.wg-cm-layer) {
 	}
 }
 .sumi-flows {
+	position: relative;
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
@@ -20854,9 +21026,63 @@ body:has(.wg-cm-layer) {
 	letter-spacing: var(--tracking-ui);
 }
 .sumi-flows-section {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-px);
+}
+.sumi-flows-drop-line {
+	position: absolute;
+	top: calc(var(--drop-y) - calc(var(--space-1-5) / 2));
+	left: calc(var(--drop-x) - calc(var(--space-1-5) / 2));
+	z-index: 1;
+	width: calc(var(--drop-width) + calc(var(--space-1-5) / 2));
+	height: var(--space-1-5);
+	pointer-events: none;
+	animation: sumi-flows-drop-in 80ms linear;
+}
+.sumi-flows-drop-line::before {
+	position: absolute;
+	top: calc(calc(var(--space-1-5) / 2) - 1px);
+	right: 0;
+	left: var(--space-1-5);
+	height: 2px;
+	content: "";
+	background: var(--text);
+	border-radius: var(--round);
+}
+.sumi-flows-drop-line::after {
+	position: absolute;
+	inset-block: 0;
+	left: 0;
+	box-sizing: border-box;
+	width: var(--space-1-5);
+	content: "";
+	background: var(--sidebar);
+	border: 1.5px solid var(--text);
+	border-radius: var(--round);
+}
+.sumi-flows-float .sumi-flows-drop-line::after {
+	background: var(--surface-menu);
+}
+@keyframes sumi-flows-drop-in {
+	from {
+		opacity: 0;
+	}
+}
+:is(.sumi-flows-row, .sumi-flows-label).sumi-flows-lifted {
+	position: fixed;
+	top: 0;
+	left: -100vw;
+	color: var(--text);
+	background: var(--surface-menu);
+	box-shadow: var(--lift-shadow);
+}
+:is(.sumi-flows-row, .sumi-flows-section)[data-dragging] {
+	opacity: 0.35;
+}
+.sumi-flows-section > .sumi-flows-field {
+	height: var(--h-xs);
 }
 .sumi-flows-section + .sumi-flows-section {
 	margin-top: var(--space-2);
@@ -20903,10 +21129,49 @@ body:has(.wg-cm-layer) {
 	color: var(--text-2);
 	border-radius: var(--r-sm);
 }
-.sumi-flows-row:is(:hover, :focus-within),
-.sumi-flows-row[data-drop] {
+.sumi-flows-row:is(:hover, :focus-within) {
 	color: var(--text);
 	background: var(--hover);
+}
+:is(.sumi-flows-row, .sumi-flows-section)[data-drop] {
+	color: var(--text);
+	background: var(--hover);
+	border-radius: var(--r-md);
+	box-shadow: inset 0 0 0 1px var(--line-menu);
+}
+.sumi-flows-row-empty {
+	color: var(--text-3);
+}
+.sumi-flows-label-tools {
+	display: none;
+	gap: var(--space-px);
+	margin-inline-end: var(--space-1);
+}
+.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-tools {
+	display: flex;
+}
+.sumi-flows-label-tools .sumi-flows-add {
+	display: grid;
+	margin-inline-end: 0;
+}
+.sumi-flows-label-main {
+	display: flex;
+	flex: 1 1 auto;
+	gap: var(--space-1);
+	align-items: center;
+	min-width: 0;
+	height: 100%;
+	padding: 0;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+	background: none;
+	border: 0;
+}
+.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-main .sumi-flows-chevron,
+.sumi-flows-label[data-collapsed] .sumi-flows-label-main .sumi-flows-chevron {
+	display: grid;
 }
 .sumi-flows-row[data-current] {
 	color: var(--text);
@@ -21009,6 +21274,18 @@ body:has(.wg-cm-layer) {
 	width: var(--icon-sm);
 	height: var(--icon-sm);
 	margin-inline-start: var(--space-2);
+}
+.sumi-flows-row .sumi-flows-close {
+	display: none;
+	flex: none;
+	margin-inline: calc(var(--space-2) - (var(--control-xxs) - var(--icon-sm)) / 2)
+		calc((var(--icon-sm) - var(--control-xxs)) / 2);
+}
+.sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-status {
+	display: none;
+}
+.sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-close {
+	display: inline-flex;
 }
 .sumi-flows-status[data-status="asking"]::before,
 .sumi-flows-status[data-status="failed"]::before {
@@ -21147,6 +21424,7 @@ body:has(.wg-cm-layer) {
 	background: none;
 	border: 0;
 	border-radius: var(--r-full);
+	transition: transform var(--press) var(--ease-standard);
 }
 .sumi-flows-picker-color::before {
 	width: 12px;
@@ -21160,7 +21438,7 @@ body:has(.wg-cm-layer) {
 	box-shadow: none;
 }
 .sumi-flows-picker-color:hover {
-	background: var(--hover);
+	transform: scale(1.15);
 }
 .sumi-flows-picker-color[aria-checked="true"] {
 	box-shadow: inset 0 0 0 1.5px var(--text-2);
@@ -21170,17 +21448,12 @@ body:has(.wg-cm-layer) {
 	height: 22px;
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) {
-	--pop-motion: scale;
 	min-width: 0;
 	padding: 0;
 	font-family: var(--font-ui);
 	font-size: var(--fs-13);
 	font-weight: var(--fw-ui);
 	letter-spacing: var(--tracking-ui);
-	background: var(--surface-menu);
-	border: 1px solid var(--line-menu);
-	border-radius: var(--r-menu);
-	box-shadow: var(--shadow-menu);
 }
 :is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) > .wg-kit-pop-inner {
 	padding: 0;
@@ -21327,13 +21600,25 @@ body:has(.wg-cm-layer) {
 	color: var(--text-2);
 }
 .sumi-flows-menu-colors {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-1);
-	padding: var(--space-1) var(--space-2);
+}
+.sumi-flows-menu-colors .sumi-flows-picker-colors {
+	align-items: center;
+	height: 30px;
+	padding: 0 var(--space-1);
+}
+.sumi-flows-menu-colors .sumi-flows-picker-color {
+	width: var(--space-5);
+	height: var(--space-5);
 }
 .sumi-flows-menu-label {
+	padding: var(--space-1-5) var(--space-2) var(--space-0-5);
 	font-size: var(--fs-12);
+	font-weight: var(--fw-medium);
+	line-height: 16px;
 	color: var(--text-3);
 }
 .sumi-pane-tabs {
@@ -22176,7 +22461,7 @@ body:has(.wg-cm-layer) {
 	height: 36px;
 	min-height: 36px;
 	padding-inline: var(--ws-look-field-inset);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-semi);
 }
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-kit-portal-layer) .sumi-ws-look .sumi-ws-look-search {
@@ -22684,7 +22969,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-canvas-home-head h2 {
 	margin: var(--space-none);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-semi);
 }
 .sumi-canvas-home-quiet {
@@ -22828,7 +23113,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-canvas-home-empty h2 {
 	margin: var(--space-none);
-	font-size: var(--fs-17);
+	font-size: var(--fs-16);
 	font-weight: var(--fw-semi);
 }
 .sumi-canvas-home-empty p {
@@ -22878,7 +23163,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-2) var(--space-2) var(--space-none);
 	color: var(--text);
 	font-family: var(--font-ui);
-	font-size: 13px;
+	font-size: var(--fs-13);
 	line-height: 1.3;
 }
 .sumi-mcp-head.is-over {
@@ -22934,7 +23219,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-mcp-tag-meta {
 	color: var(--muted-foreground);
-	font-size: 12px;
+	font-size: var(--fs-12);
 	white-space: nowrap;
 }
 .sumi-mcp-square,
@@ -22992,7 +23277,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-caption {
 	color: var(--text-3, var(--muted-foreground));
-	font-size: var(--fs-12, 12px);
+	font-size: var(--fs-12);
 	line-height: 1.4;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-image {
@@ -23134,7 +23419,7 @@ body:has(.wg-cm-layer) {
 	flex-direction: column;
 	background: var(--viewer-ground);
 	color: var(--viewer-ink);
-	font: var(--fw-regular, 400) var(--fs-13, 13px) / 1.3 var(--font-ui, inherit);
+	font: var(--fw-regular, 400) var(--fs-13) / 1.3 var(--font-ui, inherit);
 	outline: none;
 	animation: wg-studio-ai-viewer-in var(--dur-base, 180ms) var(--ease-out-expo, ease-out) both;
 }
@@ -23156,7 +23441,7 @@ body:has(.wg-cm-layer) {
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-faint {
 	flex: none;
 	color: var(--viewer-ink-2);
-	font-size: var(--fs-12, 12px);
+	font-size: var(--fs-12);
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-fill {
 	flex: 1 1 auto;
@@ -23257,13 +23542,13 @@ body:has(.wg-cm-layer) {
 		background: color-mix(in oklch, var(--hue-amber) 8%, transparent);
 	}
 	color: var(--text);
-	font: 12.5px / 1.4 var(--font-ui);
+	font: var(--fs-13) / 1.4 var(--font-ui);
 	white-space: normal;
 }
 .sumi-file-card-note {
 	margin: var(--space-3);
 	color: var(--muted-foreground);
-	font-size: 13px;
+	font-size: var(--fs-13);
 }
 .wg-git.sumi-changes-card {
 	display: flex;
@@ -23285,7 +23570,7 @@ body:has(.wg-cm-layer) {
 .sumi-changes-card-note {
 	margin: var(--space-3);
 	color: var(--muted-foreground);
-	font-size: 13px;
+	font-size: var(--fs-13);
 }
 .sumi-mini-canvas {
 	position: relative;
@@ -23310,7 +23595,7 @@ body:has(.wg-cm-layer) {
 	flex: none;
 	padding: var(--space-1) var(--space-2);
 	font: inherit;
-	font-size: 12px;
+	font-size: var(--fs-12);
 	cursor: pointer;
 }
 .sumi-keyboard-language-tag {

@@ -31,7 +31,7 @@ const ANCHOR_GAP_MOST_PX = 12;
 const SETTLE_MS = 600;
 const DOUBLE_CLICK_GAP_MS = 150;
 const SPOT_NEAR_CORNER: readonly [number, number] = [1430, 890];
-const FLOWS = "section[aria-label=Flows] .sumi-flows-row";
+const FLOWS = "section[aria-label=General] .sumi-flows-row";
 const AUTO = '.wg-studio-ai-strip .wg-kit-btn[aria-label="Permission mode"]';
 const OPEN_POP = ".wg-kit-pop.is-open";
 const FIRST_TAB = ".sumi-flow-strip .sumi-pane-tab";
@@ -53,7 +53,7 @@ const menuLook = `(() => {
 		surface: [look.backgroundColor, look.borderTopWidth, look.borderTopColor, look.borderTopLeftRadius, look.boxShadow],
 		itemHeight: item.getBoundingClientRect().height,
 		iconPx: item.querySelector(".wg-kit-pop-icon svg").getBoundingClientRect().width,
-		motion: look.getPropertyValue("--pop-motion").trim(),
+		motion: [look.animationName, look.animationDuration, look.borderTopWidth].join(" "),
 	};
 })()`;
 
@@ -198,8 +198,8 @@ async function sameMenuChecks(page: AskedPage, theme: Theme): Promise<void> {
 	await closeMenus(page);
 	check(`${theme}: the row menu draws the tab menu's surface`, row.surface, tab.surface);
 	check(`${theme}: the row menu items are as tall as the tab menu's`, row.itemHeight, tab.itemHeight);
-	check(`${theme}: the row menu icons are 13px like the tab menu's`, [row.iconPx, tab.iconPx], [13, 13]);
-	check(`${theme}: the row menu and the tab menu share the scale motion`, [row.motion, tab.motion], ["scale", "scale"]);
+	check(`${theme}: the row menu icons are 14px like the tab menu's`, [row.iconPx, tab.iconPx], [14, 14]);
+	check(`${theme}: the row menu and the tab menu fade and scale in 120ms with no border`, [row.motion, tab.motion], ["wg-kit-pop-in 0.12s 0px", "wg-kit-pop-in 0.12s 0px"]);
 }
 
 const resolvedColours = `(() => {

@@ -66,6 +66,17 @@ export const FlowLayoutSchema = z.object({
 
 export type FlowLayout = z.infer<typeof FlowLayoutSchema>;
 
+export const GENERAL_PROJECT_ID = "general";
+
+export const ProjectSchema = z.object({
+	id: z.string().min(1),
+	name: z.string(),
+	baseFolder: z.string().min(1),
+	isCollapsed: z.boolean().optional(),
+});
+
+export type Project = z.infer<typeof ProjectSchema>;
+
 export const FlowSchema = z.object({
 	id: z.string().min(1),
 	name: z.string(),
@@ -74,6 +85,7 @@ export const FlowSchema = z.object({
 	createdAt: z.number().nonnegative(),
 	lastOpenedAt: z.number().nonnegative(),
 	archivedAt: z.number().nonnegative().nullable().default(null),
+	projectId: z.string().min(1).optional(),
 });
 
 export type Flow = z.infer<typeof FlowSchema>;
@@ -86,6 +98,7 @@ export const FlowFolderSchema = z.object({
 	baseDir: z.string().min(1).nullable(),
 	isOpen: z.boolean(),
 	flowIds: z.array(z.string().min(1)),
+	projectId: z.string().min(1).optional(),
 });
 
 export type FlowFolder = z.infer<typeof FlowFolderSchema>;
@@ -172,6 +185,7 @@ export const FlowsDocSchema = z.object({
 	v: z.literal(FLOWS_DOC_V),
 	flows: z.array(FlowSchema),
 	folders: z.array(FlowFolderSchema),
+	projects: z.array(ProjectSchema).optional(),
 	looseFlowIds: z.array(z.string().min(1)),
 	setups: z.array(SetupSchema),
 	windowFlows: z.record(z.string(), z.string().min(1)),

@@ -14,16 +14,25 @@ const CHANGE_ICON = "Change icon";
 
 export interface RowFieldProps {
 	readonly name: string;
-	readonly icon: FlowIcon | null;
-	readonly fallback: FlowGlyphProps["fallback"];
+	readonly icon?: FlowIcon | null;
+	readonly fallback?: FlowGlyphProps["fallback"];
 	readonly color?: ColorChoice;
 	readonly opensPicker?: boolean;
 	readonly onCommit: (name: string) => void;
-	readonly onIcon: (icon: FlowIcon | null) => void;
+	readonly onIcon?: (icon: FlowIcon | null) => void;
 	readonly onDone: () => void;
 }
 
-export function RowField({ name, icon, fallback, color, opensPicker = false, onCommit, onIcon, onDone }: RowFieldProps): ReactElement {
+export function RowField({
+	name,
+	icon = null,
+	fallback = "dot",
+	color,
+	opensPicker = false,
+	onCommit,
+	onIcon,
+	onDone,
+}: RowFieldProps): ReactElement {
 	const [isPicking, setIsPicking] = useState(opensPicker);
 	const draft = useFieldDraft({ name, onCommit, onDone });
 	const nameRef = useRef<HTMLInputElement | null>(null);
@@ -31,22 +40,24 @@ export function RowField({ name, icon, fallback, color, opensPicker = false, onC
 	usePeekHold(true);
 	const pick = (picked: FlowIcon | null): void => {
 		setIsPicking(false);
-		onIcon(picked);
+		onIcon?.(picked);
 	};
 	return (
 		<div className="sumi-flows-field" data-color={color?.value ?? undefined}>
-			<Popover open={isPicking} onOpenChange={setIsPicking} isPortaled>
-				<PopoverTrigger
-					className="sumi-flows-field-icon"
-					aria-label={CHANGE_ICON}
-					onMouseDown={(event) => event.preventDefault()}
-				>
-					<FlowGlyph icon={icon} fallback={fallback} />
-				</PopoverTrigger>
-				<PopoverContent side="bottom" align="start">
-					<IconPicker icon={icon} color={color} onPick={pick} />
-				</PopoverContent>
-			</Popover>
+			{onIcon === undefined ? null : (
+				<Popover open={isPicking} onOpenChange={setIsPicking} isPortaled>
+					<PopoverTrigger
+						className="sumi-flows-field-icon"
+						aria-label={CHANGE_ICON}
+						onMouseDown={(event) => event.preventDefault()}
+					>
+						<FlowGlyph icon={icon} fallback={fallback} />
+					</PopoverTrigger>
+					<PopoverContent side="bottom" align="start">
+						<IconPicker icon={icon} color={color} onPick={pick} />
+					</PopoverContent>
+				</Popover>
+			)}
 			<input
 				ref={nameRef}
 				className="sumi-flows-field-input"

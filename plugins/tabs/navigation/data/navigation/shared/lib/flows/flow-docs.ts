@@ -1,11 +1,15 @@
+import { GENERAL_PROJECT_ID } from "../../schema/flows.schema.js";
 import type { Flow, FlowFolder, FlowsDoc } from "../../schema/flows.schema.js";
+import { projectIdOfFlow, projectOfId, storedProjectIdOf } from "./flow-projects.js";
 
 export interface FlowPlace {
 	readonly folderId: string | null;
 	readonly before: string | null;
+	readonly projectId?: string | null | undefined;
 }
 
 const NO_FOLDER = 'no folder "{id}" stands here';
+const NO_PROJECT = 'no project "{id}" stands here';
 const NO_BEFORE = 'the flow "{id}" is not in the place it is asked to stand before';
 
 export function flowOfId(doc: FlowsDoc, flowId: string): Flow | undefined {
@@ -43,7 +47,11 @@ export function withFlowPlaced(doc: FlowsDoc, flowId: string, place: FlowPlace):
 		return doc;
 	}
 
-	const bare = withoutFlowPlace(doc, flowId);
+	const bare = withProjectStored(
+		withoutFlowPlace(doc, flowId),
+		flowId,
+		place.folderId === null ? storedProjectIdOf(projectIdAfter(doc, flowId, place)) : undefined,
+	);
 
 	if (place.folderId === null) {
 		return {
@@ -72,14 +80,22 @@ export function withoutFlow(doc: FlowsDoc, flowId: string): FlowsDoc {
 
 export function withFolderRemoved(doc: FlowsDoc, folderId: string): FlowsDoc {
 	const folder = folderOfId(doc, folderId);
+	const spilled = new Set(folder?.flowIds ?? []);
 	return {
 		...doc,
 		folders: doc.folders.filter(({ id }) => id !== folderId),
+		flows: doc.flows.map((flow) =>
+			spilled.has(flow.id) && flow.projectId !== folder?.projectId ? { ...flow, projectId: folder?.projectId } : flow,
+		),
 		looseFlowIds: [...doc.looseFlowIds, ...(folder?.flowIds ?? [])],
 	};
 }
 
 export function placeProblemOf(doc: FlowsDoc, place: FlowPlace): string | null {
+	if (typeof place.projectId === "string" && projectOfId(doc, place.projectId) === undefined) {
+		return NO_PROJECT.replace("{id}", place.projectId);
+	}
+
 	if (place.folderId === null) {
 		return place.before === null || doc.looseFlowIds.includes(place.before)
 			? null
@@ -95,6 +111,19 @@ export function placeProblemOf(doc: FlowsDoc, place: FlowPlace): string | null {
 	return place.before === null || folder.flowIds.includes(place.before)
 		? null
 		: NO_BEFORE.replace("{id}", place.before);
+}
+
+function withProjectStored(doc: FlowsDoc, flowId: string, projectId: string | undefined): FlowsDoc {
+	return flowOfId(doc, flowId)?.projectId === projectId ? doc : withFlowChanged(doc, flowId, { projectId });
+}
+
+function projectIdAfter(doc: FlowsDoc, flowId: string, place: FlowPlace): string {
+	if (place.projectId !== undefined) {
+		return place.projectId ?? GENERAL_PROJECT_ID;
+	}
+
+	const flow = flowOfId(doc, flowId);
+	return flow === undefined ? GENERAL_PROJECT_ID : projectIdOfFlow(doc, flow);
 }
 
 function withoutFlowPlace(doc: FlowsDoc, flowId: string): FlowsDoc {

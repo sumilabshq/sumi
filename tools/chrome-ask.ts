@@ -11,6 +11,15 @@ export interface PageAsk {
 	readonly onGpu?: boolean;
 	readonly hasFramesInProcess?: boolean;
 	readonly hearsFailures?: boolean;
+	readonly pixelRatio?: number;
+}
+
+export interface ShotClip {
+	readonly x: number;
+	readonly y: number;
+	readonly width: number;
+	readonly height: number;
+	readonly scale: number;
 }
 
 export type PagePoint = readonly [x: number, y: number];
@@ -37,7 +46,7 @@ export interface AskedPage {
 	readonly drag: (path: PointerPath) => Promise<void>;
 	readonly release: (at: PagePoint) => Promise<unknown>;
 	readonly reduceMotion: () => Promise<unknown>;
-	readonly shoot: () => Promise<Buffer>;
+	readonly shoot: (clip?: ShotClip) => Promise<Buffer>;
 	readonly typeText: (text: string) => Promise<void>;
 	readonly pressEnter: () => Promise<void>;
 	readonly pressKey: (key: NamedKey) => Promise<void>;
@@ -55,12 +64,12 @@ interface PageSocket {
 	readonly drag: (path: PointerPath) => Promise<void>;
 	readonly release: (at: PagePoint) => Promise<unknown>;
 	readonly reduceMotion: () => Promise<unknown>;
-	readonly shoot: () => Promise<Buffer>;
+	readonly shoot: (clip?: ShotClip) => Promise<Buffer>;
 	readonly typeText: (text: string) => Promise<void>;
 	readonly pressEnter: () => Promise<void>;
 	readonly pressKey: (key: NamedKey) => Promise<void>;
 	readonly failures: () => readonly string[];
-	readonly viewportSetTo: (size: PageSize) => Promise<unknown>;
+	readonly viewportSetTo: (size: PageSize, pixelRatio: number) => Promise<unknown>;
 }
 
 interface Waiting {
@@ -85,7 +94,7 @@ export async function paged(file: string, gate: string, asked: PageAsk): Promise
 		throw new Error(`chrome never opened a page for ${file}`);
 	}
 	const socket = await talking(socketUrl, asked.hearsFailures === true);
-	await socket.viewportSetTo(asked.size);
+	await socket.viewportSetTo(asked.size, asked.pixelRatio ?? 1);
 	return handled(socket, chrome, profile);
 }
 
@@ -244,8 +253,11 @@ async function talking(socketUrl: string, hearsFailures: boolean): Promise<PageS
 			send("Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "left", clickCount: 1 }),
 		reduceMotion: () =>
 			send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] }),
-		shoot: async () =>
-			Buffer.from(String(fieldOf(fieldOf(await send("Page.captureScreenshot", {}), "result"), "data")), "base64"),
+		shoot: async (clip) =>
+			Buffer.from(
+				String(fieldOf(fieldOf(await send("Page.captureScreenshot", clip ? { clip } : {}), "result"), "data")),
+				"base64",
+			),
 		typeText: async (text) => {
 			await send("Input.insertText", { text });
 		},
@@ -263,8 +275,8 @@ async function talking(socketUrl: string, hearsFailures: boolean): Promise<PageS
 			await send("Input.dispatchKeyEvent", { ...held, type: "keyUp" });
 		},
 		failures: () => [...failures],
-		viewportSetTo: ([width, height]) =>
-			send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false }),
+		viewportSetTo: ([width, height], pixelRatio) =>
+			send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: pixelRatio, mobile: false }),
 	};
 }
 

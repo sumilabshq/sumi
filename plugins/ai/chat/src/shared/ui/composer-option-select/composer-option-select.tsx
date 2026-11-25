@@ -14,6 +14,7 @@ export interface ComposerOptionSelectProps extends ComposerOptionProps {
 	readonly className?: string;
 	readonly form?: ButtonForm;
 	readonly icons?: Readonly<Record<string, string>>;
+	readonly warnValue?: string;
 }
 
 export function ComposerOptionSelect({
@@ -23,6 +24,7 @@ export function ComposerOptionSelect({
 	className,
 	form,
 	icons,
+	warnValue,
 }: ComposerOptionSelectProps): ReactElement | null {
 	const options = useOptionalQuery(assistant.runners.getOptions, { chat }).data ?? [];
 	const choose = useCommand(assistant.runners.chooseOption);
@@ -39,7 +41,7 @@ export function ComposerOptionSelect({
 			isPortaled
 			onValueChange={(value) => void choose.run({ chat, key: optionKey, value: String(value) })}
 		>
-			<SelectTrigger variant="ghost" size="xs" className={className} form={form} aria-label={shown.option.label}>
+			<SelectTrigger variant="ghost" size="xs" className={shown.value === warnValue ? `${className ?? ""} is-warn`.trim() : className} form={form} aria-label={shown.option.label}>
 				{icons?.[shown.value] ? <Icon name={icons[shown.value] ?? ""} size={CHIP_ICON_PX} /> : null}
 				{picked?.label ?? shown.value}
 			</SelectTrigger>

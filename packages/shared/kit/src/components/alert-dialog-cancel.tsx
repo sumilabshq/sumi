@@ -1,8 +1,13 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { withKeyHint } from "./alert-dialog-key";
 import { DialogClose } from "./dialog-close";
 import type { DialogCloseProps } from "./dialog-close";
 
-export function AlertDialogCancel(props: DialogCloseProps): ReactElement {
-	return <DialogClose variant="outline" data-wg-autofocus="" {...props} data-slot="alert-dialog-cancel" />;
+export function AlertDialogCancel({ children, ...props }: DialogCloseProps): ReactElement {
+	return (
+		<DialogClose variant="outline" data-wg-autofocus="" {...props} data-slot="alert-dialog-cancel">
+			{withKeyHint(children, "Esc", props.asChild)}
+		</DialogClose>
+	);
 }

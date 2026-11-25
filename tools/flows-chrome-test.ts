@@ -98,7 +98,7 @@ async function hiddenReachCheck(page: AskedPage): Promise<void> {
 	const toggle = (await page.ask(boxOf(TOGGLE))) as Box;
 	const back = (await page.ask(boxOf(BACK))) as Box;
 	const forward = (await page.ask(boxOf(FORWARD))) as Box;
-	const pen = (await page.ask(boxOf("button[aria-label='New flow']"))) as Box;
+	const pen = (await page.ask(boxOf("button[aria-label='New session']"))) as Box;
 	check("hidden: the pen, Back and Forward are visible after the toggle", [pen, back, forward].every((box) => box.left >= toggle.right && box.right > box.left), true);
 }
 

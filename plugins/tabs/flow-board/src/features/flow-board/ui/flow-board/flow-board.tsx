@@ -20,12 +20,12 @@ import { useEdgeDrag } from "../../lib/use-edge-drag.js";
 import { PageHost } from "../page-host/page-host.js";
 import { SplitEdge } from "../split-edge/split-edge.js";
 
-export function FlowBoard({ drawn, empty }: PaneBoardProps): ReactElement {
+export function FlowBoard({ drawn }: PaneBoardProps): ReactElement {
 	const board = useRef<HTMLDivElement | null>(null);
 	const open = useOpenFlowBoard();
 	return (
 		<div ref={board} className="sumi-flow-board" {...{ [BOARD_ATTRIBUTE]: "" }}>
-			{open === null ? empty : <BoardPanes open={open} board={board} drawn={drawn} />}
+			{open === null ? null : <BoardPanes open={open} board={board} drawn={drawn} />}
 		</div>
 	);
 }

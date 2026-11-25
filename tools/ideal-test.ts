@@ -231,7 +231,7 @@ same(
 	}
 	same("no floating panel but a menu drops a shadow", offenders.join(" | ") || 0, 0);
 	same("the menu drops the menu shadow", px(ours, ".wg-kit-pop", "box-shadow"), MENU_SHADOW);
-	same("and is bordered by the menu line", px(ours, ".wg-kit-pop", "border"), "1px solid var(--line-menu)");
+	same("and takes its edge from the shadow ring, not a border", px(ours, ".wg-kit-pop", "border"), "none");
 	same("and so is the dialog", px(ours, ".wg-dialog", "box-shadow"), "var(--glass-edge)");
 }
 

@@ -12,7 +12,7 @@
 	flex-direction: column;
 	background: var(--viewer-ground);
 	color: var(--viewer-ink);
-	font: var(--fw-regular, 400) var(--fs-13, 13px) / 1.3 var(--font-ui, inherit);
+	font: var(--fw-regular, 400) var(--fs-13) / 1.3 var(--font-ui, inherit);
 	outline: none;
 	animation: wg-studio-ai-viewer-in var(--dur-base, 180ms) var(--ease-out-expo, ease-out) both;
 }
@@ -37,7 +37,7 @@
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-faint {
 	flex: none;
 	color: var(--viewer-ink-2);
-	font-size: var(--fs-12, 12px);
+	font-size: var(--fs-12);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-viewer-fill {
