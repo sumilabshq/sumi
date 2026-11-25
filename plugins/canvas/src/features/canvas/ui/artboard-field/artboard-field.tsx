@@ -4,6 +4,7 @@ import { artboards } from "@sumi/artboards/contract";
 import { usePanZoom } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
+import { useLiveBoards } from "../../lib/use-live-boards.js";
 import { ArtboardFrame } from "../artboard-frame/artboard-frame.js";
 import { FieldMenu } from "../field-menu/field-menu.js";
 import type { MenuSpot } from "../field-menu/field-menu.js";
@@ -28,6 +29,7 @@ export function ArtboardField(): ReactElement {
 		camera: canvas.camera,
 		onKept: (camera) => void keep.run({ canvasId, camera }),
 	});
+	const live = useLiveBoards(boards, pan, FIELD_MARGIN_PX);
 	useEffect(() => {
 		const show = (scale: number): void => {
 			fieldRef.current?.style.setProperty(ZOOM_VAR, `${scale}`);
@@ -79,7 +81,13 @@ export function ArtboardField(): ReactElement {
 			>
 				<div className="sumi-canvas-origin" style={{ left: FIELD_MARGIN_PX, top: FIELD_MARGIN_PX }}>
 					{boards.map((board) => (
-						<ArtboardFrame key={board.id} board={board} scaleNow={() => pan.lookNow().scale} />
+						<ArtboardFrame
+							key={board.id}
+							board={board}
+							scaleNow={() => pan.lookNow().scale}
+							isLive={live.liveIds.has(board.id)}
+							onLoaded={live.onBoardLoaded}
+						/>
 					))}
 				</div>
 			</div>

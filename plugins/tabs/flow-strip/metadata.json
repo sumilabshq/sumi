@@ -1,0 +1,21 @@
+{
+	"title": "Flow strip",
+	"description": "The open Flow's tabs in the title row.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Title row",
+			"what": "The Flow's tabs"
+		},
+		{
+			"where": "Panes",
+			"what": "A tab row above each pane"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": "Shows the open Flow's tabs in the title row.\nEach pane gets its own tab row."
+}

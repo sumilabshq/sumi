@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
+import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 
 export interface PaneToolsProps {
 	readonly paneId: string;
@@ -20,8 +20,9 @@ const HIDE_TIP = tooltipMarks({ said: HIDE, side: "bottom" });
 export function PaneTools({ paneId, isExpanded, onExpand, onHide }: PaneToolsProps): ReactElement {
 	return (
 		<div className="sumi-pane-tools wg-root" data-pane-tools-of={paneId}>
-			<IconButton
-				variant="ghost"
+			<Button
+				shape="square"
+				emphasis="ghost"
 				size="xs"
 				label={isExpanded ? RESTORE : EXPAND}
 				aria-pressed={isExpanded}
@@ -30,10 +31,18 @@ export function PaneTools({ paneId, isExpanded, onExpand, onHide }: PaneToolsPro
 				{...(isExpanded ? RESTORE_TIP : EXPAND_TIP)}
 			>
 				<Icon name={isExpanded ? "minimize-2" : "maximize-2"} size={ICON_PX} />
-			</IconButton>
-			<IconButton variant="ghost" size="xs" label={HIDE} data-pane-hide={paneId} onClick={onHide} {...HIDE_TIP}>
+			</Button>
+			<Button
+				shape="square"
+				emphasis="ghost"
+				size="xs"
+				label={HIDE}
+				data-pane-hide={paneId}
+				onClick={onHide}
+				{...HIDE_TIP}
+			>
 				<Icon name="x" size={ICON_PX} />
-			</IconButton>
+			</Button>
 		</div>
 	);
 }

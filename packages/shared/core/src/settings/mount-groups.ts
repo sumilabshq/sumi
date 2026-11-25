@@ -4,7 +4,7 @@ import { declaredLabel, declaredName } from "../widget-listing.js";
 import { heldKey, keepNamedRecords, mountList, mountRows, mountRowToStore, uniqueName, withoutKey } from "../model.js";
 import type { HeldRecord, Tile } from "../model.js";
 import type { MountRow, MountRowLike } from "../held-records.js";
-import { Icon, IconButton, Pill, Row, RowLabel, RowValue } from "@widgetarium/kit";
+import { Button, Icon, Pill, Row, RowLabel, RowValue } from "@widgetarium/kit";
 import { CatalogueAsk } from "../catalogue-ask.js";
 import { shownEntries } from "../prop-visibility.js";
 import { mountSpecsOf } from "../manifest-holds.js";
@@ -86,9 +86,10 @@ function moveButton({ rows, index, write }: MoveAt, step: number, label: string,
 	const at = index + step;
 	if (at < 0 || at >= rows.length) return null;
 	return h(
-		IconButton,
+		Button,
 		{
-			size: "s",
+			shape: "square",
+			size: "sm",
 			key: label,
 			label,
 			onClick: (event: SyntheticEvent) => {
@@ -119,7 +120,11 @@ function mountRow(state: WindowState, { rows, row, index, write, rename }: Mount
 			found?.component
 				? enterButton(state, { hold: "mounted", key: row.name, was: row.was, widget: row.widget })
 				: null,
-			h(IconButton, { size: "s", key: "drop", label: "Remove", onClick: drop }, h(Icon, { name: "close" })),
+			h(
+				Button,
+				{ shape: "square", size: "sm", key: "drop", label: "Remove", onClick: drop },
+				h(Icon, { name: "close" }),
+			),
 		]),
 	]);
 	const apply = (typed: string): void =>

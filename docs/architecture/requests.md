@@ -65,7 +65,7 @@ export const toggleFrameSide = command()
 
 ## Re-reading: `invalidate`
 
-A command or a subscriber calls `invalidate(query, input?)` for each query its work made stale: the own module's queries, or those of a module in `.imports` (anything else fails the call, naming the fix). With an input, only that read re-reads; without one, every read of the query. Prior art: `revalidatePath` / `revalidateTag` in Next.js server actions, `invalidateQueries` in TanStack's `onSuccess`.
+A command or a subscriber calls `invalidate(query, input?)` for each query its work made stale: the own module's queries, or those of a module in `peerDependencies` (anything else fails the call, naming the fix). With an input, only that read re-reads; without one, every read of the query. Prior art: `revalidatePath` / `revalidateTag` in Next.js server actions, `invalidateQueries` in TanStack's `onSuccess`.
 
 - Invalidations are collected during the call and applied only after a successful answer; a refused, thrown or failed call applies none. A subscriber's apply after it returns without throwing.
 - No default: a command that invalidates nothing re-reads nothing. A query has no `invalidate`.
@@ -89,7 +89,7 @@ export const rereadPanes = subscriber(panesChanged).handle((_input, { invalidate
 
 - **Two sources.** A command or a subscriber emits it with `emit(event, input)`, which returns nothing to await, or it comes from outside with `.from(...)`: one source for every platform, or a record keyed by platform (a missing platform never fires). Sources: `gatewayEvent(Gateway, (gateway, fire) => gateway.xChanged(fire))` for a gateway's own listener in the process (a signal only the host has, such as Tauri's, reaches a module this way: the host lends an object, a gateway wraps it), `windowEvent(type)` (`window.addEventListener`, the payload of a `MessageEvent` or `CustomEvent`). A payload the event's schema refuses is reported and dropped, never delivered.
 - **`.public()` enters the contract.** An event belongs to the module whose package declares it. Marked `event().public()`, it enters the generated contract; unmarked, any module that imports its module still hears it in process. **A module emits only its own events, with no declaration.** `emit` is typed by the events of its package (the generator lists them in `generated/command.ts`), and at run time `emit` refuses another module's event, naming the emitter, the event and the module. TODO: events with the same input schema share one type, so only the run time tells a foreign one apart. A query has no `emit`. The app starts a source only while some subscriber listens, and stops it with `stop()`.
-- **Subscribers.** `subscriber(event).handle((input, { invalidate, send, emit, ...injects }) => ...)`, from `#module`: what the module reacts to; many per event are normal. The generator puts every subscriber of the package in `handled`. A subscriber is named for what it does (`rereadPanes`, `ensurePanePages`), never for its trigger. A subscriber of another module's event needs that module in `.imports()`, or the start is refused naming the fix; events do not cross the network yet, so an event of a module imported from an address is refused at start.
+- **Subscribers.** `subscriber(event).handle((input, { invalidate, send, emit, ...injects }) => ...)`, from `#module`: what the module reacts to; many per event are normal. The generator puts every subscriber of the package in `handled`. A subscriber is named for what it does (`rereadPanes`, `ensurePanePages`), never for its trigger. A subscriber of another module's event needs that module in `peerDependencies`, or the start is refused naming the fix; events do not cross the network yet, so an event of a module imported from an address is refused at start.
 - **After the answer, each on its own.** Subscribers run after the emitting handler has answered (scheduled, never inline); one throwing or rejecting is reported once and touches neither the emitter nor the other subscribers.
 - **Views never touch events.** A view reads with `useQuery` and acts with `useCommand`; events are inside modules: subscribers handle them and call `invalidate` to re-read queries. A view never emits or subscribes to an event.
 - **Where it lives.** An event a gateway is the source of lives beside it, `gateways/<gateway>/<gateway>.events.ts`; an emitted event in the feature that emits it, or `shared/events/<topic>.events.ts` when two features use it.
@@ -99,7 +99,7 @@ export const rereadPanes = subscriber(panesChanged).handle((_input, { invalidate
 A module that needs live objects only its starter has (a store, a file it opened, a running agent) declares their shape with `.config<C>()`, and the module becomes callable: whoever starts it passes its config where it lists it, `tasks({ file })`, and `provide(({ platform, scope, env, config }) => ...)` receives it. The config is the module's own: no other module sees it. A config with a required field makes the uncalled module a type error in `.modules(...)`; a config whose fields are all optional lets the module stand uncalled, with an empty config. `x({ injects: fakes })` skips config and `provide` alike. The starter passes raw objects only, never a module's gateway; the module builds its gateways on them. The config's types live in the module's `shared/host/<x>.host.ts`, and `module.ts` re-exports them as types.
 
 ```ts skip-check
-export const tasks = module("tasks")
+export const tasks = module()
 	.on(Server)
 	.config<{ readonly file: BoardFile }>()
 	.provide(({ config }) => tasksPartsOn(config));
@@ -109,7 +109,7 @@ runtime().modules(tasks({ file })).start({ platform: "server", env, scope });
 **A module mounted several ways takes a union with `kind`.** The starter names the variant, and `provide` branches on it:
 
 ```ts skip-check
-export const canvas = module("canvas")
+export const canvas = module()
 	.on(Device)
 	.config<
 		| { readonly kind: "vault"; readonly adapter: DataAdapter }
@@ -121,45 +121,33 @@ canvas({ kind: "project", project });
 
 **Objects only one host has go in an optional field.** `layout` takes `{ tauri?: { store, windows } }`: the Tauri host calls `layout({ tauri: { store, windows } })`, every other starter lists `layout` uncalled, and `provide` picks its Tauri parts only when `config.tauri` is there.
 
-## A prefix
-
-Two modules of one name run in one runtime only under two prefixes. `prefix` is a reserved key of the module call and of the contract call: `questions({ prefix: "chat-2" })` or `tasks({ file, prefix })` in `.modules`, `questions({ over, prefix: "chat-2" })` in `.imports`. A prefix is one kebab segment, a numeric suffix allowed (`chat-2`).
-
-- **Routes register `<prefix>.<name>`** (`chat-2.questions.agent.post`): an adapter serves that name, and done keys and in-flight dedup are kept under it. No prefix leaves every name as it was.
-- **Sends through a contract imported with a prefix go as `<prefix>.<name>`**; the caller still sends `questions.agent.post`, through the namespace.
-- **A send with the bare name** reaches the module of the sender's own prefix first, then the unprefixed one, then the only prefixed one: in process (`local-routes.ts`), through imported contracts (`remote-modules.ts`) and in the studio's frame relay, by one function, `addressingOf` (`addressing.ts`). A handler's and a subscriber's send carry their module's prefix, a view's none. Two or more candidates and none picked answer `not-found`, naming them. TODO: prefix invalidations and events.
-- **A module config field named `prefix` is refused**: by the types (`.config<{ prefix }>()` does not compile), and where the module is called, with a value that is not one kebab segment.
-- `prefixedModule(module, prefix)` prefixes a module a starter did not call itself, such as one a plugin registers through a host service; `null` leaves it as it is.
-
-Two modules of one name with no prefix, or one prefix, are refused at start, naming both by their place in `.modules()`: rename the `module("…")` string of one. Importing a module under another constant changes nothing, since the string is its name.
-
 ## A module
 
-A module says where it may run, what it imports and guards, and picks its gateways. It never lists its requests. `module.ts` holds only this (`plugins/ai/questions/data/questions/module.ts`, `packages/state/layout/module.ts`):
+A module says where it may run, what it imports and guards, and picks its gateways. It never lists its requests. `module.ts` holds only this (`modules/questions/module.ts`, `modules/layout/module.ts`):
 
 ```ts skip-check
 import { PublicGuard, Server, module } from "@widgetarium/data-framework";
 import { questionsPartsOn } from "./gateways/questions-parts/questions-parts.gateway.js";
 
-export const questions = module("questions")
+export const questions = module()
 	.on(Server)
 	.guard(PublicGuard)
 	.provide((facts) => questionsPartsOn(facts));
 ```
 
-- **Order:** `module("questions").on(Server | Device | Anywhere)` first, then `.imports`, `.config`, `.guard`, `.use` and `.provide` last. The string is the module's name, one kebab segment (`chat-tabs`), checked where it is written; wire names, logs and done keys start with it, so renaming the constant changes nothing on the wire.
-- **The generator names, lists and hands over.** `data-framework generate` scans `features/**/requests.ts(x)`, `gateways/**/*.events.ts` and `shared/events/*.events.ts` and writes `generated/module.ts`, the runnable module and the `"./implementation"` entry: `export const questions = handledModule(definition, [named("agent.ask", ask), …, rereadQuestions])`, the definition from `module.ts` handed every request with a handler and every event named by its path in the module, and every subscriber; the types `module.ts` re-exports are re-exported beside it. Two items on one path, a constant that is not camelCase letters, a `query("…")` given a string, a `module()` without its name string, a `.handles()` in `module.ts` and a group named like a field of the descriptor are refused.
+- **Order:** `module().on(Server | Device | Anywhere)` first, then `.requireServices`, `.config`, `.guard`, `.use` and `.provide` last. The module's name is `name` in its `package.json` (`@acme/chat-tabs`), and takes no string in code; wire names, logs and done keys start with it, so renaming the constant changes nothing on the wire.
+- **The generator names, lists and hands over.** `data-framework generate` scans `features/**/requests.ts(x)`, `gateways/**/*.events.ts` and `shared/events/*.events.ts` and writes `generated/module.ts`, the runnable module and the `"./implementation"` entry: `export const questions = handledModule(definition, [named("agent.ask", ask), …, rereadQuestions])`, the definition from `module.ts` handed every request with a handler and every event named by its path in the module, and every subscriber; the types `module.ts` re-exports are re-exported beside it. Two items on one path, a constant that is not camelCase letters, a string given to `query()` or `module()`, a `.handles()` in `module.ts` and a group named like a field of the descriptor are refused.
 - **Builders from `#module`.** `generated/command.ts` holds `export const { command, query, subscriber } = buildersOf<typeof questions, typeof asked | …>();`, the second argument every event of the package (`never` with none); `package.json` maps `"imports": { "#module": … }` to it. `event` comes from `@widgetarium/data-framework`. A handler's second parameter is typed by what `provide` and the runtime return, so a request has no `.inject`: using a key neither returns is a type error.
-- **Names:** a request's path is its feature folder and its constant in kebab case (`frame-sides.toggle-frame-side`); handling it stamps the module, `layout.frame-sides.toggle`, its events and the events its own subscribers hear too. A request or event and every step of its chain share one identity cell, so the name the generator writes once reaches the object every file imports. TRADE-OFF: named by the generated list, since JavaScript cannot read a variable's name; reading an unnamed one throws, naming `npm run generate`. That full name is its address on the wire, in logs and in done keys; the generated contract carries it. Inside its module a handler names a sibling by direct import (`invalidate(frameSides)`); when a destructured key shadows it, the key is renamed in the destructuring to `<key>Gateway` (`{ frameSides: frameSidesGateway }`), never copied into a proxy variable.
-- **Renaming:** `npm run data-framework rename <full-name> <new-leaf>` (`rename file-system.files.read-folder folder`, or a module or plugin name) renames the constant and every use bound to it, scope by scope: direct imports and their aliases, namespace uses, re-exports and strings equal to the old wire name. It refuses, writing nothing, an unknown or ambiguous name and a new name already bound where the old one is used; `--dry` prints every change. Then it runs `generate` and the type check, and lists text it left alone (docs, template strings). A renamed request changes its wire name.
+- **Names:** a request's path is its feature folder and its constant in kebab case (`frame-sides.toggle-frame-side`); handling it stamps the module, `@sumi/layout#frame-sides.toggle`, its events and the events its own subscribers hear too. A request or event and every step of its chain share one identity cell, so the name the generator writes once reaches the object every file imports. TRADE-OFF: named by the generated list, since JavaScript cannot read a variable's name; reading an unnamed one throws, naming `npm run generate`. That full name is its address on the wire, in logs and in done keys; the generated contract carries it. Inside its module a handler names a sibling by direct import (`invalidate(frameSides)`); when a destructured key shadows it, the key is renamed in the destructuring to `<key>Gateway` (`{ frameSides: frameSidesGateway }`), never copied into a proxy variable.
+- **Renaming:** `npm run data-framework rename <full-name> <new-leaf>` (`rename @sumi/file-system#files.read-folder folder`) renames the constant and every use bound to it, scope by scope: direct imports and their aliases, namespace uses, re-exports and strings equal to the old wire name. It refuses, writing nothing, an unknown or ambiguous name and a new name already bound where the old one is used; `--dry` prints every change. Then it runs `generate` and the type check, and lists text it left alone (docs, template strings). A renamed request changes its wire name.
 - **`.provide((facts) => injects)`** receives `{ platform, scope, env, config }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables, `config` what the module was called with. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform), keyed by gateway name.
 - **A test hands fakes:** `layout({ injects: fakes })` skips `provide`; `runtime().modules(layout({ injects: fakes })).start({ platform, scope }).send(request, input)` runs the real handlers over them (`tools/command-menu-checks.ts`).
 
 ## Sending to another module
 
 ```ts skip-check
-import { billing } from "@widgetarium/billing";
-import { billing as billingServer } from "@widgetarium/billing/server";
+import { billing } from "@acme/billing/contract";
+import { billing as billingServer } from "@acme/billing/server";
 import { command } from "#module";
 
 export const buy = command()
@@ -169,7 +157,7 @@ export const buy = command()
 ```
 
 - `send` is in every handler's and subscriber's context and takes any request, typed by that request's input and output. Nothing lists what a handler sends: prior art is MediatR's `ISender.Send` and NestJS's `CommandBus.execute`.
-- The sending module names the other in `.imports(billing)`. A send to a module not in `.imports` fails at the send, naming the fix (`shop.orders.buy sends payments.charges.charge, but module "shop" does not import payments: add .imports()`); a request of the own module needs no import, and is imported directly from its file.
+- The sending module lists the other in `peerDependencies`. A send to a module not listed fails at the send, naming the missing package; a request of the own module needs no listing, and is imported directly from its file.
 - The `"./server"` entry exports an object named like the module too, holding the non-public requests (`billingServer.customers.createCustomer` above): a file using both entries aliases one import, the only case an import is aliased.
 - `.public()` requests come from the other module's `"./contract"` entry; the non-public requests of a `Server` or `Anywhere` module from its `"./server"`, for other server modules in the same process. A non-public request sent at an imported address is refused by the server that serves it (`refuseCaller`). Never import its `module.ts`, handler or gateway.
 - `send` routes in process when the other module runs in the same app, else over the network to the address the app imported it at. A request no module runs and no server reaches answers `no-server`, and the sender fails with it.
@@ -177,11 +165,11 @@ export const buy = command()
 
 ## The generated contract
 
-`npm run generate` scans each data module's requests and events and writes, per package: `generated/module.ts` and `generated/command.ts` ([A module](#a-module)); `generated/contract.ts`: each `.public()` request and event up to its first handling step, `.public()` / `.callableBy()` cut out (an event's `.from(...)` is cut too, so no source reaches a client), with every schema it uses copied in, transitively, in one object named like the module: `export const billing = moduleContract("billing", Server, { charges: { charge: named("charges.charge", command()…) } })`. It is the descriptor `.imports(billing({ over: transport }))` takes and the namespace a caller reads (`billing.charges.charge`), and carries no code; a group whose key is a field of the descriptor (`name`, `runs`, `requests` and the function's own) is refused. For a `Server` or `Anywhere` module with non-public requests, `generated/server.ts` holds them, `export const billing = moduleNamespace("billing", { … })`. `package.json` exports the contract itself as `"./contract"`, and the root `server.ts` re-exports the server one (`"./server"`); there is no `"."`. The contract carries no invalidation. A contract is callable; `isModuleContract(value)` tells one apart.
+`npm run generate` scans each data module's requests and events and writes, per package: `generated/module.ts` and `generated/command.ts` ([A module](#a-module)); `generated/contract.ts`: each `.public()` request and event up to its first handling step, `.public()` / `.callableBy()` cut out (an event's `.from(...)` is cut too, so no source reaches a client), with every schema it uses copied in, transitively, in one object named like the module: `export const billing = moduleContract("@acme/billing", Server, { charges: { charge: named("charges.charge", command()…) } })`. It is the descriptor `.imports(billing({ over: transport }))` takes and the namespace a caller reads (`billing.charges.charge`), and carries no code; a group whose key is a field of the descriptor (`name`, `runs`, `requests` and the function's own) is refused. For a `Server` or `Anywhere` module with non-public requests, `generated/server.ts` holds them, `export const billing = moduleNamespace("billing", { … })`. `package.json` exports the contract itself as `"./contract"`, and the root `server.ts` re-exports the server one (`"./server"`); there is no `"."`. The contract carries no invalidation. A contract is callable; `isModuleContract(value)` tells one apart.
 
 - The contract imports only `zod` and `@widgetarium/data-framework`, so no handler or gateway can reach a client.
 - A copied schema is built only from `z.*` calls, literals, object and array literals, other copied schemas and `z.lazy(() => X)`. A function, a helper call or a foreign import is refused by name: a refinement belongs to the handler or beside the gateway (`KeptPaneTreeSchema`).
-- Refused: a `module.ts` calling `.handles()`; a `module()` without its name string; a `package.json` without the `#module` import, without `"./contract"` or `"./implementation"`, or still exporting `"."`; a `"./server"` export with no non-public request, or non-public requests with no `"./server"` export; two items on one path; a contract step naming another request; a schema declared beside the request instead of in `shared/schema`.
+- Refused: a `module.ts` calling `.handles()`; a `package.json` without a `name`, without the `#module` import, without `"./contract"` or `"./implementation"`, or still exporting `"."`; a `"./server"` export with no non-public request, or non-public requests with no `"./server"` export; two items on one path; a contract step naming another request; a schema declared beside the request instead of in `shared/schema`.
 - A function idempotency key is copied only when it is one arrow reading its input: `(input) => input.id`, or a template literal of its fields.
 - `npm run generate -- --check` (in `test:generated`) fails on a stale file. In dev, `@widgetarium/vite` regenerates a package when one of its `requests.ts(x)`, `*.events.ts`, `module.ts`, `plugin.ts` or `slots.ts` changes, settling for 150 ms and running `generate` for that package only.
 
@@ -305,7 +293,7 @@ const http = dataFrameworkMiddleware(api, { authenticate });
 - **`Authenticate` belongs to the adapter**, one per adapter, since only an outside caller has headers to read. An in-process call (a view, a handler's or subscriber's send) carries no user, and `runtime.send` passes on only `idempotencyKey`, `signal` and `headers`.
 - **An `Authenticate` that throws** answers the caller `unauthenticated` with a reason that names only the request; the error itself reaches `reportFailure`.
 - **Several adapters, one runtime.** The same started runtime is served over HTTP, a port and a local transport at once; each adapter's call returns its own stop. Changes a call causes, inside or outside, reach every adapter's hearers and the runtime's own cache.
-- Every module's `.imports` must be met by the runtime's `.modules` or `.imports`; start refuses naming the missing module.
+- Every module a module lists in `peerDependencies` must be met by the runtime's `.modules` or `.imports`; start refuses naming the missing module.
 - `.provide((facts) => …)` is the runtime's own provide ([Runtime provides](#runtime-provides)).
 - `.start({ platform?, scope?, env?, host? })` answers the `Runtime`: `send`, `routes`, `watches`, `queryClient`, `expose`, `stop`. The host gives `doneKeys` and `reportFailure`.
 - **`stop()` is final.** After it `send` answers `unreachable`, `expose` throws, and an adapter mounted before keeps its own stop and answers its callers `unreachable`.
@@ -313,7 +301,7 @@ const http = dataFrameworkMiddleware(api, { authenticate });
 - **One runtime per local transport:** a second `serve` while one is served throws; a stop clears only its own serving.
 - **One runtime per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `RuntimeProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
 - **An adapter mounts only `.public()` requests**: an unmarked or `.callableBy()` one is not mounted, so an outside caller gets `not-found` as for a request no module runs, while an in-process `send` from another module reaches both.
-- `runtime()` refuses at start, naming the request: two modules of one name and prefix ([A prefix](#a-prefix)), two handlers for one request, a missing or wrong provided value, a step requiring what neither the module nor the runtime provides, a module key the runtime provides too, a declared send nothing can answer.
+- `runtime()` refuses at start, naming the request: two modules of one name, two handlers for one request, a missing or wrong provided value, a step requiring what neither the module nor the runtime provides, a module key the runtime provides too, a declared send nothing can answer.
 - **An adapter refuses to mount**, naming each request: a public request no guard covers (`PublicGuard` when anyone may call it), and, when the adapter has no `Authenticate`, a guard that needs a user. A runtime nobody exposes needs neither.
 - **A guard that needs a user is checked at adapter mount, never at runtime start:** in process it answers `unauthenticated`.
 - The wire is oRPC, and only `@widgetarium/data-framework` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).

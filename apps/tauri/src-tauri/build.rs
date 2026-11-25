@@ -33,6 +33,8 @@ const STORE_COMMANDS: &[&str] = &[
     "list_workspaces",
     "rename_workspace",
     "choose_workspace_folder",
+    "retire_other_workspaces",
+    "conversion_refusal",
 ];
 
 const BROWSER_COMMANDS: &[&str] = &[
@@ -78,6 +80,8 @@ const STUDIO_LOG_COMMANDS: &[&str] = &["line", "level"];
 const AGENT_COMMANDS: &[&str] = &["open_channel", "answer"];
 
 const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close", "run", "spawn", "stop"];
+
+const HAPTICS_COMMANDS: &[&str] = &["tap"];
 
 const FILES_COMMANDS: &[&str] =
     &[
@@ -125,8 +129,11 @@ fn main() {
     let files = InlinedPlugin::new()
         .commands(FILES_COMMANDS)
         .default_permission(DefaultPermissionRule::AllowAllCommands);
+    let haptics = InlinedPlugin::new()
+        .commands(HAPTICS_COMMANDS)
+        .default_permission(DefaultPermissionRule::AllowAllCommands);
     let plugins = Attributes::new().plugin("assistant", assistant).plugin("store", store).plugin("browser", browser);
     let plugins = plugins.plugin("studio-log", studio_log).plugin("agent", agent).plugin("studio-core", studio_core);
-    tauri_build::try_build(plugins.plugin("terminal", terminal).plugin("files", files))
+    tauri_build::try_build(plugins.plugin("terminal", terminal).plugin("files", files).plugin("haptics", haptics))
         .expect("the Tauri build step failed")
 }

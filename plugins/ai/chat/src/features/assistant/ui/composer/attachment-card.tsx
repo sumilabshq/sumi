@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, IconButton, Pressable, tooltipMarks } from "@widgetarium/kit";
+import { Button, Icon, Pressable, tooltipMarks } from "@widgetarium/kit";
 import { pictureMarksOf } from "../../../../shared/lib/picture-marks.js";
 import { CardWords } from "./card-words.js";
 import type { AttachmentChip } from "@widgetarium/assistant/contract";
@@ -31,16 +31,17 @@ export function AttachmentCard({ chip, onRemove }: AttachmentCardProps): ReactEl
 					<img src={chip.preview} alt="" />
 				</Pressable>
 			)}
-			<IconButton
-				variant="ghost"
-				size="xxs"
+			<Button
+				shape="square"
+				emphasis="ghost"
+				size="2xs"
 				className="wg-studio-ai-card-remove"
 				label={REMOVE_NAMED.replace("{name}", chip.name)}
 				onClick={onRemove}
 				{...tooltipMarks({ said: REMOVE, side: "top" })}
 			>
 				<Icon name="x" size={10} />
-			</IconButton>
+			</Button>
 		</span>
 	);
 }

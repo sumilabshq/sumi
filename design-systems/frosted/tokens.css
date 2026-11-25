@@ -90,8 +90,8 @@
 	--font-mono: var(--font-monospace, ui-monospace, Menlo, monospace);
 	--type-xs: 12px;
 	--type-s: 13px;
-	--type-m: 15px;
-	--type-l: 17px;
+	--type-m: 14px;
+	--type-l: 16px;
 	--gap-section: 48px;
 	--gap-plate: 12px;
 }

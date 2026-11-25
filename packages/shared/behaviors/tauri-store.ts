@@ -1,5 +1,5 @@
 export { HeldDoc } from "./src/tauri-store/held-doc.js";
-export type { DocAt } from "./src/tauri-store/held-doc.js";
+export type { DocAt, DocStep } from "./src/tauri-store/held-doc.js";
 export {
 	GLOBAL_ROOT,
 	StoreClient,

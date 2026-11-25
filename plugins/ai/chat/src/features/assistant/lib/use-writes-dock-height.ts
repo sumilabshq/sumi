@@ -12,12 +12,34 @@ export function useWritesDockHeight(dock: RefObject<HTMLDivElement | null>): voi
 			return undefined;
 		}
 
+		let isWaitingForRest = false;
 		const write = (): void => {
-			chat.style.setProperty(DOCK_HEIGHT_PROPERTY, `${Math.round(node.getBoundingClientRect().height)}px`);
+			const moving = finiteAnimationsIn(node);
+
+			if (moving.length === 0) {
+				chat.style.setProperty(DOCK_HEIGHT_PROPERTY, `${Math.round(node.getBoundingClientRect().height)}px`);
+				return;
+			}
+
+			if (isWaitingForRest) {
+				return;
+			}
+
+			isWaitingForRest = true;
+			void Promise.allSettled(moving.map((running) => running.finished)).then(() => {
+				isWaitingForRest = false;
+				write();
+			});
 		};
 		write();
 		const sizes = new ResizeObserver(write);
 		sizes.observe(node);
 		return () => sizes.disconnect();
 	}, [dock]);
+}
+
+function finiteAnimationsIn(node: HTMLElement): Animation[] {
+	return node
+		.getAnimations({ subtree: true })
+		.filter((running) => Number.isFinite(running.effect?.getComputedTiming().endTime ?? Infinity));
 }

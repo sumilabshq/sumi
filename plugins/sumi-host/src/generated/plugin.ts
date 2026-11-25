@@ -5,7 +5,7 @@ import { sumiHost as definition } from "../plugin.js";
 export const sumiHost = pluginWithSlots(definition, {
 	slots: {
 		frameStart: listPluginSlot<{}>("sumi-host.frame-start"),
-		paneBoard: pluginSlot<{ readonly drawn: never; readonly empty: never; readonly chatPx: never; readonly bounds: never; readonly onChatPx: never }>("sumi-host.pane-board"),
+		paneBoard: pluginSlot<{ readonly drawn: never; readonly chatPx: never; readonly bounds: never; readonly onChatPx: never }>("sumi-host.pane-board"),
 		sidebarActions: listPluginSlot<{}>("sumi-host.sidebar-actions"),
 		titleTabs: listPluginSlot<{}>("sumi-host.title-tabs"),
 		titleEnd: listPluginSlot<{}>("sumi-host.title-end"),

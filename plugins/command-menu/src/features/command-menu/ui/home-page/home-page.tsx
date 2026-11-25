@@ -15,7 +15,17 @@ export function HomePage({ tabId }: TabPageProps): ReactElement {
 		throw new Error(NO_WINDOW_APP);
 	}
 
-	const standard = <HomePanel homeTabId={tabId} head={null} idle={null} placeholder={null} />;
+	const standard = (
+		<HomePanel
+			homeTabId={tabId}
+			head={null}
+			idle={null}
+			placeholder={null}
+			fieldStart={null}
+			fieldEnd={null}
+			isHintless={false}
+		/>
+	);
 	return (
 		<RuntimeProvider runtime={windowApp}>
 			<PluginSlot name="command-menu.home" props={{ tabId, children: standard }}>

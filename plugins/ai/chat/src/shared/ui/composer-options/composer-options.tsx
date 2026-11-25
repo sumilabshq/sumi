@@ -22,6 +22,10 @@ export function ComposerOptionsStart({ chat, surface, isEmptyChat }: ComposerOpt
 	);
 }
 
+export function ComposerOptionsField({ chat, surface }: ComposerOptionProps): ReactElement {
+	return <ListPluginSlot name="chat.field-options" props={{ chat, surface }} />;
+}
+
 export function ComposerOptionsEnd({ chat, surface }: ComposerOptionProps): ReactElement {
 	return <ListPluginSlot name="chat.options-end" props={{ chat, surface }} />;
 }
@@ -29,6 +33,7 @@ export function ComposerOptionsEnd({ chat, surface }: ComposerOptionProps): Reac
 export function ComposerOptions(props: ComposerOptionsProps): ReactElement {
 	return (
 		<>
+			<ComposerOptionsField chat={props.chat} surface={props.surface} />
 			<ComposerOptionsStart {...props} />
 			<span className="wg-studio-ai-strip-space" />
 			<ComposerOptionsEnd chat={props.chat} surface={props.surface} />

@@ -76,7 +76,9 @@ export type NavigationTarget = z.infer<typeof NavigationTargetSchema>;
 
 export const NavigationWhereSchema = z
 	.enum(["this-tab", "new-tab"])
-	.describe("this-tab puts the target in the place of the tab from, which closes; new-tab opens or shows it as its own tab");
+	.describe(
+		"this-tab puts the target in the place of the tab from, which closes; new-tab opens or shows it as its own tab",
+	);
 
 export const NavigateAskSchema = z.object({
 	at: TabsAskSchema,

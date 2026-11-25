@@ -1,6 +1,6 @@
 export { Kit } from "./kit-object";
 
-export { ActionButton, Button, ButtonLabel, IconButton, ShowMore, Spinner } from "./components/button";
+export { ActionButton, Button, ButtonLabel, ShowMore, Spinner } from "./components/button";
 export { Badge, Count, Pill } from "./components/badge";
 export { TextLink } from "./components/text-link";
 export { Pressable } from "./components/pressable";
@@ -64,6 +64,9 @@ export {
 	usePopover,
 } from "./components/popover";
 export { PopoverLabel } from "./components/popover-label";
+export { PopoverSub } from "./components/popover-sub";
+export type { PopoverSubProps } from "./components/popover-sub";
+export { SpotMenu } from "./components/spot-menu";
 
 export { Progress, ProgressBar, StatusProgress } from "./components/progress";
 export { ProgressRing } from "./components/progress-ring";

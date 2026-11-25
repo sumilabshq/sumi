@@ -12,39 +12,47 @@ const BOX: PartKeys = ["h", "w", "radius", "pad", "gap", "bg", "edge"];
 const TEXT: PartKeys = ["fs", "fw", "lh", "color", "spacing"];
 const FLAT: PartKeys = ["h", "radius", "pad", "gap", "bg", "edge"];
 
-const STRIP_BOARD = ":scope > div:last-child";
 const AUTO_BUILT = '.wg-studio-ai-strip .wg-kit-btn[aria-label="Permission mode"]';
+const PICK_KEYS: PartKeys = ["h", "radius", "bg", "edge", "border", "fs", "fw", "color"];
+const PICK_BOARD = ".bar > .pick:nth-of-type(2)";
+const MODEL_BUILT = '.wg-studio-ai-field-bar .wg-kit-btn[aria-label="Model"]';
+const OPTION_BOARD = ".under .opt";
+const OPTION_BUILT = '.wg-studio-ai-strip .wg-kit-btn[aria-label="Sandbox"]';
 
 export const IDLE_PARTS: Parts = {
 	field: {
-		board: ".composer",
+		board: ".field",
 		built: ".wg-studio-ai-field",
 		keys: ["h", "radius", "pad", "gap", "bg", "edge", "border"],
 	},
-	placeholder: { board: ".composer > span", built: ".wg-studio-ai-box", keys: ["fs", "fw", "lh"] },
-	bar: { board: ".composer > div", built: ".wg-studio-ai-field-bar", keys: ["h", "gap"] },
-	plus: { board: ".ib", built: ".wg-studio-ai-plus", keys: [...BOX, "border", "color"] },
-	plusGlyph: { board: ".ib svg", built: ".wg-studio-ai-plus svg", keys: ["w", "h"] },
-	sendIdle: { board: ".send.off", built: ".wg-studio-ai-send.is-idle", keys: [...BOX, "border", "color"] },
-	sendGlyph: { board: ".send.off svg", built: ".wg-studio-ai-send.is-idle .wg-studio-ai-send-play", keys: ["w", "h"] },
-	strip: { board: STRIP_BOARD, built: ".wg-studio-ai-strip", keys: ["pad", "gap"] },
-	stripButton: { board: ".gt", built: AUTO_BUILT, keys: [...FLAT, "border", "fs", "fw", "color"] },
-	stripChevron: { board: ".gt svg", built: `${AUTO_BUILT} svg`, keys: ["w", "h"] },
-	stripWords: { board: `text:${STRIP_BOARD}`, built: "text:.wg-studio-ai-strip", keys: [] },
-	fieldToStrip: {
-		board: `between:.composer|${STRIP_BOARD}`,
-		built: "between:.wg-studio-ai-field|.wg-studio-ai-strip",
-		keys: [],
+	placeholder: { board: ".text", built: ".wg-studio-ai-box", keys: ["fs", "fw", "lh"] },
+	bar: { board: ".bar", built: ".wg-studio-ai-field-bar", keys: ["h", "gap"] },
+	plus: { board: ".plus", built: ".wg-studio-ai-plus", keys: [...BOX, "border", "color"] },
+	plusGlyph: { board: ".plus svg", built: ".wg-studio-ai-plus svg", keys: ["w", "h"] },
+	model: { board: PICK_BOARD, built: MODEL_BUILT, keys: PICK_KEYS },
+	mode: { board: ".under .opt:nth-of-type(3)", built: AUTO_BUILT, keys: ["fs", "fw", "color"] },
+	usage: { board: ".usage", built: ".sumi-usage-button", keys: ["h", "w", "radius", "pad", "border"] },
+	sendIdle: {
+		board: ".send",
+		built: ".wg-studio-ai-send.is-idle",
+		keys: ["h", "w", "radius", "pad", "gap", "edge", "border", "color"],
 	},
+	sendGlyph: { board: ".send svg", built: ".wg-studio-ai-send.is-idle svg", keys: ["w", "h"] },
+	option: { board: OPTION_BOARD, built: OPTION_BUILT, keys: ["fs", "fw", "color"] },
 };
 
 export const TYPED_PARTS: Parts = {
-	typedText: { board: ".composer > span", built: ".wg-studio-ai-box", keys: ["fs", "fw", "lh", "color"] },
-	sendReady: { board: ".send:not(.off)", built: ".wg-studio-ai-send.is-typing", keys: [...BOX, "border", "color"] },
-	sendGlyph: { board: ".send:not(.off) svg", built: ".wg-studio-ai-send.is-typing .wg-studio-ai-send-play", keys: ["w", "h"] },
+	typedText: { board: ".text", built: ".wg-studio-ai-box", keys: ["fs", "fw", "lh", "color"] },
+	sendReady: { board: ".send.ready", built: ".wg-studio-ai-send.is-typing", keys: [...BOX, "border", "color"] },
+	sendGlyph: { board: ".send.ready svg", built: ".wg-studio-ai-send.is-typing svg", keys: ["w", "h"] },
 };
 
 export const UNJUDGED = [
+	"the model and effort buttons: the board draws one button, the build two that read as one, so their padding and gap are not compared",
+	"the usage ring: the build keeps its 18px ring and the fill of a secondary button, the board draws 16px on --soft",
+	"the idle send in dark: the build paints --active, a translucent fill the probe reads over white, so its dark background is not compared",
+	"the option chevrons: the build hides them in the footer row and the board draws none",
+	"the spacing under the field: the build stands the row on the field edges with a negative margin, the board pads it, so the two gaps are not compared",
 	"the typing hints: the person moved ↵ send and ⇧↵ new line into the placeholder, so the field draws no hint row",
 	"the tooltips: the person chose the studio's own gliding tooltip, with its arrow, over the board's plain tip",
 	"the mascot's name: the boards still say Ink, the person renamed it Sumi, so board text is read with Sumi",
@@ -52,12 +60,12 @@ export const UNJUDGED = [
 
 export const WORKING_PARTS: Parts = {
 	stop: {
-		board: "button[aria-label=Stop]",
+		board: ".send.ready",
 		built: ".wg-studio-ai-send.is-streaming",
 		keys: ["h", "w", "radius", "bg", "border"],
 	},
 	stopSquare: {
-		board: "button[aria-label=Stop] > span",
+		board: ".send.ready > .stop",
 		built: ".wg-studio-ai-stop-square",
 		keys: ["h", "w", "radius", "bg"],
 	},
@@ -139,8 +147,6 @@ export const USAGE_PARTS: Parts = {
 };
 
 const WELCOME_BOARD = "sc-if > div:has(> h1)";
-const FOLDER_BOARD = "sc-if > .gt";
-const FOLDER_BUILT = '.wg-studio-ai-strip .wg-kit-btn[aria-label="Choose a folder"]';
 
 export const EMPTY_PARTS: Parts = {
 	welcome: { board: WELCOME_BOARD, built: ".wg-studio-ai-welcome", keys: ["pad", "gap"] },
@@ -166,7 +172,6 @@ export const EMPTY_PARTS: Parts = {
 		built: "text:.wg-studio-ai-starter",
 		keys: [],
 	},
-	folderButton: { board: FOLDER_BOARD, built: FOLDER_BUILT, keys: [...FLAT, "border", "fs", "fw", "color"] },
 	usageRing: { board: 'button[aria-label^="Usage"] svg', built: ".sumi-usage-ring", keys: ["w", "h"] },
 	usageTrack: {
 		board: 'button[aria-label^="Usage"] circle:first-child',
@@ -178,7 +183,6 @@ export const EMPTY_PARTS: Parts = {
 		built: ".sumi-usage-ring .is-used",
 		keys: ["stroke", "strokeWidth"],
 	},
-	folderGlyph: { board: `${FOLDER_BOARD} svg`, built: `${FOLDER_BUILT} svg`, keys: ["w", "h"] },
 };
 
 export const PART_PROBE = `((scope, parts, side) => {
@@ -234,7 +238,7 @@ export const PART_PROBE = `((scope, parts, side) => {
 	};
 	const looks = (el) => {
 		const s = getComputedStyle(el);
-		const paint = el.matches(".wg-kit-pop-item, .wg-kit-btn") ? getComputedStyle(el, "::before") : s;
+		const paint = el.matches(".wg-kit-pop-item, .wg-kit-btn, .wg-kit-icon") ? getComputedStyle(el, "::before") : s;
 		const box = el.getBoundingClientRect();
 		const radius = parseFloat(paint.borderTopLeftRadius);
 		const previous = el.previousElementSibling;

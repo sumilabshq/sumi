@@ -1,14 +1,15 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, IconButton } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 
 const NEW_TAB_LABEL = "New tab";
 
 export function NewTabButton({ onOpen }: { readonly onOpen: () => void }): ReactElement {
 	return (
 		<span className="sumi-strip-new">
-			<IconButton
-				variant="ghost"
+			<Button
+				shape="square"
+				emphasis="ghost"
 				size="xs"
 				data-own-drag=""
 				label={NEW_TAB_LABEL}
@@ -16,7 +17,7 @@ export function NewTabButton({ onOpen }: { readonly onOpen: () => void }): React
 				onClick={onOpen}
 			>
 				<Icon name="plus" />
-			</IconButton>
+			</Button>
 		</span>
 	);
 }

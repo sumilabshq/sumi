@@ -4,5 +4,15 @@ import { HomePanel } from "@sumi/command-menu-plugin";
 import type { HomeViewProps } from "@sumi/home-pages-plugin";
 
 export function CommandMenuHome({ tabId }: HomeViewProps): ReactElement {
-	return <HomePanel homeTabId={tabId} head={null} idle={null} placeholder={null} />;
+	return (
+		<HomePanel
+			homeTabId={tabId}
+			head={null}
+			idle={null}
+			placeholder={null}
+			fieldStart={null}
+			fieldEnd={null}
+			isHintless={false}
+		/>
+	);
 }

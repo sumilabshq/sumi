@@ -2,6 +2,7 @@ import { createElement as h, useRef, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { ComposerFooter } from "../composer-footer/composer-footer.js";
+import { ComposerFieldOptions } from "../composer-field-options/composer-field-options.js";
 import { ComposerMeter } from "../composer-meter/composer-meter.js";
 import { useTellsAgentActivity } from "../../lib/agent-activity.js";
 import { ChatScroll } from "./chat-scroll.js";
@@ -10,6 +11,7 @@ import { useDropsFiles } from "../../lib/use-drops-files.js";
 import { useSweepsAttachments } from "../../lib/use-sweeps-attachments.js";
 import { Composer } from "../composer/composer.js";
 import { FileDropZone } from "../file-drop-zone/file-drop-zone.js";
+import { LinkMenu } from "../link-menu/link-menu.js";
 import type { AttachedChange, ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { useFailureLine } from "../../../../shared/lib/failure-line.js";
 import { scrollToCard } from "../../lib/scroll-to-card.js";
@@ -82,12 +84,16 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 							<ComposerFooter isEmpty={isEmpty} />
 						</ChatPart>
 					}
+					fieldOptions={
+						<ChatPart>
+							<ComposerFieldOptions />
+						</ChatPart>
+					}
 					meter={
 						<ChatPart>
 							<ComposerMeter />
 						</ChatPart>
 					}
-					isFirst={isEmpty}
 					attached={change ? { label: change.label, onClear: () => setChange(null) } : null}
 					onSend={asks.send}
 					onStop={() => void stopTurn.run({ chat: chatId ?? null })}
@@ -102,6 +108,7 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 				/>
 			</ChatDock>
 			<FileDropZone isOver={drop.isOver} />
+			<LinkMenu root={chatRoot} chatId={chatId} />
 		</div>
 	);
 	return (

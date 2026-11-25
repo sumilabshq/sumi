@@ -1,0 +1,17 @@
+{
+	"title": "Flow board",
+	"description": "Draws the open Flow: its split and one page per tab.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Window",
+			"what": "The Flow split and its panes"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": "Draws the open Flow as a split of panes.\nEach tab keeps its page alive while you switch."
+}

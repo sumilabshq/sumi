@@ -264,6 +264,24 @@ export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).rea
 
 export const ClosedTabIdSchema = z.object({ tabId: z.string().min(1) });
 
+export const FlowIdAskSchema = z.object({
+	flowId: z.string().min(1),
+});
+
+export const FolderIdAskSchema = z.object({
+	folderId: z.string().min(1),
+});
+
+export const FlowCopiedSchema = z.object({
+	flowId: z.string(),
+});
+
+export const FlowTabToOpenSchema = FlowIdAskSchema.extend({
+	paneId: z.string().min(1),
+	app: AppKindSchema,
+	address: z.string().nullable().default(null),
+});
+
 export const FrameSideSchema = z.enum(["left"]);
 
 export type FrameSide = z.infer<typeof FrameSideSchema>;
@@ -286,6 +304,7 @@ export const LinkToOpenSchema = z.object({
 	href: z.string().max(MOST_LINK_CHARS),
 	opensNew: z.boolean().default(false),
 	home: z.string().nullable().default(null),
+	place: z.enum(["beside", "split"]).default("beside"),
 });
 
 export const SplitDirSchema = z.enum(["row", "column"]);
@@ -467,6 +486,40 @@ export const appHost = moduleContract("app-host", Device, {
 		reopenById: named("closed-tabs.reopen-by-id", command()
 			.public()
 			.input(ClosedTabIdSchema)
+			.idempotencyKey(Repeatable)),
+	},
+	flows: {
+		open: named("flows.open", command()
+			.public()
+			.input(FlowIdAskSchema)
+			.idempotencyKey(Repeatable)),
+		remove: named("flows.remove", command()
+			.public()
+			.input(FlowIdAskSchema)
+			.idempotencyKey(Repeatable)),
+		deleteFlow: named("flows.delete-flow", command()
+			.public()
+			.input(FlowIdAskSchema)
+			.idempotencyKey(Repeatable)),
+		deleteFolder: named("flows.delete-folder", command()
+			.public()
+			.input(FolderIdAskSchema)
+			.idempotencyKey(Repeatable)),
+		duplicate: named("flows.duplicate", command()
+			.public()
+			.input(FlowIdAskSchema)
+			.output(FlowCopiedSchema)
+			.idempotencyKey(Repeatable)),
+		openTab: named("flows.open-tab", command()
+			.public()
+			.input(FlowTabToOpenSchema)
+			.output(OpenedTabSchema)
+			.idempotencyKey(Repeatable)),
+		back: named("flows.back", command()
+			.public()
+			.idempotencyKey(Repeatable)),
+		forward: named("flows.forward", command()
+			.public()
 			.idempotencyKey(Repeatable)),
 	},
 	frameSides: {

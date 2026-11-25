@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { FileDiff } from "@sumi/git/contract";
-import { IconButton, tooltipMarks } from "@widgetarium/kit";
+import { Button, tooltipMarks } from "@widgetarium/kit";
 import { fileFolderOf, fileNameOf } from "../../lib/git-names.js";
 import { ChangeNums } from "../change-nums/change-nums.js";
 import { Glyph } from "../glyph/glyph.js";
@@ -46,8 +46,9 @@ export function FileDiffHead({ file, isOpen, isViewed, onFold, onToggleViewed }:
 				<ChangeNums added={file.added} removed={file.removed} hidesZero={false} />
 			</span>
 			<span className="wg-git-gap" />
-			<IconButton
-				variant="ghost"
+			<Button
+				shape="square"
+				emphasis="ghost"
 				size="xs"
 				label={viewedLabel}
 				{...tooltipMarks({ said: viewedLabel, keys: null })}
@@ -57,7 +58,7 @@ export function FileDiffHead({ file, isOpen, isViewed, onFold, onToggleViewed }:
 				}}
 			>
 				<Glyph name={isViewed ? "tick" : "circle"} />
-			</IconButton>
+			</Button>
 		</div>
 	);
 }

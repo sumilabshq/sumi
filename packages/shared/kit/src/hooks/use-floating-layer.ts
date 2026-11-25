@@ -33,5 +33,5 @@ function placeFloatingPanel(panel: HTMLElement | null, anchor: AnchorBox | null,
 	if (!panel || !anchor) return;
 	wearAnchorWidth(panel, anchor);
 	const size = { width: panel.offsetWidth, height: panel.offsetHeight };
-	wearSpot(panel, placeFloating({ ...placement, anchor, panel: size, viewport: viewportSize() }));
+	wearSpot(panel, placeFloating({ ...placement, anchor, panel: size, viewport: viewportSize() }), anchor);
 }

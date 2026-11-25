@@ -6,21 +6,21 @@ How code is written inside the architecture. The rules hold in any project built
 
 **A request, an event, a subscriber and a module are named by their camelCase constant, with no kind suffix and no string**: the builder already says the kind, and the constant is the name (`frameSides` → `frame-sides`). A guard, a middleware, a gateway and a schema keep PascalCase and end with their kind, a step taking options included (`HasPermissionGuard(perm)`, `RateLimitMiddleware({ calls, per })`). camelCase is also for ordinary values and for the functions that start a chain (`command`, `guard`, `middleware`, `minutes`).
 
-| Thing              | Rule                                                             | Example                                                         |
-| ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------- |
-| a query            | verb phrase starting with `get`, camelCase                       | `getFrameSides`                                                 |
-| a command          | verb phrase, camelCase                                           | `toggleFrameSide`                                               |
-| a full name        | kebab segments joined by dots: module, feature folder, constant  | `layout.frame-sides.toggle`                                     |
-| an event           | a fact in the past tense, camelCase                              | `panesChanged`                                                  |
-| a subscriber       | what it does, never its trigger: `reread<Data>` or a verb phrase | `rereadPanes`, `ensurePanePages`                                |
-| a module           | its area, camelCase; its name is the kebab of it                 | `layout`, `chatTabs` → `chat-tabs`                              |
-| a guard            | what it checks + `Guard`                                         | `AuthenticatedGuard`, `OwnsInvoiceGuard`                        |
-| a middleware       | what it does + `Middleware`                                      | `TimingLoggerMiddleware`                                        |
-| a gateway          | its data + `Gateway`, an `abstract class` that is also its token | `FrameSidesGateway`, `PaneTreeGateway`                          |
-| its implementation | `<Storage><Name>Gateway`: what it stores in                      | `TauriFrameSidesGateway`, `FlagMemoryFrameSidesGateway`         |
-| a gateway method   | the data it reads or writes, never a generic verb                | `sides()`, `saveSides(sides, reason)`, `sidesChanged(listener)` |
-| a storage shape    | `Kept<Name>Schema`, beside its gateway                           | `KeptPaneTreeSchema`                                            |
-| a file             | kebab-case                                                       | `requests.ts`, `tauri.gateway.ts`, `side-looks.ts`              |
+| Thing              | Rule                                                                  | Example                                                         |
+| ------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------- |
+| a query            | verb phrase starting with `get`, camelCase                            | `getFrameSides`                                                 |
+| a command          | verb phrase, camelCase                                                | `toggleFrameSide`                                               |
+| a full name        | package name, `#`, feature folder and constant, kebab, joined by dots | `@sumi/layout#frame-sides.toggle`                               |
+| an event           | a fact in the past tense, camelCase                                   | `panesChanged`                                                  |
+| a subscriber       | what it does, never its trigger: `reread<Data>` or a verb phrase      | `rereadPanes`, `ensurePanePages`                                |
+| a module           | its area, camelCase; its name is `name` in `package.json`             | `layout`, `chatTabs`                                            |
+| a guard            | what it checks + `Guard`                                              | `AuthenticatedGuard`, `OwnsInvoiceGuard`                        |
+| a middleware       | what it does + `Middleware`                                           | `TimingLoggerMiddleware`                                        |
+| a gateway          | its data + `Gateway`, an `abstract class` that is also its token      | `FrameSidesGateway`, `PaneTreeGateway`                          |
+| its implementation | `<Storage><Name>Gateway`: what it stores in                           | `TauriFrameSidesGateway`, `FlagMemoryFrameSidesGateway`         |
+| a gateway method   | the data it reads or writes, never a generic verb                     | `sides()`, `saveSides(sides, reason)`, `sidesChanged(listener)` |
+| a storage shape    | `Kept<Name>Schema`, beside its gateway                                | `KeptPaneTreeSchema`                                            |
+| a file             | kebab-case                                                            | `requests.ts`, `tauri.gateway.ts`, `side-looks.ts`              |
 
 **Every request is a verb phrase.** A query is `get` and what it answers (`getFrameSides`, `assistant.agent.getSetup`); a command says what it does (`toggleFrameSide`, `createTask`). Queries still named as nouns (`frameSides`, `current`, `all`) are the older style: each is renamed to `get…` when its module is next changed, never all at once.
 
@@ -35,7 +35,7 @@ How code is written inside the architecture. The rules hold in any project built
 The fluent chain is this project's one declaration pattern: requests, modules, guards, middleware and plugins are all declared by it, as zod schemas already are.
 
 - **A kind is declared with a chain; a value of a kind is one object.** Declaring a request, module, guard, middleware or plugin is a chain. Using one is a single object: options, a module's config (`tasks({ file })`), `billing({ over })`, `layout({ injects })`, input, start settings.
-- **A call that changes the chain's types takes one item; a call that lists independent items takes many.** `.guard`, `.use`, `.provide`, `.apply` take one; `.imports`, `.require`, `.optional` take many.
+- **A call that changes the chain's types takes one item; a call that lists independent items takes many.** `.guard`, `.use`, `.provide`, `.apply` take one; a runtime's `.modules` and `.imports` take many.
 - **One concern per call**, read top to bottom in the order it runs.
 - **Every behaviour ends in `.handle()`**: a request, a guard, a middleware.
 - **`.guard` decides who may call, `.use` wraps the call**: two verbs, never one for both.
@@ -116,7 +116,7 @@ export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
 
 - One picker per module in `gateways/<module>-parts/`: a record keyed by `Platform`, so a new platform is a type error until every module answers it.
 - A class built there takes its dependencies as constructor arguments.
-- `module.ts` holds only `module("layout")…provide((facts) => ({ ...layoutPartsOn(facts) }))`; `generated/module.ts` hands it its requests.
+- `module.ts` holds only `module()…provide((facts) => ({ ...layoutPartsOn(facts) }))`; `generated/module.ts` hands it its requests.
 
 ## A block
 

@@ -21,7 +21,7 @@
 	--wash: 10%;
 	--wash-hover: 16%;
 	--l-wash-ink: 0;
-	--a-control-hover: 0.035;
+	--a-control-hover: 0.04;
 	--a-control-open: 0.06;
 	--a-control-ink: 0.6;
 	--l-tone: 0.55;
@@ -31,7 +31,7 @@
 	--foreground: oklch(var(--l-ink) var(--neutral-chroma) var(--hue));
 	--neutral: oklch(var(--l-ink-muted) var(--neutral-chroma) var(--hue));
 	--faint: oklch(var(--l-faint) var(--neutral-chroma) var(--hue));
-	--field: oklch(var(--l-soft) var(--neutral-chroma) var(--hue));
+	--field: #fbfbfb;
 	--tint: oklch(var(--l-tint) var(--chroma) var(--hue));
 	--brand: var(--primary);
 	--brand-hover: oklch(calc(var(--l-contrast) + 0.08) var(--neutral-chroma) var(--hue));
@@ -103,7 +103,7 @@
 	--standout: var(--pink);
 	--highlight: var(--yellow);
 
-	--font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	--font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 	--font-serif: "IBM Plex Serif", Georgia, serif;
 	--font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 	--type-xs: 12px;
@@ -151,7 +151,7 @@
 	--foreground: oklch(var(--l-ink) var(--neutral-chroma) var(--hue));
 	--neutral: oklch(var(--l-ink-muted) var(--neutral-chroma) var(--hue));
 	--faint: oklch(var(--l-faint) var(--neutral-chroma) var(--hue));
-	--field: oklch(var(--l-soft) var(--neutral-chroma) var(--hue));
+	--field: #060606;
 	--tint: oklch(var(--l-tint) var(--chroma) var(--hue));
 	--brand: var(--primary);
 	--brand-hover: oklch(calc(var(--l-contrast) - 0.08) var(--neutral-chroma) var(--hue));

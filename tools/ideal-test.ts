@@ -215,6 +215,7 @@ same(
 );
 
 {
+	const MENU_SHADOW = "var(--shadow-menu)";
 	const floating = [".wg-kit-pop", ".wg-dialog"];
 	const offenders: string[] = [];
 	for (const block of withoutComments.split("}")) {
@@ -223,11 +224,14 @@ same(
 		const selectors = splitSelectors(block.slice(0, brace));
 		if (!selectors.some((selector) => floating.some((name) => selector.endsWith(name)))) continue;
 		const declared = block.slice(brace + 1).match(/(?:^|;|\n)\s*box-shadow\s*:\s*([^;}]+)/);
-		if (declared && !/inset|glass-edge|none/.test(declared[1] ?? ""))
+		const isMenuShadow =
+			selectors.every((selector) => selector.endsWith(".wg-kit-pop")) && declared?.[1]?.trim() === MENU_SHADOW;
+		if (declared && !isMenuShadow && !/inset|glass-edge|none/.test(declared[1] ?? ""))
 			offenders.push(`${selectors.join(", ")} → ${(declared[1] ?? "").trim()}`);
 	}
-	same("no floating panel drops a shadow", offenders.join(" | ") || 0, 0);
-	same("the popover is separated by its edge", px(ours, ".wg-kit-pop", "box-shadow"), "var(--glass-edge)");
+	same("no floating panel but a menu drops a shadow", offenders.join(" | ") || 0, 0);
+	same("the menu drops the menu shadow", px(ours, ".wg-kit-pop", "box-shadow"), MENU_SHADOW);
+	same("and takes its edge from the shadow ring, not a border", px(ours, ".wg-kit-pop", "border"), "none");
 	same("and so is the dialog", px(ours, ".wg-dialog", "box-shadow"), "var(--glass-edge)");
 }
 

@@ -17,9 +17,11 @@ export interface ArtboardFrameProps {
 		readonly html: string;
 	};
 	readonly scaleNow: () => number;
+	readonly isLive: boolean;
+	readonly onLoaded: (boardId: string) => void;
 }
 
-export function ArtboardFrame({ board, scaleNow }: ArtboardFrameProps): ReactElement {
+export function ArtboardFrame({ board, scaleNow, isLive, onLoaded }: ArtboardFrameProps): ReactElement {
 	const { canvasId, pickedBoardId, pickBoard } = useCanvasView();
 	const [isRenaming, setRenaming] = useState(false);
 	const move = useCommand(artboards.boards.moveBoard);
@@ -57,7 +59,15 @@ export function ArtboardFrame({ board, scaleNow }: ArtboardFrameProps): ReactEle
 					{board.name}
 				</p>
 			)}
-			<iframe className="sumi-canvas-board-page" title={board.name} sandbox="allow-scripts" srcDoc={board.html} />
+			{isLive ? (
+				<iframe
+					className="sumi-canvas-board-page"
+					title={board.name}
+					sandbox="allow-scripts"
+					srcDoc={board.html}
+					onLoad={() => onLoaded(board.id)}
+				/>
+			) : null}
 		</div>
 	);
 }

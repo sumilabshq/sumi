@@ -1,8 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { MouseEvent, ReactElement, ReactNode } from "react";
 import { useHoverOpen } from "../hooks/use-hover-open";
-import { Icon } from "../icons/icon";
-import { IconButton } from "./icon-button";
+import { Button } from "./button";
 import { Popover } from "./popover";
 
 export interface HelpProps {
@@ -33,15 +32,15 @@ export function Help({ children, label = WHAT_IS_THIS }: HelpProps): ReactElemen
 				isPortaled
 				className="wg-kit-help-pop"
 				trigger={
-					<IconButton
-						size="s"
+					<Button
+						shape="square"
+						size="sm"
+						icon="circle-question-mark"
 						label={label}
 						className="wg-kit-help-button"
 						aria-expanded={isOpen}
 						aria-description={typeof children === "string" ? children : undefined}
-					>
-						<Icon name="circle-question-mark" />
-					</IconButton>
+					/>
 				}
 			>
 				<p className="wg-kit-help-text">{children}</p>

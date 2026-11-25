@@ -20,7 +20,7 @@ import { bundleOf } from "./harness.ts";
 import { isRecord } from "./page-dom.ts";
 import { differences } from "./studio-tabs-diff.ts";
 import type { Difference } from "./studio-tabs-diff.ts";
-import { BOARD_SHEET, BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
+import { BOARD_SHEET, BROWSER_SHEET_SOURCES, COMPOSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 type Theme = "light" | "dark";
 
@@ -84,19 +84,20 @@ async function pressed(page: AskedPage, selector: string, label: string): Promis
 	await waited(SETTLE_MS);
 }
 
-const COMPOSER_BOARD = "Ink-composer";
+const COMPOSER_BOARD = "Sumi-composer";
 const MENUS_BOARD = "Ink-menus";
 const ATTACHMENTS_BOARD = "Ink-attachments";
 const SHELL_BOARD = "Ink-shell";
-const EMPTY_STATE = "nth:0:.plate.cell";
-const TYPING_STATE = "nth:2:.plate.cell";
-const WORKING_STATE = "nth:5:.plate.cell";
+const stateOf = (name: string): Readonly<Record<Theme, string>> => ({
+	light: `[data-name="Light"] > [data-name="${name}"]`,
+	dark: `[data-name="Dark"] > [data-name="${name}"]`,
+});
 
 const PHASES: readonly Phase[] = [
 	{
 		name: "idle",
 		board: COMPOSER_BOARD,
-		boardScope: { light: EMPTY_STATE, dark: EMPTY_STATE },
+		boardScope: stateOf("Empty"),
 		state: "composer",
 		act: noAct,
 		parts: IDLE_PARTS,
@@ -104,7 +105,7 @@ const PHASES: readonly Phase[] = [
 	{
 		name: "typed",
 		board: COMPOSER_BOARD,
-		boardScope: { light: TYPING_STATE, dark: TYPING_STATE },
+		boardScope: stateOf("Ready"),
 		state: "composer",
 		act: typedIn,
 		parts: TYPED_PARTS,
@@ -112,7 +113,7 @@ const PHASES: readonly Phase[] = [
 	{
 		name: "working",
 		board: COMPOSER_BOARD,
-		boardScope: { light: WORKING_STATE, dark: WORKING_STATE },
+		boardScope: stateOf("Working"),
 		state: "working",
 		act: noAct,
 		parts: WORKING_PARTS,
@@ -160,7 +161,7 @@ const PHASES: readonly Phase[] = [
 		menuLabel: { board: "Provider", built: "Provider" },
 		state: "composer",
 		act: async (page) => {
-			await pressed(page, ".wg-studio-ai-strip .wg-kit-btn", "Model");
+			await pressed(page, ".wg-studio-ai-field-bar .wg-kit-btn", "Model");
 			await hoveredOn(
 				page,
 				'.wg-kit-pop.is-open .sumi-model-pane:not(.is-providers) .sumi-model-list:not([data-hidden]) .wg-kit-pop-item:not([aria-checked="true"])',
@@ -221,7 +222,9 @@ async function boardOf(phase: Phase, theme: Theme): Promise<Record<string, unkno
 }
 
 function builtPageOf(theme: Theme): string {
-	const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
+	const sheets = [...BROWSER_SHEET_SOURCES, ...COMPOSER_SHEET_SOURCES]
+		.map((at) => readFileSync(path.join(REPO, at), "utf8"))
+		.join("\n");
 	const placed = `.wg-studio.wg-studio { display: block; height: auto; padding: 0; } .wg-studio .wg-studio-chat { width: 752px; height: 820px; padding: 0; } #chat, #chat > .wg-root { height: 100%; }`;
 	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style><style>${placed}</style></head><body class="theme-${theme}"><div class="wg-root wg-portal wg-kit-portal-layer is-studio"></div><div class="wg-studio"><aside class="wg-studio-chat"><div id="chat"></div></aside></div><script>__BUNDLE__</script></body></html>`;
 }

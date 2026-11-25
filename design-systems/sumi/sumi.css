@@ -1,14 +1,15 @@
 :root {
 	--invert: #ffffff;
-	--frame: #ffffff;
+	--frame: #f7f7f7;
 	--plate: #ffffff;
 	--soft: #f5f5f5;
+	--field: #fbfbfb;
 	--sunken: rgba(21, 21, 19, 0.045);
 	--overlay: #ffffff;
 	--text: #151513;
 	--text-2: rgba(21, 21, 19, 0.76);
 	--text-3: rgba(21, 21, 19, 0.62);
-	--hover: rgba(21, 21, 19, 0.045);
+	--hover: rgba(0, 0, 0, 0.04);
 	--active: rgba(21, 21, 19, 0.12);
 	--line: #d0d0d0;
 	--divider: #ebebeb;
@@ -37,6 +38,12 @@
 	--shadow-pop: 0 0 0 1px var(--line);
 	--shadow-lift: 0 0 0 1px var(--line);
 	--shadow-float: none;
+	--shadow-page: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 1px 1.5px rgba(0, 0, 0, 0.1);
+	--shadow-menu: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.08);
+	--line-menu: rgba(0, 0, 0, 0.09);
+	--surface-menu: #ffffff;
+	--r-menu: 10px;
+	--r-page: 10px;
 	--blur-pop: none;
 	--blur-corner: blur(10px);
 	--viewer-ground: rgba(15, 15, 14, 0.94);
@@ -57,22 +64,23 @@
 	--group-tint: 0%;
 	--icon-tint: 0%;
 
-	--font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-	--font-accent: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	--font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	--font-accent: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 	--font-code: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 	--font-voice: "IBM Plex Serif", Georgia, "Times New Roman", serif;
-	--fs-voice: 30px;
 	--font-features: normal;
 	--fs-11: 11px;
 	--fs-12: 12px;
 	--fs-13: 13px;
 	--fs-14: 14px;
 	--fs-16: 16px;
-	--fs-20: 20px;
-	--fs-28: 24px;
+	--fs-22: 22px;
 	--fw-regular: 400;
 	--fw-medium: 500;
 	--fw-semi: 600;
+	--fw-ui: 400;
+	--fw-tab: 400;
+	--tracking-ui: -0.01em;
 
 	--space-none: 0px;
 	--space-px: 1px;
@@ -109,13 +117,18 @@
 	--h-row: 30px;
 	--h-md: 32px;
 	--h-lg: 36px;
-	--icon: 16px;
-	--icon-sm: 14px;
+	--icon: 13px;
+	--icon-sm: 12px;
+	--brand-claude: #D97757;
+	--r-tab: 7px;
+	--tab-w: 176px;
+	--tab-min-w: 120px;
+	--tab-pad-x: 9px;
 	--header-h: 44px;
 	--sidebar-w: 280px;
 	--sidebar-min: 200px;
 	--sidebar-max: 420px;
-	--frame-gap: 0px;
+	--frame-gap: 8px;
 	--pad: 20px;
 	--side-pad: 16px;
 	--caret-w: 8px;
@@ -146,34 +159,38 @@
 	--pick-edge: 0 0 0 0 transparent;
 	--blur-pick: none;
 	--tip-kbd: rgba(127, 127, 127, 0.35);
-	--fs-tip: 12px;
 	--h-tip: 28px;
 	--r-tip: var(--r-sm);
 	--tip-arrow: 8px;
 	--dur-out: 100ms;
-	--fs-15: 15px;
-	--fs-glyph: 18px;
-	--fs-glyph-lg: 22px;
-	--fs-17: 15px;
 
 	--chats-w: 280px;
 	--chat-w: 560px;
 	--read-w: 768px;
 	--plate-min: 240px;
+
+	--field-frame-pad: var(--space-1);
+	--field-frame-gap: var(--space-none);
+	--field-frame-bg: var(--field);
+	--field-frame-line: var(--divider);
+	--field-frame-line-width: var(--space-px);
 }
 
 :root.dark,
 .dark,
 .theme-dark {
-	--frame: #000000;
+	--field-frame-bg: var(--field);
+	--field-frame-line: var(--divider);
+	--frame: #111214;
 	--plate: #000000;
 	--soft: #0e0e0e;
+	--field: #060606;
 	--sunken: rgba(233, 230, 222, 0.05);
 	--overlay: #000000;
 	--text: #e9e6de;
 	--text-2: rgba(233, 230, 222, 0.7);
-	--text-3: rgba(233, 230, 222, 0.5);
-	--hover: rgba(233, 230, 222, 0.05);
+	--text-3: rgba(233, 230, 222, 0.65);
+	--hover: oklch(0.269 0 0);
 	--active: rgba(233, 230, 222, 0.13);
 	--line: #32312f;
 	--divider: #1a1a1a;
@@ -199,6 +216,10 @@
 	--shadow-pop: 0 0 0 1px var(--line);
 	--shadow-lift: 0 0 0 1px var(--line);
 	--shadow-float: none;
+	--shadow-page: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 1px 1.5px rgba(0, 0, 0, 0.7);
+	--shadow-menu: 0 0 0 0.5px rgba(255, 255, 255, 0.06), 0 8px 28px rgba(0, 0, 0, 0.45);
+	--line-menu: rgba(255, 255, 255, 0.1);
+	--surface-menu: #17181b;
 
 	--selected: var(--soft);
 	--pick: #000000;
@@ -214,6 +235,14 @@
 	--hue-purple: #a78bfa;
 	--hue-pink: #f472b6;
 	--hue-slate: #94a3b8;
+}
+
+:root[data-field-frame="off"],
+:root[data-field-frame="off"] :is(.dark, .theme-dark) {
+	--field-frame-pad: 0px;
+	--field-frame-bg: transparent;
+	--field-frame-line: transparent;
+	--field-frame-line-width: 0px;
 }
 
 .sumi-ink-ember {
@@ -272,6 +301,12 @@ body:has(.wg-studio)::after {
 	opacity: var(--grain-opacity);
 }
 
+.wg-studio {
+	font-size: var(--fs-13);
+	font-weight: var(--fw-ui);
+	letter-spacing: var(--tracking-ui);
+}
+
 .wg-studio ::selection {
 	background: var(--selection);
 }
@@ -317,15 +352,15 @@ body:has(.wg-studio)::after {
 	--text: #151513;
 	--text-2: rgba(21, 21, 19, 0.76);
 	--text-3: rgba(21, 21, 19, 0.62);
-	--hover: rgba(21, 21, 19, 0.045);
+	--hover: rgba(0, 0, 0, 0.04);
 	--active: rgba(21, 21, 19, 0.12);
 }
 
 .sumi-ink-light {
 	--text: #e9e6de;
 	--text-2: rgba(233, 230, 222, 0.7);
-	--text-3: rgba(233, 230, 222, 0.5);
-	--hover: rgba(233, 230, 222, 0.05);
+	--text-3: rgba(233, 230, 222, 0.65);
+	--hover: oklch(0.269 0 0);
 	--active: rgba(233, 230, 222, 0.13);
 }
 

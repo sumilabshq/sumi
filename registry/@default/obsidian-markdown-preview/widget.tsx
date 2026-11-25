@@ -1,6 +1,6 @@
 import { IHost, INavigator, IQuery, createWidget, defineLayout, defineMetadata } from "widgetarium";
 import { z } from "zod";
-import { Icon, IconButton, RenderedMarkdown } from "widgetarium/kit";
+import { Button, Icon, RenderedMarkdown } from "widgetarium/kit";
 import { Collapsed } from "./collapsed";
 
 const MarkdownSourceSchema = z.union([
@@ -50,7 +50,8 @@ const ObsidianMarkdownPreview = createWidget({
 		const note = (
 			<>
 				{canOpen ? (
-					<IconButton
+					<Button
+						shape="square"
 						size="xs"
 						className="wg-markdown-preview-open"
 						data-part="open"
@@ -58,7 +59,7 @@ const ObsidianMarkdownPreview = createWidget({
 						onClick={() => navigator.navigate(`/${path}`, { target: "blank" })}
 					>
 						<Icon name="open-tab" />
-					</IconButton>
+					</Button>
 				) : null}
 				<RenderedMarkdown
 					host={host}

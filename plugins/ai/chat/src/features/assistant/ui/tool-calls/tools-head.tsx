@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, Pressable } from "@widgetarium/kit";
+import { Icon } from "@widgetarium/kit";
 import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
 import { changedLinesOf } from "../../lib/changed-lines.js";
 import { failuresIn } from "../../lib/failures-in.js";
@@ -22,15 +22,10 @@ export function ToolsHead({ calls, faces, isOpen, onToggle }: ToolsHeadProps): R
 	const failed = failuresIn(calls);
 	const spanMs = callsSpanMs(calls);
 	const changed = changedLinesOf(faces);
+	const known = knownFacesOf(calls, faces);
 	return (
-		<Pressable
-			variant="quiet"
-			tone="muted"
-			className="wg-studio-ai-tools-head"
-			aria-expanded={isOpen}
-			onClick={onToggle}
-		>
-			<span className="wg-studio-ai-tools-said">{toolsSummaryOf(knownFacesOf(calls, faces))}</span>
+		<button className="wg-studio-ai-tools-head" type="button" aria-expanded={isOpen} onClick={onToggle}>
+			<span className="wg-studio-ai-tools-said">{toolsSummaryOf(known)}</span>
 			{changed === null ? null : <LineCounts added={changed.added} removed={changed.removed} />}
 			{failed === 0 ? null : (
 				<span className="wg-studio-ai-tools-failed">{SOME_FAILED.replace("{count}", String(failed))}</span>
@@ -41,6 +36,6 @@ export function ToolsHead({ calls, faces, isOpen, onToggle }: ToolsHeadProps): R
 				size={14}
 				className={isOpen ? "wg-studio-ai-tools-chevron is-open" : "wg-studio-ai-tools-chevron"}
 			/>
-		</Pressable>
+		</button>
 	);
 }

@@ -1,7 +1,6 @@
 import { createElement as h } from "react";
 import type { MouseEvent, ReactElement } from "react";
-import { Icon, IconButton } from "@widgetarium/kit";
-import type { IconButtonProps } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 
 export interface EnterableMount {
 	readonly name?: string | undefined;
@@ -14,12 +13,13 @@ export interface MountSettingsButtonProps {
 }
 
 export function MountSettingsButton({ entry }: MountSettingsButtonProps): ReactElement {
-	const press: IconButtonProps = {
-		size: "s",
+	const press = {
+		shape: "square",
+		size: "sm",
 		label: `Settings for ${entry.title ?? entry.name ?? ""}`,
 		onClick: enterOnPress(entry),
-	};
-	return h("div", { className: "wg-mount-actions" }, h(IconButton, press, h(Icon, { name: "settings" })));
+	} as const;
+	return h("div", { className: "wg-mount-actions" }, h(Button, press, h(Icon, { name: "settings" })));
 }
 
 // TRADE-OFF: board chrome in a layer-neutral primitive; the widget places its own mounts, so nothing above this sits between a mount and its drawn node

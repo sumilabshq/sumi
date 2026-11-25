@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { CommandAnswer } from "@widgetarium/data-framework/gateway/run-handler";
-import { Card, Icon, IconButton } from "@widgetarium/kit";
+import { Button, Card, Icon } from "@widgetarium/kit";
 import { SketchRegion } from "./sketch-region.js";
 import type { Template } from "./types.js";
 import { useCommandPress } from "./use-command-press.js";
@@ -28,9 +28,11 @@ export function TemplateCard({ template, create }: TemplateCardProps) {
 				</Card>
 				<div className="wg-studio-catalogue-tpl-foot">
 					<span className="wg-studio-catalogue-tpl-name">{template.title}</span>
-					<IconButton
-						variant="accent"
-						size="s"
+					<Button
+						shape="square"
+						emphasis="solid"
+						tone="brand"
+						size="sm"
 						label={label}
 						disabled={isBusy}
 						onClick={(event) => {
@@ -39,7 +41,7 @@ export function TemplateCard({ template, create }: TemplateCardProps) {
 						}}
 					>
 						<Icon name="plus" size={15} />
-					</IconButton>
+					</Button>
 				</div>
 				<p className="wg-studio-catalogue-tpl-what">{template.description}</p>
 				{isBusy ? <p className="wg-studio-catalogue-tpl-step">{WRITING}</p> : null}

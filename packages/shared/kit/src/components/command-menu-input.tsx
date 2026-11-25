@@ -2,6 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "../icons/icon";
 import { cn } from "../utils/cn";
+import { Kbd } from "./kbd";
 
 export interface CommandMenuInputProps {
 	readonly value: string;
@@ -28,7 +29,7 @@ export function CommandMenuInput({
 				readOnly={!onValueChange}
 				onChange={(event) => onValueChange?.(event.currentTarget.value)}
 			/>
-			{hint ? <kbd>{hint}</kbd> : null}
+			{hint ? <Kbd>{hint}</Kbd> : null}
 		</label>
 	);
 }

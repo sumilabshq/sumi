@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { MouseEvent, ReactElement } from "react";
-import { Icon, IconButton } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 import { Ring } from "./catalogue-ring.js";
 import type { FetchProgress } from "./engine/widget-source.js";
 import type { PressState } from "./catalogue-install-press.js";
@@ -19,23 +19,29 @@ const ACTION_GLYPH: Readonly<Record<Exclude<PressState, "busy">, string>> = {
 	failed: "retry",
 };
 
+const ADD_LOOK = { emphasis: "solid", tone: "brand" } as const;
+
+const GHOST_LOOK = { emphasis: "ghost" } as const;
+
 export function CardAction({ state, step, label, onPress }: CardActionProps): ReactElement {
 	const press = (event: MouseEvent): void => {
 		event.stopPropagation();
 		onPress();
 	};
 	if (state === "busy") {
-		return h(IconButton, { className: "wg-cat-go is-busy", variant: "ghost", size: "s", label, disabled: true }, [
-			h(Ring, { key: "ring", step }),
-			h("span", { className: "wg-cat-stop", key: "stop" }),
-		]);
+		return h(
+			Button,
+			{ className: "wg-cat-go is-busy", shape: "square", emphasis: "ghost", size: "sm", label, disabled: true },
+			[h(Ring, { key: "ring", step }), h("span", { className: "wg-cat-stop", key: "stop" })],
+		);
 	}
 	return h(
-		IconButton,
+		Button,
 		{
 			className: `wg-cat-go is-${state}`,
-			variant: state === "add" ? "accent" : "ghost",
-			size: "s",
+			shape: "square",
+			...(state === "add" ? ADD_LOOK : GHOST_LOOK),
+			size: "sm",
 			label,
 			onClick: press,
 		},

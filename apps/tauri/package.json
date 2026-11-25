@@ -39,6 +39,7 @@
 		"@widgetarium/questions": "0.1.0",
 		"@widgetarium/studio": "0.1.0",
 		"@widgetarium/tasks": "0.1.0",
+		"@widgetarium/haptics": "0.1.0",
 		"@widgetarium/terminal": "0.1.0",
 		"@widgetarium/workspaces": "0.1.0",
 		"react": "^19.2.8",

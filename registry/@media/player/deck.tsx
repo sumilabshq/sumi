@@ -1,4 +1,4 @@
-import { Icon, IconButton, Progress } from "widgetarium/kit";
+import { Button, Icon, Progress } from "widgetarium/kit";
 import { PERCENT } from "./percent";
 import { REPEAT_MODES } from "./repeat";
 import type { PlayerProps, RepeatMode, Steering } from "./types";
@@ -38,9 +38,10 @@ export function Deck({
 	return (
 		<div className="wgm-deck">
 			<div className="wgm-transport">
-				<IconButton
-					variant={isShuffled ? "raised" : "ghost"}
-					size="m"
+				<Button
+					shape="square"
+					emphasis={isShuffled ? "raised" : "ghost"}
+					size="md"
 					className="wgm-mode"
 					label={isShuffled ? "Play the queue in order" : "Play the queue shuffled"}
 					aria-pressed={isShuffled}
@@ -48,15 +49,24 @@ export function Deck({
 					onClick={() => void setIsShuffled(!isShuffled)}
 				>
 					<Icon name="shuffle" size={18} />
-				</IconButton>
+				</Button>
 
-				<IconButton variant="ghost" size="m" label="Previous track" disabled={!canSteer} onClick={toPrevious}>
+				<Button
+					shape="square"
+					emphasis="ghost"
+					size="md"
+					label="Previous track"
+					disabled={!canSteer}
+					onClick={toPrevious}
+				>
 					<Icon name="skip-back" size={20} />
-				</IconButton>
+				</Button>
 
-				<IconButton
-					variant="accent"
-					size="l"
+				<Button
+					shape="square"
+					emphasis="solid"
+					tone="brand"
+					size="lg"
 					className="wgm-play-disc"
 					label={isPlaying ? "Pause" : "Play"}
 					aria-pressed={isPlaying}
@@ -64,15 +74,16 @@ export function Deck({
 					onClick={togglePlay}
 				>
 					<Icon name={isPlaying ? "pause" : "play"} size={24} />
-				</IconButton>
+				</Button>
 
-				<IconButton variant="ghost" size="m" label="Next track" disabled={!canSteer} onClick={toNext}>
+				<Button shape="square" emphasis="ghost" size="md" label="Next track" disabled={!canSteer} onClick={toNext}>
 					<Icon name="skip-forward" size={20} />
-				</IconButton>
+				</Button>
 
-				<IconButton
-					variant={repeat === "off" ? "ghost" : "raised"}
-					size="m"
+				<Button
+					shape="square"
+					emphasis={repeat === "off" ? "ghost" : "raised"}
+					size="md"
 					className="wgm-mode"
 					label={REPEAT_LABELS[repeatAfter(repeat)]}
 					aria-pressed={repeat !== "off"}
@@ -80,7 +91,7 @@ export function Deck({
 					onClick={() => void setRepeat(repeatAfter(repeat))}
 				>
 					<Icon name={REPEAT_ICONS[repeat]} size={18} />
-				</IconButton>
+				</Button>
 			</div>
 
 			<div className="wgm-volume">

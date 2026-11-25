@@ -2,19 +2,20 @@
 
 The rules every developer and every agent follows when writing code in this repository. Read this page first; the pages below go deeper.
 
-| Page                           | Answers                                                                                          |
-| ------------------------------ | ------------------------------------------------------------------------------------------------ |
-| [layers.md](layers.md)         | what a handler, a gateway, lib, a schema, a module and a view may do, with bad and good examples |
-| [requests.md](requests.md)     | requests, modules, sending, guards, the mediator, idempotency, starting an app and a server      |
-| [views.md](views.md)           | client packages, blocks, layouts, slots, how a view reads and writes, loading, error and empty   |
-| [placement.md](placement.md)   | where each file goes, the two package shapes and their entries                                   |
-| [code-style.md](code-style.md) | names, injected keys, logging, the shape of a request, a module, a block and a gateway           |
-| [hosts.md](hosts.md)           | the facts a host hands an app, keeping one platform's code out of another's bundle, deploy, env  |
-| [lint.md](lint.md)             | the checks that hold every rule here                                                             |
-| [apps.md](apps.md)             | Sumi as a shell: app repositories, the contract, versioning, registry, install and updates       |
-| [legacy.md](legacy.md)         | code written before these rules: `legacy/` folders and the older module shape                    |
+| Page                           | Answers                                                                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| [layers.md](layers.md)         | what a handler, a gateway, lib, a schema, a module and a view may do, with bad and good examples      |
+| [requests.md](requests.md)     | requests, modules, sending, guards, the mediator, idempotency, starting an app and a server           |
+| [views.md](views.md)           | client packages, blocks, layouts, slots, how a view reads and writes, loading, error and empty        |
+| [plugins.md](plugins.md)       | plugins and modules as packages: names, dependencies, installing, slots, the host's start, layout     |
+| [placement.md](placement.md)   | where each file goes, the two package shapes and their entries                                        |
+| [code-style.md](code-style.md) | names, injected keys, logging, the shape of a request, a module, a block and a gateway                |
+| [hosts.md](hosts.md)           | the facts a host hands an app, keeping one platform's code out of another's bundle, deploy, env       |
+| [lint.md](lint.md)             | the checks that hold every rule here                                                                  |
+| [apps.md](apps.md)             | Sumi as a shell: app repositories, the contract, versioning, registry, install and updates            |
+| [legacy.md](legacy.md)         | code written before these rules: `legacy/` folders, the older module shape and the older plugin shape |
 
-> Status: `packages/state/layout` (data) and `packages/client/shell` (its views) are the reference pair. Every other package under `packages/domain/` and `packages/client/mascot` still has the older module shape ([legacy.md](legacy.md#the-older-module-shape)). A rule marked **planned** is not built or not checked by a tool yet.
+> Status: the `layout` data module and `packages/client/shell` (its views) are the reference pair. Every other data module and `packages/client/mascot` still have the older module shape ([legacy.md](legacy.md#the-older-module-shape)). A rule marked **planned** is not built or not checked by a tool yet.
 
 ## In one page
 
@@ -24,23 +25,23 @@ The rules every developer and every agent follows when writing code in this repo
 
 **Requests: CQRS.** A query reads, a command writes (CQRS; as `useQuery` / `useMutation` in TanStack Query, `query` / `mutation` in tRPC, requests and handlers in MediatR). A request carries its contract (zod input and output) and its handler. Views call `useQuery` / `useCommand`; nothing else reaches logic.
 
-**Names come from constants, identities from strings.** A request, event or subscriber is named by the camelCase constant it is exported as, never by a string: `export const frameSides = query()`. A module and a plugin are identities that outlive a rename of their constant, so each takes its name as one kebab segment: `module("layout")`, `plugin("command-menu")`. A full name is kebab segments joined by dots, module, feature, constant: `layout.frame-sides.toggle`. JavaScript cannot read a variable's name, so `data-framework generate` writes the item names in (`generated/module.ts`: `named("frame-sides.toggle-frame-side", toggleFrameSide)`). Outside its module a request is reached through the module's namespace: `layout.frameSides.toggle`.
+**Names come from constants, identities from `package.json`.** A request, event or subscriber is named by the camelCase constant it is exported as, never by a string: `export const frameSides = query()`. A module and a plugin are identities that outlive a rename of their constant, so each takes its name from `name` in its `package.json` (`@sumi/layout`, `@sumi/command-menu-plugin`); `module()` and `plugin()` take no string. A full name is the package name, `#`, then the feature and the constant, kebab segments joined by dots: `@sumi/layout#frame-sides.toggle`. JavaScript cannot read a variable's name, so `data-framework generate` writes the item names in (`generated/module.ts`: `named("frame-sides.toggle-frame-side", toggleFrameSide)`). Outside its module a request is reached through the module's namespace: `layout.frameSides.toggle`.
 
 **Modules.** A module is one area's data: its commands and queries, their storage (gateways) and their rules (like NestJS or Medusa modules). A module declares where it runs and what it provides; it never lists its requests, the generator does:
 
 ```ts skip-check
-export const billing = module("billing")
+export const billing = module()
 	.on(Server)
-	.imports(users)
 	.guard(AuthenticatedGuard)
 	.provide((facts) => billingPartsOn(facts));
 ```
 
 - `.on(Server | Device | Anywhere)`: where the module may run.
-- `.imports(...)`: the other modules whose commands and queries this module's handlers send, and whose events its subscribers hear; their names are read when the runtime starts.
+- `peerDependencies` in `package.json`: the other modules whose commands and queries this module's handlers send, and whose events its subscribers hear (`@acme/users`); the host checks them when the runtime starts.
+- `.requireServices("file")`: the host capabilities it needs ([plugins.md](plugins.md#what-a-module-needs-from-the-host)).
 - `.config<{ file: BoardFile }>()`: live objects its starter passes (a file it opened, a running agent); the module becomes callable, `tasks({ file })`, and `provide` receives them as `config`.
 - `.provide(fn)`: the gateways its handlers receive, picked from the facts.
-- `module("billing")`: the module's name, one kebab segment; wire names start with it.
+- `module()`: takes no string; the module's name is `name` in its `package.json` (`@acme/billing`), and wire names start with it.
 - `module.ts` holds only these decisions. `data-framework generate` writes `generated/module.ts`, the runnable module: `export const billing = handledModule(definition, [named("charges.charge", charge), …])`, the definition handed every request, event and subscriber found in the package, each named.
 - **Who may call is on the request.** No mark: only the same process, any module or view of that runtime. `.public()`: anyone, through guards, and it enters the contract. `.callableBy(otherModule, …)`: only those services. An event marked `.public()` enters the contract.
 
@@ -106,7 +107,7 @@ flowchart TB
 Always `data-framework add module` and `data-framework add feature` (in this repo `npm run data-framework -- add …`), never by hand. The shapes they lay are the reference: replace the example data, keep the shape. What each lays is in [placement.md](placement.md#starting-a-module-or-a-feature).
 
 ```sh
-data-framework add module notes --on Device            # Server | Device | Anywhere; --in state for app state
+data-framework add module notes --on Device            # Server | Device | Anywhere
 data-framework add feature notes/tasks --command addTask
 ```
 
@@ -117,19 +118,19 @@ data-framework add feature notes/tasks --command addTask
 ```
 apps/                 a product you deploy or a host: studio, server, host-tauri
    ↓
-packages/client/      views: React blocks reading and writing data modules through requests
+plugins/              views: React blocks reading and writing data modules through requests
+packages/client/      views that are no plugin
    ↓
-packages/domain/      data modules of a business area (chats, tabs, billing); may run on a server
-packages/state/       data modules of the app's own state (layout); run where the app runs
+modules/              data modules: one area's logic and data (chats, tabs, billing, layout); run where the app runs or on a server
    ↓
 packages/shared/      code with no domain: framework (requests, mediator, hooks), core, kit, behaviors, cli, eslint-plugin
 ```
 
-`domain` and `state` are the same kind of package, a **data module** (`module(...)`, `"level": "domain"`), with the same rules; the folder only says what the data is about. A client package declares `"level": "client"`; a shared one `"level": "common"`.
+A data module (`module()`, `"level": "domain"`) is a package of `modules/`; the folder holds nothing else. A plugin declares `"level": "plugin"`, a client package `"level": "client"`, a shared one `"level": "common"`.
 
 ## Three rules
 
-1. **Imports go one way: `apps` → `client` → `domain`/`state` → `shared`.** A package never imports an app. A package reaches a data module only through its `"./contract"` entry, the generated contract.
+1. **Imports go one way: `apps` → `plugins` and `client` → `modules` → `shared`.** A package never imports an app. A package reaches a data module only through its `"./contract"` entry, the generated contract.
 2. **A file's place is what it is.** A request and its handler → `features/<feature>/requests.ts`. What is drawn → a client package. Storage or an outside system → `gateways/`. A pure computation → `lib/`. Which gateway a platform gets → the module's `provide`.
 3. **Nothing reaches for anything.** A view sends requests through `useQuery` / `useCommand`. A handler receives what its module's `provide` returns as its second argument, typed; a guard or middleware, shared across modules, declares what it needs in `.requires`, met by its module's `provide` or its runtime's. A host hands the app facts (platform, workspace, env), never gateways. No hidden globals, no singletons.
 
@@ -141,25 +142,25 @@ packages/shared/      code with no domain: framework (requests, mediator, hooks)
 | a write and its handler       | `command().input(…).idempotencyKey(…)….handle()` | verb phrase, camelCase      | `toggleFrameSide`        |
 | a fact that happened          | `event().input(…)`                               | past tense, camelCase       | `panesChanged`           |
 | what an event sets off        | `subscriber(event).handle(fn)`                   | what it does, camelCase     | `rereadPanes`            |
-| a data module                 | `module("layout").on(…).provide(fn)`             | its area, camelCase         | `layout`                 |
+| a data module                 | `module().on(…).provide(fn)`                     | its area, camelCase         | `layout`                 |
 | who may call                  | `guard<In>().requires({…}).handle(check)`        | what it checks + `Guard`    | `OwnsInvoiceGuard`       |
 | what wraps a call             | `middleware().requires({…}).handle(fn)`          | what it does + `Middleware` | `TimingLoggerMiddleware` |
 | storage or an outside system  | `abstract class`, its own token                  | its data + `Gateway`        | `FrameSidesGateway`      |
 | one storage's implementation  | `class … extends FrameSidesGateway`              | `<Storage><Name>Gateway`    | `TauriFrameSidesGateway` |
 | reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand`     | —                           | —                        |
 
-No building block but a module and a plugin takes a string name. A name is the kebab of its constant (a module's and a plugin's, the string they take), each segment `a-z` words joined by `-` (no digits, capitals, `/` or `_`). A request's full name is module, feature and constant joined by dots (`layout.frame-sides.toggle`): the feature is its folder under `features/`, an event's group its gateway folder or its `shared/events/<topic>`. `query`, `command` and `subscriber` come from `#module` (`generated/command.ts`), typed by the module's `provide`, the runtime's and the package's events. Every declaration is a fluent chain and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)).
+No building block takes a string name; a module's and a plugin's come from `package.json`. Any other name is the kebab of its constant, each segment `a-z` words joined by `-` (no digits, capitals, `/` or `_`). A request's full name is the package name, `#`, then feature and constant joined by dots (`@sumi/layout#frame-sides.toggle`): the feature is its folder under `features/`, an event's group its gateway folder or its `shared/events/<topic>`. `query`, `command` and `subscriber` come from `#module` (`generated/command.ts`), typed by the module's `provide`, the runtime's and the package's events. Every declaration is a fluent chain and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)).
 
 ## Imports
 
-| From ↓ may import → | app | client package | data module                                                                                                   | shared |
-| ------------------- | --- | -------------- | ------------------------------------------------------------------------------------------------------------- | ------ |
-| app                 | own | its `"."`      | its `"./contract"`; its `"./implementation"` to start it                                                      | yes    |
-| client package      | no  | its `"."`      | its `"./contract"`                                                                                            | yes    |
-| data module         | no  | no             | its `"./contract"` (and `"./server"` when both run on a server), declared in `package.json` and in `.imports` | yes    |
-| shared              | no  | no             | no                                                                                                            | yes    |
+| From ↓ may import →    | app | client package | data module                                                                                     | shared |
+| ---------------------- | --- | -------------- | ----------------------------------------------------------------------------------------------- | ------ |
+| app                    | own | its `"."`      | its `"./contract"`; its `"./implementation"` to start it                                        | yes    |
+| plugin, client package | no  | its `"."`      | its `"./contract"` for types; `useModule(…)` for the value                                      | yes    |
+| data module            | no  | no             | its `"./contract"` (and `"./server"` when both run on a server), declared in `peerDependencies` | yes    |
+| shared                 | no  | no             | no                                                                                              | yes    |
 
-A data module never imports React; a client package never imports `"./implementation"` or a gateway. The graph of packages has no cycle.
+A data module never imports React; a plugin or a client package never imports `"./implementation"` or a gateway. The graph of packages has no cycle.
 
 ## Prior art
 

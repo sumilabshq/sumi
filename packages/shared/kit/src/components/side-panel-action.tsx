@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { IconButton } from "./icon-button";
-import type { IconButtonProps } from "./icon-button";
+import { Button } from "./button";
+import type { SquareButtonProps } from "./button";
 
-export function SidePanelAction(props: IconButtonProps): ReactElement {
-	return <IconButton variant="ghost" size="xs" {...props} />;
+export function SidePanelAction(props: SquareButtonProps): ReactElement {
+	return <Button shape="square" emphasis="ghost" size="xs" {...props} label={props.label ?? ""} />;
 }

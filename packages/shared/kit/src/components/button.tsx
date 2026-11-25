@@ -1,7 +1,8 @@
 import { createElement as h } from "react";
-import type { ButtonHTMLAttributes, FunctionComponent, ReactElement, Ref } from "react";
-import { buttonClass, buttonLookClass } from "../utils/class-names";
-import type { ButtonSize, ButtonVariant } from "../utils/class-names";
+import type { ButtonHTMLAttributes, FunctionComponent, ReactElement, ReactNode, Ref } from "react";
+import { Icon } from "../icons/icon";
+import { buttonClass, buttonFormClass, buttonLookClass } from "../utils/class-names";
+import type { ButtonForm, ButtonSize, ButtonVariant } from "../utils/class-names";
 import { cn } from "../utils/cn";
 import { domPropsOf } from "../utils/dom-props";
 import { buttonMark } from "./button-mark";
@@ -10,16 +11,24 @@ import type { SlotPartProps } from "./create-slot-part";
 import { buttonPartOf } from "./slot";
 import { Slottable } from "./slottable";
 
-export { IconButton } from "./icon-button";
 export { ActionButton } from "./action-button";
 export { Spinner } from "./spinner";
 export { ShowMore } from "./show-more";
 
-interface ButtonBaseProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonBaseProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "form"> {
 	readonly asChild?: boolean;
 	readonly isLoading?: boolean;
 	readonly isDone?: boolean;
 	readonly block?: boolean | undefined;
+	readonly form?: ButtonForm | undefined;
+	readonly ref?: Ref<HTMLButtonElement>;
+}
+
+export interface SquareButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "form"> {
+	readonly asChild?: boolean;
+	readonly label?: string | undefined;
+	readonly isLoading?: boolean;
+	readonly isDone?: boolean;
 	readonly ref?: Ref<HTMLButtonElement>;
 }
 
@@ -70,19 +79,28 @@ type ButtonLooks =
 			readonly tone?: "neutral";
 	  });
 
-type ClassProps = ButtonLooks & { readonly block?: boolean | undefined; readonly className?: string | undefined };
+type SquareLooks = Extract<ButtonLooks, { readonly shape: "square" }>;
+
+type ClassProps = ButtonLooks & {
+	readonly block?: boolean | undefined;
+	readonly className?: string | undefined;
+};
 
 type ButtonAllProps = ButtonBaseProps &
 	(
-		| (Exclude<ButtonLooks, { readonly shape: "square" }> & { readonly label?: undefined })
-		| (Extract<ButtonLooks, { readonly shape: "square" }> & { readonly label: string })
+		| (Exclude<ButtonLooks, { readonly shape: "square" }> & { readonly label?: undefined; readonly icon?: undefined })
+		| (SquareLooks & { readonly label: string; readonly icon?: string | undefined })
 	);
+
+const ICON_ONLY_PX = 16;
 
 export function Button({
 	asChild = false,
 	isLoading = false,
 	isDone = false,
 	label,
+	icon,
+	form,
 	children,
 	...props
 }: ButtonAllProps): ReactElement {
@@ -93,16 +111,16 @@ export function Button({
 		<Comp
 			type={type}
 			data-slot="button"
-			aria-label={label}
+			aria-label={label || undefined}
 			{...domPropsOf(props)}
 			disabled={isDisabled}
 			aria-busy={isLoading ? "true" : undefined}
 			data-loading={isLoading ? "" : undefined}
 			data-disabled={isDisabled ? "" : undefined}
-			className={cn(classOf(props), isLoading && "is-loading", isDone && "is-done")}
+			className={cn(classOf(props), buttonFormClass(form), isLoading && "is-loading", isDone && "is-done")}
 		>
 			{mark}
-			{mark && props.shape === "square" ? null : <Slottable>{children}</Slottable>}
+			{contentOf({ mark, icon, children, isSquare: props.shape === "square" })}
 		</Comp>
 	);
 }
@@ -112,6 +130,28 @@ export const ButtonLabel: FunctionComponent<SlotPartProps> = createSlotPart(
 	(props) => cn("wg-kit-btn-label", props.className),
 	"ButtonLabel",
 );
+
+function contentOf({
+	mark,
+	icon,
+	children,
+	isSquare,
+}: {
+	readonly mark: ReactElement | null;
+	readonly icon: string | undefined;
+	readonly children: ReactNode;
+	readonly isSquare: boolean;
+}): ReactNode {
+	if (mark && isSquare) {
+		return null;
+	}
+
+	if (icon !== undefined) {
+		return <Icon name={icon} size={ICON_ONLY_PX} />;
+	}
+
+	return <Slottable>{children}</Slottable>;
+}
 
 function classOf(props: ClassProps): string {
 	if (props.emphasis !== undefined || props.shape !== undefined || props.size === "md") {

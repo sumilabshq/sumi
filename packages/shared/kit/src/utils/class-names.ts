@@ -18,6 +18,7 @@ const BUTTON_WORDS = {
 		"outline-muted": "is-outline is-muted",
 		wash: "is-wash",
 		page: "is-page",
+		lifted: "is-lifted",
 		link: "is-plain",
 	},
 	size: {
@@ -88,9 +89,9 @@ export type ButtonVariant = keyof (typeof BUTTON_WORDS)["variant"];
 
 export type ButtonSize = keyof (typeof BUTTON_WORDS)["size"];
 
-export type IconButtonVariant = keyof (typeof ICON_BUTTON_WORDS)["variant"];
+export type SquareButtonVariant = keyof (typeof ICON_BUTTON_WORDS)["variant"];
 
-export type IconButtonSize = keyof (typeof ICON_BUTTON_WORDS)["size"];
+export type SquareButtonSize = keyof (typeof ICON_BUTTON_WORDS)["size"];
 
 export type PillVariant = keyof (typeof PILL_WORDS)["variant"];
 
@@ -107,6 +108,12 @@ export type FieldSize = keyof (typeof FIELD_WORDS)["size"];
 export type FieldVariant = keyof (typeof FIELD_WORDS)["variant"];
 
 export type DialogSize = keyof (typeof DIALOG_WORDS)["size"];
+
+const FORM_WORDS: Readonly<Record<ButtonForm, string>> = { rect: "is-rect", round: "is-round" };
+
+export type ButtonForm = "rect" | "round";
+
+export const buttonFormClass = (form: ButtonForm | undefined): string => (form === undefined ? "" : FORM_WORDS[form]);
 
 export const buttonClass = variants("wg-kit-btn", BUTTON_WORDS, { variant: "neutral", size: "m" });
 
@@ -127,7 +134,7 @@ const BUTTON_LOOKS: Readonly<Record<string, ButtonVariant>> = {
 	"page-neutral": "page",
 };
 
-const SQUARE_LOOKS: Readonly<Record<string, IconButtonVariant>> = {
+const SQUARE_LOOKS: Readonly<Record<string, SquareButtonVariant>> = {
 	"solid-neutral": "primary",
 	"solid-brand": "accent",
 	"soft-neutral": "neutral",
@@ -139,7 +146,7 @@ const SQUARE_LOOKS: Readonly<Record<string, IconButtonVariant>> = {
 
 const BUTTON_LOOK_SIZES: Readonly<Record<string, ButtonSize>> = { xs: "xs", sm: "s", md: "m", lg: "l" };
 
-const SQUARE_LOOK_SIZES: Readonly<Record<string, IconButtonSize>> = {
+const SQUARE_LOOK_SIZES: Readonly<Record<string, SquareButtonSize>> = {
 	"2xs": "xxs",
 	xs: "xs",
 	sm: "s",

@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { Icon, IconButton, Input } from "@widgetarium/kit";
+import { Button, Icon, Input } from "@widgetarium/kit";
 
 export interface NewTabFieldProps {
 	readonly onOpen: (address: string) => void;
@@ -31,9 +31,9 @@ export function NewTabField({ onOpen }: NewTabFieldProps): ReactElement {
 				block
 				icon={<Icon name="search" size={18} className="cv:flex-none" />}
 				end={
-					<IconButton type="submit" variant="primary" className={GO} label={GO_LABEL}>
+					<Button shape="square" type="submit" emphasis="solid" className={GO} label={GO_LABEL}>
 						<Icon name="corner-down-left" size={16} />
-					</IconButton>
+					</Button>
 				}
 				aria-label={TYPE_AN_ADDRESS}
 				placeholder={TYPE_AN_ADDRESS}

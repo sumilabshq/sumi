@@ -1,6 +1,6 @@
 import { ICommand, IQuery, createWidget, defineLayout, defineMetadata } from "widgetarium";
 import { z } from "zod";
-import { Icon, IconButton } from "widgetarium/kit";
+import { Button, Icon } from "widgetarium/kit";
 
 const CSS = `
 .wg-toggle { display: flex; align-items: center; justify-content: flex-start; }
@@ -17,15 +17,16 @@ const ToggleWidget = createWidget({
 		return (
 			<div className="wg-toggle">
 				<style>{CSS}</style>
-				<IconButton
-					variant="raised"
-					size="l"
+				<Button
+					shape="square"
+					emphasis="raised"
+					size="lg"
 					label={label || "Open the panel"}
 					aria-pressed={isOpen}
 					onClick={() => void setIsOpen(!isOpen)}
 				>
 					<Icon name={icon || "menu"} size={22} />
-				</IconButton>
+				</Button>
 			</div>
 		);
 	},

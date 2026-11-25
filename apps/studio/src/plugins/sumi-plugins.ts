@@ -21,21 +21,19 @@ import { backgroundAgents } from "@sumi/background-agents-plugin";
 import { controlMenu } from "@sumi/control-menu-plugin";
 import { sessions } from "@sumi/sessions-plugin";
 import { navigation } from "@sumi/navigation-plugin";
-import { tabStrip } from "@sumi/tab-strip-plugin";
-import { tabsView } from "@sumi/tabs-view-plugin";
-import { panes } from "@sumi/panes-plugin";
-import { tabsSidebar } from "@sumi/tabs-sidebar-plugin";
-import { workspaceSwitcher } from "@sumi/workspace-switcher-plugin";
+import { flowsSidebar } from "@sumi/flows-sidebar-plugin";
+import { flowStrip } from "@sumi/flow-strip-plugin";
+import { flowBoard } from "@sumi/flow-board-plugin";
 import { tabGroups } from "@sumi/tab-groups-plugin";
 import { pinnedTabs } from "@sumi/pinned-tabs-plugin";
 import { subPages } from "@sumi/sub-pages-plugin";
 import { slashCommands } from "@sumi/slash-commands-plugin";
 import { chatTitle } from "@sumi/chat-title-plugin";
+import { chatContext } from "@sumi/chat-context-plugin";
 import { nextPrompt } from "@sumi/next-prompt-plugin";
 import { chatImages } from "@sumi/chat-images-plugin";
 import { chatViews } from "@sumi/chat-views-plugin";
 import { pictureViewer } from "@sumi/picture-viewer-plugin";
-import { effortPicker } from "@sumi/effort-picker-plugin";
 import { modelPicker } from "@sumi/model-picker-plugin";
 import { permissionMode } from "@sumi/permission-mode-plugin";
 import { sandboxMode } from "@sumi/sandbox-mode-plugin";
@@ -144,7 +142,6 @@ export interface ResolvedPlugins {
 const INSTALLED_PLUGINS = [
 	sumiHost,
 	navigation,
-	panes,
 	tabGroups,
 	apps,
 	commandMenu,
@@ -171,24 +168,23 @@ const INSTALLED_PLUGINS = [
 	backgroundAgents,
 	slashCommands,
 	chatTitle,
+	chatContext,
 	nextPrompt,
 	chatImages,
 	chatViews,
 	pictureViewer,
 	claudeCode,
 	modelPicker,
-	effortPicker,
-	permissionMode,
-	sandboxMode,
 	workingFolder,
+	sandboxMode,
+	permissionMode,
 	planUsage,
 	terminalCursor,
 	controlMenu,
 	sessions,
-	tabsView,
-	tabStrip,
-	tabsSidebar,
-	workspaceSwitcher,
+	flowsSidebar,
+	flowStrip,
+	flowBoard,
 	pinnedTabs,
 	subPages,
 	settings,
@@ -198,11 +194,11 @@ const INSTALLED_PLUGINS = [
 const ALWAYS_ON_PLUGINS = [
 	sumiHost,
 	navigation,
-	panes,
 	tabGroups,
 	controlMenu,
-	tabsView,
-	tabStrip,
+	flowsSidebar,
+	flowStrip,
+	flowBoard,
 	apps,
 	commandMenu,
 	chat,
@@ -247,17 +243,14 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		pictureViewer.id,
 		claudeCode.id,
 		modelPicker.id,
-		effortPicker.id,
-		permissionMode.id,
-		sandboxMode.id,
 		workingFolder.id,
+		sandboxMode.id,
+		permissionMode.id,
 		planUsage.id,
 		terminalCursor.id,
 		controlMenu.id,
 		sessions.id,
-		tabStrip.id,
-		tabsSidebar.id,
-		workspaceSwitcher.id,
+		chatContext.id,
 		pinnedTabs.id,
 		subPages.id,
 		settings.id,

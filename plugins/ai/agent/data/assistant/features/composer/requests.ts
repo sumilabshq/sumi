@@ -311,8 +311,10 @@ export const openChatDraft = command()
 				const left = chatDrafts.openChat();
 
 				if (left === chatId) {
+					const said = chatDrafts.chatDraft(chatId)?.said ?? "";
+					chatDrafts.saveUnseenSaid(said === "" ? null : said);
 					return {
-						said: "",
+						said,
 						notice: chatDrafts.problemOf(chatId),
 					};
 				}

@@ -1,6 +1,5 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Pressable } from "@widgetarium/kit";
 import { RowIcon } from "@sumi/command-menu-plugin";
 import type { Intent, Row } from "@sumi/command-menu/contract";
 
@@ -21,15 +20,16 @@ export function AppTiles({ appRows, run }: AppTilesProps): ReactElement | null {
 			<div className="sumi-launcher-label">{LABEL}</div>
 			<div className="sumi-launcher-apps">
 				{appRows.map((row) => (
-					<Pressable
+					<button
 						key={row.key}
+						type="button"
 						className="sumi-launcher-app"
 						onMouseDown={(event) => event.preventDefault()}
 						onClick={() => run(row.intent)}
 					>
 						<RowIcon icon={row.icon} />
 						<span className="sumi-launcher-app-name">{row.title}</span>
-					</Pressable>
+					</button>
 				))}
 			</div>
 		</section>

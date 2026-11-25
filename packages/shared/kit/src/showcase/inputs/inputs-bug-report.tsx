@@ -26,6 +26,7 @@ import { BUG_SCHEMA } from "./bug-schema";
 export function InputsBugReport(): ReactElement {
 	const form = useForm({ schema: BUG_SCHEMA, defaultValues: { title: "", description: "" } });
 	const [sent, setSent] = useState("");
+	const submit = form.handleSubmit((data) => setSent(JSON.stringify(data)));
 	return (
 		<Card>
 			<CardHeader>
@@ -33,7 +34,7 @@ export function InputsBugReport(): ReactElement {
 				<CardDescription>Help us improve by reporting bugs you encounter.</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<form id="form-bug-report" onSubmit={form.handleSubmit((data) => setSent(JSON.stringify(data)))}>
+				<form id="form-bug-report" onSubmit={submit}>
 					<FieldGroup>
 						<Controller
 							name="title"
@@ -85,7 +86,7 @@ export function InputsBugReport(): ReactElement {
 				<Button type="button" variant="outline" onClick={() => form.reset()}>
 					Reset
 				</Button>
-				<Button type="submit" variant="default" form="form-bug-report">
+				<Button type="button" variant="default" onClick={submit}>
 					Submit
 				</Button>
 			</CardFooter>

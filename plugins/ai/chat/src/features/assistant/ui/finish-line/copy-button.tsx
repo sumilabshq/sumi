@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { Icon, IconButton, copyText } from "@widgetarium/kit";
+import { Icon, Button, copyText } from "@widgetarium/kit";
 
 const COPIED = "Copied";
 
@@ -12,14 +12,15 @@ export interface CopyButtonProps {
 export function CopyButton({ label, text }: CopyButtonProps): ReactElement {
 	const [isCopied, setCopied] = useState(false);
 	return (
-		<IconButton
-			variant="ghost"
+		<Button
+			shape="square"
+			emphasis="ghost"
 			size="xs"
 			className="wg-studio-ai-round is-button"
 			label={isCopied ? COPIED : label}
 			onClick={() => void copyText(text).then(setCopied)}
 		>
 			<Icon name={isCopied ? "tick" : "copy"} size={13} />
-		</IconButton>
+		</Button>
 	);
 }

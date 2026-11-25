@@ -139,9 +139,10 @@ export function shoot(file: string, extra: readonly string[], { width, height }:
 	);
 }
 
-export async function bundleOf(entry: string): Promise<string> {
+export async function bundleOf(entry: string, defines: Readonly<Record<string, string>> = {}): Promise<string> {
 	const built = await esbuild.build({
 		entryPoints: [entry],
+		define: defines,
 		plugins: [createRadixInPicturesPlugin()],
 		bundle: true,
 		conditions: ["source"],

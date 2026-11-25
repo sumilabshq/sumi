@@ -154,16 +154,19 @@ function actionByKeyOf(actions: MenuKeyActions): Readonly<Record<string, () => v
 	};
 }
 
-function useDismissesOnPressOutside({ field }: ComposerInput, pressed: (isInside: boolean) => void): void {
+function useDismissesOnPressOutside({ field, above }: ComposerInput, pressed: (isInside: boolean) => void): void {
 	const latestPressed = useRef(pressed);
 	latestPressed.current = pressed;
 	useEffect(() => {
 		const press = (event: PointerEvent): void => {
-			latestPressed.current(event.target instanceof Node && Boolean(field.current?.contains(event.target)));
+			const target = event.target;
+			latestPressed.current(
+				target instanceof Node && [field.current, above.current].some((part) => part?.contains(target) === true),
+			);
 		};
 		document.addEventListener("pointerdown", press, true);
 		return () => document.removeEventListener("pointerdown", press, true);
-	}, [field]);
+	}, [field, above]);
 }
 
 // TRADE-OFF: reads the caret in render; the chat keeps no caret state to hand over

@@ -1,4 +1,5 @@
 import type { AnchorBox, FloatingSpot, PanelSpot } from "../constants/popover";
+import { pivotOf } from "./pointer-point";
 
 export interface LaidFrame extends PanelSpot {
 	readonly scale: number;
@@ -16,10 +17,11 @@ export function wearAnchorWidth(panel: HTMLElement, anchor: AnchorBox, frame: La
 	panel.style.setProperty("--anchor-width", `${anchor.width / frame.scale}px`);
 }
 
-export function wearSpot(panel: HTMLElement, spot: FloatingSpot, frame: LaidFrame = VIEWPORT_FRAME): void {
+export function wearSpot(panel: HTMLElement, spot: FloatingSpot, anchor: AnchorBox, frame: LaidFrame = VIEWPORT_FRAME): void {
 	panel.style.left = `${(spot.left - frame.left) / frame.scale}px`;
 	panel.style.top = `${(spot.top - frame.top) / frame.scale}px`;
-	panel.style.setProperty("--pop-origin", spot.origin);
+	const pivot = pivotOf(anchor);
+	panel.style.setProperty("--pop-origin", `${(pivot.x - spot.left) / frame.scale}px ${(pivot.y - spot.top) / frame.scale}px`);
 	panel.style.setProperty("--pop-available-width", `${Math.round(spot.availableWidth / frame.scale)}px`);
 	panel.style.setProperty("--pop-available-height", `${Math.round(spot.availableHeight / frame.scale)}px`);
 	panel.dataset["side"] = spot.side;

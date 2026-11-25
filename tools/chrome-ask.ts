@@ -11,6 +11,15 @@ export interface PageAsk {
 	readonly onGpu?: boolean;
 	readonly hasFramesInProcess?: boolean;
 	readonly hearsFailures?: boolean;
+	readonly pixelRatio?: number;
+}
+
+export interface ShotClip {
+	readonly x: number;
+	readonly y: number;
+	readonly width: number;
+	readonly height: number;
+	readonly scale: number;
 }
 
 export type PagePoint = readonly [x: number, y: number];
@@ -37,9 +46,10 @@ export interface AskedPage {
 	readonly drag: (path: PointerPath) => Promise<void>;
 	readonly release: (at: PagePoint) => Promise<unknown>;
 	readonly reduceMotion: () => Promise<unknown>;
-	readonly shoot: () => Promise<Buffer>;
+	readonly shoot: (clip?: ShotClip) => Promise<Buffer>;
 	readonly typeText: (text: string) => Promise<void>;
 	readonly pressEnter: () => Promise<void>;
+	readonly pressKey: (key: NamedKey) => Promise<void>;
 	readonly failures: () => readonly string[];
 	readonly close: () => void;
 }
@@ -54,11 +64,12 @@ interface PageSocket {
 	readonly drag: (path: PointerPath) => Promise<void>;
 	readonly release: (at: PagePoint) => Promise<unknown>;
 	readonly reduceMotion: () => Promise<unknown>;
-	readonly shoot: () => Promise<Buffer>;
+	readonly shoot: (clip?: ShotClip) => Promise<Buffer>;
 	readonly typeText: (text: string) => Promise<void>;
 	readonly pressEnter: () => Promise<void>;
+	readonly pressKey: (key: NamedKey) => Promise<void>;
 	readonly failures: () => readonly string[];
-	readonly viewportSetTo: (size: PageSize) => Promise<unknown>;
+	readonly viewportSetTo: (size: PageSize, pixelRatio: number) => Promise<unknown>;
 }
 
 interface Waiting {
@@ -83,7 +94,7 @@ export async function paged(file: string, gate: string, asked: PageAsk): Promise
 		throw new Error(`chrome never opened a page for ${file}`);
 	}
 	const socket = await talking(socketUrl, asked.hearsFailures === true);
-	await socket.viewportSetTo(asked.size);
+	await socket.viewportSetTo(asked.size, asked.pixelRatio ?? 1);
 	return handled(socket, chrome, profile);
 }
 
@@ -125,6 +136,7 @@ function handled(socket: PageSocket, chrome: ChildProcess, profile: string): Ask
 		shoot: socket.shoot,
 		typeText: socket.typeText,
 		pressEnter: socket.pressEnter,
+		pressKey: socket.pressKey,
 		failures: socket.failures,
 		close: () => {
 			socket.close();
@@ -241,8 +253,11 @@ async function talking(socketUrl: string, hearsFailures: boolean): Promise<PageS
 			send("Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "left", clickCount: 1 }),
 		reduceMotion: () =>
 			send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] }),
-		shoot: async () =>
-			Buffer.from(String(fieldOf(fieldOf(await send("Page.captureScreenshot", {}), "result"), "data")), "base64"),
+		shoot: async (clip) =>
+			Buffer.from(
+				String(fieldOf(fieldOf(await send("Page.captureScreenshot", clip ? { clip } : {}), "result"), "data")),
+				"base64",
+			),
 		typeText: async (text) => {
 			await send("Input.insertText", { text });
 		},
@@ -250,9 +265,18 @@ async function talking(socketUrl: string, hearsFailures: boolean): Promise<PageS
 			await send("Input.dispatchKeyEvent", ENTER_DOWN);
 			await send("Input.dispatchKeyEvent", ENTER_UP);
 		},
+		pressKey: async (key) => {
+			const held = {
+				key,
+				code: key,
+				windowsVirtualKeyCode: KEY_CODES[key],
+			};
+			await send("Input.dispatchKeyEvent", { ...held, type: "rawKeyDown" });
+			await send("Input.dispatchKeyEvent", { ...held, type: "keyUp" });
+		},
 		failures: () => [...failures],
-		viewportSetTo: ([width, height]) =>
-			send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false }),
+		viewportSetTo: ([width, height], pixelRatio) =>
+			send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: pixelRatio, mobile: false }),
 	};
 }
 
@@ -358,6 +382,16 @@ function pumping(socket: WebSocket, pending: Map<unknown, Waiting>, heard: Heard
 	socket.addEventListener("close", abandon);
 	socket.addEventListener("error", abandon);
 }
+
+export type NamedKey = "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown" | "Escape";
+
+const KEY_CODES: Readonly<Record<NamedKey, number>> = {
+	ArrowLeft: 37,
+	ArrowUp: 38,
+	ArrowRight: 39,
+	ArrowDown: 40,
+	Escape: 27,
+};
 
 const ENTER_DOWN = {
 	type: "keyDown",

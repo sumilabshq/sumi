@@ -30,7 +30,7 @@
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-said .wg-studio-ai-caption {
 	color: var(--text-3, var(--muted-foreground));
-	font-size: var(--fs-12, 12px);
+	font-size: var(--fs-12);
 	line-height: 1.4;
 }
 

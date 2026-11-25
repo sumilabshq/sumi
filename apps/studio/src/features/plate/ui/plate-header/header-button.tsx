@@ -1,8 +1,8 @@
 import { createElement as h, forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
-import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
+import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 
-export interface HeaderButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface HeaderButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "form"> {
 	readonly label: string;
 	readonly icon: string;
 	readonly keys?: string;
@@ -17,10 +17,11 @@ export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(fun
 	ref,
 ) {
 	return (
-		<IconButton
+		<Button
+			shape="square"
 			ref={ref}
 			asChild={href !== undefined}
-			variant="ghost"
+			emphasis="ghost"
 			size="xs"
 			className="wg-plate-button"
 			label={label}
@@ -39,6 +40,6 @@ export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(fun
 					<Icon name={icon} size={16} />
 				</a>
 			)}
-		</IconButton>
+		</Button>
 	);
 });

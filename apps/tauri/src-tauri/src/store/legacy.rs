@@ -1,5 +1,6 @@
 use super::place::{self, APP_FOLDER};
 use super::refusal::Refusal;
+use super::retirement;
 use super::workspaces::{self, WORKSPACE_FILE};
 use super::{Fields, Store, NO_WORKSPACE_ID};
 use serde_json::{Map, Value};
@@ -35,6 +36,9 @@ fn move_workspace(store: &Store, from: &Path) -> Result<String, Refusal> {
     };
     if id == NO_WORKSPACE_ID {
         return Ok("skipped: the no-workspace folder".to_owned());
+    }
+    if retirement::is_retired(store, &id) {
+        return Ok("skipped: retired".to_owned());
     }
     if workspaces::home_of(store, &id).is_ok() {
         return Ok("skipped: moved already".to_owned());

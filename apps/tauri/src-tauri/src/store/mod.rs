@@ -6,6 +6,7 @@ pub mod legacy;
 pub mod lines;
 pub mod place;
 pub mod refusal;
+pub mod retirement;
 pub mod workspaces;
 
 pub use docs::DocRead;

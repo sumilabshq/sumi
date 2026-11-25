@@ -1,6 +1,7 @@
 import { createElement as h, useEffect, useRef } from "react";
 import type { ReactElement } from "react";
 import { usePanZoom } from "@widgetarium/behaviors";
+import { useLiveBoards } from "../../../canvas/lib/use-live-boards.js";
 
 export interface MiniFieldBoard {
 	readonly id: string;
@@ -33,6 +34,7 @@ export function MiniField({ boards, background }: MiniFieldProps): ReactElement 
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const fieldRef = useRef<HTMLDivElement | null>(null);
 	const pan = usePanZoom({ layerRef, fieldRef }, GRIPS, UNKEPT);
+	const live = useLiveBoards(boards, pan, FIELD_MARGIN_PX);
 	useEffect(() => {
 		const show = (scale: number): void => {
 			fieldRef.current?.style.setProperty(ZOOM_VAR, `${scale}`);
@@ -62,12 +64,15 @@ export function MiniField({ boards, background }: MiniFieldProps): ReactElement 
 							style={{ left: board.x, top: board.y, width: board.w, height: board.h }}
 						>
 							<p className="sumi-canvas-board-name">{board.name}</p>
-							<iframe
-								className="sumi-canvas-board-page"
-								title={board.name}
-								sandbox="allow-scripts"
-								srcDoc={board.html}
-							/>
+							{live.liveIds.has(board.id) ? (
+								<iframe
+									className="sumi-canvas-board-page"
+									title={board.name}
+									sandbox="allow-scripts"
+									srcDoc={board.html}
+									onLoad={() => live.onBoardLoaded(board.id)}
+								/>
+							) : null}
 						</div>
 					))}
 				</div>

@@ -11,7 +11,7 @@ export interface IconProps {
 	readonly isFilled?: boolean | undefined;
 }
 
-const ICON_PX = 16;
+const ICON_PX = 13;
 const NO_DRAWING = "";
 
 export function Icon({

@@ -1,6 +1,6 @@
 import { IContent, IHere, IHost, IQuery, IReader, createWidget, defineLayout, defineMetadata } from "widgetarium";
 import { z } from "zod";
-import { Button, Icon, IconButton, Card, copyText } from "widgetarium/kit";
+import { Button, Icon, Card, copyText } from "widgetarium/kit";
 import { useEffect, useState } from "react";
 import { LanguagePicker } from "./language-picker";
 import { Painted } from "./painted";
@@ -177,9 +177,9 @@ const CodeBlock = createWidget({
 				<style>{STYLE}</style>
 				<div className="wgc-bar wg-inline-shy">
 					<LanguagePicker language={language} onPick={pick} />
-					<IconButton size="s" variant="glass" label={isCopied ? "Copied" : "Copy"} onClick={copy}>
+					<Button shape="square" size="sm" emphasis="glass" label={isCopied ? "Copied" : "Copy"} onClick={copy}>
 						<Icon name={isCopied ? "tick" : "copy"} size={15} />
-					</IconButton>
+					</Button>
 				</div>
 				{host?.can?.renderMarkdown ? (
 					<Painted host={host} markdown={`${fence}${language}\n${body}\n${fence}`} />

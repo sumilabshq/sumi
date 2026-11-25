@@ -1,0 +1,22 @@
+{
+	"title": "Chat context",
+	"description": "Shows the working folder and branch in the chat header.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Chat header",
+			"what": "A folder and branch chip"
+		}
+	],
+	"reaches": [
+		{
+			"what": "The working folder",
+			"how": "by reading its git branch"
+		}
+	],
+	"source": null,
+	"readme": "A chip in the chat header names the working folder or its branch.\nIts menu shows the folder, branch and computer, and where to open it."
+}

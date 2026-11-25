@@ -3,17 +3,17 @@ import { check, tally } from "./check-helpers.ts";
 import { baseKitGaps, kitExportNames } from "./kit-base.ts";
 
 const sample: readonly BaseKitEntry[] = [
-	{ name: "Button", group: "actions", today: ["Button", "IconButton", "Ghost"] },
+	{ name: "Button", group: "actions", today: ["Button", "ActionButton", "Ghost"] },
 	{ name: "Stack", group: "layout", today: [] },
 ];
 
 check("a base name that is exported is not missing", baseKitGaps(["Button", "Stack"], sample).missing, []);
 check("a base name that is not exported is missing", baseKitGaps(["Button"], sample).missing, ["Stack"]);
-check("a today name still exported is unmerged", baseKitGaps(["Button", "IconButton"], sample).unmerged, [
-	"IconButton -> Button",
+check("a today name still exported is unmerged", baseKitGaps(["Button", "ActionButton"], sample).unmerged, [
+	"ActionButton -> Button",
 ]);
 check("the base name itself is never unmerged", baseKitGaps(["Button"], sample).unmerged, []);
-check("a today name that is not exported is unknown", baseKitGaps(["Button", "IconButton"], sample).unknownToday, [
+check("a today name that is not exported is unknown", baseKitGaps(["Button", "ActionButton"], sample).unknownToday, [
 	"Ghost (in Button)",
 ]);
 

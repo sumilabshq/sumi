@@ -1,0 +1,17 @@
+{
+	"title": "Flows sidebar",
+	"description": "Inbox, Flows and folders in a column on the left.",
+	"type": "visual",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [
+		{
+			"where": "Window left",
+			"what": "The Flows sidebar"
+		}
+	],
+	"reaches": [],
+	"source": null,
+	"readme": "Lists the Inbox, loose Flows and folders on the left.\nThe column hides and comes back like Linear's."
+}

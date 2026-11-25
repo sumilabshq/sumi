@@ -1,7 +1,7 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
-import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
+import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 import { workspaces } from "@widgetarium/workspaces/contract";
 import { useFadesAtEdges } from "../../lib/use-fades-at-edges.js";
 import { StripButton } from "./strip-button.js";
@@ -41,8 +41,9 @@ function WorkspaceStrip({ place }: { readonly place: StripPlace }): ReactElement
 function NewWorkspaceButton(): ReactElement {
 	const createWorkspace = useCommand(workspaces.workspaces.createWorkspace);
 	return (
-		<IconButton
-			variant="ghost"
+		<Button
+			shape="square"
+			emphasis="ghost"
 			size="xs"
 			className="sumi-ws-strip-icon is-new"
 			label={NEW_WORKSPACE}
@@ -51,6 +52,6 @@ function NewWorkspaceButton(): ReactElement {
 			{...NEW_WORKSPACE_TIP}
 		>
 			<Icon name="plus" size={NEW_ICON_PX} />
-		</IconButton>
+		</Button>
 	);
 }

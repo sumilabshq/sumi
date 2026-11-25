@@ -51,7 +51,7 @@ export type { PopoverAnchorAtProps } from "./components/popover-anchor-at";
 export type { PopoverAlign, PopoverSide } from "./constants/popover";
 export type { FlameProps } from "./components/flame";
 export type { HeadingLevel, HeadingProps } from "./components/heading";
-export type { IconButtonProps } from "./components/icon-button";
+export type { SquareButtonProps } from "./components/button";
 export type { PressableProps, PressableTone, PressableVariant } from "./components/pressable";
 export type { FilePickerProps } from "./components/file-picker";
 export type { LayoutActionsProps, LayoutHeaderProps, LayoutItemProps, LayoutProps } from "./components/layout";
@@ -64,10 +64,11 @@ export type { PaginationStepProps } from "./components/pagination-next";
 export type { PopoverProps } from "./components/popover";
 export type { PopoverContentProps, PopoverSize } from "./components/popover-content";
 export type { HeldPopover } from "./components/popover-context";
-export type { PopoverItemProps } from "./components/popover-item";
+export type { PopoverItemProps, PopoverItemVariant } from "./components/popover-item";
 export type { PopoverSearchProps } from "./components/popover-search";
 export type { PopoverSeparatorProps } from "./components/popover-separator";
 export type { PopoverTriggerProps } from "./components/popover-trigger";
+export type { MenuSpot, SpotMenuProps } from "./components/spot-menu";
 export type { ProgressBarProps, ProgressProps, StatusProgressProps } from "./components/progress";
 export type { ProgressRingProps } from "./components/progress-ring";
 export type { RenderedMarkdownProps } from "./components/rendered-markdown";
@@ -129,8 +130,9 @@ export type {
 	ButtonVariant,
 	FieldSize,
 	FieldVariant,
-	IconButtonSize,
-	IconButtonVariant,
+	ButtonForm,
+	SquareButtonSize,
+	SquareButtonVariant,
 	PillSize,
 	PillVariant,
 	SidebarMode,

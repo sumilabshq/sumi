@@ -1,7 +1,7 @@
 import { createElement as h, memo, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { IconButton, Popover, PopoverAnchor, PopoverContent, tooltipMarks } from "@widgetarium/kit";
+import { Button, Popover, PopoverAnchor, PopoverContent, tooltipMarks } from "@widgetarium/kit";
 import type { WorkspaceRow } from "@widgetarium/workspaces/contract";
 import { workspaces } from "@widgetarium/workspaces/contract";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
@@ -24,8 +24,9 @@ export const StripButton = memo(function StripButton({
 	return (
 		<Popover open={isEditing} onOpenChange={setEditing} isPortaled>
 			<PopoverAnchor asChild>
-				<IconButton
-					variant="ghost"
+				<Button
+					shape="square"
+					emphasis="ghost"
 					size="xs"
 					className="sumi-ws-strip-icon"
 					label={row.name}
@@ -40,7 +41,7 @@ export const StripButton = memo(function StripButton({
 					{...tooltipMarks({ said: row.name, keys: row.keyHint, side, align: "start" })}
 				>
 					<WorkspaceGlyph icon={row.icon} />
-				</IconButton>
+				</Button>
 			</PopoverAnchor>
 			<PopoverContent side={side} align="start" sideOffset={LOOK_GAP_PX} className="sumi-ws-look-pop">
 				<WorkspaceLook workspace={row} />

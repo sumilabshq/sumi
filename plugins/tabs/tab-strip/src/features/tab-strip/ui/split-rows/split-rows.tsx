@@ -3,7 +3,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { appHost } from "@widgetarium/app-host/contract";
 import type { AppTabState, SidebarSplitState } from "@widgetarium/app-host/contract";
-import { Icon, IconButton, PopoverItem } from "@widgetarium/kit";
+import { Button, Icon, PopoverItem } from "@widgetarium/kit";
 import { useTabFace } from "@sumi/sumi-host-plugin";
 
 const SPLIT = "Split";
@@ -71,22 +71,24 @@ function SplitMemberRow({ tab, onDone }: SplitMemberRowProps): ReactNode {
 				<span className="sumi-split-row-label">{tab.title}</span>
 			</PopoverItem>
 			<span className="sumi-split-member-acts">
-				<IconButton
-					variant="ghost"
+				<Button
+					shape="square"
+					emphasis="ghost"
 					size="xs"
 					label={UNSPLIT_TAB.replace("{title}", tab.title)}
 					onClick={pressed(() => void unsplit.run({ tabIds: [tab.id] }))}
 				>
 					<Icon name="panel-right-close" size={ICON_PX} />
-				</IconButton>
-				<IconButton
-					variant="ghost"
+				</Button>
+				<Button
+					shape="square"
+					emphasis="ghost"
 					size="xs"
 					label={CLOSE_TAB.replace("{title}", tab.title)}
 					onClick={pressed(() => void closeTab.run({ id: tab.id }))}
 				>
 					<Icon name="x" size={ICON_PX} />
-				</IconButton>
+				</Button>
 			</span>
 		</div>
 	);

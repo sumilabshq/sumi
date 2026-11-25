@@ -22,7 +22,6 @@ const SOURCES = [
 	"plugins/ai/permission-mode/src",
 	"plugins/ai/plan-usage/src",
 	"plugins/ai/model-picker/src",
-	"plugins/ai/effort-picker/src",
 	"plugins/control-menu/src",
 	"plugins/ai/sessions/src",
 	"plugins/tabs/tab-strip/src",
@@ -77,6 +76,16 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
 	"@sumi/chat-title-plugin/head-title.css":
 		"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
+	"@sumi/chat-context-plugin/chat-context.css":
+		"plugins/ai/chat-context/src/features/chat-context/ui/chat-context/chat-context.css",
+	"@sumi/flows-sidebar-plugin/flows-sidebar.css":
+		"plugins/tabs/flows-sidebar/src/features/flows-column/ui/flows-sidebar/flows-sidebar.css",
+	"@sumi/flow-strip-plugin/pane-tab-row.css":
+		"plugins/tabs/flow-strip/src/features/pane-tabs/ui/pane-tab-row/pane-tab-row.css",
+	"@sumi/flow-strip-plugin/flow-strip.css":
+		"plugins/tabs/flow-strip/src/features/flow-header/ui/flow-strip/flow-strip.css",
+	"@sumi/flow-board-plugin/flow-board.css":
+		"plugins/tabs/flow-board/src/features/flow-board/ui/flow-board/flow-board.css",
 	"@sumi/tab-strip-plugin/tab-strip.css": "plugins/tabs/tab-strip/src/features/tab-strip/ui/tab-strip/tab-strip.css",
 	"@sumi/pinned-tabs-plugin/pinned-tabs.css":
 		"plugins/tabs/pinned-tabs/src/features/pinned-tabs/ui/pinned-tabs/pinned-tabs.css",
@@ -126,6 +135,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@sumi/git-plugin/changes-card.css": "plugins/git/src/features/git-page/ui/changes-card/changes-card.css",
 	"@sumi/model-picker-plugin/model-menu.css":
 		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-menu.css",
+	"@sumi/model-picker-plugin/model-button.css":
+		"plugins/ai/model-picker/src/features/model-picker/ui/model-button/model-button.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
 const ENTRY = `@layer theme, base, components, utilities;
@@ -152,6 +163,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/background-agents-plugin/agent-chat-page.css";
 @import "@sumi/slash-commands-plugin/slash-commands.css";
 @import "@sumi/model-picker-plugin/model-menu.css";
+@import "@sumi/model-picker-plugin/model-button.css";
 @import "@sumi/plan-usage-plugin/usage-button.css";
 @import "@sumi/chat-plugin/new-chat-row.css";
 @import "@sumi/sumi-host-plugin/sumi-figure.css";
@@ -160,6 +172,11 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/sessions-plugin/sessions-popover.css";
 @import "@sumi/sessions-plugin/sessions-chevron.css";
 @import "@sumi/chat-title-plugin/head-title.css";
+@import "@sumi/chat-context-plugin/chat-context.css";
+@import "@sumi/flows-sidebar-plugin/flows-sidebar.css";
+@import "@sumi/flow-strip-plugin/pane-tab-row.css";
+@import "@sumi/flow-strip-plugin/flow-strip.css";
+@import "@sumi/flow-board-plugin/flow-board.css";
 @import "@sumi/tab-strip-plugin/tab-strip.css";
 @import "@sumi/pinned-tabs-plugin/pinned-tabs.css";
 @import "@sumi/tab-groups-plugin/group-editor.css";

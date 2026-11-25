@@ -88,7 +88,7 @@
 	align-items: center;
 	gap: var(--cm-inset);
 	padding: var(--space-none) var(--cm-inset);
-	font-size: var(--fs-20);
+	font-size: var(--fs-13);
 	color: var(--text);
 }
 
@@ -102,14 +102,14 @@
 .wg-cm-ghost,
 .wg-cm-input {
 	font: inherit;
-	font-size: var(--fs-20);
+	font-size: var(--fs-13);
 	line-height: 28px;
 	letter-spacing: inherit;
 }
 
 .wg-cm-field[data-cm-link] :is(.wg-cm-ghost, .wg-cm-input) {
 	font-family: var(--font-code);
-	font-size: var(--fs-15);
+	font-size: var(--fs-13);
 }
 
 .wg-cm-ghost {

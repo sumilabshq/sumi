@@ -14,7 +14,9 @@ export type StoreCommand =
 	| "mark_workspace_opened"
 	| "choose_workspace_folder"
 	| "list_workspaces"
-	| "rename_workspace";
+	| "rename_workspace"
+	| "retire_other_workspaces"
+	| "conversion_refusal";
 
 const STORE_PLUGIN = "store";
 
@@ -27,6 +29,7 @@ const StoreRefusalSchema = z.object({
 		"no-workspace",
 		"no-folder",
 		"folder-not-found",
+		"retired",
 		"stale-rev",
 		"newer-version",
 		"bad-doc",

@@ -7,5 +7,5 @@ export const modelPicker = plugin("model-picker")
 	.describe(metadata)
 	.require(chat)
 	.apply((app) => {
-		app.use(chat).slots.optionsStart.add(ModelButton);
+		app.use(chat).slots.fieldOptions.add(ModelButton);
 	});

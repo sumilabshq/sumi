@@ -1,5 +1,6 @@
 use super::place::{self, APP_FOLDER};
 use super::refusal::Refusal;
+use super::retirement;
 use super::{now_ms, Fields, Store};
 use serde_json::{json, Value};
 use std::fs;
@@ -37,10 +38,10 @@ impl WorkspaceEntry {
     }
 }
 
-struct OpenedWorkspace {
-    id: String,
-    last_opened_at: u64,
-    home: String,
+pub(super) struct OpenedWorkspace {
+    pub id: String,
+    pub last_opened_at: u64,
+    pub home: String,
 }
 
 struct Identity {
@@ -52,6 +53,10 @@ struct Identity {
 
 pub fn open_first(store: &Store) -> Result<WorkspaceEntry, Refusal> {
     let id = first_workspace_id();
+    if retirement::is_retired(store, &id) {
+        return retirement::open_kept_root(store);
+    }
+
     if let Ok(home) = home_of(store, &id) {
         return open_folder(store, &home);
     }
@@ -72,6 +77,7 @@ pub fn first_workspace_home(store: &Store) -> PathBuf {
 pub fn register_moved(store: &Store, id: &str, home: &Path) -> Result<(), Refusal> {
     keep_out_of_git(home)?;
     store.update_doc(&store.global_place(WORKSPACES_FILE)?, "register a workspace moved into its folder", |current| {
+        retirement::refuse_retired_in(current, id)?;
         let rows = current.and_then(|fields| fields.get("workspaces")).and_then(Value::as_array).cloned().unwrap_or_default();
         let last_opened_at = rows
             .iter()
@@ -101,13 +107,16 @@ pub fn open_folder(store: &Store, folder: &Path) -> Result<WorkspaceEntry, Refus
     Ok(entry_of(kept, opened_at))
 }
 
-pub fn home_of(store: &Store, id: &str) -> Result<PathBuf, Refusal> {
-    let registry = store.read_doc(&store.global_place(WORKSPACES_FILE)?)?.doc;
-    let home = opened_in(registry.as_ref().and_then(Value::as_object))
+pub fn registered_home_of(store: &Store, id: &str) -> Option<PathBuf> {
+    let registry = store.read_doc(&store.global_place(WORKSPACES_FILE).ok()?).ok()?.doc;
+    opened_in(registry.as_ref().and_then(Value::as_object))
         .into_iter()
         .find(|row| row.id == id)
         .map(|row| PathBuf::from(row.home))
-        .ok_or_else(|| Refusal::NoWorkspace { detail: id.to_owned() })?;
+}
+
+pub fn home_of(store: &Store, id: &str) -> Result<PathBuf, Refusal> {
+    let home = registered_home_of(store, id).ok_or_else(|| Refusal::NoWorkspace { detail: id.to_owned() })?;
     if home.is_dir() {
         return Ok(home);
     }
@@ -321,6 +330,7 @@ fn register(store: &Store, id: &str, home: &Path) -> Result<u64, Refusal> {
 fn opened_from(store: &Store, id: &str, home: Option<&Path>) -> Result<u64, Refusal> {
     let opened_at = now_ms();
     store.update_doc(&store.global_place(WORKSPACES_FILE)?, "open workspace", |current| {
+        retirement::refuse_retired_in(current, id)?;
         let all = opened_in(current);
         let kept_home = all.iter().find(|kept| kept.id == id).map(|kept| kept.home.clone());
         let home = home
@@ -349,7 +359,7 @@ fn opened_from(store: &Store, id: &str, home: Option<&Path>) -> Result<u64, Refu
     Ok(opened_at)
 }
 
-fn opened_in(current: Option<&Fields>) -> Vec<OpenedWorkspace> {
+pub(super) fn opened_in(current: Option<&Fields>) -> Vec<OpenedWorkspace> {
     let rows = current
         .and_then(|fields| fields.get("workspaces"))
         .and_then(Value::as_array)

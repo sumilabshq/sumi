@@ -1,4 +1,4 @@
-import { Icon, IconButton, Popover, PopoverContent, PopoverItem, PopoverTrigger } from "widgetarium/kit";
+import { Button, Icon, Popover, PopoverContent, PopoverItem, PopoverTrigger } from "widgetarium/kit";
 import { DELETE, EDIT } from "./labels";
 
 type ActionButtonsProps = {
@@ -12,16 +12,16 @@ export function ActionButtons({ noun, canEdit, canDelete, onAsk }: ActionButtons
 	return (
 		<>
 			{canEdit ? (
-				<IconButton label={EDIT.replace("{noun}", noun)} onClick={() => onAsk("edit")}>
+				<Button shape="square" label={EDIT.replace("{noun}", noun)} onClick={() => onAsk("edit")}>
 					<Icon name="pencil" />
-				</IconButton>
+				</Button>
 			) : null}
 			{canDelete ? (
 				<Popover>
 					<PopoverTrigger asChild>
-						<IconButton label="More" variant="ghost">
+						<Button shape="square" label="More" emphasis="ghost">
 							<Icon name="ellipsis" />
-						</IconButton>
+						</Button>
 					</PopoverTrigger>
 					<PopoverContent>
 						<PopoverItem onClick={() => onAsk("delete")}>{DELETE.replace("{noun}", noun)}</PopoverItem>

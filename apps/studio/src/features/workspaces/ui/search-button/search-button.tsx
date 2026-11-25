@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
+import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 import { commandMenu } from "@sumi/command-menu/contract";
 import { OPENS_LAYER_MARK } from "@sumi/sumi-host-plugin";
 
@@ -17,8 +17,9 @@ export function SearchButton({ className, iconPx }: SearchButtonProps): ReactEle
 	const openMenu = useCommand(commandMenu.opening.toggle);
 	const keys = useQuery(commandMenu.opening.doors).data.doors.find(({ id }) => id === SEARCH_DOOR)?.keys ?? "";
 	return (
-		<IconButton
-			variant="ghost"
+		<Button
+			shape="square"
+			emphasis="ghost"
 			className={className}
 			label={SEARCH}
 			data-cm-search=""
@@ -27,6 +28,6 @@ export function SearchButton({ className, iconPx }: SearchButtonProps): ReactEle
 			{...tooltipMarks({ said: SEARCH, keys, side: "bottom" })}
 		>
 			<Icon name="search" size={iconPx} />
-		</IconButton>
+		</Button>
 	);
 }

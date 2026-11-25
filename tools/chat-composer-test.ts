@@ -14,7 +14,7 @@ const SEEN = `(() => ({
 	folder: document.querySelectorAll('.wg-studio-ai-strip .wg-kit-btn[aria-label="Choose a folder"]').length,
 	welcome: document.querySelectorAll(".wg-studio-ai-welcome").length,
 	bar: [...document.querySelectorAll(".wg-studio-ai-field-bar")].map((bar) => bar.textContent).join(""),
-	model: document.querySelector(".wg-studio-ai-strip .wg-kit-btn[aria-label=Model]")?.textContent ?? null,
+	model: document.querySelector(".wg-studio-ai-field-bar .wg-kit-btn[aria-label=Model]")?.textContent ?? null,
 }))()`;
 
 let failed = 0;
@@ -50,15 +50,15 @@ async function seenIn(state: string, bundled: string): Promise<unknown> {
 
 const bundled = await bundleOf("tools/chat-composer-page.tsx");
 check(
-	"the empty chat draws a bare head, the welcome and the folder button; the model button names the model",
+	"the empty chat draws a bare head, the welcome and the folder button; the model button names the model and its effort",
 	await seenIn("empty", bundled),
 	{
 		header: 0,
 		strip: 1,
 		folder: 1,
 		welcome: 1,
-		bar: "",
-		model: "Opus",
+		bar: "OpusMedium",
+		model: "OpusMedium",
 	},
 );
 check(
@@ -69,8 +69,8 @@ check(
 		strip: 1,
 		folder: 0,
 		welcome: 0,
-		bar: "",
-		model: "Opus",
+		bar: "OpusMedium",
+		model: "OpusMedium",
 	},
 );
 check("a provider with no runner has no options and asks for a model", await seenIn("codex", bundled), {
@@ -78,7 +78,7 @@ check("a provider with no runner has no options and asks for a model", await see
 	strip: 0,
 	folder: 0,
 	welcome: 0,
-	bar: "",
+	bar: "Choose a model",
 	model: "Choose a model",
 });
 UNJUDGED.forEach((why) => console.log(`unjudged: ${why}`));

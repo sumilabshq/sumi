@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactNode } from "react";
-import { IconButton, PopoverTrigger, usePopover } from "@widgetarium/kit";
+import { Button, PopoverTrigger, usePopover } from "@widgetarium/kit";
 import { SumiFigure } from "@sumi/sumi-host-plugin";
 import { CONTROL_MENU } from "../../lib/control-menu-said.js";
 import { entersMenuByKey } from "../../lib/menu-entry.js";
@@ -11,8 +11,9 @@ export function ControlMenuTrigger(): ReactNode {
 	const popover = usePopover();
 	return (
 		<PopoverTrigger asChild aria-haspopup="menu">
-			<IconButton
-				variant="ghost"
+			<Button
+				shape="square"
+				emphasis="ghost"
 				size="xs"
 				className="sumi-control-menu-button"
 				label={CONTROL_MENU}
@@ -24,7 +25,7 @@ export function ControlMenuTrigger(): ReactNode {
 				}}
 			>
 				<SumiFigure state="rest" size={FIGURE_PX} />
-			</IconButton>
+			</Button>
 		</PopoverTrigger>
 	);
 }

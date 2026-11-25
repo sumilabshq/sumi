@@ -27,7 +27,6 @@ import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
 import { AppPlate } from "../frame/app-plate.js";
 import { ChatPlate } from "../frame/chat-plate.js";
-import { EmptyPanes } from "../frame/empty-panes.js";
 import { PaneAppPlate } from "../frame/pane-app-plate.js";
 import { StudioLayout } from "../frame/studio-layout.js";
 import { browserStudioHost } from "./browser-studio-host.js";
@@ -204,7 +203,6 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 		studio: started.studio,
 		panes: {
 			drawn: (view: PaneView) => paneOf(started, screen, view),
-			empty: h(EmptyPanes),
 		},
 		panel: cataloguePanelOf(started, screen),
 	});

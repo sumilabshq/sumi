@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Button, Icon, TextArea } from "@widgetarium/kit";
+import { FieldFrame, Icon, TextArea } from "@widgetarium/kit";
 import { ListPluginSlot } from "@widgetarium/plugin-framework/react";
 import type { QueuedShown } from "@widgetarium/assistant/contract";
 import { useSetsDraftAside } from "../../lib/use-sets-draft-aside.js";
@@ -19,8 +19,8 @@ import { SendButton } from "./send-button.js";
 export interface ComposerProps {
 	readonly busy: boolean;
 	readonly strip?: ReactNode;
+	readonly fieldOptions?: ReactNode;
 	readonly meter?: ReactNode;
-	readonly isFirst: boolean;
 	readonly attached: Attached | null;
 	readonly onSend: (said: string) => Promise<boolean>;
 	readonly onStop: () => void;
@@ -30,9 +30,8 @@ export interface ComposerProps {
 	readonly onCancelEdit: () => void;
 }
 
-const FIRST_PLACEHOLDER = "Describe what to build or change ↵ send ⇧↵ new line / commands";
-const NEXT_PLACEHOLDER = "Ask for the next change ↵ send ⇧↵ new line";
-const BUSY_PLACEHOLDER = "Add to the queue ↵ queues it";
+const ASK_PLACEHOLDER = "Ask anything, / for actions";
+const BUSY_PLACEHOLDER = "Add to the queue, / for actions";
 const EDIT_PLACEHOLDER = "Edit the queued message";
 const EDITING = "Editing a queued message";
 const EDIT_SAVES = "· ↵ saves it in its place, your draft comes back after";
@@ -42,8 +41,8 @@ const CANCEL = "Cancel";
 export function Composer({
 	busy,
 	strip = null,
+	fieldOptions = null,
 	meter = null,
-	isFirst,
 	attached,
 	onSend,
 	onStop,
@@ -55,6 +54,7 @@ export function Composer({
 	const composer = useRef<HTMLDivElement>(null);
 	const composerBox = useRef<HTMLTextAreaElement>(null);
 	const field = useRef<HTMLDivElement>(null);
+	const above = useRef<HTMLDivElement>(null);
 	const sendOrSave = editing === null ? onSend : (said: string) => onSaveEdit(editing.id, said);
 	const { draft, state, sendDraft, onChange, onKeyDown, onPaste, fill } = useComposerDraft({
 		busy,
@@ -65,60 +65,70 @@ export function Composer({
 	const fitBox = useFitsDraft(composerBox, draft);
 	useFocusesWhen(composerBox, attached?.label ?? null);
 	useTakesPrefill(composerBox, fill);
-	const { input, takesKey, isBoxTextHidden, hint } = useComposerInput({ draft, fill, box: composerBox, field });
+	const { input, takesKey, isBoxTextHidden, hint } = useComposerInput({
+		draft,
+		fill,
+		box: composerBox,
+		field,
+		above,
+	});
 	useFocusesFromChat(composerBox);
 	return (
 		<div className="wg-studio-ai-composer" ref={composer}>
-			<div ref={field} className={fieldClassOf(busy)}>
-				{editing === null ? null : (
-					<div className="wg-studio-ai-edit-bar">
-						<Icon name="pencil" size={13} />
-						<b>{EDITING}</b>
-						<span>{editNoteOf(editing)}</span>
-						<Button variant="ghost" size="s" className="wg-studio-ai-edit-cancel" onClick={onCancelEdit}>
-							{CANCEL}
-						</Button>
+			<FieldFrame className="wg-studio-ai-composer-frame">
+				<div ref={above} className="wg-studio-ai-above" />
+				<div ref={field} className={fieldClassOf(busy)}>
+					{editing === null ? null : (
+						<div className="wg-studio-ai-edit-bar">
+							<Icon name="pencil" size={13} />
+							<b>{EDITING}</b>
+							<span>{editNoteOf(editing)}</span>
+							<button type="button" className="wg-studio-ai-edit-cancel" onClick={onCancelEdit}>
+								{CANCEL}
+							</button>
+						</div>
+					)}
+					<DraftAttachments />
+					{attached ? <AttachedChip attached={attached} /> : null}
+					<div className="wg-studio-ai-box-frame">
+						<TextArea
+							variant="bare"
+							ref={composerBox}
+							className={isBoxTextHidden ? "wg-studio-ai-box is-text-hidden" : "wg-studio-ai-box"}
+							rows={1}
+							value={draft}
+							placeholder={placeholderOf({ busy, isEditing: editing !== null, hint })}
+							onChange={onChange}
+							onKeyDown={(event) => {
+								if (takesKey(event)) {
+									event.preventDefault();
+									return;
+								}
+
+								if (editing !== null && event.key === "Escape") {
+									onCancelEdit();
+									return;
+								}
+
+								onKeyDown(event);
+							}}
+							onPaste={onPaste}
+						/>
+						<ListPluginSlot name="chat.composer-input" props={{ input }} />
 					</div>
-				)}
-				<DraftAttachments />
-				{attached ? <AttachedChip attached={attached} /> : null}
-				<div className="wg-studio-ai-box-frame">
-					<TextArea
-						variant="bare"
-						ref={composerBox}
-						className={isBoxTextHidden ? "wg-studio-ai-box is-text-hidden" : "wg-studio-ai-box"}
-						rows={1}
-						value={draft}
-						placeholder={placeholderOf({ isFirst, busy, isEditing: editing !== null, hint })}
-						onChange={onChange}
-						onKeyDown={(event) => {
-							if (takesKey(event)) {
-								event.preventDefault();
-								return;
-							}
-
-							if (editing !== null && event.key === "Escape") {
-								onCancelEdit();
-								return;
-							}
-
-							onKeyDown(event);
-						}}
-						onPaste={onPaste}
-					/>
-					<ListPluginSlot name="chat.composer-input" props={{ input }} />
+					<div className="wg-studio-ai-field-bar">
+						<ComposerTools />
+						{fieldOptions}
+						<span className="wg-studio-ai-bar-space" />
+						{meter}
+						<SendButton state={state} isEditing={editing !== null} onSend={sendDraft} onStop={onStop} />
+					</div>
 				</div>
-				<div className="wg-studio-ai-field-bar">
-					<ComposerTools />
-					<span className="wg-studio-ai-bar-space" />
-					{meter}
-					<SendButton state={state} isEditing={editing !== null} onSend={sendDraft} onStop={onStop} />
+				<div className="wg-studio-ai-under">
+					{strip}
+					<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
 				</div>
-			</div>
-			<div className="wg-studio-ai-under">
-				{strip}
-				<ListPluginSlot name="chat.composer-bar" props={{ composer, box: composerBox, fitBox }} />
-			</div>
+			</FieldFrame>
 		</div>
 	);
 }
@@ -128,12 +138,10 @@ function fieldClassOf(busy: boolean): string {
 }
 
 function placeholderOf({
-	isFirst,
 	busy,
 	isEditing,
 	hint,
 }: {
-	readonly isFirst: boolean;
 	readonly busy: boolean;
 	readonly isEditing: boolean;
 	readonly hint: string | null;
@@ -150,7 +158,7 @@ function placeholderOf({
 		return hint;
 	}
 
-	return isFirst ? FIRST_PLACEHOLDER : NEXT_PLACEHOLDER;
+	return ASK_PLACEHOLDER;
 }
 
 function editNoteOf(editing: QueuedShown): string {

@@ -16,28 +16,33 @@ gets a new transport, never a new message vocabulary. A design or diff introduci
 once: `@sumi/contract` got `ask { service, input }` with a `storage` read/write service, five agents built on
 it, and all of it had to be redone.
 
-**CRITICAL — a plugin owns its data; the host knows no plugin.** A plugin owns its modules and what other
-plugins hand it through its API (`.apply((app) => api)`); only its own code reads that, and everyone else
-reaches the data through its module's queries, commands and events (`docs/architecture/plugins.md`). The
-host provides generic services (`backend`, `windows`, `shell`) and starts or draws only what plugins register
-through them; it never reads another plugin's API or configures a module with its data. `appHost({ apps })`
-did exactly that and was rewritten.
+**CRITICAL — a module owns its data; a plugin is the view and owns none; the host starts modules from declarations
+and names no specific plugin.** A module owns its data and is its one writer; everyone else reaches it through the
+module's queries, commands and events. A plugin is the view (blocks, slots, tab pages): it keeps only view state and
+what other plugins hand it through its API (`.apply((app) => api)`), lists the modules and plugins it uses in
+`peerDependencies` and reaches them by package name (`app.use("@sumi/tasks")`), and never starts a module or imports its
+`./implementation` (`docs/architecture/plugins.md`). The host provides generic services (`shell`, `agents`), starts every
+module an enabled plugin lists from the module's declaration and draws only what plugins register through the services;
+it never reads another plugin's API or configures a module with its data. `appHost({ apps })` did exactly that and was
+rewritten.
 
 **CRITICAL — the machine is reached only through the Sumi contract.** The file system and terminal
 sessions are the host's capabilities, and every plugin and app reaches them through `@sumi/contract`
 (`fileSystem.files.read`, `terminal.lines.output`, …), never through Tauri. They are not a reason a plugin "cannot" do
 something: a plugin that needs the machine sends a contract request. `sumi-host` and its services
-(`backend`, `windows`, `shell`) are part of that contract, the base every plugin builds on; a module
-runs in the background because a plugin registers it with `app.use(backend).module(...)`, and the host starts
-it. Nothing in host code names a plugin's module.
+(`shell`, `agents`) are part of that contract, the base every plugin builds on; a module
+runs in the background because an enabled plugin lists it in `peerDependencies`, and the host starts
+it from its declaration. Nothing in host code names a plugin's module.
 
-**CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
-`plugins/<name>/`, or `plugins/<group>/<name>/` inside a group folder that holds only plugins (`plugins/ai/`), and nothing else: `src/plugin.ts` (always; only the `plugin()` definition, no helper,
-schema or type), `src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by `data-framework generate`), every other file of `src/` placed as in a client package
+**CRITICAL — the plugin and module layout is a requirement, not a preference.** Every plugin is
+`plugins/<name>/`, or `plugins/<group>/<name>/` inside a group folder that holds only plugins (`plugins/ai/`), with a
+`package.json` (`name`, `version`, `peerDependencies`) and nothing else: `src/plugin.ts` (always; only the `plugin()`
+definition, no helper, schema or type), `src/index.ts` (only re-exports), `src/generated/plugin.ts` (written by
+`data-framework generate`), every other file of `src/` placed as in a client package
 (`features/<feature>/ui/<block>/*.tsx` with the `.css` a block uses beside it, `features/<feature>/lib/*.ts`,
 `shared/ui/` and `shared/lib/` for what two features use, nothing else loose in `src/`, no feature importing
-another's `lib/`), and `data/<module>/` (when it owns modules: each a data module package). A module outside
-`data/`, a plugin outside `plugin.ts` or a file out of its place fails
+another's `lib/`). A plugin has no `data/` folder: every module is its own package, `modules/<name>/`. A module inside
+a plugin, a plugin declaration outside `plugin.ts` or a file out of its place fails
 `npm run test:plugin-layout`, and the `plugin-layout-reviewer` agent refuses the change; until the layout is
 right, no other quality of the change counts. `docs/architecture/plugins.md#layout`.
 
@@ -96,6 +101,8 @@ is `.ts` React with `h()` hyperscript, **no JSX there**; `tools/` is `.ts` too. 
 
 **The repository is an npm-workspaces monorepo, and the arrows between its parts point one way.**
 
+Where code stands today; packages move to plugins/ and modules/ as docs/architecture/plugins.md says.
+
 ```
 apps/tauri               FSL  the desktop host: windows, workspaces, the machine's capabilities; the product
 apps/tauri/capabilities/* FSL the modules only the host runs on the machine: terminal, file-system
@@ -116,12 +123,12 @@ plugins/ai/questions        FSL  @sumi/questions-plugin: the questions module (p
 plugins/ai/composer-expand  FSL  @sumi/composer-expand-plugin: the toggle that grows the chat composer over the chat, through the chat.frame and chat.composer-bar slots
 plugins/ai/slash-commands   FSL  @sumi/slash-commands-plugin: the composer's / menu of commands and skills and the accent on a typed command, through chat.composer-input
 plugins/ai/claude-code      FSL  @sumi/claude-code-plugin: the Claude Code runner: agent.addRunner with its models, their options (mode, effort), its usage meter and launchOf, which turns the host's TurnFacts into the claude command line the host starts as it is
+plugins/ai/chat-context     FSL  @sumi/chat-context-plugin: the chat header's context chip (branch or folder) and its menu (folder, branch, computer, open in an editor, open terminal here) through chat.head-tools; its module (plugins/ai/chat-context/data/chat-context, @sumi/chat-context) is a chat page module
 plugins/ai/working-folder   FSL  @sumi/working-folder-plugin: the composer's folder menu for a new chat, through chat.options-start
-plugins/ai/permission-mode  FSL  @sumi/permission-mode-plugin: the composer's permission mode select (the chosen model's `mode` option), through chat.options-start
+plugins/ai/permission-mode  FSL  @sumi/permission-mode-plugin: the composer's permission mode select (the chosen model's `mode` option), through chat.options-start, after the folder and sandbox
 plugins/ai/sandbox-mode     FSL  @sumi/sandbox-mode-plugin: the composer's sandbox select (the chosen model's `sandbox` option: project folder, read only, full access), through chat.options-start; agent-tools enforces it (Seatbelt for commands, a path check for file writes)
 plugins/ai/plan-usage       FSL  @sumi/plan-usage-plugin: the composer's usage ring and menu (the runner's `usage` meter), through chat.options-end
-plugins/ai/model-picker     FSL  @sumi/model-picker-plugin: the composer's runner and model menu, through chat.options-end
-plugins/ai/effort-picker    FSL  @sumi/effort-picker-plugin: the composer's effort select (the chosen model's `effort` option), through chat.options-end
+plugins/ai/model-picker     FSL  @sumi/model-picker-plugin: the composer's one runner, model and effort menu (the chosen model's `effort` option shows only when it has one), through chat.field-options
 plugins/terminal-cursor  FSL  @sumi/terminal-cursor-plugin: the blinking block caret over every focused text field of the window, over the first placeholder letter in an empty one, through shell.layer; a field opts out with data-terminal-cursor="off", and the one field marked "held" keeps its block while no text field has focus (the chat marks the composer that takes typing)
 plugins/tasks            FSL  @sumi/tasks-plugin: the tasks module (plugins/tasks/data/tasks), the Tasks app, the chat's tasks UI through slots, the task tools (plugins/tasks/data/task-work) as the tasks MCP server
 plugins/canvas           FSL  @sumi/canvas-plugin: the Canvas app: its artboards module (plugins/canvas/data/artboards: pages of HTML artboards per canvas tab), its tab page, the canvas tools (plugins/canvas/data/canvas-work) as the canvas MCP server and the agent's design-first prompt part
@@ -273,4 +280,4 @@ scopes, same body as before, only the subject is short.
      Idioms that stay: `xOf(y)` for a derivation read off `y`, `isX`/`hasX`, `refuseX` answering a reason
      or null, `withX(y)`, `useX`, `createX`, `defineX`, `*Schema`. A request, event, subscriber or module is
      its camelCase constant with no kind suffix (`frameSides`, `toggleFrameSide`, `layout`); a module and a plugin
-     also take their name as one kebab string (`module("layout")`, `plugin("command-menu")`).
+     take their name from `name` in `package.json`; `module()` and `plugin()` take no string.

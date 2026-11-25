@@ -3,14 +3,25 @@ import type { ButtonHTMLAttributes, ReactElement, ReactNode } from "react";
 import { Icon } from "../icons/icon";
 import { cn } from "../utils/cn";
 
+export type PopoverItemVariant = "default" | "destructive";
+
 export interface PopoverItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+	readonly variant?: PopoverItemVariant | undefined;
 	readonly checked?: boolean | undefined;
 	readonly sub?: ReactNode;
 	readonly icon?: ReactNode;
 	readonly keys?: ReactNode;
 }
 
-export function PopoverItem({ checked, sub, icon, keys, children, ...rest }: PopoverItemProps): ReactElement {
+export function PopoverItem({
+	variant = "default",
+	checked,
+	sub,
+	icon,
+	keys,
+	children,
+	...rest
+}: PopoverItemProps): ReactElement {
 	const [isHighlighted, setHighlighted] = useState(false);
 	return (
 		<button
@@ -36,7 +47,12 @@ export function PopoverItem({ checked, sub, icon, keys, children, ...rest }: Pop
 				setHighlighted(false);
 				rest.onPointerLeave?.(event);
 			}}
-			className={cn("wg-kit-pop-item", Boolean(sub) && "is-two", rest.className)}
+			className={cn(
+				"wg-kit-pop-item",
+				Boolean(sub) && "is-two",
+				variant === "destructive" && "is-destructive",
+				rest.className,
+			)}
 		>
 			{icon === undefined ? null : <span className="wg-kit-pop-icon">{icon}</span>}
 			{saidOf(children, sub, icon !== undefined || keys !== undefined)}

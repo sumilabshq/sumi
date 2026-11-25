@@ -1,9 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { CalendarView } from "../hooks/use-calendar";
-import { Icon } from "../icons/icon";
 import { monthsAfter } from "../utils/calendar";
-import { IconButton } from "./icon-button";
+import { Button } from "./button";
 
 export interface CalendarStepButtonProps {
 	readonly view: CalendarView;
@@ -24,14 +23,14 @@ const AHEAD: StepLook = { label: "Next month", icon: "chevron", canStep: (view) 
 export function CalendarStepButton({ view, step, isShown }: CalendarStepButtonProps): ReactElement {
 	const look = step < 0 ? BACK : AHEAD;
 	return (
-		<IconButton
-			size="s"
+		<Button
+			shape="square"
+			size="sm"
+			icon={look.icon}
 			label={look.label}
 			className={isShown ? undefined : "is-gap"}
 			disabled={!isShown || !look.canStep(view)}
 			onClick={() => view.showMonth(monthsAfter(view.shown, step))}
-		>
-			<Icon name={look.icon} />
-		</IconButton>
+		/>
 	);
 }

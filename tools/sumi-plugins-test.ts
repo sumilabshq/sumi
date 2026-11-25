@@ -7,6 +7,7 @@ import { fileSystem } from "@widgetarium/file-system/implementation";
 import { navigation as places } from "@widgetarium/navigation/implementation";
 import { questions } from "@widgetarium/questions/implementation";
 import { tasks } from "@widgetarium/tasks/implementation";
+import { haptics } from "@widgetarium/haptics/implementation";
 import { terminal } from "@widgetarium/terminal/implementation";
 import type { ServerSideModule } from "@widgetarium/data-framework";
 import { AppsSchema } from "@sumi/apps/contract";
@@ -138,9 +139,9 @@ const coreNamesNow = coreModulesNow.map(({ definition }) => definition.name);
 
 check("the built-in profile resolves with no refusal", resolved.refusals, []);
 check(
-	"the host runs the machine capabilities itself: files and terminal sessions",
+	"the host runs the machine capabilities itself: files, terminal sessions and trackpad haptics",
 	HOST_CAPABILITY_MODULES.map(({ definition }) => definition.name),
-	[fileSystem.definition.name, terminal.definition.name],
+	[fileSystem.definition.name, terminal.definition.name, haptics.definition.name],
 );
 check(
 	"the backend holds the apps plugin's places and apps, the chat plugin's questions, the tasks plugin's tasks and the canvas plugin's artboards, none of the host's",
@@ -195,7 +196,7 @@ check(
 check(
 	"a frame reaches the host's capabilities and every module a plugin registers in the background, and no other",
 	frameCoreModulesOf(resolved.backgroundModules).map(({ module }) => module.name),
-	["file-system", "terminal", ...resolved.backgroundModules.map(({ contract }) => contract.name)],
+	["file-system", "terminal", "haptics", ...resolved.backgroundModules.map(({ contract }) => contract.name)],
 );
 check(
 	"the registered background modules include places, tasks, questions and apps, so no host list names them",
@@ -435,7 +436,6 @@ check(
 			"slash-commands": { enabled: false },
 			"claude-code": { enabled: false },
 			"model-picker": { enabled: false },
-			"effort-picker": { enabled: false },
 			"permission-mode": { enabled: false },
 			"sandbox-mode": { enabled: false },
 			"working-folder": { enabled: false },

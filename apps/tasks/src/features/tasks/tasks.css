@@ -624,7 +624,7 @@
 
 .wg-tasks-title {
 	margin: var(--space-none);
-	font-size: var(--fs-28);
+	font-size: var(--fs-22);
 	font-weight: var(--fw-semi);
 	line-height: 1.25;
 }
@@ -965,7 +965,7 @@
 	}
 
 	.wg-tasks-title {
-		font-size: var(--fs-20);
+		font-size: var(--fs-16);
 	}
 
 	.wg-tasks-docs {

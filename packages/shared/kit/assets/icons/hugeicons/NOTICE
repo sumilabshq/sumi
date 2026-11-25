@@ -1,0 +1,10 @@
+The icon drawings in packages/shared/kit/src/icons/icon-table.ts are Hugeicons
+stroke-rounded (https://hugeicons.com), free set, taken from @hugeicons/core-free-icons@4.4.0 and
+licensed under the MIT License, a copy of which sits beside this file.
+
+A Lucide name takes the Hugeicons drawing of the same name (a trailing 01 allowed) or the
+one named in HUGEICONS_OVERRIDES in tools/fetch-icons.mts. Names with no drawing stay
+Lucide (ISC, see ../LICENSE) and are listed in lucide-fallback.txt.
+
+Each body is drawn on viewBox="0 0 24 24"; stroke, caps and width come from the icon's
+own stylesheet, so only attributes that differ from the Hugeicons default are kept.
