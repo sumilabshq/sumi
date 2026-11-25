@@ -10,7 +10,7 @@ import type {
 	FolderRowFacts,
 	ProjectFacts,
 } from "../../../../shared/lib/flow-facts.js";
-import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
+import type { FlowActs, TopRef } from "../../../../shared/lib/use-flow-acts.js";
 import { FlowRowView } from "../../../flow-rows/ui/flow-row/flow-row.js";
 import { FolderRowView } from "../../../flow-rows/ui/folder-row/folder-row.js";
 import { useProjectRenaming } from "../../../../shared/lib/project-rename-request.js";
@@ -29,8 +29,8 @@ export interface ProjectSectionProps {
 
 export function ProjectSection({ project, nextProjectId, sidebar, acts, drag }: ProjectSectionProps): ReactElement {
 	const [isRenaming, setIsRenaming] = useProjectRenaming(project.id);
-	const flows = sidebar.looseFlows.filter((flow) => flow.projectId === project.id);
-	const folders = sidebar.folders.filter((folder) => folder.projectId === project.id);
+	const flows = new Map(sidebar.looseFlows.map((flow) => [flow.id, flow]));
+	const folders = new Map(sidebar.folders.map((folder) => [folder.id, folder]));
 	const target: DropTarget = { kind: "project", projectId: project.id, nextProjectId };
 	const newSession = (): void => acts.create(NEW_SESSION, newSessionPlaceOf(sidebar, project.id));
 	return (
@@ -60,25 +60,41 @@ export function ProjectSection({ project, nextProjectId, sidebar, acts, drag }: 
 			)}
 			{project.isCollapsed
 				? null
-				: flows.map((flow, at) => (
-						<FlowRowView
-							key={flow.id}
-							flow={flow}
-							nextFlowId={flows[at + 1]?.id ?? null}
-							folderId={null}
-							projectId={project.id}
-							isCurrent={flow.id === sidebar.windowFlowId}
-							sidebar={sidebar}
-							acts={acts}
-							drag={drag}
-						/>
-					))}
-			{project.isCollapsed
-				? null
-				: folders.map((folder) => (
-						<FolderBlock key={folder.id} folder={folder} project={project} sidebar={sidebar} acts={acts} drag={drag} />
-					))}
-			{!project.isCollapsed && flows.length === 0 && folders.length === 0 ? (
+				: project.items.map((item, at) => {
+						const nextTop = project.items[at + 1] ?? null;
+						const flow = item.kind === "flow" ? flows.get(item.id) : undefined;
+						const folder = item.kind === "folder" ? folders.get(item.id) : undefined;
+
+						if (flow !== undefined) {
+							return (
+								<FlowRowView
+									key={flow.id}
+									flow={flow}
+									nextFlowId={null}
+									nextTop={nextTop}
+									folderId={null}
+									projectId={project.id}
+									isCurrent={flow.id === sidebar.windowFlowId}
+									sidebar={sidebar}
+									acts={acts}
+									drag={drag}
+								/>
+							);
+						}
+
+						return folder === undefined ? null : (
+							<FolderBlock
+								key={folder.id}
+								folder={folder}
+								nextTop={nextTop}
+								project={project}
+								sidebar={sidebar}
+								acts={acts}
+								drag={drag}
+							/>
+						);
+					})}
+			{!project.isCollapsed && project.items.length === 0 ? (
 				<div className="sumi-flows-row" data-kind="new">
 					<button type="button" className="sumi-flows-row-main sumi-flows-row-empty" onClick={newSession}>
 						<span className="sumi-flows-glyph">
@@ -94,22 +110,24 @@ export function ProjectSection({ project, nextProjectId, sidebar, acts, drag }: 
 
 interface FolderBlockProps {
 	readonly folder: FolderRowFacts;
+	readonly nextTop: TopRef | null;
 	readonly project: ProjectFacts;
 	readonly sidebar: FlowsSidebarFacts;
 	readonly acts: FlowActs;
 	readonly drag: FlowDrag;
 }
 
-function FolderBlock({ folder, project, sidebar, acts, drag }: FolderBlockProps): ReactElement {
+function FolderBlock({ folder, nextTop, project, sidebar, acts, drag }: FolderBlockProps): ReactElement {
 	return (
 		<div className="sumi-flows-folder">
-			<FolderRowView folder={folder} acts={acts} drag={drag} />
+			<FolderRowView folder={folder} nextTop={nextTop} acts={acts} drag={drag} />
 			{folder.isOpen
 				? folder.flows.map((flow: FlowRowFacts, at) => (
 						<FlowRowView
 							key={flow.id}
 							flow={flow}
 							nextFlowId={folder.flows[at + 1]?.id ?? null}
+							nextTop={nextTop}
 							folderId={folder.id}
 							projectId={project.id}
 							isCurrent={flow.id === sidebar.windowFlowId}

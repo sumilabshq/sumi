@@ -21091,7 +21091,6 @@ body:has(.wg-cm-layer) {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-px);
-	margin-top: var(--space-1-5);
 }
 .sumi-flows-trigger {
 	display: contents;

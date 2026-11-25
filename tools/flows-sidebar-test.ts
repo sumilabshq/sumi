@@ -32,7 +32,7 @@ const folderFlowsOf = (folder: string): string =>
 const dragged = (source: string, folder: string): string =>
 	`(() => {
 		const transfer = new DataTransfer();
-		const send = (el, type) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer }));
+		const send = (el, type) => { const box = el.getBoundingClientRect(); return el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer, clientY: box.top + box.height / 2 })); };
 		const row = [...document.querySelectorAll(".sumi-flows-folder .sumi-flows-row[data-kind=flow]")].find((one) => one.querySelector(".sumi-flows-name")?.textContent === ${JSON.stringify(source)});
 		const target = [...document.querySelectorAll(".sumi-flows-row[data-kind=folder]")].find((one) => one.querySelector(".sumi-flows-name")?.textContent === ${JSON.stringify(folder)});
 		send(row, "dragstart");
@@ -679,19 +679,25 @@ const LINE_TOLERANCE_PX = 1;
 const AFTER_TAP_MS = 60;
 const DRAG_SHOTS = "/tmp/drag-shots";
 
-const heldFlowDrag = (name: string): string =>
+const heldFlowDrag = (name: string): string => heldDragFrom(FOLDER_FLOWS, name);
+const heldDragFrom = (selector: string, name: string): string =>
 	`(() => {
 		const transfer = new DataTransfer();
 		const send = (el, type, y) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer, clientY: y ?? 0 }));
-		const row = ${rowOf(FOLDER_FLOWS, name)};
+		const row = ${rowOf(selector, name)};
 		send(row, "dragstart");
 		window.__drag = { send, row };
 	})()`;
-const dragOverOf = (selector: string, name: string, half: "upper" | "lower"): string =>
+const EDGE_Y: Readonly<Record<"upper" | "middle" | "lower", string>> = {
+	upper: "box.top + 2",
+	middle: "box.top + box.height / 2",
+	lower: "box.bottom - 2",
+};
+const dragOverOf = (selector: string, name: string, half: "upper" | "middle" | "lower"): string =>
 	`(() => {
 		const target = ${rowOf(selector, name)};
 		const box = target.getBoundingClientRect();
-		const y = ${half === "upper" ? "box.top + 2" : "box.bottom - 2"};
+		const y = ${EDGE_Y[half]};
 		window.__drag.send(target, "dragover", y);
 		Object.assign(window.__drag, { target, y });
 	})()`;
@@ -758,7 +764,7 @@ async function dropIndicator(): Promise<void> {
 			[below.count, isNear(below.y, lowerGapY), await page.ask("window.__taps.length")],
 			[1, true, 2],
 		);
-		await page.ask(dragOverOf(".sumi-flows-row[data-kind=folder]", "Client project", "upper"));
+		await page.ask(dragOverOf(".sumi-flows-row[data-kind=folder]", "Client project", "middle"));
 		await waited(AFTER_TAP_MS);
 		check(
 			"hovering a folder outlines it and shows no line",
@@ -797,7 +803,7 @@ async function dragShots(): Promise<void> {
 			await page.ask(dragOverOf(FOLDER_FLOWS, "Plugin layout", "upper"));
 			await waited(SETTLE_MS);
 			writeFileSync(path.join(DRAG_SHOTS, `session-between-rows-${theme}.png`), await page.shoot());
-			await page.ask(dragOverOf(".sumi-flows-row[data-kind=folder]", "Client project", "upper"));
+			await page.ask(dragOverOf(".sumi-flows-row[data-kind=folder]", "Client project", "middle"));
 			await waited(SETTLE_MS);
 			writeFileSync(path.join(DRAG_SHOTS, `hovering-folder-${theme}.png`), await page.shoot());
 			await page.ask(heldEnd);
@@ -812,11 +818,125 @@ async function dragShots(): Promise<void> {
 	}
 }
 
+const TOP_FLOWS = (section: string): string =>
+	`section[aria-label=${section}] .sumi-flows-row[data-kind=flow]:not(.sumi-flows-folder .sumi-flows-row)`;
+const TOP_FOLDERS = (section: string): string => `section[aria-label=${section}] .sumi-flows-row[data-kind=folder]`;
+const topOrderOf = (project: string): string =>
+	`(async () => { const sidebar = (await window.__flowsSidebar()).output; const one = sidebar.projects.find((item) => item.name === ${JSON.stringify(project)}); return one.items.map((item) => (item.kind === "flow" ? sidebar.looseFlows : sidebar.folders).find((row) => row.id === item.id).name); })()`;
+const glyphLeftOf = (selector: string, name: string): string =>
+	`${rowOf(selector, name)}.querySelector(".sumi-flows-glyph").getBoundingClientRect().left`;
+const newSessionIn = (name: string, project: string): string =>
+	`window.__flows("create", { name: ${JSON.stringify(name)}, place: { folderId: null, before: null, projectId: ${project} } })`;
+
+async function folderBetweenSessions(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		await page.ask(newSessionIn("Second note", JSON.stringify("general")));
+		await waited(SETTLE_MS);
+		const folderLeft = (await page.ask(glyphLeftOf(TOP_FOLDERS("General"), "Personal"))) as number;
+		const sessionLeft = (await page.ask(glyphLeftOf(TOP_FLOWS("General"), "Second note"))) as number;
+		check(
+			"a folder row's glyph stands where a session row's glyph stands",
+			Math.abs(folderLeft - sessionLeft) < LINE_TOLERANCE_PX / 2,
+			true,
+		);
+		check(
+			"a session inside a folder stays one step right of the folder glyph",
+			(await page.ask(glyphLeftOf(FOLDER_FLOWS, "Composer redesign"))) >
+				(await page.ask(glyphLeftOf(TOP_FOLDERS("General"), "Sumi"))),
+			true,
+		);
+		check(
+			"a folder row is as high as a session row",
+			await page.ask(`${rowOf(TOP_FOLDERS("General"), "Sumi")}.getBoundingClientRect().height`),
+			28,
+		);
+		check(
+			"no extra space above a folder row, the 1px row gap only",
+			await page.ask(
+				`${rowOf(TOP_FOLDERS("General"), "Sumi")}.getBoundingClientRect().top - ${rowOf(TOP_FLOWS("General"), "Second note")}.getBoundingClientRect().bottom`,
+			),
+			1,
+		);
+		const tapsBefore = (await page.ask("window.__taps.length")) as number;
+		await page.ask(heldDragFrom(TOP_FOLDERS("General"), "Personal"));
+		await page.ask(dragOverOf(TOP_FLOWS("General"), "Second note", "upper"));
+		await waited(AFTER_TAP_MS);
+		const between = (await page.ask(lineLook)) as LineLook;
+		const gapY = (await page.ask(
+			`(${rowOf(TOP_FLOWS("General"), "Reading list")}.getBoundingClientRect().bottom + ${rowOf(TOP_FLOWS("General"), "Second note")}.getBoundingClientRect().top) / 2`,
+		)) as number;
+		check(
+			"dragging a folder between two sessions shows one line at the gap and taps once",
+			[between.count, isNear(between.y, gapY), ((await page.ask("window.__taps.length")) as number) - tapsBefore],
+			[1, true, 1],
+		);
+		mkdirSync(DRAG_SHOTS, { recursive: true });
+		writeFileSync(path.join(DRAG_SHOTS, "folder-between-sessions-light.png"), await page.shoot());
+		await page.ask(heldDrop);
+		await waited(SETTLE_MS * 2);
+		check("dropping lands the folder exactly there", await page.ask(topOrderOf("General")), [
+			"Reading list",
+			"Personal",
+			"Second note",
+			"Sumi",
+			"Client project",
+			"Research",
+		]);
+		await page.ask(`window.__projects("create", { name: "Alpha" })`);
+		await waited(SETTLE_MS);
+		const alpha = JSON.stringify(await page.ask(projectIdOf("Alpha")));
+		await page.ask(newSessionIn("Alpha one", alpha));
+		await waited(SETTLE_MS);
+		await page.ask(newSessionIn("Alpha two", alpha));
+		await waited(SETTLE_MS);
+		await page.ask(heldDragFrom(TOP_FOLDERS("General"), "Research"));
+		await page.ask(dragOverOf(TOP_FLOWS("Alpha"), "Alpha two", "upper"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"a folder dragged over another project shows its line there",
+			((await page.ask(lineLook)) as LineLook).count,
+			1,
+		);
+		await page.ask(heldDrop);
+		await waited(SETTLE_MS * 2);
+		check("dropping lands the folder in the other project's gap", await page.ask(topOrderOf("Alpha")), [
+			"Alpha one",
+			"Research",
+			"Alpha two",
+		]);
+		check(
+			"and takes it out of the old project",
+			((await page.ask(topOrderOf("General"))) as string[]).includes("Research"),
+			false,
+		);
+		await page.ask(heldDragFrom(TOP_FLOWS("General"), "Reading list"));
+		await page.ask(dragOverOf(TOP_FOLDERS("General"), "Sumi", "upper"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"a session over a folder's upper edge shows a line, not an outline",
+			[
+				((await page.ask(lineLook)) as LineLook).count,
+				await page.ask(`${rowOf(TOP_FOLDERS("General"), "Sumi")}.hasAttribute("data-drop")`),
+			],
+			[1, false],
+		);
+		await page.ask(heldDrop);
+		await waited(SETTLE_MS * 2);
+		check("dropping lands the session before the folder", await page.ask(topOrderOf("General")), [
+			"Personal",
+			"Second note",
+			"Reading list",
+			"Sumi",
+			"Client project",
+		]);
+	});
+}
+
 const sectionNames = `[...document.querySelectorAll("section[aria-label]")].map((one) => one.getAttribute("aria-label"))`;
 const sectionRows = (section: string): string =>
 	`[...document.querySelectorAll(${JSON.stringify(`section[aria-label=${JSON.stringify(section)}] .sumi-flows-row`)})].map((one) => [one.dataset.kind, one.querySelector(".sumi-flows-name")?.textContent])`;
 const projectIdOf = (name: string): string =>
-	`(async () => (await window.__flowsSidebar()).projects.find((one) => one.name === ${JSON.stringify(name)}).id)()`;
+	`(async () => (await window.__flowsSidebar()).output.projects.find((one) => one.name === ${JSON.stringify(name)}).id)()`;
 const contextOn = (target: string): string =>
 	`${target}.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 200 }))`;
 const projectDragOver = (source: string, target: string, isLowerHalf: boolean): string =>
@@ -844,7 +964,7 @@ const projectDrop = `(() => { const { send, heading, section, y } = window.__hel
 const droppedOnProject = (rowSelector: string, name: string, project: string): string =>
 	`(() => {
 		const transfer = new DataTransfer();
-		const send = (el, type) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer }));
+		const send = (el, type) => { const box = el.getBoundingClientRect(); return el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: transfer, clientY: box.top + box.height / 2 })); };
 		const row = [...document.querySelectorAll(${JSON.stringify(rowSelector)})].find((one) => one.querySelector(".sumi-flows-name")?.textContent === ${JSON.stringify(name)});
 		const section = document.querySelector(${JSON.stringify(`section[aria-label=${JSON.stringify(project)}]`)});
 		send(row, "dragstart");
@@ -1211,6 +1331,7 @@ await hiding();
 await peekHolds();
 await dragging();
 await dropIndicator();
+await folderBetweenSessions();
 await dragShots();
 await editingIcon();
 await deleting();
