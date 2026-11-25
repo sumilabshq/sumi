@@ -23323,23 +23323,6 @@ body:has(.wg-cm-layer) {
 	gap: 2px;
 	margin-left: auto;
 }
-.sumi-plugins-ghost {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	height: 32px;
-	padding: 0 10px;
-	border: 0;
-	border-radius: var(--r-md);
-	background: transparent;
-	color: var(--text-2);
-	font: inherit;
-	white-space: nowrap;
-	cursor: pointer;
-}
-.sumi-plugins-ghost svg {
-	color: var(--text-3);
-}
 .sumi-plugins-search {
 	display: flex;
 	align-items: center;
@@ -23539,22 +23522,9 @@ body:has(.wg-cm-layer) {
 	margin: 2px 0 0;
 	color: var(--text-3);
 }
-.sumi-plugins-primary {
-	display: flex;
+.sumi-plugins-build > .wg-kit-btn {
 	flex: none;
-	align-items: center;
-	gap: 6px;
-	height: 32px;
 	margin-left: auto;
-	padding: 0 14px;
-	border: 0;
-	border-radius: var(--r-md);
-	background: var(--text);
-	color: var(--frame);
-	font: inherit;
-	font-weight: 500;
-	white-space: nowrap;
-	cursor: pointer;
 }
 .sumi-plugins-detail {
 	display: flex;
@@ -23785,7 +23755,7 @@ body:has(.wg-cm-layer) {
 		flex-direction: column;
 		align-items: flex-start;
 	}
-	.sumi-plugins-primary {
+	.sumi-plugins-build > .wg-kit-btn {
 		margin-left: 0;
 	}
 }

@@ -1,7 +1,7 @@
 import { createElement as h, useCallback, useState } from "react";
 import type { ReactElement } from "react";
 import { useSettingsDetail, useWindowApp } from "@sumi/settings-plugin";
-import { Icon } from "@widgetarium/kit";
+import { Button, Icon } from "@widgetarium/kit";
 import type { Runtime } from "@widgetarium/data-framework";
 import { CloverGlyph } from "../../../../shared/ui/clover-glyph/clover-glyph.js";
 import { useBuildsPlugin } from "../../lib/use-builds-plugin.js";
@@ -86,10 +86,10 @@ function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 						</p>
 					</div>
 					<div className="sumi-plugins-acts">
-						<button type="button" className="sumi-plugins-ghost" onClick={build}>
+						<Button emphasis="ghost" tone="neutral" size="sm" onClick={build}>
 							<CloverGlyph size={14} />
 							Build
-						</button>
+						</Button>
 						<label className="sumi-plugins-search">
 							<Icon name="search" size={14} />
 							<input placeholder="Search plugins" value={words} onChange={(event) => setWords(event.target.value)} />
@@ -119,10 +119,10 @@ function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 						<h3>Build your own plugin</h3>
 						<p>Tell Sumi what you need; it writes the plugin in a chat and switches it on.</p>
 					</div>
-					<button type="button" className="sumi-plugins-primary" onClick={build}>
+					<Button emphasis="solid" tone="neutral" size="sm" onClick={build}>
 						<CloverGlyph size={14} />
 						Build with Sumi
-					</button>
+					</Button>
 				</div>
 			</div>
 		</div>
