@@ -841,8 +841,8 @@ async function folderBetweenSessions(): Promise<void> {
 		);
 		check(
 			"a session inside a folder stays one step right of the folder glyph",
-			(await page.ask(glyphLeftOf(FOLDER_FLOWS, "Composer redesign"))) >
-				(await page.ask(glyphLeftOf(TOP_FOLDERS("General"), "Sumi"))),
+			((await page.ask(glyphLeftOf(FOLDER_FLOWS, "Composer redesign"))) as number) >
+				((await page.ask(glyphLeftOf(TOP_FOLDERS("General"), "Sumi"))) as number),
 			true,
 		);
 		check(
