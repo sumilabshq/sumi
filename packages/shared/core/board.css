@@ -4563,6 +4563,23 @@ body {
 	) {
 	color: var(--foreground);
 }
+:is(.wg-root, .wg-portal) .wg-kit-press.is-faint {
+	color: var(--text-3, var(--muted-foreground));
+}
+:is(.wg-root, .wg-portal)
+	.wg-kit-press.is-faint:is(
+		:hover,
+		[data-highlighted],
+		[data-state="open"],
+		[aria-expanded="true"],
+		[aria-pressed="true"],
+		[aria-current="true"],
+		[aria-current="page"],
+		[aria-selected="true"],
+		[aria-checked="true"]
+	)::before {
+	background: var(--hover, var(--control-fill-hover));
+}
 :is(.wg-root, .wg-portal) .wg-kit-press.is-soft::before {
 	background: var(--fill);
 }
