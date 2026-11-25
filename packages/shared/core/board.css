@@ -22801,9 +22801,13 @@ body:has(.wg-cm-layer) {
 	min-height: 0;
 }
 .sumi-settings-crumb {
-	position: relative;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 3;
 	display: flex;
-	flex: none;
+	max-width: 100%;
+	box-sizing: border-box;
 	align-items: center;
 	gap: 6px;
 	height: 44px;
@@ -22835,6 +22839,7 @@ body:has(.wg-cm-layer) {
 	flex: none;
 	flex-direction: column;
 	width: 220px;
+	padding-top: 44px;
 }
 .sumi-settings-left::after {
 	content: "";
@@ -22926,6 +22931,7 @@ body:has(.wg-cm-layer) {
 .sumi-settings-body {
 	flex: 1;
 	min-height: 0;
+	padding-top: 44px;
 	overflow-y: auto;
 }
 .sumi-settings-page-title {
@@ -22936,14 +22942,10 @@ body:has(.wg-cm-layer) {
 }
 @container sumi-settings (min-width: 900px) {
 	.sumi-settings[data-detail] .sumi-settings-crumb {
-		position: absolute;
-		top: 0;
-		left: 0;
-		z-index: 3;
 		width: 220px;
 	}
-	.sumi-settings[data-detail] .sumi-settings-left {
-		padding-top: 44px;
+	.sumi-settings[data-detail] .sumi-settings-body {
+		padding-top: 0;
 	}
 }
 @container sumi-settings (max-width: 899px) {

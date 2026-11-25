@@ -69,7 +69,7 @@ export function settingsPageOf(pages: readonly SettingsPage[]): ComponentType<Ta
 						<SettingsNav groups={groups} shown={shown} onShow={show} />
 					</div>
 					<div className="sumi-settings-main">
-						<div className="sumi-settings-body">
+						<div className="sumi-settings-body wg-kit-scroll-fade">
 							<SettingsDetailContext.Provider value={setDetail}>
 								<View />
 							</SettingsDetailContext.Provider>

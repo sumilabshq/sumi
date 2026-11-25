@@ -21,9 +21,13 @@
 }
 
 .sumi-settings-crumb {
-	position: relative;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 3;
 	display: flex;
-	flex: none;
+	max-width: 100%;
+	box-sizing: border-box;
 	align-items: center;
 	gap: 6px;
 	height: 44px;
@@ -60,6 +64,7 @@
 	flex: none;
 	flex-direction: column;
 	width: 220px;
+	padding-top: 44px;
 }
 
 .sumi-settings-left::after {
@@ -165,6 +170,7 @@
 .sumi-settings-body {
 	flex: 1;
 	min-height: 0;
+	padding-top: 44px;
 	overflow-y: auto;
 }
 
@@ -177,15 +183,11 @@
 
 @container sumi-settings (min-width: 900px) {
 	.sumi-settings[data-detail] .sumi-settings-crumb {
-		position: absolute;
-		top: 0;
-		left: 0;
-		z-index: 3;
 		width: 220px;
 	}
 
-	.sumi-settings[data-detail] .sumi-settings-left {
-		padding-top: 44px;
+	.sumi-settings[data-detail] .sumi-settings-body {
+		padding-top: 0;
 	}
 }
 

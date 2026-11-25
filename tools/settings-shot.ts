@@ -42,6 +42,9 @@ for (const width of WIDTHS) {
 			),
 		);
 		writeFileSync(`${OUT}/appearance-${width}.png`, await page.shoot());
+		await page.ask(`document.querySelector(".sumi-settings-body").scrollTop = 220; true`);
+		await waited(300);
+		writeFileSync(`${OUT}/appearance-scrolled-${width}.png`, await page.shoot());
 		await page.ask(
 			`[...document.querySelectorAll("button")].find((one) => one.textContent.trim() === "Plugins")?.click(); true`,
 		);
