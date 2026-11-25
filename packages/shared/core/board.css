@@ -14958,30 +14958,8 @@ body.wg-tree-carrying .wg-tile-body {
 	box-shadow: none;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-bent > .wg-kit-jelly {
-	display: block;
-	position: absolute;
-	top: -25px;
-	left: -25px;
-	z-index: -1;
-	overflow: visible;
-	pointer-events: none;
-}
-
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.is-growing .wg-kit-pop-glide {
 	visibility: hidden;
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-jelly-edge {
-	fill: var(--overlay);
-	stroke: var(--line-strong);
-	stroke-width: 1;
-}
-
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-jelly-rim {
-	fill: none;
-	stroke: var(--line);
-	stroke-width: 1;
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop .wg-kit-field,
