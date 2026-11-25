@@ -148,6 +148,7 @@ function transformedAnchorRadius(anchor: Element, rect: DOMRect, scaleX: number,
 function placePopoverPanel(panel: HTMLElement, anchor: DOMRect, placement: Placement): Placed {
 	panel.style.transition = "none";
 	panel.style.transform = "none";
+	panel.style.animation = "none";
 	panel.style.left = "0px";
 	panel.style.top = "0px";
 	const frame = laidFrameOf(panel);
@@ -155,6 +156,7 @@ function placePopoverPanel(panel: HTMLElement, anchor: DOMRect, placement: Place
 	const laid = panel.getBoundingClientRect();
 	const spot = placement.solve(anchor, laid, viewportSize());
 	wearSpot(panel, spot, frame);
+	panel.style.animation = "";
 	return { width: laid.width, height: laid.height, origin: spot.origin };
 }
 

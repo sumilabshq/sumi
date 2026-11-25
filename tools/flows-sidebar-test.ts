@@ -753,6 +753,55 @@ async function collapsing(): Promise<void> {
 	});
 }
 
+const FRAMES_RECORDED = 5;
+const FIRST_FRAME_DRIFT_PX = 1;
+
+const menuFrames = (target: string): string => `new Promise((done) => {
+	const row = ${target};
+	const box = row.getBoundingClientRect();
+	row.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: box.left + 40, clientY: box.top + 10 }));
+	const frames = [];
+	const read = () => {
+		const panel = document.querySelector("[role=menu]")?.closest(".wg-kit-pop, .wg-kit-float");
+		if (!panel) return null;
+		const rect = panel.getBoundingClientRect();
+		return { left: parseFloat(panel.style.left), top: parseFloat(panel.style.top), x: rect.left, y: rect.top };
+	};
+	const step = (count) => {
+		frames.push(read());
+		if (count < ${FRAMES_RECORDED}) requestAnimationFrame(() => step(count + 1));
+		else setTimeout(() => done({ frames, settled: read() }), 900);
+	};
+	requestAnimationFrame(() => step(1));
+})`;
+
+interface MenuFrame {
+	readonly left: number;
+	readonly top: number;
+	readonly x: number;
+	readonly y: number;
+}
+
+async function menusPlacedOnFirstFrame(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		const { frames, settled } = (await page.ask(menuFrames(rowOf(FLOWS, "Plugin layout")))) as {
+			readonly frames: readonly (MenuFrame | null)[];
+			readonly settled: MenuFrame;
+		};
+		check(
+			"a row menu is in the DOM on the first frame",
+			frames.every((frame) => frame !== null),
+			true,
+		);
+		check(
+			"a row menu's laid position never moves from the first frame on",
+			frames.map((frame) => frame !== null && Math.abs(frame.left - settled.left) <= FIRST_FRAME_DRIFT_PX && Math.abs(frame.top - settled.top) <= FIRST_FRAME_DRIFT_PX),
+			frames.map(() => true),
+		);
+	});
+}
+
+await menusPlacedOnFirstFrame();
 await inboxRows();
 await inboxOpening();
 await inboxClearing();
