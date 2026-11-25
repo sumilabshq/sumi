@@ -674,6 +674,45 @@ async function projects(): Promise<void> {
 	});
 }
 
+const headingOf = (project: string): string =>
+	`document.querySelector(${JSON.stringify(`section[aria-label=${JSON.stringify(project)}] .sumi-flows-label-main`)})`;
+const headingCentre = (project: string): string =>
+	`(() => { const box = ${headingOf(project)}.getBoundingClientRect(); return [box.left + box.width / 2, box.top + box.height / 2]; })()`;
+const chevronName = (project: string): string =>
+	`(() => { const chevron = ${headingOf(project)}.querySelector(".sumi-flows-chevron"); return getComputedStyle(chevron).display === "none" ? "hidden" : chevron.querySelector("path").getAttribute("d").startsWith("M18") ? "down" : "right"; })()`;
+const isCollapsedInData = (name: string): string =>
+	`(async () => (await window.__flowsSidebar()).output.projects.find((one) => one.name === ${JSON.stringify(name)}).isCollapsed)()`;
+
+async function collapsing(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		await page.ask(`window.__projects("create", { name: "Gamma" })`);
+		await waited(SETTLE_MS);
+		await pressOn(page, "section[aria-label=Gamma] .sumi-flows-row", "New session");
+		await waited(SETTLE_MS * 2);
+		const [awayX, awayY] = [900, 600];
+		await page.hover(awayX, awayY);
+		await waited(300);
+		check("an expanded project shows no chevron at rest", await page.ask(chevronName("Gamma")), "hidden");
+		const [x, y] = (await page.ask(headingCentre("Gamma"))) as [number, number];
+		await page.hover(x, y);
+		await waited(300);
+		check("hovering an expanded heading shows chevron-down", await page.ask(chevronName("Gamma")), "down");
+		await page.press(x, y);
+		await waited(SETTLE_MS);
+		check("pressing the heading hides the project rows", await page.ask(sectionRows("Gamma")), []);
+		await page.hover(awayX, awayY);
+		await waited(300);
+		check("a collapsed project keeps chevron-right visible at rest", await page.ask(chevronName("Gamma")), "right");
+		check("the collapsed state is stored in the data", await page.ask(isCollapsedInData("Gamma")), true);
+		await page.press(x, y);
+		await waited(SETTLE_MS);
+		check("pressing again shows the rows", (await page.ask(sectionRows("Gamma"))) as unknown[][], [
+			["flow", "New session"],
+		]);
+		check("the expanded state is stored in the data", await page.ask(isCollapsedInData("Gamma")), false);
+	});
+}
+
 await inboxRows();
 await inboxOpening();
 await inboxClearing();
@@ -688,6 +727,7 @@ await editingIcon();
 await deleting();
 await folderMenuAndArchive();
 await projects();
+await collapsing();
 
 if (tally.failed > 0) {
 	console.log(`${tally.failed} failed`);
