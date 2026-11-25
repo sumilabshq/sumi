@@ -1,6 +1,6 @@
 import { createElement as h, useCallback, useState } from "react";
 import type { ReactElement } from "react";
-import { useSettingsDetail, useWindowApp } from "@sumi/settings-plugin";
+import { useSettingsDetail, useSettingsTab, useWindowApp } from "@sumi/settings-plugin";
 import { Button, Icon } from "@widgetarium/kit";
 import type { Runtime } from "@widgetarium/data-framework";
 import { CloverGlyph } from "../../../../shared/ui/clover-glyph/clover-glyph.js";
@@ -21,7 +21,7 @@ interface PendingOff {
 
 function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 	const view = useRegistry(windowApp);
-	const build = useBuildsPlugin(windowApp);
+	const build = useBuildsPlugin(windowApp, useSettingsTab());
 	const [openId, setOpenId] = useState<string | null>(null);
 	const [words, setWords] = useState("");
 	const [isExpanded, setExpanded] = useState(false);

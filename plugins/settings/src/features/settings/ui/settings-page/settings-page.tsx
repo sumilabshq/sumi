@@ -5,13 +5,14 @@ import { Icon } from "@widgetarium/kit";
 import { SettingsDetailContext } from "../../../../shared/lib/settings-detail-context.js";
 import type { SettingsDetail } from "../../../../shared/lib/settings-detail-context.js";
 import type { SettingsPage } from "../../../../shared/lib/settings-page.js";
+import { SettingsTabContext } from "../../../../shared/lib/settings-tab-context.js";
 import { pagesByGroup } from "../../lib/pages-by-group.js";
 import { SettingsNav } from "../settings-nav/settings-nav.js";
 
 const TITLE = "Settings";
 
 export function settingsPageOf(pages: readonly SettingsPage[]): ComponentType<TabPageProps> {
-	return function SettingsRoot(): ReactElement {
+	return function SettingsRoot({ tabId }: TabPageProps): ReactElement {
 		const groups = pagesByGroup(pages);
 		const first = groups[0]?.pages[0];
 		const [pickedId, setPickedId] = useState<string | null>(null);
@@ -70,9 +71,11 @@ export function settingsPageOf(pages: readonly SettingsPage[]): ComponentType<Ta
 					</div>
 					<div className="sumi-settings-main">
 						<div className="sumi-settings-body wg-kit-scroll-fade">
-							<SettingsDetailContext.Provider value={setDetail}>
-								<View />
-							</SettingsDetailContext.Provider>
+							<SettingsTabContext.Provider value={tabId}>
+								<SettingsDetailContext.Provider value={setDetail}>
+									<View />
+								</SettingsDetailContext.Provider>
+							</SettingsTabContext.Provider>
 						</div>
 					</div>
 				</div>
