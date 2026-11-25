@@ -14886,6 +14886,8 @@ body.wg-tree-carrying .wg-tile-body {
 	-webkit-backdrop-filter: none;
 	box-shadow: var(--shadow-menu);
 	font-size: var(--fs-13);
+	font-weight: var(--fw-ui);
+	-webkit-font-smoothing: antialiased;
 	color: var(--text);
 }
 
@@ -17927,7 +17929,7 @@ body:has(.wg-cm-layer) {
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown li {
 	margin: var(--space-0-5) var(--space-none);
-	line-height: 1.5;
+	line-height: 1.6;
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown pre {
 	margin: var(--space-none) var(--space-none) var(--space-2);
@@ -18909,7 +18911,7 @@ body:has(.wg-cm-layer) {
 	display: block;
 	margin: var(--space-none);
 	padding-left: var(--space-none);
-	line-height: 1.65;
+	line-height: 1.6;
 	list-style: none;
 }
 .wg-chat-app .wg-studio-ai-said.is-markdown :is(ul, ol) > li {

@@ -288,7 +288,7 @@
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown li {
 	margin: var(--space-0-5) var(--space-none);
-	line-height: 1.5;
+	line-height: 1.6;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-said.is-markdown pre {
@@ -1433,7 +1433,7 @@
 	display: block;
 	margin: var(--space-none);
 	padding-left: var(--space-none);
-	line-height: 1.65;
+	line-height: 1.6;
 	list-style: none;
 }
 
