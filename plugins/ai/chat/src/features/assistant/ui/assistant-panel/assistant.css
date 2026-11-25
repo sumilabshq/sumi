@@ -859,6 +859,10 @@
 	gap: var(--space-3);
 }
 
+:is(.wg-root, .wg-portal) .wg-kit-select-trigger.is-warn {
+	color: var(--warning-text, var(--warning));
+}
+
 .wg-chat-app .wg-studio-ai-turn.is-mine {
 	gap: var(--space-1-5);
 }
