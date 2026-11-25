@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ComponentType, ReactElement } from "react";
 import type { TabPageProps } from "@sumi/sumi-host-plugin";
-import { Icon } from "@widgetarium/kit";
+import { Icon, PopoverItem } from "@widgetarium/kit";
 import { SettingsDetailContext } from "../../../../shared/lib/settings-detail-context.js";
 import type { SettingsDetail } from "../../../../shared/lib/settings-detail-context.js";
 import type { SettingsPage } from "../../../../shared/lib/settings-page.js";
@@ -53,10 +53,14 @@ export function settingsPageOf(pages: readonly SettingsPage[]): ComponentType<Ta
 				{isMenuOpen ? (
 					<div className="sumi-settings-crumb-menu">
 						{pages.map((page) => (
-							<button key={page.id} type="button" className="sumi-settings-item" onClick={() => show(page)}>
-								<Icon name={page.icon} size={16} />
+							<PopoverItem
+								key={page.id}
+								className="sumi-settings-item"
+								icon={<Icon name={page.icon} size={16} />}
+								onClick={() => show(page)}
+							>
 								<span className="sumi-settings-item-text">{page.title}</span>
-							</button>
+							</PopoverItem>
 						))}
 					</div>
 				) : null}

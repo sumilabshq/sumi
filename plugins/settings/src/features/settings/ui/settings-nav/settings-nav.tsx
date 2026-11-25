@@ -1,6 +1,6 @@
 import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { Icon, Input, Kbd } from "@widgetarium/kit";
+import { Icon, Input, Kbd, PopoverItem } from "@widgetarium/kit";
 import type { SettingsPage } from "../../../../shared/lib/settings-page.js";
 import { groupsMatching } from "../../lib/groups-matching.js";
 import type { PageGroup } from "../../lib/pages-by-group.js";
@@ -55,17 +55,16 @@ export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactE
 				<div key={group.label ?? "sumi"} className="sumi-settings-group">
 					{group.label === null ? null : <p className="sumi-settings-group-label">{group.label}</p>}
 					{group.pages.map((page) => (
-						<button
+						<PopoverItem
 							key={page.id}
-							type="button"
 							className="sumi-settings-item"
-							aria-current={page.id === shown.id ? "page" : undefined}
+							aria-current={page.id === shown.id ? "true" : undefined}
 							title={page.title}
+							icon={<Icon name={page.icon} size={16} />}
 							onClick={() => show(page)}
 						>
-							<Icon name={page.icon} size={16} />
 							<span className="sumi-settings-item-text">{page.title}</span>
-						</button>
+						</PopoverItem>
 					))}
 				</div>
 			))}
