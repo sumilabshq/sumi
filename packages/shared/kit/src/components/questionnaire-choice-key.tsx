@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { Kbd } from "./kbd";
 
 export interface QuestionnaireChoiceKeyProps {
 	readonly shortcut: string | undefined;
@@ -8,8 +9,8 @@ export interface QuestionnaireChoiceKeyProps {
 export function QuestionnaireChoiceKey({ shortcut }: QuestionnaireChoiceKeyProps): ReactElement | null {
 	if (!shortcut) return null;
 	return (
-		<kbd className="wg-kit-kbd wg-kit-quiz-choice-key" aria-hidden="true">
+		<Kbd className="wg-kit-quiz-choice-key" aria-hidden="true">
 			{shortcut}
-		</kbd>
+		</Kbd>
 	);
 }
