@@ -74,7 +74,7 @@
 
 	.sumi-settings .wg-kit-side .sumi-settings-search,
 	.sumi-settings-item-text,
-	.sumi-settings .wg-kit-side .wg-kit-side-label {
+	.sumi-settings .wg-kit-side.is-chrome .wg-kit-side-label {
 		display: none;
 	}
 }

@@ -4,6 +4,7 @@ import {
 	Icon,
 	Input,
 	Kbd,
+	Separator,
 	Sidebar,
 	SidebarContent,
 	SidebarGroup,
@@ -42,14 +43,7 @@ export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactE
 	};
 	return (
 		<div ref={leftRef} className="sumi-settings-left">
-			<Sidebar
-				as="nav"
-				mode="quiet"
-				surface="edge"
-				collapsible="none"
-				className="sumi-settings-nav"
-				aria-label="Settings"
-			>
+			<Sidebar as="nav" surface="chrome" collapsible="none" className="sumi-settings-nav" aria-label="Settings">
 				<SidebarHeader className="sumi-settings-search">
 					<Input
 						ref={searchRef}
@@ -92,6 +86,7 @@ export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactE
 					))}
 				</SidebarContent>
 			</Sidebar>
+			<Separator orientation="vertical" />
 		</div>
 	);
 }

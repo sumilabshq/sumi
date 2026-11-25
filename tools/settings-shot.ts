@@ -59,13 +59,6 @@ for (const width of WIDTHS) {
 		);
 		writeFileSync(`${OUT}/appearance-${width}.png`, await page.shoot());
 		if (width >= 900) {
-			console.log(
-				JSON.stringify(
-					await page.ask(
-						`(() => { const nav = document.querySelector(".sumi-settings-nav"); const r = nav.getBoundingClientRect(); const s = getComputedStyle(nav); return { navBg: s.backgroundColor, pageBg: getComputedStyle(document.querySelector(".sumi-settings")).backgroundColor, edge: s.borderInlineEndWidth + " " + s.borderInlineEndColor, top: r.top, bottom: r.bottom, root: document.querySelector(".sumi-settings").getBoundingClientRect().bottom }; })()`,
-					),
-				),
-			);
 			const field = `document.querySelector(".sumi-settings-search input")`;
 			const typed = (words: string): string =>
 				`(() => { const f = ${field}; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(f, ${JSON.stringify(words)}); f.dispatchEvent(new Event("input", { bubbles: true })); return true; })()`;
