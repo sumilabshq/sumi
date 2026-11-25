@@ -6,5 +6,6 @@ export interface SettingsPage {
 	readonly icon: string;
 	readonly group: "sumi" | "extend";
 	readonly order: number;
+	readonly keywords?: readonly string[] | undefined;
 	readonly view: ComponentType;
 }

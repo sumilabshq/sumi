@@ -85,24 +85,7 @@
 }
 
 .sumi-settings-search {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	height: 30px;
 	margin-bottom: 8px;
-	padding: 0 8px;
-	border-radius: var(--r-sm);
-	background: var(--sunken);
-	color: var(--text-3);
-}
-
-.sumi-settings-search-text {
-	flex: 1;
-}
-
-.sumi-settings-search-key {
-	font-family: var(--font-code);
-	font-size: var(--fs-11);
 }
 
 .sumi-settings-group {
@@ -204,14 +187,12 @@
 		padding-inline: 6px;
 	}
 
-	.sumi-settings-search-text,
-	.sumi-settings-search-key,
+	.sumi-settings-search,
 	.sumi-settings-item-text,
 	.sumi-settings-group-label {
 		display: none;
 	}
 
-	.sumi-settings-search,
 	.sumi-settings-item {
 		justify-content: center;
 		padding: 0;

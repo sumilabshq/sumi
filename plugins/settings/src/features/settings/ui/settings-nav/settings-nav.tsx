@@ -1,12 +1,14 @@
-import { createElement as h } from "react";
+import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import { Icon, Input, Kbd } from "@widgetarium/kit";
 import type { SettingsPage } from "../../../../shared/lib/settings-page.js";
+import { groupsMatching } from "../../lib/groups-matching.js";
 import type { PageGroup } from "../../lib/pages-by-group.js";
+import { useFocusesOnFind } from "../../lib/use-focuses-on-find.js";
 
-// TODO: settings search
 const SEARCH = "Search settings";
 const SEARCH_KEY = "⌘F";
+const NO_MATCH = "Nothing matches";
 
 export interface SettingsNavProps {
 	readonly groups: readonly PageGroup[];
@@ -15,14 +17,41 @@ export interface SettingsNavProps {
 }
 
 export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactElement {
+	const [query, setQuery] = useState("");
+	const navRef = useRef<HTMLElement>(null);
+	const searchRef = useRef<HTMLInputElement>(null);
+	useFocusesOnFind(navRef, searchRef);
+	const matching = groupsMatching(groups, query);
+	const first = matching[0]?.pages[0];
+	const show = (page: SettingsPage): void => {
+		setQuery("");
+		onShow(page);
+	};
 	return (
-		<nav className="sumi-settings-nav" aria-label="Settings">
-			<div className="sumi-settings-search">
-				<Icon name="search" size={14} />
-				<span className="sumi-settings-search-text">{SEARCH}</span>
-				<span className="sumi-settings-search-key">{SEARCH_KEY}</span>
-			</div>
-			{groups.map((group) => (
+		<nav ref={navRef} className="sumi-settings-nav" aria-label="Settings">
+			<Input
+				ref={searchRef}
+				block={true}
+				size="s"
+				className="sumi-settings-search"
+				aria-label={SEARCH}
+				placeholder={SEARCH}
+				icon={<Icon name="search" size={14} />}
+				end={<Kbd>{SEARCH_KEY}</Kbd>}
+				value={query}
+				onValueChange={setQuery}
+				onKeyDown={(event) => {
+					if (event.key === "Escape") {
+						setQuery("");
+					}
+
+					if (event.key === "Enter" && first !== undefined) {
+						show(first);
+					}
+				}}
+			/>
+			{first === undefined ? <p className="sumi-settings-group-label">{NO_MATCH}</p> : null}
+			{matching.map((group) => (
 				<div key={group.label ?? "sumi"} className="sumi-settings-group">
 					{group.label === null ? null : <p className="sumi-settings-group-label">{group.label}</p>}
 					{group.pages.map((page) => (
@@ -32,7 +61,7 @@ export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactE
 							className="sumi-settings-item"
 							aria-current={page.id === shown.id ? "page" : undefined}
 							title={page.title}
-							onClick={() => onShow(page)}
+							onClick={() => show(page)}
 						>
 							<Icon name={page.icon} size={16} />
 							<span className="sumi-settings-item-text">{page.title}</span>

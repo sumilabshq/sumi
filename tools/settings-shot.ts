@@ -45,6 +45,42 @@ for (const width of WIDTHS) {
 			),
 		);
 		writeFileSync(`${OUT}/appearance-${width}.png`, await page.shoot());
+		if (width >= 900) {
+			const field = `document.querySelector(".sumi-settings-search input")`;
+			const typed = (words: string): string =>
+				`(() => { const f = ${field}; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(f, ${JSON.stringify(words)}); f.dispatchEvent(new Event("input", { bubbles: true })); return true; })()`;
+			const keyed = (key: string): string =>
+				`${field}.dispatchEvent(new KeyboardEvent("keydown", { key: ${JSON.stringify(key)}, bubbles: true, cancelable: true }))`;
+			const items = `[...document.querySelectorAll(".sumi-settings-nav .sumi-settings-item")].map((one) => one.textContent)`;
+			const searched: Record<string, unknown> = {};
+			await page.ask(
+				`window.dispatchEvent(new KeyboardEvent("keydown", { key: "f", metaKey: true, bubbles: true, cancelable: true })); true`,
+			);
+			searched.focusedByCmdF = await page.ask(`document.activeElement === ${field}`);
+			await page.ask(typed("plu"));
+			await waited(150);
+			searched.afterTypingPlu = await page.ask(items);
+			writeFileSync(`${OUT}/search-${width}.png`, await page.shoot());
+			await page.ask(typed("zzz"));
+			await waited(150);
+			searched.afterTypingZzz = await page.ask(`document.querySelector(".sumi-settings-nav").textContent`);
+			await page.ask(keyed("Escape"));
+			await waited(150);
+			searched.afterEscape = await page.ask(`${field}.value`);
+			await page.ask(typed("plu"));
+			await waited(150);
+			await page.ask(keyed("Enter"));
+			await waited(300);
+			searched.afterEnter = await page.ask(
+				`({ crumb: document.querySelector(".sumi-settings-crumb-now").textContent, query: ${field}.value })`,
+			);
+			console.log(JSON.stringify(searched));
+			await page.ask(
+				`[...document.querySelectorAll("button")].find((one) => one.textContent.trim() === "Appearance")?.click(); true`,
+			);
+			await waited(300);
+		}
+
 		await page.ask(`document.querySelector(".sumi-settings-body").scrollTop = 220; true`);
 		await waited(300);
 		writeFileSync(`${OUT}/appearance-scrolled-${width}.png`, await page.shoot());

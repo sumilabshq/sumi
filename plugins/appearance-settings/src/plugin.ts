@@ -7,7 +7,13 @@ export const appearanceSettings = plugin("appearance-settings")
 	.describe(metadata)
 	.require(settings)
 	.apply((app) => {
-		app
-			.use(settings)
-			.page({ id: "appearance", title: "Appearance", icon: "palette", group: "sumi", order: 10, view: AppearancePage });
+		app.use(settings).page({
+			id: "appearance",
+			title: "Appearance",
+			icon: "palette",
+			group: "sumi",
+			order: 10,
+			keywords: ["theme", "dark", "light", "font", "ink", "colour", "text", "code"],
+			view: AppearancePage,
+		});
 	});

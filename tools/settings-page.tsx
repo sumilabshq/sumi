@@ -30,8 +30,16 @@ const app = runtime()
 	.start({ platform: "browser", scope: { workspaceId: "fixture" } });
 
 const Settings = settingsPageOf([
-	{ id: "appearance", title: "Appearance", icon: "palette", group: "sumi", order: 10, view: AppearancePage },
-	{ id: "plugins", title: "Plugins", icon: "plug", group: "extend", order: 10, view: PluginsPage },
+	{
+		id: "appearance",
+		title: "Appearance",
+		icon: "palette",
+		group: "sumi",
+		order: 10,
+		keywords: ["theme", "font"],
+		view: AppearancePage,
+	},
+	{ id: "plugins", title: "Plugins", icon: "plug", group: "extend", order: 10, keywords: ["build"], view: PluginsPage },
 ]);
 
 const host = document.getElementById("root");

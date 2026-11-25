@@ -8,8 +8,14 @@ export const pluginsCatalog = plugin("plugins-catalog")
 	.describe(metadata)
 	.require(settings)
 	.apply((app) => {
-		app
-			.use(settings)
-			.page({ id: "plugins", title: "Plugins", icon: "plug", group: "extend", order: 10, view: PluginsPage });
+		app.use(settings).page({
+			id: "plugins",
+			title: "Plugins",
+			icon: "plug",
+			group: "extend",
+			order: 10,
+			keywords: ["extension", "add-on", "build", "install", "skill"],
+			view: PluginsPage,
+		});
 		app.use(settings).pageImport(({ windowServer }) => assistant({ over: windowServer }));
 	});
