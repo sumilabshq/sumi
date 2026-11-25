@@ -474,7 +474,7 @@ async function deleting(): Promise<void> {
 			await page.ask(
 				`[...document.querySelectorAll("[role=menuitem] .wg-kit-pop-label")].map((item) => item.textContent)`,
 			),
-			["Rename", "Edit icon", "Duplicate", "Archive", "New project…", "Delete flow"],
+			["Rename", "Edit icon", "Duplicate", "Archive", "Move to", "Delete flow"],
 		);
 		await page.ask(clickText("[role=menuitem]", "Delete flow"));
 		await waited(300);
@@ -573,6 +573,13 @@ async function projects(): Promise<void> {
 		]);
 		await page.ask(contextOn(rowOf(FLOWS, "Plugin layout")));
 		await waited(300);
+		check(
+			"the row menu has one Move to item and no project rows until it opens",
+			await page.ask(`[[...document.querySelectorAll("[role=menuitem]")].filter((one) => one.textContent === "Move to").length, document.querySelectorAll("[role=menuitemradio]").length]`),
+			[1, 0],
+		);
+		await page.ask(clickText("[role=menuitem]", "Move to"));
+		await waited(500);
 		await page.ask(clickText("[role=menuitemradio]", "Alpha"));
 		await waited(SETTLE_MS);
 		check(
@@ -585,6 +592,8 @@ async function projects(): Promise<void> {
 		);
 		await page.ask(contextOn(rowOf("section[aria-label=Alpha] .sumi-flows-row", "Plugin layout")));
 		await waited(300);
+		await page.ask(clickText("[role=menuitem]", "Move to"));
+		await waited(500);
 		check(
 			"Move to ticks the current project only",
 			await page.ask(
@@ -595,6 +604,8 @@ async function projects(): Promise<void> {
 				["Alpha", "true"],
 			],
 		);
+		await page.pressKey("Escape");
+		await waited(300);
 		await page.pressKey("Escape");
 		await waited(300);
 		await page.ask(projectDragOver("Alpha", "General", false));

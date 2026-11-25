@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, PopoverItem } from "@widgetarium/kit";
+import { Icon, PopoverItem, PopoverSeparator, PopoverSub } from "@widgetarium/kit";
 import type { FlowRowFacts, FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
 
@@ -16,8 +16,7 @@ export interface MoveToSectionProps {
 
 export function MoveToSection({ flow, sidebar, acts, onClose }: MoveToSectionProps): ReactElement {
 	return (
-		<div className="sumi-flows-menu-moves" role="group" aria-label={MOVE_TO}>
-			<span className="sumi-flows-menu-label">{MOVE_TO}</span>
+		<PopoverSub label={MOVE_TO} icon={<Icon name="folder-input" />}>
 			{sidebar.projects.map((project) => (
 				<PopoverItem
 					key={project.id}
@@ -31,6 +30,7 @@ export function MoveToSection({ flow, sidebar, acts, onClose }: MoveToSectionPro
 					{project.name}
 				</PopoverItem>
 			))}
+			<PopoverSeparator />
 			<PopoverItem
 				role="menuitem"
 				icon={<Icon name="plus" />}
@@ -41,6 +41,6 @@ export function MoveToSection({ flow, sidebar, acts, onClose }: MoveToSectionPro
 			>
 				{NEW_PROJECT}
 			</PopoverItem>
-		</div>
+		</PopoverSub>
 	);
 }
