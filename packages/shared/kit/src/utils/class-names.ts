@@ -80,7 +80,7 @@ const SIDEBAR_WORDS = {
 const FIELD_WORDS = {
 	size: { m: "", s: "is-s" },
 	block: { true: "is-block" },
-	variant: { framed: "", bare: "is-bare", filled: "is-filled", outlined: "is-outlined", raised: "is-raised" },
+	variant: { framed: "", bare: "is-bare", filled: "is-filled", quiet: "is-quiet", outlined: "is-outlined", raised: "is-raised" },
 };
 
 const DIALOG_WORDS = { size: { m: "", s: "is-s" } };

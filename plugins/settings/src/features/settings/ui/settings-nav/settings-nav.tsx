@@ -1,6 +1,19 @@
 import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { Icon, Input, Kbd } from "@widgetarium/kit";
+import {
+	Icon,
+	Input,
+	Kbd,
+	Separator,
+	Sidebar,
+	SidebarContent,
+	SidebarGroup,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+} from "@widgetarium/kit";
 import type { SettingsPage } from "../../../../shared/lib/settings-page.js";
 import { groupsMatching } from "../../lib/groups-matching.js";
 import type { PageGroup } from "../../lib/pages-by-group.js";
@@ -9,6 +22,7 @@ import { useFocusesOnFind } from "../../lib/use-focuses-on-find.js";
 const SEARCH = "Search settings";
 const SEARCH_KEY = "⌘F";
 const NO_MATCH = "Nothing matches";
+const ICON_PX = 16;
 
 export interface SettingsNavProps {
 	readonly groups: readonly PageGroup[];
@@ -18,9 +32,9 @@ export interface SettingsNavProps {
 
 export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactElement {
 	const [query, setQuery] = useState("");
-	const navRef = useRef<HTMLElement>(null);
+	const leftRef = useRef<HTMLDivElement>(null);
 	const searchRef = useRef<HTMLInputElement>(null);
-	useFocusesOnFind(navRef, searchRef);
+	useFocusesOnFind(leftRef, searchRef);
 	const matching = groupsMatching(groups, query);
 	const first = matching[0]?.pages[0];
 	const show = (page: SettingsPage): void => {
@@ -28,47 +42,51 @@ export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactE
 		onShow(page);
 	};
 	return (
-		<nav ref={navRef} className="sumi-settings-nav" aria-label="Settings">
-			<Input
-				ref={searchRef}
-				block={true}
-				size="s"
-				className="sumi-settings-search"
-				aria-label={SEARCH}
-				placeholder={SEARCH}
-				icon={<Icon name="search" size={14} />}
-				end={<Kbd>{SEARCH_KEY}</Kbd>}
-				value={query}
-				onValueChange={setQuery}
-				onKeyDown={(event) => {
-					if (event.key === "Escape") {
-						setQuery("");
-					}
+		<div ref={leftRef} className="sumi-settings-left">
+			<Sidebar as="nav" surface="chrome" collapsible="none" className="sumi-settings-nav" aria-label="Settings">
+				<SidebarHeader className="sumi-settings-search">
+					<Input
+						ref={searchRef}
+						block={true}
+						size="s"
+						variant="quiet"
+						aria-label={SEARCH}
+						placeholder={SEARCH}
+						icon={<Icon name="search" size={14} />}
+						end={<Kbd>{SEARCH_KEY}</Kbd>}
+						value={query}
+						onValueChange={setQuery}
+						onKeyDown={(event) => {
+							if (event.key === "Escape") {
+								setQuery("");
+							}
 
-					if (event.key === "Enter" && first !== undefined) {
-						show(first);
-					}
-				}}
-			/>
-			{first === undefined ? <p className="sumi-settings-group-label">{NO_MATCH}</p> : null}
-			{matching.map((group) => (
-				<div key={group.label ?? "sumi"} className="sumi-settings-group">
-					{group.label === null ? null : <p className="sumi-settings-group-label">{group.label}</p>}
-					{group.pages.map((page) => (
-						<button
-							key={page.id}
-							type="button"
-							className="sumi-settings-item"
-							aria-current={page.id === shown.id ? "page" : undefined}
-							title={page.title}
-							onClick={() => show(page)}
-						>
-							<Icon name={page.icon} size={16} />
-							<span className="sumi-settings-item-text">{page.title}</span>
-						</button>
+							if (event.key === "Enter" && first !== undefined) {
+								show(first);
+							}
+						}}
+					/>
+				</SidebarHeader>
+				<SidebarContent>
+					{first === undefined ? <SidebarGroupLabel>{NO_MATCH}</SidebarGroupLabel> : null}
+					{matching.map((group) => (
+						<SidebarGroup key={group.label ?? "sumi"}>
+							{group.label === null ? null : <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
+							<SidebarMenu>
+								{group.pages.map((page) => (
+									<SidebarMenuItem key={page.id}>
+										<SidebarMenuButton isActive={page.id === shown.id} tooltip={page.title} onClick={() => show(page)}>
+											<Icon name={page.icon} size={ICON_PX} />
+											<span className="sumi-settings-item-text">{page.title}</span>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroup>
 					))}
-				</div>
-			))}
-		</nav>
+				</SidebarContent>
+			</Sidebar>
+			<Separator orientation="vertical" />
+		</div>
 	);
 }
