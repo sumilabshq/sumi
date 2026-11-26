@@ -22,7 +22,7 @@ export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(fun
 			ref={ref}
 			asChild={href !== undefined}
 			emphasis="ghost"
-			size="xs"
+			size="sm"
 			className="wg-plate-button"
 			label={label}
 			{...tooltipMarks({

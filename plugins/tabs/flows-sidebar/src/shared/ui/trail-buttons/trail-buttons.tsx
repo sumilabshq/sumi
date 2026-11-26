@@ -25,7 +25,7 @@ function WindowTrailButtons({ window }: { readonly window: string }): ReactEleme
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
+				size="sm"
 				label={BACK}
 				{...tooltipMarks({ said: BACK, keys: "⌘[" })}
 				disabled={!trail.canGoBack}
@@ -36,7 +36,7 @@ function WindowTrailButtons({ window }: { readonly window: string }): ReactEleme
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
+				size="sm"
 				label={FORWARD}
 				{...tooltipMarks({ said: FORWARD, keys: "⌘]" })}
 				disabled={!trail.canGoForward}

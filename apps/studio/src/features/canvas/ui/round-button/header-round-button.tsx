@@ -21,7 +21,7 @@ export function HeaderRoundButton({ label, tip, isBusy, face, ...rest }: HeaderR
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
+				size="sm"
 				className={HEADER_BUTTON}
 				label={label}
 				isLoading={isBusy}

@@ -6,7 +6,7 @@
 	gap: var(--space-1);
 	min-width: 0;
 	max-width: 420px;
-	height: var(--size-xs-h);
+	height: var(--size-s-h);
 	padding: var(--space-none) var(--space-1);
 	color: var(--text);
 	font-family: var(--font-ui);

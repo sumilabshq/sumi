@@ -22,9 +22,9 @@ const LOOK = {
 	plate: { emphasis: "soft" },
 } as const;
 
-const SIZE: Readonly<Record<RoundSize, "lg" | "sm">> = {
+const SIZE: Readonly<Record<RoundSize, "lg" | "md">> = {
 	l: "lg",
-	m: "sm",
+	m: "md",
 };
 
 const BUSY = "cv:aria-busy:motion-safe:animate-canvas-pulse";

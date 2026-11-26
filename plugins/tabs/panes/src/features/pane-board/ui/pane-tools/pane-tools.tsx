@@ -23,7 +23,7 @@ export function PaneTools({ paneId, isExpanded, onExpand, onHide }: PaneToolsPro
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
+				size="sm"
 				label={isExpanded ? RESTORE : EXPAND}
 				aria-pressed={isExpanded}
 				data-pane-expand={paneId}
@@ -35,7 +35,7 @@ export function PaneTools({ paneId, isExpanded, onExpand, onHide }: PaneToolsPro
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
+				size="sm"
 				label={HIDE}
 				data-pane-hide={paneId}
 				onClick={onHide}

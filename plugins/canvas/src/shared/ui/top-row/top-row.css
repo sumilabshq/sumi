@@ -27,7 +27,7 @@
 	align-items: center;
 	gap: var(--space-0-5);
 	min-width: 0;
-	height: var(--h-xs);
+	height: var(--size-s-h);
 	pointer-events: auto;
 }
 
@@ -50,7 +50,7 @@
 	align-items: center;
 	gap: var(--space-1-5);
 	min-width: 0;
-	height: var(--h-xs);
+	height: var(--size-s-h);
 	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-13);
@@ -85,7 +85,7 @@
 
 .sumi-canvas-title-field {
 	width: 220px;
-	height: var(--h-xs);
+	height: var(--size-s-h);
 	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-13);
