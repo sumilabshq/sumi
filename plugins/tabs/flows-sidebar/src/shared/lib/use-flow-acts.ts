@@ -14,6 +14,12 @@ export interface FlowPlace {
 	readonly folderId: string | null;
 	readonly before: string | null;
 	readonly projectId?: string | null | undefined;
+	readonly beforeFolder?: string | null | undefined;
+}
+
+export interface TopRef {
+	readonly kind: "flow" | "folder";
+	readonly id: string;
 }
 
 export interface FlowActs {
@@ -38,6 +44,7 @@ export interface FlowActs {
 	readonly reorderProject: (id: string, before: string | null) => void;
 	readonly moveToProject: (flowId: string, projectId: string) => void;
 	readonly moveFolderToProject: (folderId: string, projectId: string) => void;
+	readonly placeFolder: (id: string, projectId: string, before: TopRef | null) => void;
 }
 
 function reported(what: string): (result: { readonly ok: boolean; readonly reason?: string }) => void {
@@ -72,6 +79,7 @@ export function useFlowActs(): FlowActs {
 	const reorderProject = useCommand(navigation.projects.reorder);
 	const moveFlowToProject = useCommand(navigation.projects.moveFlow);
 	const moveFolderToProject = useCommand(navigation.projects.moveFolder);
+	const placeFolder = useCommand(navigation.folders.place);
 	const pickFolder = useCommand(fileSystem.files.pickFolder);
 	const open = (flowId: string): void => void openFlow.run({ flowId });
 	return {
@@ -116,5 +124,7 @@ export function useFlowActs(): FlowActs {
 			void moveFlowToProject.run({ flowId, projectId }).then(reported("move the session")),
 		moveFolderToProject: (folderId, projectId) =>
 			void moveFolderToProject.run({ folderId, projectId }).then(reported("move the folder")),
+		placeFolder: (id, projectId, before) =>
+			void placeFolder.run({ id, projectId, before }).then(reported("move the folder")),
 	};
 }

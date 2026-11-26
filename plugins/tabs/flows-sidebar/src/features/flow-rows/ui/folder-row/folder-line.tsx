@@ -4,6 +4,7 @@ import { Icon } from "@widgetarium/kit";
 import { dragKeyOf, intoKeyOf } from "../../../../shared/lib/flow-drag.js";
 import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FolderRowFacts } from "../../../../shared/lib/flow-facts.js";
+import type { TopRef } from "../../../../shared/lib/use-flow-acts.js";
 import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
 import { FOLDER_RENAME_KEYS, renamesOn } from "../../lib/rename-keys.js";
@@ -12,14 +13,21 @@ const CHEVRON_PX = 12;
 
 export interface FolderLineProps {
 	readonly folder: FolderRowFacts;
+	readonly nextTop: TopRef | null;
 	readonly drag: FlowDrag;
 	readonly onToggle: () => void;
 	readonly onRename: () => void;
 	readonly onAdd: () => void;
 }
 
-export function FolderLine({ folder, drag, onToggle, onRename, onAdd }: FolderLineProps): ReactElement {
-	const target: DropTarget = { kind: "folder", folderId: folder.id };
+export function FolderLine({ folder, nextTop, drag, onToggle, onRename, onAdd }: FolderLineProps): ReactElement {
+	const target: DropTarget = {
+		kind: "folder",
+		folderId: folder.id,
+		isOpen: folder.isOpen,
+		nextTop,
+		projectId: folder.projectId,
+	};
 	return (
 		<div
 			className="sumi-flows-row"

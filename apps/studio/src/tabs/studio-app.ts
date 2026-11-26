@@ -4,40 +4,21 @@ import { appHost } from "@widgetarium/app-host/contract";
 import { browser } from "@widgetarium/browser/implementation";
 import type { BrowserPagesIpc } from "@widgetarium/browser/implementation";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
-import type {
-	DeviceModule,
-	ModuleContract,
-	Platform,
-	RemoteTransport,
-	Runtime,
-	ServerRuns,
-} from "@widgetarium/data-framework";
-import { fileSystem, haptics, terminal } from "@sumi/contract";
+import type { DeviceModule, Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { layout } from "@widgetarium/layout/implementation";
 import { plugins as pluginRegistry } from "@widgetarium/plugin-registry/implementation";
 import type { CatalogueEntry } from "@widgetarium/plugin-registry/implementation";
 import type { BoardFile } from "@widgetarium/tasks/implementation";
-import { fileSystem as fileSystemModule } from "@widgetarium/file-system/implementation";
-import { haptics as hapticsModule } from "@widgetarium/haptics/implementation";
-import { terminal as terminalModule } from "@widgetarium/terminal/implementation";
 import { workspaces } from "@widgetarium/workspaces/implementation";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import type { BackgroundModule, WindowModule } from "../plugins/sumi-plugins.js";
 import type { FrameCoreModule } from "./frame-routes.js";
 
-export const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [fileSystem, terminal, haptics];
-
 export function frameCoreModulesOf(backgroundModules: readonly BackgroundModule[]): readonly FrameCoreModule[] {
-	return [
-		...HOST_CAPABILITY_CONTRACTS.map((module) => ({
-			module,
-			prefix: null,
-		})),
-		...backgroundModules.map(({ contract, prefix }) => ({
-			module: contract,
-			prefix,
-		})),
-	];
+	return backgroundModules.map(({ contract, prefix }) => ({
+		module: contract,
+		prefix,
+	}));
 }
 
 export interface TauriStudioLent {
@@ -85,12 +66,7 @@ export function startCoreInProcess(
 		file: boardFileInMemory(),
 	};
 	const core = runtime()
-		.modules(
-			fileSystemModule,
-			terminalModule,
-			hapticsModule,
-			...backgroundModules.map(({ moduleOf }) => moduleOf(offers)),
-		)
+		.modules(...backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
 		.start({ platform: "server", env: {}, scope: { workspaceId } });
 	mountOrStop(core, (started) => local.serve(started, { authenticate: new AppCallerAuthenticate() }));
 	return local;

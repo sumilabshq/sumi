@@ -8,7 +8,7 @@ import type { Answer, Settled } from "../../../shared/lib/settling/settling.js";
 import type { PlacedApps } from "../../../shared/lib/tabs/app-abilities.js";
 import type { FlowsDoc } from "../../../shared/schema/flows.schema.js";
 import type { NavigateAsk } from "../../../shared/schema/tab-asks.schema.js";
-import { navigatePlan, resolvedTargetOf } from "./navigating-plans.js";
+import { navigatePlan } from "./navigating-plans.js";
 
 type Navigated = PlacesMove<Answer<Settled<string>>>;
 
@@ -18,9 +18,7 @@ interface TabSwap {
 }
 
 export function navigateMove(ask: NavigateAsk, apps: PlacedApps): MovePlaces<Answer<Settled<string>>> {
-	const navigating = tabsMoveAsPlaces(
-		settlingWith(ask.at, apps, navigatePlan({ ...ask, target: resolvedTargetOf(apps, ask.target) })),
-	);
+	const navigating = tabsMoveAsPlaces(settlingWith(ask.at, apps, navigatePlan(ask)));
 	const fromId = placeGiverOf(ask);
 	return (now) => {
 		const navigated = navigating(now);

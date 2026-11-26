@@ -5,7 +5,8 @@ import type { DropLine } from "./drop-line.js";
 import { useHapticTap } from "./haptic-tap.js";
 import { liftCopyOf } from "./lift-copy.js";
 import { usePeekHold } from "./peek-hold.js";
-import type { FlowActs, FlowPlace } from "./use-flow-acts.js";
+import { placeBeforeOf } from "./flow-facts.js";
+import type { FlowActs, FlowPlace, TopRef } from "./use-flow-acts.js";
 
 export type DragSource =
 	| { readonly kind: "flow"; readonly id: string }
@@ -17,14 +18,23 @@ export type DropTarget =
 			readonly kind: "flow";
 			readonly flowId: string;
 			readonly nextFlowId: string | null;
+			readonly nextTop: TopRef | null;
+			readonly top: TopRef;
 			readonly folderId: string | null;
 			readonly projectId: string;
 	  }
-	| { readonly kind: "folder"; readonly folderId: string }
+	| {
+			readonly kind: "folder";
+			readonly folderId: string;
+			readonly isOpen: boolean;
+			readonly nextTop: TopRef | null;
+			readonly projectId: string;
+	  }
 	| { readonly kind: "project"; readonly projectId: string; readonly nextProjectId: string | null };
 
 type Landing =
 	| { readonly kind: "flow"; readonly place: FlowPlace }
+	| { readonly kind: "folder-place"; readonly projectId: string; readonly before: TopRef | null }
 	| { readonly kind: "folder-to-project"; readonly projectId: string }
 	| { readonly kind: "project"; readonly beforeId: string | null };
 
@@ -34,7 +44,10 @@ interface Aim {
 	readonly landing: Landing;
 }
 
-export type DragActs = Pick<FlowActs, "move" | "moveFolderToProject" | "reorderProject">;
+export type DragActs = Pick<FlowActs, "move" | "moveFolderToProject" | "placeFolder" | "reorderProject">;
+
+const FOLDER_BLOCK = ".sumi-flows-folder";
+const FOLDER_EDGE_SHARE = 0.3;
 
 export interface FlowDrag {
 	readonly intoKey: string | null;
@@ -75,6 +88,14 @@ export function useFlowDrag(acts: DragActs): FlowDrag {
 
 		if (source.kind === "folder" && landing.kind === "folder-to-project") {
 			acts.moveFolderToProject(source.id, landing.projectId);
+		}
+
+		if (
+			source.kind === "folder" &&
+			landing.kind === "folder-place" &&
+			!(landing.before?.kind === "folder" && landing.before.id === source.id)
+		) {
+			acts.placeFolder(source.id, landing.projectId, landing.before);
 		}
 
 		if (source.kind === "project" && landing.kind === "project" && landing.beforeId !== source.id) {
@@ -164,15 +185,18 @@ function aimOf(source: DragSource, target: DropTarget, event: DragEvent): Aim | 
 	}
 
 	if (source.kind === "folder") {
-		return null;
+		return topGapOf(source.kind, target.projectId, isUpper ? topOf(target) : target.nextTop, {
+			element: blockOf(element),
+			isUpper,
+		});
 	}
 
 	if (target.kind === "folder") {
-		return {
-			key: intoKeyOf(target),
-			line: null,
-			landing: { kind: "flow", place: { folderId: target.folderId, before: null } },
-		};
+		return sessionOverFolderAimOf(target, element, event);
+	}
+
+	if (target.folderId === null) {
+		return topGapOf(source.kind, target.projectId, isUpper ? target.top : target.nextTop, { element, isUpper });
 	}
 
 	const before = isUpper ? target.flowId : target.nextFlowId;
@@ -187,6 +211,60 @@ function aimOf(source: DragSource, target: DropTarget, event: DragEvent): Aim | 
 				projectId: target.folderId === null ? target.projectId : undefined,
 			},
 		},
+	};
+}
+
+interface GapAt {
+	readonly element: Element;
+	readonly isUpper: boolean;
+}
+
+function topGapOf(
+	sourceKind: "flow" | "folder",
+	projectId: string,
+	before: TopRef | null,
+	{ element, isUpper }: GapAt,
+): Aim {
+	const landing: Landing =
+		sourceKind === "folder"
+			? { kind: "folder-place", projectId, before }
+			: { kind: "flow", place: placeBeforeOf(projectId, before) };
+	return {
+		key: `gap:${projectId}:${before === null ? "end" : `${before.kind}:${before.id}`}`,
+		line: dropLineOf(element, isUpper),
+		landing,
+	};
+}
+
+function topOf(target: Exclude<DropTarget, { kind: "project" }>): TopRef {
+	return target.kind === "folder" ? { kind: "folder", id: target.folderId } : target.top;
+}
+
+function blockOf(element: Element): Element {
+	return element.closest(FOLDER_BLOCK) ?? element;
+}
+
+function sessionOverFolderAimOf(
+	target: Extract<DropTarget, { kind: "folder" }>,
+	element: Element,
+	event: DragEvent,
+): Aim {
+	const box = element.getBoundingClientRect();
+	const edge = box.height * FOLDER_EDGE_SHARE;
+	const block = blockOf(element);
+
+	if (event.clientY < box.top + edge) {
+		return topGapOf("flow", target.projectId, topOf(target), { element: block, isUpper: true });
+	}
+
+	if (event.clientY > box.bottom - edge && !target.isOpen) {
+		return topGapOf("flow", target.projectId, target.nextTop, { element: block, isUpper: false });
+	}
+
+	return {
+		key: intoKeyOf(target),
+		line: null,
+		landing: { kind: "flow", place: { folderId: target.folderId, before: null } },
 	};
 }
 

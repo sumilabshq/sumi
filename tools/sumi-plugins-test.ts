@@ -10,6 +10,7 @@ import { tasks } from "@widgetarium/tasks/implementation";
 import { haptics } from "@widgetarium/haptics/implementation";
 import { terminal } from "@widgetarium/terminal/implementation";
 import type { ServerSideModule } from "@widgetarium/data-framework";
+import { fileSystem as fileSystemContract } from "@sumi/contract";
 import { AppsSchema } from "@sumi/apps/contract";
 import { apps as appsModule } from "../plugins/apps/data/apps/generated/module.ts";
 import type { WindowOffers } from "../plugins/sumi-host/src/index.ts";
@@ -18,9 +19,8 @@ import { MemoryPluginStateStore, PLUGIN_STATE_FILE } from "@widgetarium/plugin-f
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { builtInPluginState, startSumiPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import type { ResolvedPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
-import { frameCoreModulesOf } from "../apps/studio/src/tabs/studio-app.ts";
-import { HOST_CAPABILITY_MODULES } from "../apps/tauri/src/plugins/host-capabilities.ts";
-import { workspacePluginStateOf } from "../apps/tauri/src/plugins/workspace-plugin-state.ts";
+import { frameCoreModulesOf, startStudioApp } from "../apps/studio/src/tabs/studio-app.ts";
+import { pluginStateOf as workspacePluginStateOf } from "../apps/tauri/src/plugins/plugin-state.ts";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { FakeStore, quietly } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -67,7 +67,7 @@ const CHAT_PIECES = [
 ];
 
 function coreModulesOf(resolved: ResolvedPlugins): readonly ServerSideModule[] {
-	return [...HOST_CAPABILITY_MODULES, ...resolved.backgroundModules.map(({ moduleOf }) => moduleOf(offers))];
+	return [...resolved.backgroundModules.map(({ moduleOf }) => moduleOf(offers))];
 }
 
 async function appIdsAnsweredBy(resolved: ResolvedPlugins): Promise<unknown> {
@@ -139,19 +139,21 @@ const coreNamesNow = coreModulesNow.map(({ definition }) => definition.name);
 
 check("the built-in profile resolves with no refusal", resolved.refusals, []);
 check(
-	"the host runs the machine capabilities itself: files, terminal sessions and trackpad haptics",
-	HOST_CAPABILITY_MODULES.map(({ definition }) => definition.name),
-	[fileSystem.definition.name, terminal.definition.name, haptics.definition.name],
-);
-check(
-	"the backend holds the apps plugin's places and apps, the chat plugin's questions, the tasks plugin's tasks and the canvas plugin's artboards, none of the host's",
+	"the backend holds the machine capabilities (files, terminal sessions, trackpad haptics) as background modules, then the apps plugin's places and apps, the chat plugin's questions, the tasks plugin's tasks and the canvas plugin's artboards",
 	resolved.backgroundModules.map(({ contract }) => contract.name),
 	[
+		fileSystem.definition.name,
+		terminal.definition.name,
+		haptics.definition.name,
 		places.definition.name,
+		"tab-groups",
 		appsModule.definition.name,
+		"chat-facts",
 		questions.definition.name,
 		tasks.definition.name,
+		"home-pages",
 		artboards.definition.name,
+		"pins",
 	],
 );
 check(
@@ -194,9 +196,9 @@ check(
 	[[], ...VIEWER_APP_IDS.map(() => ["file-page"])],
 );
 check(
-	"a frame reaches the host's capabilities and every module a plugin registers in the background, and no other",
+	"a frame reaches every background module, the host's capabilities among them, and no other",
 	frameCoreModulesOf(resolved.backgroundModules).map(({ module }) => module.name),
-	["file-system", "terminal", "haptics", ...resolved.backgroundModules.map(({ contract }) => contract.name)],
+	["file-system", "terminal", "haptics", ...resolved.backgroundModules.slice(3).map(({ contract }) => contract.name)],
 );
 check(
 	"the registered background modules include places, tasks, questions and apps, so no host list names them",
@@ -258,7 +260,7 @@ check(
 check(
 	"a profile cannot turn off the host's always-on plugins: an empty one still starts the apps, questions and tasks modules",
 	[emptyProfile.refusals, emptyProfile.backgroundModules.length],
-	[[], 4],
+	[[], 9],
 );
 check(
 	"a profile without the terminal plugin has no terminal app, in the module and on the tab page",
@@ -533,6 +535,23 @@ check(
 		said.includes('was written by another window first at rev 1, plugins of this start {"agent"'),
 	).length === 1 && racedStart.infos.some((said) => said.includes('→ stored {"git":{"enabled":false}}')),
 	true,
+);
+
+const studioStart = await quietly(async () => {
+	const studioApp = startStudioApp({
+		platform: "browser",
+		workspaceId: "sumi-plugins-studio",
+		backgroundModules: resolved.backgroundModules,
+		windowModules: [],
+	});
+	const picked = await studioApp.send(fileSystemContract.files.pickFolder);
+	studioApp.stop();
+	return picked.ok ? "" : picked.reason;
+});
+check(
+	"the studio runtime of the window frame reaches file-system.files.pickFolder, no 'runs on no module' refusal",
+	studioStart.answer.includes("runs on no module"),
+	false,
 );
 
 if (tally.failed > 0) {

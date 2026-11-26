@@ -41,6 +41,8 @@ declare global {
 		__flowsSidebar: () => Promise<unknown>;
 		__archive: (flowId: string) => Promise<unknown>;
 		__projects: (request: keyof typeof navigation.projects, ask: unknown) => Promise<unknown>;
+		__folders: (request: keyof typeof navigation.folders, ask: unknown) => Promise<unknown>;
+		__flows: (request: keyof typeof navigation.flows, ask: unknown) => Promise<unknown>;
 		__chrome: {
 			readonly hasOwnDrag: (target: Element) => boolean;
 			readonly isControl: (target: Element) => boolean;
@@ -110,6 +112,8 @@ async function main(): Promise<void> {
 	window.__stoppedTurns = world.stoppedTurns;
 	window.__taps = world.taps;
 	window.__projects = (request, ask) => world.app.send(navigation.projects[request] as never, ask as never);
+	window.__folders = (request, ask) => world.app.send(navigation.folders[request] as never, ask as never);
+	window.__flows = (request, ask) => world.app.send(navigation.flows[request] as never, ask as never);
 	window.__flowsSidebar = () => world.app.send(navigation.flows.sidebar, { window: FIXTURE_WINDOW });
 	window.__archive = (flowId) => world.app.send(navigation.flows.archive, { flowId });
 

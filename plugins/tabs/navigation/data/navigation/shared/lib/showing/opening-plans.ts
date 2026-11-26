@@ -13,7 +13,7 @@ import { tabPageOf } from "./tab-pages.js";
 import { chatIdOf, heldTabOf, newTabPlaceOf, openTab, openTabAfter, openTabUnshown } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, OpenedHostTab, TabPlace } from "../tabs/host-tabs.js";
 import { chatOfGroup, placeAfterOf } from "../tabs/tab-lists.js";
-import { isPageApp, navigatingAppOf } from "../tabs/app-abilities.js";
+import { isPageApp, navigatingAppOf, resolvedAppOf } from "../tabs/app-abilities.js";
 import { isPageList, isPlaceableList } from "../tabs/sub-pages.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
@@ -40,18 +40,20 @@ interface TabToOpen {
 
 export function openPlan(ask: Omit<OpenTabAsk, "at">): ExtraPlan<string> {
 	return (showing, facts) => {
-		if (!isPageApp(showing.moment.apps, ask.app)) {
-			return refusal(NOT_A_PAGE_APP.replaceAll("{app}", ask.app));
+		const app = resolvedAppOf(showing.moment.apps, ask.app, ask.address);
+
+		if (!isPageApp(showing.moment.apps, app)) {
+			return refusal(NOT_A_PAGE_APP.replaceAll("{app}", app));
 		}
 
-		const held = ask.reusesHeld ? heldAtAddressOf(showing.moment, ask) : undefined;
+		const held = ask.reusesHeld ? heldAtAddressOf(showing.moment, { app, address: ask.address }) : undefined;
 
 		if (held !== undefined) {
 			return plannedWith(ask.show ? withShownTab(showing, facts, { tab: held, paneId: null }) : showing, held.id);
 		}
 
 		const place = askedPlaceOf(showing.moment, ask);
-		return isRefusal(place) ? place : openedShowing(showing, facts, { ...ask, place });
+		return isRefusal(place) ? place : openedShowing(showing, facts, { ...ask, app, place });
 	};
 }
 
@@ -161,7 +163,10 @@ function openedShowing(showing: Showing, facts: TabFacts, asked: TabToOpen): Pla
 	return plannedWith(shown, opened.tab.id);
 }
 
-function heldAtAddressOf(moment: HostTabsMoment, { app, address }: Omit<OpenTabAsk, "at">): HostTab | undefined {
+function heldAtAddressOf(
+	moment: HostTabsMoment,
+	{ app, address }: { readonly app: string; readonly address: string },
+): HostTab | undefined {
 	return moment.tabs.find((tab) => tab.app === app && (tab.lastAddress ?? "") === address);
 }
 

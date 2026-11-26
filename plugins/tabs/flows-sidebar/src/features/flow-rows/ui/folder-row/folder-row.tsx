@@ -5,7 +5,7 @@ import type { FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import { NEW_SESSION } from "../../../../shared/lib/flow-facts.js";
 import type { FolderRowFacts } from "../../../../shared/lib/flow-facts.js";
 import { useFolderRenaming } from "../../../../shared/lib/folder-rename-request.js";
-import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
+import type { FlowActs, TopRef } from "../../../../shared/lib/use-flow-acts.js";
 import { ConfirmDelete } from "../../../../shared/ui/confirm-delete/confirm-delete.js";
 import { ColorDots } from "../row-field/color-dots.js";
 import { RowField } from "../row-field/row-field.js";
@@ -22,11 +22,12 @@ function flowCountOf(count: number): string {
 
 export interface FolderRowViewProps {
 	readonly folder: FolderRowFacts;
+	readonly nextTop: TopRef | null;
 	readonly acts: FlowActs;
 	readonly drag: FlowDrag;
 }
 
-export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): ReactElement {
+export function FolderRowView({ folder, nextTop, acts, drag }: FolderRowViewProps): ReactElement {
 	const [isRenaming, setIsRenaming] = useFolderRenaming(folder.id);
 	const [opensPicker, setOpensPicker] = useState(false);
 	const [isConfirming, setIsConfirming] = useState(false);
@@ -101,6 +102,7 @@ export function FolderRowView({ folder, acts, drag }: FolderRowViewProps): React
 			>
 				<FolderLine
 					folder={folder}
+					nextTop={nextTop}
 					drag={drag}
 					onToggle={() => acts.toggleFolder(folder.id)}
 					onRename={() => setIsRenaming(true)}

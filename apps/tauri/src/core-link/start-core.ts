@@ -8,7 +8,6 @@ import { navigation as placesContract } from "@widgetarium/navigation/contract";
 import { tasks } from "@widgetarium/tasks/contract";
 import { AppCallerAuthenticate, startBackendServers, startSumiPlugins } from "@widgetarium/studio";
 import type { ResolvedPlugins } from "@widgetarium/studio";
-import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
 import { pluginStateOf } from "../plugins/plugin-state.js";
 import { serveCore } from "./core-calls.js";
 import type { CoreListener } from "./core-calls.js";
@@ -119,7 +118,7 @@ function coreServedOver({ workspace, listener, store, plugins }: CoreServing): R
 		file: tasksBoardFileOver(own),
 	};
 	const core = runtime()
-		.modules(...HOST_CAPABILITY_MODULES, ...plugins.backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
+		.modules(...plugins.backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
 		.start({
 			platform: "server",
 			env: {

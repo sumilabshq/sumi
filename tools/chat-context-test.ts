@@ -127,8 +127,8 @@ check("a stored value that is no editor reads as none", stored.chosen(), null);
 
 const repoContext = inRepo.ok ? inRepo.output : null;
 const plainContext = plain.ok ? plain.output : null;
-check("the chip shows the branch in a git folder", chipOf(repoContext), { icon: "git-branch", label: "main" });
-check("the chip shows the folder name without git", chipOf(plainContext), { icon: "folder", label: "notes" });
+check("the chip shows the branch in a git folder", chipOf(repoContext), "main");
+check("no branch, no chip", chipOf(plainContext), null);
 check("no folder, no chip", chipOf(null), null);
 check("the home folder is written as ~ in a path", homeShortened("/Users/demo/Projects/Sumi"), "~/Projects/Sumi");
 check("the home folder itself is just ~", homeShortened("/Users/demo"), "~");

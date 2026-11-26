@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { dragKeyOf, intoKeyOf } from "../../../../shared/lib/flow-drag.js";
 import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FlowRowFacts, FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
-import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
+import type { FlowActs, TopRef } from "../../../../shared/lib/use-flow-acts.js";
 import { ConfirmDelete } from "../../../../shared/ui/confirm-delete/confirm-delete.js";
 import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
 import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
@@ -23,6 +23,7 @@ function chatCountOf(count: number): string {
 export interface FlowRowViewProps {
 	readonly flow: FlowRowFacts;
 	readonly nextFlowId: string | null;
+	readonly nextTop: TopRef | null;
 	readonly folderId: string | null;
 	readonly projectId: string;
 	readonly sidebar: FlowsSidebarFacts;
@@ -34,6 +35,7 @@ export interface FlowRowViewProps {
 export function FlowRowView({
 	flow,
 	nextFlowId,
+	nextTop,
 	folderId,
 	projectId,
 	sidebar,
@@ -48,7 +50,15 @@ export function FlowRowView({
 		setOpensPicker(true);
 		setIsRenaming(true);
 	};
-	const target: DropTarget = { kind: "flow", flowId: flow.id, nextFlowId, folderId, projectId };
+	const target: DropTarget = {
+		kind: "flow",
+		flowId: flow.id,
+		nextFlowId,
+		nextTop,
+		top: folderId === null ? { kind: "flow", id: flow.id } : { kind: "folder", id: folderId },
+		folderId,
+		projectId,
+	};
 
 	if (isRenaming) {
 		return (
