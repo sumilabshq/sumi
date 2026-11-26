@@ -616,7 +616,7 @@
 
 :is(.wg-root, .wg-portal) .wg-kit-seg.sumi-flows-picker-tabs {
 	--seg-pad: 2px;
-	background: var(--glass-group);
+	background: var(--soft);
 	display: flex;
 	border-radius: calc(var(--r-sm) + 2px);
 }
@@ -647,7 +647,7 @@
 	height: var(--h-sm);
 	padding: 0 var(--space-2);
 	color: var(--text-3);
-	background: var(--glass-group);
+	background: var(--soft);
 	border-radius: var(--r-sm);
 }
 
@@ -714,7 +714,7 @@
 	width: var(--h-sm);
 	height: var(--h-sm);
 	padding: 0;
-	color: var(--text);
+	color: var(--text-2);
 	cursor: pointer;
 	background: none;
 	border: 0;

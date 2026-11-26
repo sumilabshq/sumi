@@ -14,7 +14,7 @@ const TauriConfigSchema = z.object({
 	}),
 });
 const SIDEBAR_SHEET = "plugins/tabs/flows-sidebar/src/features/flows-column/ui/flows-sidebar/flows-sidebar.css";
-const SHEETS = ["design-systems/sumi/sumi.css", ...BROWSER_SHEET_SOURCES, SIDEBAR_SHEET];
+const SHEETS = ["apps/studio/dist/studio.css", ...BROWSER_SHEET_SOURCES, SIDEBAR_SHEET];
 const TAURI_CONFIG = "apps/tauri/src-tauri/tauri.conf.json";
 const TRAFFIC_LIGHTS_GROUP_PX = 60;
 const TRAFFIC_LIGHTS_BUTTON_PX = 14;
@@ -101,9 +101,9 @@ async function pagedWithRetry(file: string, size: PageSize, pixelRatio: number):
 
 function htmlOf(bundled: string, theme: string, [width, height]: PageSize): string {
 	const sheets = SHEETS.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
-	const dark = theme === "dark" ? " dark" : "";
+	const dark = theme === "dark" ? "dark" : "";
 	const script = bundled.replaceAll("</script", "<\\/script");
-	return `<!doctype html><html class="theme-${theme}${dark}"><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body class="theme-${theme}${dark}" style="margin:0;background:var(--frame)"><div class="${STUDIO_PORTAL_LAYER}"></div><div id="frame" style="width:${width}px;height:${height}px"></div><script>${script}</script></body></html>`;
+	return `<!doctype html><html class="${dark}"><head><meta charset="utf-8"><style>${sheets}${PAGE_CSS}</style></head><body style="margin:0;background:var(--frame)"><div class="${STUDIO_PORTAL_LAYER}"></div><div id="frame" style="width:${width}px;height:${height}px"></div><script>${script}</script></body></html>`;
 }
 
 function trafficLightsOf(): TrafficLights {
