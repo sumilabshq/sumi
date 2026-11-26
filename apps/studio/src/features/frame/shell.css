@@ -227,7 +227,7 @@ body:has([data-browser-pages-live]),
 	position: relative;
 	z-index: 3;
 	flex: none;
-	height: var(--header-h);
+	height: var(--page-head-h);
 	overflow: hidden;
 	background: transparent;
 	color: var(--text);
@@ -245,15 +245,11 @@ body:has([data-browser-pages-live]),
 	align-items: center;
 	box-sizing: border-box;
 	height: 100%;
-	padding: var(--space-none) var(--space-3) var(--space-none) var(--pad);
+	padding: var(--space-none) var(--page-head-pad);
 	gap: var(--space-1);
 	transition:
 		padding-left var(--shell-slide),
 		padding-right var(--shell-slide);
-}
-
-.wg-plate-head.is-app .wg-plate-head-row {
-	padding-left: var(--space-3);
 }
 
 .wg-plate-head-row.wg-root {

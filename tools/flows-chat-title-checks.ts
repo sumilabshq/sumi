@@ -6,9 +6,9 @@ import { bundleOf } from "./harness.ts";
 
 const WINDOW_SIZE = [1440, 900] as const;
 const SIDEBAR_PX = 261;
-const SPACE_4_PX = 16;
+const PAGE_HEAD_PAD_PX = 8;
 const TOLERANCE_PX = 1;
-const TITLE_INSET_PX = 4;
+const TITLE_INSET_PX = 0;
 const SETTLE_MS = 1200;
 const SHEETS = [
 	"packages/shared/core/board.css",
@@ -69,7 +69,7 @@ export async function chatTitleChecks(): Promise<void> {
 		const state = isDocked ? "docked" : "hidden";
 		const seen = await measured(pageOf(bundle, isDocked), `chat-title-${state}`);
 		console.log(`   chat title ${state}: ${JSON.stringify(seen)}`);
-		const wantedPx = isDocked ? SPACE_4_PX : Number.parseFloat(seen.paddingStart);
+		const wantedPx = isDocked ? PAGE_HEAD_PAD_PX : Number.parseFloat(seen.paddingStart);
 		const textStartPx = seen.title + TITLE_INSET_PX - seen.pane;
 		check(`${state}: the chat title text starts at the pane's left plus ${String(wantedPx)}px`, Math.abs(textStartPx - wantedPx) <= TOLERANCE_PX, true);
 	}

@@ -10,6 +10,7 @@ import { hasOwnDrag, isControl } from "../apps/tauri/src/window-drag-target.ts";
 import { FlowBoard } from "../plugins/tabs/flow-board/src/features/flow-board/ui/flow-board/flow-board.tsx";
 import { FlowStrip } from "../plugins/tabs/flow-strip/src/features/flow-header/ui/flow-strip/flow-strip.tsx";
 import { FlowWindowContext } from "../plugins/tabs/flow-strip/src/shared/lib/flow-window-context.ts";
+import { TrailButtons } from "../plugins/tabs/flows-sidebar/src/shared/ui/trail-buttons/trail-buttons.tsx";
 import { FlowsWindowContext } from "../plugins/tabs/flows-sidebar/src/shared/lib/flows-window.ts";
 import { RuntimeProvider, Slot } from "../packages/shared/data-framework/src/index.ts";
 import { SlotFills } from "../packages/shared/plugin-framework/src/index.ts";
@@ -139,6 +140,9 @@ async function main(): Promise<void> {
 										<FrameStart />
 									</Slot>
 									<div className="wg-shell-app-zone">
+										<header className="wg-chat-head">
+											<TrailButtons />
+										</header>
 										<PageZone isBoard={isBoard} />
 									</div>
 								</div>

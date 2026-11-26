@@ -124,7 +124,9 @@
 	--tab-w: 176px;
 	--tab-min-w: 120px;
 	--tab-pad-x: 9px;
-	--header-h: 36px;
+	--header-h: 44px;
+	--page-head-pad: var(--space-2);
+	--page-head-h: calc(var(--h-xs) + 2 * var(--page-head-pad));
 	--sidebar-w: 280px;
 	--sidebar-min: 200px;
 	--sidebar-max: 420px;

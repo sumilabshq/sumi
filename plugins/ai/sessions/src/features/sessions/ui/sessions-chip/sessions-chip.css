@@ -7,7 +7,6 @@
 	min-width: 0;
 	max-width: 420px;
 	height: var(--h-xs);
-	margin-inline-start: calc(-1 * var(--space-1));
 	padding: var(--space-none) var(--space-1);
 	color: var(--text);
 	font-family: var(--font-ui);
