@@ -1,16 +1,21 @@
 .sumi-canvas-top-row {
+	--canvas-top-inset: var(--space-3);
+	--canvas-top-fade: 56px;
 	position: absolute;
 	top: 0;
 	right: 0;
 	left: 0;
 	z-index: 3;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
+	box-sizing: border-box;
 	gap: var(--space-3);
-	height: var(--header-h);
-	padding-inline-start: calc(var(--corner-start, 0px) + var(--space-3));
-	padding-inline-end: calc(var(--corner-end, 0px) + var(--space-3));
+	height: var(--canvas-top-fade);
+	padding-block-start: var(--canvas-top-inset);
+	padding-inline-start: calc(var(--corner-start, 0px) + var(--canvas-top-inset));
+	padding-inline-end: calc(var(--corner-end, 0px) + var(--canvas-top-inset));
+	background: linear-gradient(color-mix(in srgb, var(--plate-fill, var(--plate)) 80%, transparent), transparent);
 	pointer-events: none;
 }
 
@@ -24,10 +29,7 @@
 	align-items: center;
 	gap: var(--space-0-5);
 	min-width: 0;
-	height: var(--h-md);
-	padding-inline: var(--space-1);
-	backdrop-filter: var(--blur-corner);
-	-webkit-backdrop-filter: var(--blur-corner);
+	height: var(--h-xs);
 	pointer-events: auto;
 }
 
@@ -50,7 +52,7 @@
 	align-items: center;
 	gap: var(--space-1-5);
 	min-width: 0;
-	height: var(--h-sm);
+	height: var(--h-xs);
 	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-13);
@@ -75,7 +77,7 @@
 
 .sumi-canvas-top-button.is-square {
 	justify-content: center;
-	width: var(--h-sm);
+	width: var(--h-xs);
 	padding: var(--space-none);
 }
 
@@ -85,7 +87,7 @@
 
 .sumi-canvas-title-field {
 	width: 220px;
-	height: var(--h-sm);
+	height: var(--h-xs);
 	padding: var(--space-none) var(--space-2);
 	font: inherit;
 	font-size: var(--fs-13);

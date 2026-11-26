@@ -9,7 +9,7 @@ export interface HomeCrumbProps {
 	readonly onAll: () => void;
 }
 
-const ICON_PX = 16;
+const ICON_PX = 14;
 
 export function HomeCrumb({ shown, onAll }: HomeCrumbProps): ReactElement {
 	if (shown === "all") {

@@ -153,9 +153,23 @@ check(
 	"true",
 );
 check(
-	"each plate blurs what passes under it",
+	"no plate blurs what passes under the row",
 	await editor.ask("getComputedStyle(document.querySelector('.sumi-canvas-plate')).backdropFilter"),
-	"blur(10px)",
+	"none",
+);
+check(
+	"the row fades the canvas field with a gradient 56px tall",
+	await editor.ask(
+		"(() => { const row = document.querySelector('.sumi-canvas-top-row'); return getComputedStyle(row).backgroundImage.startsWith('linear-gradient') && Math.round(row.getBoundingClientRect().height); })()",
+	),
+	56,
+);
+check(
+	"the start plate sits as far from the row's left as from its top",
+	await editor.ask(
+		"(() => { const row = document.querySelector('.sumi-canvas-top-row').getBoundingClientRect(); const plate = document.querySelector('.sumi-canvas-plate').getBoundingClientRect(); return Math.round(plate.top - row.top) - Math.round(plate.left - row.left); })()",
+	),
+	0,
 );
 check(
 	"no divider stands in the row",

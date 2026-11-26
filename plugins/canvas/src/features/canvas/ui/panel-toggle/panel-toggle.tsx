@@ -5,7 +5,7 @@ import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { Icon, Pressable, tooltipMarks } from "@widgetarium/kit";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 
-const ICON_PX = 16;
+const ICON_PX = 14;
 const HIDE_PANEL = "Hide pages and layers";
 const SHOW_PANEL = "Show pages and layers";
 

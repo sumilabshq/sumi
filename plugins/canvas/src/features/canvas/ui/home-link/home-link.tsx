@@ -5,7 +5,7 @@ import { HOME_HREF, HOME_ICON, HOME_TITLE } from "../../../../shared/lib/canvas-
 import { useOpensLink } from "../../../../shared/lib/use-opens-link.js";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
 
-const ICON_PX = 16;
+const ICON_PX = 14;
 const SAID = "All canvases";
 
 export function HomeLink(): ReactElement {
