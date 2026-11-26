@@ -5,8 +5,8 @@ import { StoreClient, memoryStoreInvoke } from "../packages/shared/behaviors/tau
 import { appearance as appearanceModule } from "../packages/state/appearance/generated/module.ts";
 import { plugins as registryModule } from "../packages/state/plugin-registry/generated/module.ts";
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
-import { WindowAppContext } from "../plugins/settings/src/shared/lib/window-app-context.ts";
-import { settingsPageOf } from "../plugins/settings/src/features/settings/ui/settings-page/settings-page.tsx";
+import { WindowAppContext } from "../plugins/settings/ui/src/shared/lib/window-app-context.ts";
+import { settingsRootOf } from "../plugins/settings/ui/src/features/settings/ui/settings-root/settings-root.tsx";
 import { AppearancePage } from "../plugins/appearance-settings/src/features/appearance/ui/appearance-page/appearance-page.tsx";
 import { PluginsPage } from "../plugins/plugins-catalog/src/features/catalog/ui/plugins-page/plugins-page.tsx";
 import { placesOver } from "./places-fixture.ts";
@@ -29,17 +29,25 @@ const app = runtime()
 	.imports(...placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "fixture" } });
 
-const Settings = settingsPageOf([
+const Settings = settingsRootOf([
 	{
 		id: "appearance",
 		title: "Appearance",
 		icon: "palette",
-		group: "sumi",
+		section: "Sumi",
 		order: 10,
 		keywords: ["theme", "font"],
 		view: AppearancePage,
 	},
-	{ id: "plugins", title: "Plugins", icon: "plug", group: "extend", order: 10, keywords: ["build"], view: PluginsPage },
+	{
+		id: "plugins",
+		title: "Plugins",
+		icon: "plug",
+		section: "Extend Sumi",
+		order: 10,
+		keywords: ["build"],
+		view: PluginsPage,
+	},
 ]);
 
 const host = document.getElementById("root");

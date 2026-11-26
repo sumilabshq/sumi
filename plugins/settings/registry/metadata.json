@@ -1,0 +1,12 @@
+{
+	"title": "Settings registry",
+	"description": "Holds the pages of Settings and their sections as data, and searches them.",
+	"type": "service",
+	"preview": null,
+	"author": "Sumi",
+	"official": true,
+	"adds": [],
+	"reaches": [],
+	"source": null,
+	"readme": "Plugins register a page with its sections here. The Settings app reads the pages and finds sections by their titles."
+}

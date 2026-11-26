@@ -11,7 +11,8 @@
 	},
 	"dependencies": {
 		"@sumi/contract": "0.6.0",
-		"@sumi/settings-plugin": "0.1.0",
+		"@sumi/settings-registry-plugin": "0.1.0",
+		"@sumi/settings-ui-plugin": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",

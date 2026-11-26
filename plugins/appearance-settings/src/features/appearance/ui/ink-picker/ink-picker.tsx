@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { workspaces } from "@widgetarium/workspaces/contract";
-import { useWindowApp } from "@sumi/settings-plugin";
+import { useWindowApp } from "@sumi/settings-ui-plugin";
 import { RuntimeProvider } from "@widgetarium/data-framework";
 
 const INKS = ["yellow", "ember", "moss", "tide", "iris", "rose"] as const;

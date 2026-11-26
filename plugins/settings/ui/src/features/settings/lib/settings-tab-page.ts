@@ -1,16 +1,16 @@
 import type { RemoteModule } from "@widgetarium/data-framework";
+import type { SettingsPageEntry } from "@sumi/settings-registry-plugin";
 import type { DrawnTabPage, WindowOffers } from "@sumi/sumi-host-plugin";
-import type { SettingsPage } from "../../../shared/lib/settings-page.js";
-import { settingsPageOf } from "../ui/settings-page/settings-page.js";
+import { settingsRootOf } from "../ui/settings-root/settings-root.js";
 
 const SETTINGS_APP = "settings";
 
 export function settingsTabPage(
-	pages: readonly SettingsPage[],
+	pages: readonly SettingsPageEntry[],
 	imports: readonly ((offers: WindowOffers) => RemoteModule)[],
 ): DrawnTabPage {
 	return {
-		page: settingsPageOf(pages),
+		page: settingsRootOf(pages),
 		header: "shell",
 		draws: (app) => app === SETTINGS_APP,
 		modulesOf: (_tab, offers) => Promise.resolve({ modules: [], imports: imports.map((build) => build(offers)) }),

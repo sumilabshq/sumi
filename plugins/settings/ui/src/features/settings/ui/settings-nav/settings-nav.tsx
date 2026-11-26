@@ -1,9 +1,8 @@
 import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { Icon, Input, Kbd, PopoverItem } from "@widgetarium/kit";
-import type { SettingsPage } from "../../../../shared/lib/settings-page.js";
+import type { SettingsPageEntry, SettingsPageGroup } from "@sumi/settings-registry-plugin";
 import { groupsMatching } from "../../lib/groups-matching.js";
-import type { PageGroup } from "../../lib/pages-by-group.js";
 import { useFocusesOnFind } from "../../lib/use-focuses-on-find.js";
 
 const SEARCH = "Search settings";
@@ -11,9 +10,9 @@ const SEARCH_KEY = "⌘F";
 const NO_MATCH = "Nothing matches";
 
 export interface SettingsNavProps {
-	readonly groups: readonly PageGroup[];
-	readonly shown: SettingsPage;
-	readonly onShow: (page: SettingsPage) => void;
+	readonly groups: readonly SettingsPageGroup[];
+	readonly shown: SettingsPageEntry;
+	readonly onShow: (page: SettingsPageEntry) => void;
 }
 
 export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactElement {
@@ -23,7 +22,7 @@ export function SettingsNav({ groups, shown, onShow }: SettingsNavProps): ReactE
 	useFocusesOnFind(navRef, searchRef);
 	const matching = groupsMatching(groups, query);
 	const first = matching[0]?.pages[0];
-	const show = (page: SettingsPage): void => {
+	const show = (page: SettingsPageEntry): void => {
 		setQuery("");
 		onShow(page);
 	};

@@ -1,4 +1,4 @@
-import { globSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, globSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import { paged, waited } from "./chrome-ask.ts";
@@ -7,15 +7,22 @@ import { shippedTauriSheet } from "./tauri-frontend-sheet.mts";
 
 const OUT = "/tmp/settings-shots";
 const WIDTHS = [1160, 720, 440];
-const ALWAYS_ON = ["settings"];
+const ALWAYS_ON = ["settings-ui", "settings-registry"];
+
+const PLUGIN_ID = /plugin\("([^"]+)"\)/;
+
+function idOf(folder: string): string {
+	const source = path.join(folder, "src/plugin.ts");
+	return (existsSync(source) ? PLUGIN_ID.exec(readFileSync(source, "utf8"))?.[1] : undefined) ?? path.basename(folder);
+}
 
 const catalogue = globSync("plugins/**/metadata.json")
 	.filter((file) => !file.includes("node_modules"))
 	.map((file) => ({
-		id: path.basename(path.dirname(file)),
+		id: idOf(path.dirname(file)),
 		metadata: JSON.parse(readFileSync(file, "utf8")),
 		requires: [],
-		alwaysOn: ALWAYS_ON.includes(path.basename(path.dirname(file))),
+		alwaysOn: ALWAYS_ON.includes(idOf(path.dirname(file))),
 	}));
 const bundle = await bundleOf("tools/settings-page.tsx");
 const FRESH_SHEETS = ["packages/shared/core/board.css", "apps/studio/dist/studio.css"];

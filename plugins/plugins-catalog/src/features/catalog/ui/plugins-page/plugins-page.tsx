@@ -1,6 +1,6 @@
 import { createElement as h, useCallback, useState } from "react";
 import type { ReactElement } from "react";
-import { useSettingsDetail, useSettingsTab, useWindowApp } from "@sumi/settings-plugin";
+import { useSettingsDetail, useSettingsTab, useWindowApp } from "@sumi/settings-ui-plugin";
 import { Button, Icon } from "@widgetarium/kit";
 import type { Runtime } from "@widgetarium/data-framework";
 import { CloverGlyph } from "../../../../shared/ui/clover-glyph/clover-glyph.js";

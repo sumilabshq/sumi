@@ -4,16 +4,16 @@ import type { TabPageProps } from "@sumi/sumi-host-plugin";
 import { Icon, PopoverItem } from "@widgetarium/kit";
 import { SettingsDetailContext } from "../../../../shared/lib/settings-detail-context.js";
 import type { SettingsDetail } from "../../../../shared/lib/settings-detail-context.js";
-import type { SettingsPage } from "../../../../shared/lib/settings-page.js";
+import { pagesBySection } from "@sumi/settings-registry-plugin";
+import type { SettingsPageEntry } from "@sumi/settings-registry-plugin";
 import { SettingsTabContext } from "../../../../shared/lib/settings-tab-context.js";
-import { pagesByGroup } from "../../lib/pages-by-group.js";
 import { SettingsNav } from "../settings-nav/settings-nav.js";
 
 const TITLE = "Settings";
 
-export function settingsPageOf(pages: readonly SettingsPage[]): ComponentType<TabPageProps> {
+export function settingsRootOf(pages: readonly SettingsPageEntry[]): ComponentType<TabPageProps> {
 	return function SettingsRoot({ tabId }: TabPageProps): ReactElement {
-		const groups = pagesByGroup(pages);
+		const groups = pagesBySection(pages);
 		const first = groups[0]?.pages[0];
 		const [pickedId, setPickedId] = useState<string | null>(null);
 		const [isMenuOpen, setMenuOpen] = useState(false);
@@ -25,7 +25,7 @@ export function settingsPageOf(pages: readonly SettingsPage[]): ComponentType<Ta
 		}
 
 		const View = shown.view;
-		const show = (page: SettingsPage): void => {
+		const show = (page: SettingsPageEntry): void => {
 			setPickedId(page.id);
 			setMenuOpen(false);
 		};

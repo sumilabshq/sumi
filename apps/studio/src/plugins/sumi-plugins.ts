@@ -68,7 +68,8 @@ import { imageViewer } from "@sumi/image-viewer-plugin";
 import { markdownViewer } from "@sumi/markdown-viewer-plugin";
 import { appearanceSettings } from "@sumi/appearance-settings-plugin";
 import { pluginsCatalog } from "@sumi/plugins-catalog-plugin";
-import { settings } from "@sumi/settings-plugin";
+import { settingsRegistry } from "@sumi/settings-registry-plugin";
+import { settingsUi } from "@sumi/settings-ui-plugin";
 import { terminal } from "@sumi/terminal-plugin";
 import { terminalCursor } from "@sumi/terminal-cursor-plugin";
 import { videoViewer } from "@sumi/video-viewer-plugin";
@@ -187,7 +188,8 @@ const INSTALLED_PLUGINS = [
 	flowBoard,
 	pinnedTabs,
 	subPages,
-	settings,
+	settingsRegistry,
+	settingsUi,
 	appearanceSettings,
 	pluginsCatalog,
 ];
@@ -207,6 +209,8 @@ const ALWAYS_ON_PLUGINS = [
 	questions,
 	tasks,
 	mcpApps,
+	settingsRegistry,
+	settingsUi,
 ];
 
 function catalogueOf(): readonly CatalogueEntry[] {
@@ -253,7 +257,8 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		chatContext.id,
 		pinnedTabs.id,
 		subPages.id,
-		settings.id,
+		settingsRegistry.id,
+		settingsUi.id,
 		appearanceSettings.id,
 		pluginsCatalog.id,
 	],

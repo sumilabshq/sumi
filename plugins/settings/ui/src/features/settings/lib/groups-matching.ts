@@ -1,11 +1,10 @@
-import type { SettingsPage } from "../../../shared/lib/settings-page.js";
-import type { PageGroup } from "./pages-by-group.js";
+import type { SettingsPageEntry, SettingsPageGroup } from "@sumi/settings-registry-plugin";
 
-function isMatch(page: SettingsPage, needle: string): boolean {
+function isMatch(page: SettingsPageEntry, needle: string): boolean {
 	return [page.title, ...(page.keywords ?? [])].some((word) => word.toLowerCase().includes(needle));
 }
 
-export function groupsMatching(groups: readonly PageGroup[], query: string): readonly PageGroup[] {
+export function groupsMatching(groups: readonly SettingsPageGroup[], query: string): readonly SettingsPageGroup[] {
 	const needle = query.trim().toLowerCase();
 
 	if (needle === "") {

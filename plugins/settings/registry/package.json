@@ -1,7 +1,7 @@
 {
-	"name": "@sumi/settings-plugin",
+	"name": "@sumi/settings-registry-plugin",
 	"version": "0.1.0",
-	"description": "The Settings app: sidebar and page area that other plugins add pages to",
+	"description": "The settings registry: pages and their sections as data, and the search over them",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"exports": {
@@ -10,15 +10,12 @@
 		}
 	},
 	"dependencies": {
-		"@sumi/apps-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
-		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0"
 	},
 	"peerDependencies": {
-		"react": "^19.2.8",
-		"zod": "^4.6.5"
+		"react": "^19.2.8"
 	},
 	"widgetarium": {
 		"level": "plugin"
