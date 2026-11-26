@@ -1,5 +1,5 @@
 import { appHost } from "@widgetarium/app-host/contract";
-import { useCommand, useQuery } from "@widgetarium/data-framework";
+import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { navigation } from "@widgetarium/navigation/contract";
 
 export interface Trail {
@@ -10,19 +10,21 @@ export interface Trail {
 }
 
 export function useTrail(window: string): Trail {
-	const trail = useQuery(navigation.windowTrail.trail, { window }).data;
+	const trail = useOptionalQuery(navigation.windowTrail.trail, { window }).data;
+	const canGoBack = trail?.canGoBack === true;
+	const canGoForward = trail?.canGoForward === true;
 	const back = useCommand(appHost.flows.back);
 	const forward = useCommand(appHost.flows.forward);
 	return {
-		canGoBack: trail.canGoBack,
-		canGoForward: trail.canGoForward,
+		canGoBack,
+		canGoForward,
 		goBack: () => {
-			if (trail.canGoBack) {
+			if (canGoBack) {
 				void back.run();
 			}
 		},
 		goForward: () => {
-			if (trail.canGoForward) {
+			if (canGoForward) {
 				void forward.run();
 			}
 		},

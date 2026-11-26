@@ -28,6 +28,9 @@ const APP_CALLABLE: ReadonlySet<string> = new Set([
 	"navigation.tab-facts.own-app-tab",
 	"navigation.tab-facts.open-link",
 	"navigation.tab-facts.tabs-of-app",
+	"navigation.window-trail.trail",
+	"navigation.window-trail.back",
+	"navigation.window-trail.forward",
 ]);
 const NOT_OWN_APP = "app {app} asked for the tabs of {asked}; an app reads only its own tabs";
 const NOT_FOR_APPS = "{request} is not open to apps; an app may call {allowed}";

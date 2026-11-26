@@ -219,6 +219,10 @@ check(
 );
 const canvasTabsAsChat = await asChat.send(navigation.tabFacts.tabsOfApp, { app: "canvas" });
 check("another app is refused the canvas tabs", canvasTabsAsChat.ok, false);
+const trailAsCanvas = await asCanvas.send(navigation.windowTrail.trail, { window: "w1" });
+check("the canvas app reads the window trail for its header buttons", trailAsCanvas.ok, true);
+const trailAsChat = await asChat.send(navigation.windowTrail.trail, { window: "w1" });
+check("the chat app reads the window trail for its header buttons", trailAsChat.ok, true);
 
 const titled = await asCanvas.send(apps.pages.record, { id: "k2", title: "Canvases" });
 check("the canvas app names its own tab", titled.ok, true);
