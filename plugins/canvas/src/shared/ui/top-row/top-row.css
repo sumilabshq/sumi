@@ -10,9 +10,9 @@
 	box-sizing: border-box;
 	gap: var(--space-3);
 	height: 56px;
-	padding-block-start: var(--space-3);
-	padding-inline-start: calc(var(--corner-start, 0px) + var(--space-3));
-	padding-inline-end: calc(var(--corner-end, 0px) + var(--space-3));
+	padding-block-start: var(--page-head-pad);
+	padding-inline-start: calc(var(--corner-start, 0px) + var(--page-head-pad));
+	padding-inline-end: calc(var(--corner-end, 0px) + var(--page-head-pad));
 	background: linear-gradient(color-mix(in srgb, var(--plate-fill, var(--plate)) 80%, transparent), transparent);
 	pointer-events: none;
 }

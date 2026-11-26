@@ -1,5 +1,5 @@
 .sumi-canvas {
-	--side-panel-top: max(var(--corner-top, 0px), var(--header-h));
+	--side-panel-top: max(var(--corner-top, 0px), var(--page-head-h));
 	--side-panel-fill: var(--canvas-plate-fill);
 	position: relative;
 	container-type: inline-size;

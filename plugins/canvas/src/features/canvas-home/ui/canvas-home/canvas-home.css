@@ -22,7 +22,7 @@
 	flex: 1;
 	min-width: 0;
 	overflow-y: auto;
-	padding: calc(var(--header-h) + var(--canvas-home-pad)) var(--canvas-home-pad) var(--canvas-home-pad);
+	padding: calc(var(--page-head-h) + var(--canvas-home-pad)) var(--canvas-home-pad) var(--canvas-home-pad);
 }
 
 .sumi-canvas-home-column {
