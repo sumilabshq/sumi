@@ -52,6 +52,7 @@ export type { PopoverAlign, PopoverSide } from "./constants/popover";
 export type { FlameProps } from "./components/flame";
 export type { HeadingLevel, HeadingProps } from "./components/heading";
 export type { SquareButtonProps } from "./components/button";
+export type { PartButtonProps } from "./components/part-button";
 export type { PressableProps, PressableTone, PressableVariant } from "./components/pressable";
 export type { FilePickerProps } from "./components/file-picker";
 export type { LayoutActionsProps, LayoutHeaderProps, LayoutItemProps, LayoutProps } from "./components/layout";

@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { Button, Icon, Popover, PopoverContent, PopoverItem, PopoverTrigger } from "@widgetarium/kit";
+import { Icon, PartButton, Popover, PopoverContent, PopoverItem, PopoverTrigger } from "@widgetarium/kit";
 import { appHost } from "@widgetarium/app-host/contract";
 import { TabIcons } from "@sumi/tab-strip-plugin";
 import { pageEntryOf } from "../../lib/page-entries.js";
@@ -27,10 +27,7 @@ export function StripSubPages({ tabId }: StripSubPagesProps): ReactElement | nul
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
 			<PopoverTrigger asChild>
-				<Button
-					shape="square"
-					emphasis="ghost"
-					size="2xs"
+				<PartButton
 					className="sumi-sub-pages-chevron"
 					label={LIST.replace("{title}", page.tab.title)}
 					aria-expanded={isOpen}
@@ -38,7 +35,7 @@ export function StripSubPages({ tabId }: StripSubPagesProps): ReactElement | nul
 					onClick={(event) => event.stopPropagation()}
 				>
 					<Icon name="chevron-down" size={CHEVRON_PX} />
-				</Button>
+				</PartButton>
 			</PopoverTrigger>
 			<PopoverContent side="bottom" align="start" className="is-compact sumi-sub-pages-menu">
 				<div role="menu" aria-label={LIST.replace("{title}", page.tab.title)}>

@@ -1,6 +1,6 @@
 import { createElement as h, useEffect, useRef } from "react";
 import type { KeyboardEvent, MouseEvent, PointerEvent, ReactElement } from "react";
-import { Button, Icon, Pressable } from "@widgetarium/kit";
+import { Icon, PartButton, Pressable } from "@widgetarium/kit";
 import { ListPluginSlot, PluginSlot } from "@widgetarium/plugin-framework/react";
 import { isShownItem, itemIdOf, itemMarkOf, tabOf } from "../../lib/strip-items.js";
 import type { StripItem } from "../../lib/strip-items.js";
@@ -28,10 +28,7 @@ export function StripTab({ item, acts, drag, isLifted, onMenu, onClose }: StripT
 	const close = onClose ?? (() => acts.close(item));
 	const element = useRef<HTMLDivElement | null>(null);
 	const closeButton = (
-		<Button
-			shape="square"
-			emphasis="ghost"
-			size="2xs"
+		<PartButton
 			className="sumi-strip-tab-close"
 			label={CLOSE_LABEL}
 			onPointerDown={(event) => event.stopPropagation()}
@@ -41,7 +38,7 @@ export function StripTab({ item, acts, drag, isLifted, onMenu, onClose }: StripT
 			}}
 		>
 			<Icon name="x" size={CLOSE_PX} />
-		</Button>
+		</PartButton>
 	);
 	useEffect(() => {
 		if (isShown && element.current !== null) {

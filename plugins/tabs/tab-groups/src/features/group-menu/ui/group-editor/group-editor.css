@@ -18,8 +18,8 @@
 .sumi-group-hue {
 	flex: none;
 	justify-content: center;
-	width: var(--control-xxs);
-	height: var(--control-xxs);
+	width: var(--part-size);
+	height: var(--part-size);
 }
 
 .sumi-group-hue-dot {

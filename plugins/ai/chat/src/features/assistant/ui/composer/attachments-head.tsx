@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Button, Icon } from "@widgetarium/kit";
+import { Icon, PartButton } from "@widgetarium/kit";
 import type { AttachmentChip } from "@widgetarium/assistant/contract";
 import { sizeSaid } from "../../lib/size-said.js";
 import type { Across } from "../../lib/use-overflows-across.js";
@@ -28,26 +28,20 @@ export function AttachmentsHead({ drafts, across }: AttachmentsHeadProps): React
 			</span>
 			{isScrolling ? (
 				<span className="wg-studio-ai-attachments-nav">
-					<Button
-						shape="square"
-						emphasis="ghost"
-						size="2xs"
+					<PartButton
 						label={BACK}
 						disabled={!across.isMoreBefore}
 						onClick={across.pageBack}
 					>
 						<Icon name="chevron-left" size={NAV_PX} />
-					</Button>
-					<Button
-						shape="square"
-						emphasis="ghost"
-						size="2xs"
+					</PartButton>
+					<PartButton
 						label={ON}
 						disabled={!across.isMoreAfter}
 						onClick={across.pageOn}
 					>
 						<Icon name="chevron-right" size={NAV_PX} />
-					</Button>
+					</PartButton>
 				</span>
 			) : null}
 		</div>

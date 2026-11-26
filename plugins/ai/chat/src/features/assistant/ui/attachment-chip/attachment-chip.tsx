@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Button, Icon } from "@widgetarium/kit";
+import { Icon, PartButton } from "@widgetarium/kit";
 import { ChipMedia } from "./chip-media.js";
 import type { AttachmentChip } from "@widgetarium/assistant/contract";
 
@@ -27,16 +27,13 @@ export function AttachmentChipView({ chip, onOpen, onRemove }: AttachmentChipVie
 				<span className={SIZE}>{chip.size}</span>
 			</span>
 			{onRemove ? (
-				<Button
-					shape="square"
-					emphasis="ghost"
-					size="2xs"
+				<PartButton
 					className={REMOVES}
 					label={REMOVE.replace("{name}", chip.name)}
 					onClick={onRemove}
 				>
 					<Icon name="x" size={12} />
-				</Button>
+				</PartButton>
 			) : null}
 		</span>
 	);

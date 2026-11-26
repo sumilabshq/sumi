@@ -1,7 +1,7 @@
 import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { Button, Icon, toast } from "@widgetarium/kit";
+import { Icon, PartButton, toast } from "@widgetarium/kit";
 import { assistant } from "@widgetarium/assistant/contract";
 import type { FlowRowFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
@@ -32,10 +32,7 @@ export function CloseFlowButton({ flow, acts }: CloseFlowButtonProps): ReactElem
 
 	return (
 		<Fragment>
-			<Button
-				shape="square"
-				emphasis="ghost"
-				size="2xs"
+			<PartButton
 				label="Archive session"
 				className="sumi-flows-close"
 				onPointerDown={(event) => event.stopPropagation()}
@@ -51,7 +48,7 @@ export function CloseFlowButton({ flow, acts }: CloseFlowButtonProps): ReactElem
 				}}
 			>
 				<Icon name="x" size={CLOSE_ICON_PX} />
-			</Button>
+			</PartButton>
 			<ConfirmDelete
 				isOpen={isConfirming}
 				title="Stop and archive this session?"

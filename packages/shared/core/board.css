@@ -1275,7 +1275,8 @@
 	--control-s: var(--size-s-h);
 	--control-m: var(--size-m-h);
 	--control-l: var(--size-l-h);
-	--control-xxs: 20px;
+	--part-size: 20px;
+	--part-icon: var(--icon-sm, 14px);
 	--pop-s: 200px;
 	--pop-m: 260px;
 	--pop-l: 320px;
@@ -2175,13 +2176,13 @@ body {
 	width: var(--size-xs-h);
 	height: var(--size-xs-h);
 }
-:is(.wg-root, .wg-portal) .wg-kit-icon.is-xxs {
-	width: var(--control-xxs);
-	height: var(--control-xxs);
+:is(.wg-root, .wg-portal) .wg-kit-icon.is-part {
+	width: var(--part-size);
+	height: var(--part-size);
 }
-:is(.wg-root, .wg-portal) .wg-kit-icon.is-xxs .wg-kit-icon-glyph {
-	width: var(--icon-sm, 14px);
-	height: var(--icon-sm, 14px);
+:is(.wg-root, .wg-portal) .wg-kit-icon.is-part .wg-kit-icon-glyph {
+	width: var(--part-icon);
+	height: var(--part-icon);
 }
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-accent {
 	color: var(--shine);
@@ -3867,7 +3868,7 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-ghost:hover::before {
 	background: var(--control-fill-hover);
 }
-:is(.wg-root, .wg-portal) .wg-kit-icon.is-ghost.is-xxs:hover {
+:is(.wg-root, .wg-portal) .wg-kit-icon.is-ghost.is-part:hover {
 	color: var(--control-glyph-on);
 }
 :is(.wg-root, .wg-portal)
@@ -20444,7 +20445,7 @@ body:has(.wg-cm-layer) {
 }
 .sumi-composer-expand-toggle {
 	flex: none;
-	margin-inline-end: calc(-1 * ((var(--control-xxs) - var(--icon-sm, 14px)) / 2 + var(--icon-sm, 14px) / 12));
+	margin-inline-end: calc(-1 * ((var(--part-size) - var(--icon-sm, 14px)) / 2 + var(--icon-sm, 14px) / 12));
 }
 .sumi-background-agents {
 	display: flex;
@@ -21413,8 +21414,8 @@ body:has(.wg-cm-layer) {
 .sumi-flows-row .sumi-flows-close {
 	display: none;
 	flex: none;
-	margin-inline: calc(var(--space-2) - (var(--control-xxs) - var(--icon-sm)) / 2)
-		calc((var(--icon-sm) - var(--control-xxs)) / 2);
+	margin-inline: calc(var(--space-2) - (var(--part-size) - var(--icon-sm)) / 2)
+		calc((var(--icon-sm) - var(--part-size)) / 2);
 }
 :where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-status {
 	display: none;
@@ -22373,8 +22374,8 @@ body:has(.wg-cm-layer) {
 .sumi-group-hue {
 	flex: none;
 	justify-content: center;
-	width: var(--control-xxs);
-	height: var(--control-xxs);
+	width: var(--part-size);
+	height: var(--part-size);
 }
 .sumi-group-hue-dot {
 	width: 12px;

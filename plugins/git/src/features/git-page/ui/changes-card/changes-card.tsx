@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { Button, Pressable } from "@widgetarium/kit";
+import { PartButton, Pressable } from "@widgetarium/kit";
 import { git } from "@sumi/git/contract";
 import type { FileDiff } from "@sumi/git/contract";
 import { ShownChangesSchema } from "@sumi/git-work/contract";
@@ -43,10 +43,7 @@ export function ChangesCard({ result }: McpAppViewProps<z.output<typeof ShownCha
 				<div className="sumi-mcp-head">
 					<div className="sumi-mcp-tag">
 						{shown !== null && !isOne ? (
-							<Button
-								shape="square"
-								emphasis="ghost"
-								size="2xs"
+							<PartButton
 								className="sumi-mcp-tag-button"
 								label={BACK_LABEL}
 								title={BACK_LABEL}
@@ -55,7 +52,7 @@ export function ChangesCard({ result }: McpAppViewProps<z.output<typeof ShownCha
 								<svg viewBox="0 0 12 12" aria-hidden="true">
 									<path d="M7.5 2.5L4 6l3.5 3.5" />
 								</svg>
-							</Button>
+							</PartButton>
 						) : (
 							<img className="sumi-mcp-tag-glyph" src={GIT_ICON_SOURCE} alt="" />
 						)}

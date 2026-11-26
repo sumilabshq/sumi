@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Button, Icon } from "@widgetarium/kit";
+import { Icon, PartButton } from "@widgetarium/kit";
 
 export interface Attached {
 	readonly label: string;
@@ -14,16 +14,13 @@ export function AttachedChip({ attached }: { readonly attached: Attached }): Rea
 		<span className="wg-studio-ai-target is-attached">
 			<Icon name="pencil" size={14} />
 			<span className="wg-studio-ai-target-name">{attached.label}</span>
-			<Button
-				shape="square"
-				emphasis="ghost"
-				size="2xs"
+			<PartButton
 				className="wg-studio-ai-attached-clear"
 				label={STOP_CHANGING}
 				onClick={attached.onClear}
 			>
 				<Icon name="x" size={12} />
-			</Button>
+			</PartButton>
 		</span>
 	);
 }

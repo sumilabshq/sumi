@@ -119,6 +119,8 @@ export const buttonClass = variants("wg-kit-btn", BUTTON_WORDS, { variant: "neut
 
 export const iconButtonClass = variants("wg-kit-icon", ICON_BUTTON_WORDS, { variant: "neutral", size: "m" });
 
+export const partButtonClass = variants("wg-kit-icon is-ghost is-part", {});
+
 // TODO: fold wash, muted, page, raised, glass, overlay into the four emphases, look changes
 const BUTTON_LOOKS: Readonly<Record<string, ButtonVariant>> = {
 	"solid-neutral": "primary",

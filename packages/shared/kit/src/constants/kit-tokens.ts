@@ -29,7 +29,7 @@ export const KIT_TOKENS: readonly string[] = [
 	"control-l",
 	"control-m",
 	"control-s",
-	"control-xxs",
+	"part-size",
 	"cyan",
 	"drawer-drag",
 	"drawer-height",
