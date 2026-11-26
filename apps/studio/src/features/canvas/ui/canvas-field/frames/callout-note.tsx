@@ -43,7 +43,6 @@ export function CalloutNote({ callout, at, place, side }: CalloutNoteProps): Rea
 			<span>{callout.text}</span>
 			{callout.widget ? (
 				<Button
-					size="s"
 					className={WIDGET_BUTTON}
 					onClick={() => callout.widget && void focus.run({ widget: callout.widget.id })}
 					data-canvas-note-widget=""

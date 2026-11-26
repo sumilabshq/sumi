@@ -35,7 +35,7 @@ export function TestRunRow({ run, number, cases }: TestRunRowProps): ReactElemen
 				</span>
 				<span className="wg-tasks-fill" />
 				{failed.length === 0 ? null : (
-					<Button variant="ghost" size="s" onClick={() => setOpen(!isOpen)}>
+					<Button variant="ghost" onClick={() => setOpen(!isOpen)}>
 						{isOpen ? "Hide" : "Show failures"}
 						<Icon name={isOpen ? "chevron-up" : "chevron-down"} size={14} />
 					</Button>

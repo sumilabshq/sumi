@@ -21,7 +21,6 @@ export function ContinueLink({ card }: ContinueLinkProps): ReactElement {
 	return (
 		<Button
 			variant="link"
-			size="s"
 			className="wg-tasks-resolve"
 			data-tasks-continue="now"
 			isLoading={continueTask.isRunning}

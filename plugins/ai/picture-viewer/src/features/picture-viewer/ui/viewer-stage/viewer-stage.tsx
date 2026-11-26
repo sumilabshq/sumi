@@ -20,7 +20,6 @@ export function ViewerStage({ shown, count, step, onClose }: ViewerStageProps): 
 				<Button
 					shape="square"
 					emphasis="overlay"
-					size="sm"
 					className="wg-studio-ai-viewer-button"
 					label={PREVIOUS}
 					onClick={() => step(-1)}
@@ -35,7 +34,6 @@ export function ViewerStage({ shown, count, step, onClose }: ViewerStageProps): 
 				<Button
 					shape="square"
 					emphasis="overlay"
-					size="sm"
 					className="wg-studio-ai-viewer-button"
 					label={NEXT}
 					onClick={() => step(1)}

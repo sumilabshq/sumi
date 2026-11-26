@@ -39,7 +39,7 @@ export function BoardColumn({ column, view, fold }: BoardColumnProps): ReactElem
 				</div>
 			) : null}
 			{column.isClosed && column.hidden > 0 ? (
-				<Button variant="ghost" size="s" data-tasks-older="" onClick={() => view.listOnly(column.status)}>
+				<Button variant="ghost" data-tasks-older="" onClick={() => view.listOnly(column.status)}>
 					{OLDER.replace("{count}", String(column.hidden))}
 				</Button>
 			) : null}
@@ -57,7 +57,7 @@ function headEndOf(column: Column, view: TasksView, fold: () => void): ReactNode
 	}
 
 	return (
-		<Button shape="square" emphasis="ghost" size="xs" label={FOLD.replace("{status}", column.label)} onClick={fold}>
+		<Button shape="square" emphasis="ghost" label={FOLD.replace("{status}", column.label)} onClick={fold}>
 			<Icon name="chevrons-left" size={14} />
 		</Button>
 	);

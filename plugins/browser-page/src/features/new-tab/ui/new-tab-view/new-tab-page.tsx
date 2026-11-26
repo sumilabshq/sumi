@@ -37,14 +37,7 @@ export function NewTabPage({ onOpen }: NewTabPageProps): ReactElement {
 					autoFocus
 					onChange={(event) => setTyped(event.target.value)}
 				/>
-				<Button
-					shape="square"
-					type="submit"
-					emphasis="ghost"
-					size="xs"
-					className="wg-browser-field-go"
-					label={GO_LABEL}
-				>
+				<Button shape="square" type="submit" emphasis="ghost" className="wg-browser-field-go" label={GO_LABEL}>
 					<Icon name="corner-down-left" size={16} />
 				</Button>
 			</form>

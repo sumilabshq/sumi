@@ -34,7 +34,6 @@ const FilterBar = createWidget({
 			<div>
 				<div className="wg-studio-catalogue-bar">
 					<Button
-						size="s"
 						className={narrowed > 0 ? "wg-studio-catalogue-bar-filters is-on" : "wg-studio-catalogue-bar-filters"}
 						aria-expanded={isOpen}
 						onClick={() => void setIsOpen(!isOpen)}
@@ -47,12 +46,7 @@ const FilterBar = createWidget({
 						{(shown === 1 ? COUNTED_ONE : COUNTED).replace("{count}", String(shown))}
 					</span>
 					{narrowed > 0 ? (
-						<Button
-							size="s"
-							variant="plain"
-							className="wg-studio-catalogue-bar-clear"
-							onClick={() => void clearFilters(null)}
-						>
+						<Button variant="plain" className="wg-studio-catalogue-bar-clear" onClick={() => void clearFilters(null)}>
 							{CLEAR_ALL}
 						</Button>
 					) : null}

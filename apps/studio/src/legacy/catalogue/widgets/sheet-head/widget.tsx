@@ -18,7 +18,7 @@ const SheetHead = createWidget({
 			<div className="wg-studio-catalogue-sheet-head">
 				<h2 className="wg-studio-catalogue-sheet-title">{title}</h2>
 				{narrowed > 0 ? (
-					<Button size="s" variant="plain" onClick={() => void clearFilters(null)}>
+					<Button variant="plain" onClick={() => void clearFilters(null)}>
 						{CLEAR_ALL}
 					</Button>
 				) : null}

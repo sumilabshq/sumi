@@ -16,7 +16,6 @@ export function LayersHeader(): ReactElement {
 		<PanelHeader title={TITLE}>
 			<Button
 				shape="square"
-				size="sm"
 				emphasis="ghost"
 				label={isLocked ? LOCKED : UNLOCKED}
 				onClick={() => void toggleLock.run()}

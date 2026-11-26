@@ -14,7 +14,6 @@ export function ControlMenuTrigger(): ReactNode {
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
 				className="sumi-control-menu-button"
 				label={CONTROL_MENU}
 				aria-haspopup="menu"

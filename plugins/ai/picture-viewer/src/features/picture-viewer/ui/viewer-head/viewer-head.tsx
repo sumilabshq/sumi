@@ -24,14 +24,7 @@ export function ViewerHead({ shown, at, count, onClose }: ViewerHeadProps): Reac
 					{COUNTER.replace("{at}", String(at + 1)).replace("{count}", String(count))}
 				</span>
 			) : null}
-			<Button
-				shape="square"
-				emphasis="overlay"
-				size="sm"
-				className="wg-studio-ai-viewer-button"
-				label={CLOSE}
-				onClick={onClose}
-			>
+			<Button shape="square" emphasis="overlay" className="wg-studio-ai-viewer-button" label={CLOSE} onClick={onClose}>
 				<Icon name="x" size={16} />
 			</Button>
 		</div>

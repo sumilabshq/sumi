@@ -15,7 +15,7 @@ export function TaskGone({ task }: TaskGoneProps): ReactElement {
 	return (
 		<div className="wg-tasks-gone" data-tasks-gone={task}>
 			<p className="wg-tasks-t2">{GONE}</p>
-			<Button variant="ghost" size="s" data-tasks-gone-back="" onClick={() => openTask(BOARD_ADDRESS)}>
+			<Button variant="ghost" data-tasks-gone-back="" onClick={() => openTask(BOARD_ADDRESS)}>
 				{BACK}
 			</Button>
 		</div>

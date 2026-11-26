@@ -11,7 +11,7 @@ const CONTINUE_AT = "Continue at {clock}";
 
 export function ContinueLater({ continueAt }: ContinueLaterProps): ReactElement {
 	return (
-		<Button variant="link" size="s" className="wg-tasks-resolve" data-tasks-continue="later" disabled>
+		<Button variant="link" className="wg-tasks-resolve" data-tasks-continue="later" disabled>
 			{CONTINUE_AT.replace("{clock}", clockOf(continueAt))}
 		</Button>
 	);

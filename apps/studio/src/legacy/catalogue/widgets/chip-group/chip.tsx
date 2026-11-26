@@ -14,7 +14,6 @@ export function Chip({ chip, picked, select }: ChipProps) {
 	const isOn = picked === chip.name;
 	return (
 		<Button
-			size="s"
 			variant={isOn ? "accent" : "neutral"}
 			className="wg-studio-catalogue-chip"
 			aria-pressed={isOn}

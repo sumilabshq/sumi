@@ -35,7 +35,6 @@ export function CanvasCard({ tabId, row, chat }: CanvasCardProps): ReactElement 
 			{chat === null ? null : (
 				<Button
 					variant="tinted"
-					size="xs"
 					className="sumi-canvas-card-chat"
 					{...tooltipMarks({ said: TO_CHAT })}
 					onClick={(event) => openLink(chatHrefOf(chat.id), event.metaKey)}

@@ -32,7 +32,6 @@ export function TemplateCard({ template, create }: TemplateCardProps) {
 						shape="square"
 						emphasis="solid"
 						tone="brand"
-						size="sm"
 						label={label}
 						disabled={isBusy}
 						onClick={(event) => {

@@ -30,7 +30,6 @@ export function EntryGo({ busyJob, state, label, press }: EntryGoProps) {
 			shape="square"
 			className={GO_CLASS[state]}
 			{...(state === "add" ? ADD_LOOK : GHOST_LOOK)}
-			size="sm"
 			label={label}
 			onClick={(event) => {
 				event.stopPropagation();

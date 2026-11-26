@@ -49,7 +49,6 @@ export function FileDiffHead({ file, isOpen, isViewed, onFold, onToggleViewed }:
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
 				label={viewedLabel}
 				{...tooltipMarks({ said: viewedLabel, keys: null })}
 				onClick={(click) => {
