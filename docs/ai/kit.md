@@ -60,17 +60,20 @@ good.
 
 A button size is a step of the design system, never a number: `xs`, `s`, `m` (the default) and `l`. The kit
 reads `--size-<step>-h`, `-icon`, `-pad`, `-radius`, `-font` and `-gap`, no pixel of its own; a design system
-sets them (`design-systems/sumi/sumi.css`). One step per place:
+sets them (`design-systems/sumi/sumi.css`). The size passed is the size drawn, for every emphasis. One step per
+place:
 
-- `xs`: headers and toolbars, ghost icon buttons with a 14px glyph.
-- `s`: popovers and small panels.
-- `m`: forms and dialogs.
-- `l`: one large action on a page.
+| Step | Height | Glyph | Where                                                                            |
+| ---- | ------ | ----- | -------------------------------------------------------------------------------- |
+| `xs` | 20     | 12    | tab close, chip and attachment remove, row actions, sidebar section `+` and `⋯`  |
+| `s`  | 24     | 14    | the app header only: back and forward, `⋯`, header buttons, the chat title chip  |
+| `m`  | 28     | 16    | every other icon or ghost button: tab-strip `+`, top-bar buttons, composer icons |
+| `l`  | 32     | 16    | text buttons in forms and dialogs                                                |
 
-A close, remove, pager or row-action button inside a tab, chip, attachment, token or row is no Button size:
-draw it with `PartButton`, a ghost square sized by `--part-size` with a `--part-icon` glyph, and let the
-parent place it. `npm run test:kit-styles` refuses any other `size` on `Button` or `IconButton`, and any
-pixel or non-`--size-*` token in a kit button size rule.
+A close, remove, pager or row-action button inside a tab, chip, attachment, token or row is `xs`: use
+`PartButton`, an `xs` ghost square whose `--part-size` and `--part-icon` read `--size-xs-h` and
+`--size-xs-icon`, and let the parent place it. `npm run test:kit-styles` refuses any other `size` on `Button`
+or `IconButton`, and any pixel or non-`--size-*` token in a kit button size rule.
 
 ## Between the pieces: Tailwind
 

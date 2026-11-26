@@ -1083,7 +1083,7 @@ check(
 check(
 	"an action with no words is a small grey icon button named for a reader",
 	[found(headOf(), "button").className, found(headOf(), "button").getAttribute("aria-label")],
-	["wg-kit-icon is-s wg-kit-action", "Log a session"],
+	["wg-kit-icon is-m wg-kit-action", "Log a session"],
 );
 render(
 	h(Kit.Layout, null, h(Kit.LayoutHeader, { title: "Steps" }, h("button", null, "go")), h(Kit.LayoutItem, null, "one")),
@@ -1098,7 +1098,7 @@ render(h(Kit.ActionButton, { icon: "plus" }, "Add"), host);
 check(
 	"with words it is a small grey button carrying both",
 	[mustHtmlOf(host.firstChild).className, mustHtmlOf(host.firstChild).textContent],
-	["wg-kit-btn is-s wg-kit-action", "Add"],
+	["wg-kit-btn is-m wg-kit-action", "Add"],
 );
 render(h(Kit.Tabs, { items: [{ value: "a", label: "A" }], value: "a" }), host);
 check(
