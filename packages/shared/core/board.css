@@ -53,6 +53,30 @@
 		--ring: var(--brand);
 		--radius: 14px;
 		--control-radius: 8px;
+		--size-xs-h: 28px;
+		--size-xs-icon: 14px;
+		--size-xs-pad: 5px;
+		--size-xs-radius: var(--control-radius, 8px);
+		--size-xs-font: var(--fs-13, var(--type-m));
+		--size-xs-gap: 2px;
+		--size-s-h: 34px;
+		--size-s-icon: 16px;
+		--size-s-pad: 16px;
+		--size-s-radius: var(--control-radius, 8px);
+		--size-s-font: var(--type-m);
+		--size-s-gap: 8px;
+		--size-m-h: 42px;
+		--size-m-icon: 16px;
+		--size-m-pad: 20px;
+		--size-m-radius: var(--control-radius, 8px);
+		--size-m-font: var(--type-m);
+		--size-m-gap: 8px;
+		--size-l-h: 52px;
+		--size-l-icon: 16px;
+		--size-l-pad: 24px;
+		--size-l-radius: var(--control-radius, 8px);
+		--size-l-font: var(--type-l);
+		--size-l-gap: 8px;
 
 		--chart-1: var(--brand);
 		--chart-2: var(--blue);
@@ -397,6 +421,30 @@
 		--h-lg: 36px;
 		--icon: 13px;
 		--icon-sm: 12px;
+		--size-xs-h: 28px;
+		--size-xs-icon: 14px;
+		--size-xs-pad: 5px;
+		--size-xs-radius: var(--control-radius, 8px);
+		--size-xs-font: var(--fs-13);
+		--size-xs-gap: 2px;
+		--size-s-h: 34px;
+		--size-s-icon: 16px;
+		--size-s-pad: 16px;
+		--size-s-radius: var(--control-radius, 8px);
+		--size-s-font: var(--type-m);
+		--size-s-gap: 8px;
+		--size-m-h: 42px;
+		--size-m-icon: 16px;
+		--size-m-pad: 20px;
+		--size-m-radius: var(--control-radius, 8px);
+		--size-m-font: var(--type-m);
+		--size-m-gap: 8px;
+		--size-l-h: 52px;
+		--size-l-icon: 16px;
+		--size-l-pad: 24px;
+		--size-l-radius: var(--control-radius, 8px);
+		--size-l-font: var(--type-l);
+		--size-l-gap: 8px;
 		--brand-claude: #d97757;
 		--r-tab: 7px;
 		--tab-w: 176px;
@@ -945,6 +993,30 @@
 		--ring: var(--brand);
 		--radius: 14px;
 		--control-radius: 8px;
+		--size-xs-h: 28px;
+		--size-xs-icon: 14px;
+		--size-xs-pad: 5px;
+		--size-xs-radius: var(--control-radius, 8px);
+		--size-xs-font: var(--fs-13, var(--type-m));
+		--size-xs-gap: 2px;
+		--size-s-h: 34px;
+		--size-s-icon: 16px;
+		--size-s-pad: 16px;
+		--size-s-radius: var(--control-radius, 8px);
+		--size-s-font: var(--type-m);
+		--size-s-gap: 8px;
+		--size-m-h: 42px;
+		--size-m-icon: 16px;
+		--size-m-pad: 20px;
+		--size-m-radius: var(--control-radius, 8px);
+		--size-m-font: var(--type-m);
+		--size-m-gap: 8px;
+		--size-l-h: 52px;
+		--size-l-icon: 16px;
+		--size-l-pad: 24px;
+		--size-l-radius: var(--control-radius, 8px);
+		--size-l-font: var(--type-l);
+		--size-l-gap: 8px;
 
 		--chart-1: var(--brand);
 		--chart-2: var(--blue);
@@ -1200,10 +1272,9 @@
 	--field-inset-s: var(--size-4-3, 12px);
 	--joined-gap: 2px;
 
-	--control-s: 34px;
-	--control-m: 42px;
-	--control-l: 52px;
-	--control-xs: 28px;
+	--control-s: var(--size-s-h);
+	--control-m: var(--size-m-h);
+	--control-l: var(--size-l-h);
 	--control-xxs: 20px;
 	--pop-s: 200px;
 	--pop-m: 260px;
@@ -1860,6 +1931,11 @@ body {
 	fill: currentColor;
 }
 
+:is(.wg-root, .wg-portal) .wg-kit-icon-glyph.is-fit {
+	width: var(--glyph-size);
+	height: var(--glyph-size);
+}
+
 :is(.wg-root, .wg-portal) .wg-kit-emoji {
 	flex: none;
 	display: block;
@@ -1871,7 +1947,7 @@ body {
 	line-height: 1;
 	border: none;
 	cursor: pointer;
-	border-radius: var(--control-corner);
+	border-radius: var(--btn-radius, var(--size-m-radius));
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -1884,27 +1960,38 @@ body {
 	transform: scale(0.955);
 }
 :is(.wg-root, .wg-portal) .wg-kit-btn.is-l {
-	font-size: var(--text-l);
-	padding: 0 var(--size-4-6, 24px);
-	height: var(--control-l);
+	--btn-radius: var(--size-l-radius);
+	--glyph-size: var(--size-l-icon);
+	gap: var(--size-l-gap);
+	font-size: var(--size-l-font);
+	padding: 0 var(--size-l-pad);
+	height: var(--size-l-h);
 }
 :is(.wg-root, .wg-portal) .wg-kit-btn.is-m {
-	font-size: var(--text-m);
-	padding: 0 var(--size-4-5, 20px);
-	height: var(--control-m);
+	--btn-radius: var(--size-m-radius);
+	--glyph-size: var(--size-m-icon);
+	gap: var(--size-m-gap);
+	font-size: var(--size-m-font);
+	padding: 0 var(--size-m-pad);
+	height: var(--size-m-h);
 }
 :is(.wg-root, .wg-portal) .wg-kit-btn.is-s {
-	font-size: var(--text-m);
-	padding: 0 var(--size-4-4, 16px);
-	height: var(--control-s);
+	--btn-radius: var(--size-s-radius);
+	--glyph-size: var(--size-s-icon);
+	gap: var(--size-s-gap);
+	font-size: var(--size-s-font);
+	padding: 0 var(--size-s-pad);
+	height: var(--size-s-h);
 }
 :is(.wg-root, .wg-portal)
 	.wg-kit-btn:is(.is-xs, .is-ghost.is-s, .is-ghost.is-m, .is-ghost.is-l, .is-ghost:not(.is-s, .is-m, .is-l, .is-icon)) {
-	gap: var(--space-0-5, var(--size-2-1, 2px));
-	height: var(--control-xs);
+	--btn-radius: var(--size-xs-radius);
+	--glyph-size: var(--size-xs-icon);
+	gap: var(--size-xs-gap);
+	height: var(--size-xs-h);
 	min-height: 0;
-	padding: 0 5px;
-	font-size: var(--fs-13, var(--text-m));
+	padding: 0 var(--size-xs-pad);
+	font-size: var(--size-xs-font);
 	font-weight: var(--font-normal, 400);
 	white-space: nowrap;
 }
@@ -2043,7 +2130,7 @@ body {
 :is(.wg-root, .wg-portal) .wg-kit-icon {
 	border: none;
 	cursor: pointer;
-	border-radius: var(--control-corner);
+	border-radius: var(--btn-radius, var(--size-m-radius));
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -2065,20 +2152,28 @@ body {
 	background: var(--control-fill-rest);
 }
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-l {
-	width: var(--control-l);
-	height: var(--control-l);
+	--btn-radius: var(--size-l-radius);
+	--glyph-size: var(--size-l-icon);
+	width: var(--size-l-h);
+	height: var(--size-l-h);
 }
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-m {
-	width: var(--control-m);
-	height: var(--control-m);
+	--btn-radius: var(--size-m-radius);
+	--glyph-size: var(--size-m-icon);
+	width: var(--size-m-h);
+	height: var(--size-m-h);
 }
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-s {
-	width: var(--control-s);
-	height: var(--control-s);
+	--btn-radius: var(--size-s-radius);
+	--glyph-size: var(--size-s-icon);
+	width: var(--size-s-h);
+	height: var(--size-s-h);
 }
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-xs {
-	width: var(--control-xs);
-	height: var(--control-xs);
+	--btn-radius: var(--size-xs-radius);
+	--glyph-size: var(--size-xs-icon);
+	width: var(--size-xs-h);
+	height: var(--size-xs-h);
 }
 :is(.wg-root, .wg-portal) .wg-kit-icon.is-xxs {
 	width: var(--control-xxs);
@@ -18549,7 +18644,7 @@ body:has(.wg-cm-layer) {
 	padding: var(--space-none);
 	font-family: var(--font-ui);
 	--composer-box-radius: 18px;
-	--control-xs: var(--h-xs);
+	--size-xs-h: var(--h-xs);
 	--chat-gutter: max(var(--space-6), calc(50% - var(--studio-chat-content, var(--read-w)) / 2));
 }
 :is(.wg-root, .wg-portal) .wg-studio-ai-composer-frame {

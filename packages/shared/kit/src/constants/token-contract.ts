@@ -99,7 +99,14 @@ export const BRAND_EXTENSION_TOKENS: readonly string[] = [
 	...TONE_TOKENS,
 ];
 
+const SIZE_STEPS: readonly string[] = ["xs", "s", "m", "l"];
+
+const SIZE_PARTS: readonly string[] = ["h", "icon", "pad", "radius", "font", "gap"];
+
+export const SIZE_TOKENS: readonly string[] = SIZE_STEPS.flatMap((step) => SIZE_PARTS.map((part) => `size-${step}-${part}`));
+
 export const NON_COLOUR_TOKENS: ReadonlySet<string> = new Set([
+	...SIZE_TOKENS,
 	"radius",
 	...FONT_TOKENS,
 	...TYPE_TOKENS,
@@ -115,6 +122,7 @@ export const CONTRACT_TOKENS: readonly string[] = [
 	...BRAND_EXTENSION_TOKENS,
 	...SHAPE_TOKENS,
 	...CONTROL_TOKENS,
+	...SIZE_TOKENS,
 ];
 
 const FOREGROUND_SUFFIX = "-foreground";

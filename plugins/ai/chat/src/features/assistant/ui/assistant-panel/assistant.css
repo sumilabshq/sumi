@@ -932,7 +932,7 @@
 	padding: var(--space-none);
 	font-family: var(--font-ui);
 	--composer-box-radius: 18px;
-	--control-xs: var(--h-xs);
+	--size-xs-h: var(--h-xs);
 	--chat-gutter: max(var(--space-6), calc(50% - var(--studio-chat-content, var(--read-w)) / 2));
 }
 

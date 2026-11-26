@@ -12,6 +12,7 @@ export interface IconProps {
 }
 
 const ICON_PX = 13;
+const FIT = "fit";
 const NO_DRAWING = "";
 
 export function Icon({
@@ -23,14 +24,15 @@ export function Icon({
 }: IconProps): ReactElement | null {
 	const drawn = iconOf(name) ?? (fallback ? iconOf(fallback) : null);
 	const body = drawn?.body ?? NO_DRAWING;
+	const isFit = size === FIT;
 	const markup = useMemo(() => ({ __html: body }), [body]);
 	if (!drawn) return null;
 	return (
 		<svg
-			className={cn("wg-kit-icon-glyph", "is-lucide", isFilled && "is-filled", cls)}
+			className={cn("wg-kit-icon-glyph", "is-lucide", isFilled && "is-filled", isFit && "is-fit", cls)}
 			viewBox={drawn.viewBox}
-			width={size}
-			height={size}
+			width={isFit ? undefined : size}
+			height={isFit ? undefined : size}
 			aria-hidden="true"
 			dangerouslySetInnerHTML={markup}
 		/>

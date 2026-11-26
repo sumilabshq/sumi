@@ -29,7 +29,6 @@ export const KIT_TOKENS: readonly string[] = [
 	"control-l",
 	"control-m",
 	"control-s",
-	"control-xs",
 	"control-xxs",
 	"cyan",
 	"drawer-drag",
