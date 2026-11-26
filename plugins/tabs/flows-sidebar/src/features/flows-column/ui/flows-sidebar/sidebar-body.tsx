@@ -18,7 +18,7 @@ export function SidebarBody(): ReactNode {
 	}
 
 	return (
-		<EmptySpaceMenu sidebar={sidebar} acts={acts}>
+		<EmptySpaceMenu sidebar={sidebar} acts={acts} isHoverHeld={drag.isHoverHeld}>
 			<InboxSection sidebar={sidebar} acts={acts} />
 			<ProjectSections sidebar={sidebar} acts={acts} drag={drag} />
 			<DropLineMark line={drag.line} />

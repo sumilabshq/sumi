@@ -4,6 +4,7 @@ import { dropLineOf } from "./drop-line.js";
 import type { DropLine } from "./drop-line.js";
 import { useHapticTap } from "./haptic-tap.js";
 import { liftCopyOf } from "./lift-copy.js";
+import { useHoverHold } from "./hover-hold.js";
 import { usePeekHold } from "./peek-hold.js";
 import { placeBeforeOf } from "./flow-facts.js";
 import type { FlowActs, FlowPlace, TopRef } from "./use-flow-acts.js";
@@ -53,6 +54,7 @@ const FOLDER_EDGE_SHARE = 0.3;
 export interface FlowDrag {
 	readonly containerKey: string | null;
 	readonly draggingKey: string | null;
+	readonly isHoverHeld: boolean;
 	readonly line: DropLine | null;
 	sourceProps(source: DragSource): SourceProps;
 	targetProps(target: DropTarget): TargetProps;
@@ -76,6 +78,7 @@ export function useFlowDrag(acts: DragActs): FlowDrag {
 	const [aim, setAim] = useState<Aim | null>(null);
 	const tap = useHapticTap();
 	usePeekHold(draggingKey !== null);
+	const isHoverHeld = useHoverHold(draggingKey !== null);
 	const reset = (): void => {
 		dragging.current = null;
 		aimed.current = null;
@@ -106,6 +109,7 @@ export function useFlowDrag(acts: DragActs): FlowDrag {
 	return {
 		containerKey: aim?.container ?? null,
 		draggingKey,
+		isHoverHeld,
 		line: aim?.line ?? null,
 		sourceProps: (source) => ({
 			draggable: true,

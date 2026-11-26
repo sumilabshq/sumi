@@ -21169,7 +21169,7 @@ body:has(.wg-cm-layer) {
 	color: var(--text-2);
 	border-radius: var(--r-sm);
 }
-.sumi-flows-row:is(:hover, :focus-within) {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row:is(:hover, :focus-within) {
 	color: var(--text);
 	background: var(--hover);
 }
@@ -21187,7 +21187,7 @@ body:has(.wg-cm-layer) {
 	gap: var(--space-px);
 	margin-inline-end: var(--space-1);
 }
-.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-tools {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-tools {
 	display: flex;
 }
 .sumi-flows-label-tools .sumi-flows-add {
@@ -21209,7 +21209,7 @@ body:has(.wg-cm-layer) {
 	background: none;
 	border: 0;
 }
-.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-main .sumi-flows-chevron,
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-main .sumi-flows-chevron,
 .sumi-flows-label[data-collapsed] .sumi-flows-label-main .sumi-flows-chevron {
 	display: grid;
 }
@@ -21277,13 +21277,13 @@ body:has(.wg-cm-layer) {
 	width: var(--icon);
 	height: var(--icon);
 }
-.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-glyph {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-glyph {
 	display: none;
 }
-.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-chevron {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-chevron {
 	display: grid;
 }
-.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-status {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-status {
 	display: none;
 }
 .sumi-flows-add {
@@ -21300,7 +21300,7 @@ body:has(.wg-cm-layer) {
 	border: 0;
 	border-radius: var(--r-xs);
 }
-.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-add {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-add {
 	display: grid;
 }
 .sumi-flows-add:hover {
@@ -21321,10 +21321,10 @@ body:has(.wg-cm-layer) {
 	margin-inline: calc(var(--space-2) - (var(--control-xxs) - var(--icon-sm)) / 2)
 		calc((var(--icon-sm) - var(--control-xxs)) / 2);
 }
-.sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-status {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-status {
 	display: none;
 }
-.sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-close {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-close {
 	display: inline-flex;
 }
 .sumi-flows-status[data-status="asking"]::before,

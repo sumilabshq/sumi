@@ -941,6 +941,10 @@ const lineInSection = (section: string): string =>
 		const box = document.querySelector(${JSON.stringify(`section[aria-label=${section}]`)}).getBoundingClientRect();
 		return mark.left >= box.left - 0.5 && mark.right <= box.right + 0.5 && mark.top >= box.top - 0.5 && mark.bottom <= box.bottom + 0.5;
 	})()`;
+const closeShownOf = (name: string): string =>
+	`getComputedStyle(${rowOf(`${FLOWS}[data-kind=flow]`, name)}.querySelector(".sumi-flows-close")).display !== "none"`;
+const hoverHeld = `document.querySelector(".sumi-flows").hasAttribute("data-hover-held")`;
+
 async function dragContainers(): Promise<void> {
 	await inInbox("light", "inbox", async (page) => {
 		await page.ask(heldFlowDrag("Composer redesign"));
@@ -982,6 +986,48 @@ async function dragContainers(): Promise<void> {
 		await page.ask(heldDrop);
 		await waited(SETTLE_MS);
 		check("a drop clears every outline", await page.ask(dropFlags), []);
+	});
+}
+
+async function hoverAfterDrop(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		const rows = `${FLOWS}[data-kind=flow]`;
+		await hoverOn(page, rows, "Sprint board", 150);
+		check(
+			"at rest under the pointer only the row under it shows the ×",
+			[await page.ask(closeShownOf("Sprint board")), await page.ask(closeShownOf("Design system")), await page.ask(hoverHeld)],
+			[true, false, false],
+		);
+		await page.ask(heldFlowDrag("Composer redesign"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"a drag holds every hover look, even on the row the browser still calls hovered",
+			[await page.ask(closeShownOf("Sprint board")), await page.ask(hoverHeld)],
+			[false, true],
+		);
+		await page.ask(heldEnd);
+		await waited(AFTER_TAP_MS);
+		check(
+			"the hold stays after the drop until the pointer moves",
+			[await page.ask(closeShownOf("Sprint board")), await page.ask(hoverHeld)],
+			[false, true],
+		);
+		await hoverOn(page, rows, "Design system", 150);
+		check(
+			"the next pointer move releases it and only the row under the pointer shows the ×",
+			[
+				await page.ask(hoverHeld),
+				await page.ask(closeShownOf("Design system")),
+				await page.ask(closeShownOf("Sprint board")),
+				await page.ask(closeShownOf("Plugin layout")),
+			],
+			[false, true, false, false],
+		);
+		await hoverOn(page, FOLDER_FLOWS, "Composer redesign", 1100);
+		check("a Flow with several chats opens its panel on hover", await page.ask(count(".sumi-flows-chats.is-open")), 1);
+		await page.ask(heldFlowDrag("Composer redesign"));
+		await waited(AFTER_TAP_MS * 4);
+		check("starting a drag closes the chats panel", await page.ask(count(".sumi-flows-chats.is-open")), 0);
 	});
 }
 
@@ -1386,6 +1432,7 @@ await dragging();
 await dropIndicator();
 await folderBetweenSessions();
 await dragContainers();
+await hoverAfterDrop();
 await dragShots();
 await editingIcon();
 await deleting();

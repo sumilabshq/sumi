@@ -216,7 +216,7 @@
 	border-radius: var(--r-sm);
 }
 
-.sumi-flows-row:is(:hover, :focus-within) {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row:is(:hover, :focus-within) {
 	color: var(--text);
 	background: var(--hover);
 }
@@ -238,7 +238,7 @@
 	margin-inline-end: var(--space-1);
 }
 
-.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-tools {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-tools {
 	display: flex;
 }
 
@@ -263,7 +263,7 @@
 	border: 0;
 }
 
-.sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-main .sumi-flows-chevron,
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-label[data-kind="project"]:is(:hover, :focus-within) .sumi-flows-label-main .sumi-flows-chevron,
 .sumi-flows-label[data-collapsed] .sumi-flows-label-main .sumi-flows-chevron {
 	display: grid;
 }
@@ -341,15 +341,15 @@
 	height: var(--icon);
 }
 
-.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-glyph {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-glyph {
 	display: none;
 }
 
-.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-chevron {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-chevron {
 	display: grid;
 }
 
-.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-status {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-status {
 	display: none;
 }
 
@@ -368,7 +368,7 @@
 	border-radius: var(--r-xs);
 }
 
-.sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-add {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="folder"]:is(:hover, :focus-within) .sumi-flows-add {
 	display: grid;
 }
 
@@ -393,11 +393,11 @@
 		calc((var(--icon-sm) - var(--control-xxs)) / 2);
 }
 
-.sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-status {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-status {
 	display: none;
 }
 
-.sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-close {
+:where(.sumi-flows:not([data-hover-held])) .sumi-flows-row[data-kind="flow"]:is(:hover, :focus-within) .sumi-flows-close {
 	display: inline-flex;
 }
 

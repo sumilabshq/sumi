@@ -14,10 +14,11 @@ const MENU_LABEL = "Sessions";
 export interface EmptySpaceMenuProps {
 	readonly sidebar: FlowsSidebarFacts;
 	readonly acts: FlowActs;
+	readonly isHoverHeld: boolean;
 	readonly children: ReactNode;
 }
 
-export function EmptySpaceMenu({ sidebar, acts, children }: EmptySpaceMenuProps): ReactElement {
+export function EmptySpaceMenu({ sidebar, acts, isHoverHeld, children }: EmptySpaceMenuProps): ReactElement {
 	const [at, setAt] = useState<MenuSpot | null>(null);
 	const [wasOpened, setWasOpened] = useState(false);
 	usePeekHold(at !== null);
@@ -37,7 +38,7 @@ export function EmptySpaceMenu({ sidebar, acts, children }: EmptySpaceMenuProps)
 	};
 
 	return (
-		<div className="sumi-flows" onContextMenu={open}>
+		<div className="sumi-flows" data-hover-held={isHoverHeld ? "" : undefined} onContextMenu={open}>
 			{children}
 			{wasOpened ? (
 				<SpotMenu at={at} onClose={close}>
