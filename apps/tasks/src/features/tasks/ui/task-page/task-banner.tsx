@@ -35,17 +35,17 @@ export function TaskBanner({ card, showsStatus = true }: TaskBannerProps): React
 				<BannerSaid card={card} />
 				<span className="wg-tasks-fill" />
 				{card.actions.includes("keep") ? (
-					<Button variant="secondary" size="s" onClick={() => void keep.run()}>
+					<Button variant="secondary" size="l" onClick={() => void keep.run()}>
 						Keep
 					</Button>
 				) : null}
 				{card.actions.includes("send_back") && !isSendingBack ? (
-					<Button variant="secondary" size="s" data-tasks-send-back-open="" onClick={() => setSendingBack(true)}>
+					<Button variant="secondary" size="l" data-tasks-send-back-open="" onClick={() => setSendingBack(true)}>
 						Send back
 					</Button>
 				) : null}
 				{card.actions.includes("accept") ? (
-					<Button variant="primary" size="s" data-tasks-accept="" onClick={() => void accept.run()}>
+					<Button variant="primary" size="l" data-tasks-accept="" onClick={() => void accept.run()}>
 						Accept
 					</Button>
 				) : null}

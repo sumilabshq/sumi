@@ -19,7 +19,7 @@ export function ContinueButton({ card }: ContinueButtonProps): ReactElement {
 	}
 
 	return (
-		<Button variant="primary" size="s" isLoading={continueTask.isRunning} onClick={continueTask.run}>
+		<Button variant="primary" size="l" isLoading={continueTask.isRunning} onClick={continueTask.run}>
 			{CONTINUE}
 		</Button>
 	);

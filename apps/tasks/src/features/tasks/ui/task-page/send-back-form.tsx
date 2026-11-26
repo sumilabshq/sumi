@@ -35,10 +35,10 @@ export function SendBackForm({ card, close }: SendBackFormProps): ReactElement {
 				onChange={(event) => setNote(event.target.value)}
 			/>
 			<div className="wg-tasks-send-back-acts">
-				<Button variant="secondary" size="s" data-tasks-send-back-cancel="" onClick={close}>
+				<Button variant="secondary" size="l" data-tasks-send-back-cancel="" onClick={close}>
 					Cancel
 				</Button>
-				<Button type="submit" variant="primary" size="s" disabled={isEmpty} isLoading={sendBack.isRunning}>
+				<Button type="submit" variant="primary" size="l" disabled={isEmpty} isLoading={sendBack.isRunning}>
 					Send back
 				</Button>
 			</div>

@@ -64,7 +64,7 @@ export function QuestionCard({ question, answer }: QuestionCardProps): ReactElem
 			{question.multiple ? (
 				<Button
 					variant="primary"
-					size="s"
+					size="l"
 					className="wg-questions-answer"
 					disabled={picked.length === 0}
 					onClick={() => answer(question.id, picked, null)}

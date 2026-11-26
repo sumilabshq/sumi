@@ -18,7 +18,7 @@ export function NoProviderChat({ label }: { readonly label: string }): ReactElem
 			<Icon name="gear" size={28} />
 			<p className="wg-studio-ai-empty-lead">{NO_PROVIDER_LEAD.replace("{label}", label)}</p>
 			<p className="wg-studio-ai-empty-said">{NO_PROVIDER_SAID}</p>
-			<Button variant="accent" size="m" onClick={() => void openProviders.run({ chat })}>
+			<Button variant="accent" size="l" onClick={() => void openProviders.run({ chat })}>
 				{SET_UP}
 			</Button>
 		</div>

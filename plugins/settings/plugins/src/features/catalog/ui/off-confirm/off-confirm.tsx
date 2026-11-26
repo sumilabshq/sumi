@@ -16,8 +16,12 @@ export function OffConfirm({ title, alsoOff, onConfirm, onCancel }: OffConfirmPr
 				These plugins need {title} and will turn off too: {alsoOff.join(", ")}
 			</p>
 			<div className="sumi-plugins-confirm-actions">
-				<Button onClick={onConfirm}>Turn off all</Button>
-				<Button onClick={onCancel}>Cancel</Button>
+				<Button size="l" onClick={onConfirm}>
+					Turn off all
+				</Button>
+				<Button size="l" onClick={onCancel}>
+					Cancel
+				</Button>
 			</div>
 		</div>
 	);

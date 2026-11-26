@@ -37,13 +37,13 @@ export function AskCard(): ReactElement | null {
 			</div>
 			{asked.isNavigation ? null : <AskChips />}
 			<div className={ANSWERS}>
-				<Button variant="primary" className={PRIMARY} onClick={answer("site")}>
+				<Button size="l" variant="primary" className={PRIMARY} onClick={answer("site")}>
 					Allow for this site
 				</Button>
-				<Button className={SECONDARY} onClick={answer("once")}>
+				<Button size="l" className={SECONDARY} onClick={answer("once")}>
 					Once
 				</Button>
-				<Button className={SECONDARY} onClick={answer("no")}>
+				<Button size="l" className={SECONDARY} onClick={answer("no")}>
 					No
 				</Button>
 			</div>

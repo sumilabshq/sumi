@@ -22,10 +22,10 @@ export function TaskActionBar({ card }: TaskActionBarProps): ReactElement {
 			<SendBackFold card={card} isOpen={isSendingBack} close={() => setSendingBack(false)} />
 			{isSendingBack ? null : (
 				<div className="wg-tasks-action-bar-acts">
-					<Button variant="secondary" size="m" block data-tasks-send-back-open="" onClick={() => setSendingBack(true)}>
+					<Button variant="secondary" size="l" block data-tasks-send-back-open="" onClick={() => setSendingBack(true)}>
 						Send back
 					</Button>
-					<Button variant="primary" size="m" block data-tasks-accept="" onClick={() => void accept.run()}>
+					<Button variant="primary" size="l" block data-tasks-accept="" onClick={() => void accept.run()}>
 						Accept
 					</Button>
 				</div>

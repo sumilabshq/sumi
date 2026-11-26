@@ -24,7 +24,7 @@ export function NewCanvasButton({ tabId }: { readonly tabId: string }): ReactEle
 		openLink(canvasHrefOf(canvasId), inNewTab);
 	};
 	return (
-		<Button variant="primary" size="s" className="sumi-canvas-new" onClick={(event) => void startNew(event.metaKey)}>
+		<Button variant="primary" size="l" className="sumi-canvas-new" onClick={(event) => void startNew(event.metaKey)}>
 			<Icon name="plus" size={ICON_PX} />
 			<span>New canvas</span>
 		</Button>

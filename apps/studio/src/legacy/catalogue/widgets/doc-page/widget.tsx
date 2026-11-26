@@ -33,7 +33,7 @@ const DocPage = createWidget({
 					plainClassName="wg-studio-catalogue-doc-plain"
 				/>
 				{page.action ? (
-					<Button asChild variant="accent" size="m" className="wg-studio-catalogue-doc-action">
+					<Button asChild variant="accent" size="l" className="wg-studio-catalogue-doc-action">
 						<a href={page.action.href} target="_blank" rel="noopener">
 							<Icon name={page.action.icon} />
 							<span>{page.action.label}</span>

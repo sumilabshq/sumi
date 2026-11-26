@@ -91,7 +91,7 @@ function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 						<SettingsPageHead />
 					</div>
 					<div className="sumi-plugins-acts">
-						<Button emphasis="ghost" tone="neutral" size="sm" onClick={startBuild}>
+						<Button emphasis="ghost" tone="neutral" onClick={startBuild}>
 							<CloverGlyph size={14} />
 							Build
 						</Button>
@@ -125,7 +125,7 @@ function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 						<h3>{build.title}</h3>
 						<p>{build.description}</p>
 					</div>
-					<Button emphasis="solid" tone="neutral" size="sm" onClick={startBuild}>
+					<Button emphasis="solid" tone="neutral" size="lg" onClick={startBuild}>
 						<CloverGlyph size={14} />
 						Build with Sumi
 					</Button>
