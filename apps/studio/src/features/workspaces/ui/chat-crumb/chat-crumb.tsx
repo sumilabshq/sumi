@@ -4,7 +4,7 @@ import { NEW_CHAT_TITLE } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { ChatRenaming } from "../../lib/chat-renaming.js";
 import { useRenamingIdIn } from "../../lib/chat-renaming.js";
 import { useChatRow } from "../../lib/use-chat-row.js";
-import { ChatLinkCrumb } from "./chat-link-crumb.js";
+import { ChatTitleCrumb } from "./chat-title-crumb.js";
 import { RenamingCrumb } from "./renaming-crumb.js";
 
 export interface ChatCrumbProps {
@@ -20,5 +20,5 @@ export function ChatCrumb({ renaming, chatId }: ChatCrumbProps): ReactElement {
 		return <RenamingCrumb chat={row} renaming={renaming} />;
 	}
 
-	return <ChatLinkCrumb chatId={chatId} words={{ first: row?.title ?? NEW_CHAT_TITLE, second: null }} />;
+	return <ChatTitleCrumb words={{ first: row?.title ?? NEW_CHAT_TITLE, second: null }} />;
 }

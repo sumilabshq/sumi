@@ -793,33 +793,16 @@ const CHAT_CRUMB = ".wg-plate-head.is-chat [data-ws-crumb]";
 
 async function chatCrumbChecks(page: AskedPage): Promise<void> {
 	check(
-		"chat: the header crumb is one button holding workspace / chat",
+		"chat: the header crumb is plain text, not a button",
 		await waitUntil(
 			async () =>
 				(await page.ask(
-					`(() => { const crumb = document.querySelector(${JSON.stringify(CHAT_CRUMB)}); return crumb?.tagName === "BUTTON" && crumb.querySelector(".wg-plate-crumb-first") !== null && crumb.querySelector(".wg-plate-crumb-second") !== null; })()`,
+					`(() => { const crumb = document.querySelector(${JSON.stringify(CHAT_CRUMB)}); return crumb?.tagName === "SPAN" && crumb.querySelector(".wg-plate-crumb-first") !== null; })()`,
 				)) === true,
 			WAIT_MS,
 			STEP_MS,
 		),
 		true,
-	);
-	await pressInPage(page, CHAT_CRUMB);
-	check(
-		"chat: pressing the crumb fills the address field with sumi://chat/<id>",
-		await waitUntil(
-			async () =>
-				String(await page.ask(`document.querySelector(".wg-cm-input")?.value ?? ""`)).startsWith("sumi://chat/"),
-			WAIT_MS,
-			STEP_MS,
-		),
-		true,
-	);
-	await pressInPage(page, CHAT_CRUMB);
-	await waitUntil(
-		async () => (await page.ask(`document.querySelector("[data-cm-mode]") === null`)) === true,
-		WAIT_MS,
-		STEP_MS,
 	);
 }
 

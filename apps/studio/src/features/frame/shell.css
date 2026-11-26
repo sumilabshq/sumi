@@ -300,10 +300,6 @@ body:has([data-browser-pages-live]),
 	flex-shrink: 0;
 }
 
-.wg-plate-crumb.is-pressable {
-	cursor: pointer;
-}
-
 .wg-pane[data-pane-dimmed] .wg-plate-head,
 .wg-pane[data-pane-dimmed] .wg-plate-head .wg-plate-crumb-first {
 	color: var(--text-3);
