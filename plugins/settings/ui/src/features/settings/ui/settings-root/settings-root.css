@@ -128,6 +128,7 @@
 	min-height: 0;
 	padding-top: 44px;
 	overflow-y: auto;
+	scroll-padding-top: 44px;
 }
 
 .sumi-settings .sumi-settings-body.wg-kit-scroll-fade {

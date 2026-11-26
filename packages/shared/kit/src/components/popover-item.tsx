@@ -8,6 +8,7 @@ export type PopoverItemVariant = "default" | "destructive";
 export interface PopoverItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	readonly variant?: PopoverItemVariant | undefined;
 	readonly checked?: boolean | undefined;
+	readonly highlighted?: boolean | undefined;
 	readonly sub?: ReactNode;
 	readonly icon?: ReactNode;
 	readonly keys?: ReactNode;
@@ -16,6 +17,7 @@ export interface PopoverItemProps extends ButtonHTMLAttributes<HTMLButtonElement
 export function PopoverItem({
 	variant = "default",
 	checked,
+	highlighted,
 	sub,
 	icon,
 	keys,
@@ -29,7 +31,7 @@ export function PopoverItem({
 			{...rest}
 			aria-checked={checked}
 			data-state={checkedStateOf(checked)}
-			data-highlighted={isHighlighted ? "" : undefined}
+			data-highlighted={highlighted === true || isHighlighted ? "" : undefined}
 			data-disabled={rest.disabled ? "" : undefined}
 			onFocus={(event) => {
 				setHighlighted(true);

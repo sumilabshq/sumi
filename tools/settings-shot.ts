@@ -86,6 +86,31 @@ for (const width of WIDTHS) {
 				`[...document.querySelectorAll("button")].find((one) => one.textContent.trim() === "Appearance")?.click(); true`,
 			);
 			await waited(300);
+			const steered: Record<string, unknown> = {};
+			const highlighted = `[...document.querySelectorAll(".sumi-settings-nav .sumi-settings-item")].findIndex((one) => one.hasAttribute("data-highlighted"))`;
+			await page.ask(typed("text"));
+			await waited(150);
+			steered.textHits = await page.ask(items);
+			steered.firstHighlighted = await page.ask(highlighted);
+			await page.ask(keyed("ArrowDown"));
+			await waited(100);
+			steered.afterArrowDown = await page.ask(highlighted);
+			writeFileSync(`${OUT}/search-hits-${width}.png`, await page.shoot());
+			await page.ask(keyed("Escape"));
+			await page.ask(typed("head"));
+			await waited(150);
+			await page.ask(keyed("Enter"));
+			await waited(150);
+			steered.flashing = await page.ask(`!!document.querySelector("[data-flashing]")`);
+			writeFileSync(`${OUT}/search-landed-${width}.png`, await page.shoot());
+			await waited(1200);
+			steered.flashDone = await page.ask(`!document.querySelector("[data-flashing]")`);
+			steered.landed = await page.ask(
+				`(() => { const body = document.querySelector(".sumi-settings-body"); const title = [...document.querySelectorAll(".sumi-settings-subsection-title")].find((one) => one.textContent === "Headings"); return { scrollTop: body.scrollTop, headingTop: Math.round(title.getBoundingClientRect().top - body.getBoundingClientRect().top), query: ${field}.value }; })()`,
+			);
+			console.log(JSON.stringify(steered));
+			await page.ask(`document.querySelector(".sumi-settings-body").scrollTop = 0; true`);
+			await waited(400);
 		}
 
 		if (width === 1160) {

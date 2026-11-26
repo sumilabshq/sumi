@@ -76,7 +76,7 @@ export function settingsRootOf(pages: readonly SettingsPageEntry[]): ComponentTy
 				{crumb}
 				<div className="sumi-settings-row">
 					<div className="sumi-settings-left">
-						<SettingsNav groups={groups} shown={shown} onShow={show} />
+						<SettingsNav groups={groups} pages={pages} shown={shown} onShow={show} />
 					</div>
 					<div className="sumi-settings-main">
 						<div className="sumi-settings-body wg-kit-scroll-fade">
