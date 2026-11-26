@@ -49,7 +49,7 @@ type AutoLook<Emphasis extends string, Tone extends string> = {
 
 type SquareBase = {
 	readonly shape: "square";
-	readonly size?: AutoLookSize | "2xs" | undefined;
+	readonly size?: AutoLookSize | undefined;
 	readonly variant?: undefined;
 };
 

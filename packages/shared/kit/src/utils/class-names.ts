@@ -46,7 +46,7 @@ const ICON_BUTTON_WORDS = {
 		glass: "wg-kit-glass",
 		overlay: "is-overlay",
 	},
-	size: { l: "is-l", m: "is-m", s: "is-s", xs: "is-xs", xxs: "is-xxs" },
+	size: { l: "is-l", m: "is-m", s: "is-s", xs: "is-xs" },
 };
 
 const PILL_WORDS = {
@@ -149,7 +149,6 @@ const SQUARE_LOOKS: Readonly<Record<string, SquareButtonVariant>> = {
 const BUTTON_LOOK_SIZES: Readonly<Record<string, ButtonSize>> = { xs: "xs", sm: "s", md: "m", lg: "l" };
 
 const SQUARE_LOOK_SIZES: Readonly<Record<string, SquareButtonSize>> = {
-	"2xs": "xxs",
 	xs: "xs",
 	sm: "s",
 	md: "m",

@@ -44,7 +44,7 @@ const ICON_VARIANTS: Readonly<Record<string, Look>> = {
 	overlay: ["overlay", "neutral"],
 };
 
-const ICON_SIZES: Readonly<Record<string, string>> = { l: "lg", m: "md", s: "sm", xs: "xs", xxs: "2xs" };
+const ICON_SIZES: Readonly<Record<string, string>> = { l: "lg", m: "md", s: "sm", xs: "xs" };
 
 function sameClasses(what: string, old: string, look: ButtonLook): void {
 	check(what, sortedWords(buttonLookClass(look)), sortedWords(old));
