@@ -112,7 +112,9 @@ const registry = settingsRegistry.applyWith(undefined as never);
 if (registry === undefined) throw new Error("the settings registry returned no API");
 check(
 	"a page repeating a section id is refused",
-	thrownBy(() => registry.page({ ...looks, sections: [{ id: "a", title: "A", sections: [{ id: "a", title: "A" }] }] })),
+	thrownBy(() =>
+		registry.addPage({ ...looks, sections: [{ id: "a", title: "A", sections: [{ id: "a", title: "A" }] }] }),
+	),
 	'settings page "looks" has section id "a" more than once',
 );
 

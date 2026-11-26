@@ -7,5 +7,5 @@ export const appearanceSettings = plugin("appearance-settings")
 	.describe(metadata)
 	.require(settingsRegistry)
 	.apply((app) => {
-		app.use(settingsRegistry).page(appearancePage);
+		app.use(settingsRegistry).addPage(appearancePage);
 	});

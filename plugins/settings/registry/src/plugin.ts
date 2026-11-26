@@ -1,17 +1,25 @@
-import type { WindowOffers } from "@sumi/sumi-host-plugin";
+import { shell } from "@sumi/sumi-host-plugin";
+import type { DrawnTabPage, WindowOffers } from "@sumi/sumi-host-plugin";
 import type { RemoteModule } from "@widgetarium/data-framework";
 import { plugin } from "@widgetarium/plugin-framework";
 import metadata from "../metadata.json" with { type: "json" };
 import { repeatedSectionId } from "./features/registry/lib/section-tree.js";
 import type { SettingsPageEntry } from "./shared/lib/settings-page-entry.js";
 
+export type SettingsPageImport = (offers: WindowOffers) => RemoteModule;
+export type SettingsTabPageOf = (
+	pages: readonly SettingsPageEntry[],
+	imports: readonly SettingsPageImport[],
+) => DrawnTabPage;
+
 export const settingsRegistry = plugin("settings-registry")
 	.describe(metadata)
-	.apply(() => {
+	.require(shell)
+	.apply((app) => {
 		const pages: SettingsPageEntry[] = [];
-		const imports: ((offers: WindowOffers) => RemoteModule)[] = [];
+		const imports: SettingsPageImport[] = [];
 		return {
-			page: (page: SettingsPageEntry): void => {
+			addPage: (page: SettingsPageEntry): void => {
 				const repeated = repeatedSectionId(page);
 
 				if (repeated !== undefined) {
@@ -20,10 +28,11 @@ export const settingsRegistry = plugin("settings-registry")
 
 				pages.push(page);
 			},
-			pageImport: (build: (offers: WindowOffers) => RemoteModule): void => {
+			addPageImport: (build: SettingsPageImport): void => {
 				imports.push(build);
 			},
-			pages: (): readonly SettingsPageEntry[] => pages,
-			pageImports: (): readonly ((offers: WindowOffers) => RemoteModule)[] => imports,
+			addTabPage: (tabPageOf: SettingsTabPageOf): void => {
+				app.use(shell).tabPage(tabPageOf(pages, imports));
+			},
 		};
 	});

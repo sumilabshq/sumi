@@ -13,7 +13,7 @@ export const BUILD_SKILL_TEXT = [
 	"- A new tab-like tool: register an app with `app.use(apps).app({ id, title, icon, view })`. Model: `plugins/terminal`.",
 	"- A visualization inside a chat reply: a chat view (`plugins/ai/chat-views`), not a plugin.",
 	"- A button or option in the chat composer: a slot of `plugins/ai/chat`. Model: `plugins/ai/model-picker`.",
-	"- A page in Settings: `app.use(settingsRegistry).page({ id, title, icon, section, order, view, sections })`, with its sections as data so search finds them. Model: `plugins/settings/appearance`.",
+	"- A page in Settings: `app.use(settingsRegistry).addPage({ id, title, icon, section, order, view, sections })`, with its sections as data so search finds them. Model: `plugins/settings/appearance`.",
 	"- Everything crosses plugins through the request system (queries, commands, events). A plugin owns its data; others reach it through its module.",
 	"",
 	"## Layout",

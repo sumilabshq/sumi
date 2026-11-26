@@ -8,6 +8,6 @@ export const pluginsSettings = plugin("plugins-settings")
 	.describe(metadata)
 	.require(settingsRegistry)
 	.apply((app) => {
-		app.use(settingsRegistry).page(pluginsPage);
-		app.use(settingsRegistry).pageImport(({ windowServer }) => assistant({ over: windowServer }));
+		app.use(settingsRegistry).addPage(pluginsPage);
+		app.use(settingsRegistry).addPageImport(({ windowServer }) => assistant({ over: windowServer }));
 	});

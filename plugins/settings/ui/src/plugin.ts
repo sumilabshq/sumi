@@ -11,8 +11,7 @@ export const settingsUi = plugin("settings-ui")
 	.describe(metadata)
 	.require(apps, shell, settingsRegistry)
 	.apply((app) => {
-		const registry = app.use(settingsRegistry);
 		app.use(apps).app({ id: "settings", title: "Settings", icon: SETTINGS_ICON });
-		app.use(shell).tabPage(settingsTabPage(registry.pages(), registry.pageImports()));
+		app.use(settingsRegistry).addTabPage(settingsTabPage);
 		app.use(shell).provider(windowAppProviderOf);
 	});
