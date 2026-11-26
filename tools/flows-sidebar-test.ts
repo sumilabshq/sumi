@@ -333,6 +333,15 @@ async function hiding(): Promise<void> {
 		await page.hover(700, 300);
 		await waited(SETTLE_MS);
 		check("leaving it hides it again", await page.ask(count(".sumi-flows-float")), 0);
+		const [toggleX, toggleY] = (await page.ask(
+			`(() => { const r = document.querySelector("[aria-label='Show sidebar']").getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()`,
+		)) as [number, number];
+		await page.hover(toggleX, toggleY);
+		await waited(SETTLE_MS);
+		check("hovering Show sidebar reveals the sidebar", await page.ask(count(".sumi-flows-float")), 1);
+		await page.hover(700, 300);
+		await waited(SETTLE_MS);
+		check("leaving Show sidebar hides it again", await page.ask(count(".sumi-flows-float")), 0);
 		await page.ask(`document.querySelector("[aria-label='Show sidebar']").click()`);
 		await waited(SETTLE_MS);
 		check(

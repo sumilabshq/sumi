@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { appHost } from "@widgetarium/app-host/contract";
-import type { PeekHold } from "../../../shared/lib/peek-hold.js";
+import type { PeekHold } from "./peek-hold.js";
 import { RevealControl } from "./reveal-control.js";
+import { isPointerInRevealZone } from "./reveal-zone.js";
 
 export interface RevealIntent {
-	readonly panel: RefObject<HTMLDivElement | null>;
 	readonly hold: PeekHold;
 	onEnter(): void;
 	onLeave(): void;
@@ -15,7 +14,6 @@ export interface RevealIntent {
 export function useRevealIntent(): RevealIntent {
 	const peek = useCommand(appHost.frameSides.peek);
 	const conceal = useCommand(appHost.frameSides.conceal);
-	const panel = useRef<HTMLDivElement | null>(null);
 	const latest = useRef({ peek, conceal });
 	latest.current = { peek, conceal };
 	const [control] = useState(
@@ -23,7 +21,7 @@ export function useRevealIntent(): RevealIntent {
 			new RevealControl({
 				peek: () => void latest.current.peek.run({ side: "left" }),
 				conceal: () => void latest.current.conceal.run({ side: "left" }),
-				isPointerInside: () => panel.current?.matches(":hover") === true,
+				isPointerInside: isPointerInRevealZone,
 			}),
 	);
 
@@ -32,7 +30,6 @@ export function useRevealIntent(): RevealIntent {
 	const hold = useMemo<PeekHold>(() => () => control.hold(), [control]);
 
 	return {
-		panel,
 		hold,
 		onEnter: () => control.enter(),
 		onLeave: () => control.leave(),

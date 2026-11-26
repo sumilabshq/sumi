@@ -1,8 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { PeekHoldContext } from "../../../../shared/lib/peek-hold.js";
+import { REVEAL_ZONE_MARK } from "../../../../shared/lib/reveal-zone.js";
+import { useRevealIntent } from "../../../../shared/lib/use-reveal-intent.js";
 import { useLingering } from "../../lib/use-lingering.js";
-import { useRevealIntent } from "../../lib/use-reveal-intent.js";
 import { useSidebarWidth } from "../../lib/use-sidebar-width.js";
 import { SidebarBody } from "./sidebar-body.js";
 
@@ -22,7 +23,7 @@ export function HiddenColumn({ isPeeking }: HiddenColumnProps): ReactElement {
 			<div className="sumi-flows-edge" onPointerEnter={intent.onEnter} onPointerLeave={intent.onLeave} />
 			{peek.isDrawn ? (
 				<aside
-					ref={intent.panel}
+					{...REVEAL_ZONE_MARK}
 					className="sumi-flows-float"
 					data-leaving={peek.isLeaving ? "" : undefined}
 					style={{ width: width.px }}

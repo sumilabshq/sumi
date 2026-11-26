@@ -4,6 +4,8 @@ import { appHost } from "@widgetarium/app-host/contract";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 import { layout } from "@widgetarium/layout/contract";
+import { REVEAL_ZONE_MARK } from "../../../../shared/lib/reveal-zone.js";
+import { useRevealIntent } from "../../../../shared/lib/use-reveal-intent.js";
 import { useTitleReach } from "../../lib/use-title-reach.js";
 import { NewFlowButton } from "./new-flow-button.js";
 import { TrailKeys } from "./trail-keys.js";
@@ -19,6 +21,10 @@ export function SidebarTitle(): ReactElement {
 	const isDocked = look === "docked";
 	const label = isDocked ? HIDE_SIDEBAR : SHOW_SIDEBAR;
 	const reach = useTitleReach(isDocked ? sidebarPx : null);
+	const intent = useRevealIntent();
+	const revealOnHover = isDocked
+		? {}
+		: { ...REVEAL_ZONE_MARK, onPointerEnter: intent.onEnter, onPointerLeave: intent.onLeave };
 	return (
 		<div
 			ref={reach.ref}
@@ -33,6 +39,7 @@ export function SidebarTitle(): ReactElement {
 				label={label}
 				{...tooltipMarks({ said: label })}
 				aria-expanded={isDocked}
+				{...revealOnHover}
 				onClick={() => void toggle.run({ side: "left" })}
 			>
 				<Icon name="panel-left" size={ICON_PX} />
