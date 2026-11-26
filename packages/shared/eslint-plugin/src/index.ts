@@ -9,6 +9,7 @@ import { moduleDefinition } from "./rules/module-definition.js";
 import { moduleImports } from "./rules/module-imports.js";
 import { moduleState } from "./rules/module-state.js";
 import { noChoiceStrings } from "./rules/no-choice-strings.js";
+import { pluginApiVerbs } from "./rules/plugin-api-verbs.js";
 import { serverModule } from "./rules/server-module.js";
 import { singleUseLib } from "./rules/single-use-lib.js";
 
@@ -26,6 +27,7 @@ const rules = {
 	"layer-order": layerOrder,
 	"handler-ownership": handlerOwnership,
 	"single-use-lib": singleUseLib,
+	"plugin-api-verbs": pluginApiVerbs,
 } as const;
 
 const SEVERITY: Readonly<Record<keyof typeof rules, Linter.RuleSeverity>> = {
@@ -40,6 +42,7 @@ const SEVERITY: Readonly<Record<keyof typeof rules, Linter.RuleSeverity>> = {
 	"layer-order": "warn",
 	"handler-ownership": "warn",
 	"single-use-lib": "warn",
+	"plugin-api-verbs": "error",
 };
 
 const ruled: ESLint.Plugin = { meta: { name: "@widgetarium/eslint-plugin" }, rules };

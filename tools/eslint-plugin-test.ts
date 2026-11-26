@@ -197,6 +197,29 @@ tested("building-block-names", {
 	],
 });
 
+const APPLIED = `${PLUGINS}export const registry = plugin("registry").apply(() => {`;
+
+tested("plugin-api-verbs", {
+	valid: [
+		ok(`${APPLIED} return { addPage: () => undefined, openPage: () => undefined }; });`),
+		ok(`${APPLIED} const api = { addPage: () => undefined }; return api; });`),
+		ok(`${APPLIED} return { mcp: { addServer: () => undefined } }; });`),
+		ok(`${PLUGINS}export const files = plugin("files").apply(() => ({ addViewer: () => undefined }));`),
+		ok(`${APPLIED} return { ...other, [key]: 1 }; });`),
+		ok(`${APPLIED} return; });`),
+		ok(`${PLUGINS}export const apps = plugin("apps").apply(() => ({ app: () => undefined }));`),
+		ok('import { plugin } from "./elsewhere.js";\nexport const x = plugin("x").apply(() => ({ pages: 1 }));'),
+	],
+	invalid: [
+		bad(`${APPLIED} return { page: () => undefined }; });`, "notVerb"),
+		bad(`${APPLIED} const api = { pages: () => [] }; return api; });`, "notVerb"),
+		bad(`${APPLIED} return { getPages: () => [] }; });`, "getter"),
+		bad(`${APPLIED} return { mcp: { server: () => undefined } }; });`, "notVerb"),
+		bad(`${PLUGINS}export const files = plugin("files").apply(() => ({ viewers: [] }));`, "notVerb"),
+		bad(`${PLUGINS}export const other = plugin("other").describe(m).apply(() => ({ pageModule: 1 }));`, "notVerb"),
+	],
+});
+
 tested("no-choice-strings", {
 	valid: [
 		ok(TALLY_MODULE, "packages/tally/module.ts"),
@@ -504,6 +527,7 @@ check(
 		"@widgetarium/layer-order warn",
 		"@widgetarium/handler-ownership warn",
 		"@widgetarium/single-use-lib warn",
+		"@widgetarium/plugin-api-verbs error",
 	],
 );
 
