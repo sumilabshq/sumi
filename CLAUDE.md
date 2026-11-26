@@ -2,6 +2,8 @@
 
 The product is the Tauri desktop studio (`apps/tauri`, `apps/studio`). The vault widget system (boards, tiles, the catalogue, `registry/`) is legacy.
 
+Before writing any code, read [docs/architecture/code-style.md](docs/architecture/code-style.md) — the repo's whole code style.
+
 ## Architecture
 
 The architecture is `docs/architecture/`, loaded here in full. Where this file and those pages disagree, the
@@ -51,8 +53,6 @@ right, no other quality of the change counts. `docs/architecture/plugins.md#layo
 - **Window session:** one studio window and its view: the tab, split and selection it shows (`views[<window>]` in `<workspace>/.sumi/navigation.json`). **A tab belongs to the workspace, never to a window**: tabs, lists, groups and splits are the workspace's, every window of it sees them live, and they outlive windows, quits and crashes. A window that joined (`windows` in the same file) holds the tabs its view shows; another window that opens a held tab brings the holder forward, and cannot close it or change its split. A hold is never stored: it is read from the views of joined windows, earliest joined first, so closing a window, quitting, a crash, a start or a move to another workspace ends it. The `sessions` kept from the old model are read only. Owner: the navigation module (`plugins/tabs/navigation/data/navigation`), the one writer.
 - **Chat session:** one conversation with an AI agent: turns, model, the agent's own session id. Owner: the assistant module (`plugins/ai/agent`). A chat is a record, not a tab: closing its tab or its window does not end the chat.
 
-In code and text, never write a bare "session": write "window session" or "chat session".
-
 A tab never holds tabs. A chat is a plain tab (`isChat`); tabs stand together in a split, never inside a chat.
 
 **CRITICAL — Sumi is a harness over harnesses, at this stage.** Sumi writes no agent loop. Each model runs in its vendor's own harness, started headless as a runner (`agent.addRunner`), and gets Sumi's tools through MCP. A new model is a new runner: its `launchOf` and a translator of its events into chat parts. A model is never pushed through another vendor's harness. Sumi's own harness comes later, as one more runner beside these.
@@ -84,20 +84,6 @@ Only the Claude Code runner is built (`plugins/ai/claude-code`).
 @docs/architecture/lint.md
 
 @docs/architecture/legacy.md
-
-**Code style, every rule enforced by a tool, never by memory**: tabs, width 4. `if` and `for` always
-take braces and a body on its own line, even a lone `return`. An object literal is always spread over
-lines, one property per line. More than three parameters or arguments go one per line, and a declaration
-takes at most three (more → one object). Blank lines separate a group of declarations from the logic and
-stand around `if`/`for` blocks. `===`, `const` unless reassigned, no nested ternaries, no `else` after
-`return`, object shorthand, one statement per line. ESLint Stylistic formats `.ts`/`.tsx` (`eslint --fix`),
-Prettier the rest; a hook formats every edit, and `npm test` fails on a violation.
-
-**Everything is strict TypeScript.** `packages/shared/kit` and every package under `domain`, `state` and `client`
-is TSX (JSX with the classic `h` factory, one component per file); `packages/shared/core`
-is `.ts` React with `h()` hyperscript, **no JSX there**; `tools/` is `.ts` too. `npm run test:types` gates it all
-(`tsc -b`, then the `double-cast` lint): no `any`, no `as unknown as`, no `!`; data from outside arrives
-`unknown` and is narrowed by a guard.
 
 **The repository is an npm-workspaces monorepo, and the arrows between its parts point one way.**
 
@@ -252,32 +238,3 @@ suites resolve no cascade and lay nothing out, so a CSS claim proved only there 
 the subject, cut to a few words: `feat(ai): design canvas states`. What stood after the dash goes to
 the body: the files and what each does, then `verified:` and what was not verified. Same types and
 scopes, same body as before, only the subject is short.
-
-## House rules
-
-- **CRITICAL: NEVER A CHECK MARK INSIDE A BOX OR A CIRCLE.** A chosen, done, viewed or selected state is the bare
-  tick only: the kit icon `tick`. The kit's `check` is a tick in a rounded square and is forbidden, as are
-  `square-check`, `check-square`, `circle-check` and `check-circle`. Seeing one, the person stops the work.
-- **CRITICAL: NO ELLIPSIS IN WRITTEN TEXT.** A label, menu item, button, placeholder or status is written
-  without "…" or "...": "Add a provider", never "Add a provider…". Only an overflowing line cut by CSS
-  (`text-overflow: ellipsis`) may show one.
-- All colours from tokens (the theme's tokens in `design-systems/sumi/sumi.css` in the studio, kit tokens such as `var(--fill)` in the kit); no hardcoded colours. The kit's controls paint fill and corner
-  on a `::before` — the element itself is `border-radius: 0` by design.
-- Comments only with the prefixes `TODO:` and `TRADE-OFF:`, fewest possible words. `CONTEXT:` is
-  gone: a fact the reader needs belongs in a name. A hook blocks anything else, on edits and on
-  shell writes alike.
-- **Everything written in this repository is English.** Code, strings, comments, commit messages,
-  documentation, a `.md` anywhere in the tree. `npm run lint:lang` must pass. Never build a sentence
-  by concatenation — author the whole sentence with a placeholder.
-- Early returns over nesting; no proxy variables; every new entity needs a consumer.
-- **A name says what the code does.** Four rules:
-  1. A function that returns a changed copy or builds something is an imperative verb phrase:
-     `archiveColumn(column)`, `prune(node)`, `columnsToWrite(columns)` when it only prepares a write.
-  2. A past participle or an `is*` name is a fact about data that already exists: `isInstalled`,
-     `surfacesWritten(layout)`. A component naming a drawn state (`Collapsed`) is fine.
-  3. A hook that performs an effect every render is named for what it does: `useWritesOwnSize`.
-  4. One idiom per name: `manifestOfDeclared`, never `manifestOfWritten`.
-     Idioms that stay: `xOf(y)` for a derivation read off `y`, `isX`/`hasX`, `refuseX` answering a reason
-     or null, `withX(y)`, `useX`, `createX`, `defineX`, `*Schema`. A request, event, subscriber or module is
-     its camelCase constant with no kind suffix (`frameSides`, `toggleFrameSide`, `layout`); a module and a plugin
-     take their name from `name` in `package.json`; `module()` and `plugin()` take no string.

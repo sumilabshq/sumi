@@ -155,15 +155,13 @@ function listAt(drawing: MarkdownDrawing, lines: readonly string[], at: number):
 		const entry = list.appendChild(drawing.page.createElement("li"));
 		entry.append(...inlineNodesOf(drawing.page, item[3] ?? ""));
 		next += 1;
-		const nested: string[] = [];
+		const textColumn = (lines[next - 1] ?? "").length - (item[3] ?? "").length;
+		const bodyEnd = itemBodyEnd(lines, next, indent, textColumn);
+		const body = lines.slice(next, bodyEnd).map((line) => line.slice(Math.min(leadingOf(line), textColumn)));
+		next = bodyEnd;
 
-		while (next < lines.length && isInsideItem(lines[next] ?? "", indent)) {
-			nested.push(lines[next] ?? "");
-			next += 1;
-		}
-
-		if (nested.length > 0) {
-			entry.append(...blocksOf(drawing, nested));
+		if (body.length > 0) {
+			entry.append(...blocksOf(drawing, body));
 		}
 	}
 
@@ -173,13 +171,30 @@ function listAt(drawing: MarkdownDrawing, lines: readonly string[], at: number):
 	};
 }
 
-function isInsideItem(line: string, indent: number): boolean {
-	if (BLANK.test(line)) {
-		return false;
+function leadingOf(line: string): number {
+	return line.length - line.trimStart().length;
+}
+
+function itemBodyEnd(lines: readonly string[], from: number, indent: number, textColumn: number): number {
+	let end = from;
+
+	for (let at = from; at < lines.length; at += 1) {
+		const line = lines[at] ?? "";
+
+		if (BLANK.test(line)) {
+			continue;
+		}
+
+		const afterBlank = at > end;
+
+		if (leadingOf(line) <= indent || (afterBlank && leadingOf(line) < textColumn)) {
+			break;
+		}
+
+		end = at + 1;
 	}
 
-	const leading = line.length - line.trimStart().length;
-	return leading > indent;
+	return end;
 }
 
 const NUMBER_CELL = /^[+\-−]?\d[\d\s.,:]*(?:%|[a-zµ]{1,3}|\sof\s\d+)?$/i;
