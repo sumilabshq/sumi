@@ -2,6 +2,8 @@ import { createElement as h, forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
 import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 
+const HEADER_ICON_PX = 14;
+
 export interface HeaderButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "form"> {
 	readonly label: string;
 	readonly icon: string;
@@ -34,10 +36,10 @@ export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(fun
 			{...pressed}
 		>
 			{href === undefined ? (
-				<Icon name={icon} size={16} />
+				<Icon name={icon} size={HEADER_ICON_PX} />
 			) : (
 				<a href={href}>
-					<Icon name={icon} size={16} />
+					<Icon name={icon} size={HEADER_ICON_PX} />
 				</a>
 			)}
 		</Button>

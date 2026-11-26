@@ -331,7 +331,7 @@ async function walk(theme: Theme): Promise<void> {
 			chat?.radius,
 			app?.radius,
 		]);
-		check(`${theme}: both headers are 44 tall`, opened.chatHead?.height === 44 && opened.appHead?.height === 44, [
+		check(`${theme}: both headers are 36 tall`, opened.chatHead?.height === 36 && opened.appHead?.height === 36, [
 			opened.chatHead?.height,
 			opened.appHead?.height,
 		]);
