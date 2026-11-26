@@ -25,7 +25,7 @@ export function FolderButton({ chat, surface }: ComposerOptionProps): ReactEleme
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
 			<PopoverTrigger asChild>
-				<Button variant="ghost" size="xs" aria-label={CHOOSE_A_FOLDER}>
+				<Button variant="ghost" aria-label={CHOOSE_A_FOLDER}>
 					<Icon name="folder" size={12} />
 					{folders.current === null ? WORK_IN_A_FOLDER : folderNameOf(folders.current)}
 					<SelectChevron />

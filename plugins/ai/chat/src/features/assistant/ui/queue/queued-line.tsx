@@ -28,11 +28,11 @@ export function QueuedLine({ isHeld, canEdit, onEdit, onRemove }: QueuedLineProp
 		<div className="wg-studio-ai-queued-line">
 			<Icon name="clock" size={13} />
 			<span className="wg-studio-ai-queued-state">{QUEUED}</span>
-			<Button variant="ghost" size="s" className="wg-studio-ai-queued-act" disabled={!canEdit} onClick={onEdit}>
+			<Button variant="ghost" className="wg-studio-ai-queued-act" disabled={!canEdit} onClick={onEdit}>
 				<Icon name="pencil" size={13} />
 				{EDIT}
 			</Button>
-			<Button variant="ghost" size="s" className="wg-studio-ai-queued-act" onClick={onRemove}>
+			<Button variant="ghost" className="wg-studio-ai-queued-act" onClick={onRemove}>
 				<Icon name="trash" size={13} />
 				{REMOVE}
 			</Button>

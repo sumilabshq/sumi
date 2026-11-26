@@ -41,7 +41,13 @@ export function ComposerOptionSelect({
 			isPortaled
 			onValueChange={(value) => void choose.run({ chat, key: optionKey, value: String(value) })}
 		>
-			<SelectTrigger variant="ghost" size="xs" className={shown.value === warnValue ? `${className ?? ""} is-warn`.trim() : className} form={form} aria-label={shown.option.label}>
+			<SelectTrigger
+				variant="ghost"
+				size="s"
+				className={shown.value === warnValue ? `${className ?? ""} is-warn`.trim() : className}
+				form={form}
+				aria-label={shown.option.label}
+			>
 				{icons?.[shown.value] ? <Icon name={icons[shown.value] ?? ""} size={CHIP_ICON_PX} /> : null}
 				{picked?.label ?? shown.value}
 			</SelectTrigger>

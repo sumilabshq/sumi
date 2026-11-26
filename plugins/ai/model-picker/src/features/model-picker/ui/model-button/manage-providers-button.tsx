@@ -9,7 +9,6 @@ export function ManageProvidersButton({ onManage }: { readonly onManage: () => v
 		<Button
 			shape="square"
 			emphasis="ghost"
-			size="xs"
 			className="sumi-pane-head-button"
 			label={MANAGE_PROVIDERS}
 			onClick={onManage}

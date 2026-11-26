@@ -25,7 +25,6 @@ export function SendButton({ state, isEditing, onSend, onStop }: SendButtonProps
 		<Button
 			shape="square"
 			emphasis="solid"
-			size="xs"
 			form="round"
 			className={`wg-studio-ai-send is-${state}`}
 			label={said}

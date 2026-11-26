@@ -1047,8 +1047,6 @@
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: var(--h-xs);
-	height: var(--h-xs);
 	padding: var(--space-none);
 	cursor: pointer;
 	margin: var(--space-none) var(--space-none) var(--space-none) calc(-1 * var(--space-2) + var(--space-px));
@@ -1064,8 +1062,6 @@
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: var(--h-xs);
-	height: var(--h-xs);
 	padding: var(--space-none);
 	cursor: pointer;
 }

@@ -26,7 +26,6 @@ export function UsageButton({ chat, surface }: ComposerOptionProps): ReactElemen
 			<PopoverTrigger asChild>
 				<Button
 					variant="secondary"
-					size="xs"
 					form="round"
 					className="sumi-usage-button"
 					aria-label={

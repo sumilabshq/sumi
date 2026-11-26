@@ -25,7 +25,7 @@ export function ModelButton({ chat }: ComposerOptionProps): ReactElement | null 
 	return (
 		<Popover open={isOpen} onOpenChange={setOpen} isPortaled>
 			<PopoverTrigger asChild>
-				<Button variant="ghost" size="xs" form="round" className="sumi-model-trigger" aria-label={MODEL}>
+				<Button variant="ghost" form="round" className="sumi-model-trigger" aria-label={MODEL}>
 					<RunnerMark runner={shown.chosenRunner} />
 					<span className="sumi-model-name">{chosenLabelOf(shown)}</span>
 					{effortLabel === null ? null : <span className="sumi-model-effort">{effortLabel}</span>}

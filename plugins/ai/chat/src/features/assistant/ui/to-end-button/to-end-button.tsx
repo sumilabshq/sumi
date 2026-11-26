@@ -21,7 +21,6 @@ export function ToEndButton(): ReactNode {
 			<Button
 				variant="lifted"
 				form="round"
-				size="s"
 				className="wg-studio-ai-to-end-button"
 				aria-label={TO_END}
 				onClick={() => scrollToEnd()}

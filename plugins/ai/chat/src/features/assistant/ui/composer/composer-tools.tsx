@@ -28,7 +28,6 @@ export function ComposerTools(): ReactElement {
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
 				form="round"
 				icon="plus"
 				aria-pressed={plus.spot !== null}

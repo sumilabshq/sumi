@@ -70,7 +70,6 @@ export function ContextBar({ folder }: { readonly folder: string }): ReactNode {
 						<Button
 							shape="square"
 							emphasis="ghost"
-							size="xs"
 							label={MORE}
 							className="sumi-chat-context-more"
 							{...tooltipMarks({ said: MORE })}

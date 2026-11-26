@@ -13,11 +13,7 @@ export function SessionsPicker({ chat }: SessionsPickerProps): ReactNode {
 			chatId={chat}
 			side="top"
 			align="end"
-			trigger={
-				<SelectTrigger variant="ghost" size="xs">
-					{SESSIONS}
-				</SelectTrigger>
-			}
+			trigger={<SelectTrigger variant="ghost">{SESSIONS}</SelectTrigger>}
 		/>
 	);
 }

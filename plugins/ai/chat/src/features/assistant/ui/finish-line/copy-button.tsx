@@ -15,7 +15,6 @@ export function CopyButton({ label, text }: CopyButtonProps): ReactElement {
 		<Button
 			shape="square"
 			emphasis="ghost"
-			size="xs"
 			className="wg-studio-ai-round is-button"
 			label={isCopied ? COPIED : label}
 			onClick={() => void copyText(text).then(setCopied)}
