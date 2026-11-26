@@ -12,14 +12,14 @@ export interface ActionButtonProps extends Omit<ButtonProps, "size" | "variant">
 
 const ACTION_ICON_PX = 16;
 
-const ACTION_SIZE = "s";
+const ACTION_SIZE = "m";
 
 export function ActionButton({ icon, label, className: cls, children, ...rest }: ActionButtonProps): ReactElement {
 	const isMarked = rest.isLoading || rest.isDone;
 	const drawnIcon = isMarked ? null : iconDrawn(icon);
 	const className = cn("wg-kit-action", cls);
 	if (!children) {
-		return <Button {...rest} shape="square" size="sm" className={className} label={label ?? ""} children={drawnIcon} />;
+		return <Button {...rest} shape="square" className={className} label={label ?? ""} children={drawnIcon} />;
 	}
 
 	return (

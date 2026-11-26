@@ -34,7 +34,6 @@ export function Help({ children, label = WHAT_IS_THIS }: HelpProps): ReactElemen
 				trigger={
 					<Button
 						shape="square"
-						size="sm"
 						icon="circle-question-mark"
 						label={label}
 						className="wg-kit-help-button"

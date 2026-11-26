@@ -14,9 +14,7 @@ export function DialogHead({ title, onClose }: Pick<DialogPanelProps, "title" | 
 			<span id={titleId} className="wg-kit-dialog-title">
 				{title}
 			</span>
-			{onClose ? (
-				<Button shape="square" emphasis="ghost" size="sm" icon="x" label={CLOSE_LABEL} onClick={onClose} />
-			) : null}
+			{onClose ? <Button shape="square" emphasis="ghost" icon="x" label={CLOSE_LABEL} onClick={onClose} /> : null}
 		</header>
 	);
 }

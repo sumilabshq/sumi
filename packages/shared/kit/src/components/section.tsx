@@ -53,7 +53,7 @@ export function Section({
 			</header>
 			<div className="wg-kit-section-body">{children}</div>
 			{more ? (
-				<Button variant="plain" size="s" className="wg-kit-section-more" onClick={more.onPress}>
+				<Button variant="plain" className="wg-kit-section-more" onClick={more.onPress}>
 					{more.label}
 				</Button>
 			) : null}

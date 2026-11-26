@@ -5,7 +5,7 @@ import { Button } from "./button";
 import type { ButtonProps } from "./button";
 
 export function AttachmentAction({
-	size = "icon-sm",
+	size = "icon-xs",
 	variant = "ghost",
 	className,
 	...rest

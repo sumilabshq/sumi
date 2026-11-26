@@ -25,7 +25,6 @@ export function CalendarStepButton({ view, step, isShown }: CalendarStepButtonPr
 	return (
 		<Button
 			shape="square"
-			size="sm"
 			icon={look.icon}
 			label={look.label}
 			className={isShown ? undefined : "is-gap"}

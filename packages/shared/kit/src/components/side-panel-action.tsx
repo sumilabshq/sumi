@@ -4,5 +4,5 @@ import { Button } from "./button";
 import type { SquareButtonProps } from "./button";
 
 export function SidePanelAction(props: SquareButtonProps): ReactElement {
-	return <Button shape="square" emphasis="ghost" size="xs" {...props} label={props.label ?? ""} />;
+	return <Button shape="square" emphasis="ghost" {...props} label={props.label ?? ""} />;
 }

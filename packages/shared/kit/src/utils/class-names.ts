@@ -32,6 +32,7 @@ const BUTTON_WORDS = {
 		icon: "is-m is-icon",
 		"icon-lg": "is-l is-icon",
 		"icon-sm": "is-s is-icon",
+		"icon-xs": "is-xs is-icon",
 	},
 	block: { true: "is-block" },
 };

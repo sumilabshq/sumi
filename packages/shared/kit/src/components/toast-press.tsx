@@ -13,7 +13,6 @@ export interface ToastPressProps {
 export function ToastPress({ button, id, variant }: ToastPressProps): ReactElement {
 	return (
 		<Button
-			size="sm"
 			variant={variant}
 			className="wg-kit-toast-button"
 			onClick={(event) => {

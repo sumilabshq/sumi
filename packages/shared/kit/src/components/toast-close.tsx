@@ -15,7 +15,6 @@ export function ToastClose({ id }: ToastCloseProps): ReactElement {
 		<Button
 			shape="square"
 			emphasis="ghost"
-			size="sm"
 			icon="x"
 			label={CLOSE_LABEL}
 			className="wg-kit-toast-close"

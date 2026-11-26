@@ -17,7 +17,6 @@ export function SidebarTrigger({
 			data-slot="sidebar-trigger"
 			shape="square"
 			emphasis="ghost"
-			size="sm"
 			icon="panel-left"
 			label={label}
 			{...rest}

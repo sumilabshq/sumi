@@ -20,7 +20,7 @@ export function CalendarDropdown({ label, value, options, onPick }: CalendarDrop
 				if (typeof picked === "number") onPick(picked);
 			}}
 		>
-			<SelectTrigger variant="ghost" size="sm" aria-label={label} className="wg-kit-cal-dropdown">
+			<SelectTrigger variant="ghost" aria-label={label} className="wg-kit-cal-dropdown">
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent className="wg-kit-cal-dropdown-list">
