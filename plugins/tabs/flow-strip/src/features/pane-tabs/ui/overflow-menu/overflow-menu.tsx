@@ -23,7 +23,6 @@ export function OverflowMenu({ tabs, faceOf, onShow }: OverflowMenuProps): React
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
 				label={MORE_LABEL}
 				title={MORE_LABEL}
 				onClick={(event) => {
@@ -40,14 +39,7 @@ export function OverflowMenu({ tabs, faceOf, onShow }: OverflowMenuProps): React
 							<PopoverItem
 								key={tab.id}
 								role="menuitem"
-								icon={
-									<TabFace
-										{...faceOf(tab)}
-										title={tabLabelOf(tab)}
-										address={tab.address}
-										mark={tab.mark}
-									/>
-								}
+								icon={<TabFace {...faceOf(tab)} title={tabLabelOf(tab)} address={tab.address} mark={tab.mark} />}
 								onClick={() => {
 									setAt(null);
 									onShow(tab.id);

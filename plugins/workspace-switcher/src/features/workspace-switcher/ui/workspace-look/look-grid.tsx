@@ -29,7 +29,6 @@ export function LookGrid({ workspace, typed }: LookGridProps): ReactElement {
 					shape="square"
 					key={name}
 					emphasis="ghost"
-					size="sm"
 					role="option"
 					label={words}
 					aria-selected={workspace.icon?.kind === "icon" && workspace.icon.name === name}

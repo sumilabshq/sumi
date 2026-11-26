@@ -190,6 +190,10 @@
 	color: var(--text-3);
 }
 
+.sumi-flows-label-clear {
+	margin-inline-end: var(--space-1);
+}
+
 .sumi-flows-label-action {
 	margin-inline-end: var(--space-2);
 	padding: 0 var(--space-1);
@@ -357,8 +361,8 @@
 	display: none;
 	flex: none;
 	place-items: center;
-	width: 20px;
-	height: 20px;
+	width: var(--size-xs-h);
+	height: var(--size-xs-h);
 	margin-inline-end: calc(var(--space-1) * -1);
 	padding: 0;
 	color: var(--text-2);

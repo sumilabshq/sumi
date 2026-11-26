@@ -30,7 +30,6 @@ export function SidebarTitle(): ReactElement {
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
 				label={label}
 				{...tooltipMarks({ said: label })}
 				aria-expanded={isDocked}

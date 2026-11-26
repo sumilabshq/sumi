@@ -31,7 +31,6 @@ export function WorkspaceLook({ workspace }: { readonly workspace: WorkspaceRow 
 				/>
 				<Button
 					variant="ghost"
-					size="s"
 					className="sumi-ws-look-remove"
 					disabled={workspace.icon === null}
 					data-ws-remove-icon=""

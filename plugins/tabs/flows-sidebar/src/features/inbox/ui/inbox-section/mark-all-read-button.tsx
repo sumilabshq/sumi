@@ -11,6 +11,7 @@ export function MarkAllReadButton({ onClear }: { readonly onClear: () => void })
 			shape="square"
 			emphasis="ghost"
 			size="xs"
+			className="sumi-flows-label-clear"
 			label={MARK_ALL_READ}
 			{...tooltipMarks({ said: MARK_ALL_READ })}
 			onClick={onClear}

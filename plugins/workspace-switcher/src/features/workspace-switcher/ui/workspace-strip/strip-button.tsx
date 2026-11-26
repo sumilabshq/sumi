@@ -27,7 +27,6 @@ export const StripButton = memo(function StripButton({
 				<Button
 					shape="square"
 					emphasis="ghost"
-					size="xs"
 					className="sumi-ws-strip-icon"
 					label={row.name}
 					aria-current={row.isCurrent ? "true" : undefined}

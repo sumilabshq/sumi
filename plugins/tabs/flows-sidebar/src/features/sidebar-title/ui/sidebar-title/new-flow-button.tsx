@@ -14,7 +14,6 @@ export function NewFlowButton(): ReactElement {
 		<Button
 			shape="square"
 			emphasis="ghost"
-			size="xs"
 			label={NEW_SESSION}
 			{...tooltipMarks({ said: NEW_SESSION })}
 			onClick={() => acts.create(NEW_SESSION, newSessionPlaceOf(sidebar, sidebar.windowProjectId))}

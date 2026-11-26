@@ -92,14 +92,7 @@ function PaneTabRowBody({ flowId, paneId, tabs, activeTabId, notice, onNotice }:
 			{fit.hidden.length === 0 ? null : (
 				<OverflowMenu tabs={tabs.filter(({ id }) => fit.hidden.includes(id))} faceOf={faceOf} onShow={acts.show} />
 			)}
-			<Button
-				shape="square"
-				emphasis="ghost"
-				size="xs"
-				label={NEW_TAB_LABEL}
-				title={NEW_TAB_LABEL}
-				onClick={acts.openHome}
-			>
+			<Button shape="square" emphasis="ghost" label={NEW_TAB_LABEL} title={NEW_TAB_LABEL} onClick={acts.openHome}>
 				<Icon name="plus" />
 			</Button>
 			{notice === null ? null : (

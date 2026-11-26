@@ -44,7 +44,6 @@ function NewWorkspaceButton(): ReactElement {
 		<Button
 			shape="square"
 			emphasis="ghost"
-			size="xs"
 			className="sumi-ws-strip-icon is-new"
 			label={NEW_WORKSPACE}
 			isLoading={createWorkspace.isRunning}

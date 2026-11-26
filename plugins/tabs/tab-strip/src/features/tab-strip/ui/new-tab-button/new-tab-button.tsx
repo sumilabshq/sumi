@@ -10,7 +10,6 @@ export function NewTabButton({ onOpen }: { readonly onOpen: () => void }): React
 			<Button
 				shape="square"
 				emphasis="ghost"
-				size="xs"
 				data-own-drag=""
 				label={NEW_TAB_LABEL}
 				title={NEW_TAB_LABEL}
