@@ -2,9 +2,23 @@
 
 How code is written inside the architecture. The rules hold in any project built on it, not only in this repository.
 
+## Formatting
+
+Every rule is enforced by a tool, never by memory. Tabs, width 4. `if` and `for` always take braces and a body on its own line, even a lone `return`. An object literal is always spread over lines, one property per line. More than three parameters or arguments go one per line, and a declaration takes at most three (more → one object). Blank lines separate a group of declarations from the logic and stand around `if`/`for` blocks. `===`, `const` unless reassigned, no nested ternaries, no `else` after `return`, object shorthand, one statement per line. ESLint Stylistic formats `.ts`/`.tsx` (`eslint --fix`), Prettier the rest; a hook formats every edit, and `npm test` fails on a violation.
+
+## Types
+
+Everything is strict TypeScript. `packages/shared/kit` and every package under `domain`, `state` and `client` is TSX (JSX with the classic `h` factory, one component per file); `packages/shared/core` is `.ts` React with `h()` hyperscript, no JSX there; `tools/` is `.ts` too. `npm run test:types` gates it all (`tsc -b`, then the `double-cast` lint): no `any`, no `as unknown as`, no `!`; data from outside arrives `unknown` and is narrowed by a guard.
+
+## Writing code
+
+- **Everything written in this repository is English.** Code, strings, comments, commit messages, documentation, a `.md` anywhere in the tree. `npm run lint:lang` must pass.
+- Never build a sentence by concatenation: author the whole sentence with a placeholder.
+- Early returns over nesting; no proxy variables; every new entity needs a consumer.
+
 ## Names
 
-**A request, an event, a subscriber and a module are named by their camelCase constant, with no kind suffix and no string**: the builder already says the kind, and the constant is the name (`frameSides` → `frame-sides`). A guard, a middleware, a gateway and a schema keep PascalCase and end with their kind, a step taking options included (`HasPermissionGuard(perm)`, `RateLimitMiddleware({ calls, per })`). camelCase is also for ordinary values and for the functions that start a chain (`command`, `guard`, `middleware`, `minutes`).
+**A request, an event, a subscriber and a module are named by their camelCase constant, with no kind suffix and no string**: the builder already says the kind, and the constant is the name (`frameSides` → `frame-sides`). `module()` and `plugin()` take no string either: a module and a plugin take their name from `name` in `package.json`. A guard, a middleware, a gateway and a schema keep PascalCase and end with their kind, a step taking options included (`HasPermissionGuard(perm)`, `RateLimitMiddleware({ calls, per })`). camelCase is also for ordinary values and for the functions that start a chain (`command`, `guard`, `middleware`, `minutes`).
 
 | Thing              | Rule                                                                  | Example                                                         |
 | ------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------- |
@@ -24,7 +38,16 @@ How code is written inside the architecture. The rules hold in any project built
 
 **Every request is a verb phrase.** A query is `get` and what it answers (`getFrameSides`, `assistant.agent.getSetup`); a command says what it does (`toggleFrameSide`, `createTask`). Queries still named as nouns (`frameSides`, `current`, `all`) are the older style: each is renamed to `get…` when its module is next changed, never all at once.
 
-**A plugin's API is verb phrases too.** What a plugin's `apply` returns says what the call does: `agent.addRunner(...)`, `agent.addServer(...)`, `files.addViewer(...)`. Reading goes through the plugin's module, so an API has no getters. APIs still named as nouns (`files.viewer`, `mcp.server`, `apps.app`) are the older style and are renamed when their plugin is next changed.
+**A plugin's API is verb phrases too.** What a plugin's `apply` returns says what the call does: `agent.addRunner(...)`, `agent.addServer(...)`, `files.addViewer(...)`. Reading goes through the plugin's module, so an API has no getters. APIs still named as nouns (`files.viewer`, `mcp.server`, `apps.app`) are the older style and are renamed when their plugin is next changed. `plugin-api-verbs` enforces it: a key returned from a plugin's `apply` starts with a verb; today's older-style keys are an allowlist, each a `TODO: rename`.
+
+**A name says what the code does.** Four rules:
+
+1. A function that returns a changed copy or builds something is an imperative verb phrase: `archiveColumn(column)`, `prune(node)`, `columnsToWrite(columns)` when it only prepares a write.
+2. A past participle or an `is*` name is a fact about data that already exists: `isInstalled`, `surfacesWritten(layout)`. A component naming a drawn state (`Collapsed`) is fine.
+3. A hook that performs an effect every render is named for what it does: `useWritesOwnSize`.
+4. One idiom per name: `manifestOfDeclared`, never `manifestOfWritten`. Idioms that stay: `xOf(y)` for a derivation read off `y`, `isX`/`hasX`, `refuseX` answering a reason or null, `withX(y)`, `useX`, `createX`, `defineX`, `*Schema`.
+
+In code and text, never write a bare "session": write "window session" or "chat session".
 
 `building-block-names` enforces the camelCase rows and the PascalCase and suffix ones; `no-choice-strings` and the generator refuse a string name. A segment is `a-z` words joined by `-`: no digits, capitals, `/` or `_`. Two subscribers of one feature doing the same on different events add what changed: `rereadFieldForDesign`.
 
@@ -134,4 +157,11 @@ export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
 
 ## Comments
 
-Only `TODO:` (debt to repay) and `TRADE-OFF:` (a worse choice taken, and why), in the fewest words. A name that needs a comment is renamed.
+Only `TODO:` (debt to repay) and `TRADE-OFF:` (a worse choice taken, and why), in the fewest words. A fact the reader needs belongs in a name: a name that needs a comment is renamed, and `CONTEXT:` is gone. A hook blocks any other comment, on edits and on shell writes alike.
+
+## UI
+
+- **A chosen, done, viewed or selected state is the bare tick only: the kit icon `tick`, never a check mark inside a box or a circle.** The kit's `check` is a tick in a rounded square and is forbidden, as are `square-check`, `check-square`, `circle-check` and `check-circle`. Seeing one, the person stops the work.
+- **No ellipsis in written text.** A label, menu item, button, placeholder or status is written without "…" or "...": "Add a provider", never "Add a provider…". Only an overflowing line cut by CSS (`text-overflow: ellipsis`) may show one.
+- All colours come from tokens: the theme's tokens in `design-systems/sumi/sumi.css` in the studio, kit tokens such as `var(--fill)` in the kit. No hardcoded colours.
+- The kit's controls paint fill and corner on a `::before`; the element itself is `border-radius: 0` by design.
