@@ -13,7 +13,7 @@ const SHEETS = [
 	"apps/studio/dist/studio.css",
 	"plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant.css",
 	"plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-page.css",
-	"plugins/ai/sessions/src/features/sessions/ui/sessions-chip/sessions-chip.css",
+	"plugins/ai/sessions/src/features/sessions/ui/chat-head-title/chat-head-title.css",
 	"plugins/ai/chat-context/src/features/chat-context/ui/chat-context/chat-context.css",
 ];
 const LAYOUT =
@@ -56,7 +56,7 @@ const TEXT_PROBE = `(() => {
 const HEAD_PROBE = `(() => {
 	const chip = document.querySelector(".sumi-chat-context-chip");
 	const more = document.querySelector(".sumi-chat-context-more");
-	const title = document.querySelector(".sumi-sessions-chip");
+	const title = document.querySelector(".sumi-chat-head-title");
 	const box = (node) => node === null ? null : node.getBoundingClientRect();
 	return {
 		chip: chip === null ? null : chip.textContent,
@@ -145,7 +145,7 @@ interface Probe {
 
 const HEAD_GEOMETRY = `(() => {
 	const head = document.querySelector(".wg-chat-head");
-	const [chevron, chip, more] = [".sumi-sessions-chip", ".sumi-chat-context-chip", ".sumi-chat-context-more"].map((selector) => document.querySelector(selector));
+	const [chevron, chip, more] = [".sumi-chat-head-title", ".sumi-chat-context-chip", ".sumi-chat-context-more"].map((selector) => document.querySelector(selector));
 	const box = (node) => node.getBoundingClientRect();
 	const follows = (first, second) => Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
 	return {

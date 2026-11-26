@@ -16,7 +16,7 @@ import { workspaces as workspacesModule } from "../packages/domain/workspaces/ge
 import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 import { ChatHead } from "../plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-head.tsx";
 import { WindowAppContext as TitleWindowApp } from "../plugins/ai/chat-title/src/shared/lib/window-app-context.ts";
-import { SessionsChip } from "../plugins/ai/sessions/src/features/sessions/ui/sessions-chip/sessions-chip.tsx";
+import { ChatHeadTitle } from "../plugins/ai/sessions/src/features/sessions/ui/chat-head-title/chat-head-title.tsx";
 import { WindowAppContext as SessionsWindowApp } from "../plugins/ai/sessions/src/features/sessions/lib/window-app-context.ts";
 import { ContextBar } from "../plugins/ai/chat-context/src/features/chat-context/ui/chat-context/chat-context.tsx";
 import { chatContext as chatContextContract } from "../plugins/ai/chat-context/data/chat-context/generated/contract.ts";
@@ -103,7 +103,7 @@ const sessionsFill = {
 	slot: "chat.head-title",
 	pluginId: "sessions",
 	kind: "replace" as const,
-	component: SessionsChip,
+	component: ChatHeadTitle,
 };
 const contextFill = { slot: "chat.head-tools", pluginId: "chat-context", kind: "add" as const, component: Context };
 const toolFills = [sessionsFill, contextFill];

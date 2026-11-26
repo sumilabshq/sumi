@@ -9,7 +9,7 @@ const SHEETS = [
 	BOARD_SHEET,
 	"plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant.css",
 	"plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-page.css",
-	"plugins/ai/sessions/src/features/sessions/ui/sessions-chip/sessions-chip.css",
+	"plugins/ai/sessions/src/features/sessions/ui/chat-head-title/chat-head-title.css",
 	"plugins/ai/sessions/src/features/sessions/ui/sessions-popover/sessions-popover.css",
 ];
 const LAYOUT =
@@ -27,9 +27,9 @@ const origin = typeof address === "object" && address !== null ? `http://127.0.0
 
 const PROBE = `(() => {
 	const head = document.querySelector(".wg-chat-head");
-	const title = document.querySelector(".sumi-sessions-chip");
-	const chevron = document.querySelector(".sumi-sessions-chip");
-	const field = document.querySelector(".sumi-sessions-chip-field");
+	const title = document.querySelector(".sumi-chat-head-title");
+	const chevron = document.querySelector(".sumi-chat-head-title");
+	const field = document.querySelector(".sumi-chat-head-title-field");
 	const picker = [...document.querySelectorAll(".wg-studio-ai-strip .wg-kit-btn")].map((one) => one.textContent);
 	return {
 		head: head === null ? null : head.getBoundingClientRect().height,
@@ -43,8 +43,8 @@ const PROBE = `(() => {
 
 const CASES: readonly { readonly name: string; readonly variant: string; readonly act: string | null }[] = [
 	{ name: "head", variant: "short", act: null },
-	{ name: "renaming", variant: "short", act: "document.querySelector('.sumi-sessions-chip').click()" },
-	{ name: "chevron-open", variant: "short", act: "document.querySelector('.sumi-sessions-chip').click()" },
+	{ name: "renaming", variant: "short", act: "document.querySelector('.sumi-chat-head-title').click()" },
+	{ name: "chevron-open", variant: "short", act: "document.querySelector('.sumi-chat-head-title').click()" },
 	{ name: "long-title", variant: "long", act: null },
 	{ name: "empty", variant: "empty", act: null },
 ];

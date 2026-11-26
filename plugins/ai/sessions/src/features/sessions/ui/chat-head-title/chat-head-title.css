@@ -1,13 +1,11 @@
-.sumi-sessions-chip {
-	position: relative;
+.sumi-chat-head-title {
+	display: flex;
 	flex: 0 1 auto;
 	align-items: center;
-	box-sizing: border-box;
 	gap: var(--space-1);
 	min-width: 0;
 	max-width: 420px;
 	height: var(--size-s-h);
-	padding: var(--space-none) var(--space-1);
 	color: var(--text);
 	font-family: var(--font-ui);
 	font-size: var(--fs-13);
@@ -16,19 +14,21 @@
 	user-select: none;
 }
 
-.sumi-sessions-chip-title {
+.sumi-chat-head-title-text {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.sumi-sessions-chip svg {
+.sumi-chat-head-title-menu {
 	flex: none;
-	color: var(--text-3);
+}
+
+.sumi-chat-head-title-menu svg {
 	transition: transform var(--dur-base) var(--ease-emphasized);
 }
 
-.sumi-sessions-chip[data-state="open"] svg {
+.sumi-chat-head-title-menu[data-state="open"] svg {
 	transform: rotate(180deg);
 }
