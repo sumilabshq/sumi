@@ -33,7 +33,6 @@ export function toggleCodeWrap(page: Document): void {
 export function syncCodeWrapToggle(page: Document, toggle: Element): void {
 	const isWrapped = isCodeWrapped(page);
 	const said = isWrapped ? UNWRAP_SAID : WRAP_SAID;
-	toggle.setAttribute("aria-pressed", String(isWrapped));
 	toggle.setAttribute("aria-label", said);
 	toggle.setAttribute("data-tip-said", tooltipMarks({ said })["data-tip-said"]);
 	toggle.replaceChildren(createGlyph(page, isWrapped ? "text-wrap" : "move-horizontal"));
