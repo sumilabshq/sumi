@@ -57,7 +57,7 @@ export function ChoiceGrid({ id, label, choices, picked, grid, onPick }: ChoiceG
 									tabIndex={-1}
 									className="sumi-flows-picker-choice"
 									aria-label={choice.label}
-									{...tooltipMarks({ said: choice.label })}
+									{...tooltipMarks({ said: choice.label, side: "bottom" })}
 									aria-selected={isPickedChoice(choice, picked)}
 									data-active={grid.isKeying && index === grid.activeIndex ? "" : undefined}
 									onClick={() => onPick(choice.icon)}

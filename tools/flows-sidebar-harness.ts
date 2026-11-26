@@ -116,5 +116,5 @@ function trafficLightsOf(): TrafficLights {
 }
 
 export function bundledSidebarPage(): Promise<string> {
-	return bundleOf("tools/flows-sidebar-page.tsx");
+	return bundleOf("tools/flows-sidebar-page.tsx", { "import.meta.url": JSON.stringify("http://127.0.0.1/") });
 }

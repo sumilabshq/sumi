@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
+import { TooltipHost } from "@widgetarium/kit";
 import { FrameStart, PaneBoardSlot, TabFaceContext, TitleBar } from "../plugins/sumi-host/src/index.ts";
 import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
 import { FlowsSidebar } from "../plugins/tabs/flows-sidebar/src/features/flows-column/ui/flows-sidebar/flows-sidebar.tsx";
@@ -141,6 +142,7 @@ async function main(): Promise<void> {
 										<PageZone isBoard={isBoard} />
 									</div>
 								</div>
+								<TooltipHost />
 							</div>
 						</FlowWindowContext.Provider>
 					</FlowsWindowContext.Provider>

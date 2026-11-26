@@ -616,7 +616,7 @@
 
 :is(.wg-root, .wg-portal) .wg-kit-seg.sumi-flows-picker-tabs {
 	--seg-pad: 2px;
-	background: var(--fill);
+	background: var(--glass-group);
 	display: flex;
 	border-radius: calc(var(--r-sm) + 2px);
 }
@@ -647,7 +647,7 @@
 	height: var(--h-sm);
 	padding: 0 var(--space-2);
 	color: var(--text-3);
-	background: var(--fill);
+	background: var(--glass-group);
 	border-radius: var(--r-sm);
 }
 
@@ -714,11 +714,15 @@
 	width: var(--h-sm);
 	height: var(--h-sm);
 	padding: 0;
-	color: var(--text-2);
+	color: var(--text);
 	cursor: pointer;
 	background: none;
 	border: 0;
 	border-radius: var(--r-sm);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-pop:has(.sumi-flows-picker) .wg-kit-pop-glide {
+	display: none;
 }
 
 .sumi-flows-picker-choice:hover,
@@ -730,6 +734,7 @@
 .sumi-flows-picker-choice[aria-selected="true"] {
 	color: var(--text);
 	background: var(--group-plain);
+	box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 .sumi-flows-picker-none {
