@@ -138,9 +138,9 @@ check(
 	2,
 );
 check(
-	"the start plate reads Canvases / its name",
+	"the start plate reads only the canvas name",
 	await editor.ask("document.querySelector('.sumi-canvas-plate').textContent.replace(/\\s+/g, ' ').trim()"),
-	"Canvases/Sumi header",
+	"Sumi header",
 );
 check(
 	"the end plate shows the zoom in percent",

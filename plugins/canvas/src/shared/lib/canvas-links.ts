@@ -1,6 +1,5 @@
 export const CANVAS_APP = "canvas";
 export const HOME_ADDRESS = "";
-export const HOME_HREF = "/";
 export const HOME_TITLE = "Canvases";
 export const HOME_ICON = "shapes";
 
