@@ -119,7 +119,7 @@
 	--h-lg: 36px;
 	--icon: 13px;
 	--icon-sm: 12px;
-	--size-xs-h: 28px;
+	--size-xs-h: 24px;
 	--size-xs-icon: 14px;
 	--size-xs-pad: 5px;
 	--size-xs-radius: var(--control-radius, 8px);
@@ -150,7 +150,7 @@
 	--tab-pad-x: 9px;
 	--header-h: 44px;
 	--page-head-pad: var(--space-2);
-	--page-head-h: calc(var(--h-xs) + 2 * var(--page-head-pad));
+	--page-head-h: calc(var(--size-xs-h) + 2 * var(--page-head-pad));
 	--sidebar-w: 280px;
 	--sidebar-min: 200px;
 	--sidebar-max: 420px;

@@ -52,7 +52,7 @@
 	--ring: var(--brand);
 	--radius: 14px;
 	--control-radius: 8px;
-	--size-xs-h: 28px;
+	--size-xs-h: 24px;
 	--size-xs-icon: 14px;
 	--size-xs-pad: 5px;
 	--size-xs-radius: var(--control-radius, 8px);
