@@ -134,9 +134,30 @@ export const ShotSchema = z.object({
 	height: z.number(),
 });
 
+export const AreaSchema = z.object({
+	x: z.number(),
+	y: z.number(),
+	w: z.number().positive(),
+	h: z.number().positive(),
+});
+
+const PagesSchema = z.array(PageIdSchema).min(1).max(12);
+const BoardsSchema = z.array(BoardIdSchema).max(40);
+const AreaAimSchema = AreaSchema.describe("A region in canvas px to zoom on, such as one button; wins over boards");
+
+export const ChatViewSchema = z.object({
+	pages: PagesSchema,
+	page: PageIdSchema,
+	boards: BoardsSchema.default([]),
+	area: AreaSchema.nullable().default(null),
+});
+
 export const ShowCanvasAskSchema = z.object({
 	canvasId: CanvasIdSchema,
-	page: PageIdSchema.nullable().default(null).describe("The page the person sees first; null is the canvas's shown page"),
+	pages: PagesSchema.describe("The pages the card offers as tabs, in order; only these, so pick the ones that matter"),
+	page: PageIdSchema.nullable().default(null).describe("The page the person sees first; null is the first of pages"),
+	boards: BoardsSchema.default([]).describe("Artboards of that page to frame; empty frames the whole page"),
+	area: AreaAimSchema.nullable().default(null),
 });
 
 export const ShownCanvasSchema = z.object({
@@ -145,4 +166,24 @@ export const ShownCanvasSchema = z.object({
 	page: PageIdSchema,
 	pageName: NameSchema,
 	boardCount: z.number().int().nonnegative(),
+	view: z.string().nullable().default(null),
+	pages: z.array(PageIdSchema).default([]),
+});
+
+export const AimViewAskSchema = z.object({
+	canvasId: CanvasIdSchema,
+	view: z.string().min(1).max(80).describe("The view id show-canvas answered"),
+	pages: PagesSchema.nullable().default(null).describe("New tabs; null keeps them"),
+	page: PageIdSchema.nullable().default(null).describe("The page to show; null keeps it"),
+	boards: BoardsSchema.nullable().default(null).describe("Artboards to frame; null keeps them, [] frames the whole page. Changing the page without boards clears them"),
+	area: AreaAimSchema.nullable().default(null).describe("A region in canvas px to zoom on; null keeps it"),
+	clearArea: z.boolean().default(false).describe("True drops the stored area"),
+});
+
+export const ViewShotAskSchema = z.object({
+	canvasId: CanvasIdSchema,
+	view: z.string().max(80).nullable().default(null).describe("A view id from show-canvas: shoots its stored aim, and the fields below are ignored. null shoots the aim given below"),
+	page: PageIdSchema.nullable().default(null).describe("null shoots the shown page"),
+	boards: BoardsSchema.default([]).describe("Artboards to frame; empty frames the whole page"),
+	area: AreaAimSchema.nullable().default(null),
 });

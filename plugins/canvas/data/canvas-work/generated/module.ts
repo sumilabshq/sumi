@@ -2,12 +2,12 @@
 import { handledModule, named } from "@widgetarium/data-framework";
 import { canvasWork as definition } from "../module.js";
 import { getBoard, getBoardsMatching, moveBoard, removeBoard, renameBoard, renameLayer, writeBoard } from "../features/boards/requests.js";
-import { getCanvas, getCanvases, renameCanvas, showCanvas } from "../features/canvases/requests.js";
+import { aimView, getCanvas, getCanvases, renameCanvas, showCanvas } from "../features/canvases/requests.js";
 import { createPage, removePage, renamePage, showPage } from "../features/pages/requests.js";
-import { getBoardShot, getPageShot } from "../features/shots/requests.js";
+import { getBoardShot, getPageShot, getViewShot } from "../features/shots/requests.js";
 import { getTweaks, writeTweaks } from "../features/tweaks/requests.js";
 
-export type { AppliedTweak, BoardRendering, CanvasWorkConfig, DrawnBoard, Layer, Shot } from "../module.js";
+export type { AppliedTweak, BoardRendering, CanvasWorkConfig, DrawnBoard, Layer, Shot, ShotFrame } from "../module.js";
 
 export const canvasWork = handledModule(definition, [
 	named("boards.get-board", getBoard),
@@ -17,6 +17,7 @@ export const canvasWork = handledModule(definition, [
 	named("boards.rename-board", renameBoard),
 	named("boards.rename-layer", renameLayer),
 	named("boards.write-board", writeBoard),
+	named("canvases.aim-view", aimView),
 	named("canvases.get-canvas", getCanvas),
 	named("canvases.get-canvases", getCanvases),
 	named("canvases.rename-canvas", renameCanvas),
@@ -27,6 +28,7 @@ export const canvasWork = handledModule(definition, [
 	named("pages.show-page", showPage),
 	named("shots.get-board-shot", getBoardShot),
 	named("shots.get-page-shot", getPageShot),
+	named("shots.get-view-shot", getViewShot),
 	named("tweaks.get-tweaks", getTweaks),
 	named("tweaks.write-tweaks", writeTweaks),
 ]);

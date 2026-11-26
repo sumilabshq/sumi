@@ -4,6 +4,8 @@ import {
 	BoardIdSchema,
 	CameraSchema,
 	CanvasOrderSchema,
+	ChatViewIdSchema,
+	ChatViewSchema,
 	NameSchema,
 	PageIdSchema,
 	CanvasIdSchema,
@@ -81,6 +83,16 @@ export const SetBackgroundAskSchema = z.object({
 export const KeepCameraAskSchema = z.object({
 	canvasId: CanvasIdSchema,
 	camera: CameraSchema,
+});
+
+export const GetChatViewAskSchema = z.object({
+	canvasId: CanvasIdSchema,
+	view: ChatViewIdSchema,
+});
+
+export const KeepChatViewAskSchema = GetChatViewAskSchema.extend({
+	view: ChatViewIdSchema.min(1),
+	chatView: ChatViewSchema,
 });
 
 export const TweaksAskSchema = z.object({

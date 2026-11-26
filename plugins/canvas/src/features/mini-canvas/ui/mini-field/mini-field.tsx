@@ -1,5 +1,7 @@
-import { createElement as h, useEffect, useRef } from "react";
-import type { ReactElement } from "react";
+import { createElement as h, useEffect, useMemo, useRef, useState } from "react";
+import type { MutableRefObject, ReactElement } from "react";
+import { cardLookOf } from "@sumi/canvas-work/card-look";
+import type { CardBox, CardLook, CardSize } from "@sumi/canvas-work/card-look";
 import { usePanZoom } from "@widgetarium/behaviors";
 import { useLiveBoards } from "../../../canvas/lib/use-live-boards.js";
 
@@ -16,6 +18,7 @@ export interface MiniFieldBoard {
 export interface MiniFieldProps {
 	readonly boards: readonly MiniFieldBoard[];
 	readonly background: string | null;
+	readonly aim: CardBox | null;
 }
 
 const GRIPS = {
@@ -23,17 +26,16 @@ const GRIPS = {
 	pressable: "[data-mini-canvas-head]",
 	ownScroll: null,
 };
-const UNKEPT = {
-	camera: null,
-	onKept: (): void => undefined,
-};
 const ZOOM_VAR = "--canvas-zoom";
 const FIELD_MARGIN_PX = 80;
+const NO_BOX: CardBox = { x: 0, y: 0, width: 0, height: 0 };
+const KEEPS_NOTHING = (): void => undefined;
 
-export function MiniField({ boards, background }: MiniFieldProps): ReactElement {
+export function MiniField({ boards, background, aim }: MiniFieldProps): ReactElement {
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const fieldRef = useRef<HTMLDivElement | null>(null);
-	const pan = usePanZoom({ layerRef, fieldRef }, GRIPS, UNKEPT);
+	const camera = useAimedCamera(aim, useMeasuredSize(fieldRef));
+	const pan = usePanZoom({ layerRef, fieldRef }, GRIPS, { camera, onKept: KEEPS_NOTHING });
 	const live = useLiveBoards(boards, pan, FIELD_MARGIN_PX);
 	useEffect(() => {
 		const show = (scale: number): void => {
@@ -78,5 +80,42 @@ export function MiniField({ boards, background }: MiniFieldProps): ReactElement 
 				</div>
 			</div>
 		</div>
+	);
+}
+
+function useMeasuredSize(fieldRef: MutableRefObject<HTMLDivElement | null>): CardSize | null {
+	const [size, setSize] = useState<CardSize | null>(null);
+	useEffect(() => {
+		const field = fieldRef.current;
+
+		if (field === null) {
+			return undefined;
+		}
+
+		const measure = (): void =>
+			setSize((was) =>
+				was?.width === field.clientWidth && was.height === field.clientHeight
+					? was
+					: { width: field.clientWidth, height: field.clientHeight },
+			);
+		measure();
+		const watching = new ResizeObserver(measure);
+		watching.observe(field);
+		return () => watching.disconnect();
+	}, [fieldRef]);
+	return size;
+}
+
+function useAimedCamera(aim: CardBox | null, size: CardSize | null): CardLook | null {
+	const { x, y, width, height } = aim ?? NO_BOX;
+	const cardWidth = size?.width ?? 0;
+	const cardHeight = size?.height ?? 0;
+	const isAimed = aim !== null && cardWidth > 0 && cardHeight > 0;
+	return useMemo(
+		() =>
+			isAimed
+				? cardLookOf({ x: x + FIELD_MARGIN_PX, y: y + FIELD_MARGIN_PX, width, height }, { width: cardWidth, height: cardHeight })
+				: null,
+		[isAimed, x, y, width, height, cardWidth, cardHeight],
 	);
 }

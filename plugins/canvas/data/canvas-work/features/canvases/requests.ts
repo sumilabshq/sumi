@@ -1,8 +1,10 @@
 import { artboards } from "@sumi/artboards/contract";
-import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command, query } from "#module";
 import {
+	AimViewAskSchema,
 	CanvasAskSchema,
+	ChatViewSchema,
 	CanvasRowSchema,
 	CanvasSchema,
 	NoAskSchema,
@@ -54,11 +56,11 @@ export const renameCanvas = command()
 	.idempotencyKey(Repeatable)
 	.handle((ask, { send }) => send(artboards.canvases.renameCanvas, ask));
 
-export const showCanvas = query()
+export const showCanvas = command()
 	.public()
 	.metadata({
 		description:
-			"Show a canvas in this chat as a small live canvas the person can pan, zoom and switch pages in, with a link to open it whole. Call it after drawing, so the person sees the result without leaving the chat.",
+			"Show a canvas in this chat as a small live canvas the person can pan, zoom and switch pages in, with a link to open it whole. Call it after drawing, so the person sees the result without leaving the chat. Pick the pages that matter (only they become tabs) and aim the camera with boards or area. Preview the card with get-view-shot before posting; to change a posted card, call aim-view with the view id this answers instead of posting a second card.",
 		mcp: {
 			kind: "read",
 			running: "Showing the canvas",
@@ -68,19 +70,53 @@ export const showCanvas = query()
 	})
 	.input(ShowCanvasAskSchema)
 	.output(ShownCanvasSchema)
-	.handle(async ({ canvasId, page }, { send }) => {
+	.idempotencyKey(PerCall)
+	.handle(async ({ canvasId, pages, page, boards, area }, { send }) => {
 		const canvas = await send(artboards.canvases.getCanvas, { canvasId });
-		const shown = canvas.pages.find(({ id }) => id === (page ?? canvas.shownPage));
+		const first = page ?? pages[0] ?? canvas.shownPage;
+		const shown = canvas.pages.find(({ id }) => id === first);
 
 		if (shown === undefined) {
-			return refuse(NO_PAGE.replace("{page}", page ?? canvas.shownPage));
+			return refuse(NO_PAGE.replace("{page}", first));
 		}
 
+		const view = `view-${crypto.randomUUID()}`;
+		await send(artboards.chatViews.keepChatView, { canvasId, view, chatView: { pages, page: first, boards, area } });
 		return {
 			canvasId,
 			title: canvas.title,
 			page: shown.id,
 			pageName: shown.name,
 			boardCount: shown.boardCount,
+			view,
+			pages,
 		};
+	});
+
+export const aimView = command()
+	.public()
+	.metadata({
+		description:
+			"Re-aim a card show-canvas posted, by its view id: change its tabs, page, framed artboards or zoom region. The card in the chat follows live; null fields keep what is stored. Changing the page without boards clears the framed artboards. Check the result with get-view-shot.",
+	})
+	.input(AimViewAskSchema)
+	.output(ChatViewSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ canvasId, view, pages, page, boards, area, clearArea }, { send }) => {
+		const stored = await send(artboards.chatViews.getChatView, { canvasId, view });
+
+		if (stored === null) {
+			return refuse(`no card ${view} on the canvas; show-canvas answers the view id of a card it posted`);
+		}
+
+		const nextPages = pages ?? stored.pages;
+		const nextPage = page ?? (nextPages.includes(stored.page) ? stored.page : (nextPages[0] ?? stored.page));
+		const aimed = {
+			pages: nextPages,
+			page: nextPage,
+			boards: boards ?? (nextPage === stored.page ? stored.boards : []),
+			area: clearArea ? null : (area ?? stored.area),
+		};
+		await send(artboards.chatViews.keepChatView, { canvasId, view, chatView: aimed });
+		return aimed;
 	});

@@ -1,4 +1,4 @@
-import type { BoardRendering, DrawnBoard, Shot } from "@sumi/canvas-work/implementation";
+import type { BoardRendering, DrawnBoard, Shot, ShotFrame } from "@sumi/canvas-work/implementation";
 import { findElementAtPath, layersOf, parseHtmlDocument, serializeDocument } from "../../../shared/lib/layers-of.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -28,9 +28,10 @@ export const domBoardRendering: BoardRendering = {
 };
 
 // TRADE-OFF: drawn through an SVG foreignObject, so scripts do not run and web fonts fall back; a native webview shot would need a hidden browser page
-async function renderShot(boards: readonly DrawnBoard[], maxSide: number): Promise<Shot> {
-	const bounds = boundsOf(boards);
-	const scale = Math.min(1, maxSide / Math.max(bounds.width, bounds.height));
+async function renderShot(boards: readonly DrawnBoard[], maxSide: number, frame?: ShotFrame): Promise<Shot> {
+	const bounds = frame === undefined ? boundsOf(boards) : { left: frame.x, top: frame.y, width: frame.w, height: frame.h };
+	const fitted = maxSide / Math.max(bounds.width, bounds.height);
+	const scale = frame === undefined ? Math.min(1, fitted) : fitted;
 	const canvasElement = createShotCanvas(bounds, scale);
 	const canvasContext = canvasElement.getContext("2d");
 

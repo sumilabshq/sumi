@@ -13,6 +13,11 @@
 			"types": "./dist/generated/contract.d.ts",
 			"default": "./dist/generated/contract.js"
 		},
+		"./card-look": {
+			"source": "./shared/lib/card-look.ts",
+			"types": "./dist/shared/lib/card-look.d.ts",
+			"default": "./dist/shared/lib/card-look.js"
+		},
 		"./implementation": {
 			"source": "./generated/module.ts",
 			"types": "./dist/generated/module.d.ts",

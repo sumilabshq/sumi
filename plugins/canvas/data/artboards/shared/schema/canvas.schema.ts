@@ -19,6 +19,22 @@ export const CameraSchema = z.object({
 	scale: z.number().positive(),
 });
 
+export const AreaSchema = z.object({
+	x: z.number(),
+	y: z.number(),
+	w: z.number().positive(),
+	h: z.number().positive(),
+});
+
+export const ChatViewIdSchema = z.string().max(80);
+
+export const ChatViewSchema = z.object({
+	pages: z.array(PageIdSchema).min(1).max(12),
+	page: PageIdSchema,
+	boards: z.array(BoardIdSchema).max(40).default([]),
+	area: AreaSchema.nullable().default(null),
+});
+
 export const PageSchema = z.object({
 	id: PageIdSchema,
 	name: NameSchema,
@@ -85,6 +101,7 @@ export const CanvasSchema = z.object({
 	panelWidth: z.number().min(120).max(800).default(240),
 	background: BackgroundSchema.default(null),
 	camera: CameraSchema.nullable(),
+	chatViews: z.record(z.string(), ChatViewSchema).default({}),
 	editedAt: z.number().nonnegative().default(0),
 });
 
@@ -126,6 +143,8 @@ export const BoardHitSchema = z.object({
 });
 
 export type Camera = z.infer<typeof CameraSchema>;
+export type Area = z.infer<typeof AreaSchema>;
+export type ChatView = z.infer<typeof ChatViewSchema>;
 export type Page = z.infer<typeof PageSchema>;
 export type Board = z.infer<typeof BoardSchema>;
 export type Tweak = z.infer<typeof TweakSchema>;

@@ -7,6 +7,7 @@ import { artboards as artboardsModule } from "../plugins/canvas/data/artboards/g
 import { artboards } from "../plugins/canvas/data/artboards/generated/contract.ts";
 import { canvasWork } from "../plugins/canvas/data/canvas-work/generated/module.ts";
 import { ShownCanvasSchema } from "../plugins/canvas/data/canvas-work/generated/contract.ts";
+import { CARD_SIZE, cardLookOf } from "../plugins/canvas/data/canvas-work/shared/lib/card-look.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { mcpServeOf, servedMcpOf } from "../plugins/ai/agent/src/features/serve-mcp/lib/serve-mcp.ts";
 import { servedToolNameOf } from "../plugins/ai/agent/data/assistant/features/chat/lib/labelled-face.ts";
@@ -116,11 +117,41 @@ const written = await called("canvas-work_boards_write-board", {
 });
 check("an artboard is written through the canvas tool", written.isError, false);
 
-const shown = await called(SHOW_TOOL, { canvasId: "tab-1" });
+const secondPage = JSON.parse((await called("canvas-work_pages_create-page", { canvasId: "tab-1" })).text).page;
+const secondBoard = JSON.parse(
+	(await called("canvas-work_boards_write-board", { canvasId: "tab-1", page: secondPage, html: "<!doctype html><p>two</p>", name: "Two" })).text,
+).board;
+const firstBoard = JSON.parse((await called("canvas-work_boards_write-board", { canvasId: "tab-1", page: "page-1", html: "<!doctype html><p>one</p>", name: "One" })).text).board;
+await called("canvas-work_pages_show-page", { canvasId: "tab-1", page: "page-1" });
+const shown = await called(SHOW_TOOL, { canvasId: "tab-1", pages: ["page-1", secondPage], boards: [firstBoard] });
 const result = ShownCanvasSchema.safeParse(JSON.parse(shown.text));
 check("show-canvas answers JSON the view's schema reads", result.success, true);
-check("it counts the page's artboards", result.success ? result.data.boardCount : null, 1);
-check("an unknown page is refused with its reason", (await called(SHOW_TOOL, { canvasId: "tab-1", page: "page-9" })).isError, true);
+check("it counts the page's artboards", result.success ? result.data.boardCount : null, 2);
+check("it answers the card's view id", result.success && typeof result.data.view === "string", true);
+const viewId = result.success ? (result.data.view ?? "") : "";
+const kept = await windowApp.send(artboards.chatViews.getChatView, { canvasId: "tab-1", view: viewId });
+check("the stored chat view has the pages and the aimed artboard", kept.ok ? [kept.output?.pages, kept.output?.boards] : kept, [["page-1", secondPage], [firstBoard]]);
+check("an unknown page is refused with its reason", (await called(SHOW_TOOL, { canvasId: "tab-1", pages: ["page-1"], page: "page-9" })).isError, true);
+check("a tab for a page not on the canvas is refused", (await called(SHOW_TOOL, { canvasId: "tab-1", pages: ["page-1", "page-9"] })).isError, true);
+check("a first page outside the tabs is refused", (await called(SHOW_TOOL, { canvasId: "tab-1", pages: ["page-1"], page: secondPage })).isError, true);
+check("an artboard of another page is refused", (await called(SHOW_TOOL, { canvasId: "tab-1", pages: ["page-1"], boards: [secondBoard] })).isError, true);
+const aimed = await called("canvas-work_canvases_aim-view", { canvasId: "tab-1", view: viewId, page: secondPage, boards: [secondBoard] });
+check("aim-view is accepted", aimed.isError, false);
+const reaimed = await windowApp.send(artboards.chatViews.getChatView, { canvasId: "tab-1", view: viewId });
+check("getChatView reads the new page and artboards", reaimed.ok ? [reaimed.output?.page, reaimed.output?.boards] : reaimed, [secondPage, [secondBoard]]);
+check("aim-view keeps the tabs it was not given", reaimed.ok ? reaimed.output?.pages : reaimed, ["page-1", secondPage]);
+check("aim-view refuses an artboard of another page", (await called("canvas-work_canvases_aim-view", { canvasId: "tab-1", view: viewId, boards: [firstBoard] })).isError, true);
+check("aim-view refuses an unknown view", (await called("canvas-work_canvases_aim-view", { canvasId: "tab-1", view: "view-none", page: "page-1" })).isError, true);
+const zoomed = await called("canvas-work_canvases_aim-view", { canvasId: "tab-1", view: viewId, area: { x: 0, y: 0, w: 200, h: 100 } });
+check("aim-view zooms on an area", JSON.parse(zoomed.text).area, { x: 0, y: 0, w: 200, h: 100 });
+check("clearArea drops it", JSON.parse((await called("canvas-work_canvases_aim-view", { canvasId: "tab-1", view: viewId, clearArea: true })).text).area, null);
+check(
+	"a result from before chat views still parses",
+	ShownCanvasSchema.safeParse({ canvasId: "tab-1", title: "T", page: "page-1", pageName: "P", boardCount: 1 }).success,
+	true,
+);
+const fitted = cardLookOf({ x: 0, y: 0, width: 200, height: 100 }, CARD_SIZE);
+check("a small box is centered below the head at no more than 2x", [fitted.scale, fitted.x + 100 * fitted.scale, fitted.y + 50 * fitted.scale], [2, 360, 232]);
 
 const pageBoards = await windowApp.send(artboards.boards.getPageBoards, { canvasId: "tab-1", page: null });
 check("getPageBoards answers the page's artboards with their HTML", pageBoards.ok ? pageBoards.output[0]?.html : null, "<!doctype html><p>hello</p>");

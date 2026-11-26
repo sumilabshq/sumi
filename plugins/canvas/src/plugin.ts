@@ -31,6 +31,6 @@ export const canvas = plugin("canvas")
 			view: MiniCanvas,
 			height: MINI_CANVAS_HEIGHT,
 			guide:
-				"canvas-work_canvases_show-canvas: a live mini canvas of one canvas page the person can pan, zoom and switch pages in. It needs artboards: draw them first (canvas-work_boards_write-board), then show the page.",
+				"canvas-work_canvases_show-canvas: a live mini canvas the person can pan, zoom and switch pages in. It needs artboards: draw them first (canvas-work_boards_write-board), then show only the pages that matter, aimed with boards or area; check it with canvas-work_shots_get-view-shot first, and re-aim a posted card with canvas-work_canvases_aim-view and its view id instead of posting a second one.",
 		});
 	});

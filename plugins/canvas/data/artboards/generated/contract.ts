@@ -94,6 +94,32 @@ export const KeepCameraAskSchema = z.object({
 	camera: CameraSchema,
 });
 
+export const ChatViewIdSchema = z.string().max(80);
+
+export const GetChatViewAskSchema = z.object({
+	canvasId: CanvasIdSchema,
+	view: ChatViewIdSchema,
+});
+
+export const AreaSchema = z.object({
+	x: z.number(),
+	y: z.number(),
+	w: z.number().positive(),
+	h: z.number().positive(),
+});
+
+export const ChatViewSchema = z.object({
+	pages: z.array(PageIdSchema).min(1).max(12),
+	page: PageIdSchema,
+	boards: z.array(BoardIdSchema).max(40).default([]),
+	area: AreaSchema.nullable().default(null),
+});
+
+export const KeepChatViewAskSchema = GetChatViewAskSchema.extend({
+	view: ChatViewIdSchema.min(1),
+	chatView: ChatViewSchema,
+});
+
 export const TweaksAskSchema = z.object({
 	canvasId: CanvasIdSchema,
 	page: PageIdSchema.nullable().default(null),
@@ -227,6 +253,10 @@ export const BoardHitSchema = z.object({
 
 export type Camera = z.infer<typeof CameraSchema>;
 
+export type Area = z.infer<typeof AreaSchema>;
+
+export type ChatView = z.infer<typeof ChatViewSchema>;
+
 export type Page = z.infer<typeof PageSchema>;
 
 export type Board = z.infer<typeof BoardSchema>;
@@ -313,6 +343,16 @@ export const artboards = moduleContract("artboards", Server, {
 		renameCanvas: named("canvases.rename-canvas", command()
 			.public()
 			.input(RenameCanvasAskSchema)
+			.idempotencyKey(Repeatable)),
+	},
+	chatViews: {
+		getChatView: named("chat-views.get-chat-view", query()
+			.public()
+			.input(GetChatViewAskSchema)
+			.output(ChatViewSchema.nullable())),
+		keepChatView: named("chat-views.keep-chat-view", command()
+			.public()
+			.input(KeepChatViewAskSchema)
 			.idempotencyKey(Repeatable)),
 	},
 	pages: {

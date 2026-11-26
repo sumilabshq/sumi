@@ -32,6 +32,7 @@ export function createEmptyCanvas(): Canvas {
 		panelWidth: PANEL_WIDTH,
 		background: null,
 		camera: null,
+		chatViews: {},
 		editedAt: 0,
 	};
 }

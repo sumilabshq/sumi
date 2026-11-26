@@ -3,6 +3,7 @@ import { handledModule, named } from "@widgetarium/data-framework";
 import { artboards as definition } from "../module.js";
 import { getBoard, getBoards, getBoardsMatching, getPageBoards, getShownPageBoards, moveBoard, removeBoard, renameBoard, rereadBoards, writeBoard } from "../features/boards/requests.js";
 import { createCanvas, getCanvas, getCanvases, getCanvasesPage, renameCanvas, rereadCanvases } from "../features/canvases/requests.js";
+import { getChatView, keepChatView, rereadChatViews } from "../features/chat-views/requests.js";
 import { createPage, removePage, renamePage, showPage } from "../features/pages/requests.js";
 import { getBoardTweaks, getTweaks, rereadTweaks, resetTweaks, setTweakValue, writeTweaks } from "../features/tweaks/requests.js";
 import { keepCamera, resizePanel, setBackground, togglePanel } from "../features/view/requests.js";
@@ -13,6 +14,7 @@ export type { ArtboardsConfig } from "../module.js";
 export const artboards = handledModule(definition, [
 	rereadBoards,
 	rereadCanvases,
+	rereadChatViews,
 	rereadTweaks,
 	named("boards.get-board", getBoard),
 	named("boards.get-boards", getBoards),
@@ -29,6 +31,8 @@ export const artboards = handledModule(definition, [
 	named("canvases.get-canvases", getCanvases),
 	named("canvases.get-canvases-page", getCanvasesPage),
 	named("canvases.rename-canvas", renameCanvas),
+	named("chat-views.get-chat-view", getChatView),
+	named("chat-views.keep-chat-view", keepChatView),
 	named("pages.create-page", createPage),
 	named("pages.remove-page", removePage),
 	named("pages.rename-page", renamePage),
