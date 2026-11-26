@@ -37,7 +37,7 @@ export function BrowserPlateHeader(): ReactElement | null {
 				/>
 			</PlateHeaderPart>
 			<PlateHeaderPart place="crumb">
-				<PlateCrumb words={{ first: head.site, second: head.title }} isPressable pageId={heldTabId} />
+				<PlateCrumb words={{ first: head.site, second: head.title }} />
 			</PlateHeaderPart>
 			<PlateHeaderPart place="controls">
 				<KeptOutChip />

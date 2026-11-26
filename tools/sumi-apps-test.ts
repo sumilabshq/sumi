@@ -561,36 +561,11 @@ async function tasksHistoryChecks(page: AskedPage): Promise<void> {
 		[true, true],
 	);
 	check(
-		"tasks: the whole crumb is one button, with no separate home part",
+		"tasks: the whole crumb is one plain text span, with no button inside",
 		await page.ask(
 			`(() => { const shown = [...document.querySelectorAll(".wg-plate-head.is-app [data-plate-crumb]")].filter((each) => each.getClientRects().length > 0); return [shown.length, shown[0]?.querySelectorAll("button").length ?? null, shown[0]?.tagName ?? null]; })()`,
 		),
-		[1, 0, "BUTTON"],
-	);
-	await pressInPage(page, ".wg-plate-head.is-app [data-plate-crumb]");
-	check(
-		"tasks: pressing the crumb opens the address field",
-		await waitUntil(
-			async () => (await page.ask(`document.querySelector("[data-cm-mode]") !== null`)) === true,
-			WAIT_MS,
-			STEP_MS,
-		),
-		true,
-	);
-	check(
-		`tasks: the address field holds the tab's deep link sumi://tasks/${TASK_ACCEPTED}`,
-		await page.ask(`document.querySelector(".wg-cm-input")?.value ?? null`),
-		`sumi://tasks/${TASK_ACCEPTED}`,
-	);
-	await pressInPage(page, ".wg-plate-head.is-app [data-plate-crumb]");
-	check(
-		"tasks: pressing the crumb again shuts the address field",
-		await waitUntil(
-			async () => (await page.ask(`document.querySelector("[data-cm-mode]") === null`)) === true,
-			WAIT_MS,
-			STEP_MS,
-		),
-		true,
+		[1, 0, "SPAN"],
 	);
 }
 

@@ -39,7 +39,6 @@ export function PaneAppPlate({ tabId, browser }: PaneAppPlateProps): ReactElemen
 						first: appTitle,
 						second: paneTab?.label ?? null,
 					}}
-					isPressable={false}
 				/>
 			}
 			more={<PlateMore items={NO_MORE_ITEMS} />}

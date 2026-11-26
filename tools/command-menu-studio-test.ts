@@ -264,16 +264,10 @@ try {
 	check("⌘T opens the menu in New, not an empty page", JSON.stringify(fromKey).includes('"mode":"new"'), fromKey);
 	await escapedAll(page);
 
-	const pressedCrumb = await pressOn(page, ".wg-plate-head.is-app [data-plate-crumb]");
-	const fromCrumb = await menuAfter(page);
-	check(
-		"the app plate's title opens the menu filled with what it shows",
-		pressedCrumb &&
-			JSON.stringify(fromCrumb).includes('"text":"Canvas"') &&
-			JSON.stringify(fromCrumb).includes('"active":"anywhere"') &&
-			!JSON.stringify(fromCrumb).includes('"count":""'),
-		[pressedCrumb, fromCrumb, await page.ask(`document.querySelectorAll("[data-plate-crumb]").length`)],
+	const crumbKind = await page.ask(
+		`(() => { const crumb = document.querySelector(".wg-plate-head.is-app [data-plate-crumb]"); return [crumb?.tagName ?? null, crumb?.querySelectorAll("button").length ?? null, crumb?.getAttribute("aria-label") ?? null]; })()`,
 	);
+	check("the app plate's title is plain text, not a button", crumbKind, ["SPAN", 0, null]);
 	const icons = await page.ask(
 		`[...document.querySelectorAll('.wg-cm-row:is([data-cm-row="tab"], [data-cm-row="app"]) .wg-cm-icon')].map((icon) => icon.querySelector("img, svg")?.getAttribute("class") ?? "")`,
 	);

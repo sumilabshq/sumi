@@ -35,7 +35,6 @@ export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
 						first: apps.find(({ id }) => id === app)?.title ?? app,
 						second: pageWordOf(tab.address, pageTitle),
 					}}
-					isPressable
 				/>
 			</PlateHeaderPart>
 			<PlateHeaderPart place="controls">

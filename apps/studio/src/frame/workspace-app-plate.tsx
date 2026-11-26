@@ -56,7 +56,7 @@ export function WorkspaceAppPlate({
 			label={appName}
 			edgeStart={null}
 			lead={<MovesUnheld />}
-			crumb={<PlateCrumb words={crumbOf({ view, appName, pathname, appTitleOf })} isPressable />}
+			crumb={<PlateCrumb words={crumbOf({ view, appName, pathname, appTitleOf })} />}
 			more={<PlateMore items={moreItems} />}
 			edgeEnd={null}
 		>
