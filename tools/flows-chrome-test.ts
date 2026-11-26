@@ -9,7 +9,7 @@ import type { FrameState, FrameTheme } from "./flows-frame-checks.ts";
 import { FRAME_SPLITS, sceneOf } from "./flows-frame-scenes.ts";
 import { crowdedTabChecks, framedAt, hoverChecks, openedFlowRow, roomyTabChecks, tabsOf } from "./flows-tab-checks.ts";
 import type { Crowding } from "./flows-tab-checks.ts";
-import { BACK, FORWARD, trailChecks } from "./flows-trail-checks.ts";
+import { trailChecks } from "./flows-trail-checks.ts";
 import { trailLawChecks } from "./window-trail-checks.ts";
 
 const TOGGLE = "button[aria-label='Hide sidebar'], button[aria-label='Show sidebar']";
@@ -77,29 +77,12 @@ async function chromeChecks(page: AskedPage, state: string): Promise<void> {
 	check(`${state}: the first tab is centred on the traffic lights`, isCentredOnTrafficLights(tab), true);
 	check(`${state}: the first tab starts after the toggle`, tab.left >= toggle.right, true);
 	check(`${state}: the new tab button is centred on the traffic lights`, isCentredOnTrafficLights(plus), true);
-	const back = (await page.ask(boxOf(BACK))) as Box;
-	const forward = (await page.ask(boxOf(FORWARD))) as Box;
-	check(
-		`${state}: Back and Forward are centred on the traffic lights`,
-		[back, forward].every(isCentredOnTrafficLights),
-		true,
-	);
-	check(`${state}: Back and Forward follow the toggle`, back.left >= toggle.right && forward.left >= back.right, true);
-}
-
-async function dockedReachCheck(page: AskedPage): Promise<void> {
-	const forward = (await page.ask(boxOf(FORWARD))) as Box;
-	const sidebar = (await page.ask(boxOf(SIDEBAR_COLUMN))) as Box;
-	const paddingPx = Number(await page.ask(`parseFloat(getComputedStyle(document.querySelector(${JSON.stringify(TITLE_GROUP)})).paddingInlineEnd)`));
-	check("docked: Forward ends at the sidebar right edge minus the padding", Math.abs(forward.right - (sidebar.right - paddingPx)) <= TOLERANCE_PX, true);
 }
 
 async function hiddenReachCheck(page: AskedPage): Promise<void> {
 	const toggle = (await page.ask(boxOf(TOGGLE))) as Box;
-	const back = (await page.ask(boxOf(BACK))) as Box;
-	const forward = (await page.ask(boxOf(FORWARD))) as Box;
 	const pen = (await page.ask(boxOf("button[aria-label='New session']"))) as Box;
-	check("hidden: the pen, Back and Forward are visible after the toggle", [pen, back, forward].every((box) => box.left >= toggle.right && box.right > box.left), true);
+	check("hidden: the pen is visible after the toggle", [pen].every((box) => box.left >= toggle.right && box.right > box.left), true);
 }
 
 async function pressChecks(page: AskedPage, state: string): Promise<void> {
@@ -122,7 +105,6 @@ check(
 );
 await inState("inbox+board", "light", async (page) => {
 	await chromeChecks(page, "docked");
-	await dockedReachCheck(page);
 	await pressChecks(page, "docked");
 });
 await inState("hidden+board", "light", async (page) => {

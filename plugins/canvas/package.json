@@ -16,6 +16,7 @@
 		"@sumi/artboards": "0.1.0",
 		"@sumi/canvas-work": "0.1.0",
 		"@sumi/chat-plugin": "0.1.0",
+		"@sumi/flows-sidebar-plugin": "0.1.0",
 		"@sumi/mcp-apps-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@widgetarium/behaviors": "0.1.0",

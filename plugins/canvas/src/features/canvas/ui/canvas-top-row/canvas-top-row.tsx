@@ -1,5 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
+import { TrailButtons } from "@sumi/flows-sidebar-plugin";
 import { TopRow } from "../../../../shared/ui/top-row/top-row.js";
 import { BackgroundAction } from "../background-action/background-action.js";
 import { CanvasTitle } from "../canvas-title/canvas-title.js";
@@ -12,6 +13,7 @@ export function CanvasTopRow(): ReactElement {
 		<TopRow
 			start={
 				<Fragment>
+					<TrailButtons />
 					<HomeLink />
 					<span className="sumi-canvas-crumb-slash" aria-hidden="true">
 						/

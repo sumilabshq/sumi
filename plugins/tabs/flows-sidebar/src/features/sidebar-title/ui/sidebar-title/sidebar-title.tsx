@@ -6,7 +6,7 @@ import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 import { layout } from "@widgetarium/layout/contract";
 import { useTitleReach } from "../../lib/use-title-reach.js";
 import { NewFlowButton } from "./new-flow-button.js";
-import { TrailButtons } from "./trail-buttons.js";
+import { TrailKeys } from "./trail-keys.js";
 
 const HIDE_SIDEBAR = "Hide sidebar";
 const SHOW_SIDEBAR = "Show sidebar";
@@ -40,7 +40,7 @@ export function SidebarTitle(): ReactElement {
 			</Button>
 			<div className="sumi-flows-title-acts">
 				<NewFlowButton />
-				<TrailButtons />
+				<TrailKeys />
 			</div>
 		</div>
 	);

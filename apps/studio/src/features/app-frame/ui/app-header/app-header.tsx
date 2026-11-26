@@ -1,9 +1,9 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { apps as appsContract } from "@sumi/apps/contract";
-import { useCommand, useOptionalQuery, useQuery } from "@widgetarium/data-framework";
+import { TrailButtons } from "@sumi/flows-sidebar-plugin";
+import { useOptionalQuery, useQuery } from "@widgetarium/data-framework";
 import { navigation } from "@widgetarium/navigation/contract";
-import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 import { PlateCrumb } from "../../../plate/ui/plate-header/plate-crumb.js";
 import { PlateHeaderPart } from "../../../plate/ui/plate-header/plate-header-part.js";
 import { AppActions } from "./app-actions.js";
@@ -19,32 +19,15 @@ export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
 	const tab = useOptionalQuery(navigation.tabFacts.ownAppTab, { id: tabId }).data;
 	const { apps } = useQuery(appsContract.apps.all).data;
 	const pageTitle = useOptionalQuery(appsContract.pages.pageOfTab, { id: tabId }).data?.title ?? null;
-	const goBack = useCommand(navigation.tabHistory.goBack);
-	const goForward = useCommand(navigation.tabHistory.goForward);
 
 	if (tab === null) {
 		return null;
 	}
 
-	const canGoBack = tab.canGoBack === true;
-	const canGoForward = tab.canGoForward === true;
 	return (
 		<Fragment>
 			<PlateHeaderPart place="lead">
-				<HeaderButton
-					label="Back"
-					icon="chevron-left"
-					isOff={!canGoBack}
-					data-app-back=""
-					onClick={() => canGoBack && void goBack.run({ id: tabId })}
-				/>
-				<HeaderButton
-					label="Forward"
-					icon="chevron-right"
-					isOff={!canGoForward}
-					data-app-forward=""
-					onClick={() => canGoForward && void goForward.run({ id: tabId })}
-				/>
+				<TrailButtons />
 			</PlateHeaderPart>
 			<PlateHeaderPart place="crumb">
 				<PlateCrumb

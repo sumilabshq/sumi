@@ -3,8 +3,9 @@ import type { AskedPage } from "./chrome-ask.ts";
 import { check } from "./check-helpers.ts";
 import { openedFlowRow } from "./flows-tab-checks.ts";
 
-export const BACK = ".sumi-flows-title button[aria-label='Back']";
-export const FORWARD = ".sumi-flows-title button[aria-label='Forward']";
+const HEADERS = ".wg-chat-head, .wg-plate-head, .sumi-canvas-top-row";
+const BACK = `:is(${HEADERS}) button[aria-label='Back']`;
+const FORWARD = `:is(${HEADERS}) button[aria-label='Forward']`;
 
 const ACTIVE_TITLE = ".sumi-flow-strip .sumi-pane-tab[data-active] .sumi-pane-tab-title";
 const OPENED_FLOW = "Composer redesign";
