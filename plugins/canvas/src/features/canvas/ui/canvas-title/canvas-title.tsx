@@ -1,47 +1,18 @@
-import { createElement as h, useState } from "react";
+import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { artboards } from "@sumi/artboards/contract";
-import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { Pressable, tooltipMarks } from "@widgetarium/kit";
+import { useQuery } from "@widgetarium/data-framework";
 import { useRecordsTabTitle } from "../../../../shared/lib/use-records-tab-title.js";
 import { useCanvasView } from "../../lib/canvas-view-context.js";
-import { NameField } from "../name-field/name-field.js";
-
-const SAID = "Rename canvas";
 
 export function CanvasTitle(): ReactElement {
 	const { tabId, canvasId } = useCanvasView();
 	const { title } = useQuery(artboards.canvases.getCanvas, { canvasId }).data;
-	const rename = useCommand(artboards.canvases.renameCanvas);
-	const [isNaming, setNaming] = useState(false);
 	useRecordsTabTitle(tabId, title);
 
-	if (isNaming) {
-		return (
-			<NameField
-				name={title}
-				className="sumi-canvas-title-field"
-				onDone={(name) => {
-					setNaming(false);
-
-					if (name !== null) {
-						void rename.run({
-							canvasId,
-							title: name,
-						});
-					}
-				}}
-			/>
-		);
-	}
-
 	return (
-		<Pressable
-			className="sumi-canvas-top-button is-title"
-			{...tooltipMarks({ said: SAID })}
-			onClick={() => setNaming(true)}
-		>
+		<span className="sumi-canvas-title">
 			<span>{title}</span>
-		</Pressable>
+		</span>
 	);
 }

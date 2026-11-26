@@ -14,7 +14,7 @@ const ICON_PX = 14;
 export function HomeCrumb({ shown, onAll }: HomeCrumbProps): ReactElement {
 	if (shown === "all") {
 		return (
-			<span className="sumi-canvas-top-button is-title is-still">
+			<span className="sumi-canvas-title">
 				<Icon name={HOME_ICON} size={ICON_PX} />
 				<span>{HOME_TITLE}</span>
 			</span>
@@ -30,7 +30,7 @@ export function HomeCrumb({ shown, onAll }: HomeCrumbProps): ReactElement {
 			<span className="sumi-canvas-crumb-slash" aria-hidden="true">
 				/
 			</span>
-			<span className="sumi-canvas-top-button is-title is-still">
+			<span className="sumi-canvas-title">
 				<span>Open in chats</span>
 			</span>
 		</Fragment>

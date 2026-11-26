@@ -192,10 +192,6 @@
 	cursor: pointer;
 }
 
-.sumi-canvas-top-button.is-still {
-	cursor: default;
-}
-
 .sumi-canvas-home-empty {
 	display: flex;
 	flex-direction: column;

@@ -58,11 +58,23 @@
 	cursor: pointer;
 }
 
-.sumi-canvas-top-button.is-title {
+.sumi-canvas-title {
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	gap: var(--space-1-5);
+	min-width: 0;
+	height: var(--size-s-h);
+	padding: var(--space-none) var(--space-2);
+	color: var(--text);
+	font-size: var(--fs-13);
 	font-weight: var(--fw-medium);
+	white-space: nowrap;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
-.sumi-canvas-top-button.is-title span {
+.sumi-canvas-title span {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
@@ -83,22 +95,12 @@
 	color: var(--text-3);
 }
 
-.sumi-canvas-title-field {
-	width: 220px;
-	height: var(--size-s-h);
-	padding: var(--space-none) var(--space-2);
-	font: inherit;
-	font-size: var(--fs-13);
-	font-weight: var(--fw-medium);
-	user-select: text;
-}
-
 @container (max-width: 760px) {
 	.sumi-canvas-top-button.is-home span {
 		display: none;
 	}
 
-	.sumi-canvas-top-button.is-title {
+	.sumi-canvas-title {
 		max-width: 160px;
 	}
 }

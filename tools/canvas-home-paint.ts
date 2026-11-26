@@ -200,14 +200,14 @@ check(
 	"200%",
 );
 
-await editor.ask("document.querySelector('.sumi-canvas-top-button.is-title').click()");
+await editor.ask("document.querySelector('.sumi-canvas-title').click()");
 await waited(SETTLE_MS);
 check(
-	"pressing the name opens its field",
-	await editor.ask("document.querySelectorAll('.sumi-canvas-title-field').length"),
-	1,
+	"the title is plain text: a span, pressing it opens no field",
+	await editor.ask("[document.querySelector('.sumi-canvas-title').tagName, document.querySelectorAll('input').length]"),
+	["SPAN", 0],
 );
-await shot(editor, "editor-renaming");
+await shot(editor, "editor-title");
 check("the editor heard no failure", editor.failures(), []);
 editor.close();
 
