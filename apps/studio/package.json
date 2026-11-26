@@ -59,7 +59,7 @@
 		"@sumi/navigation-plugin": "0.1.0",
 		"@sumi/permission-mode-plugin": "0.1.0",
 		"@sumi/appearance-settings-plugin": "0.1.0",
-		"@sumi/plugins-catalog-plugin": "0.1.0",
+		"@sumi/plugins-settings-plugin": "0.1.0",
 		"@sumi/settings-registry-plugin": "0.1.0",
 		"@sumi/settings-ui-plugin": "0.1.0",
 		"@sumi/sandbox-mode-plugin": "0.1.0",

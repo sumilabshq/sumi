@@ -8,7 +8,7 @@ import { workspaces as workspacesModule } from "../packages/domain/workspaces/ge
 import { WindowAppContext } from "../plugins/settings/ui/src/shared/lib/window-app-context.ts";
 import { settingsRootOf } from "../plugins/settings/ui/src/features/settings/ui/settings-root/settings-root.tsx";
 import { appearancePage } from "../plugins/settings/appearance/src/features/appearance/lib/appearance-page.ts";
-import { PluginsPage } from "../plugins/plugins-catalog/src/features/catalog/ui/plugins-page/plugins-page.tsx";
+import { pluginsPage } from "../plugins/settings/plugins/src/features/catalog/lib/plugins-page.ts";
 import { placesOver } from "./places-fixture.ts";
 import { boardWorkspacesParts } from "./board-workspaces-fixture.ts";
 import { pageGlobal } from "./page-harness.ts";
@@ -29,18 +29,7 @@ const app = runtime()
 	.imports(...placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "fixture" } });
 
-const Settings = settingsRootOf([
-	appearancePage,
-	{
-		id: "plugins",
-		title: "Plugins",
-		icon: "plug",
-		section: "Extend Sumi",
-		order: 10,
-		keywords: ["build"],
-		view: PluginsPage,
-	},
-]);
+const Settings = settingsRootOf([appearancePage, pluginsPage]);
 
 const host = document.getElementById("root");
 

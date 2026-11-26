@@ -36,6 +36,9 @@
 .sumi-settings-section[data-flashing],
 .sumi-settings-subsection[data-flashing] {
 	border-radius: var(--r-md);
+}
+
+.sumi-settings [data-flashing] {
 	animation: sumi-settings-flash calc(var(--dur-slow) * 5) ease-out;
 }
 

@@ -90,7 +90,7 @@ export const BUILD_SKILL_TEXT = [
 	"- `image-viewer` (app): Opens image files.",
 	"- `main` (app): The main browsing app that opens web addresses in tabs.",
 	"- `markdown-viewer` (app): Opens Markdown files as formatted text.",
-	"- `plugins-catalog` (app): See every built-in plugin, what it adds and reaches, and turn it on or off.",
+	"- `plugins-settings` (app): See every built-in plugin, what it adds and reaches, and turn it on or off.",
 	"- `settings-registry` (service): Holds the pages of Settings and their sections as data, and searches them.",
 	"- `settings-ui` (app): The place where Sumi is set up: pages for appearance, plugins and more.",
 	"- `sumi-host` (service): The base the other plugins build on: the window, its slots, backend and shell.",

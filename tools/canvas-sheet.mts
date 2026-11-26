@@ -123,8 +123,8 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 		"plugins/settings/ui/src/features/settings/ui/settings-section/settings-section.css",
 	"@sumi/appearance-settings-plugin/appearance-page.css":
 		"plugins/settings/appearance/src/features/appearance/ui/appearance-page/appearance-page.css",
-	"@sumi/plugins-catalog-plugin/plugins-page.css":
-		"plugins/plugins-catalog/src/features/catalog/ui/plugins-page/plugins-page.css",
+	"@sumi/plugins-settings-plugin/plugins-page.css":
+		"plugins/settings/plugins/src/features/catalog/ui/plugins-page/plugins-page.css",
 	"@sumi/canvas-plugin/canvas-page.css": "plugins/canvas/src/features/canvas/ui/canvas-page/canvas-page.css",
 	"@sumi/canvas-plugin/top-row.css": "plugins/canvas/src/shared/ui/top-row/top-row.css",
 	"@sumi/canvas-plugin/canvas-home.css": "plugins/canvas/src/features/canvas-home/ui/canvas-home/canvas-home.css",
@@ -199,7 +199,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/settings-ui-plugin/settings-page.css";
 @import "@sumi/settings-ui-plugin/settings-section.css";
 @import "@sumi/appearance-settings-plugin/appearance-page.css";
-@import "@sumi/plugins-catalog-plugin/plugins-page.css";
+@import "@sumi/plugins-settings-plugin/plugins-page.css";
 @import "@sumi/canvas-plugin/canvas-page.css";
 @import "@sumi/canvas-plugin/top-row.css";
 @import "@sumi/canvas-plugin/canvas-home.css";

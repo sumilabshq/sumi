@@ -1,6 +1,7 @@
 import { findSection, pagesBySection, searchSettings, settingsRegistry } from "@sumi/settings-registry-plugin";
 import type { SettingsPageEntry } from "@sumi/settings-registry-plugin";
 import { appearancePage } from "../plugins/settings/appearance/src/features/appearance/lib/appearance-page.ts";
+import { pluginsPage } from "../plugins/settings/plugins/src/features/catalog/lib/plugins-page.ts";
 import { check, thrownBy, tally } from "./check-helpers.ts";
 
 const view = (): null => null;
@@ -68,7 +69,7 @@ check(
 check("the match ignores case", first("HEAD"), ["section", "looks", "text", "headings"]);
 check("nothing matching finds nothing", searchSettings(pages, "zzz"), []);
 
-const installed = [appearancePage];
+const installed = [appearancePage, pluginsPage];
 const installedFirst = (query: string): unknown => {
 	const [hit] = searchSettings(installed, query);
 	return hit === undefined ? null : [hit.kind, hit.pageId, ...hit.sectionPath, hit.trail.join(" > ")];
@@ -86,6 +87,14 @@ check("theme finds the Theme section before the page that lists it as a keyword"
 	"appearance",
 	"theme",
 	"Appearance",
+]);
+
+check("plug finds the Plugins page first", installedFirst("plug"), ["page", "plugins", ""]);
+check("build your finds the build section of the Plugins page", installedFirst("build your"), [
+	"section",
+	"plugins",
+	"build",
+	"Plugins",
 ]);
 
 check(

@@ -48,12 +48,7 @@ export function StudioLayout({
 				<AppFramesProvider routesFor={frameRoutes} pageUrlOf={appPageUrlOf} tabPages={tabPages}>
 					<WindowLayersContext value={windowLayers}>
 						<WindowProviders providers={windowProviders}>
-							<StudioFrame
-								frame={frame}
-								chromeLeftPx={chromeLeftPx}
-								panes={panes}
-								panel={panel}
-							/>
+							<StudioFrame frame={frame} chromeLeftPx={chromeLeftPx} panes={panes} panel={panel} />
 						</WindowProviders>
 					</WindowLayersContext>
 				</AppFramesProvider>

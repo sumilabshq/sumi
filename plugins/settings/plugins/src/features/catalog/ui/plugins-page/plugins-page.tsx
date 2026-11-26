@@ -1,6 +1,12 @@
 import { createElement as h, useCallback, useState } from "react";
 import type { ReactElement } from "react";
-import { useSettingsDetail, useSettingsTab, useWindowApp } from "@sumi/settings-ui-plugin";
+import {
+	SettingsPageHead,
+	useSettingsDetail,
+	useSettingsSection,
+	useSettingsTab,
+	useWindowApp,
+} from "@sumi/settings-ui-plugin";
 import { Button, Icon } from "@widgetarium/kit";
 import type { Runtime } from "@widgetarium/data-framework";
 import { CloverGlyph } from "../../../../shared/ui/clover-glyph/clover-glyph.js";
@@ -21,7 +27,9 @@ interface PendingOff {
 
 function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 	const view = useRegistry(windowApp);
-	const build = useBuildsPlugin(windowApp, useSettingsTab());
+	const bySumi = useSettingsSection("by-sumi");
+	const build = useSettingsSection("build");
+	const startBuild = useBuildsPlugin(windowApp, useSettingsTab());
 	const [openId, setOpenId] = useState<string | null>(null);
 	const [words, setWords] = useState("");
 	const [isExpanded, setExpanded] = useState(false);
@@ -80,13 +88,10 @@ function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 				{banner}
 				<div className="sumi-plugins-top">
 					<div>
-						<h1 className="sumi-settings-page-title">Plugins</h1>
-						<p className="sumi-plugins-lede">
-							Each plugin adds one feature to Sumi. Switch one off and it leaves everywhere it appeared.
-						</p>
+						<SettingsPageHead />
 					</div>
 					<div className="sumi-plugins-acts">
-						<Button emphasis="ghost" tone="neutral" size="sm" onClick={build}>
+						<Button emphasis="ghost" tone="neutral" size="sm" onClick={startBuild}>
 							<CloverGlyph size={14} />
 							Build
 						</Button>
@@ -96,8 +101,9 @@ function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 						</label>
 					</div>
 				</div>
-				<div className="sumi-plugins-label">
-					By Sumi<span>{visible.length}</span>
+				<div {...bySumi.anchor} className="sumi-plugins-label">
+					{bySumi.title}
+					<span>{visible.length}</span>
 				</div>
 				<div className="sumi-plugins-grid">
 					{shown.map((entry) => (
@@ -114,12 +120,12 @@ function Catalog({ windowApp }: { readonly windowApp: Runtime }): ReactElement {
 						{`Show ${hiddenCount} more`}
 					</button>
 				) : null}
-				<div className="sumi-plugins-build">
+				<div {...build.anchor} className="sumi-plugins-build">
 					<div>
-						<h3>Build your own plugin</h3>
-						<p>Tell Sumi what you need; it writes the plugin in a chat and switches it on.</p>
+						<h3>{build.title}</h3>
+						<p>{build.description}</p>
 					</div>
-					<Button emphasis="solid" tone="neutral" size="sm" onClick={build}>
+					<Button emphasis="solid" tone="neutral" size="sm" onClick={startBuild}>
 						<CloverGlyph size={14} />
 						Build with Sumi
 					</Button>

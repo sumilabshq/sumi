@@ -3,10 +3,7 @@ import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framewor
 import type { RemoteTransport } from "@widgetarium/data-framework";
 import type { WindowServerModule } from "../plugins/sumi-plugins.js";
 
-export function startWindowServer(
-	modules: readonly WindowServerModule[],
-	offers: WindowServerOffers,
-): RemoteTransport {
+export function startWindowServer(modules: readonly WindowServerModule[], offers: WindowServerOffers): RemoteTransport {
 	const transport = localTransport();
 
 	if (modules.length === 0) {

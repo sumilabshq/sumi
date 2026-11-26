@@ -67,7 +67,7 @@ import { htmlViewer } from "@sumi/html-viewer-plugin";
 import { imageViewer } from "@sumi/image-viewer-plugin";
 import { markdownViewer } from "@sumi/markdown-viewer-plugin";
 import { appearanceSettings } from "@sumi/appearance-settings-plugin";
-import { pluginsCatalog } from "@sumi/plugins-catalog-plugin";
+import { pluginsSettings } from "@sumi/plugins-settings-plugin";
 import { settingsRegistry } from "@sumi/settings-registry-plugin";
 import { settingsUi } from "@sumi/settings-ui-plugin";
 import { terminal } from "@sumi/terminal-plugin";
@@ -191,7 +191,7 @@ const INSTALLED_PLUGINS = [
 	settingsRegistry,
 	settingsUi,
 	appearanceSettings,
-	pluginsCatalog,
+	pluginsSettings,
 ];
 const ALWAYS_ON_PLUGINS = [
 	sumiHost,
@@ -260,7 +260,7 @@ export const BUILT_IN_PROFILE: SumiProfile = {
 		settingsRegistry.id,
 		settingsUi.id,
 		appearanceSettings.id,
-		pluginsCatalog.id,
+		pluginsSettings.id,
 	],
 };
 

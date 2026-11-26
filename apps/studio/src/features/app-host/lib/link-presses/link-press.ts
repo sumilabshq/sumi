@@ -18,7 +18,8 @@ const MAIN_BUTTON = 0;
 const MIDDLE_BUTTON = 1;
 
 export function linkPressOf(event: MouseEvent, view: PageWindow): LinkPress | null {
-	const anchor = event.target instanceof view.Element ? event.target.closest(`${SUMI_ANCHOR}, ${HOMED_WEB_ANCHOR}`) : null;
+	const anchor =
+		event.target instanceof view.Element ? event.target.closest(`${SUMI_ANCHOR}, ${HOMED_WEB_ANCHOR}`) : null;
 
 	if (anchor === null || !isOpeningButton(event)) {
 		return null;
@@ -27,7 +28,10 @@ export function linkPressOf(event: MouseEvent, view: PageWindow): LinkPress | nu
 	return {
 		href: anchor.getAttribute("href") ?? "",
 		opensNew:
-			event.metaKey || event.ctrlKey || event.button === MIDDLE_BUTTON || anchor.getAttribute("data-link-target") === NEW_TAB_TARGET,
+			event.metaKey ||
+			event.ctrlKey ||
+			event.button === MIDDLE_BUTTON ||
+			anchor.getAttribute("data-link-target") === NEW_TAB_TARGET,
 		home: anchor.closest(LINK_HOME)?.getAttribute("data-link-home") || null,
 	};
 }
