@@ -21173,7 +21173,7 @@ body:has(.wg-cm-layer) {
 	color: var(--text);
 	background: var(--hover);
 }
-:is(.sumi-flows-row, .sumi-flows-section)[data-drop] {
+:is(.sumi-flows-folder, .sumi-flows-section)[data-drop] {
 	color: var(--text);
 	background: var(--hover);
 	border-radius: var(--r-md);

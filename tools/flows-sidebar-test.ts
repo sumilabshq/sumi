@@ -770,7 +770,7 @@ async function dropIndicator(): Promise<void> {
 			"hovering a folder outlines it and shows no line",
 			[
 				((await page.ask(lineLook)) as LineLook).count,
-				await page.ask(`${rowOf(".sumi-flows-row[data-kind=folder]", "Client project")}.hasAttribute("data-drop")`),
+				await page.ask(`${rowOf(".sumi-flows-row[data-kind=folder]", "Client project")}.closest(".sumi-flows-folder").hasAttribute("data-drop")`),
 				await page.ask("window.__taps.length"),
 			],
 			[0, true, 3],
@@ -916,7 +916,7 @@ async function folderBetweenSessions(): Promise<void> {
 			"a session over a folder's upper edge shows a line, not an outline",
 			[
 				((await page.ask(lineLook)) as LineLook).count,
-				await page.ask(`${rowOf(TOP_FOLDERS("General"), "Sumi")}.hasAttribute("data-drop")`),
+				await page.ask(`${rowOf(TOP_FOLDERS("General"), "Sumi")}.closest(".sumi-flows-folder").hasAttribute("data-drop")`),
 			],
 			[1, false],
 		);
@@ -929,6 +929,59 @@ async function folderBetweenSessions(): Promise<void> {
 			"Sumi",
 			"Client project",
 		]);
+	});
+}
+
+const dropFlags = `(() => [...document.querySelectorAll("[data-drop]")].map((one) => one.classList.contains("sumi-flows-folder") ? "folder:" + one.querySelector(".sumi-flows-name").textContent : "project:" + one.getAttribute("aria-label")))()`;
+const lineInSection = (section: string): string =>
+	`(() => {
+		const line = document.querySelector(${JSON.stringify(DROP_LINE)});
+		if (!line) return null;
+		const mark = line.getBoundingClientRect();
+		const box = document.querySelector(${JSON.stringify(`section[aria-label=${section}]`)}).getBoundingClientRect();
+		return mark.left >= box.left - 0.5 && mark.right <= box.right + 0.5 && mark.top >= box.top - 0.5 && mark.bottom <= box.bottom + 0.5;
+	})()`;
+async function dragContainers(): Promise<void> {
+	await inInbox("light", "inbox", async (page) => {
+		await page.ask(heldFlowDrag("Composer redesign"));
+		await page.ask(dragOverOf(FOLDER_FLOWS, "Plugin layout", "upper"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"a line between two sessions of a folder keeps that folder outlined, and only it",
+			[((await page.ask(lineLook)) as LineLook).count, await page.ask(dropFlags), await page.ask(lineInSection("General"))],
+			[1, ["folder:Sumi"], true],
+		);
+		await page.ask(dragOverOf(TOP_FLOWS("General"), "Reading list", "lower"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"a line in a top-level gap outlines the project",
+			[((await page.ask(lineLook)) as LineLook).count, await page.ask(dropFlags), await page.ask(lineInSection("General"))],
+			[1, ["project:General"], true],
+		);
+		await page.ask(dragOverOf(FOLDER_FLOWS, "Design system", "middle"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"the middle of a folder's session keeps the folder outlined",
+			[((await page.ask(lineLook)) as LineLook).count, await page.ask(dropFlags)],
+			[1, ["folder:Sumi"]],
+		);
+		await page.ask(dragOverOf(TOP_FOLDERS("General"), "Sumi", "middle"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"the folder row outlines the folder with no line",
+			[((await page.ask(lineLook)) as LineLook).count, await page.ask(dropFlags)],
+			[0, ["folder:Sumi"]],
+		);
+		await page.ask(dragOverOf(TOP_FOLDERS("General"), "Research", "lower"));
+		await waited(AFTER_TAP_MS);
+		check(
+			"the line below the last row of a project stays inside the project box",
+			[((await page.ask(lineLook)) as LineLook).count, await page.ask(lineInSection("General")), await page.ask(dropFlags)],
+			[1, true, ["project:General"]],
+		);
+		await page.ask(heldDrop);
+		await waited(SETTLE_MS);
+		check("a drop clears every outline", await page.ask(dropFlags), []);
 	});
 }
 
@@ -1332,6 +1385,7 @@ await peekHolds();
 await dragging();
 await dropIndicator();
 await folderBetweenSessions();
+await dragContainers();
 await dragShots();
 await editingIcon();
 await deleting();

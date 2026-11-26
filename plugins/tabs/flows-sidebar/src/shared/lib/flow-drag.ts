@@ -40,6 +40,7 @@ type Landing =
 
 interface Aim {
 	readonly key: string;
+	readonly container: string | null;
 	readonly line: DropLine | null;
 	readonly landing: Landing;
 }
@@ -50,7 +51,7 @@ const FOLDER_BLOCK = ".sumi-flows-folder";
 const FOLDER_EDGE_SHARE = 0.3;
 
 export interface FlowDrag {
-	readonly intoKey: string | null;
+	readonly containerKey: string | null;
 	readonly draggingKey: string | null;
 	readonly line: DropLine | null;
 	sourceProps(source: DragSource): SourceProps;
@@ -103,7 +104,7 @@ export function useFlowDrag(acts: DragActs): FlowDrag {
 		}
 	};
 	return {
-		intoKey: aim !== null && aim.line === null ? aim.key : null,
+		containerKey: aim?.container ?? null,
 		draggingKey,
 		line: aim?.line ?? null,
 		sourceProps: (source) => ({
@@ -159,12 +160,12 @@ export function dragKeyOf(source: DragSource): string {
 	return `${source.kind}:${source.id}`;
 }
 
-export function intoKeyOf(target: DropTarget): string {
-	if (target.kind === "flow") {
-		return `flow:${target.flowId}`;
-	}
+export function folderKeyOf(folderId: string): string {
+	return `folder:${folderId}`;
+}
 
-	return target.kind === "folder" ? `folder:${target.folderId}` : `project:${target.projectId}`;
+export function projectKeyOf(projectId: string): string {
+	return `project:${projectId}`;
 }
 
 function aimOf(source: DragSource, target: DropTarget, event: DragEvent): Aim | null {
@@ -181,7 +182,8 @@ function aimOf(source: DragSource, target: DropTarget, event: DragEvent): Aim | 
 			source.kind === "flow"
 				? { kind: "flow", place: { folderId: null, before: null, projectId: target.projectId } }
 				: { kind: "folder-to-project", projectId: target.projectId };
-		return { key: intoKeyOf(target), line: null, landing };
+		const key = projectKeyOf(target.projectId);
+		return { key, container: key, line: null, landing };
 	}
 
 	if (source.kind === "folder") {
@@ -201,7 +203,8 @@ function aimOf(source: DragSource, target: DropTarget, event: DragEvent): Aim | 
 
 	const before = isUpper ? target.flowId : target.nextFlowId;
 	return {
-		key: `gap:${target.folderId ?? target.projectId}:${before ?? "end"}`,
+		key: `gap:${target.folderId}:${before ?? "end"}`,
+		container: folderKeyOf(target.folderId),
 		line: dropLineOf(element, isUpper),
 		landing: {
 			kind: "flow",
@@ -231,6 +234,7 @@ function topGapOf(
 			: { kind: "flow", place: placeBeforeOf(projectId, before) };
 	return {
 		key: `gap:${projectId}:${before === null ? "end" : `${before.kind}:${before.id}`}`,
+		container: projectKeyOf(projectId),
 		line: dropLineOf(element, isUpper),
 		landing,
 	};
@@ -261,8 +265,10 @@ function sessionOverFolderAimOf(
 		return topGapOf("flow", target.projectId, target.nextTop, { element: block, isUpper: false });
 	}
 
+	const key = folderKeyOf(target.folderId);
 	return {
-		key: intoKeyOf(target),
+		key,
+		container: key,
 		line: null,
 		landing: { kind: "flow", place: { folderId: target.folderId, before: null } },
 	};
@@ -272,6 +278,7 @@ function projectGapOf(target: Extract<DropTarget, { kind: "project" }>, element:
 	const beforeId = isUpper ? target.projectId : target.nextProjectId;
 	return {
 		key: `projects:${beforeId ?? "end"}`,
+		container: null,
 		line: dropLineOf(element, isUpper),
 		landing: { kind: "project", beforeId },
 	};

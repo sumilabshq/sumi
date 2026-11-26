@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { dragKeyOf, intoKeyOf } from "../../../../shared/lib/flow-drag.js";
+import { dragKeyOf } from "../../../../shared/lib/flow-drag.js";
 import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FolderRowFacts } from "../../../../shared/lib/flow-facts.js";
 import type { TopRef } from "../../../../shared/lib/use-flow-acts.js";
@@ -33,7 +33,6 @@ export function FolderLine({ folder, nextTop, drag, onToggle, onRename, onAdd }:
 			className="sumi-flows-row"
 			data-kind="folder"
 			data-color={folder.color ?? undefined}
-			data-drop={drag.intoKey === intoKeyOf(target) ? "" : undefined}
 			data-dragging={drag.draggingKey === dragKeyOf({ kind: "folder", id: folder.id }) ? "" : undefined}
 			{...drag.sourceProps({ kind: "folder", id: folder.id })}
 			{...drag.targetProps(target)}

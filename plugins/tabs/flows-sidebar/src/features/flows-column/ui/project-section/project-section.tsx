@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { dragKeyOf, intoKeyOf } from "../../../../shared/lib/flow-drag.js";
+import { dragKeyOf, folderKeyOf, projectKeyOf } from "../../../../shared/lib/flow-drag.js";
 import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import { NEW_SESSION, newSessionPlaceOf } from "../../../../shared/lib/flow-facts.js";
 import type {
@@ -38,7 +38,7 @@ export function ProjectSection({ project, nextProjectId, sidebar, acts, drag }: 
 			className="sumi-flows-section"
 			aria-label={project.name}
 			data-project={project.id}
-			data-drop={drag.intoKey === intoKeyOf(target) ? "" : undefined}
+			data-drop={drag.containerKey === projectKeyOf(project.id) ? "" : undefined}
 			data-dragging={drag.draggingKey === dragKeyOf({ kind: "project", id: project.id }) ? "" : undefined}
 			{...drag.targetProps(target)}
 		>
@@ -119,7 +119,7 @@ interface FolderBlockProps {
 
 function FolderBlock({ folder, nextTop, project, sidebar, acts, drag }: FolderBlockProps): ReactElement {
 	return (
-		<div className="sumi-flows-folder">
+		<div className="sumi-flows-folder" data-drop={drag.containerKey === folderKeyOf(folder.id) ? "" : undefined}>
 			<FolderRowView folder={folder} nextTop={nextTop} acts={acts} drag={drag} />
 			{folder.isOpen
 				? folder.flows.map((flow: FlowRowFacts, at) => (

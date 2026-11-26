@@ -1,6 +1,6 @@
 import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement } from "react";
-import { dragKeyOf, intoKeyOf } from "../../../../shared/lib/flow-drag.js";
+import { dragKeyOf } from "../../../../shared/lib/flow-drag.js";
 import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FlowRowFacts, FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs, TopRef } from "../../../../shared/lib/use-flow-acts.js";
@@ -98,7 +98,6 @@ export function FlowRowView({
 							data-kind="flow"
 							data-indented={folderId === null ? undefined : ""}
 							data-current={isCurrent ? "" : undefined}
-							data-drop={drag.intoKey === intoKeyOf(target) ? "" : undefined}
 							data-dragging={drag.draggingKey === dragKeyOf({ kind: "flow", id: flow.id }) ? "" : undefined}
 							{...drag.sourceProps({ kind: "flow", id: flow.id })}
 							{...drag.targetProps(target)}
