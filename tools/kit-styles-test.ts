@@ -1,5 +1,13 @@
+import { readFileSync } from "node:fs";
 import { check, tally } from "./check-helpers.ts";
-import { KIT_STYLE_ROOTS, kitClassesOf, kitStyleRefusalsOf, kitStyleRefusalsUnder } from "./kit-styles.ts";
+import {
+	KIT_STYLE_ROOTS,
+	kitButtonSheetRefusalsOf,
+	kitClassesOf,
+	kitStyleRefusalsOf,
+	kitStyleRefusalsUnder,
+} from "./kit-styles.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 check(
 	"a sheet that reads kit tokens only passes",
@@ -213,6 +221,57 @@ check(
 	"an arbitrary pixel spacing utility is refused",
 	kitStyleRefusalsOf("a.ts", 'const A = "cv:ps-[19px]";').length,
 	1,
+);
+
+check(
+	"a size outside the kit's steps is refused",
+	kitStyleRefusalsOf("a.tsx", '<Button shape="square" size="2xs" label="x" />'),
+	[
+		'a.tsx:1 button-size: size="2xs" is no kit size; use xs, s, m or l, and draw close, remove and row actions with PartButton',
+	],
+);
+check(
+	"an unknown size on an icon button is refused",
+	kitStyleRefusalsOf("a.tsx", '<IconButton size="xxs" />').length,
+	1,
+);
+check(
+	"the kit's steps and their aliases pass",
+	kitStyleRefusalsOf("a.tsx", '<><Button size="xs" /><Button size="default" /><Button size="lg" /></>'),
+	[],
+);
+check(
+	"a size handed down in a callback arrow is still read",
+	kitStyleRefusalsOf("a.tsx", '<Button onClick={() => go()} size="tiny">x</Button>').length,
+	1,
+);
+check(
+	"a pixel height on a kit button size is refused",
+	kitButtonSheetRefusalsOf("kit.css", ":is(.wg-root) .wg-kit-btn.is-m { height: 42px; }"),
+	["kit.css:1 button-size-literal: height: 42px; a kit button size reads only its --size-* tokens"],
+);
+check(
+	"a control token on a kit icon button size is refused",
+	kitButtonSheetRefusalsOf("kit.css", ".wg-kit-icon.is-xs { width: var(--control-xs); }").length,
+	1,
+);
+check(
+	"a kit button size that reads its tokens passes",
+	kitButtonSheetRefusalsOf(
+		"kit.css",
+		".wg-kit-btn.is-l { height: var(--size-l-h); padding: 0 var(--size-l-pad); min-height: 0; }",
+	),
+	[],
+);
+check(
+	"a part drawn inside a sized button is not a size rule",
+	kitButtonSheetRefusalsOf("kit.css", ".wg-kit-btn:is(.is-xs, .is-ghost) .wg-kit-select-chevron { width: 12px; }"),
+	[],
+);
+check(
+	"the kit sheet's button sizes read only --size-* tokens",
+	kitButtonSheetRefusalsOf(BOARD_SHEET, readFileSync(BOARD_SHEET, "utf8")),
+	[],
 );
 
 const refusals = kitStyleRefusalsUnder(KIT_STYLE_ROOTS);

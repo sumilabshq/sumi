@@ -28,6 +28,26 @@ const BARE_NUMBER = /^-?(?:\d+\.?\d*|\.\d+)$/;
 const SPACING_KEYWORD = /^(?:auto|inherit|initial|unset|revert)$/;
 const NAMED_COLOR =
 	/(?<![\w-])(?:white|black|red|green|blue|gray|grey|yellow|orange|purple|pink|brown|silver|gold|navy|teal|cyan|magenta|lime|maroon|olive|aqua|fuchsia)(?![\w-])/;
+const BUTTON_TAG = /<(?:Button|IconButton)\b(?:[^>=]|=(?!>)|=>)*?(?<!=)>/gs;
+const BUTTON_SIZE_PROP = /\ssize="([^"]*)"/;
+const BUTTON_SIZES: ReadonlySet<string> = new Set([
+	"xs",
+	"s",
+	"m",
+	"l",
+	"sm",
+	"md",
+	"lg",
+	"default",
+	"icon",
+	"icon-sm",
+	"icon-lg",
+]);
+const BUTTON_SELF_SELECTOR = /\.wg-kit-(?:btn|icon)(?:\.is-[\w-]+|:is\([^)]*\)|:not\([^)]*\))*$/;
+const BUTTON_SIZE_CLASS = /\.is-(?:xs|s|m|l)(?![\w-])/;
+const BUTTON_SIZE_PROPERTY =
+	/^(?:width|height|min-width|min-height|padding(?:-[a-z]+)?|font-size|gap|--glyph-size|--btn-radius)$/;
+const NOT_SIZE_TOKEN = /var\(--(?!size-)/;
 const ROOT_SELECTOR = /^:root(?:\.[\w-]+|\[[^\]]+\])*$/;
 const UTILITY_SPACING = /^-?(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])-\[(.*)\]$/;
 const UTILITY_ARBITRARY_PAINT = /^(?:bg|text|border|fill|stroke|outline|ring|decoration|caret)-\[(.*)\]$/;
@@ -84,10 +104,58 @@ export function kitStyleRefusalsOf(
 	}
 
 	if (file.endsWith(".tsx")) {
-		return [...rawElementRefusalsOf(file, text), ...utilityRefusalsOf(file, text), ...kitUtilityRefusalsOf(file, text)];
+		return [
+			...rawElementRefusalsOf(file, text),
+			...utilityRefusalsOf(file, text),
+			...kitUtilityRefusalsOf(file, text),
+			...buttonSizeRefusalsOf(file, text),
+		];
 	}
 
 	return sheetRefusalsOf(file, text, kitClasses);
+}
+
+function buttonSizeRefusalsOf(file: string, text: string): readonly string[] {
+	return [...text.matchAll(BUTTON_TAG)].flatMap((found) => {
+		const size = BUTTON_SIZE_PROP.exec(found[0])?.[1];
+
+		if (size === undefined || BUTTON_SIZES.has(size)) {
+			return [];
+		}
+
+		const line = text.slice(0, found.index).split("\n").length;
+		return [
+			`${file}:${line} button-size: size="${size}" is no kit size; use xs, s, m or l, and draw close, remove and row actions with PartButton`,
+		];
+	});
+}
+
+export function kitButtonSheetRefusalsOf(file: string, text: string): readonly string[] {
+	const refusals: string[] = [];
+
+	postcss.parse(text, { from: file }).walkRules((rule) => {
+		const isSizeRule = rule.selectors.some((selector) => {
+			const one = selector.replace(/\s+/g, " ").trim();
+			return BUTTON_SELF_SELECTOR.test(one) && BUTTON_SIZE_CLASS.test(one);
+		});
+
+		if (!isSizeRule) {
+			return;
+		}
+
+		rule.walkDecls((declaration) => {
+			const { prop, value } = declaration;
+
+			if (!BUTTON_SIZE_PROPERTY.test(prop) || !(LENGTH.test(value) || NOT_SIZE_TOKEN.test(value))) {
+				return;
+			}
+
+			refusals.push(
+				`${file}:${declaration.source?.start?.line ?? 0} button-size-literal: ${prop}: ${value}; a kit button size reads only its --size-* tokens`,
+			);
+		});
+	});
+	return refusals;
 }
 
 function rawElementRefusalsOf(file: string, text: string): readonly string[] {

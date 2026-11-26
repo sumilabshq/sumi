@@ -56,6 +56,22 @@ A raw `<button>`, `<input>`, `<select>` or `<textarea>` is refused by `check`: O
 bare control its own way. Tabs need not be `Tabs`: a widget of tabs or chips from the catalogue is as
 good.
 
+### Button sizes
+
+A button size is a step of the design system, never a number: `xs`, `s`, `m` (the default) and `l`. The kit
+reads `--size-<step>-h`, `-icon`, `-pad`, `-radius`, `-font` and `-gap`, no pixel of its own; a design system
+sets them (`design-systems/sumi/sumi.css`). One step per place:
+
+- `xs`: headers and toolbars, ghost icon buttons with a 14px glyph.
+- `s`: popovers and small panels.
+- `m`: forms and dialogs.
+- `l`: one large action on a page.
+
+A close, remove, pager or row-action button inside a tab, chip, attachment, token or row is no Button size:
+draw it with `PartButton`, a ghost square sized by `--part-size` with a `--part-icon` glyph, and let the
+parent place it. `npm run test:kit-styles` refuses any other `size` on `Button` or `IconButton`, and any
+pixel or non-`--size-*` token in a kit button size rule.
+
 ## Between the pieces: Tailwind
 
 What the kit has no piece for — a card of your own, a row, the space between blocks — is Tailwind

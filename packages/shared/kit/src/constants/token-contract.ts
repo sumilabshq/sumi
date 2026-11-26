@@ -103,7 +103,9 @@ const SIZE_STEPS: readonly string[] = ["xs", "s", "m", "l"];
 
 const SIZE_PARTS: readonly string[] = ["h", "icon", "pad", "radius", "font", "gap"];
 
-export const SIZE_TOKENS: readonly string[] = SIZE_STEPS.flatMap((step) => SIZE_PARTS.map((part) => `size-${step}-${part}`));
+export const SIZE_TOKENS: readonly string[] = SIZE_STEPS.flatMap((step) =>
+	SIZE_PARTS.map((part) => `size-${step}-${part}`),
+);
 
 export const NON_COLOUR_TOKENS: ReadonlySet<string> = new Set([
 	...SIZE_TOKENS,
