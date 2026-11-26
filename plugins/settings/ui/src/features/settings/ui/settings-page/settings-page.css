@@ -1,0 +1,16 @@
+.sumi-settings-page {
+	container: sumi-settings-page / inline-size;
+}
+
+.sumi-settings-page-title {
+	margin: 0;
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.sumi-settings-lede {
+	margin: 6px 0 0;
+	color: var(--text-3);
+	font-size: var(--fs-14);
+}

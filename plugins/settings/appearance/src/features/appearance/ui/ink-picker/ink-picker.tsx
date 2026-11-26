@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { workspaces } from "@widgetarium/workspaces/contract";
-import { useWindowApp } from "@sumi/settings-ui-plugin";
+import { SettingsSection, useWindowApp } from "@sumi/settings-ui-plugin";
 import { RuntimeProvider } from "@widgetarium/data-framework";
 
 const INKS = ["yellow", "ember", "moss", "tide", "iris", "rose"] as const;
@@ -36,14 +36,12 @@ function Inks(): ReactElement {
 export function InkPicker(): ReactElement {
 	const windowApp = useWindowApp();
 	return (
-		<section className="sumi-appearance-section">
-			<h2 className="sumi-appearance-heading">Workspace ink</h2>
-			<p className="sumi-appearance-hint">The colour of this workspace: its clover, the caret, links.</p>
+		<SettingsSection id="ink">
 			{windowApp === null ? null : (
 				<RuntimeProvider runtime={windowApp}>
 					<Inks />
 				</RuntimeProvider>
 			)}
-		</section>
+		</SettingsSection>
 	);
 }

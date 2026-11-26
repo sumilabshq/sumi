@@ -1,19 +1,6 @@
 .sumi-appearance {
 	max-width: 936px;
 	padding: 20px 48px;
-	container: sumi-appearance / inline-size;
-}
-
-.sumi-appearance-lede {
-	margin: 6px 0 0;
-	color: var(--text-3);
-	font-size: var(--fs-14);
-}
-
-.sumi-appearance-heading {
-	margin: 40px 0 2px;
-	font-size: 17px;
-	font-weight: 600;
 }
 
 .sumi-appearance-hint {
@@ -165,24 +152,6 @@
 	box-shadow: 0 0 0 1.5px var(--text);
 }
 
-.sumi-appearance-role {
-	display: grid;
-	grid-template-columns: 180px 1fr;
-	gap: 28px;
-	padding: 18px 0;
-}
-
-.sumi-appearance-role-name {
-	margin: 0;
-	color: var(--text-2);
-	font-size: var(--fs-13);
-	font-weight: 500;
-}
-
-.sumi-appearance-role-body {
-	min-width: 0;
-}
-
 .sumi-appearance-example {
 	display: block;
 	max-width: 560px;
@@ -315,15 +284,4 @@
 
 .sumi-appearance-fontrow:hover {
 	background: var(--hover);
-}
-
-@container sumi-appearance (max-width: 619px) {
-	.sumi-appearance {
-		padding: 16px;
-	}
-
-	.sumi-appearance-role {
-		grid-template-columns: 1fr;
-		gap: 10px;
-	}
 }

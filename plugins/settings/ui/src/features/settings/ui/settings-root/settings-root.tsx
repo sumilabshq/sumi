@@ -6,6 +6,9 @@ import { SettingsDetailContext } from "../../../../shared/lib/settings-detail-co
 import type { SettingsDetail } from "../../../../shared/lib/settings-detail-context.js";
 import { pagesBySection } from "@sumi/settings-registry-plugin";
 import type { SettingsPageEntry } from "@sumi/settings-registry-plugin";
+import { SettingsFocusContext } from "../../../../shared/lib/settings-focus-context.js";
+import type { SectionFocus } from "../../../../shared/lib/settings-focus-context.js";
+import { SettingsPageContext } from "../../../../shared/lib/settings-page-context.js";
 import { SettingsTabContext } from "../../../../shared/lib/settings-tab-context.js";
 import { SettingsNav } from "../settings-nav/settings-nav.js";
 
@@ -18,6 +21,7 @@ export function settingsRootOf(pages: readonly SettingsPageEntry[]): ComponentTy
 		const [pickedId, setPickedId] = useState<string | null>(null);
 		const [isMenuOpen, setMenuOpen] = useState(false);
 		const [detail, setDetail] = useState<SettingsDetail | null>(null);
+		const [focus, setFocus] = useState<SectionFocus | null>(null);
 		const shown = pages.find((page) => page.id === pickedId) ?? first;
 
 		if (shown === undefined) {
@@ -25,8 +29,9 @@ export function settingsRootOf(pages: readonly SettingsPageEntry[]): ComponentTy
 		}
 
 		const View = shown.view;
-		const show = (page: SettingsPageEntry): void => {
+		const show = (page: SettingsPageEntry, sectionId: string | null = null): void => {
 			setPickedId(page.id);
+			setFocus(sectionId === null ? null : { pageId: page.id, sectionId });
 			setMenuOpen(false);
 		};
 		const crumb = (
@@ -77,7 +82,11 @@ export function settingsRootOf(pages: readonly SettingsPageEntry[]): ComponentTy
 						<div className="sumi-settings-body wg-kit-scroll-fade">
 							<SettingsTabContext.Provider value={tabId}>
 								<SettingsDetailContext.Provider value={setDetail}>
-									<View />
+									<SettingsPageContext.Provider value={shown}>
+										<SettingsFocusContext.Provider value={focus}>
+											<View />
+										</SettingsFocusContext.Provider>
+									</SettingsPageContext.Provider>
 								</SettingsDetailContext.Provider>
 							</SettingsTabContext.Provider>
 						</div>

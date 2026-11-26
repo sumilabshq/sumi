@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { appearance } from "@sumi/contract";
+import { SettingsSection } from "@sumi/settings-ui-plugin";
 import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { ThemePaper } from "./theme-paper.js";
 
@@ -14,9 +15,7 @@ export function ThemePicker(): ReactElement {
 	const current = useOptionalQuery(appearance.theme.current).data?.choice ?? null;
 	const choose = useCommand(appearance.theme.choose);
 	return (
-		<section className="sumi-appearance-section">
-			<h2 className="sumi-appearance-heading">Theme</h2>
-			<p className="sumi-appearance-hint">Black paper or white paper. System follows macOS.</p>
+		<SettingsSection id="theme">
 			<div className="sumi-appearance-themes">
 				{CHOICES.map(({ choice, label, hint }) => (
 					<button
@@ -36,6 +35,6 @@ export function ThemePicker(): ReactElement {
 					</button>
 				))}
 			</div>
-		</section>
+		</SettingsSection>
 	);
 }

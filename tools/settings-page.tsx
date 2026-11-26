@@ -7,7 +7,7 @@ import { plugins as registryModule } from "../packages/state/plugin-registry/gen
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
 import { WindowAppContext } from "../plugins/settings/ui/src/shared/lib/window-app-context.ts";
 import { settingsRootOf } from "../plugins/settings/ui/src/features/settings/ui/settings-root/settings-root.tsx";
-import { AppearancePage } from "../plugins/appearance-settings/src/features/appearance/ui/appearance-page/appearance-page.tsx";
+import { appearancePage } from "../plugins/settings/appearance/src/features/appearance/lib/appearance-page.ts";
 import { PluginsPage } from "../plugins/plugins-catalog/src/features/catalog/ui/plugins-page/plugins-page.tsx";
 import { placesOver } from "./places-fixture.ts";
 import { boardWorkspacesParts } from "./board-workspaces-fixture.ts";
@@ -30,15 +30,7 @@ const app = runtime()
 	.start({ platform: "browser", scope: { workspaceId: "fixture" } });
 
 const Settings = settingsRootOf([
-	{
-		id: "appearance",
-		title: "Appearance",
-		icon: "palette",
-		section: "Sumi",
-		order: 10,
-		keywords: ["theme", "font"],
-		view: AppearancePage,
-	},
+	appearancePage,
 	{
 		id: "plugins",
 		title: "Plugins",

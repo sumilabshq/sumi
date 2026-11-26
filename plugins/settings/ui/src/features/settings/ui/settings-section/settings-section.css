@@ -1,0 +1,57 @@
+.sumi-settings-section-title {
+	margin: 40px 0 2px;
+	font-size: 17px;
+	font-weight: 600;
+}
+
+.sumi-settings-section-hint {
+	margin: 0 0 16px;
+	color: var(--text-3);
+}
+
+.sumi-settings-subsection {
+	display: grid;
+	grid-template-columns: 180px 1fr;
+	gap: 28px;
+	padding: 18px 0;
+}
+
+.sumi-settings-subsection-title {
+	margin: 0;
+	color: var(--text-2);
+	font-size: var(--fs-13);
+	font-weight: 500;
+}
+
+.sumi-settings-subsection-hint {
+	margin: 2px 0 0;
+	color: var(--text-3);
+	font-size: var(--fs-12);
+}
+
+.sumi-settings-subsection-body {
+	min-width: 0;
+}
+
+.sumi-settings-section[data-flashing],
+.sumi-settings-subsection[data-flashing] {
+	border-radius: var(--r-md);
+	animation: sumi-settings-flash calc(var(--dur-slow) * 5) ease-out;
+}
+
+@keyframes sumi-settings-flash {
+	from {
+		background: var(--hover);
+	}
+
+	to {
+		background: transparent;
+	}
+}
+
+@container sumi-settings-page (max-width: 619px) {
+	.sumi-settings-subsection {
+		grid-template-columns: 1fr;
+		gap: 10px;
+	}
+}

@@ -1,5 +1,6 @@
 import { findSection, pagesBySection, searchSettings, settingsRegistry } from "@sumi/settings-registry-plugin";
 import type { SettingsPageEntry } from "@sumi/settings-registry-plugin";
+import { appearancePage } from "../plugins/settings/appearance/src/features/appearance/lib/appearance-page.ts";
 import { check, thrownBy, tally } from "./check-helpers.ts";
 
 const view = (): null => null;
@@ -66,6 +67,26 @@ check(
 );
 check("the match ignores case", first("HEAD"), ["section", "looks", "text", "headings"]);
 check("nothing matching finds nothing", searchSettings(pages, "zzz"), []);
+
+const installed = [appearancePage];
+const installedFirst = (query: string): unknown => {
+	const [hit] = searchSettings(installed, query);
+	return hit === undefined ? null : [hit.kind, hit.pageId, ...hit.sectionPath, hit.trail.join(" > ")];
+};
+
+check("head finds Appearance > Text > Headings", installedFirst("head"), [
+	"section",
+	"appearance",
+	"text",
+	"headings",
+	"Appearance > Text",
+]);
+check("theme finds the Theme section before the page that lists it as a keyword", installedFirst("theme"), [
+	"section",
+	"appearance",
+	"theme",
+	"Appearance",
+]);
 
 check(
 	"a section text other than Sumi becomes a labelled group after the unlabelled one",

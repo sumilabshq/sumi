@@ -117,8 +117,12 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@widgetarium/kit/side-panel.css": "packages/shared/kit/side-panel.css",
 	"@sumi/settings-ui-plugin/settings-root.css":
 		"plugins/settings/ui/src/features/settings/ui/settings-root/settings-root.css",
+	"@sumi/settings-ui-plugin/settings-page.css":
+		"plugins/settings/ui/src/features/settings/ui/settings-page/settings-page.css",
+	"@sumi/settings-ui-plugin/settings-section.css":
+		"plugins/settings/ui/src/features/settings/ui/settings-section/settings-section.css",
 	"@sumi/appearance-settings-plugin/appearance-page.css":
-		"plugins/appearance-settings/src/features/appearance/ui/appearance-page/appearance-page.css",
+		"plugins/settings/appearance/src/features/appearance/ui/appearance-page/appearance-page.css",
 	"@sumi/plugins-catalog-plugin/plugins-page.css":
 		"plugins/plugins-catalog/src/features/catalog/ui/plugins-page/plugins-page.css",
 	"@sumi/canvas-plugin/canvas-page.css": "plugins/canvas/src/features/canvas/ui/canvas-page/canvas-page.css",
@@ -192,6 +196,8 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@sumi/terminal-cursor-plugin/terminal-cursor.css";
 @import "@widgetarium/kit/side-panel.css";
 @import "@sumi/settings-ui-plugin/settings-root.css";
+@import "@sumi/settings-ui-plugin/settings-page.css";
+@import "@sumi/settings-ui-plugin/settings-section.css";
 @import "@sumi/appearance-settings-plugin/appearance-page.css";
 @import "@sumi/plugins-catalog-plugin/plugins-page.css";
 @import "@sumi/canvas-plugin/canvas-page.css";
