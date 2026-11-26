@@ -4,7 +4,7 @@ import { useQuery } from "@widgetarium/data-framework";
 import { navigation } from "@widgetarium/navigation/contract";
 import type { FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs } from "../../../../shared/lib/use-flow-acts.js";
-import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
+import { FlowRowGlyph } from "../../../../shared/ui/flow-glyph/flow-row-glyph.js";
 import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
 import { INBOX_SHORT_ROWS, folderNamesByFlow, shownInboxRows } from "../../lib/inbox-view.js";
 import { ClearedNotice } from "./cleared-notice.js";
@@ -41,7 +41,7 @@ export function InboxSection({ sidebar, acts }: InboxSectionProps): ReactElement
 			{shownInboxRows(rows, isExpanded).map((flow) => (
 				<div className="sumi-flows-row" data-kind="flow" key={flow.id}>
 					<button type="button" className="sumi-flows-row-main" onClick={() => acts.open(flow.id)}>
-						<FlowGlyph icon={flow.icon} fallback="dot" />
+						<FlowRowGlyph flow={flow} />
 						<span className="sumi-flows-name">{flow.name}</span>
 						<span className="sumi-flows-sub">{folderNames.get(flow.id)}</span>
 					</button>

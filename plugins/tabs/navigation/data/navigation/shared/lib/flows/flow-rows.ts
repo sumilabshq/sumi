@@ -3,6 +3,7 @@ import type { Flow, FlowFolder, FlowStatus, FlowsDoc } from "../../schema/flows.
 import type { GroupHue, PlacedTabs } from "../../schema/tabs.schema.js";
 import { isChatTab } from "../tabs/app-abilities.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
+import { flowLookOf } from "./flow-anchors.js";
 import { isArchived } from "./flow-docs.js";
 import { flowTabIdsOf } from "./flow-nodes.js";
 import { projectIdOfFlow, projectIdOfFolder } from "./flow-projects.js";
@@ -20,6 +21,7 @@ export interface FlowRow {
 	readonly id: string;
 	readonly name: string;
 	readonly icon: Flow["icon"];
+	readonly face: Flow["anchorFace"];
 	readonly status: FlowStatus | null;
 	readonly chats: readonly FlowChatRow[];
 	readonly isOpen: boolean;
@@ -47,10 +49,12 @@ export interface RowFacts {
 
 export function flowRowOf(flow: Flow, facts: RowFacts): FlowRow {
 	const chats = chatTabsOf(flow, facts);
+	const look = flowLookOf(flow, facts);
 	return {
 		id: flow.id,
-		name: flow.name,
+		name: look.name,
 		icon: flow.icon,
+		face: look.face,
 		status: flowStatusOf(chats.map((tab) => ({ isChat: true, mark: tab.mark }))),
 		chats: chats.map((tab) => ({
 			id: tab.id,

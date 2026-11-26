@@ -80,7 +80,8 @@ export function renameFlowPlan({ id, name }: RenameAsk): FlowsPlan<null> {
 		}
 
 		return {
-			flows: flow.name === name ? flows : withFlowChanged(flows, id, { name }),
+			flows:
+				flow.name === name && flow.isNamedByHand ? flows : withFlowChanged(flows, id, { name, isNamedByHand: true }),
 			reason: `flow ${id} name "${flow.name}" → "${name}"`,
 			value: null,
 		};

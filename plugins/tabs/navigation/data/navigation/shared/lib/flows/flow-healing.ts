@@ -2,6 +2,7 @@ import type { Flow, FlowLayout, FlowNode, FlowPane, FlowsDoc } from "../../schem
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
 import { flowNameOfTab } from "./flow-conversion.js";
 import { withFlowAdded, withFlowChanged } from "./flow-docs.js";
+import { UNANCHORED } from "./flow-anchors.js";
 import { tabFlowIdOf } from "./flow-ids.js";
 import { layoutOfTabs } from "./flow-layouts.js";
 import { flowLayoutBreaksOf, flowPlacesBreaksOf } from "./flow-laws.js";
@@ -75,6 +76,7 @@ function withStrayFlowed(doc: FlowsDoc, { tabId, placed, now }: StrayTab): Flows
 		createdAt: now,
 		lastOpenedAt: now,
 		archivedAt: null,
+		...UNANCHORED,
 	};
 	return withFlowAdded(doc, flow, { folderId: null, before: null });
 }

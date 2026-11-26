@@ -1,4 +1,5 @@
 import { flowOfId, placeProblemOf, withFlowAdded } from "../../../shared/lib/flows/flow-docs.js";
+import { UNANCHORED } from "../../../shared/lib/flows/flow-anchors.js";
 import { layoutOfTabs } from "../../../shared/lib/flows/flow-layouts.js";
 import type { FlowsPlan, MovePlaces } from "../../../shared/lib/flows/flow-moves.js";
 import { refusal } from "../../../shared/lib/settling/settling.js";
@@ -107,6 +108,7 @@ export function startSetupMove(
 			createdAt: birth.at,
 			lastOpenedAt: birth.at,
 			archivedAt: null,
+			...UNANCHORED,
 		};
 		return {
 			next: { tabs: created.placed, flows: withFlowAdded(now.flows, flow, ask.place) },

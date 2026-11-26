@@ -1,4 +1,5 @@
 import { flowOfId, withFlowAdded } from "../../../shared/lib/flows/flow-docs.js";
+import { UNANCHORED } from "../../../shared/lib/flows/flow-anchors.js";
 import { layoutWithFreshIds, layoutWithTabsRenamed, placeAfterFlow } from "../../../shared/lib/flows/flow-copies.js";
 import { tabsMoveAsPlaces } from "../../../shared/lib/flows/flow-moves.js";
 import type { MovePlaces, PlacedPlaces, PlacesMove } from "../../../shared/lib/flows/flow-moves.js";
@@ -99,6 +100,8 @@ function withCopyAdded(
 		createdAt: birth.at,
 		lastOpenedAt: birth.at,
 		archivedAt: null,
+		...UNANCHORED,
+		isNamedByHand: true,
 	};
 	return {
 		next: { tabs: copied?.next?.tabs ?? now.tabs, flows: withFlowAdded(flows, copy, place) },

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SplitDirSchema } from "./splits.schema.js";
+import { TabArtSchema } from "./tab-rows.schema.js";
 import { AppKindSchema, GroupHueSchema, TabMarkSchema } from "./tabs.schema.js";
 
 export const FLOWS_DOC_V = 1;
@@ -77,6 +78,13 @@ export const ProjectSchema = z.object({
 
 export type Project = z.infer<typeof ProjectSchema>;
 
+export const FlowAnchorFaceSchema = z.object({
+	art: TabArtSchema,
+	address: z.string().nullable(),
+});
+
+export type FlowAnchorFace = z.infer<typeof FlowAnchorFaceSchema>;
+
 export const FlowSchema = z.object({
 	id: z.string().min(1),
 	name: z.string(),
@@ -86,6 +94,9 @@ export const FlowSchema = z.object({
 	lastOpenedAt: z.number().nonnegative(),
 	archivedAt: z.number().nonnegative().nullable().default(null),
 	projectId: z.string().min(1).optional(),
+	anchorTabId: z.string().min(1).nullable().default(null),
+	anchorFace: FlowAnchorFaceSchema.nullable().default(null),
+	isNamedByHand: z.boolean().default(false),
 });
 
 export type Flow = z.infer<typeof FlowSchema>;

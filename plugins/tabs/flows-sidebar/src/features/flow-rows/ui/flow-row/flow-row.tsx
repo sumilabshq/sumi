@@ -5,7 +5,7 @@ import type { DropTarget, FlowDrag } from "../../../../shared/lib/flow-drag.js";
 import type { FlowRowFacts, FlowsSidebarFacts } from "../../../../shared/lib/flow-facts.js";
 import type { FlowActs, TopRef } from "../../../../shared/lib/use-flow-acts.js";
 import { ConfirmDelete } from "../../../../shared/ui/confirm-delete/confirm-delete.js";
-import { FlowGlyph } from "../../../../shared/ui/flow-glyph/flow-glyph.js";
+import { FlowRowGlyph } from "../../../../shared/ui/flow-glyph/flow-row-glyph.js";
 import { StatusMark } from "../../../../shared/ui/status-mark/status-mark.js";
 import { FLOW_RENAME_KEYS, RENAME_KEY, renamesOn } from "../../lib/rename-keys.js";
 import { ChatsHover } from "../chats-panel/chats-panel.js";
@@ -111,7 +111,7 @@ export function FlowRowView({
 								onDoubleClick={() => setIsRenaming(true)}
 								onKeyDown={renamesOn(FLOW_RENAME_KEYS, () => setIsRenaming(true))}
 							>
-								<FlowGlyph icon={flow.icon} fallback="dot" />
+								<FlowRowGlyph flow={flow} />
 								<span className="sumi-flows-name">{flow.name}</span>
 							</button>
 							<StatusMark status={flow.status} />

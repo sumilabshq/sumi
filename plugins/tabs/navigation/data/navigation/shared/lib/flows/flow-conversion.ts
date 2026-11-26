@@ -1,4 +1,5 @@
 import { FLOWS_DOC_V, WORKSPACE_TO_FLOWS_KEY } from "../../schema/flows.schema.js";
+import { UNANCHORED } from "./flow-anchors.js";
 import type { Flow, FlowFolder, FlowLayout, FlowsDoc } from "../../schema/flows.schema.js";
 import type { PaneNode, PaneTree } from "../../schema/pane-tree.schema.js";
 import type { SplitNode } from "../../schema/splits.schema.js";
@@ -281,6 +282,7 @@ function flowOf({ id, name, layout }: FlowFacts, { source }: Context): Flow {
 		createdAt: source.now,
 		lastOpenedAt: source.now,
 		archivedAt: null,
+		...UNANCHORED,
 	};
 }
 

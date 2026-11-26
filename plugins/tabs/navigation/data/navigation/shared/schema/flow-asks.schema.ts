@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+	FlowAnchorFaceSchema,
 	FlowIconSchema,
 	FlowLayoutSchema,
 	FlowSchema,
@@ -21,6 +22,7 @@ export const FlowRowSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	icon: FlowIconSchema.nullable(),
+	face: FlowAnchorFaceSchema.nullable(),
 	status: FlowStatusSchema.nullable(),
 	chats: z.array(FlowChatRowSchema).readonly(),
 	isOpen: z.boolean(),

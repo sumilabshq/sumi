@@ -15,6 +15,7 @@ import { PlacedTabsSchema } from "../plugins/tabs/navigation/data/navigation/sha
 import type { PlacedTabs, TabMark } from "../plugins/tabs/navigation/data/navigation/shared/schema/tabs.schema.ts";
 import type { KeptChat } from "../packages/domain/workspaces/shared/schema/chat.schema.ts";
 import type { FlowsDoc } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
+import { UNANCHORED } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-anchors.ts";
 import { browser } from "../packages/domain/browser/generated/module.ts";
 import { layout as layoutModule } from "../packages/state/layout/generated/module.ts";
 import { serverLayoutParts } from "../packages/state/layout/gateways/layout-parts/server.gateway.ts";
@@ -228,6 +229,7 @@ function flowOf(flow: FlowSpec): FlowsDoc["flows"][number] {
 		createdAt: 1,
 		lastOpenedAt: 1,
 		archivedAt: null,
+		...UNANCHORED,
 	};
 }
 

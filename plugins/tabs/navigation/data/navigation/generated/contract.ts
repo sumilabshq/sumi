@@ -23,10 +23,36 @@ export const FlowIconSchema = z.discriminatedUnion("kind", [
 	}),
 ]);
 
+export const TabArtSchema = z.enum([
+	"canvas",
+	"browser",
+	"tasks",
+	"git",
+	"files",
+	"routines",
+	"settings",
+	"note",
+	"table",
+	"code-ts",
+	"code-js",
+	"code-py",
+	"code-css",
+	"image",
+	"built-app",
+	"site",
+	"chat",
+]);
+
+export const FlowAnchorFaceSchema = z.object({
+	art: TabArtSchema,
+	address: z.string().nullable(),
+});
+
 export const FlowRowSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	icon: FlowIconSchema.nullable(),
+	face: FlowAnchorFaceSchema.nullable(),
 	status: FlowStatusSchema.nullable(),
 	chats: z.array(FlowChatRowSchema).readonly(),
 	isOpen: z.boolean(),
@@ -139,6 +165,9 @@ export const FlowSchema = z.object({
 	lastOpenedAt: z.number().nonnegative(),
 	archivedAt: z.number().nonnegative().nullable().default(null),
 	projectId: z.string().min(1).optional(),
+	anchorTabId: z.string().min(1).nullable().default(null),
+	anchorFace: FlowAnchorFaceSchema.nullable().default(null),
+	isNamedByHand: z.boolean().default(false),
 });
 
 export const FlowDetailSchema = z.object({
@@ -474,6 +503,8 @@ export type FlowNode = FlowPane | FlowSplit;
 export type FlowLayout = z.infer<typeof FlowLayoutSchema>;
 
 export type Project = z.infer<typeof ProjectSchema>;
+
+export type FlowAnchorFace = z.infer<typeof FlowAnchorFaceSchema>;
 
 export type Flow = z.infer<typeof FlowSchema>;
 
@@ -988,26 +1019,6 @@ export type AppAddress = z.infer<typeof AppAddressSchema>;
 export const TabStatusSchema = z.enum(["reading", "waiting", "cannot-look"]);
 
 export type TabStatus = z.infer<typeof TabStatusSchema>;
-
-export const TabArtSchema = z.enum([
-	"canvas",
-	"browser",
-	"tasks",
-	"git",
-	"files",
-	"routines",
-	"settings",
-	"note",
-	"table",
-	"code-ts",
-	"code-js",
-	"code-py",
-	"code-css",
-	"image",
-	"built-app",
-	"site",
-	"chat",
-]);
 
 export type TabArt = z.infer<typeof TabArtSchema>;
 

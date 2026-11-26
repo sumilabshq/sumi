@@ -9,7 +9,8 @@ import { withHomeTabsInEmptyFlows } from "./flow-home-tabs.js";
 import type { HomeTabsFilled } from "./flow-home-tabs.js";
 import type { FlowsHealed } from "./flow-healing.js";
 import { flowBreaksOf } from "./flow-laws.js";
-import type { MovePlaces } from "./flow-moves.js";
+import { withAnchorsKept } from "./flow-anchors.js";
+import type { MovePlaces, PlacedPlaces } from "./flow-moves.js";
 import { flowTabIdsOf } from "./flow-nodes.js";
 import { layoutWithTab, layoutWithoutTabs } from "./flow-panes.js";
 import { withShownKept } from "./flow-shown.js";
@@ -36,7 +37,7 @@ export function reconciling<T>(move: MovePlaces<T>, facts: ReconcileFacts | null
 			return moved;
 		}
 
-		const reconciled = placesReconciled({ tabs: moved.next.tabs, flows: moved.next.flows }, facts, now.flows);
+		const reconciled = placesReconciled({ tabs: moved.next.tabs, flows: moved.next.flows }, facts, now);
 
 		if (reconciled.said.length === 0) {
 			return { ...moved, next: { tabs: reconciled.tabs, flows: reconciled.flows } };
@@ -52,13 +53,14 @@ export function reconciling<T>(move: MovePlaces<T>, facts: ReconcileFacts | null
 	};
 }
 
-function placesReconciled(next: PlacesToReconcile, facts: ReconcileFacts, was: FlowsDoc | null): HomeTabsFilled {
+function placesReconciled(next: PlacesToReconcile, facts: ReconcileFacts, was: PlacedPlaces): HomeTabsFilled {
 	const healed = flowsHealed(next.flows);
 	const colored = withFolderColorsFilled(healed.doc, next.tabs.groups);
 	const tidy = withoutGoneTabs(colored.doc, new Set(next.tabs.tabs.map(({ id }) => id)));
 	const adopted = withStraysAdopted({ doc: tidy, said: [...healed.said, ...colored.said] }, next.tabs, facts);
-	const shown = withShownKept({ was, doc: adopted.doc, placed: next.tabs, now: facts.now() });
-	const homed = withHomeTabsInEmptyFlows({ tabs: next.tabs, flows: shown.doc }, facts.apps);
+	const shown = withShownKept({ was: was.flows, doc: adopted.doc, placed: next.tabs, now: facts.now() });
+	const anchored = withAnchorsKept({ doc: shown.doc, was: was.tabs, placed: next.tabs, apps: facts.apps });
+	const homed = withHomeTabsInEmptyFlows({ tabs: next.tabs, flows: anchored }, facts.apps);
 	const breaks = flowBreaksOf(
 		homed.flows,
 		homed.tabs.tabs.map(({ id }) => id),

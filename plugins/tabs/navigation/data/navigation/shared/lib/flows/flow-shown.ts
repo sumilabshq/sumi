@@ -2,6 +2,7 @@ import { GENERAL_PROJECT_ID } from "../../schema/flows.schema.js";
 import type { Flow, FlowsDoc } from "../../schema/flows.schema.js";
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
 import { flowOfId, folderOfId, isArchived, withFlowAdded, withFlowChanged } from "./flow-docs.js";
+import { DEFAULT_SESSION_NAME, UNANCHORED } from "./flow-anchors.js";
 import { layoutOfTabs } from "./flow-layouts.js";
 import { projectIdOfFlow, projectsOf } from "./flow-projects.js";
 import { topLevelOf } from "./flow-top-level.js";
@@ -25,7 +26,6 @@ interface DefaultSession {
 	readonly said: string;
 }
 
-export const DEFAULT_SESSION_NAME = "New session";
 const DEFAULT_FLOW_PREFIX = "flow-default-";
 const SESSION_MADE = "sessions outside the archive {count} → {after}: default session {id} made in General";
 const SHOWN_MOVED = "window {window} flow {gone} → {next} ({why})";
@@ -39,6 +39,7 @@ export function blankFlowOf(id: string, name: string, at: number): Flow {
 		createdAt: at,
 		lastOpenedAt: at,
 		archivedAt: null,
+		...UNANCHORED,
 	};
 }
 

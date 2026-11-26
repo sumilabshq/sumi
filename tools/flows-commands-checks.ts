@@ -5,6 +5,7 @@ import type { SidebarWorld } from "./flows-sidebar-world.ts";
 import { navigation } from "../plugins/tabs/navigation/data/navigation/generated/contract.ts";
 import { FlowsDocSchema } from "../plugins/tabs/navigation/data/navigation/shared/schema/flows.schema.ts";
 import { flowPanesOf, flowTabIdsOf } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-nodes.ts";
+import { UNANCHORED } from "../plugins/tabs/navigation/data/navigation/shared/lib/flows/flow-anchors.ts";
 import type {
 	FlowFolder,
 	FlowNode,
@@ -498,6 +499,7 @@ function withStoredEmptyFlow(flows: FlowsDoc): FlowsDoc {
 		createdAt: 0,
 		lastOpenedAt: 0,
 		archivedAt: null,
+		...UNANCHORED,
 	};
 	return { ...flows, flows: [...flows.flows, flow], looseFlowIds: [...flows.looseFlowIds, STORED_EMPTY_FLOW] };
 }
@@ -1090,6 +1092,100 @@ async function folderShownChecks(): Promise<void> {
 	);
 }
 
+async function titledTab(stand: Stand, tabId: string, title: string): Promise<void> {
+	await stand.tabs.movePlaces((now) => ({
+		next: {
+			tabs: { ...now.tabs, tabs: now.tabs.tabs.map((tab) => (tab.id === tabId ? { ...tab, title } : tab)) },
+			flows: now.flows,
+		},
+		reason: `tab ${tabId} title → ${title}`,
+		answer: null,
+	}));
+}
+
+async function sessionOf(
+	stand: Stand,
+	flowId: string,
+): Promise<{ readonly name: string; readonly hasFace: boolean } | undefined> {
+	const sidebar = await stand.app.send(navigation.flows.sidebar, { window: MAIN });
+	const row = sidebar.looseFlows.find(({ id }) => id === flowId);
+	return row === undefined ? undefined : { name: row.name, hasFace: row.face !== null };
+}
+
+async function sessionWithTab(stand: Stand): Promise<{ readonly flowId: string; readonly tabId: string }> {
+	const { flowId } = await stand.app.send(navigation.flows.create, {
+		name: "New session",
+		place: { folderId: null, before: null },
+	});
+	await stand.app.send(navigation.flows.open, { window: MAIN, flowId, at: atOf(MAIN) });
+	const paneId = flowPanesOf((await flowsIn(stand)).flows.find(({ id }) => id === flowId) ?? emptyFlow())[0]?.id ?? "";
+	const tab = await stand.app.send(navigation.flows.openTab, {
+		window: MAIN,
+		flowId,
+		paneId,
+		address: null,
+		at: atOf(MAIN),
+		app: "canvas",
+	});
+	return { flowId, tabId: tab.id };
+}
+
+async function anchorChecks(): Promise<void> {
+	const stand = standOver(true);
+	const followed = await sessionWithTab(stand);
+	const anchorOf = async (flowId: string): Promise<string | null | undefined> =>
+		(await flowsIn(stand)).flows.find(({ id }) => id === flowId)?.anchorTabId;
+	check("the first tab that is not Home becomes the anchor", await anchorOf(followed.flowId), followed.tabId);
+	check(
+		"an anchor that never names itself leaves the session New session",
+		(await sessionOf(stand, followed.flowId))?.name,
+		"New session",
+	);
+	await titledTab(stand, followed.tabId, "Plans");
+	check("the session shows the anchor's title and face", await sessionOf(stand, followed.flowId), {
+		name: "Plans",
+		hasFace: true,
+	});
+	await titledTab(stand, followed.tabId, "Plans v2");
+	check("a later title of the anchor is followed", (await sessionOf(stand, followed.flowId))?.name, "Plans v2");
+
+	await stand.app.send(navigation.flows.rename, { id: followed.flowId, name: "Mine" });
+	await titledTab(stand, followed.tabId, "Plans v3");
+	check(
+		"after a manual rename the anchor's titles are ignored and the face is gone",
+		await sessionOf(stand, followed.flowId),
+		{ name: "Mine", hasFace: false },
+	);
+
+	const closing = await sessionWithTab(stand);
+	await titledTab(stand, closing.tabId, "Reading");
+	await stand.app.send(navigation.tabClosing.closeTab, {
+		at: { window: MAIN, screen: BARE_SCREEN },
+		id: closing.tabId,
+	});
+	check("a closed anchor leaves the session with its last name and face", await sessionOf(stand, closing.flowId), {
+		name: "Reading",
+		hasFace: true,
+	});
+	const paneId =
+		flowPanesOf((await flowsIn(stand)).flows.find(({ id }) => id === closing.flowId) ?? emptyFlow())[0]?.id ?? "";
+	const later = await stand.app.send(navigation.flows.openTab, {
+		window: MAIN,
+		flowId: closing.flowId,
+		paneId,
+		address: null,
+		at: atOf(MAIN),
+		app: "canvas",
+	});
+	await titledTab(stand, later.id, "Second");
+	check(
+		"no new anchor is picked after the anchor closed",
+		[(await sessionOf(stand, closing.flowId))?.name, await anchorOf(closing.flowId)],
+		["Reading", closing.tabId],
+	);
+	check("every law holds after anchoring", await lawsOf(stand), []);
+}
+
 function never(): never {
 	throw new Error("the fixture holds no tab-94");
 }
@@ -1102,6 +1198,7 @@ console.info = () => undefined;
 console.warn = () => undefined;
 console.error = () => undefined;
 await readChecks();
+await anchorChecks();
 await flowCommandChecks();
 await inboxChecks();
 await undoSkipsMovedOnChecks();
