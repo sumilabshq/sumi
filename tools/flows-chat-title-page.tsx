@@ -13,9 +13,8 @@ import { workspaces as workspacesModule } from "../packages/domain/workspaces/ge
 import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 import { ChatHead } from "../plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-head.tsx";
 import { ComposerOptions } from "../plugins/ai/chat/src/shared/ui/composer-options/composer-options.tsx";
-import { HeadTitle } from "../plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.tsx";
 import { WindowAppContext as TitleWindowApp } from "../plugins/ai/chat-title/src/shared/lib/window-app-context.ts";
-import { SessionsChevron } from "../plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.tsx";
+import { SessionsChip } from "../plugins/ai/sessions/src/features/sessions/ui/sessions-chip/sessions-chip.tsx";
 import { SessionsPicker } from "../plugins/ai/sessions/src/features/sessions/ui/sessions-picker/sessions-picker.tsx";
 import { WindowAppContext as SessionsWindowApp } from "../plugins/ai/sessions/src/features/sessions/lib/window-app-context.ts";
 import { Select, SelectTrigger } from "@widgetarium/kit";
@@ -49,8 +48,7 @@ function StubPicker({ said }: { readonly said: string }): ReactElement {
 }
 
 const fills = new SlotFills([
-	{ slot: "chat.head-title", pluginId: "chat-title", kind: "replace" as const, component: HeadTitle },
-	{ slot: "chat.head-tools", pluginId: "sessions", kind: "add" as const, component: SessionsChevron },
+	{ slot: "chat.head-title", pluginId: "sessions", kind: "replace" as const, component: SessionsChip },
 	{ slot: "chat.empty-options", pluginId: "sessions", kind: "add" as const, component: SessionsPicker },
 	{
 		slot: "chat.field-options",

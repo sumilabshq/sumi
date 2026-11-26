@@ -1,7 +1,0 @@
-.sumi-sessions-chevron svg {
-	transition: transform var(--dur-base) var(--ease-emphasized);
-}
-
-.sumi-sessions-chevron[data-state="open"] svg {
-	transform: rotate(180deg);
-}

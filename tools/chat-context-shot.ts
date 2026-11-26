@@ -13,8 +13,7 @@ const SHEETS = [
 	"apps/studio/dist/studio.css",
 	"plugins/ai/chat/src/features/assistant/ui/assistant-panel/assistant.css",
 	"plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-page.css",
-	"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
-	"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
+	"plugins/ai/sessions/src/features/sessions/ui/sessions-chip/sessions-chip.css",
 	"plugins/ai/chat-context/src/features/chat-context/ui/chat-context/chat-context.css",
 ];
 const LAYOUT =
@@ -57,7 +56,7 @@ const TEXT_PROBE = `(() => {
 const HEAD_PROBE = `(() => {
 	const chip = document.querySelector(".sumi-chat-context-chip");
 	const more = document.querySelector(".sumi-chat-context-more");
-	const title = document.querySelector(".sumi-head-title");
+	const title = document.querySelector(".sumi-sessions-chip");
 	const box = (node) => node === null ? null : node.getBoundingClientRect();
 	return {
 		chip: chip === null ? null : chip.textContent,
@@ -146,12 +145,12 @@ interface Probe {
 
 const HEAD_GEOMETRY = `(() => {
 	const head = document.querySelector(".wg-chat-head");
-	const [title, chevron, chip, more] = [".sumi-head-title", ".sumi-sessions-chevron", ".sumi-chat-context-chip", ".sumi-chat-context-more"].map((selector) => document.querySelector(selector));
+	const [chevron, chip, more] = [".sumi-sessions-chip", ".sumi-chat-context-chip", ".sumi-chat-context-more"].map((selector) => document.querySelector(selector));
 	const box = (node) => node.getBoundingClientRect();
 	const follows = (first, second) => Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
 	return {
-		domOrder: follows(title, chevron) && follows(chevron, chip),
-		visualOrder: box(title).right <= box(chevron).left + 1 && box(chevron).right <= box(chip).left + 1 && box(chip).right <= box(more).left + 1,
+		domOrder: follows(chevron, chip),
+		visualOrder: box(chevron).right <= box(chip).left + 1 && box(chip).right <= box(more).left + 1,
 		moreRight: box(more).right,
 		contentRight: box(head).right - parseFloat(getComputedStyle(head).paddingRight),
 		chipGap: box(chip).left - box(chevron).right,
@@ -169,8 +168,8 @@ interface HeadGeometry {
 async function checkHead(page: AskedPage, label: string, domOrder: boolean): Promise<void> {
 	const head = (await page.ask(HEAD_GEOMETRY)) as HeadGeometry;
 	console.log(label, JSON.stringify(head));
-	check(`${label}: DOM order is title, chevron, chip`, head.domOrder, domOrder);
-	check(`${label}: drawn order is title, chevron, chip, more`, head.visualOrder, true);
+	check(`${label}: DOM order is chat chip, context chip`, head.domOrder, domOrder);
+	check(`${label}: drawn order is chat chip, context chip, more`, head.visualOrder, true);
 	check(
 		`${label}: more button right edge is the header content right edge`,
 		Math.abs(head.moreRight - head.contentRight) <= 1,

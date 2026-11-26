@@ -15,9 +15,8 @@ import {
 import { workspaces as workspacesModule } from "../packages/domain/workspaces/generated/module.ts";
 import { chatFacts } from "../plugins/ai/chat/data/chat-facts/generated/contract.ts";
 import { ChatHead } from "../plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-head.tsx";
-import { HeadTitle } from "../plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.tsx";
 import { WindowAppContext as TitleWindowApp } from "../plugins/ai/chat-title/src/shared/lib/window-app-context.ts";
-import { SessionsChevron } from "../plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.tsx";
+import { SessionsChip } from "../plugins/ai/sessions/src/features/sessions/ui/sessions-chip/sessions-chip.tsx";
 import { WindowAppContext as SessionsWindowApp } from "../plugins/ai/sessions/src/features/sessions/lib/window-app-context.ts";
 import { ContextBar } from "../plugins/ai/chat-context/src/features/chat-context/ui/chat-context/chat-context.tsx";
 import { chatContext as chatContextContract } from "../plugins/ai/chat-context/data/chat-context/generated/contract.ts";
@@ -101,19 +100,15 @@ function Context(): ReactElement | null {
 }
 
 const sessionsFill = {
-	slot: "chat.head-tools",
+	slot: "chat.head-title",
 	pluginId: "sessions",
-	kind: "add" as const,
-	component: SessionsChevron,
+	kind: "replace" as const,
+	component: SessionsChip,
 };
 const contextFill = { slot: "chat.head-tools", pluginId: "chat-context", kind: "add" as const, component: Context };
-const toolFills =
-	new URLSearchParams(location.search).get("fills") === "context-first"
-		? [contextFill, sessionsFill]
-		: [sessionsFill, contextFill];
+const toolFills = [sessionsFill, contextFill];
 
 const fills = new SlotFills([
-	{ slot: "chat.head-title", pluginId: "chat-title", kind: "replace" as const, component: HeadTitle },
 	...toolFills,
 ]);
 

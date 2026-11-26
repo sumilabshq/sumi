@@ -1,0 +1,35 @@
+.sumi-sessions-chip {
+	position: relative;
+	flex: 0 1 auto;
+	align-items: center;
+	box-sizing: border-box;
+	gap: var(--space-1);
+	min-width: 0;
+	max-width: 420px;
+	height: var(--h-xs);
+	margin-inline-start: calc(-1 * var(--space-1));
+	padding: var(--space-none) var(--space-1);
+	color: var(--text);
+	font-family: var(--font-ui);
+	font-size: var(--fs-13);
+	font-weight: var(--fw-medium);
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.sumi-sessions-chip-title {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sumi-sessions-chip svg {
+	flex: none;
+	color: var(--text-3);
+	transition: transform var(--dur-base) var(--ease-emphasized);
+}
+
+.sumi-sessions-chip[data-state="open"] svg {
+	transform: rotate(180deg);
+}

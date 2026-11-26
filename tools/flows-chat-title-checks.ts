@@ -15,8 +15,7 @@ const SHEETS = [
 	"apps/studio/dist/studio.css",
 	"apps/studio/src/features/frame/shell.css",
 	"plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-page.css",
-	"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
-	"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
+	"plugins/ai/sessions/src/features/sessions/ui/sessions-chip/sessions-chip.css",
 ];
 const LAYOUT = `body{margin:0}.wg-shell{position:relative;width:100vw;height:100vh;overflow:hidden;--shell-chrome-left:78px}
 .wg-pane{position:absolute;top:0;bottom:0;right:0}.wg-pane .wg-studio-chat{width:100%!important;max-width:none!important;padding:0!important}
@@ -25,7 +24,7 @@ const LAYOUT = `body{margin:0}.wg-shell{position:relative;width:100vw;height:100
 const PROBE = `(() => {
 	const left = (selector) => document.querySelector(selector).getBoundingClientRect().left;
 	const head = getComputedStyle(document.querySelector(".wg-chat-head"));
-	return { pane: left(".wg-pane"), head: left(".wg-chat-head"), title: left(".sumi-head-title"), cornerStart: getComputedStyle(document.querySelector(".wg-pane")).getPropertyValue("--corner-start"), paddingStart: head.paddingInlineStart };
+	return { pane: left(".wg-pane"), head: left(".wg-chat-head"), title: left(".sumi-sessions-chip"), cornerStart: getComputedStyle(document.querySelector(".wg-pane")).getPropertyValue("--corner-start"), paddingStart: head.paddingInlineStart };
 })()`;
 
 interface Measured {

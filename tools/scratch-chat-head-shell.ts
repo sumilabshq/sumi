@@ -11,8 +11,7 @@ const SHEETS = [
 	"plugins/sumi-host/src/features/title-bar/ui/title-bar/title-bar.css",
 	"plugins/tabs/panes/src/features/pane-board/ui/pane-tools/pane-tools.css",
 	"plugins/ai/chat/src/features/chat-page/ui/chat-page/chat-page.css",
-	"plugins/ai/chat-title/src/features/head-title/ui/head-title/head-title.css",
-	"plugins/ai/sessions/src/features/sessions/ui/sessions-chevron/sessions-chevron.css",
+	"plugins/ai/sessions/src/features/sessions/ui/sessions-chip/sessions-chip.css",
 ];
 const LAYOUT = `
 body { margin: 0; }
@@ -49,8 +48,8 @@ function pageOf(isDocked: boolean): string {
 const PROBE = `(() => {
 	const pane = document.querySelector(".wg-pane").getBoundingClientRect();
 	const toggle = document.querySelector(".demo-toggle").getBoundingClientRect();
-	const title = document.querySelector(".sumi-head-title").getBoundingClientRect();
-	const chevron = document.querySelector(".sumi-sessions-chevron svg").getBoundingClientRect();
+	const title = document.querySelector(".sumi-sessions-chip").getBoundingClientRect();
+	const chevron = document.querySelector(".sumi-sessions-chip svg").getBoundingClientRect();
 	const x = document.querySelector(".demo-x").getBoundingClientRect();
 	const menu = document.querySelector(".demo-menu").getBoundingClientRect();
 	const text = title.left + 4;
